@@ -11,14 +11,15 @@ Runs in a consumer project directory, reads .framework.yaml to find the
 framework, then updates governance sections, templates, hooks, and seeds.
 Project-specific content is preserved.
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [git](/docs/generated/agents-git-git) | calls | Git Agent - Structural Enforcement for Git Operations |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [version-relation](/docs/generated/lib-version-relation) | calls | TODO: describe what this component does |
 
-## Used By (15)
+## Used By (26)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -37,6 +38,17 @@ Project-specific content is preserved.
 | [test_self_vendor_agents_md_filter](/docs/generated/tests-unit-test_self_vendor_agents_md_filter) | tests_by | TODO: describe what this component does |
 | [test_self_vendor_libs_md_filter](/docs/generated/tests-unit-test_self_vendor_libs_md_filter) | called_by | TODO: describe what this component does |
 | [test_self_vendor_libs_md_filter](/docs/generated/tests-unit-test_self_vendor_libs_md_filter) | tests_by | TODO: describe what this component does |
+| [hook_parity](/docs/generated/lib-hook_parity) | called_by | TODO: describe what this component does |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | called_by | TODO: describe what this component does |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | TODO: describe what this component does |
+| [t2759_upgrade_target_dir_shadowing](/docs/generated/tests-unit-t2759_upgrade_target_dir_shadowing) | tests_by | TODO: describe what this component does |
+| [t2912_upgrade_hook_regen_convergence](/docs/generated/tests-unit-t2912_upgrade_hook_regen_convergence) | tests_by | End-to-end (real fw init'd consumer, env -i) proof that fw upgrade's hook-regeneration step reports its own verified effect instead of the pre-write trigger — a regen that cannot supply a detected-missing hook must report FAILED/PARTIAL, not UPDATED, on every run, and must not write a fresh .bak for a no-op. |
+| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | tests_by | TODO: describe what this component does |
+| [t3113_upgrade_worktree_advisory](/docs/generated/tests-unit-t3113_upgrade_worktree_advisory) | tests_by | TODO: describe what this component does |
+| [version_relation](/docs/generated/tests-unit-version_relation) | tests_by | TODO: describe what this component does |
+| [t2912_upgrade_hook_regen_convergence](/docs/generated/tests-unit-t2912_upgrade_hook_regen_convergence) | called_by | End-to-end (real fw init'd consumer, env -i) proof that fw upgrade's hook-regeneration step reports its own verified effect instead of the pre-write trigger — a regen that cannot supply a detected-missing hook must report FAILED/PARTIAL, not UPDATED, on every run, and must not write a fresh .bak for a no-op. |
+| [t3113_upgrade_worktree_advisory](/docs/generated/tests-unit-t3113_upgrade_worktree_advisory) | called_by | TODO: describe what this component does |
+| [test_self_vendor_agents_md_filter](/docs/generated/tests-unit-test_self_vendor_agents_md_filter) | called_by | TODO: describe what this component does |
 
 ## Related
 

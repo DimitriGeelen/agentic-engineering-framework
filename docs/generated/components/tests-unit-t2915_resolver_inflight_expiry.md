@@ -13,6 +13,13 @@ weeks with no distinguishing signal in `dispatched 0`. These tests pin the
 CLI-level surfaces: `fw resolver latched` (AC5, stale-latch visibility) and
 `fw resolver loop --json` naming its own silence (AC3).
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [resolver](/docs/generated/lib-resolver) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2915_resolver_inflight_expiry.yaml`*
 *Last verified: 2026-08-11*

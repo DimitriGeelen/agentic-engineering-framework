@@ -17,7 +17,7 @@ cannot be acted on — the only way to satisfy it was to stop mentioning fw.
 2. It could not tell a COMMAND from PROSE ABOUT a command. Lines like
 "Works for: fw task update, fw context add-*." are sentences naming verbs,
 
-## Dependencies (11)
+## Dependencies (12)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -31,6 +31,7 @@ cannot be acted on — the only way to satisfy it was to stop mentioning fw.
 | [check-agent-dispatch](/docs/generated/agents-context-check-agent-dispatch) | tests | Agent Dispatch Gate — PreToolUse hook for Agent tool. Tracks dispatches per session, blocks 3rd+ unless approved or TermLink not installed. |
 | [check-project-boundary](/docs/generated/agents-context-check-project-boundary) | tests | PreToolUse hook that blocks Write/Edit/Bash operations targeting paths outside PROJECT_ROOT. Prevents cross-project edits. Part of the project boundary enforcement gate (T-559). |
 | [init](/docs/generated/agents-context-lib-init) | tests | Context Agent - init command |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-no-bare-fw-in-gate-scripts.yaml`*

@@ -17,6 +17,13 @@ three broken filenames would pass against a fix that special-cased those three
 strings, and would say nothing about the seventh word someone adds next year.
 Leg (c) enumerates both lists at run time, so a future edit is caught by
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | calls | TODO: describe what this component does |
+| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-secret_scan_span_rule.yaml`*
 *Last verified: 2026-08-09*

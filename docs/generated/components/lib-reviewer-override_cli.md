@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [overrides](/docs/generated/lib-reviewer-overrides) | calls | TODO: describe what this component does |
+| [overrides](/docs/generated/lib-reviewer-overrides) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-override_cli.yaml`*

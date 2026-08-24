@@ -17,6 +17,13 @@ Our shape differs: our watch file is tailored (this repo authored it) and
 expands to 339 files. But 600+ cards point at files no pattern covers — the
 registry has already decided those are components and the drift check cannot
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-fabric_watch_pattern_fitness.yaml`*
 *Last verified: 2026-08-02*

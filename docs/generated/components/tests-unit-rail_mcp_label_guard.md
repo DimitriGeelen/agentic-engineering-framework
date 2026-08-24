@@ -17,6 +17,14 @@ our project boundary, T-559). This hook enforces the LABEL only: same
 detection surface as T-2905's shell-side auto-attach, applied at the one other
 call shape that reaches the topic. See CLAUDE.md L-572.
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | calls | TODO: describe what this component does |
+| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-rail_mcp_label_guard.yaml`*
 *Last verified: 2026-08-10*

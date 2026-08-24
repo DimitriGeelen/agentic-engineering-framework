@@ -16,13 +16,14 @@
 | [bvp](/docs/generated/lib-bvp) | calls | TODO: describe what this component does |
 | [bvp-estimator](/docs/generated/agents-termlink-bvp-estimator-bvp-estimator) | calls | TODO: describe what this component does |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [bvp](/docs/generated/lib-bvp) | called_by | TODO: describe what this component does |
 | [test_bvp_estimator](/docs/generated/tests-unit-test_bvp_estimator) | called_by | TODO: describe what this component does |
 | [test_bvp_estimator_v_alias](/docs/generated/tests-unit-test_bvp_estimator_v_alias) | tests_by | TODO: describe what this component does |
+| [test_t3068_unknown_cost](/docs/generated/tests-unit-test_t3068_unknown_cost) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-termlink-bvp-estimator-estimator.yaml`*

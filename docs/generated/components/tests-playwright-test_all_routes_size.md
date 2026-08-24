@@ -12,6 +12,12 @@ headroom for honest growth while catching anything in the runaway class (the pre
 was 34x this). A cap that only just fits today's corpus would fail on corpus growth and
 teach everyone to raise it, which is how a guard stops meaning anything.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [ux-review](/docs/generated/agents-ux-review-ux-review) | calls | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_all_routes_size.yaml`*
 *Last verified: 2026-08-03*

@@ -8,11 +8,12 @@
 
 ── 1. Whitelist validation ─────────────────────────────────────────────────
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [__init__](/docs/generated/web-blueprints-__init__) | calls | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_appearance_validation.yaml`*

@@ -25,11 +25,12 @@ the lone live emitter resetting the cut's clean-window gate. Silent no-op
 |-----------|--------------|-------------|
 | [pickup](/docs/generated/lib-pickup) | called_by | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [pickup](/docs/generated/lib-pickup) | invokes_at_process_one | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
+| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-pickup-channel-bridge.yaml`*

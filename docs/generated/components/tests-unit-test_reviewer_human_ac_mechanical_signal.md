@@ -8,11 +8,12 @@
 
 ───────────────────────── Positive cases ─────────────────────────
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [__init__](/docs/generated/lib-reviewer-__init__) | calls | TODO: describe what this component does |
+| [__init__](/docs/generated/lib-reviewer-__init__) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_reviewer_human_ac_mechanical_signal.yaml`*

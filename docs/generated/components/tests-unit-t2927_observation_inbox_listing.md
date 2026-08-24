@@ -17,6 +17,15 @@ enumerating guard cannot distinguish 'converted the ones we found' from
 'converted all of them'") landing a second time, on a different idiom, after
 the learning that describes it was already written down.
 
+## Dependencies (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [handover](/docs/generated/agents-handover-handover) | tests | Handover Agent - Mechanical Operations |
+| [harvest](/docs/generated/lib-harvest) | tests | fw harvest - Collect learnings from projects back into the framework |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2927_observation_inbox_listing.yaml`*
 *Last verified: 2026-08-11*

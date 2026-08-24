@@ -19,7 +19,7 @@ Architecture (T-138 hybrid):
 - Optional cron job can write .budget-status externally (future)
 Performance target: <100ms per invocation
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -27,8 +27,9 @@ Performance target: <100ms per invocation
 | `budget-gate-counter` | reads | — |
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [context_tokens](/docs/generated/lib-context_tokens) | calls | TODO: describe what this component does |
 
-## Used By (6)
+## Used By (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -38,6 +39,11 @@ Performance target: <100ms per invocation
 | [hook-config](/docs/generated/hook-config) | triggers_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 | [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [context_tokens](/docs/generated/lib-context_tokens) | called_by | TODO: describe what this component does |
+| [no-backticks-in-inline-python](/docs/generated/tests-lint-no-backticks-in-inline-python) | tests_by | TODO: describe what this component does |
+| [prescribed-commands-are-allowed](/docs/generated/tests-lint-prescribed-commands-are-allowed) | tests_by | TODO: describe what this component does |
+| [t2919_budget_gate_command_classify](/docs/generated/tests-unit-t2919_budget_gate_command_classify) | called_by | TODO: describe what this component does |
+| [t2919_budget_gate_command_classify](/docs/generated/tests-unit-t2919_budget_gate_command_classify) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

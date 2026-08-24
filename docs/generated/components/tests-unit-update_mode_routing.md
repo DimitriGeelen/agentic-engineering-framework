@@ -17,6 +17,13 @@ the clone's own `origin` is already the answer. The git-based update branch
 T-2854/D-377: `_do_update_git` and its dispatch are gone — global installs
 have no producer since T-2800, so there is nothing left to update in place
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update](/docs/generated/lib-update) | tests | fw update subcommand: CLI wrapper for framework self-update. Pulls latest, runs upgrade, reports changes. |
+| [update](/docs/generated/lib-update) | calls | fw update subcommand: CLI wrapper for framework self-update. Pulls latest, runs upgrade, reports changes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-update_mode_routing.yaml`*
 *Last verified: 2026-08-07*

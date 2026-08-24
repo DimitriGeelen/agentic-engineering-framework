@@ -8,11 +8,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_cockpit.yaml`*

@@ -29,7 +29,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (5)
+## Dependencies (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -38,8 +38,10 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [context_tokens](/docs/generated/lib-context_tokens) | calls | TODO: describe what this component does |
+| [compat](/docs/generated/lib-compat) | calls | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
 
-## Used By (17)
+## Used By (19)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -60,6 +62,8 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 | [doctor_hook_exercise](/docs/generated/tests-unit-doctor_hook_exercise) | called_by | TODO: describe what this component does |
 | [upgrade_duplicate_hook_detection](/docs/generated/tests-unit-upgrade_duplicate_hook_detection) | called_by | TODO: describe what this component does |
+| [context_tokens](/docs/generated/lib-context_tokens) | called_by | TODO: describe what this component does |
+| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | called_by | TODO: describe what this component does |
 
 ## Documentation
 

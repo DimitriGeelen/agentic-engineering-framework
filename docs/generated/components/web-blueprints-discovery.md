@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (14)
+## Dependencies (20)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -26,8 +26,14 @@
 | [graduation](/docs/generated/web-templates-graduation) | renders | Watchtower UI page: Graduation |
 | [patterns-data](/docs/generated/patterns-data) | calls | Stores failure, success, and workflow patterns discovered during project work. |
 | [gaps](/docs/generated/lib-gaps) | calls | TODO: describe what this component does |
+| [context_loader](/docs/generated/web-context_loader) | uses | Centralized YAML loading for context project files (learnings, patterns, decisions, practices, concerns, directives). Replaces duplicated try/except blocks across blueprints. Uses shared.load_yaml() for error collection. |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [embeddings](/docs/generated/web-embeddings) | uses | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
+| [gaps](/docs/generated/lib-gaps) | uses | TODO: describe what this component does |
+| [search](/docs/generated/web-search) | uses | Tantivy BM25 full-text search engine — indexes all YAML/Markdown files, provides ranked search with snippets |
+| [search_utils](/docs/generated/web-search_utils) | uses | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
 
-## Used By (7)
+## Used By (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -37,6 +43,7 @@
 | [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 | [search](/docs/generated/web-search) | imported_by_by | Tantivy BM25 full-text search engine — indexes all YAML/Markdown files, provides ranked search with snippets |
 | [chat](/docs/generated/web-static-js-chat) | called_by | Ask AI chat tab JavaScript — streaming SSE client, conversation state management, save/load conversations, provider/model switching |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-discovery.yaml`*

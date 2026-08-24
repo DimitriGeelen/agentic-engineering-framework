@@ -17,6 +17,12 @@ Flask runs with `debug=False` here, so there is no reloader. Six days of a
 process holding bytes nobody could see.
 Why doctor could not see it. The existing triple check (bin/fw ~:1892) asks
 
+## Used By (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-watchtower-staleness.yaml`*
 *Last verified: 2026-08-12*

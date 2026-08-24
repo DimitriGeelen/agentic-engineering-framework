@@ -17,11 +17,12 @@ on-disk hook here while main sits on a session branch.
 `git checkout master` in main fails — you must `git push origin <branch>:master`.
 - per-worktree merged-into-master? and live-on-this-host? state.
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [t3117_gc_landing_predicate](/docs/generated/tests-unit-t3117_gc_landing_predicate) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-worktree.yaml`*

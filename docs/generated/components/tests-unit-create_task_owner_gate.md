@@ -17,6 +17,13 @@ fw work-on default, 500+ live tasks) added to status-transitions.yaml
 owners — the gate goes hard only against values outside {human,
 claude-code, agent}.
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [create-task](/docs/generated/agents-task-create-create-task) | calls | Task Creation Agent - Mechanical Operations |
+| [create-task](/docs/generated/agents-task-create-create-task) | tests | Task Creation Agent - Mechanical Operations |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-create_task_owner_gate.yaml`*
 *Last verified: 2026-07-29*

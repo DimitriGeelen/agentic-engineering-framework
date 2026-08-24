@@ -23,12 +23,13 @@ Usage:
 |-----------|--------------|-------------|
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
 | [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | tests_by | TODO: describe what this component does |
+| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-handover-discard-manifest.yaml`*

@@ -11,6 +11,13 @@ a maintenance signal (consider deprecating), not a runtime failure. Surfaced
 as audit WARN, not FAIL. Threshold picked as ≈ one quarter; param-injectable
 for tests, no config plumbing until pressure (T-819 pattern).
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [spawn](/docs/generated/lib-spawn) | uses | TODO: describe what this component does |
+| [resolver](/docs/generated/lib-resolver) | uses | TODO: describe what this component does |
+
 ## Used By (2)
 
 | Component | Relationship | Description |

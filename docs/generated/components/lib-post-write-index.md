@@ -17,6 +17,15 @@ episodic YAML, a pattern entry. Do NOT wire it into appends against the large
 aggregates (.context/project/learnings.yaml is ~386 chunks, decisions.yaml
 ~112). index_one() re-chunks and re-embeds the WHOLE file, so hooking an
 
+## Used By (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [episodic](/docs/generated/agents-context-lib-episodic) | called_by | Context Agent - generate-episodic command |
+| [pattern](/docs/generated/agents-context-lib-pattern) | called_by | Context Agent - add-pattern command |
+| [t1719_post_write_index](/docs/generated/tests-unit-t1719_post_write_index) | called_by | TODO: describe what this component does |
+| [t1719_post_write_index](/docs/generated/tests-unit-t1719_post_write_index) | tests_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-post-write-index.yaml`*
 *Last verified: 2026-08-16*

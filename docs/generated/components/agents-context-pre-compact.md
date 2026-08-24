@@ -22,7 +22,7 @@ Updated: T-177 (manual-only cleanup, D-027 documentation)
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (12)
+## Used By (13)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -38,6 +38,7 @@ Updated: T-177 (manual-only cleanup, D-027 documentation)
 | [doctor_duplicate_hook_detection](/docs/generated/tests-unit-doctor_duplicate_hook_detection) | called_by | TODO: describe what this component does |
 | [upgrade_dedupe_user_hooks](/docs/generated/tests-unit-upgrade_dedupe_user_hooks) | called_by | TODO: describe what this component does |
 | [upgrade_duplicate_hook_detection](/docs/generated/tests-unit-upgrade_duplicate_hook_detection) | called_by | TODO: describe what this component does |
+| [validate_init_hook_path_expansion](/docs/generated/tests-unit-validate_init_hook_path_expansion) | called_by | TODO: describe what this component does |
 
 ## Related
 

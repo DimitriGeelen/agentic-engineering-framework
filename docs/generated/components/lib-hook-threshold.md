@@ -13,7 +13,7 @@
 | [hook-telemetry](/docs/generated/lib-hook-telemetry) | calls | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -21,6 +21,7 @@
 | [hook_threshold](/docs/generated/tests-unit-hook_threshold) | called_by | TODO: describe what this component does |
 | [hook_threshold](/docs/generated/tests-unit-hook_threshold) | tests_by | TODO: describe what this component does |
 | [hooks](/docs/generated/web-blueprints-hooks) | called_by | TODO: describe what this component does |
+| [write_set](/docs/generated/lib-write_set) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-hook-threshold.yaml`*

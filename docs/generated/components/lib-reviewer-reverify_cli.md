@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [reverify](/docs/generated/lib-reviewer-reverify) | calls | TODO: describe what this component does |
+| [reverify](/docs/generated/lib-reviewer-reverify) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-reverify_cli.yaml`*

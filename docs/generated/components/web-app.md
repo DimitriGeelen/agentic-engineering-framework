@@ -18,7 +18,7 @@ When building a web application:
 3. **Report access options** — localhost, LAN IP (for other devices), internet (if applicable)
 4. Never leave a built web app unstarted without informing the user
 
-## Dependencies (30)
+## Dependencies (35)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -52,8 +52,13 @@ When building a web application:
 | [embeddings](/docs/generated/web-embeddings) | calls | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
 | [arcs](/docs/generated/web-blueprints-arcs) | calls | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [arcs](/docs/generated/web-blueprints-arcs) | registers | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [search_utils](/docs/generated/web-search_utils) | uses | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
+| [arcs](/docs/generated/web-blueprints-arcs) | uses | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses | Flask blueprint:   Init |
+| [embeddings](/docs/generated/web-embeddings) | uses | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
 
-## Used By (45)
+## Used By (94)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -100,6 +105,55 @@ When building a web application:
 | [test_api_overlay](/docs/generated/tests-web-test_api_overlay) | called_by | TODO: describe what this component does |
 | [test_api_version_latest](/docs/generated/tests-web-test_api_version_latest) | called_by | TODO: describe what this component does |
 | [test_designer_overlay](/docs/generated/tests-web-test_designer_overlay) | called_by | TODO: describe what this component does |
+| [ux-review](/docs/generated/agents-ux-review-ux-review) | uses_by | TODO: describe what this component does |
+| [test_approvals_content_tokens](/docs/generated/tests-unit-test_approvals_content_tokens) | uses_by | TODO: describe what this component does |
+| [test_approvals_style_tokens](/docs/generated/tests-unit-test_approvals_style_tokens) | uses_by | TODO: describe what this component does |
+| [test_arc_membership_web_surfaces](/docs/generated/tests-unit-test_arc_membership_web_surfaces) | uses_by | TODO: describe what this component does |
+| [test_arcs_pages_tokens](/docs/generated/tests-unit-test_arcs_pages_tokens) | uses_by | TODO: describe what this component does |
+| [test_arcs_routes](/docs/generated/tests-unit-test_arcs_routes) | uses_by | Unit tests for /arcs and /arcs/<id> routes (T-1662) — Flask test_client pins index empty/populated, detail in-progress with three-question check, detail closed without check, 404 for unregistered, missing-task graceful render. |
+| [test_breadcrumb](/docs/generated/tests-unit-test_breadcrumb) | uses_by | TODO: describe what this component does |
+| [test_bulk_actions](/docs/generated/tests-unit-test_bulk_actions) | uses_by | TODO: describe what this component does |
+| [test_cockpit_activity](/docs/generated/tests-unit-test_cockpit_activity) | uses_by | TODO: describe what this component does |
+| [test_cockpit_density_spacing](/docs/generated/tests-unit-test_cockpit_density_spacing) | uses_by | TODO: describe what this component does |
+| [test_cockpit_inline_tokens](/docs/generated/tests-unit-test_cockpit_inline_tokens) | uses_by | TODO: describe what this component does |
+| [test_cockpit_knowledge_counts](/docs/generated/tests-unit-test_cockpit_knowledge_counts) | uses_by | TODO: describe what this component does |
+| [test_cockpit_status_pills](/docs/generated/tests-unit-test_cockpit_status_pills) | uses_by | TODO: describe what this component does |
+| [test_cockpit_traceability](/docs/generated/tests-unit-test_cockpit_traceability) | uses_by | TODO: describe what this component does |
+| [test_command_palette](/docs/generated/tests-unit-test_command_palette) | uses_by | TODO: describe what this component does |
+| [test_fabric_coupling_token](/docs/generated/tests-unit-test_fabric_coupling_token) | uses_by | TODO: describe what this component does |
+| [test_file_route_extensions](/docs/generated/tests-unit-test_file_route_extensions) | uses_by | TODO: describe what this component does |
+| [test_filter_chips](/docs/generated/tests-unit-test_filter_chips) | uses_by | TODO: describe what this component does |
+| [test_kanban_drag](/docs/generated/tests-unit-test_kanban_drag) | uses_by | TODO: describe what this component does |
+| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | uses_by | TODO: describe what this component does |
+| [test_nav_layouts](/docs/generated/tests-unit-test_nav_layouts) | uses_by | TODO: describe what this component does |
+| [test_nav_subsections](/docs/generated/tests-unit-test_nav_subsections) | uses_by | TODO: describe what this component does |
+| [test_orchestrator_parallel_view](/docs/generated/tests-unit-test_orchestrator_parallel_view) | uses_by | TODO: describe what this component does |
+| [test_orchestrator_workflow_coverage](/docs/generated/tests-unit-test_orchestrator_workflow_coverage) | uses_by | TODO: describe what this component does |
+| [test_pins](/docs/generated/tests-unit-test_pins) | uses_by | TODO: describe what this component does |
+| [test_review_paused_resolve](/docs/generated/tests-unit-test_review_paused_resolve) | uses_by | TODO: describe what this component does |
+| [test_reviewer_audit_blueprint](/docs/generated/tests-unit-test_reviewer_audit_blueprint) | uses_by | TODO: describe what this component does |
+| [test_session_cookie_port](/docs/generated/tests-unit-test_session_cookie_port) | called_by | TODO: describe what this component does |
+| [test_settings_nav_link](/docs/generated/tests-unit-test_settings_nav_link) | uses_by | TODO: describe what this component does |
+| [test_shortcuts_overlay](/docs/generated/tests-unit-test_shortcuts_overlay) | uses_by | TODO: describe what this component does |
+| [test_t3068_unknown_cost](/docs/generated/tests-unit-test_t3068_unknown_cost) | called_by | TODO: describe what this component does |
+| [test_task_panel](/docs/generated/tests-unit-test_task_panel) | uses_by | TODO: describe what this component does |
+| [test_task_panel_edit](/docs/generated/tests-unit-test_task_panel_edit) | uses_by | TODO: describe what this component does |
+| [test_theme_toggle_contrast](/docs/generated/tests-unit-test_theme_toggle_contrast) | uses_by | TODO: describe what this component does |
+| [test_api_overlay](/docs/generated/tests-web-test_api_overlay) | uses_by | TODO: describe what this component does |
+| [test_api_version_latest](/docs/generated/tests-web-test_api_version_latest) | uses_by | TODO: describe what this component does |
+| [test_approvals_blocked_arcs](/docs/generated/tests-web-test_approvals_blocked_arcs) | called_by | TODO: describe what this component does |
+| [test_approvals_blocked_arcs](/docs/generated/tests-web-test_approvals_blocked_arcs) | uses_by | TODO: describe what this component does |
+| [test_approvals_origin](/docs/generated/tests-web-test_approvals_origin) | called_by | TODO: describe what this component does |
+| [test_approvals_origin](/docs/generated/tests-web-test_approvals_origin) | uses_by | TODO: describe what this component does |
+| [test_designer_api_uuid_identity](/docs/generated/tests-web-test_designer_api_uuid_identity) | uses_by | TODO: describe what this component does |
+| [test_designer_landing](/docs/generated/tests-web-test_designer_landing) | uses_by | TODO: describe what this component does |
+| [test_designer_overlay](/docs/generated/tests-web-test_designer_overlay) | uses_by | TODO: describe what this component does |
+| [test_designer_registry_claim](/docs/generated/tests-web-test_designer_registry_claim) | uses_by | TODO: describe what this component does |
+| [test_designer_registry_ghosts](/docs/generated/tests-web-test_designer_registry_ghosts) | uses_by | TODO: describe what this component does |
+| [test_inception_decide_hardening](/docs/generated/tests-web-test_inception_decide_hardening) | uses_by | TODO: describe what this component does |
+| [test_onboarding_maps_reachable](/docs/generated/tests-web-test_onboarding_maps_reachable) | called_by | TODO: describe what this component does |
+| [test_onboarding_maps_reachable](/docs/generated/tests-web-test_onboarding_maps_reachable) | uses_by | TODO: describe what this component does |
+| [test_costs](/docs/generated/web-test_costs) | uses_by | 24 pytest tests for costs blueprint — _fmt_tokens, _parse_session, _load_all_sessions, route (T-810) |
 
 ## Related
 

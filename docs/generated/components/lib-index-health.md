@@ -17,6 +17,15 @@ WARN — older than the threshold, or age not determinable
 SKIP — web.embeddings not importable (consumer without the embedding extras)
 Embed-free by construction: it reads the corpus manifest, or stats the database
 
+## Used By (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | tests_by | TODO: describe what this component does |
+| [embeddings](/docs/generated/web-blueprints-embeddings) | called_by | TODO: describe what this component does |
+| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | called_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-index-health.yaml`*
 *Last verified: 2026-08-15*

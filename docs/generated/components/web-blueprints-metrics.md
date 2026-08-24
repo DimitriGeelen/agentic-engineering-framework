@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Dependencies (4)
+## Dependencies (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -14,8 +14,11 @@
 | [metrics](/docs/generated/web-templates-metrics) | renders | Watchtower UI page: Metrics |
 | [context_loader](/docs/generated/web-context_loader) | calls | Centralized YAML loading for context project files (learnings, patterns, decisions, practices, concerns, directives). Replaces duplicated try/except blocks across blueprints. Uses shared.load_yaml() for error collection. |
 | [subprocess_utils](/docs/generated/web-subprocess_utils) | calls | Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling. |
+| [context_loader](/docs/generated/web-context_loader) | uses | Centralized YAML loading for context project files (learnings, patterns, decisions, practices, concerns, directives). Replaces duplicated try/except blocks across blueprints. Uses shared.load_yaml() for error collection. |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [subprocess_utils](/docs/generated/web-subprocess_utils) | uses | Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling. |
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -23,6 +26,7 @@
 | [app](/docs/generated/web-app) | registered_by | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 | [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
 | [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-metrics.yaml`*

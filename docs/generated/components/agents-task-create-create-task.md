@@ -17,7 +17,7 @@ Creates properly structured tasks following the framework specification
 | [enums](/docs/generated/lib-enums) | calls | Single source of truth for framework enumerations — valid statuses, workflow types, horizons, and status transitions. Provides is_valid_status(), is_valid_type(), is_valid_horizon(), is_valid_transition() functions. Replaces hardcoded lists previously duplicated across 6+ files. |
 | [keylock](/docs/generated/lib-keylock) | calls | Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications. |
 
-## Used By (11)
+## Used By (17)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -32,6 +32,12 @@ Creates properly structured tasks following the framework specification
 | [task_id_race](/docs/generated/tests-unit-task_id_race) | tests_by | Regression test — concurrent fw work-on invocations must allocate distinct task IDs. Prior bug: generate_id() read max_id then (later) wrote the file; N parallel invocations all observed the same max_id and wrote T-${max+1}. Fix: keylock around read-compute-write sequence. |
 | [update_task](/docs/generated/tests-unit-update_task) | called_by | Unit tests for agents/task-create/update-task.sh (11 tests) |
 | [update_task](/docs/generated/tests-unit-update_task) | tests_by | Unit tests for agents/task-create/update-task.sh (11 tests) |
+| [readme_five_minute_by_hand](/docs/generated/tests-integration-readme_five_minute_by_hand) | tests_by | TODO: describe what this component does |
+| [create_task_owner_gate](/docs/generated/tests-unit-create_task_owner_gate) | called_by | TODO: describe what this component does |
+| [create_task_owner_gate](/docs/generated/tests-unit-create_task_owner_gate) | tests_by | TODO: describe what this component does |
+| [create_task_status_guard](/docs/generated/tests-unit-create_task_status_guard) | called_by | TODO: describe what this component does |
+| [create_task_status_guard](/docs/generated/tests-unit-create_task_status_guard) | tests_by | TODO: describe what this component does |
+| [test_task_create_description_yaml](/docs/generated/tests-unit-test_task_create_description_yaml) | called_by | TODO: describe what this component does |
 
 ## Documentation
 

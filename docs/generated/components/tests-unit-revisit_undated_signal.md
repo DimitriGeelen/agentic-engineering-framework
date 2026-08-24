@@ -17,6 +17,13 @@ file's absence read as "no deferrals pending" while 14 of 14 active DEFER
 decisions sat unscheduled and unobservable.
 WHAT IS PINNED: the real scanner, driven against a synthetic PROJECT_ROOT. Not a
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | calls | TODO: describe what this component does |
+| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-revisit_undated_signal.yaml`*
 *Last verified: 2026-08-08*

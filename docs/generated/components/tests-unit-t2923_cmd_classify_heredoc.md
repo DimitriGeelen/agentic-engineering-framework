@@ -17,6 +17,13 @@ T-2919's classifier splits on `;` `&&` `||` `|` `&` and NEWLINES outside
 quotes. A heredoc body is newline-separated text that is not inside shell
 quotes, so every message line became a segment.
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [cmd_classify](/docs/generated/lib-cmd_classify) | calls | TODO: describe what this component does |
+| [cmd_classify](/docs/generated/lib-cmd_classify) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2923_cmd_classify_heredoc.yaml`*
 *Last verified: 2026-08-11*

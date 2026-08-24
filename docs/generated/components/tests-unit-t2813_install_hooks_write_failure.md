@@ -16,6 +16,13 @@ Invokes agents/git/git.sh directly (not `fw git`) with PROJECT_ROOT
 exported per-scenario, per the L-271 bats pattern (see sibling
 git_install_hooks_git_path.bats for T-2812).
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [git](/docs/generated/agents-git-git) | calls | Git Agent - Structural Enforcement for Git Operations |
+| [git](/docs/generated/agents-git-git) | tests | Git Agent - Structural Enforcement for Git Operations |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2813_install_hooks_write_failure.yaml`*
 *Last verified: 2026-08-05*

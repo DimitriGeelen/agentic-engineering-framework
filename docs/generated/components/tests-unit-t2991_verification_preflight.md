@@ -17,6 +17,18 @@ The load-bearing test is `the import line is never reached`. It plants a fake
 `import` on PATH that TOUCHES A FILE when run — so if the preflight ever stops
 working, the test fails on evidence rather than on an assertion about wording.
 
+## Dependencies (7)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [verification-port](/docs/generated/lib-verification-port) | calls | TODO: describe what this component does |
+| [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
+| [verify_queue](/docs/generated/lib-verify_queue) | calls | TODO: describe what this component does |
+| [verification-port](/docs/generated/lib-verification-port) | tests | TODO: describe what this component does |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+| [verify_queue](/docs/generated/lib-verify_queue) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2991_verification_preflight.yaml`*
 *Last verified: 2026-08-14*

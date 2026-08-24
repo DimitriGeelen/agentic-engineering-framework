@@ -8,11 +8,12 @@
 
 ── fixtures ──────────────────────────────────────────────────────────────────
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [recommendation_claims](/docs/generated/lib-reviewer-recommendation_claims) | calls | TODO: describe what this component does |
+| [recommendation_claims](/docs/generated/lib-reviewer-recommendation_claims) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_recommendation_claims.yaml`*

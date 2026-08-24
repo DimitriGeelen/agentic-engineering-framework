@@ -23,13 +23,14 @@ Exit codes:
 |-----------|--------------|-------------|
 | [heredoc_guard](/docs/generated/lib-heredoc_guard) | calls | TODO: describe what this component does |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [test_heredoc_cmd_sub_guard](/docs/generated/tests-unit-test_heredoc_cmd_sub_guard) | called_by | TODO: describe what this component does |
 | [test_heredoc_cmd_sub_guard](/docs/generated/tests-unit-test_heredoc_cmd_sub_guard) | tests_by | TODO: describe what this component does |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [settings_regenerate_preserves_hooks](/docs/generated/tests-unit-settings_regenerate_preserves_hooks) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-heredoc-cmd-sub.yaml`*

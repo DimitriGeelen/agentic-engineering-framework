@@ -9,7 +9,7 @@
 T-2648 (OBS-097): pin + fw binary are FRAMEWORK-owned (vendored for
 consumers) — PROJECT_ROOT resolution breaks split-root installs.
 
-## Dependencies (8)
+## Dependencies (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -21,13 +21,19 @@ consumers) — PROJECT_ROOT resolution breaks split-root installs.
 | [designer_landing](/docs/generated/web-templates-designer_landing) | renders | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [corpus_overlay](/docs/generated/tools-corpus_overlay) | calls | TODO: describe what this component does |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [designer_api](/docs/generated/web-blueprints-designer_api) | uses | TODO: describe what this component does |
+| [designer_registry](/docs/generated/web-designer_registry) | uses | TODO: describe what this component does |
 
-## Used By (2)
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
 | [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
+| [test_api_overlay](/docs/generated/tests-web-test_api_overlay) | uses_by | TODO: describe what this component does |
+| [test_designer_overlay](/docs/generated/tests-web-test_designer_overlay) | uses_by | TODO: describe what this component does |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-designer.yaml`*

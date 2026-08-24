@@ -17,7 +17,7 @@ Categories (27 patterns):
 2. File reading (7 patterns)
 3. Searching (4 patterns)
 
-## Used By (7)
+## Used By (15)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -28,6 +28,14 @@ Categories (27 patterns):
 | [safe_commands_env_prefix](/docs/generated/tests-unit-safe_commands_env_prefix) | tests_by | TODO: describe what this component does |
 | [test_safe_commands_git_commit](/docs/generated/tests-unit-test_safe_commands_git_commit) | called_by | TODO: describe what this component does |
 | [test_safe_commands_git_commit](/docs/generated/tests-unit-test_safe_commands_git_commit) | tests_by | TODO: describe what this component does |
+| [capture_verbs_nulltask](/docs/generated/tests-unit-capture_verbs_nulltask) | called_by | TODO: describe what this component does |
+| [capture_verbs_nulltask](/docs/generated/tests-unit-capture_verbs_nulltask) | tests_by | TODO: describe what this component does |
+| [safe_commands_chain](/docs/generated/tests-unit-safe_commands_chain) | called_by | TODO: describe what this component does |
+| [safe_commands_chain](/docs/generated/tests-unit-safe_commands_chain) | tests_by | TODO: describe what this component does |
+| [t2936_bootstrap_quoted_redirect](/docs/generated/tests-unit-t2936_bootstrap_quoted_redirect) | called_by | TODO: describe what this component does |
+| [t2936_bootstrap_quoted_redirect](/docs/generated/tests-unit-t2936_bootstrap_quoted_redirect) | tests_by | TODO: describe what this component does |
+| [t2988_grouped_command_classification](/docs/generated/tests-unit-t2988_grouped_command_classification) | called_by | TODO: describe what this component does |
+| [t2988_grouped_command_classification](/docs/generated/tests-unit-t2988_grouped_command_classification) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-safe-commands.yaml`*

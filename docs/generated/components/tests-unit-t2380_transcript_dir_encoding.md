@@ -15,7 +15,7 @@ Drives REAL code: lib/paths.sh helper, the sourced lib/costs.sh resolver, and
 the real agents/capture/read-transcript.py CLI (--dry-run). Plus one static
 guard asserting no slash-only sanitizer survives in any of the three files.
 
-## Dependencies (7)
+## Dependencies (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -26,6 +26,7 @@ guard asserting no slash-only sanitizer survives in any of the three files.
 | [JSONL Transcript Reader](/docs/generated/capture-reader) | tests | Extracts human/agent conversation turns from the current Claude Code session's JSONL transcript. Used by the /capture skill to save volatile conversation content to disk before it is lost. |
 | [colors](/docs/generated/lib-colors) | tests | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
 | [discard-manifest](/docs/generated/agents-handover-discard-manifest) | tests | TODO: describe what this component does |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2380_transcript_dir_encoding.yaml`*

@@ -16,13 +16,14 @@ Human-readable description
 Check types: dir, file, yaml, json, exec, hookpaths
 Conditions: ?git (requires .git), ?claude,generic (provider match)
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [init](/docs/generated/lib-init) | reads | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+| [git-identity](/docs/generated/lib-git-identity) | calls | TODO: describe what this component does |
 
-## Used By (5)
+## Used By (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -31,6 +32,8 @@ Conditions: ?git (requires .git), ?claude,generic (provider match)
 | [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | called-by | Unit tests for lib/validate-init.sh (7 tests) |
 | [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | called_by | Unit tests for lib/validate-init.sh (7 tests) |
 | [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | tests_by | Unit tests for lib/validate-init.sh (7 tests) |
+| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | tests_by | TODO: describe what this component does |
+| [validate_init_hook_path_expansion](/docs/generated/tests-unit-validate_init_hook_path_expansion) | tests_by | TODO: describe what this component does |
 
 ## Related
 

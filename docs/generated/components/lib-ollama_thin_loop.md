@@ -14,12 +14,13 @@
 |-----------|--------------|-------------|
 | [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | calls | TODO: describe what this component does |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [spawn](/docs/generated/lib-spawn) | calls | TODO: describe what this component does |
 | `tests/unit/test_ollama_thin_loop.py` | reads | — |
+| [spawn](/docs/generated/lib-spawn) | uses_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-ollama_thin_loop.yaml`*

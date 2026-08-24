@@ -14,6 +14,17 @@ strip already existed in lib/consumer-recover.sh and had never been applied
 on the write path (L-399 producer/consumer split).
 The tokens below are synthesized fixtures, not real credentials.
 
+## Dependencies (6)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [url-credentials](/docs/generated/lib-url-credentials) | calls | TODO: describe what this component does |
+| [consumer-recover](/docs/generated/lib-consumer-recover) | calls | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [url-credentials](/docs/generated/lib-url-credentials) | tests | TODO: describe what this component does |
+| [consumer-recover](/docs/generated/lib-consumer-recover) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_url_credentials.yaml`*
 *Last verified: 2026-07-31*

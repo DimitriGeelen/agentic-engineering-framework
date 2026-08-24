@@ -19,6 +19,12 @@ warn MESSAGE              — Print warning to stderr
 info MESSAGE              — Print info to stdout
 success MESSAGE           — Print success to stdout
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+
 ## Used By (34)
 
 | Component | Relationship | Description |

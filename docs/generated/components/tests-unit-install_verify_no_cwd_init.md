@@ -19,6 +19,12 @@ project after nothing but the documented `curl | bash` one-liner.
 Regression test: run install.sh --local end to end in an isolated HOME
 with an empty, isolated cwd, then assert the cwd is untouched.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-install_verify_no_cwd_init.yaml`*
 *Last verified: 2026-08-04*

@@ -14,6 +14,16 @@ identity check used it to decide what "ours" means — so a server that fell
 back matched itself and passed `fw doctor`. Every test below therefore
 exercises the UNSET case, which is the only one that could ever have failed.
 
+## Dependencies (5)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+| [watchtower](/docs/generated/lib-watchtower) | calls | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
+| [watchtower](/docs/generated/lib-watchtower) | tests | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
+| [colors](/docs/generated/lib-colors) | tests | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+| [watchtower](/docs/generated/bin-watchtower) | tests | Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3054_watchtower_root_fallback.yaml`*
 *Last verified: 2026-08-16*

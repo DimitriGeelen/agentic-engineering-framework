@@ -17,6 +17,17 @@ A fabricated directory layout would assert nothing about that.
 This is the test that protects the fix from being undone by the next
 person who needs the comparison in a third place and copies it. The
 
+## Dependencies (6)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-parity](/docs/generated/lib-hook-parity) | tests | TODO: describe what this component does |
+| [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
+| [hook_parity](/docs/generated/lib-hook_parity) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+| [checkpoint](/docs/generated/checkpoint) | calls | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3112_worktree_hook_parity.yaml`*
 *Last verified: 2026-08-20*

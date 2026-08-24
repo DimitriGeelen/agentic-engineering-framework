@@ -17,6 +17,18 @@ The abort happened BEFORE the function's final act: writing
 `.context/working/.reviewed-<id>`, which is the T-973 gate's only unblock for
 `fw inception decide`.
 
+## Dependencies (7)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [watchtower](/docs/generated/lib-watchtower) | calls | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
+| [inception](/docs/generated/lib-inception) | calls | fw inception - Inception phase workflow |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [inception](/docs/generated/lib-inception) | tests | fw inception - Inception phase workflow |
+| [watchtower](/docs/generated/lib-watchtower) | tests | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
+| [review](/docs/generated/lib-review) | tests | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-t2922_greenfield_first_inception.yaml`*
 *Last verified: 2026-08-11*

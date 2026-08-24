@@ -17,15 +17,16 @@
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [enforcement](/docs/generated/web-templates-enforcement) | renders | Page template: Enforcement Tiers |
 | [hook-config](/docs/generated/hook-config) | calls | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -33,6 +34,7 @@
 | [app](/docs/generated/web-app) | registered_by | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 | [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
 | [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-enforcement.yaml`*

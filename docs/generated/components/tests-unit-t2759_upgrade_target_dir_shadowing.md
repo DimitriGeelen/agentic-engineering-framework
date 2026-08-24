@@ -17,6 +17,13 @@ dirname(readlink -f ~/.local/bin/fw).
 Steps 5-10 then wrote .claude/settings.json, .mcp.json, resume.md, scripts/,
 the .context subdirs, the .framework.yaml version pin and the enforcement
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2759_upgrade_target_dir_shadowing.yaml`*
 *Last verified: 2026-08-03*

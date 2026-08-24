@@ -17,6 +17,13 @@ audit_anchor_task_existence.bats: the seeds are copied into every project by
 confused operator at a time. Deterministic, operator-facing, one-line fix.
 The last test is the one that matters most over time: it checks the audit's
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_seed_corpus_refs.yaml`*
 *Last verified: 2026-08-14*

@@ -17,13 +17,21 @@ Exit codes:
 1   precondition failed (unreachable / missing tooling / project not found)
 2   consumer is post-T-2232 — refused with redirect to plain fw upgrade
 
-## Used By (3)
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [url-credentials](/docs/generated/lib-url-credentials) | calls | TODO: describe what this component does |
+
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [test_consumer_recover](/docs/generated/tests-unit-test_consumer_recover) | called_by | TODO: describe what this component does |
 | [test_consumer_recover](/docs/generated/tests-unit-test_consumer_recover) | tests_by | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | called_by | TODO: describe what this component does |
+| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-consumer-recover.yaml`*

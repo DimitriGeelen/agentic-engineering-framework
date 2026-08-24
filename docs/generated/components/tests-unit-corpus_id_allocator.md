@@ -17,6 +17,14 @@ and how the same defect then recurred at three more sites (G-079).
 So the load-bearing leg is `pre-fix allocator is RED on the same fixture` — it runs
 the OLD pattern against the SAME corpus and asserts it finds nothing, proving the
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [corpus-id](/docs/generated/lib-corpus-id) | calls | TODO: describe what this component does |
+| [corpus-id](/docs/generated/lib-corpus-id) | tests | TODO: describe what this component does |
+| [add-learning](/docs/generated/add-learning) | tests | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-corpus_id_allocator.yaml`*
 *Last verified: 2026-08-10*

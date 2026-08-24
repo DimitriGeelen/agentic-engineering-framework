@@ -17,6 +17,15 @@ its own `bin/fw`, and its own copy of the enforcement code that is
 supposed to constrain it. Audited by nobody until this file existed.
 Subject (2) is the R7 discovery: rules are enforced by code, code is tracked
 
+## Used By (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [hook_parity](/docs/generated/lib-hook_parity) | called_by | TODO: describe what this component does |
+| [t3111_worktree_reexec](/docs/generated/tests-unit-t3111_worktree_reexec) | tests_by | TODO: describe what this component does |
+| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | tests_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-hook-parity.yaml`*
 *Last verified: 2026-08-20*

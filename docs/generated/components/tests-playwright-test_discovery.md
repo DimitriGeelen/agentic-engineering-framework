@@ -8,10 +8,11 @@
 
 Should have at least some learning references (L-XXX or task refs)
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
+| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
 
 ## Related
 

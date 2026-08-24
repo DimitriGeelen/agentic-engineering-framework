@@ -18,11 +18,12 @@ lives in check-onboarding-gate.py to keep parsing clean.
 | `agents/context/check-onboarding-gate.py` | calls | — |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | reads | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | `tests/unit/check_onboarding_gate.bats` | reads | — |
+| [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-onboarding-gate.yaml`*

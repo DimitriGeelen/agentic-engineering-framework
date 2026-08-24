@@ -8,11 +8,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [hook_paths](/docs/generated/lib-hook_paths) | calls | TODO: describe what this component does |
+| [hook_paths](/docs/generated/lib-hook_paths) | uses | TODO: describe what this component does |
 
 ## Used By (3)
 

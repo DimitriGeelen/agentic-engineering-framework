@@ -21,7 +21,7 @@ Ensures every commit connects to a task (T-XXX pattern)
 | [log](/docs/generated/agents-git-lib-log) | calls | Git Agent - Log subcommand |
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
-## Used By (9)
+## Used By (14)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -34,6 +34,11 @@ Ensures every commit connects to a task (T-XXX pattern)
 | [git_common](/docs/generated/tests-unit-git_common) | called-by | Unit tests for git common (10 tests) |
 | [git_common](/docs/generated/tests-unit-git_common) | called_by | Unit tests for git common (10 tests) |
 | [git_log](/docs/generated/tests-unit-git_log) | called_by | Unit tests for git log (14 tests) |
+| [handover_commit_scope](/docs/generated/tests-unit-handover_commit_scope) | called_by | TODO: describe what this component does |
+| [handover_commit_scope](/docs/generated/tests-unit-handover_commit_scope) | tests_by | TODO: describe what this component does |
+| [hook_version_marker_parity](/docs/generated/tests-unit-hook_version_marker_parity) | tests_by | TODO: describe what this component does |
+| [t2813_install_hooks_write_failure](/docs/generated/tests-unit-t2813_install_hooks_write_failure) | called_by | TODO: describe what this component does |
+| [t2813_install_hooks_write_failure](/docs/generated/tests-unit-t2813_install_hooks_write_failure) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

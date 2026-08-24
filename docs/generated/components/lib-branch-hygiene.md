@@ -17,12 +17,13 @@ Finding classes (one token-prefixed line each):
 merged-undeleted <branch>                    local branch tip contained in TARGET
 behind-threshold <branch> behind=<n> days=<d> (threshold <t>)
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-branch-hygiene.yaml`*

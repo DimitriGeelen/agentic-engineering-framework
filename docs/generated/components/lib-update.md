@@ -21,7 +21,7 @@ update in place.
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
-## Used By (4)
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -29,6 +29,8 @@ update in place.
 | [lib_update](/docs/generated/tests-unit-lib_update) | called-by | Unit tests for update (3 tests) |
 | [lib_update](/docs/generated/tests-unit-lib_update) | called_by | Unit tests for update (3 tests) |
 | [lib_update](/docs/generated/tests-unit-lib_update) | tests_by | Unit tests for update (3 tests) |
+| [update_mode_routing](/docs/generated/tests-unit-update_mode_routing) | tests_by | TODO: describe what this component does |
+| [update_mode_routing](/docs/generated/tests-unit-update_mode_routing) | called_by | TODO: describe what this component does |
 
 ## Related
 

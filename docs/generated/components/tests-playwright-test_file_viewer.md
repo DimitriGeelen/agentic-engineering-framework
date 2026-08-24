@@ -8,12 +8,13 @@
 
 ## What It Does
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_file_viewer.yaml`*

@@ -17,6 +17,14 @@ by a "fix" that disabled the check outright, which is the failure mode this
 whole family keeps producing (T-2843/T-2844/T-2845: green about the wrong
 object). The negative control is the load-bearing half.
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [traceability](/docs/generated/lib-traceability) | calls | TODO: describe what this component does |
+| [traceability](/docs/generated/lib-traceability) | tests | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_root_commit_traceability.yaml`*
 *Last verified: 2026-08-07*

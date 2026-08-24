@@ -17,6 +17,13 @@ manufactures confidence at exactly the moment someone is being careful.
 The cost is not lost prose. A dismissed observation with no reason cannot
 answer the only question anyone asks of one: was this judged and closed, or
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [observe](/docs/generated/agents-observe-observe) | calls | Observe Agent - Lightweight observation capture |
+| [observe](/docs/generated/agents-observe-observe) | tests | Observe Agent - Lightweight observation capture |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2928_note_dismiss_persists_reason.yaml`*
 *Last verified: 2026-08-11*

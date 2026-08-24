@@ -17,6 +17,12 @@ checkout living elsewhere on disk. Under D-377 (total isolation) the default is
 vendored mode, where the running fw is the project's own `.agentic-framework/`
 — so the two CANNOT be equal, and inequality carries no information.
 
+## Used By (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-doctor-upstream.yaml`*
 *Last verified: 2026-08-06*

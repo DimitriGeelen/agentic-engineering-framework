@@ -17,6 +17,12 @@ CLI dispatch  ← the global install   (whatever version that happens to be)
 libs + agents ← the project's copy   (the version the project pinned)
 Vendoring isolated libraries but not tooling. Every consumer ran an untested
 
+## Used By (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [router_no_global_fallback](/docs/generated/tests-unit-router_no_global_fallback) | called_by | Pins bin/fw-router's three post-T-2854 properties together (a fix that regressed any one would still pass a narrower test): refuses with no project found and no global consulted, still routes a vendored consumer project correctly, and still finds the project root walking up from a nested subdirectory. Also covers a residue global on the host not being routed to, and the framework repo itself still routing to its own bin/fw. |
+
 ---
 *Auto-generated from Component Fabric. Card: `bin-fw-router.yaml`*
 *Last verified: 2026-08-04*

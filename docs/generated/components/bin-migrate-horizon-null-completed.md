@@ -17,12 +17,13 @@ Idempotent: re-running emits `0 changes` once the corpus is clean.
 Safe: only touches files where `horizon: <something>` exists in YAML
 frontmatter and the value is non-null/non-empty.
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [update_task_horizon_null_on_close](/docs/generated/tests-unit-update_task_horizon_null_on_close) | called_by | TODO: describe what this component does |
 | [update_task_horizon_null_on_close](/docs/generated/tests-unit-update_task_horizon_null_on_close) | tests_by | TODO: describe what this component does |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-migrate-horizon-null-completed.yaml`*

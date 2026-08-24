@@ -17,6 +17,13 @@ and asked why. The surface had no way to know the answer.
 ── The property under test ──────────────────────────────────────────────────
 Provenance is DERIVED, never declared. No caller passes `--is-a-test`, because
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-tier0_card_provenance.yaml`*
 *Last verified: 2026-08-19*

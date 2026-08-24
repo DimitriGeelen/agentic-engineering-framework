@@ -8,12 +8,14 @@
 
 Should have inception task cards or table rows
 
-## Dependencies (3)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [approvals](/docs/generated/web-blueprints-approvals) | calls | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
 | [approvals](/docs/generated/web-blueprints-approvals) | registers | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
+| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [approvals](/docs/generated/web-blueprints-approvals) | uses | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
 
 ## Related
 

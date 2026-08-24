@@ -17,7 +17,7 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,8 +25,9 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | [fabric](/docs/generated/web-templates-fabric) | renders | Watchtower UI page: Fabric |
 | [fabric_detail](/docs/generated/web-templates-fabric_detail) | renders | Watchtower UI page: Fabric Detail |
 | [fabric_explorer](/docs/generated/web-templates-fabric_explorer) | renders | Interactive D3.js Fabric Explorer — force-directed graph with subsystem bubbles, component expansion, source/report viewers, search, and pathfinding. 1,584 LOC template with CSS isolation (all: initial) to prevent Pico CSS bleeding. |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
-## Used By (9)
+## Used By (10)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -38,6 +39,7 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | [fabric_explorer](/docs/generated/web-templates-fabric_explorer) | rendered_by_by | Interactive D3.js Fabric Explorer — force-directed graph with subsystem bubbles, component expansion, source/report viewers, search, and pathfinding. 1,584 LOC template with CSS isolation (all: initial) to prevent Pico CSS bleeding. |
 | [test_api_fabric_source](/docs/generated/tests-playwright-test_api_fabric_source) | called_by | Playwright tests for fabric file APIs (T-1025). |
 | [test_fabric_detail](/docs/generated/tests-playwright-test_fabric_detail) | called_by | Playwright tests for fabric component detail page (T-1041). |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
 
 ## Related
 

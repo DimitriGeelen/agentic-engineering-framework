@@ -26,11 +26,12 @@ touch the on-PATH copy. That is the global-install problem wearing a
 |-----------|--------------|-------------|
 | [claude-fw](/docs/generated/bin-claude-fw) | triggers | Claude Code wrapper with auto-restart support. Runs claude normally, then checks for a restart signal file written by checkpoint.sh when auto-handover fires at critical budget. If found and fresh, auto-restarts with claude -c to continue seamlessly. |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | `install.sh` | calls | — |
+| [claude_fw_router](/docs/generated/tests-unit-claude_fw_router) | called_by | Pins bin/claude-fw-router's resolution: routes to a vendored consumer's own claude-fw, walks up from a nested subdirectory, prefers the framework repo's own bin/claude-fw over its self-vendored copy, falls back to plain claude when no project/sibling is found (announced on stderr), and skips an incomplete vendor mid-init. |
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-claude-fw-router.yaml`*

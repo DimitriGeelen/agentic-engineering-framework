@@ -17,6 +17,12 @@ each lands in exactly one bucket. The union check is the important one: it is
 what stops a future "just filter it" change from silently dropping the parked
 and awaiting-review tasks on the floor.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [handover](/docs/generated/agents-handover-handover) | tests | Handover Agent - Mechanical Operations |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-handover_task_classification.yaml`*
 *Last verified: 2026-08-16*

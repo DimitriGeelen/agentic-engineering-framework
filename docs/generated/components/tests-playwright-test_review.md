@@ -8,10 +8,11 @@
 
 Find a task ID from the tasks page to test review
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
+| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
 
 ## Related
 

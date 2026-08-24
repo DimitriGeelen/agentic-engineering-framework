@@ -16,6 +16,13 @@ change, `fw pickup status` identical before and after.
 So the suite tests them separately, and mutates them separately: a test that
 only passes when BOTH fixes are present cannot tell you which one is load-bearing.
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [pickup](/docs/generated/lib-pickup) | calls | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
+| [pickup](/docs/generated/lib-pickup) | tests | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3052_pickup_id_collision.yaml`*
 *Last verified: 2026-08-17*

@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [govd_holder](/docs/generated/lib-govd_holder) | calls | TODO: describe what this component does |
+| [govd_holder](/docs/generated/lib-govd_holder) | uses | TODO: describe what this component does |
 
 ## Used By (2)
 

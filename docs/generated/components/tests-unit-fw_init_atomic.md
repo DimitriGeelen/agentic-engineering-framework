@@ -17,6 +17,12 @@ tests for it — so the window is closed by an observed signal as well as by the
 declared marker this file was written for. See tests/unit/fw_vendor_completeness.bats.
 bin/fw-router routed on `[ -x <dir>/.agentic-framework/bin/fw ]` alone, so it
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-fw_init_atomic.yaml`*
 *Last verified: 2026-08-04*

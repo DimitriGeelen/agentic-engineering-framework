@@ -29,14 +29,15 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 | [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | calls | TODO: describe what this component does |
+| [git-identity](/docs/generated/lib-git-identity) | calls | TODO: describe what this component does |
 
-## Used By (11)
+## Used By (13)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -51,6 +52,8 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 | [test_termlink_dispatch_task_type](/docs/generated/tests-unit-test_termlink_dispatch_task_type) | called_by | Unit tests for fw termlink dispatch/spawn orchestrator-substrate wiring (T-1643/W1-W4) — pins _derive_task_type, _resolve_dispatch_model fallback chain, --task-type flag handlers in cmd_spawn/cmd_dispatch, and meta.json schema (task_type/model_used/fallback_used). |
 | [orchestrator](/docs/generated/web-blueprints-orchestrator) | called_by | TODO: describe what this component does |
 | [ollama_loop](/docs/generated/lib-ollama_loop) | called_by | TODO: describe what this component does |
+| [t3038_session_scoped_focus](/docs/generated/tests-unit-t3038_session_scoped_focus) | called_by | TODO: describe what this component does |
+| [t3038_session_scoped_focus](/docs/generated/tests-unit-t3038_session_scoped_focus) | tests_by | TODO: describe what this component does |
 
 ## Related
 

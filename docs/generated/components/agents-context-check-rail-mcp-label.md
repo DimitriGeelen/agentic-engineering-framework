@@ -17,6 +17,22 @@ SCOPE: this hook enforces the LABEL only, not the identity.
 The label is a per-call JSON field (`tool_input.metadata.from_project`) — a
 PreToolUse hook can inspect and block it, exactly like any other tool_input
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [rail-identity](/docs/generated/lib-rail-identity) | calls | TODO: describe what this component does |
+
+## Used By (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [rail_mcp_label_guard](/docs/generated/tests-unit-rail_mcp_label_guard) | called_by | TODO: describe what this component does |
+| [rail_mcp_label_guard](/docs/generated/tests-unit-rail_mcp_label_guard) | tests_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-rail-mcp-label.yaml`*
 *Last verified: 2026-08-10*

@@ -17,6 +17,14 @@ a local helper only ever checks the shape its author already had in mind
 Usage: source "$FRAMEWORK_ROOT/lib/traceability.sh"
 trace_is_root_commit "$repo_dir" "$sha"   # rc 0 = root commit
 
+## Used By (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [audit_root_commit_traceability](/docs/generated/tests-unit-audit_root_commit_traceability) | called_by | TODO: describe what this component does |
+| [audit_root_commit_traceability](/docs/generated/tests-unit-audit_root_commit_traceability) | tests_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-traceability.yaml`*
 *Last verified: 2026-08-07*

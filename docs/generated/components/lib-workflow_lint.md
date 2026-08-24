@@ -13,7 +13,7 @@
 | [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -22,6 +22,7 @@
 | [test_doctor_scope_tags](/docs/generated/tests-unit-test_doctor_scope_tags) | called_by | TODO: describe what this component does |
 | [test_doctor_scope_tags](/docs/generated/tests-unit-test_doctor_scope_tags) | tests_by | TODO: describe what this component does |
 | [test_workflow_schema_pause_lint](/docs/generated/tests-unit-test_workflow_schema_pause_lint) | called_by | TODO: describe what this component does |
+| [t1719_ask_routing](/docs/generated/tests-unit-t1719_ask_routing) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-workflow_lint.yaml`*

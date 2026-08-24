@@ -17,6 +17,15 @@ with the NEXT `-->` below, deleting every command between them
 BEFORE `wc -l` counts them. The gate then prints "N/N passed"
 over a population it silently shrank. Quiet, and worse.
 
+## Dependencies (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [verification-port](/docs/generated/lib-verification-port) | calls | TODO: describe what this component does |
+| [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
+| [verification-port](/docs/generated/lib-verification-port) | tests | TODO: describe what this component does |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2921_verification_comment_strip.yaml`*
 *Last verified: 2026-08-12*

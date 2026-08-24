@@ -17,6 +17,13 @@ JSON and matches that string. It never opens a file the command refers to.
 So `bash ./build.sh` is opaque no matter what build.sh does.
 Origin: 832 lost a working tree to exactly this shape — a mutated build script
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-tier0](/docs/generated/agents-context-check-tier0) | calls | Tier 0 Enforcement Hook — PreToolUse gate for Bash tool |
+| [check-tier0](/docs/generated/agents-context-check-tier0) | tests | Tier 0 Enforcement Hook — PreToolUse gate for Bash tool |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-tier0_scope_boundary.yaml`*
 *Last verified: 2026-08-02*

@@ -8,13 +8,14 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
-## Used By (10)
+## Used By (16)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -28,6 +29,12 @@
 | [risks](/docs/generated/web-blueprints-risks) | called_by | Flask blueprint 'risks' serving routes: /risks |
 | [quality](/docs/generated/web-blueprints-quality) | called_by | Flask blueprint: Quality |
 | [discovery_blueprint](/docs/generated/web-blueprints-discovery) | called_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
+| [learnings-route](/docs/generated/learnings-route) | uses_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
+| [core](/docs/generated/web-blueprints-core) | uses_by | Flask blueprint: Core |
+| [discovery_blueprint](/docs/generated/web-blueprints-discovery) | uses_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
+| [metrics](/docs/generated/web-blueprints-metrics) | uses_by | Flask blueprint: Metrics |
+| [quality](/docs/generated/web-blueprints-quality) | uses_by | Flask blueprint: Quality |
+| [risks](/docs/generated/web-blueprints-risks) | uses_by | Flask blueprint 'risks' serving routes: /risks |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-context_loader.yaml`*

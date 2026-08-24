@@ -23,7 +23,7 @@ Git Agent - Hook installation subcommand
 | [master-guard](/docs/generated/agents-git-lib-master-guard) | calls | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -31,6 +31,7 @@ Git Agent - Hook installation subcommand
 | [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
 | [inception_commit_counter](/docs/generated/tests-unit-inception_commit_counter) | called_by | TODO: describe what this component does |
 | [inception_commit_counter](/docs/generated/tests-unit-inception_commit_counter) | tests_by | TODO: describe what this component does |
+| [hook_version_marker_parity](/docs/generated/tests-unit-hook_version_marker_parity) | tests_by | TODO: describe what this component does |
 
 ## Related
 

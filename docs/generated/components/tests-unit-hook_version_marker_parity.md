@@ -16,6 +16,13 @@ hooks while announcing a downgrade that nothing had actually computed.
 agents/git/git.sh already carried a comment telling the reader to keep the two
 in sync. It was correct, and it drifted anyway. Hence a test.
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [git](/docs/generated/agents-git-git) | tests | Git Agent - Structural Enforcement for Git Operations |
+| [hooks](/docs/generated/agents-git-lib-hooks) | tests | Git Agent - Hook installation subcommand |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_version_marker_parity.yaml`*
 *Last verified: 2026-08-07*

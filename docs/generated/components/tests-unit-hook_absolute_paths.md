@@ -19,7 +19,7 @@ rewritten rather than deleted:
 The original remediation framed the choice as *relative vs absolute* and pinned the
 winner as a test invariant here: every command must `startswith('/')`. But the
 
-## Dependencies (6)
+## Dependencies (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -29,6 +29,7 @@ winner as a test invariant here: every command must `startswith('/')`. But the
 | [init](/docs/generated/lib-init) | tests | fw init - Bootstrap a new project with the Agentic Engineering Framework |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_absolute_paths.yaml`*

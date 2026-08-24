@@ -11,7 +11,7 @@ Source this file to get portable shell functions that work on
 both GNU (Linux) and BSD (macOS) systems.
 Usage: source "$FRAMEWORK_ROOT/lib/compat.sh"
 
-## Used By (24)
+## Used By (26)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -39,6 +39,8 @@ Usage: source "$FRAMEWORK_ROOT/lib/compat.sh"
 | [lib_update](/docs/generated/tests-unit-lib_update) | tests_by | Unit tests for update (3 tests) |
 | [lib_version](/docs/generated/tests-unit-lib_version) | called_by | Unit tests for version (16 tests) |
 | [lib_version](/docs/generated/tests-unit-lib_version) | tests_by | Unit tests for version (16 tests) |
+| [episodic](/docs/generated/agents-context-lib-episodic) | called_by | Context Agent - generate-episodic command |
+| [checkpoint](/docs/generated/checkpoint) | called_by | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-compat.yaml`*

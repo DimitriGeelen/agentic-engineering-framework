@@ -17,6 +17,12 @@ entry lands AND stays green.
 Entry shape:
 <map_id>:
 
+## Used By (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [test_corpus_conformance_registry](/docs/generated/tests-unit-test_corpus_conformance_registry) | called_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tools-conformance-registry.yaml`*
 *Last verified: 2026-07-28*

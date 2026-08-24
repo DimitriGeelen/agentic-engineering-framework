@@ -33,7 +33,7 @@ Agent-relevant settings:
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (29)
+## Used By (38)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -66,6 +66,15 @@ Agent-relevant settings:
 | [config](/docs/generated/web-blueprints-config) | called_by | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
 | [master-guard](/docs/generated/agents-git-lib-master-guard) | called_by | TODO: describe what this component does |
 | [notify](/docs/generated/lib-notify) | called_by | Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh. |
+| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | called_by | TODO: describe what this component does |
+| [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
+| [handover_digest](/docs/generated/tests-unit-handover_digest) | tests_by | TODO: describe what this component does |
+| [rail_identity_guard](/docs/generated/tests-unit-rail_identity_guard) | tests_by | TODO: describe what this component does |
+| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | tests_by | TODO: describe what this component does |
+| [search_utils](/docs/generated/web-search_utils) | called_by | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
+| [config-file](/docs/generated/lib-config-file) | called_by | Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments |
+| [watchtower](/docs/generated/lib-watchtower) | called_by | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
+| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | called_by | TODO: describe what this component does |
 
 ## Related
 

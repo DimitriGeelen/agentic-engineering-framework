@@ -17,6 +17,13 @@ via T-2865's own closing commit, where `git add -A` swept the generated file in.
 .revisits-due.txt has been untracked for the project's whole history, but by luck
 rather than by rule — nothing stopped the same accident. Both are pinned here.
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | calls | TODO: describe what this component does |
+| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-revisit_signal_untracked.yaml`*
 *Last verified: 2026-08-08*

@@ -15,6 +15,15 @@ It exists so any future path that derives STATUS from less-trusted input
 (a) both live paths still write the expected valid status, (b) the guard is
 present in the script, (c) the predicate itself rejects out-of-enum values.
 
+## Dependencies (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [create-task](/docs/generated/agents-task-create-create-task) | calls | Task Creation Agent - Mechanical Operations |
+| [enums](/docs/generated/lib-enums) | calls | Single source of truth for framework enumerations — valid statuses, workflow types, horizons, and status transitions. Provides is_valid_status(), is_valid_type(), is_valid_horizon(), is_valid_transition() functions. Replaces hardcoded lists previously duplicated across 6+ files. |
+| [create-task](/docs/generated/agents-task-create-create-task) | tests | Task Creation Agent - Mechanical Operations |
+| [enums](/docs/generated/lib-enums) | tests | Single source of truth for framework enumerations — valid statuses, workflow types, horizons, and status transitions. Provides is_valid_status(), is_valid_type(), is_valid_horizon(), is_valid_transition() functions. Replaces hardcoded lists previously duplicated across 6+ files. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-create_task_status_guard.yaml`*
 *Last verified: 2026-07-29*

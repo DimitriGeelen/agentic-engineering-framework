@@ -17,6 +17,12 @@ Two disciplines this script must not lose, both learned the hard way:
 directory it has already initialised, so re-using one produces NO evidence line
 and no mode line. Read carelessly that looks exactly like "the feature is not
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-demo-arc015_capture.yaml`*
 *Last verified: 2026-08-10*

@@ -6,12 +6,14 @@
 
 ## What It Does
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [drift](/docs/generated/lib-reviewer-drift) | calls | TODO: describe what this component does |
 | [static_scan](/docs/generated/lib-reviewer-static_scan) | calls | TODO: describe what this component does |
+| [drift](/docs/generated/lib-reviewer-drift) | uses | TODO: describe what this component does |
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-drift_cli.yaml`*

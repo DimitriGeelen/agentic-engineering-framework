@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Used By (7)
+## Used By (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -17,6 +17,8 @@
 | [audit_ctl028_completed_status_consistency](/docs/generated/tests-unit-audit_ctl028_completed_status_consistency) | tests_by | TODO: describe what this component does |
 | [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | called_by | TODO: describe what this component does |
 | [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | tests_by | TODO: describe what this component does |
+| [audit_ctl012_missing_decide_grandfather](/docs/generated/tests-unit-audit_ctl012_missing_decide_grandfather) | called_by | TODO: describe what this component does |
+| [audit_ctl012_missing_decide_grandfather](/docs/generated/tests-unit-audit_ctl012_missing_decide_grandfather) | tests_by | TODO: describe what this component does |
 
 ## Related
 

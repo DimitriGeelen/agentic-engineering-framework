@@ -17,6 +17,12 @@ T-1844 secret-scan hook refused the new project's very FIRST commit, reporting
 emitted — so the onboarding symptom (first commit blocked by a file the framework
 itself authored) and the leak are the same defect seen from two sides.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [init](/docs/generated/lib-init) | tests | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-init_strips_upstream_credentials.yaml`*
 *Last verified: 2026-08-05*

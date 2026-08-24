@@ -17,6 +17,16 @@ multi-line name was silently truncated mid-sentence and every folded
 description collapsed to a bare `>`. That half never raised — it just quietly
 wrote the wrong value.
 
+## Dependencies (5)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
+| [episodic](/docs/generated/agents-context-lib-episodic) | calls | Context Agent - generate-episodic command |
+| [yaml](/docs/generated/lib-yaml) | tests | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
+| [episodic](/docs/generated/agents-context-lib-episodic) | tests | Context Agent - generate-episodic command |
+| [paths](/docs/generated/lib-paths) | tests | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-episodic_frontmatter_extraction.yaml`*
 *Last verified: 2026-08-02*

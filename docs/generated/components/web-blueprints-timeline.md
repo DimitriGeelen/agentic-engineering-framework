@@ -13,14 +13,16 @@ forcing a full re-walk of 1000+ handover files (parse_frontmatter @ ~4ms ea =
 instantly from memory; only added/modified files pay parse cost.
 T-2109: migrated from local stat+cache logic to shared.mtime_cached_get.
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [timeline](/docs/generated/web-templates-timeline) | renders | Page template: Timeline |
+| [timeline_session](/docs/generated/web-templates-timeline_session) | renders | TODO: describe what this component does |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
-## Used By (7)
+## Used By (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -30,6 +32,7 @@ T-2109: migrated from local stat+cache logic to shared.mtime_cached_get.
 | [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 | [test_api_timeline_detail](/docs/generated/tests-playwright-test_api_timeline_detail) | called_by | Playwright tests for timeline task detail API (T-1025). |
 | [shared](/docs/generated/web-shared) | called_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
 
 ## Related
 

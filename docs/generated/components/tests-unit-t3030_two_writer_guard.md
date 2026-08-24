@@ -17,6 +17,14 @@ mid-reconciliation on that task. Both wrote agents/task-create/update-task.sh.
 So the tests below deliberately assert against a NULL focus. Anything that
 passes only because focus happens to name the task is re-testing the guard
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+| [resolver](/docs/generated/lib-resolver) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3030_two_writer_guard.yaml`*
 *Last verified: 2026-08-16*

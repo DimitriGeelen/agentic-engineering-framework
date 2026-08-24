@@ -23,7 +23,7 @@ Stale lock cleanup: locks older than KEYLOCK_TIMEOUT (default 300s) are auto-rel
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (8)
+## Used By (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -35,6 +35,7 @@ Stale lock cleanup: locks older than KEYLOCK_TIMEOUT (default 300s) are auto-rel
 | [keylock_subshell_close](/docs/generated/tests-unit-keylock_subshell_close) | tests_by | TODO: describe what this component does |
 | [lib_keylock](/docs/generated/tests-unit-lib_keylock) | tests_by | Unit tests for keylock (9 tests) |
 | [task_id_race](/docs/generated/tests-unit-task_id_race) | tests_by | Regression test — concurrent fw work-on invocations must allocate distinct task IDs. Prior bug: generate_id() read max_id then (later) wrote the file; N parallel invocations all observed the same max_id and wrote T-${max+1}. Fix: keylock around read-compute-write sequence. |
+| [keylock-py](/docs/generated/lib-keylock-py) | called_by | Python sibling of lib/keylock.sh: sidecar fcntl.flock advisory locks in .context/locks/, with a bounded timeout that raises loudly rather than degrading to a silent skipped write. Guards the dispatch ledger against the concurrent-append erasure fixed in T-3042. |
 
 ## Related
 

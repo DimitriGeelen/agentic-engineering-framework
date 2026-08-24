@@ -17,15 +17,16 @@ For Bash: checks tool_input.command against safe-command allowlist (T-650)
 Exempt paths (framework operations that don't need task context):
 .context/   — Context fabric management
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [safe-commands](/docs/generated/agents-context-lib-safe-commands) | calls | Allowlist of safe bash commands for task gate bypass — git status, ls, cat, grep etc. that dont need an active task. |
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
-## Used By (18)
+## Used By (41)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -47,6 +48,29 @@ Exempt paths (framework operations that don't need task context):
 | [check_active_task_cwd_resolution](/docs/generated/tests-unit-check_active_task_cwd_resolution) | tests_by | TODO: describe what this component does |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 | [hook_enable_absolute_path](/docs/generated/tests-unit-hook_enable_absolute_path) | called_by | TODO: describe what this component does |
+| [hook_parity](/docs/generated/lib-hook_parity) | called_by | TODO: describe what this component does |
+| [prescribed-commands-are-allowed](/docs/generated/tests-lint-prescribed-commands-are-allowed) | tests_by | TODO: describe what this component does |
+| [capture_verbs_nulltask](/docs/generated/tests-unit-capture_verbs_nulltask) | called_by | TODO: describe what this component does |
+| [capture_verbs_nulltask](/docs/generated/tests-unit-capture_verbs_nulltask) | tests_by | TODO: describe what this component does |
+| [drift_gate_not_shadowed_by_safelist](/docs/generated/tests-unit-drift_gate_not_shadowed_by_safelist) | called_by | TODO: describe what this component does |
+| [drift_gate_not_shadowed_by_safelist](/docs/generated/tests-unit-drift_gate_not_shadowed_by_safelist) | tests_by | TODO: describe what this component does |
+| [hook_absolute_paths](/docs/generated/tests-unit-hook_absolute_paths) | called_by | Regression test — .claude/settings.json hook commands must emit absolute paths (canonicalized via cd && pwd at init/upgrade time), because Claude Code resolves hook commands against the session CWD. Relative paths cascade into tool-blocks when CWD drifts. |
+| [onboarding_gate_arc_tag_fp](/docs/generated/tests-unit-onboarding_gate_arc_tag_fp) | called_by | TODO: describe what this component does |
+| [onboarding_gate_arc_tag_fp](/docs/generated/tests-unit-onboarding_gate_arc_tag_fp) | tests_by | TODO: describe what this component does |
+| [settings_regenerate_preserves_hooks](/docs/generated/tests-unit-settings_regenerate_preserves_hooks) | called_by | TODO: describe what this component does |
+| [t2936_bootstrap_quoted_redirect](/docs/generated/tests-unit-t2936_bootstrap_quoted_redirect) | called_by | TODO: describe what this component does |
+| [t2936_bootstrap_quoted_redirect](/docs/generated/tests-unit-t2936_bootstrap_quoted_redirect) | tests_by | TODO: describe what this component does |
+| [t2987_bootstrap_shape_hint](/docs/generated/tests-unit-t2987_bootstrap_shape_hint) | called_by | TODO: describe what this component does |
+| [t2987_bootstrap_shape_hint](/docs/generated/tests-unit-t2987_bootstrap_shape_hint) | tests_by | TODO: describe what this component does |
+| [t2988_grouped_command_classification](/docs/generated/tests-unit-t2988_grouped_command_classification) | called_by | TODO: describe what this component does |
+| [t2988_grouped_command_classification](/docs/generated/tests-unit-t2988_grouped_command_classification) | tests_by | TODO: describe what this component does |
+| [t3038_session_scoped_focus](/docs/generated/tests-unit-t3038_session_scoped_focus) | called_by | TODO: describe what this component does |
+| [t3038_session_scoped_focus](/docs/generated/tests-unit-t3038_session_scoped_focus) | tests_by | TODO: describe what this component does |
+| [t3050_b005_block_message](/docs/generated/tests-unit-t3050_b005_block_message) | called_by | TODO: describe what this component does |
+| [t3050_b005_block_message](/docs/generated/tests-unit-t3050_b005_block_message) | tests_by | TODO: describe what this component does |
+| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | called_by | TODO: describe what this component does |
+| [t3113_upgrade_worktree_advisory](/docs/generated/tests-unit-t3113_upgrade_worktree_advisory) | called_by | TODO: describe what this component does |
+| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate) | read_by | T-2815 PreToolUse Write/Edit hook — refuses adding an agent-unresolvable task (owner != human but agent-unresolvable: inception workflow_type or an unticked ### Human AC) to the T-532 gated onboarding set. Bash wrapper exec's the real logic in check-onboarding-gate.py. |
 
 ## Documentation
 

@@ -12,12 +12,14 @@ Build a self-contained git topology with three local bare repos acting as
 four cases the auto-recovery contract must distinguish:
 in-sync, ancestor (fast-forward), diverged, unreachable.
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [mirror](/docs/generated/lib-mirror) | calls | TODO: describe what this component does |
 | [mirror](/docs/generated/lib-mirror) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_mirror_sync.yaml`*

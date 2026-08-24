@@ -9,12 +9,14 @@
 Fabric Agent - drift detection commands
 Implements: fw fabric drift, fw fabric validate
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fabric](/docs/generated/agents-fabric-fabric) | called_by | Fabric Agent - Component topology system for codebase self-awareness |
 | [test_fabric_drift_absolute_paths](/docs/generated/tests-unit-test_fabric_drift_absolute_paths) | called_by | TODO: describe what this component does |
+| [t3049_fabric_url_location](/docs/generated/tests-unit-t3049_fabric_url_location) | called_by | TODO: describe what this component does |
+| [t3049_fabric_url_location](/docs/generated/tests-unit-t3049_fabric_url_location) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

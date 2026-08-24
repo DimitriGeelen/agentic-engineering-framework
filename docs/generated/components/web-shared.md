@@ -10,7 +10,7 @@
 
 Path resolution
 
-## Dependencies (11)
+## Dependencies (12)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,8 +25,9 @@ Path resolution
 | [search_utils](/docs/generated/web-search_utils) | calls | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
 | [cockpit](/docs/generated/web-blueprints-cockpit) | calls | Flask blueprint: Cockpit |
 | [static_scan](/docs/generated/lib-reviewer-static_scan) | calls | TODO: describe what this component does |
+| [settings](/docs/generated/web-blueprints-settings) | uses | Watchtower settings blueprint: framework configuration display — shows hooks, cron config, notification state. |
 
-## Used By (64)
+## Used By (122)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -94,6 +95,64 @@ Path resolution
 | [designer](/docs/generated/web-blueprints-designer) | called_by | TODO: describe what this component does |
 | [designer_api](/docs/generated/web-blueprints-designer_api) | called_by | TODO: describe what this component does |
 | [extract_recommendation_close_keep_open](/docs/generated/tests-unit-extract_recommendation_close_keep_open) | tests_by | TODO: describe what this component does |
+| [learnings-route](/docs/generated/learnings-route) | uses_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
+| [test_arc_membership_web_surfaces](/docs/generated/tests-unit-test_arc_membership_web_surfaces) | uses_by | TODO: describe what this component does |
+| [test_arcs_membership_cached](/docs/generated/tests-unit-test_arcs_membership_cached) | called_by | TODO: describe what this component does |
+| [test_arcs_routes](/docs/generated/tests-unit-test_arcs_routes) | uses_by | Unit tests for /arcs and /arcs/<id> routes (T-1662) — Flask test_client pins index empty/populated, detail in-progress with three-question check, detail closed without check, 404 for unregistered, missing-task graceful render. |
+| [test_breadcrumb](/docs/generated/tests-unit-test_breadcrumb) | uses_by | TODO: describe what this component does |
+| [test_file_route_extensions](/docs/generated/tests-unit-test_file_route_extensions) | uses_by | TODO: describe what this component does |
+| [test_frontmatter_loader_equivalence](/docs/generated/tests-unit-test_frontmatter_loader_equivalence) | called_by | TODO: describe what this component does |
+| [test_frontmatter_loader_equivalence](/docs/generated/tests-unit-test_frontmatter_loader_equivalence) | uses_by | TODO: describe what this component does |
+| [test_inception_commit_rename_paths](/docs/generated/tests-unit-test_inception_commit_rename_paths) | uses_by | TODO: describe what this component does |
+| [test_nav_subsections](/docs/generated/tests-unit-test_nav_subsections) | uses_by | TODO: describe what this component does |
+| [test_orchestrator_parallel_view](/docs/generated/tests-unit-test_orchestrator_parallel_view) | uses_by | TODO: describe what this component does |
+| [test_orchestrator_workflow_coverage](/docs/generated/tests-unit-test_orchestrator_workflow_coverage) | uses_by | TODO: describe what this component does |
+| [test_project_root_discovery](/docs/generated/tests-unit-test_project_root_discovery) | uses_by | TODO: describe what this component does |
+| [test_render_page_guard](/docs/generated/tests-unit-test_render_page_guard) | uses_by | TODO: describe what this component does |
+| [test_reviewer_audit_blueprint](/docs/generated/tests-unit-test_reviewer_audit_blueprint) | uses_by | TODO: describe what this component does |
+| [test_inception_decide_hardening](/docs/generated/tests-web-test_inception_decide_hardening) | uses_by | TODO: describe what this component does |
+| [app](/docs/generated/web-app) | uses_by | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+| [api](/docs/generated/web-blueprints-api) | uses_by | Watchtower API blueprint: JSON endpoints for AJAX/htmx — task data, metrics, approval actions. |
+| [approvals](/docs/generated/web-blueprints-approvals) | uses_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
+| [arcs](/docs/generated/web-blueprints-arcs) | uses_by | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [bvp](/docs/generated/web-blueprints-bvp) | uses_by | TODO: describe what this component does |
+| [cockpit](/docs/generated/web-blueprints-cockpit) | uses_by | Flask blueprint: Cockpit |
+| [config](/docs/generated/web-blueprints-config) | uses_by | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
+| [core](/docs/generated/web-blueprints-core) | uses_by | Flask blueprint: Core |
+| [costs](/docs/generated/web-blueprints-costs) | uses_by | Watchtower /costs page — token usage dashboard with session table and project summary (T-802) |
+| [cron](/docs/generated/web-blueprints-cron) | uses_by | Watchtower cron blueprint: cron job status display — shows registered jobs, schedule, last run, active/paused state. |
+| [designer](/docs/generated/web-blueprints-designer) | uses_by | TODO: describe what this component does |
+| [designer_api](/docs/generated/web-blueprints-designer_api) | uses_by | TODO: describe what this component does |
+| [discoveries](/docs/generated/web-blueprints-discoveries) | uses_by | Flask blueprint serving /discoveries route. Displays audit discovery findings with WARN/FAIL status from cron and manual audits. |
+| [discovery_blueprint](/docs/generated/web-blueprints-discovery) | uses_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
+| [docs](/docs/generated/web-blueprints-docs) | uses_by | Watchtower docs blueprint: file viewer for docs/reports/ and docs/articles/ — renders markdown with syntax highlighting. |
+| [embeddings](/docs/generated/web-blueprints-embeddings) | called_by | TODO: describe what this component does |
+| [embeddings](/docs/generated/web-blueprints-embeddings) | uses_by | TODO: describe what this component does |
+| [enforcement](/docs/generated/web-blueprints-enforcement) | uses_by | Flask blueprint: Enforcement |
+| [escalation](/docs/generated/web-blueprints-escalation) | uses_by | TODO: describe what this component does |
+| [fabric](/docs/generated/web-blueprints-fabric) | uses_by | Flask blueprint: Fabric |
+| [fleet](/docs/generated/web-blueprints-fleet) | uses_by | TODO: describe what this component does |
+| [hooks](/docs/generated/web-blueprints-hooks) | uses_by | TODO: describe what this component does |
+| [inception](/docs/generated/web-blueprints-inception) | uses_by | Blueprint 'inception' — routes: /inception |
+| [metrics](/docs/generated/web-blueprints-metrics) | uses_by | Flask blueprint: Metrics |
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | uses_by | TODO: describe what this component does |
+| [pending](/docs/generated/web-blueprints-pending) | uses_by | TODO: describe what this component does |
+| [prompts](/docs/generated/web-blueprints-prompts) | uses_by | TODO: describe what this component does |
+| [quality](/docs/generated/web-blueprints-quality) | uses_by | Flask blueprint: Quality |
+| [review](/docs/generated/web-blueprints-review) | uses_by | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
+| [reviewer](/docs/generated/web-blueprints-reviewer) | uses_by | TODO: describe what this component does |
+| [risks](/docs/generated/web-blueprints-risks) | uses_by | Flask blueprint 'risks' serving routes: /risks |
+| [session](/docs/generated/web-blueprints-session) | uses_by | Flask blueprint: Session |
+| [sessions](/docs/generated/web-blueprints-sessions) | uses_by | Flask blueprint that renders the terminal session management page listing active and historical sessions |
+| [settings](/docs/generated/web-blueprints-settings) | uses_by | Watchtower settings blueprint: framework configuration display — shows hooks, cron config, notification state. |
+| [tasks](/docs/generated/web-blueprints-tasks) | uses_by | Flask blueprint: Tasks |
+| [terminal](/docs/generated/web-blueprints-terminal) | uses_by | Flask blueprint providing the interactive web terminal API with session creation, I/O, resize, and profile-based configuration |
+| [timeline](/docs/generated/web-blueprints-timeline) | uses_by | Blueprint 'timeline' — routes: /timeline |
+| [context_loader](/docs/generated/web-context_loader) | uses_by | Centralized YAML loading for context project files (learnings, patterns, decisions, practices, concerns, directives). Replaces duplicated try/except blocks across blueprints. Uses shared.load_yaml() for error collection. |
+| [embeddings](/docs/generated/web-embeddings) | uses_by | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
+| [search](/docs/generated/web-search) | uses_by | Tantivy BM25 full-text search engine — indexes all YAML/Markdown files, provides ranked search with snippets |
+| [search_utils](/docs/generated/web-search_utils) | uses_by | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
+| [subprocess_utils](/docs/generated/web-subprocess_utils) | uses_by | Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling. |
 
 ## Related
 

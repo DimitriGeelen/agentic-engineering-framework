@@ -10,7 +10,7 @@
 
 Index lives in /tmp — ephemeral, rebuilt as needed
 
-## Dependencies (4)
+## Dependencies (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -18,8 +18,10 @@ Index lives in /tmp — ephemeral, rebuilt as needed
 | [discovery_blueprint](/docs/generated/web-blueprints-discovery) | imported_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
 | [search_utils](/docs/generated/web-search_utils) | calls | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [search_utils](/docs/generated/web-search_utils) | uses | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
-## Used By (5)
+## Used By (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -28,6 +30,10 @@ Index lives in /tmp — ephemeral, rebuilt as needed
 | [embeddings](/docs/generated/web-embeddings) | called_by | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
 | [discovery_blueprint](/docs/generated/web-blueprints-discovery) | called_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
 | [search_utils](/docs/generated/web-search_utils) | called_by | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
+| [learnings-route](/docs/generated/learnings-route) | uses_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
+| [api](/docs/generated/web-blueprints-api) | uses_by | Watchtower API blueprint: JSON endpoints for AJAX/htmx — task data, metrics, approval actions. |
+| [discovery_blueprint](/docs/generated/web-blueprints-discovery) | uses_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
+| [embeddings](/docs/generated/web-embeddings) | uses_by | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-search.yaml`*

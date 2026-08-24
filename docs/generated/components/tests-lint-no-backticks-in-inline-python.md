@@ -17,6 +17,13 @@ Origin: T-2702 shipped a comment reading "PRINTS `fw context focus T-XXX` as the
 remedy" into agents/context/budget-gate.sh. Every hook invocation then shelled out
 to `fw context focus` (and `context init`, `context focus` -> command not found).
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [budget-gate](/docs/generated/budget-gate) | tests | Block Write/Edit/Bash tool execution when context budget reaches critical level (>=170K tokens). Primary enforcement for P-009. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-no-backticks-in-inline-python.yaml`*
 *Last verified: 2026-07-31*

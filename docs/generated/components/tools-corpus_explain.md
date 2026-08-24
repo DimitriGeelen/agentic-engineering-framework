@@ -6,6 +6,13 @@
 
 ## What It Does
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [corpus_spec](/docs/generated/tools-corpus_spec) | uses | TODO: describe what this component does |
+| [corpus_conformance](/docs/generated/tools-corpus_conformance) | uses | TODO: describe what this component does |
+
 ## Used By (1)
 
 | Component | Relationship | Description |

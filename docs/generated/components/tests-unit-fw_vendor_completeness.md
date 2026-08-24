@@ -17,6 +17,12 @@ What that cost: a directory with a half-copied .agentic-framework/ could not be
 repaired by `fw init`, because that call routed into the broken copy and died
 "Cannot find framework installation" — whose own advice is "Run 'fw init' in
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-fw_vendor_completeness.yaml`*
 *Last verified: 2026-08-05*

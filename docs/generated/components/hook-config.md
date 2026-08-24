@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (31)
+## Dependencies (33)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -43,6 +43,8 @@
 | [audit-task-tools](/docs/generated/agents-context-audit-task-tools) | calls | PostToolUse hook detecting TodoWrite/TaskCreate bypass (T-1115/T-1118). Advisory — warns agent when banned task tools are used. |
 | [check-settings-edit](/docs/generated/agents-context-check-settings-edit) | calls | PostToolUse hook (Write\|Edit matcher) that fires an advisory L-398 reminder when .claude/settings.json is written/edited. Reminds the agent to add `bin/fw enforcement baseline` to the active task's Verification block so the canonical hash refreshes at task-close. Strictly advisory (exit 0).  Origin: T-1886 RCA Candidate B — paired with T-1887 Candidate A (template hint). The enforcement-baseline-drift class accumulated for multiple sessions across T-1849/T-1730/T-1731 before T-1886 cleaned up. |
 | [check-active-completed-dup-sh](/docs/generated/agents-context-check-active-completed-dup-sh) | calls | Thin wrapper (T-2517) the fw hook dispatcher loads for the active/completed duplicate write-time guard. Execs check-active-completed-dup.py; the shell layer exists only because bin/fw's hook loader globs .sh files. |
+| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate) | calls | T-2815 PreToolUse Write/Edit hook — refuses adding an agent-unresolvable task (owner != human but agent-unresolvable: inception workflow_type or an unticked ### Human AC) to the T-532 gated onboarding set. Bash wrapper exec's the real logic in check-onboarding-gate.py. |
+| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | calls | TODO: describe what this component does |
 
 ## Used By (2)
 

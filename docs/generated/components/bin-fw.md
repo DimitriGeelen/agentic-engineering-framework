@@ -22,7 +22,7 @@ When run from inside the framework repo itself, it auto-detects.
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (75)
+## Dependencies (90)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -101,8 +101,23 @@ When run from inside the framework repo itself, it auto-detects.
 | [corpus_lint](/docs/generated/tools-corpus_lint) | calls | TODO: describe what this component does |
 | [corpus_explain](/docs/generated/tools-corpus_explain) | calls | TODO: describe what this component does |
 | [corpus_spec](/docs/generated/tools-corpus_spec) | calls | TODO: describe what this component does |
+| [version-relation](/docs/generated/lib-version-relation) | calls | TODO: describe what this component does |
+| [rail-identity](/docs/generated/lib-rail-identity) | calls | TODO: describe what this component does |
+| [hook-parity](/docs/generated/lib-hook-parity) | calls | TODO: describe what this component does |
+| [doctor-upstream](/docs/generated/lib-doctor-upstream) | calls | TODO: describe what this component does |
+| [root-pollution](/docs/generated/lib-root-pollution) | calls | TODO: describe what this component does |
+| [git-identity](/docs/generated/lib-git-identity) | calls | TODO: describe what this component does |
+| [index-health](/docs/generated/lib-index-health) | calls | TODO: describe what this component does |
+| [recall-usage](/docs/generated/lib-recall-usage) | calls | TODO: describe what this component does |
+| [watchtower-staleness](/docs/generated/lib-watchtower-staleness) | calls | TODO: describe what this component does |
+| [worktree-identity](/docs/generated/lib-worktree-identity) | calls | TODO: describe what this component does |
+| [cron-registry](/docs/generated/lib-cron-registry) | calls | TODO: describe what this component does |
+| [embeddings](/docs/generated/web-embeddings) | calls | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
+| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [message_router](/docs/generated/lib-message_router) | calls | TODO: describe what this component does |
+| [verify_queue](/docs/generated/lib-verify_queue) | calls | TODO: describe what this component does |
 
-## Used By (310)
+## Used By (392)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -415,6 +430,88 @@ When run from inside the framework repo itself, it auto-detects.
 | [designer_sync_from_tag](/docs/generated/tests-unit-designer_sync_from_tag) | tests_by | TODO: describe what this component does |
 | [corpus_spec](/docs/generated/tools-corpus_spec) | called_by | TODO: describe what this component does |
 | [designer](/docs/generated/web-blueprints-designer) | called_by | TODO: describe what this component does |
+| [check-active-task](/docs/generated/agents-context-check-active-task) | called_by | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+| [cmd_classify](/docs/generated/lib-cmd_classify) | called_by | TODO: describe what this component does |
+| [hook_parity](/docs/generated/lib-hook_parity) | called_by | TODO: describe what this component does |
+| [arc015_capture](/docs/generated/tests-demo-arc015_capture) | called_by | TODO: describe what this component does |
+| [fw_onboarding_greenfield](/docs/generated/tests-integration-fw_onboarding_greenfield) | tests_by | TODO: describe what this component does |
+| [readme_five_minute_by_hand](/docs/generated/tests-integration-readme_five_minute_by_hand) | tests_by | TODO: describe what this component does |
+| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | called_by | TODO: describe what this component does |
+| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | tests_by | TODO: describe what this component does |
+| [bvp-help-parity](/docs/generated/tests-lint-bvp-help-parity) | tests_by | TODO: describe what this component does |
+| [no-backticks-in-inline-python](/docs/generated/tests-lint-no-backticks-in-inline-python) | tests_by | TODO: describe what this component does |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
+| [no-orphaned-test-dirs](/docs/generated/tests-lint-no-orphaned-test-dirs) | tests_by | TODO: describe what this component does |
+| [capture_verbs_nulltask](/docs/generated/tests-unit-capture_verbs_nulltask) | tests_by | TODO: describe what this component does |
+| [claude_fw_router](/docs/generated/tests-unit-claude_fw_router) | tests_by | Pins bin/claude-fw-router's resolution: routes to a vendored consumer's own claude-fw, walks up from a nested subdirectory, prefers the framework repo's own bin/claude-fw over its self-vendored copy, falls back to plain claude when no project/sibling is found (announced on stderr), and skips an incomplete vendor mid-init. |
+| [doctor_hook_counters](/docs/generated/tests-unit-doctor_hook_counters) | called_by | TODO: describe what this component does |
+| [doctor_hook_counters](/docs/generated/tests-unit-doctor_hook_counters) | tests_by | TODO: describe what this component does |
+| [drift_gate_not_shadowed_by_safelist](/docs/generated/tests-unit-drift_gate_not_shadowed_by_safelist) | tests_by | TODO: describe what this component does |
+| [episodic_yaml_timeline_escape](/docs/generated/tests-unit-episodic_yaml_timeline_escape) | called_by | TODO: describe what this component does |
+| [episodic_yaml_timeline_escape](/docs/generated/tests-unit-episodic_yaml_timeline_escape) | tests_by | TODO: describe what this component does |
+| [fw_help_watchtower_discoverable](/docs/generated/tests-unit-fw_help_watchtower_discoverable) | tests_by | TODO: describe what this component does |
+| [fw_init_atomic](/docs/generated/tests-unit-fw_init_atomic) | tests_by | TODO: describe what this component does |
+| [fw_vendor_completeness](/docs/generated/tests-unit-fw_vendor_completeness) | tests_by | TODO: describe what this component does |
+| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | called_by | TODO: describe what this component does |
+| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | tests_by | TODO: describe what this component does |
+| [handover_digest](/docs/generated/tests-unit-handover_digest) | tests_by | TODO: describe what this component does |
+| [hook_producer_site_parity](/docs/generated/tests-unit-hook_producer_site_parity) | called_by | Guards that lib/init.sh:generate_claude_code_config never diverges again from the framework repo's own .claude/settings.json (the cumulative record of every 'fw hook-enable' call) — name-keyed comparison plus an explicit framework-only allowlist and a negative control proving the comparator is non-vacuous. |
+| [hook_producer_site_parity](/docs/generated/tests-unit-hook_producer_site_parity) | tests_by | Guards that lib/init.sh:generate_claude_code_config never diverges again from the framework repo's own .claude/settings.json (the cumulative record of every 'fw hook-enable' call) — name-keyed comparison plus an explicit framework-only allowlist and a negative control proving the comparator is non-vacuous. |
+| [init_git_identity_blocker](/docs/generated/tests-unit-init_git_identity_blocker) | tests_by | TODO: describe what this component does |
+| [init_project_shape_detection](/docs/generated/tests-unit-init_project_shape_detection) | called_by | TODO: describe what this component does |
+| [init_project_shape_detection](/docs/generated/tests-unit-init_project_shape_detection) | tests_by | TODO: describe what this component does |
+| [install_verify_no_cwd_init](/docs/generated/tests-unit-install_verify_no_cwd_init) | tests_by | Regression test (T-2799): runs the real install.sh end to end in an isolated HOME + empty cwd and asserts the cwd is untouched afterward. Guards against the installer's own verify() step silently auto-initialising a project wherever the user happened to invoke curl\|bash from. |
+| [learning_application_birth](/docs/generated/tests-unit-learning_application_birth) | tests_by | TODO: describe what this component does |
+| [lib_upgrade](/docs/generated/tests-unit-lib_upgrade) | tests_by | TODO: describe what this component does |
+| [rail_identity_guard](/docs/generated/tests-unit-rail_identity_guard) | tests_by | TODO: describe what this component does |
+| [rail_mcp_label_guard](/docs/generated/tests-unit-rail_mcp_label_guard) | tests_by | TODO: describe what this component does |
+| [reviewer_verdict_replacement_escape](/docs/generated/tests-unit-reviewer_verdict_replacement_escape) | called_by | TODO: describe what this component does |
+| [reviewer_verdict_replacement_escape](/docs/generated/tests-unit-reviewer_verdict_replacement_escape) | tests_by | TODO: describe what this component does |
+| [router_no_global_fallback](/docs/generated/tests-unit-router_no_global_fallback) | tests_by | Pins bin/fw-router's three post-T-2854 properties together (a fix that regressed any one would still pass a narrower test): refuses with no project found and no global consulted, still routes a vendored consumer project correctly, and still finds the project root walking up from a nested subdirectory. Also covers a residue global on the host not being routed to, and the framework repo itself still routing to its own bin/fw. |
+| [safe_commands_chain](/docs/generated/tests-unit-safe_commands_chain) | tests_by | TODO: describe what this component does |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | TODO: describe what this component does |
+| [settings_regenerate_preserves_hooks](/docs/generated/tests-unit-settings_regenerate_preserves_hooks) | tests_by | TODO: describe what this component does |
+| [t1719_ask_routing](/docs/generated/tests-unit-t1719_ask_routing) | tests_by | TODO: describe what this component does |
+| [t2759_upgrade_target_dir_shadowing](/docs/generated/tests-unit-t2759_upgrade_target_dir_shadowing) | tests_by | TODO: describe what this component does |
+| [t2762_upgrade_foreign_source_sha](/docs/generated/tests-unit-t2762_upgrade_foreign_source_sha) | tests_by | TODO: describe what this component does |
+| [t2862_greenfield_first_inception_e2e](/docs/generated/tests-unit-t2862_greenfield_first_inception_e2e) | called_by | TODO: describe what this component does |
+| [t2862_greenfield_first_inception_e2e](/docs/generated/tests-unit-t2862_greenfield_first_inception_e2e) | tests_by | TODO: describe what this component does |
+| [t2912_upgrade_hook_regen_convergence](/docs/generated/tests-unit-t2912_upgrade_hook_regen_convergence) | tests_by | End-to-end (real fw init'd consumer, env -i) proof that fw upgrade's hook-regeneration step reports its own verified effect instead of the pre-write trigger — a regen that cannot supply a detected-missing hook must report FAILED/PARTIAL, not UPDATED, on every run, and must not write a fresh .bak for a no-op. |
+| [t2919_budget_gate_command_classify](/docs/generated/tests-unit-t2919_budget_gate_command_classify) | tests_by | TODO: describe what this component does |
+| [t2920_boundary_heredoc_strip_order](/docs/generated/tests-unit-t2920_boundary_heredoc_strip_order) | tests_by | TODO: describe what this component does |
+| [t2936_bootstrap_quoted_redirect](/docs/generated/tests-unit-t2936_bootstrap_quoted_redirect) | tests_by | TODO: describe what this component does |
+| [t2945_default_template_recommendation](/docs/generated/tests-unit-t2945_default_template_recommendation) | called_by | TODO: describe what this component does |
+| [t2945_default_template_recommendation](/docs/generated/tests-unit-t2945_default_template_recommendation) | tests_by | TODO: describe what this component does |
+| [t2948_review_human_ac_comment_aware](/docs/generated/tests-unit-t2948_review_human_ac_comment_aware) | called_by | TODO: describe what this component does |
+| [t2948_review_human_ac_comment_aware](/docs/generated/tests-unit-t2948_review_human_ac_comment_aware) | tests_by | TODO: describe what this component does |
+| [t2988_grouped_command_classification](/docs/generated/tests-unit-t2988_grouped_command_classification) | tests_by | TODO: describe what this component does |
+| [t2990_root_pollution](/docs/generated/tests-unit-t2990_root_pollution) | called_by | TODO: describe what this component does |
+| [t2990_root_pollution](/docs/generated/tests-unit-t2990_root_pollution) | tests_by | TODO: describe what this component does |
+| [t2991_verification_preflight](/docs/generated/tests-unit-t2991_verification_preflight) | tests_by | TODO: describe what this component does |
+| [t3046_message_router](/docs/generated/tests-unit-t3046_message_router) | called_by | TODO: describe what this component does |
+| [t3046_message_router](/docs/generated/tests-unit-t3046_message_router) | tests_by | TODO: describe what this component does |
+| [t3048_bats_leg_guard](/docs/generated/tests-unit-t3048_bats_leg_guard) | tests_by | TODO: describe what this component does |
+| [t3050_b005_block_message](/docs/generated/tests-unit-t3050_b005_block_message) | tests_by | TODO: describe what this component does |
+| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | tests_by | TODO: describe what this component does |
+| [t3073_c001_recommendation_bearing_inceptions](/docs/generated/tests-unit-t3073_c001_recommendation_bearing_inceptions) | called_by | TODO: describe what this component does |
+| [t3073_c001_recommendation_bearing_inceptions](/docs/generated/tests-unit-t3073_c001_recommendation_bearing_inceptions) | tests_by | TODO: describe what this component does |
+| [t3111_worktree_reexec](/docs/generated/tests-unit-t3111_worktree_reexec) | tests_by | TODO: describe what this component does |
+| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | tests_by | TODO: describe what this component does |
+| [t3113_upgrade_worktree_advisory](/docs/generated/tests-unit-t3113_upgrade_worktree_advisory) | tests_by | TODO: describe what this component does |
+| [test_fw_json_stdout_purity](/docs/generated/tests-unit-test_fw_json_stdout_purity) | called_by | TODO: describe what this component does |
+| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | tests_by | TODO: describe what this component does |
+| [test_mirror_sync](/docs/generated/tests-unit-test_mirror_sync) | called_by | TODO: describe what this component does |
+| [test_mirror_sync](/docs/generated/tests-unit-test_mirror_sync) | tests_by | TODO: describe what this component does |
+| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | called_by | TODO: describe what this component does |
+| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | tests_by | TODO: describe what this component does |
+| [tier0_card_provenance](/docs/generated/tests-unit-tier0_card_provenance) | called_by | TODO: describe what this component does |
+| [tier0_card_provenance](/docs/generated/tests-unit-tier0_card_provenance) | tests_by | TODO: describe what this component does |
+| [tier0_grant_ttl](/docs/generated/tests-unit-tier0_grant_ttl) | called_by | TODO: describe what this component does |
+| [tier0_grant_ttl](/docs/generated/tests-unit-tier0_grant_ttl) | tests_by | TODO: describe what this component does |
+| [upgrade_fresh_machine_simulation](/docs/generated/tests-unit-upgrade_fresh_machine_simulation) | called_by | TODO: describe what this component does |
+| [validate_init_hook_path_expansion](/docs/generated/tests-unit-validate_init_hook_path_expansion) | tests_by | TODO: describe what this component does |
+| [version_relation](/docs/generated/tests-unit-version_relation) | tests_by | TODO: describe what this component does |
+| [hook_producer_site_parity](/docs/generated/tests-unit-hook_producer_site_parity) | triggers_by | Guards that lib/init.sh:generate_claude_code_config never diverges again from the framework repo's own .claude/settings.json (the cumulative record of every 'fw hook-enable' call) — name-keyed comparison plus an explicit framework-only allowlist and a negative control proving the comparator is non-vacuous. |
 
 ## Documentation
 

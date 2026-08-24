@@ -17,7 +17,13 @@ Used by:
 - (future) lib/evolution_log.sh sweep mode
 Public functions:
 
-## Used By (4)
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [arc_membership-sh](/docs/generated/lib-arc_membership-sh) | calls | Canonical shell helper for arc-membership scans (T-1880 / T-NEW-15). Consolidates the union-of-`arc_id:`-frontmatter + legacy `arc:<slug>`-tag scan that previously lived inline in three shell consumers: lib/arc.sh, agents/handover/handover.sh, lib/evolution_log.sh. Companion to lib/arc_membership.py (which serves the Python/Flask side).  Public API (PROJECT_ROOT must be set):   arc_tasks_with_arc_id <slug>   → T-IDs whose `arc_id:` matches slug   arc_tasks_with_tag <tag>       → T-IDs whose `tags:` includes tag  Origin: silent-corpus #1 (T-1874/75/76/77) and #2 (T-1879) — captured as L-397. Each inline consumer had to be migrated independently after the T-1850 tags-to-arc_id storage migration; consolidation prevents the next storage-format migration from leaking through nine sites again. |
+
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,6 +31,7 @@ Public functions:
 | [evolution_log_gate](/docs/generated/tests-unit-evolution_log_gate) | called_by | TODO: describe what this component does |
 | [evolution_log_gate](/docs/generated/tests-unit-evolution_log_gate) | tests_by | TODO: describe what this component does |
 | [arc_membership_agent_surfaces](/docs/generated/tests-unit-arc_membership_agent_surfaces) | tests_by | TODO: describe what this component does |
+| [arc_membership_agent_surfaces](/docs/generated/tests-unit-arc_membership_agent_surfaces) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-evolution_log.yaml`*

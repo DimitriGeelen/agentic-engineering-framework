@@ -17,6 +17,15 @@ to catch exactly them.
 Every assertion here is two-sided (A3, L-616): a known-missing fixture IS
 reported AND a known-satisfied fixture is NOT. Two empty sets are equal, so a
 
+## Dependencies (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [active-task-scan](/docs/generated/agents-audit-active-task-scan) | calls | Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review queue status in one efficient pass |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [active-task-scan](/docs/generated/agents-audit-active-task-scan) | tests | Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review queue status in one efficient pass |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3073_c001_recommendation_bearing_inceptions.yaml`*
 *Last verified: 2026-08-18*

@@ -16,11 +16,12 @@
 | [resolver](/docs/generated/lib-resolver) | uses | TODO: describe what this component does |
 | [workflow_lint](/docs/generated/lib-workflow_lint) | uses | TODO: describe what this component does |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [t1719_ask_routing](/docs/generated/tests-unit-t1719_ask_routing) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-worker_kinds_parity.yaml`*

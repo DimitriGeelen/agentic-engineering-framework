@@ -17,7 +17,7 @@ Called by:
 Usage:
 source "$FW_LIB_DIR/task-audit.sh"
 
-## Used By (6)
+## Used By (10)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,6 +25,10 @@ source "$FW_LIB_DIR/task-audit.sh"
 | [inception](/docs/generated/lib-inception) | called_by | fw inception - Inception phase workflow |
 | [lib_task_audit](/docs/generated/tests-unit-lib_task_audit) | called_by | TODO: describe what this component does |
 | [lib_task_audit](/docs/generated/tests-unit-lib_task_audit) | tests_by | TODO: describe what this component does |
+| [active-task-scan](/docs/generated/agents-audit-active-task-scan) | called_by | Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review queue status in one efficient pass |
+| [t2945_default_template_recommendation](/docs/generated/tests-unit-t2945_default_template_recommendation) | called_by | TODO: describe what this component does |
+| [t2945_default_template_recommendation](/docs/generated/tests-unit-t2945_default_template_recommendation) | tests_by | TODO: describe what this component does |
+| [review](/docs/generated/lib-review) | called_by | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-task-audit.yaml`*

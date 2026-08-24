@@ -11,7 +11,15 @@ Generate rich episodic summary for a completed task
 Hybrid approach (D-023): Git owns timeline/metrics/artifacts,
 task file owns AC + decisions, episodic merges both automatically.
 
-## Used By (6)
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [post-write-index](/docs/generated/lib-post-write-index) | calls | TODO: describe what this component does |
+| [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
+| [compat](/docs/generated/lib-compat) | calls | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
+
+## Used By (12)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -21,6 +29,12 @@ task file owns AC + decisions, episodic merges both automatically.
 | [context_episodic](/docs/generated/tests-unit-context_episodic) | tests_by | Unit tests for context episodic (11 tests) |
 | [episodic_yaml_decision_escape](/docs/generated/tests-unit-episodic_yaml_decision_escape) | called_by | TODO: describe what this component does |
 | [episodic_yaml_decision_escape](/docs/generated/tests-unit-episodic_yaml_decision_escape) | tests_by | TODO: describe what this component does |
+| [episodic_frontmatter_extraction](/docs/generated/tests-unit-episodic_frontmatter_extraction) | called_by | TODO: describe what this component does |
+| [episodic_frontmatter_extraction](/docs/generated/tests-unit-episodic_frontmatter_extraction) | tests_by | TODO: describe what this component does |
+| [episodic_yaml_timeline_escape](/docs/generated/tests-unit-episodic_yaml_timeline_escape) | called_by | TODO: describe what this component does |
+| [episodic_yaml_timeline_escape](/docs/generated/tests-unit-episodic_yaml_timeline_escape) | tests_by | TODO: describe what this component does |
+| [t1719_post_write_index](/docs/generated/tests-unit-t1719_post_write_index) | called_by | TODO: describe what this component does |
+| [t1719_post_write_index](/docs/generated/tests-unit-t1719_post_write_index) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

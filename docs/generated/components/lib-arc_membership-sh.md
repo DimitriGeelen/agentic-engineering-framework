@@ -40,7 +40,7 @@ arc_tasks_with_arc_id <slug>     → T-IDs whose `arc_id:` matches slug
 | `.tasks/active/` | reads | — |
 | `.tasks/completed/` | reads | — |
 
-## Used By (8)
+## Used By (12)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -52,6 +52,10 @@ arc_tasks_with_arc_id <slug>     → T-IDs whose `arc_id:` matches slug
 | [audit_ctl_arc_tag_only_pattern](/docs/generated/tests-unit-audit_ctl_arc_tag_only_pattern) | called_by | TODO: describe what this component does |
 | [audit_ctl_arc_tag_only_pattern](/docs/generated/tests-unit-audit_ctl_arc_tag_only_pattern) | tests_by | TODO: describe what this component does |
 | [arc_membership_dual_id](/docs/generated/tests-unit-arc_membership_dual_id) | tests_by | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | called_by | TODO: describe what this component does |
+| [evolution_log](/docs/generated/lib-evolution_log) | called_by | TODO: describe what this component does |
+| [arc_membership_dual_id](/docs/generated/tests-unit-arc_membership_dual_id) | called_by | TODO: describe what this component does |
+| [arc_membership_shared](/docs/generated/tests-unit-arc_membership_shared) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-arc_membership-sh.yaml`*

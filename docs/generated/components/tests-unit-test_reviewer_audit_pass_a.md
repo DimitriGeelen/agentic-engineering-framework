@@ -6,12 +6,14 @@
 
 ## What It Does
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [audit](/docs/generated/lib-reviewer-audit) | calls | TODO: describe what this component does |
 | [drift](/docs/generated/lib-reviewer-drift) | calls | TODO: describe what this component does |
+| [audit](/docs/generated/lib-reviewer-audit) | uses | TODO: describe what this component does |
+| [drift](/docs/generated/lib-reviewer-drift) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_reviewer_audit_pass_a.yaml`*

@@ -16,7 +16,7 @@ Creates handover documents for session continuity
 - When generating handover: fill in ALL [TODO] sections immediately in the same operation
 - For mid-session checkpoints: `fw handover --checkpoint`
 
-## Dependencies (12)
+## Dependencies (13)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -32,8 +32,9 @@ Creates handover documents for session continuity
 | [discard-manifest](/docs/generated/agents-handover-discard-manifest) | calls | TODO: describe what this component does |
 | [branch-hygiene](/docs/generated/lib-branch-hygiene) | calls | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (22)
+## Used By (28)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -59,6 +60,12 @@ Creates handover documents for session continuity
 | [arc_membership_agent_surfaces](/docs/generated/tests-unit-arc_membership_agent_surfaces) | tests_by | TODO: describe what this component does |
 | [handover_checkpoint_push](/docs/generated/tests-unit-handover_checkpoint_push) | called_by | TODO: describe what this component does |
 | [handover_checkpoint_push](/docs/generated/tests-unit-handover_checkpoint_push) | tests_by | TODO: describe what this component does |
+| [handover_commit_scope](/docs/generated/tests-unit-handover_commit_scope) | called_by | TODO: describe what this component does |
+| [handover_commit_scope](/docs/generated/tests-unit-handover_commit_scope) | tests_by | TODO: describe what this component does |
+| [handover_digest](/docs/generated/tests-unit-handover_digest) | tests_by | TODO: describe what this component does |
+| [handover_task_classification](/docs/generated/tests-unit-handover_task_classification) | tests_by | TODO: describe what this component does |
+| [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | called_by | TODO: describe what this component does |
+| [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

@@ -10,7 +10,7 @@
 The 6 named presets from the arc headline mechanic. Each is a curated combo
 over the S0 foundation axes (T-1991). Axis values MUST match foundations.css.
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -18,8 +18,9 @@ over the S0 foundation axes (T-1991). Axis values MUST match foundations.css.
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [settings](/docs/generated/web-templates-settings) | renders | Full page template: settings — hook configuration, notification state, framework paths. |
 | [appearance](/docs/generated/web-templates-appearance) | renders | TODO: describe what this component does |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
-## Used By (9)
+## Used By (12)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -31,6 +32,9 @@ over the S0 foundation axes (T-1991). Axis values MUST match foundations.css.
 | [shared](/docs/generated/web-shared) | called_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [shared](/docs/generated/web-shared) | registered_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | tests_by | TODO: describe what this component does |
+| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | uses_by | TODO: describe what this component does |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
+| [shared](/docs/generated/web-shared) | uses_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-settings.yaml`*

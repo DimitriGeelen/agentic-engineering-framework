@@ -17,6 +17,13 @@ for projects that had made no progress.
 Test 4 is the NEGATIVE CONTROL: it asserts the fixture state (empty active/,
 populated completed/) is genuinely the state the old guard mis-read. Without it,
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [init](/docs/generated/lib-init) | calls | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+| [init](/docs/generated/lib-init) | tests | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-init_seed_guard.yaml`*
 *Last verified: 2026-08-01*

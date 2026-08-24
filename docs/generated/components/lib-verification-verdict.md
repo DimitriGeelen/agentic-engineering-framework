@@ -17,6 +17,12 @@ local helper can only ever check the sites its author already knew about
 (L-533, from the T-2729/T-2730/T-2731 escape family).
 Usage: source "$FRAMEWORK_ROOT/lib/verification-verdict.sh"
 
+## Used By (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-verification-verdict.yaml`*
 *Last verified: 2026-08-02*

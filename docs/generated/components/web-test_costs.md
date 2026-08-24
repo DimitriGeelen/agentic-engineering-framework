@@ -10,13 +10,15 @@
 
 ── Fixtures ────────────────────────────────────────────────────
 
-## Dependencies (3)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [costs](/docs/generated/web-blueprints-costs) | calls | Watchtower /costs page — token usage dashboard with session table and project summary (T-802) |
 | [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 | [costs](/docs/generated/web-blueprints-costs) | registers | Watchtower /costs page — token usage dashboard with session table and project summary (T-802) |
+| [costs](/docs/generated/web-blueprints-costs) | uses | Watchtower /costs page — token usage dashboard with session table and project summary (T-802) |
+| [app](/docs/generated/web-app) | uses | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 
 ## Related
 

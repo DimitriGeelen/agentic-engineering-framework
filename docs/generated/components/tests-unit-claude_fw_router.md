@@ -16,11 +16,12 @@ own path, and assert on that path. Unlike bin/fw-router, claude-fw-router has
 no framework-only refusal to fall back to — a bare directory or a project
 with no claude-fw sibling both degrade to plain `claude`, they don't error.
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [claude-fw-router](/docs/generated/bin-claude-fw-router) | calls | The `claude-fw` entry point installed onto PATH. Walks up from cwd to find the current project (framework repo or vendored consumer, same predicate as bin/fw-router) and execs THAT project's own bin/claude-fw. Replaces a fixed copy of the wrapper's logic that install.sh used to put on PATH — a fixed copy runs the same bytes regardless of which project you're standing in, which is the global-install problem wearing a different name (T-2854). Falls back to plain `claude` when no project is found or the resolved project has no claude-fw sibling. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-claude_fw_router.yaml`*

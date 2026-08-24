@@ -20,7 +20,7 @@ When the active task has `workflow_type: inception`:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (7)
+## Dependencies (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -31,8 +31,10 @@ When the active task has `workflow_type: inception`:
 | [subprocess_utils](/docs/generated/web-subprocess_utils) | calls | Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling. |
 | [assumptions](/docs/generated/context-project-assumptions) | calls | Project assumption register. Tracks assumptions made during inception and build tasks, with validation status and evidence. |
 | [inception](/docs/generated/lib-inception) | calls | fw inception - Inception phase workflow |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [subprocess_utils](/docs/generated/web-subprocess_utils) | uses | Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling. |
 
-## Used By (10)
+## Used By (15)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -45,6 +47,11 @@ When the active task has `workflow_type: inception`:
 | [review](/docs/generated/web-blueprints-review) | called_by | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
 | [review](/docs/generated/web-blueprints-review) | registered_by | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
 | [test_api_inception](/docs/generated/tests-playwright-test_api_inception) | called_by | Playwright tests for inception API endpoints (T-1031). |
+| [test_inception_commit_rename_paths](/docs/generated/tests-unit-test_inception_commit_rename_paths) | uses_by | TODO: describe what this component does |
+| [test_inception_decide_hardening](/docs/generated/tests-web-test_inception_decide_hardening) | uses_by | TODO: describe what this component does |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
+| [approvals](/docs/generated/web-blueprints-approvals) | uses_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
+| [review](/docs/generated/web-blueprints-review) | uses_by | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
 
 ## Related
 

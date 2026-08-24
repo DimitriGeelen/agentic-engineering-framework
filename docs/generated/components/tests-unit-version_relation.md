@@ -17,6 +17,15 @@ Field consequence: a consumer pinned 1.6.264 read as AHEAD of a framework at
 with no governance or security fixes. Test 1 is that exact case.
 Test 6 is the NEGATIVE CONTROL: it asserts the fixture pair genuinely fools
 
+## Dependencies (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [version-relation](/docs/generated/lib-version-relation) | tests | TODO: describe what this component does |
+| [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [version-relation](/docs/generated/lib-version-relation) | calls | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-version_relation.yaml`*
 *Last verified: 2026-08-01*

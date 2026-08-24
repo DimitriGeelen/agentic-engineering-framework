@@ -19,7 +19,7 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 After sourcing, these variables are set:
 FRAMEWORK_ROOT — Absolute path to the framework repo root
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -27,8 +27,9 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | [errors](/docs/generated/lib-errors) | calls | Consistent error/warning/info output functions with TTY-aware coloring. Provides die(), error(), warn(), info(), success(), block() with standardized exit codes (0=ok, 1=error, 2=blocking). Auto-sourced by lib/paths.sh. |
 | [tasks](/docs/generated/lib-tasks) | calls | fw task subcommand dispatcher: routes task create/update/list/verify/review to agents/task-create/ scripts. |
 | [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
+| [worktree-identity](/docs/generated/lib-worktree-identity) | calls | TODO: describe what this component does |
 
-## Used By (62)
+## Used By (80)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -94,6 +95,24 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | [t2465_reanchor_from_cwd](/docs/generated/tests-unit-t2465_reanchor_from_cwd) | tests_by | TODO: describe what this component does |
 | [hook_paths](/docs/generated/lib-hook_paths) | called_by | TODO: describe what this component does |
 | [bpmn_promote](/docs/generated/tools-bpmn_promote) | called_by | TODO: describe what this component does |
+| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | called_by | TODO: describe what this component does |
+| [test_pretooluse_gates](/docs/generated/tests-governance-test_pretooluse_gates) | tests_by | TODO: describe what this component does |
+| [drift_gate_not_shadowed_by_safelist](/docs/generated/tests-unit-drift_gate_not_shadowed_by_safelist) | tests_by | TODO: describe what this component does |
+| [episodic_frontmatter_extraction](/docs/generated/tests-unit-episodic_frontmatter_extraction) | tests_by | TODO: describe what this component does |
+| [handover_digest](/docs/generated/tests-unit-handover_digest) | tests_by | TODO: describe what this component does |
+| [harvest_indent_agnostic](/docs/generated/tests-unit-harvest_indent_agnostic) | called_by | TODO: describe what this component does |
+| [harvest_indent_agnostic](/docs/generated/tests-unit-harvest_indent_agnostic) | tests_by | TODO: describe what this component does |
+| [note_capture_guard](/docs/generated/tests-unit-note_capture_guard) | tests_by | TODO: describe what this component does |
+| [note_exit_status](/docs/generated/tests-unit-note_exit_status) | tests_by | TODO: describe what this component does |
+| [t3038_session_scoped_focus](/docs/generated/tests-unit-t3038_session_scoped_focus) | called_by | TODO: describe what this component does |
+| [t3038_session_scoped_focus](/docs/generated/tests-unit-t3038_session_scoped_focus) | tests_by | TODO: describe what this component does |
+| [t3053_multiref_traceability](/docs/generated/tests-unit-t3053_multiref_traceability) | tests_by | TODO: describe what this component does |
+| [t3111_worktree_reexec](/docs/generated/tests-unit-t3111_worktree_reexec) | tests_by | TODO: describe what this component does |
+| [worktree-corpus-guard](/docs/generated/agents-git-lib-worktree-corpus-guard) | called_by | TODO: describe what this component does |
+| [costs](/docs/generated/lib-costs) | called_by | Token usage tracking from JSONL transcripts — parses Claude Code session data for cost reporting (T-801) |
+| [inception](/docs/generated/lib-inception) | called_by | fw inception - Inception phase workflow |
+| [review](/docs/generated/lib-review) | called_by | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
+| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-paths.yaml`*

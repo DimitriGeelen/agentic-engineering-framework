@@ -17,6 +17,13 @@ session.yaml — because the framework writes them on the task's behalf. Two
 tasks with genuinely disjoint declared sets still collide there, in the
 27-site shared read-modify-write set measured by
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [write_set](/docs/generated/lib-write_set) | calls | TODO: describe what this component does |
+| [write_set](/docs/generated/lib-write_set) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3039_write_set_implicit.yaml`*
 *Last verified: 2026-08-16*

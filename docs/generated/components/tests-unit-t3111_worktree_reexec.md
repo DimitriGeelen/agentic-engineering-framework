@@ -17,6 +17,17 @@ binaries disagree about something, so the fixture makes them disagree twice:
 to whichever binary is running, so the string names the winner.
 2. `_stub_authority` replaces the AUTHORITY's bin/fw with a script that prints
 
+## Dependencies (6)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [worktree-identity](/docs/generated/lib-worktree-identity) | tests | TODO: describe what this component does |
+| [hook-parity](/docs/generated/lib-hook-parity) | tests | TODO: describe what this component does |
+| [hook_parity](/docs/generated/lib-hook_parity) | tests | TODO: describe what this component does |
+| [paths](/docs/generated/lib-paths) | tests | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [worktree-identity](/docs/generated/lib-worktree-identity) | calls | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3111_worktree_reexec.yaml`*
 *Last verified: 2026-08-22*

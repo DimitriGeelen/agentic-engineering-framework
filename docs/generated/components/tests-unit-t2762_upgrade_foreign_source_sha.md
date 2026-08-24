@@ -17,6 +17,14 @@ FW_UNDECIDABLE_VERSION_PROCEED defaulting to 1, that WARNs and proceeds — and 
 consumer is downgraded by a source that never held its code.
 Measured before the fix, with the field numbers from the 2026-08-03 report:
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [version-relation](/docs/generated/lib-version-relation) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [version-relation](/docs/generated/lib-version-relation) | calls | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2762_upgrade_foreign_source_sha.yaml`*
 *Last verified: 2026-08-03*

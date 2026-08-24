@@ -8,12 +8,13 @@
 
 Reach the blueprint helper via the project's normal import path.
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [bvp](/docs/generated/web-blueprints-bvp) | calls | TODO: describe what this component does |
 | [bvp](/docs/generated/web-blueprints-bvp) | registers | TODO: describe what this component does |
+| [bvp](/docs/generated/web-blueprints-bvp) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_driver_rubrics.yaml`*

@@ -17,6 +17,13 @@ to catch; re-flagging these forever adds no actionable signal, since the
 flip path is already closed for NEW instances by CTL-028 (T-1870/T-1882/
 T-1883) at pre-push time.
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [completed-task-scan](/docs/generated/agents-audit-completed-task-scan) | calls | Single-pass scan of completed task files that checks for missing episodic summaries, missing research artifacts, and unchecked acceptance criteria |
+| [completed-task-scan](/docs/generated/agents-audit-completed-task-scan) | tests | Single-pass scan of completed task files that checks for missing episodic summaries, missing research artifacts, and unchecked acceptance criteria |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_ctl012_missing_decide_grandfather.yaml`*
 *Last verified: 2026-08-12*

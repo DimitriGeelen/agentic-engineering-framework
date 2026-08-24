@@ -17,11 +17,12 @@ git checkout <remote-ref> -- <code dirs>   # bring master's code, only code
 git commit -m "T-XXX: ..."                 # commit only the staged code
 This touches ZERO .context/ data, so it cannot conflict on accumulators and
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-integrate-go-live.yaml`*

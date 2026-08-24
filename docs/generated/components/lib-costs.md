@@ -17,13 +17,14 @@ fw costs session ID   # Detailed session view
 fw costs help         # Show usage
 Follows T-799 (GO) and T-800 (GO) inception decisions.
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
-## Used By (11)
+## Used By (12)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -38,6 +39,7 @@ Follows T-799 (GO) and T-800 (GO) inception decisions.
 | [claude_code](/docs/generated/web-terminal-adapters-claude_code) | called_by | Terminal adapter that spawns Claude Code agent sessions via PTY using claude -p (prompt) or claude -c (interactive) commands |
 | [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | called_by | TODO: describe what this component does |
 | [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | tests_by | TODO: describe what this component does |
+| [context_tokens](/docs/generated/lib-context_tokens) | called_by | TODO: describe what this component does |
 
 ## Related
 

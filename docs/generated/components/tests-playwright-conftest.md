@@ -11,7 +11,13 @@ here independently is what let 81 test files drift onto a literal 3099 while thi
 started, identity-checked and age-bounded a server on FW_TEST_PORT — the guarantees
 below would then attach to a server the suite was not addressing.
 
-## Used By (43)
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+
+## Used By (44)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -58,6 +64,7 @@ below would then attach to a server the suite was not addressing.
 | [test_task_detail_enhanced](/docs/generated/tests-playwright-test_task_detail_enhanced) | called_by | Playwright tests for enhanced task detail page (T-1056) |
 | [test_arcs_renders_without_constituent_field](/docs/generated/tests-playwright-test_arcs_renders_without_constituent_field) | called_by | Playwright DOM-content assertion (per T-1575/T-971) pinning the /arcs/<slug> render contract for arcs that omit the legacy `constituent_tasks:` frontmatter field. Fixture writes a synthetic arc YAML to .context/arcs/, yields, removes on teardown — Watchtower reads filesystem live, no restart needed.  Two tests: - test_arcs_detail_renders_without_constituent_tasks: synthetic   field-less arc → 200 + no "Traceback" + no "Internal Server Error"   + arc name renders. - test_legacy_arc_with_constituent_tasks_still_renders: regression   guard pinning legacy /arcs/arc-grooming still renders.  Re-classifies T-1851's first Human [REVIEW] AC to Agent. The deprecation-banner reading-quality AC remains Human [REVIEW] — doc tone is genuinely subjective. |
 | [test_landing_arc_cards](/docs/generated/tests-playwright-test_landing_arc_cards) | called_by | Playwright DOM-content assertion (per T-1575/T-971) pinning the landing-page arc-cards render contract and the /tasks?arc=<id> filter contract after the T-1850 arc_id migration. Two tests: - test_landing_arc_cards_show_nonzero_counts: every in-progress arc card   on / renders with a non-zero task count (arc-005 ≥14); no zero-count   cards (the migration-blindness regression signal). - test_tasks_filter_by_arc_returns_members: /tasks?arc=arc-grooming lists   ≥4 known arc-grooming task IDs.  Re-classifies T-1879's Human [REVIEW] AC to Agent. Origin: T-1879 migration-blindness #2 sweep — 5 sites read arc:<slug> tag only after the migration stripped them, surfacing zero arc memberships on the landing page. |
+| [test_playwright_server_adoption](/docs/generated/tests-unit-test_playwright_server_adoption) | called_by | TODO: describe what this component does |
 
 ## Related
 

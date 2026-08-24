@@ -25,7 +25,15 @@ When agent ACs are complete and human ACs remain:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (12)
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [watchtower](/docs/generated/lib-watchtower) | calls | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
+| [task-audit](/docs/generated/lib-task-audit) | calls | Scans task files for literal placeholder content that should have been replaced during authoring, blocking review and inception decisions until resolved |
+
+## Used By (17)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -41,6 +49,11 @@ When agent ACs are complete and human ACs remain:
 | [recommendation_gate_build_partial](/docs/generated/tests-unit-recommendation_gate_build_partial) | called_by | TODO: describe what this component does |
 | [recommendation_gate_build_partial](/docs/generated/tests-unit-recommendation_gate_build_partial) | tests_by | TODO: describe what this component does |
 | [review](/docs/generated/web-blueprints-review) | called_by | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
+| [comment_strip](/docs/generated/lib-comment_strip) | called_by | TODO: describe what this component does |
+| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | tests_by | TODO: describe what this component does |
+| [t2945_default_template_recommendation](/docs/generated/tests-unit-t2945_default_template_recommendation) | tests_by | TODO: describe what this component does |
+| [t2948_review_human_ac_comment_aware](/docs/generated/tests-unit-t2948_review_human_ac_comment_aware) | called_by | TODO: describe what this component does |
+| [t2948_review_human_ac_comment_aware](/docs/generated/tests-unit-t2948_review_human_ac_comment_aware) | tests_by | TODO: describe what this component does |
 
 ## Related
 

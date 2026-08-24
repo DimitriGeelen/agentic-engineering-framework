@@ -17,13 +17,14 @@ Usage:
 ./bvp-estimator.sh measure-a3 [--n 20] [--output PATH]
 Invoked via `fw bvp estimate` (lib/bvp.sh routing) for the common case.
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [resume](/docs/generated/agents-resume-resume) | called_by | Resume Agent - Post-compaction recovery and state synchronization |
 | [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
 | [estimator](/docs/generated/agents-termlink-bvp-estimator-estimator) | called_by | TODO: describe what this component does |
+| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-termlink-bvp-estimator-bvp-estimator.yaml`*

@@ -17,6 +17,13 @@ had cleared everything.
 These legs pin the three things that were wrong, each in BOTH directions so
 the suite cannot pass by reporting everything or nothing.
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [resolver](/docs/generated/lib-resolver) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2916_stall_guard_coverage.yaml`*
 *Last verified: 2026-08-11*

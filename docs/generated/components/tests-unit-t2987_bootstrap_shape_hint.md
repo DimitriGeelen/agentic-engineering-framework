@@ -17,6 +17,13 @@ it. A `>` anywhere — on an unrelated chained command, or just capturing the bo
 command's own output — voids it for the bootstrap command too.
 The guard is deliberate (:213-222 argues for failing toward blocking; L-547/T-2834
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+| [check-active-task](/docs/generated/agents-context-check-active-task) | tests | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2987_bootstrap_shape_hint.yaml`*
 *Last verified: 2026-08-14*

@@ -17,6 +17,13 @@ Why it matters more than it sounds: consumer projects run the same Flask app,
 so a foreign Watchtower on the guessed port answers 200 for almost any path.
 A verification line built on the guess passes while asserting nothing. That is
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [watchtower](/docs/generated/lib-watchtower) | tests | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
+| [watchtower](/docs/generated/bin-watchtower) | tests | Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-watchtower_url_no_guess.yaml`*
 *Last verified: 2026-08-04*

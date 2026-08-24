@@ -17,6 +17,13 @@ seconds old, which is the framework complaining about a state it created and
 which is in fact correct.
 The distinction that was missing: "nothing to generate" and "something to
 
+## Used By (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-cron-registry.yaml`*
 *Last verified: 2026-08-06*

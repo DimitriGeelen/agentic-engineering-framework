@@ -17,6 +17,14 @@ perfectly — the greenfield seed set is consistent with itself no matter which 
 it was wrongly applied to. Seed-set health is not shape-detection health.
 F-10 (measured under T-2718, 2026-08-02): lib/init.sh consults a seven-entry manifest
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [init](/docs/generated/lib-init) | tests | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-init_project_shape_detection.yaml`*
 *Last verified: 2026-08-02*

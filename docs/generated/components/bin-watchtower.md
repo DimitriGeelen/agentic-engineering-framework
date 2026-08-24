@@ -38,13 +38,16 @@ Resolution order (T-885, T-1287, T-1376):
 | [firewall](/docs/generated/lib-firewall) | calls | Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive |
 | [watchtower](/docs/generated/lib-watchtower) | calls | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
 
-## Used By (3)
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [watchtower_url_refresh](/docs/generated/tests-unit-watchtower_url_refresh) | called_by | TODO: describe what this component does |
 | [watchtower_url_refresh](/docs/generated/tests-unit-watchtower_url_refresh) | tests_by | TODO: describe what this component does |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | TODO: describe what this component does |
+| [t3054_watchtower_root_fallback](/docs/generated/tests-unit-t3054_watchtower_root_fallback) | tests_by | TODO: describe what this component does |
+| [watchtower_url_no_guess](/docs/generated/tests-unit-watchtower_url_no_guess) | tests_by | TODO: describe what this component does |
 
 ## Related
 

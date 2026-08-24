@@ -22,7 +22,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (7)
+## Dependencies (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -33,8 +33,12 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | [arc_membership-py](/docs/generated/lib-arc_membership) | calls | Canonical Python helper for arc-membership scans (T-1880 / T-NEW-15). Consolidates the union-of-`arc_id:`-frontmatter + legacy `arc:<slug>`-tag scan that previously lived inline in three Watchtower blueprints: web/blueprints/arcs.py, core.py, tasks.py. Companion to lib/arc_membership.sh (which serves shell consumers).  Public API:   scan_tasks_by_arc_membership(project_root)       → (by_arc_id: dict[str, list[task_id]],          by_tag:    dict[str, list[task_id]])  Origin: silent-corpus #1 (T-1874/75/76/77) and #2 (T-1879) — captured as L-397. Each inline consumer had to be migrated independently after the T-1850 tags-to-arc_id storage migration (162 tasks rewritten); the consolidated helpers prevent the next storage-format migration from leaking through nine sites again. |
 | [bvp](/docs/generated/web-blueprints-bvp) | calls | TODO: describe what this component does |
 | [bvp](/docs/generated/web-blueprints-bvp) | registers | TODO: describe what this component does |
+| [arc_membership-py](/docs/generated/lib-arc_membership) | uses | Canonical Python helper for arc-membership scans (T-1880 / T-NEW-15). Consolidates the union-of-`arc_id:`-frontmatter + legacy `arc:<slug>`-tag scan that previously lived inline in three Watchtower blueprints: web/blueprints/arcs.py, core.py, tasks.py. Companion to lib/arc_membership.sh (which serves shell consumers).  Public API:   scan_tasks_by_arc_membership(project_root)       → (by_arc_id: dict[str, list[task_id]],          by_tag:    dict[str, list[task_id]])  Origin: silent-corpus #1 (T-1874/75/76/77) and #2 (T-1879) — captured as L-397. Each inline consumer had to be migrated independently after the T-1850 tags-to-arc_id storage migration (162 tasks rewritten); the consolidated helpers prevent the next storage-format migration from leaking through nine sites again. |
+| [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [subprocess_utils](/docs/generated/web-subprocess_utils) | uses | Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling. |
+| [bvp](/docs/generated/web-blueprints-bvp) | uses | TODO: describe what this component does |
 
-## Used By (25)
+## Used By (33)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -62,6 +66,14 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | [test_filter_chips](/docs/generated/tests-unit-test_filter_chips) | called_by | TODO: describe what this component does |
 | [test_filter_chips](/docs/generated/tests-unit-test_filter_chips) | registered_by | TODO: describe what this component does |
 | [arc_membership-py](/docs/generated/lib-arc_membership) | called_by | Canonical Python helper for arc-membership scans (T-1880 / T-NEW-15). Consolidates the union-of-`arc_id:`-frontmatter + legacy `arc:<slug>`-tag scan that previously lived inline in three Watchtower blueprints: web/blueprints/arcs.py, core.py, tasks.py. Companion to lib/arc_membership.sh (which serves shell consumers).  Public API:   scan_tasks_by_arc_membership(project_root)       → (by_arc_id: dict[str, list[task_id]],          by_tag:    dict[str, list[task_id]])  Origin: silent-corpus #1 (T-1874/75/76/77) and #2 (T-1879) — captured as L-397. Each inline consumer had to be migrated independently after the T-1850 tags-to-arc_id storage migration (162 tasks rewritten); the consolidated helpers prevent the next storage-format migration from leaking through nine sites again. |
+| [test_ac_body_html_comment](/docs/generated/tests-unit-test_ac_body_html_comment) | uses_by | TODO: describe what this component does |
+| [test_arc_membership_web_surfaces](/docs/generated/tests-unit-test_arc_membership_web_surfaces) | uses_by | TODO: describe what this component does |
+| [test_filter_chips](/docs/generated/tests-unit-test_filter_chips) | uses_by | TODO: describe what this component does |
+| [test_task_panel_edit](/docs/generated/tests-unit-test_task_panel_edit) | uses_by | TODO: describe what this component does |
+| [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
+| [approvals](/docs/generated/web-blueprints-approvals) | uses_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
+| [cockpit](/docs/generated/web-blueprints-cockpit) | uses_by | Flask blueprint: Cockpit |
+| [review](/docs/generated/web-blueprints-review) | uses_by | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-tasks.yaml`*

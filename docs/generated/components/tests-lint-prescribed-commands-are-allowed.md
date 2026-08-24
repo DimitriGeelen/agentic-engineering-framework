@@ -17,6 +17,14 @@ Reported by a consumer (832) who hit it and could NOT file it, because filing
 required the blocked path. A defect that suppresses its own bug report will not
 arrive through the usual channel, so it needs a standing check rather than a
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [cmd_classify](/docs/generated/lib-cmd_classify) | tests | TODO: describe what this component does |
+| [budget-gate](/docs/generated/budget-gate) | tests | Block Write/Edit/Bash tool execution when context budget reaches critical level (>=170K tokens). Primary enforcement for P-009. |
+| [check-active-task](/docs/generated/agents-context-check-active-task) | tests | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-prescribed-commands-are-allowed.yaml`*
 *Last verified: 2026-07-31*

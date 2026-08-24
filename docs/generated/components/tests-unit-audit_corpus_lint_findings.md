@@ -17,6 +17,15 @@ WARN, not FAIL, diverging from the T-2980 seed-reference sibling: corpus finding
 are not homogeneous (aef-dispatch-loop's emitterless-typed-event is a real seam,
 not a defect), and an audit that exits 2 on a correct corpus trains people to stop
 
+## Dependencies (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [corpus_lint](/docs/generated/tools-corpus_lint) | calls | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [corpus_lint](/docs/generated/tools-corpus_lint) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_corpus_lint_findings.yaml`*
 *Last verified: 2026-08-14*

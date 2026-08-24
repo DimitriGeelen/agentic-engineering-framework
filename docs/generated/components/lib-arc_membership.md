@@ -35,7 +35,7 @@ Frontmatter regexes — same patterns previously inline in arcs.py.
 | [arcs](/docs/generated/web-blueprints-arcs) | calls | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [tasks](/docs/generated/web-blueprints-tasks) | calls | Flask blueprint: Tasks |
 
-## Used By (7)
+## Used By (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -46,6 +46,10 @@ Frontmatter regexes — same patterns previously inline in arcs.py.
 | [arcs](/docs/generated/web-blueprints-arcs) | called_by | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [core](/docs/generated/web-blueprints-core) | called_by | Flask blueprint: Core |
 | [tasks](/docs/generated/web-blueprints-tasks) | called_by | Flask blueprint: Tasks |
+| [test_arc_membership_shared](/docs/generated/tests-unit-test_arc_membership_shared) | uses_by | TODO: describe what this component does |
+| [arcs](/docs/generated/web-blueprints-arcs) | uses_by | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [core](/docs/generated/web-blueprints-core) | uses_by | Flask blueprint: Core |
+| [tasks](/docs/generated/web-blueprints-tasks) | uses_by | Flask blueprint: Tasks |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-arc_membership.yaml`*

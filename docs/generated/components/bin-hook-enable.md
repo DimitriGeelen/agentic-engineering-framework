@@ -21,13 +21,16 @@ Written 2026-04-22 under T-1189 to repair T-977 false-complete (G-015 Hit #2).
 |-----------|--------------|-------------|
 | [hook-config](/docs/generated/hook-config) | writes | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 
-## Used By (3)
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [hook_enable_absolute_path](/docs/generated/tests-unit-hook_enable_absolute_path) | called_by | TODO: describe what this component does |
 | [hook_enable_absolute_path](/docs/generated/tests-unit-hook_enable_absolute_path) | tests_by | TODO: describe what this component does |
+| [hook_producer_site_parity](/docs/generated/tests-unit-hook_producer_site_parity) | tests_by | Guards that lib/init.sh:generate_claude_code_config never diverges again from the framework repo's own .claude/settings.json (the cumulative record of every 'fw hook-enable' call) — name-keyed comparison plus an explicit framework-only allowlist and a negative control proving the comparator is non-vacuous. |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | called_by | TODO: describe what this component does |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-hook-enable.yaml`*

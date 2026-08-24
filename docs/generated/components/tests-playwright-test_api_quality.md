@@ -8,12 +8,13 @@
 
 ## What It Does
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
 | [quality](/docs/generated/web-blueprints-quality) | calls | Flask blueprint: Quality |
+| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_quality.yaml`*

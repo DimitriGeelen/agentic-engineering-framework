@@ -17,6 +17,13 @@ re.error: bad escape \x at position 386
 Measured population at fix time: 7 task files (`\x`, and also `\s` and `\d`
 from regex idioms in Verification blocks), out of 486 containing a backslash
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-reviewer_verdict_replacement_escape.yaml`*
 *Last verified: 2026-08-02*

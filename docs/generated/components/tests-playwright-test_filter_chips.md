@@ -8,6 +8,12 @@
 
 clear just the owner chip
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_filter_chips.yaml`*
 *Last verified: 2026-05-24*

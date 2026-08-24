@@ -17,6 +17,12 @@ a string containing "nboarding" — neither of which checked an exit status.
 The unit tests answer "is this predicate correct?". They cannot answer "what
 does an operator see after `fw init`?", because that answer is a property of
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_onboarding_greenfield.yaml`*
 *Last verified: 2026-08-07*

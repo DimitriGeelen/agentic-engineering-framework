@@ -17,6 +17,14 @@ This file is that contract's single implementation. Callers source it rather
 than re-deriving a second `sed` dialect, so a future fix to the transformation
 lands everywhere at once. Deliberately dependency-free and side-effect-free
 
+## Used By (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | called_by | TODO: describe what this component does |
+| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | tests_by | TODO: describe what this component does |
+| [consumer-recover](/docs/generated/lib-consumer-recover) | called_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-url-credentials.yaml`*
 *Last verified: 2026-07-31*

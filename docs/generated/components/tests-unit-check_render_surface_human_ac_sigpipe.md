@@ -17,7 +17,7 @@ Fix: awk reads to EOF instead of head closing stdin early. No SIGPIPE.
 Test pins:
 - the offending pipeline pattern no longer present in source
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,6 +25,7 @@ Test pins:
 | [arcs](/docs/generated/web-blueprints-arcs) | tests | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
 | [render_surface](/docs/generated/lib-render_surface) | tests | TODO: describe what this component does |
+| [render_surface](/docs/generated/lib-render_surface) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-check_render_surface_human_ac_sigpipe.yaml`*

@@ -8,12 +8,13 @@
 
 Env-var sentinel that prevents recursive dispatch inside a worker session.
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [termlink_worker](/docs/generated/lib-termlink_worker) | calls | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [termlink_worker](/docs/generated/lib-termlink_worker) | uses | TODO: describe what this component does |
 
 ## Used By (2)
 

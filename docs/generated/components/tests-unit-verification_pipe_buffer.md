@@ -17,6 +17,12 @@ These tests pin the MECHANISM, not the wording of the hint. Prose can be
 reworded; the 64KB threshold is a property of the kernel and of how P-011 runs
 each line (`set -eo pipefail`, agents/task-create/update-task.sh).
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-verification_pipe_buffer.yaml`*
 *Last verified: 2026-08-02*

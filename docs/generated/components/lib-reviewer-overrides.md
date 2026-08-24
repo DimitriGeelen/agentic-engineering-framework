@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Used By (5)
+## Used By (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -15,6 +15,10 @@
 | [reviewer](/docs/generated/web-blueprints-reviewer) | called_by | TODO: describe what this component does |
 | [audit](/docs/generated/lib-reviewer-audit) | called_by | TODO: describe what this component does |
 | [static_scan](/docs/generated/lib-reviewer-static_scan) | called_by | TODO: describe what this component does |
+| [audit](/docs/generated/lib-reviewer-audit) | uses_by | TODO: describe what this component does |
+| [override_cli](/docs/generated/lib-reviewer-override_cli) | uses_by | TODO: describe what this component does |
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | uses_by | TODO: describe what this component does |
+| [reviewer](/docs/generated/web-blueprints-reviewer) | uses_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-overrides.yaml`*

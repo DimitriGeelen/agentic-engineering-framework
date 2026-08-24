@@ -15,6 +15,12 @@ The failure class is the one this whole directory exists to catch: a guard
 that reports success by not running. Directory-level, so it applies to the
 next tests/<thing>/ someone adds as well as to the ones here today.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-no-orphaned-test-dirs.yaml`*
 *Last verified: 2026-07-31*

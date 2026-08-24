@@ -14,7 +14,7 @@ Graduation pipeline:
 2+ projects = candidate (proposed for framework)
 3+ projects = practice (promoted to framework)
 
-## Used By (4)
+## Used By (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -22,6 +22,9 @@ Graduation pipeline:
 | [lib_harvest](/docs/generated/tests-unit-lib_harvest) | called-by | TODO: describe what this component does |
 | [lib_harvest](/docs/generated/tests-unit-lib_harvest) | called_by | TODO: describe what this component does |
 | [lib_harvest](/docs/generated/tests-unit-lib_harvest) | tests_by | TODO: describe what this component does |
+| [harvest_indent_agnostic](/docs/generated/tests-unit-harvest_indent_agnostic) | called_by | TODO: describe what this component does |
+| [harvest_indent_agnostic](/docs/generated/tests-unit-harvest_indent_agnostic) | tests_by | TODO: describe what this component does |
+| [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | tests_by | TODO: describe what this component does |
 
 ## Related
 

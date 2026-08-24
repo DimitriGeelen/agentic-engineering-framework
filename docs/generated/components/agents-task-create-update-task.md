@@ -16,7 +16,7 @@ Usage:
 ./agents/task-create/update-task.sh T-XXX --owner claude-code
 ./agents/task-create/update-task.sh T-XXX --status blocked --reason "Waiting on API key"
 
-## Dependencies (15)
+## Dependencies (17)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -35,8 +35,10 @@ Usage:
 | [bvp-estimator](/docs/generated/agents-termlink-bvp-estimator-bvp-estimator) | calls | TODO: describe what this component does |
 | [inception_decisions](/docs/generated/lib-inception_decisions) | calls | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [verification-port](/docs/generated/lib-verification-port) | calls | TODO: describe what this component does |
+| [verification-verdict](/docs/generated/lib-verification-verdict) | calls | TODO: describe what this component does |
 
-## Used By (32)
+## Used By (44)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -72,6 +74,18 @@ Usage:
 | [recommendation_gate_build_partial](/docs/generated/tests-unit-recommendation_gate_build_partial) | called_by | TODO: describe what this component does |
 | [recommendation_gate_build_partial](/docs/generated/tests-unit-recommendation_gate_build_partial) | tests_by | TODO: describe what this component does |
 | [render_surface_review_state_dup_human](/docs/generated/tests-unit-render_surface_review_state_dup_human) | tests_by | TODO: describe what this component does |
+| [ac_structure_close_gate](/docs/generated/tests-unit-ac_structure_close_gate) | called_by | TODO: describe what this component does |
+| [ac_structure_close_gate](/docs/generated/tests-unit-ac_structure_close_gate) | tests_by | TODO: describe what this component does |
+| [t2921_verification_comment_strip](/docs/generated/tests-unit-t2921_verification_comment_strip) | called_by | TODO: describe what this component does |
+| [t2921_verification_comment_strip](/docs/generated/tests-unit-t2921_verification_comment_strip) | tests_by | TODO: describe what this component does |
+| [t2924_update_task_owner_gate](/docs/generated/tests-unit-t2924_update_task_owner_gate) | called_by | TODO: describe what this component does |
+| [t2924_update_task_owner_gate](/docs/generated/tests-unit-t2924_update_task_owner_gate) | tests_by | TODO: describe what this component does |
+| [t2991_verification_preflight](/docs/generated/tests-unit-t2991_verification_preflight) | called_by | TODO: describe what this component does |
+| [t2991_verification_preflight](/docs/generated/tests-unit-t2991_verification_preflight) | tests_by | TODO: describe what this component does |
+| [t3030_two_writer_guard](/docs/generated/tests-unit-t3030_two_writer_guard) | tests_by | TODO: describe what this component does |
+| [update_task_orphan_guard](/docs/generated/tests-unit-update_task_orphan_guard) | called_by | TODO: describe what this component does |
+| [update_task_orphan_guard](/docs/generated/tests-unit-update_task_orphan_guard) | tests_by | TODO: describe what this component does |
+| [verification_pipe_buffer](/docs/generated/tests-unit-verification_pipe_buffer) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

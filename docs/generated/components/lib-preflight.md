@@ -18,13 +18,14 @@ Exit codes:
 0 = all required deps present
 1 = required dep(s) missing
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | `?` | uses | — |
+| [git-identity](/docs/generated/lib-git-identity) | calls | TODO: describe what this component does |
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -33,6 +34,7 @@ Exit codes:
 | [lib_preflight](/docs/generated/tests-unit-lib_preflight) | called-by | Unit tests for preflight (11 tests) |
 | [lib_preflight](/docs/generated/tests-unit-lib_preflight) | called_by | Unit tests for preflight (11 tests) |
 | [lib_preflight](/docs/generated/tests-unit-lib_preflight) | tests_by | Unit tests for preflight (11 tests) |
+| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-preflight.yaml`*

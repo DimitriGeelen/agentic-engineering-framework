@@ -13,12 +13,13 @@
 | [termlink](/docs/generated/agents-termlink-termlink) | calls | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
 | [termlink_worker](/docs/generated/lib-termlink_worker) | calls | TODO: describe what this component does |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [test_ollama_loop](/docs/generated/tests-unit-test_ollama_loop) | called_by | TODO: describe what this component does |
 | [spawn](/docs/generated/lib-spawn) | called_by | TODO: describe what this component does |
+| [spawn](/docs/generated/lib-spawn) | uses_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-ollama_loop.yaml`*

@@ -8,11 +8,12 @@
 
 Singleton adapter for backward compatibility
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [local_shell](/docs/generated/web-terminal-adapters-local_shell) | calls | Terminal adapter that spawns local shell sessions via PTY fork for interactive shell access in the web terminal |
+| [local_shell](/docs/generated/web-terminal-adapters-local_shell) | uses | Terminal adapter that spawns local shell sessions via PTY fork for interactive shell access in the web terminal |
 
 ## Related
 

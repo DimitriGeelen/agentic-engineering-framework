@@ -16,6 +16,12 @@ one of them covered.
 Checks run against a scratch repo holding a COPY of the real .gitignore, so the
 mutation (deleting the rule) is possible without touching the working tree.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [embeddings](/docs/generated/web-embeddings) | tests | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3058_reindex_scratch_ignored.yaml`*
 *Last verified: 2026-08-16*

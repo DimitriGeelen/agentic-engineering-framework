@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Dependencies (5)
+## Dependencies (10)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -15,13 +15,20 @@
 | [drift](/docs/generated/lib-reviewer-drift) | calls | TODO: describe what this component does |
 | [static_scan](/docs/generated/lib-reviewer-static_scan) | calls | TODO: describe what this component does |
 | [reverify](/docs/generated/lib-reviewer-reverify) | calls | TODO: describe what this component does |
+| [__init__](/docs/generated/lib-reviewer-__init__) | uses | TODO: describe what this component does |
+| [overrides](/docs/generated/lib-reviewer-overrides) | uses | TODO: describe what this component does |
+| [drift](/docs/generated/lib-reviewer-drift) | uses | TODO: describe what this component does |
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | uses | TODO: describe what this component does |
+| [reverify](/docs/generated/lib-reviewer-reverify) | uses | TODO: describe what this component does |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [test_reviewer_audit_pass_a](/docs/generated/tests-unit-test_reviewer_audit_pass_a) | called_by | TODO: describe what this component does |
 | [test_reviewer_audit_pass_b](/docs/generated/tests-unit-test_reviewer_audit_pass_b) | called_by | TODO: describe what this component does |
+| [test_reviewer_audit_pass_a](/docs/generated/tests-unit-test_reviewer_audit_pass_a) | uses_by | TODO: describe what this component does |
+| [test_reviewer_audit_pass_b](/docs/generated/tests-unit-test_reviewer_audit_pass_b) | uses_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-audit.yaml`*

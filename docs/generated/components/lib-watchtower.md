@@ -28,7 +28,13 @@ Resolution order (T-885, T-1287, T-1376):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (7)
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+
+## Used By (14)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -39,6 +45,13 @@ Resolution order (T-885, T-1287, T-1376):
 | [watchtower](/docs/generated/bin-watchtower) | called_by | Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode. |
 | [watchtower_health_verdict_identity](/docs/generated/tests-unit-watchtower_health_verdict_identity) | called_by | TODO: describe what this component does |
 | [watchtower_health_verdict_identity](/docs/generated/tests-unit-watchtower_health_verdict_identity) | tests_by | TODO: describe what this component does |
+| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | called_by | TODO: describe what this component does |
+| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | tests_by | TODO: describe what this component does |
+| [t3054_watchtower_root_fallback](/docs/generated/tests-unit-t3054_watchtower_root_fallback) | called_by | TODO: describe what this component does |
+| [t3054_watchtower_root_fallback](/docs/generated/tests-unit-t3054_watchtower_root_fallback) | tests_by | TODO: describe what this component does |
+| [watchtower_url_no_guess](/docs/generated/tests-unit-watchtower_url_no_guess) | tests_by | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | called_by | TODO: describe what this component does |
+| [review](/docs/generated/lib-review) | called_by | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-watchtower.yaml`*

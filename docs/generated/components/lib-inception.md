@@ -21,15 +21,16 @@ When the active task has `workflow_type: inception`:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [review](/docs/generated/lib-review) | calls | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
 | [task-audit](/docs/generated/lib-task-audit) | calls | Scans task files for literal placeholder content that should have been replaced during authoring, blocking review and inception decisions until resolved |
 | [inception_recommendation](/docs/generated/lib-inception_recommendation) | calls | TODO: describe what this component does |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
-## Used By (21)
+## Used By (23)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -53,6 +54,8 @@ When the active task has `workflow_type: inception`:
 | [lib_inception](/docs/generated/tests-unit-lib_inception) | tests_by | Unit tests for inception (12 tests) |
 | [inception](/docs/generated/web-blueprints-inception) | called_by | Blueprint 'inception' — routes: /inception |
 | [audit_d10_html_comment_blindness](/docs/generated/tests-unit-audit_d10_html_comment_blindness) | tests_by | Bats unit tests pinning D10 audit ("Decision-without-Dialogue") behaviour against HTML-comment-blindness false positives (T-1889). 4 cases verify: template-stub-only Human section is silent, real unchecked AC outside comments fires, checked AC is silent, mixed comments+real AC doesn't double-count. Forward-pins the strip-comments call added to audit.sh D10 block — future refactors that remove it fail test #1. |
+| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | called_by | TODO: describe what this component does |
+| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | tests_by | TODO: describe what this component does |
 
 ## Related
 

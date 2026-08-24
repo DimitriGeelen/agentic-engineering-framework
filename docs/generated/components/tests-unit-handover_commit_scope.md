@@ -17,6 +17,15 @@ that session's index out from under it mid-compose.
 NOT "the commit succeeded" and NOT "the foreign file is absent". A do_commit
 that committed NOTHING AT ALL would satisfy "the foreign file is absent"
 
+## Dependencies (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [git](/docs/generated/agents-git-git) | calls | Git Agent - Structural Enforcement for Git Operations |
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [git](/docs/generated/agents-git-git) | tests | Git Agent - Structural Enforcement for Git Operations |
+| [handover](/docs/generated/agents-handover-handover) | tests | Handover Agent - Mechanical Operations |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-handover_commit_scope.yaml`*
 *Last verified: 2026-08-19*

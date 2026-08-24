@@ -17,6 +17,13 @@ The counter line lives inline in audit.sh section 9; these tests pin the
 REGEX ITSELF against fixture files plus the live-file floor, so a
 regression to a fixed-shape grep fails here before it dies in the field.
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_graduation_counter.yaml`*
 *Last verified: 2026-07-29*

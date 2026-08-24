@@ -8,11 +8,12 @@
 
 the task's identity + key metadata render
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+| [app](/docs/generated/web-app) | uses | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_task_panel.yaml`*

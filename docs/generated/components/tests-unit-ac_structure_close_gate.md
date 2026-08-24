@@ -17,6 +17,13 @@ before the parser ever saw the Human heading. T-2420's PreToolUse hook
 prevents this shape from being *written* (once wired into
 .claude/settings.json), but does not cover files already malformed on
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-ac_structure_close_gate.yaml`*
 *Last verified: 2026-08-16*

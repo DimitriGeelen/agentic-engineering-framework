@@ -15,11 +15,12 @@ Origin: T-2301 hit this on the resume agent.
 T-2304: filter extended to `.sh + .py + .md`. This test pins the .md leg so
 any future refactor that narrows the filter trips the gate.
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
+| [upgrade](/docs/generated/lib-upgrade) | calls | fw upgrade - Sync framework improvements to a consumer project |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_self_vendor_agents_md_filter.yaml`*

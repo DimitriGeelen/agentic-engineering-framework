@@ -17,6 +17,14 @@ gate's cwd. (Quotes here are deliberately plain, not backticks: this file is
 scanned by tests/lint/no-backticks-in-inline-python.bats, and prose ABOUT an
 inline-python command trips it just as real code would.)
 
+## Used By (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [t2990_root_pollution](/docs/generated/tests-unit-t2990_root_pollution) | called_by | TODO: describe what this component does |
+| [t2990_root_pollution](/docs/generated/tests-unit-t2990_root_pollution) | tests_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-root-pollution.yaml`*
 *Last verified: 2026-08-14*
