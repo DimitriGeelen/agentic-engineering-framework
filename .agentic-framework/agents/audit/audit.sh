@@ -436,6 +436,10 @@ should_run_section() {
 PASS_COUNT=0
 WARN_COUNT=0
 FAIL_COUNT=0
+# T-3126: FAIL_COUNT partitioned by scope. Their sum equals FAIL_COUNT.
+FAIL_REF_COUNT=0
+FAIL_WORKTREE_COUNT=0
+declare -a FAIL_WORKTREE_TITLES
 
 # Priority actions
 declare -a PRIORITY_ACTIONS
@@ -464,10 +468,35 @@ warn() {
     FINDINGS+=("WARN|$1|$3")
 }
 
+# T-3126: findings carry their SCOPE.
+#
+# The audit reads the working tree; that is what a health check is for. But the
+# pre-push gate consumes this audit to decide a REF operation, and a FAIL owned
+# by uncommitted edits, untracked files, or host state is not a property of the
+# commit being pushed. Observed live 2026-08-23: two FAILs from a concurrent
+# session's uncommitted bin/fw + agents/audit/audit.sh and two untracked
+# tests/lint/*.bats files refused a push of a ref containing neither.
+#
+# The partition is emitted, not enforced, here. Verdicts are untouched: a FAIL is
+# still a FAIL, still counted, still exit 2. Only the fourth argument is new, and
+# it defaults to "ref" so every existing call site keeps blocking exactly as
+# before. Callers that can PROVE a finding cannot be in any ref pass "worktree".
+#
+#   fail "<title>" "<evidence>" "<mitigation>" [ref|worktree] [<reason>]
 fail() {
+    local _scope="${4:-ref}" _reason="${5:-}"
+    case "$_scope" in ref|worktree) ;; *) _scope="ref" ;; esac
     echo -e "${RED}[FAIL]${NC} $1"
     echo "       Evidence: $2"
     echo "       Mitigation: $3"
+    if [ "$_scope" = "worktree" ]; then
+        echo "       Scope: worktree${_reason:+ ($_reason)} — not present in any committed ref"
+        FAIL_WORKTREE_COUNT=$((FAIL_WORKTREE_COUNT + 1))
+        FAIL_WORKTREE_TITLES+=("$1")
+    else
+        echo "       Scope: ref — property of committed content"
+        FAIL_REF_COUNT=$((FAIL_REF_COUNT + 1))
+    fi
     FAIL_COUNT=$((FAIL_COUNT + 1))
     PRIORITY_ACTIONS+=("$3")
     FINDINGS+=("FAIL|$1|$3")
@@ -548,6 +577,45 @@ pass_over() {
              "${_evidence:-The check ran and found nothing, because there was nothing to look at. A PASS here would assert coverage the check does not have (T-3105).}" \
              "${_mitigation:-Confirm that 0 $_set is the real corpus state and not a mis-scoped enumeration or a predicate that matches nothing}"
     fi
+}
+
+# --- T-3126 scope predicates -------------------------------------------------
+#
+# Three helpers, all fail-safe: when they cannot answer, they answer "ref", so an
+# unanswerable question keeps the pre-push gate blocking. A gate that could not
+# decide is not a gate that passed (same reasoning as the exit-75 branch above).
+#
+# $1 is a git work tree root for every one of them; callers pass the root of the
+# tree the check actually read (FRAMEWORK_ROOT for the vendored/lint checks),
+# because in a split-root consumer that is a different repo from PROJECT_ROOT.
+
+# 0 when <root> is a usable git work tree with a resolvable HEAD.
+_t3126_git_ok() {
+    git -C "$1" rev-parse --verify -q HEAD >/dev/null 2>&1
+}
+
+# 0 when <root>/<rel> is NOT in HEAD, or differs from its HEAD blob. i.e. "this
+# path's current bytes exist nowhere in the committed history of this branch".
+_t3126_path_uncommitted() {
+    local _root="$1" _rel="$2"
+    git -C "$_root" rev-parse -q --verify "HEAD:$_rel" >/dev/null 2>&1 || return 0
+    git -C "$_root" diff --quiet HEAD -- "$_rel" 2>/dev/null || return 0
+    return 1
+}
+
+# 0 when the self-vendor pair <rel> vs .agentic-framework/<rel> ALSO drifts in
+# HEAD — i.e. the drift is committed and a consumer vendoring from origin would
+# inherit it. Mirrors T-3125's _t3125_committed_drift decision (missing-dest
+# counts as drift, because vendor-self syncs on absent OR different).
+_t3126_pair_drifts_in_head() {
+    local _root="$1" _rel="$2" _src _ven
+    _src=$(git -C "$_root" rev-parse -q --verify "HEAD:$_rel" 2>/dev/null || true)
+    _ven=$(git -C "$_root" rev-parse -q --verify "HEAD:.agentic-framework/$_rel" 2>/dev/null || true)
+    # Neither side is in HEAD at all: the pair is entirely uncommitted, so no ref
+    # carries this drift.
+    [ -z "$_src" ] && [ -z "$_ven" ] && return 1
+    [ "$_src" = "$_ven" ] && return 1
+    return 0
 }
 
 warn_unenumerable() {
@@ -2248,14 +2316,20 @@ elif [ -f "$_cron_registry" ]; then
         if diff -q "$_cron_source" "$_cron_target" >/dev/null 2>&1; then
             pass "Cron registry in sync with $_cron_target"
         else
+            # T-3126: the comparand is $_cron_target_dir (host state, /etc/cron.d
+            # by default). No git ref contains it, and no push creates or clears
+            # it — so this FAIL cannot be a property of the ref being pushed.
             fail "Cron drift: $_cron_source differs from deployed $_cron_target" \
                  "Registry edits or generator output have not been deployed — cron jobs may be running stale or absent" \
-                 "Run: fw cron install"
+                 "Run: fw cron install" \
+                 worktree "host state: $_cron_target_dir"
         fi
     elif [ -f "$_cron_source" ] && [ ! -f "$_cron_target" ]; then
+        # T-3126: host-state comparand, same as the deployed-drift arm above.
         fail "Cron drift: generated but not installed at $_cron_target" \
              "Generated crontab exists but is not deployed — scheduled jobs are not running" \
-             "Run: fw cron install"
+             "Run: fw cron install" \
+             worktree "host state: $_cron_target_dir"
     elif [ ! -f "$_cron_source" ]; then
         warn "Cron drift: registry present but not generated" \
              "$_cron_registry exists but $_cron_source is missing" \
@@ -2329,9 +2403,11 @@ elif [ -d "$_cron_lint_dir" ]; then
         if [ -n "$_cf_install" ]; then
             pass "cron(${_cf_base}): USER-field syntax installed at $_cf_install"
         else
+            # T-3126: host-state comparand ($_cron_lint_target_dir).
             fail "cron(${_cf_base}): USER-field syntax but no install in $_cron_lint_target_dir" \
                  "Source: $_cf. Dormant -- scheduled jobs are not running (PL-173 / G-058 prevention)." \
-                 "Install: sudo cp $_cf $_cron_lint_target_dir/${_cron_lint_slug}-$_cf_base && sudo systemctl reload cron"
+                 "Install: sudo cp $_cf $_cron_lint_target_dir/${_cron_lint_slug}-$_cf_base && sudo systemctl reload cron" \
+                 worktree "host state: $_cron_lint_target_dir"
         fi
     done
 fi
@@ -2448,6 +2524,12 @@ check_self_vendor_drift() {
 
     local _sv_libs=0 _sv_tpl=0
     local _sv_libs_list="" _sv_tpl_list=""
+    # T-3126: of the drifting pairs, how many still drift in HEAD. A pair whose
+    # committed blobs already agree is drift a concurrent session created in the
+    # working tree — real for `fw vendor self`, absent from every ref.
+    local _sv_libs_head=0 _sv_tpl_head=0
+    local _sv_git_ok=0
+    _t3126_git_ok "$FRAMEWORK_ROOT" && _sv_git_ok=1
 
     # libs class: .agentic-framework/{bin,lib,agents,web}/* vs source
     while IFS= read -r _vf; do
@@ -2458,6 +2540,10 @@ check_self_vendor_drift() {
             _sv_libs=$((_sv_libs + 1))
             if [ "$_sv_libs" -le 5 ]; then
                 _sv_libs_list="$_sv_libs_list $_rel"
+            fi
+            # Cannot read git → count every pair as committed (fail-safe → ref).
+            if [ "$_sv_git_ok" != "1" ] || _t3126_pair_drifts_in_head "$FRAMEWORK_ROOT" "$_rel"; then
+                _sv_libs_head=$((_sv_libs_head + 1))
             fi
         fi
     # T-2304 (OBS-068) + T-2307 (follow-on): `*.md` is in scope for parity with
@@ -2495,6 +2581,9 @@ check_self_vendor_drift() {
                 if [ "$_sv_tpl" -le 5 ]; then
                     _sv_tpl_list="$_sv_tpl_list $_rel"
                 fi
+                if [ "$_sv_git_ok" != "1" ] || _t3126_pair_drifts_in_head "$FRAMEWORK_ROOT" "$_rel"; then
+                    _sv_tpl_head=$((_sv_tpl_head + 1))
+                fi
             fi
         done < <(find "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" -type f -name "*.md" 2>/dev/null)
     fi
@@ -2512,16 +2601,21 @@ check_self_vendor_drift() {
         # scope this libs-class check scans. Recommend `fw vendor self` so the
         # FAIL's fix command AGREES with the canonical sync verb (and with
         # `fw vendor self --check`, the read-only verifier added in T-2436).
+        # T-3126: ref-scoped iff at least one drifting pair still drifts in HEAD.
         fail "Self-vendor drift: libs class — $_sv_libs file(s) out of sync (T-2244)" \
              "First $([ $_sv_libs -gt 5 ] && echo 5 || echo $_sv_libs):$_sv_libs_list" \
-             "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
+             "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)" \
+             "$([ "$_sv_libs_head" -gt 0 ] && echo ref || echo worktree)" \
+             "$_sv_libs_head of $_sv_libs drifting pair(s) also drift in HEAD"
     fi
     if [ "$_sv_tpl" -gt 0 ]; then
         # Templates class is correctly scoped to 'fw vendor self' — it syncs
         # .tasks/templates as a sibling of lib/ (lib/upgrade.sh _self_vendor_templates).
         fail "Self-vendor drift: templates class — $_sv_tpl file(s) out of sync (T-2244)" \
              "First $([ $_sv_tpl -gt 5 ] && echo 5 || echo $_sv_tpl):$_sv_tpl_list" \
-             "Run: fw vendor self  (sync .agentic-framework/ templates with source)"
+             "Run: fw vendor self  (sync .agentic-framework/ templates with source)" \
+             "$([ "$_sv_tpl_head" -gt 0 ] && echo ref || echo worktree)" \
+             "$_sv_tpl_head of $_sv_tpl drifting pair(s) also drift in HEAD"
     fi
 }
 check_self_vendor_drift
@@ -2571,9 +2665,72 @@ check_invariant_suite() {
         return 0
     fi
 
+    # T-3126: decide, per RED test, whether the failure is a property of the
+    # COMMIT or of the working tree. The origin case (2026-08-23) was two
+    # UNTRACKED tests/lint/*.bats files a concurrent session had dropped in: bats
+    # collects them, an invariant goes red, and a ref containing neither file is
+    # refused.
+    #
+    # Two independent grounds make one RED test worktree-scoped:
+    #   (a) the .bats file DECLARING it is untracked-in-HEAD or modified-vs-HEAD
+    #       — the assertion itself is not in any ref;
+    #   (b) its failure evidence names at least one repo path and EVERY path it
+    #       names is untracked-in-HEAD or modified-vs-HEAD — the assertion is
+    #       committed, but everything it is complaining about is not. This is the
+    #       shape of `no-untracked-test-files.bats`, whose whole subject is files
+    #       that exist nowhere but the working tree.
+    # The declaring file named by bats's own `(in test file …)` line is excluded
+    # from (b)'s path harvest: it is present in every failure block and is
+    # normally committed, so counting it would make (b) unreachable.
+    #
+    # The whole FINDING is worktree-scoped only when EVERY red test is, and at
+    # least one was attributable. Any red test in committed code about committed
+    # content, and any red test that cannot be attributed at all, makes it
+    # ref-scoped — a mixture must keep blocking.
+    local _inv_scope="ref" _inv_reason=""
+    local _inv_dirty=0 _inv_clean=0 _inv_unattributed=0
+    if _t3126_git_ok "$FRAMEWORK_ROOT"; then
+        local _inv_decl _inv_evs _inv_ev _inv_any_ev _inv_all_unc
+        while IFS='|' read -r _inv_decl _inv_evs; do
+            if [ -z "$_inv_decl" ] && [ -z "$_inv_evs" ]; then
+                _inv_unattributed=$((_inv_unattributed + 1))
+                continue
+            fi
+            # (a) the assertion itself is not committed
+            if [ -n "$_inv_decl" ] && _t3126_path_uncommitted "$FRAMEWORK_ROOT" "$_inv_decl"; then
+                _inv_dirty=$((_inv_dirty + 1))
+                continue
+            fi
+            # (b) everything the assertion names is not committed
+            _inv_any_ev=0; _inv_all_unc=1
+            local _oldifs="$IFS"; IFS=';'
+            for _inv_ev in $_inv_evs; do
+                [ -z "$_inv_ev" ] && continue
+                _inv_any_ev=1
+                _t3126_path_uncommitted "$FRAMEWORK_ROOT" "$_inv_ev" || _inv_all_unc=0
+            done
+            IFS="$_oldifs"
+            if [ "$_inv_any_ev" = "1" ] && [ "$_inv_all_unc" = "1" ]; then
+                _inv_dirty=$((_inv_dirty + 1))
+            else
+                _inv_clean=$((_inv_clean + 1))
+            fi
+        done < <(printf '%s\n' "$_out" | python3 "$FRAMEWORK_ROOT/lib/bats_red_attribution.py" "$FRAMEWORK_ROOT" 2>/dev/null)
+
+        if [ "$_inv_clean" -eq 0 ] && [ "$_inv_unattributed" -eq 0 ] && [ "$_inv_dirty" -gt 0 ]; then
+            _inv_scope="worktree"
+            _inv_reason="all $_inv_dirty RED test(s) are about state not committed to HEAD"
+        else
+            _inv_reason="$_inv_clean RED test(s) about committed content, $_inv_unattributed unattributed"
+        fi
+    else
+        _inv_reason="git HEAD unreadable — scope undecidable, defaulting to ref"
+    fi
+
     fail "Invariant suite: $_red of $_total structural invariant(s) RED (T-2837)" \
          "$(printf '%s\n' "$_out" | grep '^not ok' | head -3 | sed 's/^not ok [0-9]* //' | tr '\n' ';')" \
-         "Run: fw test invariants"
+         "Run: fw test invariants" \
+         "$_inv_scope" "$_inv_reason"
 }
 check_invariant_suite
 
@@ -6685,6 +6842,17 @@ METRICS_EOF
 fi
 
 echo ""
+# T-3126: machine-readable scope partition of FAIL_COUNT, for callers that act on
+# a REF rather than on the working tree (agents/git/lib/hooks.sh pre-push).
+#
+# Emitted unconditionally, including when there are no failures, so a consumer can
+# tell "this audit partitions its findings" from "this audit predates T-3126".
+# The pre-push gate treats an ABSENT line as ref=unknown and keeps blocking — an
+# old vendored audit must not be read as a clean bill of health.
+echo "AUDIT-SCOPE: fails=$FAIL_COUNT ref=$FAIL_REF_COUNT worktree=$FAIL_WORKTREE_COUNT"
+for _t3126_wt in "${FAIL_WORKTREE_TITLES[@]:-}"; do
+    [ -n "$_t3126_wt" ] && echo "AUDIT-SCOPE-WORKTREE: $_t3126_wt"
+done
 echo "=== END AUDIT ==="
 
 # Restore stdout if quiet mode was active
