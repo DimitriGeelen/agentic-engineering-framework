@@ -1,0 +1,20 @@
+id: lib/bats_red_attribution.py
+name: bats_red_attribution
+type: script
+subsystem: framework-core
+location: lib/bats_red_attribution.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-24
+created_by: unknown

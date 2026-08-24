@@ -18,10 +18,10 @@ description: >
   and audit disagree on the file-class list) but a different axis: this is about WHICH
   TREE, not which files.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -36,7 +36,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T21:41:55Z
-last_update: '2026-08-23T21:45:13Z'
+last_update: 2026-08-24T20:29:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,14 +82,61 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The pre-push hook runs `audit.sh --section structure` and blocks on exit 2. The audit
+reads the WORKING TREE; the push operates on a REF. A FAIL owned by another session's
+uncommitted or untracked files therefore refuses a push of a commit that does not
+contain them. Same proxy-vs-property class T-3125 closed on the sibling self-vendor
+gate. Fix shape (decided): PARTITION — tag each structure finding with its scope, and
+let the gate act only on ref-scoped FAILs. The audit's verdicts are unchanged.
+
+### AC1 — classification of every `--section structure` FAIL site
+
+Structure section spans `agents/audit/audit.sh:632-2785`. Scope definition used
+throughout: a finding is **REF-scoped** when it is a property of committed content
+(so it may be present in the ref being pushed); it is **WORKTREE-scoped** when it is a
+property of state no git ref contains — uncommitted edits, untracked files, or host
+state outside the repo entirely. `BOTH` / not-cheaply-provable resolves to REF
+(fail safe = keep blocking).
+
+| # | Line | Check (FAIL title) | Reads | Scope | Evidence / basis |
+|---|------|--------------------|-------|-------|------------------|
+| 1 | 639 | Tasks directory missing | `$TASKS_DIR` presence in worktree | REF (fail-safe) | Directory presence; a ref lacking `.tasks/` is equally possible. Not cheaply separable → default. |
+| 2 | 818 | Duplicate task IDs detected (G-052) | task files across all corpus views | REF (fail-safe) | Colliding files may be tracked, untracked, or mixed. Mixed = BOTH → ref. |
+| 3 | 871 | YAML parse error: `<project yaml>` | `.context/project/*.yaml`, `policy/*.yaml`, `.context/arcs/*.yaml` | REF (fail-safe) | Tracked files; a dirty copy could be worktree-only, but corruption in the ref is the case the gate exists for. |
+| 4 | 903 | YAML parse error: inbox.yaml | `.context/inbox.yaml` (tracked) | REF (fail-safe) | Same as #3. |
+| 5 | 1070 | Seed routes to missing corpus map | `lib/seeds/tasks`, `.context/designer/projects` | REF (fail-safe) | Both sides tracked; ships to consumers via `fw init` from the ref. |
+| 6 | 1671 | inline `arc:<slug>` tag-only scan(s) | tracked source under `lib web agents bin tools` | REF (fail-safe) | Source lint; a hit in an uncommitted edit is possible but not separable per-hit here. |
+| 7 | 1725 | PROJECT_ROOT resolution of framework-owned assets | tracked `*.py` under `web/ lib/` | REF (fail-safe) | Same as #6. |
+| 8 | 2161 | Fabric drift: coverage expander failed | `agents/fabric/lib/expand_patterns.py` (tracked) | REF (fail-safe) | Instrument-failure; the instrument is committed source. |
+| 9 | 2240 | Cron drift: registry ahead of generated | `.context/cron-registry.yaml` vs `.context/cron/agentic-audit.crontab` — **both tracked** | REF | Deterministic function of two tracked files; when both are clean the drift IS in the ref. Dirty case = BOTH → ref. |
+| 10 | 2251 | Cron drift: generated differs from deployed | tracked crontab vs **`/etc/cron.d/`** | WORKTREE (host) | The comparand is host state. No git ref contains `/etc/cron.d`; pushing cannot create or clear it. Statically provable, unconditional. |
+| 11 | 2256 | Cron drift: generated but not installed | existence of **`/etc/cron.d/agentic-audit-<slug>`** | WORKTREE (host) | Same as #10. |
+| 12 | 2332 | cron(...): USER-field syntax but no install | **`$FW_CRON_INSTALL_DIR`/`/etc/cron.d`** | WORKTREE (host) | Same as #10. |
+| 13 | 2515 | Self-vendor drift: libs class | worktree `<rel>` vs worktree `.agentic-framework/<rel>` | **DYNAMIC** | Recomputed against HEAD blobs per drifting pair (`git rev-parse HEAD:<p>`), the T-3125 method. Any pair still drifting in HEAD → REF; none → WORKTREE. |
+| 14 | 2522 | Self-vendor drift: templates class | same, `.tasks/templates/*.md` | **DYNAMIC** | Same as #13. |
+| 15 | 2574 | Invariant suite: N of M RED | `bats tests/lint/` over the worktree | **DYNAMIC** | Per RED test, two independent grounds for worktree scope: **(a)** the `.bats` file *declaring* it is untracked-in-HEAD or modified-vs-HEAD (the assertion is in no ref); **(b)** its failure evidence names ≥1 repo path and *every* named path is uncommitted-in-HEAD (the assertion is committed but its whole subject is not — this is `no-untracked-test-files.bats`, the literal AC6 case). Attribution via `lib/bats_red_attribution.py`, which excludes bats's own `(in test file …)` marker from the evidence set. WORKTREE only if every RED test qualifies and ≥1 was attributable; any RED test about committed content, or any unattributable one, → REF. |
+
+Notes:
+- #10-#12 are host state, not working-tree state. They satisfy the operative property
+  the gate needs ("not a property of the commit being pushed") and are emitted with
+  tag `worktree` and reason `host`. The audit still FAILs on them; `fw doctor` and the
+  cron close-gate (L-364) are unaffected. Only the *push* stops being coupled to one
+  host's deployment state.
+- #13-#15 carry the two findings that held the 2026-08-23 push (AC6). Both are decided
+  per-run, not statically — a genuinely committed self-vendor drift or a genuinely
+  committed RED invariant still tags `ref` and still blocks.
+- Fail-safe defaults everywhere: no git worktree, unparseable bats output, failed
+  attribution, or a missing `AUDIT-SCOPE:` line all resolve to REF / block.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] AC1 — Ground truth first: enumerate every audit `--section structure` check that can emit FAIL, and classify each as REF-SCOPED (the finding is a property of the commit being pushed) or WORKTREE-SCOPED (the finding is a property of uncommitted/untracked files and would not exist in a clean checkout of the pushed ref). Record the classification and its evidence in the task body. If a check is genuinely BOTH, say so and treat it as ref-scoped.
+- [x] AC2 — Audit findings carry their scope. Each structure-section finding emits a machine-readable scope tag (`ref` or `worktree`). Adding the tag must not change any existing PASS/WARN/FAIL verdict — the audit reports exactly what it reported before, plus the tag.
+- [x] AC3 — The pre-push gate blocks only on ref-scoped FAILs. A worktree-scoped FAIL is reported in full and downgraded to a non-blocking WARN whose message says plainly that the finding is in the working tree, is not in the ref being pushed, and is therefore not blocking this push.
+- [x] AC4 — A ref-scoped FAIL still blocks. Blocking behaviour on genuine FAILs is unchanged, including the exit-75 could-not-run branch (T-2930), which must keep blocking — a gate that did not run is not a gate that passed.
+- [x] AC5 — Regression test pinning both directions, in its own fixture tree (L-599: do not pin to a live defect or the live corpus). At minimum: (a) worktree-only FAIL → push allowed + WARN; (b) ref FAIL → BLOCKED; (c) both present → BLOCKED; (d) exit 75 → BLOCKED. State how many tests fail against the pre-change code — a test that passes before the fix guards nothing.
+- [x] AC6 — The literal 2026-08-23 shape is covered: uncommitted `bin/fw` + `agents/audit/audit.sh` producing 'Self-vendor drift: libs class' and two untracked `.bats` files producing 'Invariant suite: 1 of 74 RED', on a ref containing neither, must push cleanly.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -183,21 +230,49 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/git/lib/hooks.sh
+bash -n agents/audit/audit.sh
+bats tests/unit/t3126_prepush_audit_gate_scope.bats > /tmp/.t3126-bats.out 2>&1 && grep -qE "^ok " /tmp/.t3126-bats.out && ! grep -q "^not ok" /tmp/.t3126-bats.out
+# Lint: this repo carries 4 standing FAILs (agents/sessions/{claude-code,antigravity}/list.sh
+# and their vendored copies — each is a python3 script named .sh, so shellcheck refuses it with
+# SC1071). They predate this task and are untouched by it. So the assertion is NOT "zero FAILs"
+# — that can never pass here — and NOT "exactly 4 FAILs" either, which would pin a live defect
+# (L-599) and go red the moment someone fixes those scripts. It is: no file this task touched
+# is among the failures.
+bin/fw test lint > /tmp/.t3126-lint.out 2>&1; ! grep -E "^\s*\x1b?\[?[0-9;]*m?FAIL" /tmp/.t3126-lint.out | grep -qE "audit\.sh|hooks\.sh|bats_red_attribution\.py"
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** On 2026-08-23 a push was refused by the pre-push audit gate on two
+`--section structure` FAILs — `Self-vendor drift: libs class — 3 file(s) out of sync`
+(a concurrent session's uncommitted `bin/fw` and `agents/audit/audit.sh`) and
+`Invariant suite: 1 of 74 RED` (invariant 43, two untracked `.bats` files the runner
+collects). The commit being pushed contained neither.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** A working-tree health verdict was wired directly to a ref-based
+decision. `audit.sh` reads the working tree — correctly, that is what a health check
+is for — and the gate consumed only its exit code, which carries no information about
+*which tree* a failure lives in. With no scope in the signal, the gate could not
+distinguish "this commit is broken" from "somebody's editor is open".
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the same proxy-vs-property substitution T-3125 had just
+closed on the sibling self-vendor gate in the same file. Exit code 2 was treated as a
+property of the push; it is a property of the filesystem at audit time. Nothing in the
+audit's output made the difference expressible, so no consumer could have honoured it
+however carefully written. The failure mode is also self-clearing — the concurrent
+session commits, the block evaporates, and no artefact survives to be counted — which
+is why it recurred rather than accumulating into a visible defect.
+
+**Prevention:** the audit now partitions its own findings. Every structure FAIL carries
+a `Scope:` line and the run emits `AUDIT-SCOPE: fails=N ref=X worktree=Y`; the gate
+blocks iff `X > 0`, iff the line is absent (an audit predating the contract is never
+read as a clean bill of health), or iff the audit did not run (exit 75, T-2930,
+untouched). `tests/unit/t3126_prepush_audit_gate_scope.bats` pins both directions in a
+synthetic fixture — 15 of its 20 tests fail against the pre-change source, and the 5
+that pass are the invariant-preservation cases that must not change. Fail-safe is the
+default everywhere: unreadable git, unattributable test, unparseable count, and missing
+scope line all resolve to `ref` and keep blocking.
 
 ## Evolution
 
@@ -279,3 +354,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3126-the-pre-push-audit-gate-blocks-a-ref-ope.md
 - **Context:** Initial task creation
+
+### 2026-08-24T20:29:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

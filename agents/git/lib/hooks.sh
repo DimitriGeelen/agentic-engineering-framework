@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.13"
+COMMIT_MSG_HOOK_VERSION="1.14"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -102,7 +102,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.13
+# VERSION=1.14
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -660,10 +660,10 @@ HOOK_EOF
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125, T-3126)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.6
+# VERSION=1.7
 
 # T-1603: VERSION monotonicity check.
 # Origin: T-1602 surfaced silent VERSION rollback in cc38e98f5 (1.5.463 → 1.5.19,
@@ -1064,8 +1064,36 @@ echo ""
 
 # T-862: Run fast audit subset for pre-push (full audit takes >90s with 100+ tasks)
 # Structure checks: dirs exist, YAML parses, fabric valid — fast and catches real breaks
-"$AUDIT_SCRIPT" --section structure
-audit_exit=$?
+#
+# T-3126: the output is captured as well as shown, because the FAIL verdict alone
+# does not say WHICH TREE the failure lives in. The audit reads the working tree;
+# this gate decides a REF operation. `tee` keeps the run streaming to the operator
+# (it takes tens of seconds) while PIPESTATUS preserves the audit's own exit code —
+# the whole point of the exit-75 branch below is that the pipeline's exit code must
+# not be substituted for the audit's.
+_t3126_out=$(mktemp -t fw-prepush-audit-XXXXXX 2>/dev/null || echo "")
+if [ -n "$_t3126_out" ]; then
+    "$AUDIT_SCRIPT" --section structure 2>&1 | tee "$_t3126_out"
+    audit_exit=${PIPESTATUS[0]}
+else
+    # mktemp unavailable: run exactly as before. No capture means no scope line,
+    # and the gate below treats a missing scope line as "block" — degraded to the
+    # pre-T-3126 behaviour, never to something weaker.
+    "$AUDIT_SCRIPT" --section structure
+    audit_exit=$?
+fi
+
+# Parse the T-3126 partition. Absent line, unparseable count, or no capture at all
+# → _t3126_ref_fails stays empty → the FAILURES branch blocks, exactly as before.
+_t3126_ref_fails=""
+_t3126_wt_fails=""
+if [ -n "$_t3126_out" ] && [ -f "$_t3126_out" ]; then
+    _t3126_scope_line=$(grep -E '^AUDIT-SCOPE: ' "$_t3126_out" 2>/dev/null | tail -1)
+    if [ -n "$_t3126_scope_line" ]; then
+        _t3126_ref_fails=$(printf '%s\n' "$_t3126_scope_line" | sed -n 's/.*[[:space:]]ref=\([0-9][0-9]*\).*/\1/p')
+        _t3126_wt_fails=$(printf '%s\n' "$_t3126_scope_line" | sed -n 's/.*[[:space:]]worktree=\([0-9][0-9]*\).*/\1/p')
+    fi
+fi
 
 if [ $audit_exit -eq 75 ]; then
     # T-2930 / OBS-221: 75 = EX_TEMPFAIL = the audit DID NOT RUN (lock contention).
@@ -1091,17 +1119,60 @@ if [ $audit_exit -eq 75 ]; then
     echo "Bypass: git push --no-verify"
     echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
     echo ""
+    [ -n "$_t3126_out" ] && rm -f "$_t3126_out"
     exit 1
 elif [ $audit_exit -eq 2 ]; then
-    echo ""
-    echo "ERROR: Push blocked - audit has FAILURES"
-    echo ""
-    echo "Fix the issues above before pushing."
-    echo ""
-    echo "Bypass: git push --no-verify"
-    echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
-    echo ""
-    exit 1
+    # T-3126: block only on REF-scoped failures.
+    #
+    # A worktree-scoped FAIL is real — the audit is right to report it — but it is
+    # a property of uncommitted edits, untracked files, or host state, none of
+    # which any git ref contains. Refusing the push does not fix it, and it is
+    # routinely somebody ELSE's in-flight work: on 2026-08-23 a concurrent
+    # session's uncommitted bin/fw + agents/audit/audit.sh and two untracked
+    # tests/lint/*.bats files held a push of a ref containing neither.
+    #
+    # The downgrade requires PROOF: a scope line saying ref=0 with at least one
+    # worktree-scoped failure. Anything else — no line (audit predates T-3126, or
+    # the capture failed), a non-numeric count, or ref>0 — blocks.
+    if [ "$_t3126_ref_fails" = "0" ] && [ -n "$_t3126_wt_fails" ] && [ "$_t3126_wt_fails" != "0" ]; then
+        echo ""
+        echo "WARNING: Audit FAILED, but every failure is in the WORKING TREE (T-3126)"
+        echo ""
+        echo "  Worktree-scoped failure(s):"
+        grep -E '^AUDIT-SCOPE-WORKTREE: ' "$_t3126_out" 2>/dev/null \
+            | sed -e 's/^AUDIT-SCOPE-WORKTREE: /    - /'
+        echo ""
+        echo "  These findings are in the WORKING TREE: uncommitted edits, untracked"
+        echo "  files, or host state such as /etc/cron.d."
+        echo "  They are NOT in the ref being pushed — a clean checkout of that commit"
+        echo "  does not contain them."
+        echo "  They are therefore NOT BLOCKING THIS PUSH."
+        echo ""
+        echo "  They are still real. Fix them before COMMITTING the edits that caused"
+        echo "  them — or, if they are a concurrent session's, leave them to that"
+        echo "  session. Details: the [FAIL] blocks above, each with a 'Scope:' line."
+        echo ""
+    else
+        echo ""
+        echo "ERROR: Push blocked - audit has FAILURES"
+        echo ""
+        if [ -n "$_t3126_ref_fails" ]; then
+            echo "  $_t3126_ref_fails failure(s) are REF-scoped — present in the commit being"
+            echo "  pushed, not just in your working tree."
+        else
+            echo "  Failure scope could not be determined (no AUDIT-SCOPE line — the audit"
+            echo "  predates T-3126, or its output could not be captured). Blocking:"
+            echo "  an undetermined scope is not a determination that the ref is clean."
+        fi
+        echo ""
+        echo "Fix the issues above before pushing."
+        echo ""
+        echo "Bypass: git push --no-verify"
+        echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
+        echo ""
+        [ -n "$_t3126_out" ] && rm -f "$_t3126_out"
+        exit 1
+    fi
 elif [ $audit_exit -eq 1 ]; then
     echo ""
     echo "WARNING: Audit has warnings (push allowed)"
@@ -1109,6 +1180,7 @@ elif [ $audit_exit -eq 1 ]; then
     echo ""
 fi
 
+[ -n "$_t3126_out" ] && rm -f "$_t3126_out"
 exit 0
 HOOK_EOF
 
