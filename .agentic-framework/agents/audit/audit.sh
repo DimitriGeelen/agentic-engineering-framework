@@ -128,6 +128,24 @@ CRONEOF
                 exit 1
             fi
 
+            # T-3070: this command and 'fw cron install' used to be two
+            # independent generators writing the SAME git-tracked source file
+            # ($CRON_SOURCE) — this one from a hardcoded heredoc
+            # (_cron_generate_source, below), 'fw cron install' from
+            # .context/cron-registry.yaml. T-1112/T-1114 built the
+            # registry-driven 'fw cron install' as the intended single
+            # chokepoint, but this legacy entry point was never redirected to
+            # it, so running 'fw audit schedule install' after editing the
+            # registry silently reverted every registry-sourced schedule
+            # fix back to the hardcoded template — confirmed live 2026-08-23
+            # (three collision fixes reverted in one call). When a registry
+            # exists, delegate entirely; the hardcoded heredoc path below
+            # remains only for pre-T-448 consumer projects with no registry.
+            if [ -f "$PROJECT_ROOT/.context/cron-registry.yaml" ]; then
+                shift
+                exec "$FW_PATH" cron install "$@"
+            fi
+
             # Migrate legacy cron if present
             if [ -f "$LEGACY_CRON_FILE" ]; then
                 legacy_project=$(grep -m1 'PROJECT_ROOT=' "$LEGACY_CRON_FILE" 2>/dev/null | sed 's/.*PROJECT_ROOT="\([^"]*\)".*/\1/')

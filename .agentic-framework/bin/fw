@@ -5221,7 +5221,7 @@ with open(cron_source, 'w') as f:
 
 print(f'Generated {cron_source}')
 print(f'  {active} active, {paused} paused ({len(jobs)} total)')
-print(f'  Install with: fw audit schedule install')
+print(f'  Install with: fw cron install')
 "
                 ;;
             status)
