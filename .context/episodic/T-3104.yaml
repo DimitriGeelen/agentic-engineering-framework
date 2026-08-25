@@ -75,10 +75,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 7165
-  commits: 1
-  files_changed: 6
-  lines_added: 649
-  lines_removed: 13
+  commits: 2
+  files_changed: 10
+  lines_added: 1050
+  lines_removed: 18
+  footprint_refreshed_at: '2026-08-25T11:41:45Z'
+  footprint_refreshed_by_commit: 5143f24ea
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3104-lift-the-task-corpus-view-set-into-a-sha.md
