@@ -151,6 +151,81 @@ def find_gap(data: Dict[str, Any], gap_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+# ── Outstanding/terminal partition (T-3140) ─────────────────────────────────
+#
+# TERMINAL is an explicit, closed set. Everything else — including a status
+# nobody has invented yet and an entry with no `status:` field at all — is
+# OUTSTANDING by default. The direction matters and is the whole fix.
+#
+# `fw gaps` used to enumerate an allowlist instead: it rendered `watching` and
+# counted `closed|decided-build|decided-simplify`. Any status outside those two
+# lists was invisible on the register's only CLI surface — not rendered, not
+# counted, not summarised. Measured at T-3140: 12 unresolved gaps hidden, 6 of
+# them severity `high`, including six entries whose status was literally `open`.
+# The header compounded it by labelling the `closed` count "resolved" while the
+# 30 entries actually carrying `status: resolved` were counted nowhere.
+#
+# An allowlist fails silently and in the dangerous direction: a status it does
+# not know about disappears rather than showing up misfiled. A denylist of
+# terminal states fails loudly and in the safe one — an unrecognised status
+# shows up as outstanding and someone notices it needs a decision.
+#
+# `mitigated` is deliberately NOT terminal. CLAUDE.md §Post-Fix Root Cause
+# Escalation: "mitigation (cleaned up the mess) is not prevention (can't happen
+# again) … Do not close the gap until prevention exists." By the framework's own
+# rule these are among the least finished entries in the register; the old code
+# hid all 18 of them.
+TERMINAL_GAP_STATUSES = frozenset(
+    {"closed", "resolved", "decided-build", "decided-simplify"}
+)
+
+
+def is_outstanding(gap: Any) -> bool:
+    """True when a gap still needs a decision.
+
+    Anything not explicitly terminal is outstanding, including `status: null`
+    and a missing `status:` key — an entry too malformed to classify is one
+    nobody has finished, not one nobody has to look at.
+    """
+    if not isinstance(gap, dict):
+        return False
+    status = gap.get("status")
+    if not isinstance(status, str):
+        return True
+    return status.strip().lower() not in TERMINAL_GAP_STATUSES
+
+
+def partition_gaps(
+    gaps: Optional[List[Any]],
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Split a gap list into (outstanding, terminal), preserving order.
+
+    Non-dict entries are dropped from both halves — they are register
+    corruption, not gaps, and cannot carry a severity or a title to render.
+    Their absence is recoverable from `len(gaps)` against the two returned
+    lengths, which is why the caller reports a total.
+    """
+    outstanding: List[Dict[str, Any]] = []
+    terminal: List[Dict[str, Any]] = []
+    for entry in gaps or []:
+        if not isinstance(entry, dict):
+            continue
+        (outstanding if is_outstanding(entry) else terminal).append(entry)
+    return outstanding, terminal
+
+
+def status_breakdown(gaps: Optional[List[Any]]) -> "OrderedDict[str, int]":
+    """Count entries per status, most-common first. Unset renders as `<unset>`."""
+    from collections import Counter, OrderedDict
+
+    counts = Counter(
+        (g.get("status") if isinstance(g.get("status"), str) else None) or "<unset>"
+        for g in (gaps or [])
+        if isinstance(g, dict)
+    )
+    return OrderedDict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))
+
+
 # ── Surgical YAML block rewrite ─────────────────────────────────────────────
 
 _GAP_HEADER_RE = re.compile(r"^- id: (\S+)\s*$", re.MULTILINE)

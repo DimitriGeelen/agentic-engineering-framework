@@ -1,6 +1,6 @@
-audit-task-tools=2
+audit-task-tools=4
 
-loop-detect=87
+loop-detect=89
 check-active-completed-dup=13
 check-arc-id=13
 check-heredoc-cmd-sub=7
@@ -12,10 +12,10 @@ check-onboarding-gate=13
 check-worktree-governance-write=13
 check-agent-dispatch=1
 check-settings-edit=4
-checkpoint=14
-check-tier0=11
-budget-gate=15
-check-project-boundary=15
-check-active-task=14
-error-watchdog=4
+checkpoint=16
+check-tier0=13
+budget-gate=17
+check-project-boundary=17
+check-active-task=16
+error-watchdog=6
 audit-task-tools=1
