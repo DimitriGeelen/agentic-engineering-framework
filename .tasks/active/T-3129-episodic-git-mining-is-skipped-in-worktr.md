@@ -256,7 +256,23 @@ likely reading but is not *proven*, and a clean quiet-system run is the evidence
 that would settle it. Ticking on a likely reading is exactly the move the
 false-green work in this task exists to discourage.
 
-**Contention-sensitive test set, observed (run reached 627 tests / 28 failures).**
+**CORRECTION — the unit run was TRUNCATED, not completed.**
+`bin/fw test unit` was launched under `timeout 3000`. It exited **124** (killed)
+after exactly 50 minutes, having run **843 of the 4522 tests** `bats --count
+tests/unit/` reports. The `[exited with code 0]` visible in the harness output was
+the *background wrapper's* status, not the suite's.
+
+Consequence: **this task's own 7 controls never ran in the suite** — the run died
+before reaching them. They pass 7/7 when invoked directly, and 5/7 fail against
+pre-change code, but they have never been exercised by `fw test unit`. That is
+the same shape as the defect this task fixes: a control that looks like coverage
+and is not executed. Anyone reading "843 tests, 41 failures" as a full-suite
+result would be reading a truncated one.
+
+The re-run therefore needs a **longer timeout as well as a quiet system** — 3000s
+is not enough for 4522 tests on this host.
+
+**Contention-sensitive test set, observed (in the 843 that did run — 41 failures).**
 Beyond the audit cluster, three more files went red for reasons this session
 caused by running the suite against a live working session:
 
