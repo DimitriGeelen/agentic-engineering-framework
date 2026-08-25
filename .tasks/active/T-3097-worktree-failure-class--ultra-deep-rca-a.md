@@ -285,9 +285,23 @@ predicate. Both are executing existing decisions, which is why they started befo
 review rather than after it.
 
 **Needs the operator, and only the operator:**
-1. **Tier 0 — prune the two stranded worktrees and their branches.** T-2824 recovered
+1. ~~**Tier 0 — prune the two stranded worktrees and their branches.** T-2824 recovered
    everything of value and correctly stopped short; branch deletion is Tier 0 and that
-   handoff has been outstanding since 2026-08-06. Nothing agent-side can close it.
+   handoff has been outstanding since 2026-08-06. Nothing agent-side can close it.~~
+
+   **CORRECTED 2026-08-25 (T-3142) — do not execute this as written.** The claim that
+   T-2824 recovered "everything of value" was taken from T-2824's own report and never
+   re-derived against the tree. `fw worktree gc`, which compares **content** rather than
+   commit identity, disagrees: `worktree-rca-worktree-push-strand` is `unlanded 28/53`
+   and `worktree-inception-gov-payload-mediation` is `unlanded 3/3`. Both are **KEEP**,
+   not RECLAIM. Deleting them as instructed above would have destroyed 31 commits' worth
+   of content that is in master nowhere.
+
+   The corrected handoff is **push-then-triage, not prune**: both branches are on origin
+   so the work is safe, and the operator decision is now "land it or drop it deliberately"
+   — carried by T-3142's Human AC, which reads the live `fw worktree gc` split rather than
+   any stored claim. The generalisable form: *a recovery claim is evidence about the past;
+   only a content comparison is evidence about now.*
 2. **T-100201** — the T-100196 / T-2394 contradiction in CLAUDE.md is still open and is a
    worktree-adjacent decision only the operator can settle.
 
@@ -296,14 +310,9 @@ writes from inside a worktree. Leg A ships behind a logged bypass precisely so t
 one exists, it appears in the bypass log as data rather than as a silent workaround.
 
 
-**Recommendation:** DEFER
-
-**Rationale:**
-
-Filed at the start of the investigation: the evidence base (errors log, peer RCA, incident corpus) has not been read yet, so no GO/NO-GO is available. This is a genuine evidence gap, not a confidence hedge — it will be replaced with GO or NO-GO once the corpus is walked.
-
-**Evidence:**
-
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+<!-- T-3142: a stale `**Recommendation:** DEFER` stub sat here below the real GO,
+     left by `fw inception retrofit-rec --apply` at filing time and never cleared
+     when the GO was written. Two conflicting verdicts in one file means any
+     parser reading "the" recommendation can get either. Measured across all 3126
+     task files: this was the only file with conflicting verdicts, so it is a
+     repair rather than a class. -->

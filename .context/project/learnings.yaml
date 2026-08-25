@@ -4774,3 +4774,9 @@ X'` returning empty group."
   task: T-3140
   date: 2026-08-25
   context: Added via context agent
+- id: L-640
+  learning: "Repo-tracked systemd unit templates (deploy/*.service) can silently diverge from the live installed unit (/etc/systemd/system/*.service) because the sync step is a manual 'sudo cp && daemon-reload' with no automated check. T-2914's --stall-after fix landed in the repo but not on the host for 9 days (OBS-280), causing 30-min cooldown re-dispatches with zero AC advancement. fw doctor has no diff check between deploy/ templates and installed units — a follow-up gap/task to add one would close this class structurally."
+  source: G-019
+  task: T-3116
+  date: 2026-08-25
+  context: Added via context agent

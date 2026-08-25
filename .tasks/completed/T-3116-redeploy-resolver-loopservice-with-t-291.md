@@ -5,10 +5,10 @@ name: "redeploy resolver-loop.service with T-2914 stall-after fix (OBS-280 deplo
 description: >
   redeploy resolver-loop.service with T-2914 stall-after fix (OBS-280 deploy drift)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-22T15:38:38Z
-last_update: '2026-08-22T15:45:13Z'
-date_finished:
+last_update: 2026-08-25T12:06:47Z
+date_finished: 2026-08-25T12:06:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -93,14 +93,14 @@ change. `deploy/resolver-loop.service` is the source of truth (T-2494 template).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **A1** `/etc/systemd/system/resolver-loop.service` matches
+- [x] **A1** `/etc/systemd/system/resolver-loop.service` matches
   `deploy/resolver-loop.service` byte-for-byte (diff empty).
-- [ ] **A2** `systemctl daemon-reload` run; `systemctl cat resolver-loop.service`
+- [x] **A2** `systemctl daemon-reload` run; `systemctl cat resolver-loop.service`
   shows `ExecStart=... --stall-after 5` (not `--cooldown-min`).
-- [ ] **A3** `fw resolver stalled --json` runs cleanly against the live unit
+- [x] **A3** `fw resolver stalled --json` runs cleanly against the live unit
   (confirms the new flag is understood by the installed `fw` binary this
   systemd unit invokes — no stale-vendoring mismatch).
-- [ ] **A4** Timer still enabled/active after reload (`systemctl is-active
+- [x] **A4** Timer still enabled/active after reload (`systemctl is-active
   resolver-loop.timer` — or equivalent — unchanged from pre-edit state).
 
 ## Verification
@@ -164,24 +164,43 @@ change. `deploy/resolver-loop.service` is the source of truth (T-2494 template).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 diff /etc/systemd/system/resolver-loop.service deploy/resolver-loop.service
-out=$(systemctl cat resolver-loop.service 2>&1); echo "$out" | grep -q -- "--stall-after 5" && ! echo "$out" | grep -q -- "--cooldown-min"
+out=$(systemctl cat resolver-loop.service 2>&1); echo "$out" | grep -- "^ExecStart=" > /tmp/.t3116-execstart; grep -q -- "--stall-after 5" /tmp/.t3116-execstart && ! grep -q -- "--cooldown-min" /tmp/.t3116-execstart
 systemctl is-active resolver-loop.timer
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `/etc/systemd/system/resolver-loop.service` (the live, installed
+unit) still ran `--cooldown-min 30` after the T-2914 fix landed in
+`deploy/resolver-loop.service` (`--stall-after 5`). Measured consequence
+caught during T-1719 re-verification: five consecutive dispatches exactly 30
+minutes apart, all `outcome=success`, zero AC advancement since the ninth
+dispatch — the cooldown window matched the timer's `OnUnitActiveSec` exactly
+and so never actually suppressed a non-advancing re-dispatch (same failure
+mode as the T-2862 origin: 57 dispatches / 0 outcomes over 2 days).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `deploy/resolver-loop.service` is a source-of-truth template
+copied to `/etc/systemd/system/` by a manual operator step (`sudo cp ... &&
+systemctl daemon-reload`, per the file's own header comment) — there is no
+automated sync between a repo-tracked deploy artifact and the live systemd
+unit it templates. T-2914 changed the repo file but nothing re-ran the manual
+deploy step on this host, so the fix shipped in git without shipping to the
+running service.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** deploy drift for host-installed systemd units is
+invisible to normal task-close gates (P-011 verifies repo state, not live host
+state) and to `fw doctor` at the time T-2914 closed — there was no check
+comparing `deploy/*.service` against `/etc/systemd/system/*.service`. The gap
+was only surfaced manually, via OBS-280 (2026-08-16, T-3030) noticing the
+diff during unrelated verification of T-1719.
+
+**Prevention:** this redeploy (T-3116) closes the immediate drift. The
+generalisable prevention — a `fw doctor` check that diffs
+`deploy/*.service`/`*.timer` against their installed
+`/etc/systemd/system/` counterparts and WARNs on mismatch — is not yet built;
+recommend a follow-up task if this class recurs. Immediate mitigation for this
+instance: `fw resolver stalled --json` (A3) confirms the installed `fw`
+binary this unit invokes understands `--stall-after`, closing the
+stale-vendoring variant of this same drift class.
 
 ## Evolution
 
@@ -263,3 +282,15 @@ systemctl is-active resolver-loop.timer
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3116-redeploy-resolver-loopservice-with-t-291.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8e05065f
+- **Timestamp:** 2026-08-25T12:06:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-25T12:06:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

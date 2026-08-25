@@ -36951,3 +36951,39 @@ scan_id: R-e960815a
 task_id: T-3104
 payload:
   task_file: .tasks/active/T-3104-lift-the-task-corpus-view-set-into-a-sha.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T12:06:48Z'
+scan_id: R-8e05065f
+task_id: T-3116
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T12:06:48Z'
+scan_id: R-8e05065f
+task_id: T-3116
+payload:
+  task_file: .tasks/active/T-3116-redeploy-resolver-loopservice-with-t-291.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T16:18:27Z'
+scan_id: R-4d49ecb1
+task_id: T-3142
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T16:18:27Z'
+scan_id: R-4d49ecb1
+task_id: T-3142
+payload:
+  task_file: .tasks/active/T-3142-24-commits-on-3-branches-exist-only-on-t.md
