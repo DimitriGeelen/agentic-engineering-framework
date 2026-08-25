@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T20:44:07Z
-last_update: 2026-08-25T20:46:11Z
+last_update: 2026-08-25T22:18:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,23 +105,23 @@ on it here.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] AC1 — Reproduce before fixing. Build a synthetic consumer whose
+- [x] AC1 — Reproduce before fixing. Build a synthetic consumer whose
       `.gitignore` carries the snapshot-allowlist shape (`.agentic-framework/*`
       plus `!` re-includes for a fixed set of directories), vendor into it, and
       show that a file in a directory outside the allowlist lands on disk and is
       invisible to git. Report which directories of the current framework are
       NOT on the allowlist shape 010-termlink quoted — `tools/` is the reported
       one; do not assume it is the only one.
-- [ ] AC2 — `fw vendor` (and the vendoring leg of `fw upgrade`) checks, after
+- [x] AC2 — `fw vendor` (and the vendoring leg of `fw upgrade`) checks, after
       writing, that every file it just wrote is visible to git in the target.
       The check must run in the TARGET repo, not ours: `git check-ignore` is
       answered by the consumer's `.gitignore`, which is the thing at fault.
-- [ ] AC3 — A dropped file is surfaced as a FAIL, naming the directory and the
+- [x] AC3 — A dropped file is surfaced as a FAIL, naming the directory and the
       ignore rule responsible (`git check-ignore -v` gives both). Not a WARN:
       the framework is shipping code that `bin/fw` then execs by absolute path,
       so the consequence is a hard runtime error (`python3: can't open file
       '<proj>/.agentic-framework/tools/corpus_explain.py'`), not untidiness.
-- [ ] AC4 — The check cannot pass vacuously. If it enumerates zero written
+- [x] AC4 — The check cannot pass vacuously. If it enumerates zero written
       files it must refuse, not report success — a vendor run that wrote nothing
       and a vendor run whose file list was never populated are the same output
       otherwise. Pin that with a fixture, not a comment (L-575, T-3140).
@@ -130,12 +130,41 @@ on it here.
       applies to us; "not affected" is a finding that has to be measured, since
       absent-from-`git log` and never-vendored read identically (the exact
       instrument problem 010-termlink corrected itself on, twice).
-- [ ] AC6 — A test fails against pre-change code. Fixtures only: a synthetic
+- [x] AC6 — A test fails against pre-change code. Fixtures only: a synthetic
       consumer, no assertion pinned to a live consumer project, since consumer
       `.gitignore` files are edited outside this repo and a control pinned to
       one is a report about them rather than a check on us.
 
 ### Human
+- [ ] [REVIEW] Decide whether a legacy consumer should be BLOCKED or WARNED on upgrade
+      **Steps:**
+      1. Read the blast radius: this makes `fw vendor` — and therefore `fw upgrade`,
+         which vendors through it — exit 1 in any consumer whose `.gitignore` hides
+         part of the vendored tree. Every consumer carrying the snapshot-allowlist
+         shape is in that state today and does not know it.
+      2. Reproduce the operator experience in ten seconds:
+         `rm -rf /tmp/t3144x && mkdir -p /tmp/t3144x && git -C /tmp/t3144x init -q . && printf '.agentic-framework/*\n' > /tmp/t3144x/.gitignore && bin/fw vendor --target /tmp/t3144x 2>&1 | tail -25`
+      3. Judge the trade: a FAIL stops an upgrade that would otherwise leave the
+         consumer with code git cannot see (T-2942's `python3: can't open file` class,
+         which took three separate tasks to find). A WARN keeps upgrades flowing and
+         re-enters the loop where each fix is silently re-dropped.
+      **Expected:** a decision — keep FAIL, or downgrade to WARN for the `fw upgrade`
+      leg only while `fw vendor` stays FAIL. The `FW_ALLOW_INVISIBLE_VENDOR=1` escape
+      hatch exists either way and logs Tier-2.
+      **If not:** if FAIL is too aggressive for the fleet, say so and it becomes a WARN
+      plus a `fw doctor` check in a follow-up task — the detection is the durable part,
+      the severity is the reversible part.
+- [ ] [REVIEW] Decide whether our own 23 vendored `*.png` files should be tracked
+      **Steps:**
+      1. `cd /opt/999-Agentic-Engineering-Framework && source lib/vendor-visibility.sh && fw_vendor_check_visibility "$PWD/.agentic-framework" "$PWD"`
+      2. Note it is 22 files under `docs/` and one `web/static/logo.png`, all hidden
+         by our own project-wide `*.png` rule at `.gitignore:65`.
+      **Expected:** either add `!.agentic-framework/docs` + `!.agentic-framework/web`
+      to `.gitignore` and commit the 23 images, or accept that a clone's vendored docs
+      have missing images. No executable code is affected either way.
+      **If not:** leaving it is defensible; this AC exists so the choice is made rather
+      than inherited.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -166,7 +195,86 @@ on it here.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+## Results
+
+**Reproduced first (AC1).** Synthetic consumer carrying the snapshot-allowlist
+shape 010-termlink reported (`.agentic-framework/*` plus `!` re-includes for the
+directories that existed when the snapshot was taken), vendored into with
+`fw vendor --target`. Result: **62 of 2649 written files invisible to git**,
+while `fw vendor` printed *Vendored successfully* and exited 0.
+
+`tools/` is not the only one, and the pattern in the rest is the point:
+
+| Path | Files | Added to `includes[]` by |
+|---|---:|---|
+| `tools/` | 33 | T-2942 — consumer `fw corpus explain` was dead |
+| `.context/designer/projects/` | 21 | T-2942 — the maps that `tools/corpus_explain.py` reads |
+| `vendor/…designer…html` | 1 | T-3064 — `/designer` rendered an error page in every consumer |
+| `status-transitions.yaml` | 1 | T-2674 — consumer enums froze at seed time |
+| `VERSION`, `.upstream`, `.secret-scan-{patterns,allowlist}`, `.fw-not-a-project`, `.gitignore` | 6 | various |
+
+Every one of those entries was added by a task fixing a *"consumer is missing X"*
+bug. A stale allowlist silently re-drops each of them the moment it ships, so the
+fix and the regression are the same event. That loop is what this check breaks.
+
+**The check (AC2–AC4).** `lib/vendor-visibility.sh:fw_vendor_check_visibility`,
+called from `do_vendor` after `FRAMEWORK.md` — the completeness sentinel — so the
+tree it inspects is the tree a consumer actually gets. `fw upgrade` reaches it
+for free: `lib/upgrade.sh:1543` vendors through `do_vendor`. `fw vendor self` is a
+different path (`_self_vendor_libs`) and is deliberately untouched.
+
+FAIL, not WARN, per AC3: `bin/fw` execs several vendored files by absolute path,
+so the consequence is a hard runtime error naming `python3` and a missing file,
+never vendoring. Zero enumerated files REFUSES with exit 2 (AC4) — *"nothing was
+looked at"* is not *"nothing was ignored"*. Override `FW_ALLOW_INVISIBLE_VENDOR=1`,
+logged Tier-2.
+
+The remedy it prints was re-run, not just printed: pasting its `!` lines into the
+fixture's `.gitignore` takes the same call from exit 1 to exit 0.
+
+**AC5 — our own repo IS affected, and this corrects the previous session's claim.**
+That claim ("not affected, all nine vendored dirs are git-visible") was measured at
+*directory* granularity and is wrong at *file* granularity:
+
+    FAIL: 23 of 2505 vendored file(s) are invisible to git in the target.
+        docs                             22 file(s)   .gitignore:65:*.png
+        web                               1 file(s)   .gitignore:65:*.png
+
+All 23 are images, hidden by our own project-wide `*.png` rule. **No executable
+code is hidden** — `bin/fw` execs `.py`/`.sh`, all visible — so the T-2942/T-3064
+class does not bite us. The consequence is a clone whose vendored docs have
+missing images and no Watchtower logo. The one-line remedy is a `!` re-include,
+deliberately NOT applied here: it commits 23 binary files, which is a repo-weight
+decision for the operator, not a defect fix.
+
+**AC6, and what the tests are actually worth.** 8/8 green. "Fails against
+pre-change code" is true and nearly worthless — the function did not exist, so
+every test fails by NameError rather than by disagreeing with a behaviour (same
+degenerate control as T-3138). The three tests marked `[instrument]` are the ones
+carrying weight, because each is a false positive this check **shipped with** and
+that only running it against real trees exposed:
+
+1. `git check-ignore -v` prints negation matches too, so files re-included by
+   `!…` looked identical to hidden ones — `FRAMEWORK.md` and `metrics.sh` were
+   reported invisible while git saw them fine. Fixed by two passes: plain
+   `check-ignore` decides *which*, `-v` only then supplies *which rule*.
+2. `find` under the destination sees `__pycache__/` that Python wrote at
+   *runtime*, not the vendor. 10 of a reported 87 were runtime droppings.
+3. The per-directory rule column printed whichever rule awk saw first, so
+   `web  55 file(s)  *.png` appeared when 54 of the 55 were hidden by a different
+   rule — and it misled its own author for a full step. Now grouped by
+   (directory, rule), so every row's cause is true for that row.
+
+All three read as findings about the repo and were findings about the instrument.
+
 ## Verification
+
+bats tests/unit/vendor_visibility.bats > /tmp/.t3144 2>&1 && grep -q "^ok 8 " /tmp/.t3144
+! grep -q "^not ok" /tmp/.t3144
+bash -n lib/vendor-visibility.sh
+bash -n bin/fw
+grep -q "fw_vendor_check_visibility" bin/fw
+tools/bats-dead-negation-lint.py tests > /tmp/.t3144l 2>&1 && grep -q "dead 0 in 0 file" /tmp/.t3144l
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -323,3 +431,16 @@ on it here.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3144-fw-vendor-ships-executable-code-into-con.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8f0ff95a
+- **Timestamp:** 2026-08-25T22:25:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `consumer project`
