@@ -8,10 +8,10 @@ description: >
   that does not yet contain what it is mining for. Second, independent root cause
   of the same false-zero symptom as T-3129.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T06:01:27Z
-last_update: '2026-08-25T06:15:15Z'
+last_update: 2026-08-25T08:48:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -153,13 +153,13 @@ about a history that is about to change.
 
 ### Agent
 
-- [ ] AC1 — The `commits`/`files_changed`/`lines_added`/`lines_removed` values in a generated episodic reflect the completion commit. Whatever mechanism achieves this, the recorded footprint of a task whose entire history lands in ONE commit at completion is no longer zero.
-- [ ] AC2 — The control captures the value AT GENERATION and compares it to the value after the commit lands. A test that completes a task, commits, and *then* asserts `commits > 0` passes against unfixed code — it is measuring from the wrong vantage and guards nothing. State explicitly in the test file why the naive form is insufficient.
-- [ ] AC3 — The control MUST fail against pre-change code. Report "N of M fail against pre-change code", and count only tests that genuinely discriminate — regression guards that pass on both sides are named separately, not folded into N.
-- [ ] AC4 — The refresh hangs off the COMMIT, not off the completion. The completion gate runs before the commit by design (that ordering is what lets it block), so it cannot be the hook. Record in `## Decisions` where the refresh was attached and what now owns the `commits:` field, since it becomes a field written by a different agent than the rest of the episodic.
-- [ ] AC5 — Interaction with T-3129 is stated, not assumed: T-3129's AC3 makes an *unmeasurable* value null. This task's zeros are *measured and truthful at the time*, so AC3 does not cover them. The fix must not conflate the two, and a test must distinguish "could not measure" from "measured against an incomplete history".
-- [ ] AC6 — Fixtures only (L-599). No assertion pinned to the live corpus, the 577, or any live task id. Must still pass after the backfill runs.
-- [ ] AC7 — `bin/fw test unit` shows no NEW failures attributable to this change. Note: the audit tests in `tests/unit/audit.bats` assert `status -le 1` and go red under lock contention regardless of the code under test — name that separately rather than absorbing it.
+- [x] AC1 — The `commits`/`files_changed`/`lines_added`/`lines_removed` values in a generated episodic reflect the completion commit. Whatever mechanism achieves this, the recorded footprint of a task whose entire history lands in ONE commit at completion is no longer zero.
+- [x] AC2 — The control captures the value AT GENERATION and compares it to the value after the commit lands. A test that completes a task, commits, and *then* asserts `commits > 0` passes against unfixed code — it is measuring from the wrong vantage and guards nothing. State explicitly in the test file why the naive form is insufficient.
+- [x] AC3 — The control MUST fail against pre-change code. Report "N of M fail against pre-change code", and count only tests that genuinely discriminate — regression guards that pass on both sides are named separately, not folded into N.
+- [x] AC4 — The refresh hangs off the COMMIT, not off the completion. The completion gate runs before the commit by design (that ordering is what lets it block), so it cannot be the hook. Record in `## Decisions` where the refresh was attached and what now owns the `commits:` field, since it becomes a field written by a different agent than the rest of the episodic.
+- [x] AC5 — Interaction with T-3129 is stated, not assumed: T-3129's AC3 makes an *unmeasurable* value null. This task's zeros are *measured and truthful at the time*, so AC3 does not cover them. The fix must not conflate the two, and a test must distinguish "could not measure" from "measured against an incomplete history".
+- [x] AC6 — Fixtures only (L-599). No assertion pinned to the live corpus, the 577, or any live task id. Must still pass after the backfill runs.
+- [x] AC7 — `bin/fw test unit` shows no NEW failures attributable to this change. Note: the audit tests in `tests/unit/audit.bats` assert `status -le 1` and go red under lock contention regardless of the code under test — name that separately rather than absorbing it.
 
 ### Human
 
@@ -190,64 +190,29 @@ about a history that is about to change.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# The module exists and is executable as the hook calls it.
+test -f lib/episodic_footprint.py
+python3 -c "import ast,sys; ast.parse(open('lib/episodic_footprint.py').read())"
+
+# AC4 — the refresh hangs off the commit, not the completion.
+grep -q 'episodic_footprint.py' agents/git/lib/hooks.sh
+! grep -q 'episodic_footprint' agents/task-create/update-task.sh
+
+# PL-078 — BOTH version markers moved, or consumers never redeploy.
+grep -q 'COMMIT_MSG_HOOK_VERSION="1.15"' agents/git/lib/hooks.sh
+grep -q '# VERSION=1.7' agents/git/lib/hooks.sh
+
+# L-364 — wired is not deployed. Assert the hook ON DISK carries the wiring.
+grep -q '# VERSION=1.7' .git/hooks/post-commit
+grep -q 'episodic_footprint.py' .git/hooks/post-commit
+
+# AC5 — the T-3129 boundary is enforced in code, not just documented.
+grep -q 'skipped-not-refreshable' lib/episodic_footprint.py
+
+# AC2/AC3/AC6 — the control itself.
+bats tests/unit/episodic_footprint_refresh.bats > /tmp/.t3130 2>&1 && grep -q '^ok 11' /tmp/.t3130
+! grep -q '^not ok' /tmp/.t3130
+grep -q 'PASSES AGAINST UNFIXED CODE' tests/unit/episodic_footprint_refresh.bats
 
 ## RCA
 
@@ -320,14 +285,67 @@ about a history that is about to change.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Where the refresh hangs, and why it could not hang anywhere else (AC4).**
+The refresh is attached to the **post-commit hook**
+(`agents/git/lib/hooks.sh`, template `# VERSION=1.7`), which extracts every
+distinct `T-NNNN` from the commit message and calls
+`lib/episodic_footprint.py` for each one that already has an episodic.
+
+The completion path was never a candidate. `fw task update --status
+work-completed` generates the episodic *before* the commit carrying the work,
+and that ordering is load-bearing: the completion gate runs ahead of the commit
+precisely so it can block. Moving generation later to get a better number would
+trade a reporting defect for a governance one. So the vantage point has to
+change, not the ordering — and post-commit is the first moment the commit being
+described exists.
+
+**Consequence, stated because it is a real cost.** The four mined counters are
+now written by a different agent than the rest of the episodic: the completion
+path writes the file, the post-commit hook rewrites four of its fields. That
+split is visible in the artefact rather than only here — a refresh stamps
+`footprint_refreshed_at:` and `footprint_refreshed_by_commit:` directly beneath
+`lines_removed:`, so a reader looking at the numbers sees who last touched them
+without going to a Decisions section. Repeated refreshes replace that stamp
+rather than accumulating it.
+
+**Alternatives rejected:**
+
+- *A scheduled reconcile* (cron sweeps episodics and re-mines). Correct
+  eventually, but it puts an unbounded window between the artefact and the
+  truth, and cron drift is a class this repo already tracks in three places
+  (L-364's registry→generated→deployed chain). Post-commit has no window.
+- *Leaving the field stale by design and documenting it.* This is what was in
+  effect, undocumented. The failure mode is that `commits: 0` beside
+  `git_mining: ok` is indistinguishable from a task that genuinely produced no
+  commits — the same false-zero shape T-3129 fixed one layer up.
+- *Regenerating the whole episodic post-commit.* Rejected: it would overwrite
+  the narrative sections a human or agent may have edited between completion and
+  commit, to fix four numbers.
+
+**Boundary with T-3129, and why it is enforced in code rather than trusted
+(AC5).** T-3129 makes an *unmeasurable* footprint `null` with
+`git_mining: skipped`. This task's zeros are *measured and truthful at the
+instant taken*. Post-commit always runs inside a git repo, so this module
+**could** fill in the `skipped` ones — and that is exactly why it refuses to.
+Silently flipping `skipped` → `ok` from a different code path would erase the
+evidence that generation-time mining failed, which is the signal T-3129 was
+built to produce. Those are repaired by backfill, under their own task, where
+the population is counted. Two tests pin the distinction, including one that
+runs both states through the same repo and the same commit history and asserts
+they diverge.
+
+**PL-078 was tripped during this task, on this task.** Bumping the `# VERSION=`
+literal inside the commit-msg heredoc did **not** cause a redeploy —
+`install-hooks` short-circuits on the separate constant
+`COMMIT_MSG_HOOK_VERSION` at `hooks.sh:27`, and it still read `1.14`.
+`fw git install-hooks` reported "Hooks already installed" and the post-commit
+hook on disk stayed at `VERSION=1.6` with no wiring, while the template said
+`1.7`. Caught by reading the deployed file rather than trusting the installer's
+success message — the same wrapper-vs-wrapped confusion that has cost this
+session three wrong claims. The file's own comment says to bump both; there is a
+`tests/unit/hook_version_marker_parity.bats` guarding it. Both constants are now
+`1.15`/`1.7` and the deployed hook is verified by grep, not by the installer's
+say-so.
 
 ## Decision
 
@@ -345,3 +363,7 @@ about a history that is about to change.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3130-episodic-mining-runs-before-the-completi.md
 - **Context:** Initial task creation
+
+### 2026-08-25T08:48:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

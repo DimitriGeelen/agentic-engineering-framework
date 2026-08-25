@@ -78,10 +78,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 10
-  commits: 1
-  files_changed: 9
-  lines_added: 1512
-  lines_removed: 4
+  commits: 2
+  files_changed: 34
+  lines_added: 2450
+  lines_removed: 110
+  footprint_refreshed_at: '2026-08-25T08:52:26Z'
+  footprint_refreshed_by_commit: 67aeacc73
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3133-concurrent-antigravity-work-reverted-che.md
