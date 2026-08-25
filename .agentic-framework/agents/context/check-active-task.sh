@@ -450,7 +450,7 @@ esac
 # before T-001-T-005 complete). Exempt the auto-memory directory
 # globally, regardless of user prefix or task state.
 case "$FILE_PATH" in
-    */.claude/projects/*/memory/*)
+    */.claude/projects/*/memory/*|*/.gemini/antigravity-cli/brain/*)
         exit 0
         ;;
 esac

@@ -4060,3 +4060,10 @@ observations:
   tags: [verification]
   status: pending
   promoted_to: null
+- id: OBS-344
+  text: "fw gaps lists ONLY status: watching. The register also carries status: open (7 entries), partial-mitigation (2), accepted-risk (1), partially-resolved (1) and 2 with no status — none of which appear in the primary CLI surface, and the header 'N watching, M resolved' does not account for them either, so the omission is invisible. Hit live on T-3133: G-085 was filed 'open' (a vocabulary 7 existing entries use) and simply did not render; it took a grep of the parsed YAML to notice. Same false-zero shape as the rest of this session — the surface that reports 'here are the gaps' cannot see a third of the register and says nothing about it. Fix: either render every non-terminal status, or refuse an unrecognised status at write time."
+  captured: 2026-08-25T08:09:50Z
+  context_task: T-3133
+  tags: [false-green]
+  status: pending
+  promoted_to: null

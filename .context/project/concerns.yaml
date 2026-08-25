@@ -3132,3 +3132,67 @@ concerns:
   status: watching
   detected_in: T-3096
   observed: 2026-08-20
+- id: G-085
+  type: gap
+  title: A committed governance file can lose committed behaviour with no commit, and
+    nothing asks
+  description: 'On 2026-08-25 the live PreToolUse gate agents/context/check-active-task.sh
+    was 840 lines in the working tree against 1012 at HEAD, uncommitted, having been clean
+    at session start 37 minutes earlier. The delta was not an edit: T-3038''s
+    _resolve_focus_file helper and both call sites were gone (replaced by a hard-coded
+    FOCUS_FILE, making session-scoped focus inert), T-2987''s ~115-line explain-why-the-
+    remedy-did-not-apply block was gone (restoring the identical-message loop it was filed
+    to break), and T-3050''s richer B-005 message had reverted to its predecessor. The only
+    genuinely NEW content in 186 removed and 14 added lines was one alternative on one case
+    pattern: */.gemini/antigravity-cli/brain/*. Concurrent antigravity work had applied its
+    change to an older base and written the result over HEAD''s version.
+
+    The gap is not that this happened — concurrent work on a shared checkout will
+    occasionally re-derive from a stale base. The gap is that NOTHING ASKED. It surfaced
+    only because `fw vendor self` propagated the regressed source into .agentic-framework/
+    and the pre-push self-vendor gate then refused a push to master. That gate answers "does
+    vendored match source?", not "did source regress?" — so detection was incidental to a
+    check about a different question. Had the vendored copy not been touched, the working
+    tree would have been committed at the next opportunity and three tasks'' worth of
+    governance behaviour would have shipped silently, including to consumers.
+
+    Note the asymmetry that makes this invisible: adding a line to a case pattern is a
+    normal, welcome edit; losing 186 lines of committed behaviour in the same write is
+    catastrophic. git status renders both as a single " M". Every existing check is either
+    about committed state (audit, invariant suite, blast radius) or about vendor parity —
+    none reads the uncommitted delta of a governed file and asks whether it removes
+    behaviour that a completed task put there.
+
+    Candidate shapes, cheapest first: (a) a doctor/audit WARN when a file under
+    agents/context/, agents/git/ or lib/ is uncommitted AND its working copy is net-negative
+    by more than N lines against HEAD — cheap, no semantics, catches the shape; (b) grep the
+    uncommitted delta for removal of lines carrying a completed task id (T-NNNN comments are
+    dense in these files) and name the tasks whose behaviour is being dropped; (c) a
+    pre-commit refusal on net-negative governance-file diffs without an explicit
+    --removes-behaviour ack. (b) is the one that would have named T-3038 and T-2987 by id.
+
+    '
+  spec_reference: CLAUDE.md §Post-Fix Root Cause Escalation (G-019); §Verification Gate
+    (P-011, chain-of-transitions reasoning shared with L-364)
+  severity: high
+  decision_trigger: 'A governed file under agents/ or lib/ is found with an uncommitted
+    working copy that is net-negative against HEAD and removes lines bearing a completed
+    task id — or any regression of committed behaviour is discovered by a check whose
+    stated question was something else.
+
+    '
+  trigger_check:
+    type: manual
+    hint: 'for f in $(git diff --name-only -- agents/ lib/); do git diff --numstat -- "$f";
+      done — a large deletions:insertions ratio on a governance file is the shape. Then:
+      git diff -- "$f" | grep -E "^-.*T-[0-9]{3,}" to name the behaviour being removed.'
+  status: watching
+  detected_in: T-3133
+  observed: 2026-08-25
+  blast_radius: cross-project
+  related:
+  - T-3133
+  - T-3038
+  - T-2987
+  - T-3050
+  follow_up_task: T-3133

@@ -1,0 +1,304 @@
+diff --git a/agents/context/check-active-task.sh b/agents/context/check-active-task.sh
+index 0cd07701b..0eecb2fba 100755
+--- a/agents/context/check-active-task.sh
++++ b/agents/context/check-active-task.sh
+@@ -31,25 +31,7 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+ source "$FRAMEWORK_ROOT/lib/paths.sh"
+ source "$FRAMEWORK_ROOT/lib/config.sh"
+ fw_hook_crash_trap "check-active-task"
+-
+-# T-3038 (OBS-291): resolve focus through the shared helper so this gate reads
+-# the same file `fw context focus` wrote. Under FW_SESSION_SCOPED_FOCUS=1 that is
+-# a session-local focus.<key>.yaml; otherwise the shared focus.yaml, unchanged.
+-#
+-# The READER falls back to the shared file when the scoped one does not exist yet
+-# — and that fallback is deliberate, not defensive padding. A dispatched worker
+-# that never calls `fw work-on` should still be governed by the parent's active
+-# task rather than being refused for having no focus of its own. Inheriting is
+-# safe (read-only on the shared file); only WRITING it was ever the hijack.
+-_resolve_focus_file() {
+-    local f
+-    f=$(fw_focus_file "$PROJECT_ROOT")
+-    if [ ! -f "$f" ] && [ -f "$PROJECT_ROOT/.context/working/focus.yaml" ]; then
+-        f="$PROJECT_ROOT/.context/working/focus.yaml"
+-    fi
+-    printf '%s\n' "$f"
+-}
+-FOCUS_FILE=$(_resolve_focus_file)
++FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
+ 
+ # Read stdin (JSON from Claude Code)
+ INPUT=$(cat)
+@@ -72,7 +54,7 @@ except:
+ # the original inline block so every hook shares one implementation). No-op for
+ # non-worktree sessions. Recompute FOCUS_FILE after, since it caches PROJECT_ROOT.
+ fw_reanchor_from_hook_stdin "$INPUT"
+-FOCUS_FILE=$(_resolve_focus_file)   # T-3038: re-resolve, PROJECT_ROOT just moved
++FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
+ 
+ # --- Drift-target extraction (T-1730; hoisted out of the gate by T-2880) ---
+ # Answers ONE purely syntactic question: does this command name a task?
+@@ -258,119 +240,6 @@ except:
+     # so we go straight to the task-exists check.
+ fi
+ 
+-# --- T-2987: explain WHY the advertised remedy did not apply -----------------
+-#
+-# Every block below names a bootstrap command (`fw work-on` / `context focus`)
+-# as the unblock path, and the exemption at :194 and :227 honours exactly that.
+-# But the exemption is guarded by has_bash_write_pattern, which classifies the
+-# WHOLE command line while the exemption is about ONE command in it. So a `>`
+-# anywhere on the line — on an unrelated chained command, or merely capturing
+-# the bootstrap command's own output — voids it:
+-#
+-#     fw work-on T-016                 -> allowed
+-#     fw work-on T-016 && fw doctor    -> allowed
+-#     fw work-on T-016 > out.txt 2>&1  -> BLOCKED, and the block re-advertises
+-#                                         the very command that just failed
+-#
+-# That is a loop: identical message, no signal to change SHAPE rather than
+-# target. Reported from a fresh consumer whose focus pointed at a completed
+-# T-001 (T-2987), and hit in-session before that.
+-#
+-# The guard is NOT the bug and is not relaxed here — :213-222 argues for failing
+-# toward blocking, and L-547 (T-2834) says a fast-path exemption must classify
+-# the whole command. Widening it would admit `fw work-on X > .claude/settings.json`.
+-# The bug is that six sites advertise a remedy without its precondition. This
+-# emits the precondition; permissions are unchanged.
+-_bootstrap_shape_hint() {
+-    local cmd="${1:-}"
+-    [ -n "$cmd" ] || return 0
+-    [[ "$cmd" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception)([[:space:]]|$) ]] || return 0
+-    type has_bash_write_pattern &>/dev/null || return 0
+-    has_bash_write_pattern "$cmd" || return 0
+-
+-    echo "" >&2
+-    echo "  ⚠ Your command already contains that bootstrap command — it was blocked" >&2
+-    echo "    anyway because the line also has a redirect, 'rm', 'tee', a heredoc or" >&2
+-    echo "    an in-place sed. The bootstrap exemption is refused for the whole line" >&2
+-    echo "    when any of those is present, even when it belongs to a different" >&2
+-    echo "    command on the line (or is just capturing output)." >&2
+-    echo "" >&2
+-    echo "    Run the bootstrap command BARE and alone first, then re-run the rest:" >&2
+-    echo "      $(_fw_cmd) work-on T-XXX          <- nothing else on the line" >&2
+-    echo "" >&2
+-    echo "    (Chaining itself is fine — 'fw work-on T-X && fw doctor' is allowed." >&2
+-    echo "     It is the write pattern that voids the exemption, not the ';' or '&&'.)" >&2
+-    echo "" >&2
+-    echo "    This is a message, not a permission: the redirected form stays blocked" >&2
+-    echo "    by design (T-2987, L-547)." >&2
+-}
+-
+-# Bash blocks show an empty "Attempting to modify:" — FILE_PATH is populated only
+-# for Write/Edit. That blank was load-bearing in the T-2987 loop: the message never
+-# showed WHICH command was blocked, which is the one datum that makes a stray
+-# redirect visible. Show the command for Bash, the path otherwise.
+-_blocked_subject() {
+-    if [ -n "${BASH_CMD:-}" ]; then
+-        printf 'Blocked command: %s' "$(printf '%s' "$BASH_CMD" | tr '\n' ' ' | head -c 160)"
+-        printf '\n%s' "$(_bash_gate_reason)"
+-    else
+-        printf 'Attempting to modify: %s' "${FILE_PATH:-}"
+-    fi
+-}
+-
+-# T-3096 / G-084: say which of the gate's TWO questions actually refused.
+-#
+-# The Bash arm asks (1) does this match a write pattern, and (2) is its base command on
+-# the read-only allowlist. Every block message downstream is phrased for question 1 —
+-# "Cannot modify files under a completed task", "before editing source files" — but most
+-# real blocks come from question 2. Measured in one session: `sed -n RANGE file`,
+-# `timeout 30 termlink agent inbox | head` and `./x.sh status | tail` were each told they
+-# had attempted a modification. None writes.
+-#
+-# That is not a cosmetic problem. A gate that names a cause the agent knows to be false
+-# teaches the agent that the gate's stated contract is unreliable, and the documented
+-# consequence is that the agent routes around it rather than through the sanctioned
+-# remedy (L-399 / T-1890 — a bypass contract that fails on one leg produced three weeks
+-# of silent circumvention). Naming the real reason costs two lines and keeps the gate
+-# credible on the occasions it is right.
+-#
+-# Emitted from _blocked_subject so all eight block sites inherit it with no new call
+-# site to forget — the same "consume at exactly one checkpoint" argument the SAFE_ALLOWED
+-# comment at :231 makes, for the same reason.
+-_bash_gate_reason() {
+-    [ -z "${BASH_CMD:-}" ] && return 0
+-    type has_bash_write_pattern &>/dev/null || return 0
+-
+-    if has_bash_write_pattern "$BASH_CMD"; then
+-        printf 'Why: it matches a file-write pattern (a redirect, rm, tee, sed -i, or a heredoc).'
+-        return 0
+-    fi
+-
+-    # No write pattern: the refusal came from recognition, not modification. Name the
+-    # segment that was not recognised — with a chained command that is the one datum
+-    # that turns "why is my read blocked?" into a one-second answer.
+-    local _seg _bad=""
+-    if type _fw_chain_split &>/dev/null && type _fw_single_command_is_safe &>/dev/null; then
+-        while IFS= read -r _seg; do
+-            [[ "$_seg" =~ ^[[:space:]]*$ ]] && continue
+-            if ! _fw_single_command_is_safe "$_seg"; then
+-                _bad=$(printf '%s' "$_seg" | sed 's/^[[:space:]]*//' | head -c 60)
+-                break
+-            fi
+-        done < <(_fw_chain_split "$BASH_CMD")
+-    fi
+-
+-    if [ -n "$_bad" ]; then
+-        printf 'Why: this command writes nothing the gate can detect. It was gated because\n'
+-        printf '     "%s" is not on the read-only allowlist\n' "$_bad"
+-        printf '     (agents/context/lib/safe-commands.sh), so the gate cannot prove it is a read.\n'
+-        printf '     If it genuinely only reads, that is a gap in the allowlist worth filing.'
+-    else
+-        printf 'Why: this command writes nothing the gate can detect, but it is not recognised\n'
+-        printf '     as read-only (agents/context/lib/safe-commands.sh).'
+-    fi
+-}
+-
+ # Extract file path from tool input (supports file_path and notebook_path for NotebookEdit)
+ FILE_PATH=$(echo "$INPUT" | python3 -c "
+ import sys, json
+@@ -389,45 +258,11 @@ case "$FILE_PATH" in
+     */settings.json)
+         # Only block if it's the Claude Code settings file
+         if echo "$FILE_PATH" | grep -q '\.claude/settings\.json$'; then
+-            # T-3050: name the sanctioned route. This refusal used to end at
+-            # "requires human review" and offer no mechanism, so every agent that
+-            # tripped it escalated to the operator for a JSON paste-in — for a
+-            # capability that has shipped since T-1189. A gate with no exit is a
+-            # gate people route around.
+-            # Not `local` — this case block is at script top level, not in a
+-            # function. Consumer projects have no bin/ at their root (T-1257),
+-            # and the framework repo ALSO vendors itself at .agentic-framework/,
+-            # so test for the framework repo FIRST or it advertises the consumer
+-            # path to itself. FRAMEWORK.md + bin/fw at root is the discriminator.
+-            if [ -f "$PROJECT_ROOT/FRAMEWORK.md" ] && [ -x "$PROJECT_ROOT/bin/fw" ]; then
+-                _fw="bin/fw"
+-            elif [ -x "$PROJECT_ROOT/.agentic-framework/bin/fw" ]; then
+-                _fw=".agentic-framework/bin/fw"
+-            else
+-                _fw="fw"
+-            fi
+-            echo "" >&2
+-            echo "BLOCKED: Cannot hand-edit .claude/settings.json — it registers the enforcement hooks." >&2
+-            echo "" >&2
+-            echo "Editing it directly could disable task gates, Tier 0 checks, and budget enforcement," >&2
+-            echo "and a hand-written entry is easy to get subtly wrong (bad event name, absolute path" >&2
+-            echo "that breaks on the next machine, a duplicate that runs the hook twice)." >&2
+-            echo "" >&2
+-            echo "To ADD a hook, use the governed path — it is idempotent, validates the event name," >&2
+-            echo "writes atomically, and survives regeneration by fw upgrade:" >&2
+-            echo "" >&2
+-            echo "  cd $PROJECT_ROOT && $_fw hook-enable --name <hook> --event PreToolUse --matcher 'Write|Edit'" >&2
+-            echo "  cd $PROJECT_ROOT && $_fw hook-enable --script /abs/path/to/hook.sh --event PreToolUse --matcher 'Bash'" >&2
+-            echo "" >&2
+-            echo "  --name   for framework hooks under agents/context/;  --script for project-local ones." >&2
+-            echo "  Add --dry-run first to print the resulting JSON without writing." >&2
+             echo "" >&2
+-            echo "To REMOVE or REWIRE an existing hook, stop and ask the operator. That is a" >&2
+-            echo "sovereignty decision, not a configuration change." >&2
++            echo "BLOCKED: Cannot modify .claude/settings.json — this controls enforcement hooks." >&2
+             echo "" >&2
+-            echo "Scope note: B-005 covers Write/Edit on this path only. It does not read the file's" >&2
+-            echo "content, so it cannot tell an addition from a deletion — which is why additions are" >&2
+-            echo "routed through the CLI above rather than permitted here." >&2
++            echo "Modifying this file could disable task gates, Tier 0 checks, and budget enforcement." >&2
++            echo "Changes to hook configuration require human review." >&2
+             echo "" >&2
+             echo "Policy: B-005 (Enforcement Config Protection)" >&2
+             exit 2
+@@ -450,7 +285,7 @@ esac
+ # before T-001-T-005 complete). Exempt the auto-memory directory
+ # globally, regardless of user prefix or task state.
+ case "$FILE_PATH" in
+-    */.claude/projects/*/memory/*)
++    */.claude/projects/*/memory/*|*/.gemini/antigravity-cli/brain/*)
+         exit 0
+         ;;
+ esac
+@@ -541,9 +376,8 @@ if [ -z "$CURRENT_TASK" ]; then
+     echo "To unblock:" >&2
+     echo "  1. Create a task:  $(_fw_cmd) task create --name '...' --type build --start" >&2
+     echo "  2. Set focus:      $(_fw_cmd) context focus T-XXX" >&2
+-    _bootstrap_shape_hint "${BASH_CMD:-}"
+     echo "" >&2
+-    echo "$(_blocked_subject)" >&2
++    echo "Attempting to modify: $FILE_PATH" >&2
+     echo "Policy: P-002 (Structural Enforcement Over Agent Discipline)" >&2
+     exit 2
+ fi
+@@ -574,9 +408,8 @@ if [ -n "$CURRENT_SESSION" ] && [ -n "$FOCUS_SESSION" ] && [ "$FOCUS_SESSION" !=
+     echo "" >&2
+     echo "  To start different work:" >&2
+     echo "    $(_fw_cmd) work-on 'New task name' --type build" >&2
+-    _bootstrap_shape_hint "${BASH_CMD:-}"
+     echo "" >&2
+-    echo "  $(_blocked_subject)" >&2
++    echo "  Attempting to modify: $FILE_PATH" >&2
+     echo "  Policy: T-560 (Session-Stamped Focus Enforcement)" >&2
+     echo "══════════════════════════════════════════════════════════" >&2
+     echo "" >&2
+@@ -720,9 +553,8 @@ if [ -z "$ACTIVE_FILE" ]; then
+     echo "To unblock:" >&2
+     echo "  $(_fw_cmd) work-on T-XXX   (resume an active task)" >&2
+     echo "  $(_fw_cmd) work-on 'name'  (create a new task)" >&2
+-    _bootstrap_shape_hint "${BASH_CMD:-}"
+     echo "" >&2
+-    echo "$(_blocked_subject)" >&2
++    echo "Attempting to modify: $FILE_PATH" >&2
+     echo "Policy: P-002 (Structural Enforcement Over Agent Discipline)" >&2
+     exit 2
+ fi
+@@ -741,9 +573,8 @@ case "$TASK_STATUS" in
+         echo "" >&2
+         echo "To unblock:" >&2
+         echo "  $(_fw_cmd) work-on $CURRENT_TASK   (sets status to started-work)" >&2
+-        _bootstrap_shape_hint "${BASH_CMD:-}"
+         echo "" >&2
+-        echo "$(_blocked_subject)" >&2
++        echo "Attempting to modify: $FILE_PATH" >&2
+         echo "Policy: P-002 (Task must be started before modifying files)" >&2
+         exit 2
+         ;;
+@@ -754,9 +585,8 @@ case "$TASK_STATUS" in
+         echo "To unblock:" >&2
+         echo "  $(_fw_cmd) work-on T-XXX   (resume another task)" >&2
+         echo "  $(_fw_cmd) work-on 'name'  (create a new task)" >&2
+-        _bootstrap_shape_hint "${BASH_CMD:-}"
+         echo "" >&2
+-        echo "$(_blocked_subject)" >&2
++        echo "Attempting to modify: $FILE_PATH" >&2
+         echo "Policy: P-002 (Cannot modify files under a completed task)" >&2
+         exit 2
+         ;;
+@@ -831,9 +661,8 @@ if [ ! -f "$ONBOARDING_MARKER" ]; then
+             echo "" >&2
+             echo "To skip onboarding (not recommended):" >&2
+             echo "  $(_fw_cmd) onboarding skip" >&2
+-            _bootstrap_shape_hint "${BASH_CMD:-}"
+             echo "" >&2
+-            echo "$(_blocked_subject)" >&2
++            echo "Attempting to modify: $FILE_PATH" >&2
+             echo "Policy: T-532 (Onboarding Enforcement Gate)" >&2
+             exit 2
+         fi
+@@ -904,7 +733,7 @@ if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2
+                 echo "" >&2
+                 echo "  3. Override (logged Tier 2):  FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1 <command>" >&2
+                 echo "" >&2
+-                echo "$(_blocked_subject)" >&2
++                echo "Attempting to modify: $FILE_PATH" >&2
+                 echo "Policy: T-2194 / G-067 (Inception Open Questions readiness gate)" >&2
+                 echo "See: 050-Inceptions.md §Disposition Gate, CLAUDE.md §Inception Discipline" >&2
+                 exit 2
+@@ -956,9 +785,8 @@ if [ -n "$ACTIVE_FILE" ]; then
+                 echo "  1. Edit the task file: replace [First criterion] with real ACs" >&2
+                 echo "  2. Or change to inception:" >&2
+                 echo "     $(_fw_cmd) task update $CURRENT_TASK --type inception" >&2
+-                _bootstrap_shape_hint "${BASH_CMD:-}"
+                 echo "" >&2
+-                echo "$(_blocked_subject)" >&2
++                echo "Attempting to modify: $FILE_PATH" >&2
+                 echo "Policy: G-020 (Pickup message governance bypass prevention)" >&2
+                 exit 2
+             fi
