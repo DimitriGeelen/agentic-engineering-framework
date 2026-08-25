@@ -3376,3 +3376,17 @@ decisions:
     date: 2026-08-20
     task: T-3099
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-485
+    decision: "replace the sed range with awk that anchors the heading"
+    scope: project
+    date: 2026-08-25
+    task: T-3134
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-486
+    decision: "every \"must not contain\" assertion is `[[ \"$output\" != *x* ]]`."
+    scope: project
+    date: 2026-08-25
+    task: T-3134
+    rationale: "Auto-captured from task file on completion"

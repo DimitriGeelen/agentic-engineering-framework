@@ -1,26 +1,14 @@
 ---
-id: T-3137
-name: "doctor expands CLAUDE_PROJECT_DIR only in the is_fw branch, so project-owned
-  hooks can only ever FAIL"
+id: T-3138
+name: "106 bats assertions cannot fail: bash exempts !-inverted commands from errexit"
 description: >
-  bin/fw:2469 expands the placeholder inside the is_fw branch (T-2709). bin/fw:2482's
-  os.path.exists(script_path) and the os.access on 2487 use the raw literal, so a
-  project-owned hook written as ${CLAUDE_PROJECT_DIR}/x.sh — the form fw itself writes
-  and the only form that survives a worktree — reports 'script not found' for a hook
-  that resolves and runs correctly. Fourth instance of the parity gap T-2709's own
-  comment counts three of. Invisible from inside the framework repo: all our hooks
-  route through 'fw hook' and take the is_fw branch, so live exposure here is zero
-  and the defect is consumer-only. HAZARD: the region is inside hook_result=$(python3
-  -c " at bin/fw:2397 — a DOUBLE-QUOTED shell string. Backticks in that Python source
-  are command-substituted by bash before python sees them; the reporter's re-applied
-  comment executed fw update and recursed. Any patch to this region needs a warning
-  comment. Reported by consumer 001-CashWeb (their T-111).
+  106 bats assertions cannot fail: bash exempts !-inverted commands from errexit
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [doctor, hooks, portability, consumer-report]
+tags: []
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -33,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-25T08:59:55Z
-last_update: '2026-08-25T09:15:13Z'
-date_finished:
+created: 2026-08-25T09:30:27Z
+last_update: 2026-08-25T09:30:27Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -46,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-25T09:15:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=202,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-25T09:15:13Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3137: doctor expands CLAUDE_PROJECT_DIR only in the is_fw branch, so project-owned hooks can only ever FAIL
+# T-3138: 106 bats assertions cannot fail: bash exempts !-inverted commands from errexit
 
 ## Context
 
@@ -86,8 +46,31 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] AC1 — The mechanism is pinned, not asserted. A bats fixture demonstrates
+      all three cases in one file: a non-final `! true` does NOT fail its test, a
+      final `! true` DOES, and a non-final `[[ a != a ]]` DOES. Anyone reading the
+      lint later can re-derive why it exists without trusting this task's prose.
+- [ ] AC2 — A lint enumerates every dead assertion in `tests/**/*.bats`: a line
+      whose first token is `!` and which is NOT the last statement of its `@test`
+      block. It reports file, line, and total. Final `!` assertions are counted
+      separately and NOT flagged — those fire correctly.
+- [ ] AC3 — The lint is wired into `bin/fw test lint` and fails on a non-empty
+      result, so a new dead assertion cannot be added silently. Baseline handling
+      is explicit: either the sweep in AC4 lands first (preferred), or the
+      remaining count is recorded in the lint itself as a shrinking allowance —
+      never an unbounded skip.
+- [ ] AC4 — The 106 existing dead assertions across 66 files are converted to a
+      form that fires. Report the count actually converted and, for any left
+      behind, name the file and why. A dead assertion that is dead *and*
+      would fail if revived is a second defect, not a conversion — file it.
+- [ ] AC5 — At least one converted assertion is shown to have been hiding a real
+      defect, OR it is reported that none were. This is the point of the task: the
+      question is not "are the tests tidy" but "what were these tests not telling
+      us". Measure it; do not assume the answer either way.
+- [ ] AC6 — The lint's own control fails against pre-change code. Fixtures only
+      (L-599) — no assertion pinned to a live test file, since those are exactly
+      what this task edits. Report "N of M fail against pre-change" and name
+      regression guards separately.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,7 +256,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-25T08:59:55Z — task-created [task-create-agent]
+### 2026-08-25T09:30:27Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3137-doctor-expands-claudeprojectdir-only-in-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3138-106-bats-assertions-cannot-fail-bash-exe.md
 - **Context:** Initial task creation

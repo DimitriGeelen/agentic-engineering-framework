@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3134: P-011 verification extractor matches ## Verification as a prefix, so the task template's own comment injects prose into the executed block
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-25T09:29:01Z
+# ============================================================================
+
+task_id: T-3134
+task_name: "P-011 verification extractor matches ## Verification as a prefix, so the task template's own comment injects prose into the executed block"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-25T08:55:11Z
+completed: 2026-08-25T09:28:07Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-25T11:27:57+02:00
+last_commit: 2026-08-25T11:27:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the P-011 gate could not see the commands it was supposed to run
+
+# Key outcomes
+outcomes:
+  - 'AC1 — `extract_verification_block` matches `## Verification` only as a'
+  - 'AC2 — Only the FIRST matching section is extracted. A second `## Verification`'
+  - 'AC3 — The shipped task template no longer injects. Extracting from a task'
+  - 'AC4 — Command extraction is UNCHANGED for well-formed tasks. Measured over'
+  - 'AC5 — The control fails against pre-change code. Fixtures only (L-599) —'
+  - 'AC6 — The divergence is closed, not just this instance.'
+  - 'AC7 — T-2991''s parseable-check still fires. This fix removes the *cause*; it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-25 — awk with an explicit first-range flag, not a tighter sed address'
+    chose: 'replace the sed range with awk that anchors the heading (`/^## Verification[[:space:]]*$/`) and carries a `seen` flag so only the FIRST matching section is ever extracted.'
+    rationale: 'anchoring alone fixes injection but leaves the repeating-range behaviour, which is the part that is hard to reason about and easy to reintroduce. An explicit flag makes "first block only" a stated property rather than an emergent one.'
+    alternatives_rejected: ['calling `static_scan.extract_section` from shell — correct, but it puts a python import on the hot path of a gate that must work when the python side is broken.']
+  - decision: '2026-08-25 — the control''s negative assertions are `[[ ]]`, not `! ... | grep`'
+    chose: 'every "must not contain" assertion is `[[ "$output" != *x* ]]`.'
+    rationale: 'bash exempts from errexit any command whose return value is inverted with `!`, so a non-final `! echo "$output" | grep -q x` inside a bats test can never fail it. This file''s first draft used that form, and test 3 was GREEN against the unfixed extractor while the prose it asserted absent was demonstrably in the output. Proven with a three-line bats fixture: non-final `! true` passes, final `! true` fails, non-final `[[ a != a ]]` fails.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/verification-port.sh'
+  - '.tasks/active/T-3134-p-011-verification-extractor-matches--ve.md'
+  - 'tests/unit/verification_extractor_anchoring.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-25T11:27:57'
+    action: 'T-3134: the P-011 gate could not see the commands it was supposed to run'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 32 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 32
+  commits: 1
+  files_changed: 3
+  lines_added: 571
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3134-p-011-verification-extractor-matches--ve.md
+generated_by: context-agent-hybrid
