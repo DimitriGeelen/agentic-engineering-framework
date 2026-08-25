@@ -1560,3 +1560,4 @@
 {"timestamp":"2026-08-25T11:35:01+02:00","host":"dimitrimintdev","pid":2445164,"etime_sec":133711,"rss_kb":374996,"vsz_kb":2220380,"pcpu":1.3,"state":"up"}
 {"timestamp":"2026-08-25T11:40:01+02:00","host":"dimitrimintdev","pid":2445164,"etime_sec":134010,"rss_kb":375008,"vsz_kb":2220380,"pcpu":1.3,"state":"up"}
 {"timestamp":"2026-08-25T11:45:01+02:00","host":"dimitrimintdev","pid":3718781,"etime_sec":122,"rss_kb":321100,"vsz_kb":542548,"pcpu":20.3,"state":"up"}
+{"timestamp":"2026-08-25T11:50:01+02:00","host":"dimitrimintdev","pid":3718781,"etime_sec":422,"rss_kb":321424,"vsz_kb":542548,"pcpu":11.7,"state":"up"}

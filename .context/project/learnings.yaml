@@ -4750,3 +4750,21 @@ X'` returning empty group."
   task: T-3130
   date: 2026-08-25
   context: Added via context agent
+- id: L-636
+  learning: "Bash exempts from errexit any command whose return value is inverted with '!'. A non-final `! cmd` inside a bats test therefore CANNOT fail it — bats reports the status of the last command only. Absence assertions written that way are dead: they read identically to assertions that looked and were satisfied. Use [[ \"$out\" != *x* ]] instead, which puts the negation inside a single command so errexit applies. Measured: 106 dead assertions across 66 of 664 bats files in this repo; 150 more are final-position and fire correctly. Caught when a T-3134 control was green against the defect it was written to detect."
+  source: P-001
+  task: T-3138
+  date: 2026-08-25
+  context: Added via context agent
+- id: L-637
+  learning: "Do not strip HTML comments with re.sub(r'<!--.*?-->', '', body, flags=DOTALL) on task bodies. Task files QUOTE '<!--' inside backticks when discussing the template, so openers outnumber closers (T-1545: four openers, two closers) and the naive form pairs the wrong two, eating kilobytes of real content. The discriminator is POSITION, not balance: '<!--' opens a comment only if it starts its line or closes on the same line. Also: a removed span containing a newline must leave one behind, or preceding text is joined onto the following line and a heading that is no longer at column 0 becomes invisible to every anchor."
+  source: P-001
+  task: T-3139
+  date: 2026-08-25
+  context: Added via context agent
+- id: L-638
+  learning: "Consolidation buys consistency and SPENDS the cross-check. count_unchecked_human_acs was centralised (T-2075) so /approvals and fw review-queue could not drift — and it worked: both surfaces agreed, and on four task files both were wrong together. The disagreement that would have been the visible symptom was removed by the very fix that made them consistent. Price this before the next shared predicate: when a single predicate serves two surfaces, add a census against an independently-implemented reference, because surface-vs-surface comparison no longer detects anything. Credit: 832-Workflow-designer."
+  source: P-001
+  task: T-3139
+  date: 2026-08-25
+  context: Added via context agent
