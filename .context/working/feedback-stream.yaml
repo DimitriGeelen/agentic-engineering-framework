@@ -36843,3 +36843,57 @@ scan_id: R-7a4fd8da
 task_id: T-3133
 payload:
   task_file: .tasks/active/T-3133-concurrent-antigravity-work-reverted-che.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T09:28:50Z'
+scan_id: R-2cf9fa41
+task_id: T-3134
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T09:28:50Z'
+scan_id: R-2cf9fa41
+task_id: T-3134
+payload:
+  task_file: .tasks/active/T-3134-p-011-verification-extractor-matches--ve.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T09:29:47Z'
+scan_id: R-11ee8c70
+task_id: T-3130
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T09:29:47Z'
+scan_id: R-11ee8c70
+task_id: T-3130
+payload:
+  task_file: .tasks/active/T-3130-episodic-mining-runs-before-the-completi.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T09:47:44Z'
+scan_id: R-cd65ed9a
+task_id: T-3139
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T09:47:44Z'
+scan_id: R-cd65ed9a
+task_id: T-3139
+payload:
+  task_file: .tasks/active/T-3139-review-queue-predicate-cannot-see-3-unch.md

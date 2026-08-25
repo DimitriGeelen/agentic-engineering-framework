@@ -78,10 +78,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 32
-  commits: 1
-  files_changed: 3
-  lines_added: 571
-  lines_removed: 2
+  commits: 2
+  files_changed: 8
+  lines_added: 868
+  lines_removed: 9
+  footprint_refreshed_at: '2026-08-25T09:32:30Z'
+  footprint_refreshed_by_commit: 94682deb7
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3134-p-011-verification-extractor-matches--ve.md

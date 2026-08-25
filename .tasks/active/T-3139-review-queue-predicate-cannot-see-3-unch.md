@@ -4,12 +4,12 @@ name: "review queue predicate cannot see 3 unchecked Human ACs that exist"
 description: >
   review queue predicate cannot see 3 unchecked Human ACs that exist
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T09:37:37Z
-last_update: '2026-08-25T09:45:13Z'
-date_finished:
+last_update: 2026-08-25T09:47:35Z
+date_finished: 2026-08-25T09:47:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -118,6 +118,25 @@ the page was empty). Independently reproduced here rather than taken on trust.
       the census notices tomorrow's.
 
 ### Human
+
+- [ ] [REVIEW] Three decisions you have never been shown are now on /approvals
+
+  **Steps:**
+  1. Open http://192.168.10.107:3000/approvals
+  2. Find T-1808, T-2200 and T-2202. All three were filed months ago with an
+     unchecked `[REVIEW]` AC; the queue reported zero for all three, so they
+     have never appeared here before today.
+  3. Read each one's Human AC and decide. They are ordinary review decisions —
+     nothing about this task needs your approval, the three tasks do.
+
+  **Expected:** the three appear, render like every other queue entry (no broken
+  card, no orphan markup from the wider Human-AC block they sit in), and the
+  page's count has gone up by three rather than by some larger number.
+
+  **If not:** if the page looks wrong, note which card and reopen this task. If
+  the count jumped by much more than three, that is the failure mode AC5
+  guarded against — say so and the predicate is too permissive, not too strict.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -226,32 +245,32 @@ one, which is the outcome a census that nobody has actually run never produces.
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** The fix is measured rather than argued. Across all 3126 task
+files the predicate now counts three more active tasks and one more completed
+one, and counts two fewer in completed — and every one of those six is
+individually accounted for in the RCA. Nothing else in the corpus moves. Both
+surfaces were checked directly (`fw review-queue` and a `curl` of `/approvals`
+after a Watchtower restart), not inferred from the shared predicate.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+The residual risk is over-permissiveness — a predicate that now sees too much
+would flood the queue. That is the one thing the corpus sweep is positioned to
+detect, and it reports +4 across 3126 files.
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
+What needs your eyes is not the code but its output: three real decisions have
+been waiting, unseen, for months.
 
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Evidence:**
+- 14-test control; 8 fail against pre-change, 6 pass on both sides by construction.
+- Corpus sweep: active +3/−0, completed +1/−2, every difference explained.
+- `fw review-queue` and `/approvals` both list T-2200 and T-2202 (verification
+  lines 6 and 7 assert this mechanically, on both surfaces).
+- The census test disagreed with the predicate on its first run and the
+  reference implementation was the wrong one — the control was exercised, not
+  just written.
+- Independently reproduced from 832-Workflow-designer's report rather than
+  accepted on trust; their tree, ours, and the failure mode all match.
 
 ## Decisions
 
@@ -301,3 +320,15 @@ one, which is the outcome a census that nobody has actually run never produces.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3139-review-queue-predicate-cannot-see-3-unch.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cd65ed9a
+- **Timestamp:** 2026-08-25T09:47:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-25T09:47:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

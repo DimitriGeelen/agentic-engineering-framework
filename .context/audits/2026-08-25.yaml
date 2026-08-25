@@ -1,5 +1,5 @@
-# Audit Results - 2026-08-25-1013
-timestamp: 2026-08-25T08:13:13Z
+# Audit Results - 2026-08-25-1132
+timestamp: 2026-08-25T09:32:42Z
 sections: "structure"
 summary:
   pass: 30
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3120 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3125 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 29 project YAML file(s)"
   - level: PASS
@@ -37,24 +37,24 @@ findings:
   - level: INFO
     check: "free driver F2: retire_when text present, no recognition heuristic — manual review"
   - level: PASS
-    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 394 source file(s) under lib/ web/ agents/ bin/ tools/"
+    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 395 source file(s) under lib/ web/ agents/ bin/ tools/"
   - level: PASS
-    check: "No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 136 Python file(s) under web/ + lib/"
+    check: "No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 137 Python file(s) under web/ + lib/"
   - level: PASS
-    check: "No stale-slice-references (L-417) — examined 265 file(s) under web/templates web/blueprints lib"
+    check: "No stale-slice-references (L-417) — examined 266 file(s) under web/templates web/blueprints lib"
   - level: WARN
     check: "Found 181 GO-scope-not-propagated inception(s) of 350 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
     mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
   - level: PASS
-    check: "Fabric: 1108 registered card(s)"
+    check: "Fabric: 1110 registered card(s)"
   - level: WARN
-    check: "Fabric: 26/1021 cards have no edges"
+    check: "Fabric: 28/1023 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 11 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 733 card(s) point at files no watch pattern covers"
+    check: "Fabric: 734 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"

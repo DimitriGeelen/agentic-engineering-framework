@@ -7337,3 +7337,43 @@ FW_SWITCH_FOCUS=1 git commit -m "T-3130: real ACs — the control must measure a
 
 The surviving Human AC came from the REJECTED first draft: it asked the operator
 to run'
+- timestamp: '2026-08-25T08:17:57Z'
+  task: 'T-3127'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3133'
+  command: 'git restore --staged .context/working/.auto-restart-pending 2>/dev/null; FW_SWITCH_FOCUS=1 git commit -q -m "T-3133: session state — G-085, OBS-343/344, episodic, peer post offset 395
+
+Co-Authored-B'
+- timestamp: '2026-08-25T09:31:32Z'
+  task: 'T-3138'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3130'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .tasks/active/T-3130-episodic-mining-runs-before-the-completi.md .tasks/completed/T-3134-*.md .tasks/active/T-3134-*.md .context/epi'
+- timestamp: '2026-08-25T09:31:57Z'
+  task: 'T-3138'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3130'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add -A .tasks/ .context/episodic/ .context/project/ 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3130: partial-complete — Human A'
+- timestamp: '2026-08-25T09:32:13Z'
+  task: 'T-3138'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3134'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git status --short .agentic-framework/ | head
+FW_SWITCH_FOCUS=1 git add .agentic-framework/ VERSION
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3134: refresh vendor'
+- timestamp: '2026-08-25T09:48:30Z'
+  task: 'T-3138'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3139'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add -A .tasks/ .context/ 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3139: partial-complete — three unseen decisions handed to t'

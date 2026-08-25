@@ -3390,3 +3390,17 @@ decisions:
     date: 2026-08-25
     task: T-3134
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-487
+    decision: "drop the AC-block scoping entirely; find every `^### Human` in the"
+    scope: project
+    date: 2026-08-25
+    task: T-3139
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-488
+    decision: "`<!--` opens a comment only if it starts its line, or closes on the"
+    scope: project
+    date: 2026-08-25
+    task: T-3139
+    rationale: "Auto-captured from task file on completion"
