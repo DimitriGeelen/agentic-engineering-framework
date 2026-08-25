@@ -23,7 +23,9 @@ _upstream_resolve_repo() {
     fi
 
     # 2. Fallback: detect from framework repo's git remotes (try origin, then any github.com remote)
-    if [ -z "$repo" ] && [ -d "${FRAMEWORK_ROOT:-.}/.git" ]; then
+    # T-3129: `-e` — remotes are shared with the main checkout and readable
+    # from a linked worktree, whose `.git` is a file.
+    if [ -z "$repo" ] && [ -e "${FRAMEWORK_ROOT:-.}/.git" ]; then
         local remote_url
         # Try origin first
         remote_url=$(git -C "$FRAMEWORK_ROOT" remote get-url origin 2>/dev/null) || true

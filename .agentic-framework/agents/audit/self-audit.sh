@@ -343,9 +343,22 @@ fi
 echo ""
 echo "=== LAYER 4: GIT HOOKS ==="
 
-HOOKS_DIR="$PROJECT_ROOT/.git/hooks"
+# T-3129: `$PROJECT_ROOT/.git/hooks` does not exist in a linked git worktree —
+# `.git` is a FILE there and the hooks live in the shared common dir. The old
+# `[ -d "$PROJECT_ROOT/.git" ]` gate therefore reported "Not a git repository"
+# for a checkout that is a git repository AND has the hooks installed: a guard
+# that could not read its input emitting the same line as a guard that looked
+# and found nothing (L-575). `rev-parse --git-path hooks` answers the question
+# this block actually depends on, in both shapes. Same resolution as
+# agents/git/lib/common.sh:resolve_git_hooks_dir, which install-hooks already
+# uses — only the audit's gate was blind.
+HOOKS_DIR=$(git -C "$PROJECT_ROOT" rev-parse --git-path hooks 2>/dev/null || true)
+case "$HOOKS_DIR" in
+    ""|/*) : ;;
+    *) HOOKS_DIR="$PROJECT_ROOT/$HOOKS_DIR" ;;
+esac
 
-if [ ! -d "$PROJECT_ROOT/.git" ]; then
+if ! git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     warn "Not a git repository — skipping git hook checks"
 else
     # commit-msg

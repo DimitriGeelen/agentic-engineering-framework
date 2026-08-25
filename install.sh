@@ -57,7 +57,10 @@ parse_args() {
                     fatal "--local requires a path argument"
                 fi
                 LOCAL_REPO="$2"
-                if [[ ! -d "$LOCAL_REPO/.git" ]]; then
+                # T-3129: `-e`, not `-d`. In a linked git worktree `.git` is a
+                # regular FILE holding a `gitdir:` pointer, so a `-d` test
+                # rejects a perfectly clonable checkout.
+                if [[ ! -e "$LOCAL_REPO/.git" ]]; then
                     fatal "--local path is not a git repository: $LOCAL_REPO"
                 fi
                 shift 2

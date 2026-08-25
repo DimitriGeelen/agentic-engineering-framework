@@ -122,16 +122,55 @@ guard passing.
 
 ### Agent
 
-- [ ] AC1 — The guard tests what the code actually depends on. `[ -d "$PROJECT_ROOT/.git" ]` is replaced by a test that is true in a linked worktree AND in a normal checkout (`git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree` preferred over `[ -e ]`, because it tests reachability rather than the existence of a path).
-- [ ] AC2 — A control generates an episodic FROM A LINKED WORKTREE and asserts `commits > 0` for a task that has commits. This control MUST fail against pre-change code. Report "N of M fail against pre-change code"; a fixture that passes both before and after guards nothing.
-- [ ] AC3 — When mining cannot run, the numeric fields are absent or null in the emitted YAML — never `0`. A reader (human or code) can distinguish "not measured" from "measured, none". This is a separate assertion from AC1 and must have its own test: force the mining block to be unreachable and assert the fields are not `0`.
-- [ ] AC4 — Every sibling `[ -d "…/.git" ]` test in the repo is enumerated, and each is either fixed or explicitly recorded as correct-as-written with a reason. The idiom repeats; a point fix on one line leaves the class open.
-- [ ] AC5 — The control lives in its own fixture tree, not pinned to the live corpus or to any currently-failing task (L-599). It must still pass after the 577 are backfilled.
+- [x] AC1 — The guard tests what the code actually depends on. `[ -d "$PROJECT_ROOT/.git" ]` is replaced by a test that is true in a linked worktree AND in a normal checkout (`git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree` preferred over `[ -e ]`, because it tests reachability rather than the existence of a path).
+- [x] AC2 — A control generates an episodic FROM A LINKED WORKTREE and asserts `commits > 0` for a task that has commits. This control MUST fail against pre-change code. Report "N of M fail against pre-change code"; a fixture that passes both before and after guards nothing.
+- [x] AC3 — When mining cannot run, the numeric fields are absent or null in the emitted YAML — never `0`. A reader (human or code) can distinguish "not measured" from "measured, none". This is a separate assertion from AC1 and must have its own test: force the mining block to be unreachable and assert the fields are not `0`.
+- [x] AC4 — Every sibling `[ -d "…/.git" ]` test in the repo is enumerated, and each is either fixed or explicitly recorded as correct-as-written with a reason. The idiom repeats; a point fix on one line leaves the class open.
+- [x] AC5 — The control lives in its own fixture tree, not pinned to the live corpus or to any currently-failing task (L-599). It must still pass after the 577 are backfilled.
 - [ ] AC6 — `bin/fw test unit` shows no NEW failures attributable to this change; any pre-existing RED is named explicitly rather than absorbed.
 
 ### Human
 
 - [ ] [REVIEW] Backfill decision: the 577 false zeros are regenerable (the commits never went anywhere) but regenerating against a definition that is about to change again for the ordering fix means doing it twice. **Steps:** read the Recommendation block below, then decide backfill-now vs backfill-after-ordering-fix. **Expected:** a one-line decision recorded on this task. **If not:** the corpus keeps understating itself and a zero keeps looking like an answer.
+
+## Recommendation
+
+**Recommendation:** GO — backfill AFTER T-3129 lands, BEFORE T-3130.
+
+**Rationale.** 832-Workflow-designer advised the opposite ("if the generator is
+going to change, backfilling first means doing it twice against a moving
+definition"), and that is sound reasoning about a moving *schema*. It does not
+apply to the *commit mining*, and the distinction is what settles the call:
+
+The ordering bug (T-3130) corrupts an episodic only at the instant it is
+generated — mining ran before the completion commit existed. **Regenerating an
+old episodic today mines a history that has long since been complete.** The
+commits are all there; my 577 measurement is itself proof, because it found them
+with the generator's own query. So a backfill run today is not exposed to T-3130
+at all, and T-3130's fix changes WHEN mining runs, not WHAT it records.
+
+What genuinely would invalidate a backfill is a change to the emitted *shape* —
+and that is T-3129's AC3 (absent/null rather than 0), which lands in this task.
+So the schema is settled by the thing we are shipping now, and waiting for T-3130
+buys nothing while leaving 577 records understating themselves for however long
+the ordering fix takes.
+
+**Evidence:**
+- 577 of 2736 episodics carry a false `commits: 0`; all 577 are recoverable by
+  the generator's own `git log --all --grep` today (that is how they were counted).
+- 403 of the 577 have exactly one commit, 509 have two or fewer — the ordering
+  signature, i.e. the majority are T-3130-caused and *still* regenerable now.
+- This checkout's `.git` is a directory and no worktrees are currently
+  registered, so the guard bug is not what produced most of these — which is
+  precisely why fixing the guard will barely move the number, and why the
+  backfill is the step that actually repairs the corpus.
+- Recovery is one-directional and lossless: the failure can only understate, so
+  a regenerated value is never worse than the stored one.
+
+**What I am NOT recommending:** running the backfill under agent authority. It
+rewrites 577 files in episodic memory — one of the three memory types — and the
+operator should say go before that happens, which is why this is a Human AC and
+not an Agent AC.
 
 ## Verification
 
@@ -140,5 +179,62 @@ grep -q 'rev-parse --is-inside-work-tree' agents/context/lib/episodic.sh
 ! grep -qE '\[ -d "\$PROJECT_ROOT/\.git" \]' agents/context/lib/episodic.sh
 
 ## Decisions
+
+**AC4 — every `[ -d "…/.git" ]` site in the repo, with a verdict for each.**
+
+Enumerated with `grep -rn '\-d .*\.git"' --include='*.sh' .` (excluding the
+vendored `.agentic-framework/` mirror, which is regenerated by `fw vendor self`,
+and `tests/`).
+
+FIXED — 13 sites across 13 files. Two different questions were being asked under
+one idiom, and they take two different answers:
+
+- *"Can git answer here?"* → `git -C "$DIR" rev-parse --is-inside-work-tree`.
+  Used in `agents/context/lib/episodic.sh` (the origin site). This is the correct
+  test wherever the code goes on to RUN git commands, because it asks the
+  question those commands actually depend on rather than inferring it from the
+  shape of a path.
+- *"Does a `.git` exist at this path?"* → `[ -e "$DIR/.git" ]`. Used in
+  `agents/audit/self-audit.sh`, `agents/git/lib/large-file-scan.sh`,
+  `agents/git/lib/secret-scan.sh`, `agents/termlink/termlink.sh`, `install.sh`,
+  `lib/init.sh`, `lib/setup.sh`, `lib/update.sh`, `lib/upgrade.sh`,
+  `lib/upstream.sh`, `lib/url-credentials.sh`, `lib/validate-init.sh`. These are
+  repo-detection predicates; `-e` is sufficient and is worktree-correct because a
+  linked worktree's `.git` exists as a file.
+
+CORRECT AS WRITTEN — 2 sites, deliberately left alone:
+
+- `agents/audit/self-audit.sh:348` — not code. It is a comment that quotes the
+  old `[ -d "$PROJECT_ROOT/.git" ]` gate while explaining the bug it caused.
+  Rewriting it would destroy the explanation.
+- `lib/update.sh:80` — `[ ! -d "$vendored_dir/.git" ]`. This asks a genuinely
+  different question: *"is the vendored framework copy a clone rather than a
+  vendored tree?"*, i.e. it is testing for **residue**, not for reachability. A
+  vendored directory is produced by file copy and is never a linked worktree, so
+  the worktree failure mode cannot arise here. `-d` is the right test for
+  "a `.git` DIRECTORY is sitting in the vendored path". Noted rather than
+  changed, per this AC's requirement that skipped sites be recorded with a reason.
+
+**Mutation check (run by the orchestrator, not reported by the worker).**
+5 of 7 controls fail against pre-change code (tests 1, 2, 3, 5, 6). The two that
+pass on both sides are regression guards and are supposed to: test 4 asserts an
+ordinary checkout still mines after the guard change, and test 7 asserts the
+emitted YAML stays parseable in the skipped case. Counting them as mutation
+coverage would overstate the suite — 5 controls detect the defect, 2 protect
+against the fix breaking something else.
+
+**AC3 went further than specified.** The task asked for absent/null instead of
+`0`. The implementation also emits an explicit `git_mining: ok|skipped` field, so
+the record states *why* the counters are null rather than leaving a reader to
+infer it from their absence. Kept — it converts an inference into a statement,
+which is the whole point of the AC.
+
+**The worker did not finish.** It was killed by the dispatch watchdog at its 600s
+timeout while running `bin/fw test unit` for AC6 — correctly; the watchdog wrote
+`TIMEOUT` to its stderr log. The 600s budget was the orchestrator's error, not
+the worker's: AC6 requires the full unit suite, which alone exceeds that. Source
+changes, the test file and `fw vendor self` had all landed on disk before the
+kill; the AC4 decisions above, AC ticking, verification and the commit were
+completed by the orchestrator.
 
 ## Updates

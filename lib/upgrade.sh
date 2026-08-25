@@ -1503,7 +1503,9 @@ CRONREGEOF
     # ── 4. Git hooks ──
     echo -e "${YELLOW}[4/10] Git hooks${NC}"
 
-    if [ -d "$target_dir/.git" ]; then
+    # T-3129: `-e` — see lib/setup.sh; install-hooks itself is already
+    # worktree-correct, this gate was the blind spot.
+    if [ -e "$target_dir/.git" ]; then
         if [ "$dry_run" = true ]; then
             echo -e "  ${CYAN}WOULD REINSTALL${NC}  Git hooks"
             changes=$((changes + 1))

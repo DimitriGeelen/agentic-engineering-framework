@@ -54,7 +54,10 @@ fw_preferred_upstream_url() {
     local remotes=("$@")
     [ "${#remotes[@]}" -eq 0 ] && remotes=(github origin)
 
-    [ -d "$repo_dir/.git" ] || return 0
+    # T-3129: `-e`, not `-d`. `git remote get-url` resolves through a linked
+    # worktree's `.git` file; the old test returned empty there, and an empty
+    # upstream URL is indistinguishable from "no remote configured".
+    [ -e "$repo_dir/.git" ] || return 0
 
     local r url=""
     for r in "${remotes[@]}"; do

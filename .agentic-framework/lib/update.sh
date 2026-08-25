@@ -280,7 +280,8 @@ _do_rollback() {
     fi
 
     # Git-based rollback (legacy)
-    if [ -d "$FRAMEWORK_ROOT/.git" ]; then
+    # T-3129: `-e` — `git config --get` works from a linked worktree.
+    if [ -e "$FRAMEWORK_ROOT/.git" ]; then
         local prev_hash
         prev_hash=$(git -C "$FRAMEWORK_ROOT" config --get fw.previousVersion 2>/dev/null || true)
 

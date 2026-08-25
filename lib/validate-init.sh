@@ -52,7 +52,10 @@ do_validate_init() {
     provider="${provider:-generic}"
 
     local is_git=false
-    [ -d "$target_dir/.git" ] && is_git=true
+    # T-3129: `-e` — a worktree target is a git project. With `-d` the
+    # git-dependent checks were reported as skipped, which reads identically to
+    # "not applicable" (L-575).
+    [ -e "$target_dir/.git" ] && is_git=true
 
     local has_python=false
     command -v python3 >/dev/null 2>&1 && has_python=true

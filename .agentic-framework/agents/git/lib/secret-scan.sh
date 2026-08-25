@@ -30,7 +30,9 @@ _secret_scan_project_root() {
     # Else walk up from cwd looking for a .git or FRAMEWORK.md / .framework.yaml
     local dir="$PWD"
     while [ "$dir" != "/" ]; do
-        if [ -d "$dir/.git" ] || [ -f "$dir/FRAMEWORK.md" ] || [ -f "$dir/.framework.yaml" ]; then
+        # T-3129: `-e`, not `-d` — a linked worktree's `.git` is a file. See
+        # the sibling comment in large-file-scan.sh.
+        if [ -e "$dir/.git" ] || [ -f "$dir/FRAMEWORK.md" ] || [ -f "$dir/.framework.yaml" ]; then
             echo "$dir"
             return
         fi

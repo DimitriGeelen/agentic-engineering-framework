@@ -369,7 +369,10 @@ setup_step_enforcement() {
     echo "enforcement_level: $level" >> "$fw_yaml"
 
     # Install git hooks based on level
-    if [ -d "$dir/.git" ] && [ "$level" != "advisory" ]; then
+    # T-3129: `-e` — install-hooks already resolves the hooks dir via
+    # `rev-parse --git-path hooks` (worktree-correct); only this gate was
+    # blind, so enforcement was silently skipped on worktree checkouts.
+    if [ -e "$dir/.git" ] && [ "$level" != "advisory" ]; then
         PROJECT_ROOT="$dir" "$FRAMEWORK_ROOT/agents/git/git.sh" install-hooks 2>/dev/null || true
     fi
 

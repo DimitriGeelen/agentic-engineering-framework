@@ -1017,7 +1017,9 @@ cmd_update() {
     local quiet=false
     [ "${1:-}" = "--quiet" ] && quiet=true
 
-    if [ ! -d "$repo_dir/.git" ]; then
+    # T-3129: `-e` — a TermLink checkout that happens to be a linked worktree
+    # has a `.git` file, and the `git fetch` below works fine from one.
+    if [ ! -e "$repo_dir/.git" ]; then
         $quiet && exit 1
         die "TermLink repo not found at $repo_dir\n  Set TERMLINK_REPO or clone: git clone https://onedev.docker.ring20.geelenandcompany.com/termlink $repo_dir"
     fi

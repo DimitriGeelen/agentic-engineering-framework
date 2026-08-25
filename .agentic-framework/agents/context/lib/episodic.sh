@@ -162,7 +162,24 @@ do_generate_episodic() {
     local lines_removed=0
     local files_changed_count=0
 
-    if command -v git >/dev/null 2>&1 && [ -d "$PROJECT_ROOT/.git" ]; then
+    # T-3129 (AC3): distinguish "could not measure" from "measured, found none".
+    # The four counters above are INITIALISED to 0. If the mining block below is
+    # skipped, those zeros are not results — they are the absence of a result. The
+    # emitter keys on this flag and writes `null` rather than `0` in that case, so
+    # a reader (human or code) can tell the two apart. Sibling of L-575.
+    local git_mining_ran=false
+
+    # T-3129 (AC1): test REACHABILITY, not the shape of a path. In a linked git
+    # worktree `$PROJECT_ROOT/.git` is a regular FILE holding a `gitdir:` pointer,
+    # so the old `[ -d ... ]` was false and this entire block — every mine_git_*
+    # call plus the --numstat metrics — was skipped, even though the very next
+    # line's `git -C "$PROJECT_ROOT" log` works perfectly from inside a worktree.
+    # `fw worktree create` is the framework's own sanctioned path for parallel
+    # work, so the tasks most likely to record a zero footprint were the ones the
+    # framework itself routed into isolation. `rev-parse --is-inside-work-tree`
+    # asks the question the code below actually depends on: can git answer here?
+    if command -v git >/dev/null 2>&1 && git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        git_mining_ran=true
         git_summary=$(mine_git_summary "$task_id")
         git_challenges=$(mine_git_challenges "$task_id")
         git_artifacts=$(mine_git_artifacts "$task_id")
@@ -392,7 +409,28 @@ HEREDOC
         echo "  - description: \"[TODO: What worked well?]\"" >> "$episodic_file"
         echo "    why: \"[TODO: Why did it work?]\"" >> "$episodic_file"
     else
-        echo "  # Completed successfully in $commit_count commit(s), $wall_minutes min" >> "$episodic_file"
+        if [ "$git_mining_ran" = true ]; then
+            echo "  # Completed successfully in $commit_count commit(s), $wall_minutes min" >> "$episodic_file"
+        else
+            echo "  # Completed successfully in $wall_minutes min (commit count not measured)" >> "$episodic_file"
+        fi
+    fi
+
+    # T-3129 (AC3): a skipped measurement must not emit its initialised value as
+    # a result. `commits: 0` reads as "measured, answer none"; `commits: null`
+    # reads as "not measured". Only the git-derived counters are affected —
+    # wall_clock_minutes comes from the task frontmatter and is always measured.
+    local m_commits="$commit_count"
+    local m_files_changed="$files_changed_count"
+    local m_lines_added="$lines_added"
+    local m_lines_removed="$lines_removed"
+    local git_mining_status=ok
+    if [ "$git_mining_ran" != true ]; then
+        git_mining_status=skipped
+        m_commits=null
+        m_files_changed=null
+        m_lines_added=null
+        m_lines_removed=null
     fi
 
     # Static sections
@@ -409,11 +447,15 @@ tags: [$tags]
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: $git_mining_status
   wall_clock_minutes: $wall_minutes
-  commits: $commit_count
-  files_changed: $files_changed_count
-  lines_added: $lines_added
-  lines_removed: $lines_removed
+  commits: $m_commits
+  files_changed: $m_files_changed
+  lines_added: $m_lines_added
+  lines_removed: $m_lines_removed
 
 # Metadata
 source_file: $task_file
@@ -465,8 +507,13 @@ HEREDOC
     echo "  Task: $task_name"
     echo "  Duration: $duration_days days ($wall_minutes min)"
     echo "  Updates: $update_count"
-    echo "  Commits: $commit_count"
-    echo "  Lines: +$lines_added -$lines_removed across $files_changed_count files"
+    if [ "$git_mining_ran" = true ]; then
+        echo "  Commits: $commit_count"
+        echo "  Lines: +$lines_added -$lines_removed across $files_changed_count files"
+    else
+        # T-3129: do not print the initialised zeros as if they were counted.
+        echo "  Commits: not measured (git unreachable from $PROJECT_ROOT)"
+    fi
     [ -n "$outcomes" ] && echo "  Outcomes: $(echo "$outcomes" | wc -l | tr -d ' ') AC checked"
     [ -n "$git_challenges" ] && echo "  Challenges: $(echo "$git_challenges" | wc -l | tr -d ' ') detected from git"
     [ -n "$git_artifacts" ] && echo "  Artifacts: $(echo "$git_artifacts" | wc -l | tr -d ' ') files tracked"

@@ -27,7 +27,10 @@ _lf_project_root() {
     [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT" ] && { echo "$PROJECT_ROOT"; return; }
     local dir="$PWD"
     while [ "$dir" != "/" ]; do
-        if [ -d "$dir/.git" ] || [ -f "$dir/FRAMEWORK.md" ] || [ -f "$dir/.framework.yaml" ]; then
+        # T-3129: `-e` covers both a `.git` directory and the `.git` FILE a
+        # linked worktree carries. With `-d` the walk-up sailed past a worktree
+        # root and resolved the scan against the wrong tree.
+        if [ -e "$dir/.git" ] || [ -f "$dir/FRAMEWORK.md" ] || [ -f "$dir/.framework.yaml" ]; then
             echo "$dir"
             return
         fi

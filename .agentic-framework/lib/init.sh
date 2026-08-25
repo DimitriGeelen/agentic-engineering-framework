@@ -351,7 +351,9 @@ WGIT
     # Auto-detect upstream repo from framework's git remotes
     # T-575: Accept any git remote, not just GitHub
     local upstream_repo=""
-    if [ -d "$FRAMEWORK_ROOT/.git" ]; then
+    # T-3129: `-e` — a linked worktree's `.git` is a file, and its remotes
+    # resolve normally.
+    if [ -e "$FRAMEWORK_ROOT/.git" ]; then
         local remote_url
         remote_url=$(git -C "$FRAMEWORK_ROOT" remote get-url origin 2>/dev/null) || true
         # If no origin, try first available push remote
