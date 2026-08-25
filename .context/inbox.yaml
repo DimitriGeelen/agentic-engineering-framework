@@ -4074,3 +4074,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-346
+  text: "Cross-project task IDs in commit prose trigger local episodic re-mining. agents/git/lib/hooks.sh:676 refreshes .context/episodic/T-NNNN.yaml for EVERY T-NNNN matched anywhere in the commit message, including prose references to another project's tasks. Observed on commit 5cdb36e3a, which named the peer's T-037 and re-mined our own T-037 (fw doctor health check). No corruption occurred: mine() greps --grep='T-037:' so it recomputes from colon-prefixed commits only, and our T-037's footprint was an absent measurement it left alone. The forward risk is real though: the T-3145 ingestion initiative names peer task IDs throughout, and a commit written 'T-037: ...' for the PEER's task inside this repo would silently join our T-037's footprint. Same low-ID cross-project collision class as the port-3000 false green (T-1376)."
+  captured: 2026-08-25T22:06:09Z
+  context_task: T-3145
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-347
+  text: "An autonomous sweep mutated a LIVE task mid-work. T-3146 was created at 22:07:26 and set started-work/horizon:now by this session; by 22:12:28 its frontmatter read status: issues, horizon: later, tags: [refused-for-this-dispatch] — none of which this session wrote. The tag string appears in NO source file in the repo (grep -rl over lib/ agents/ bin/ tools/ policy/ returns only the task file itself), so it was authored as free text by an LLM worker, not emitted by framework code. Two dispatch envelopes for T-3146 exist in .context/dispatches.jsonl (0f3860cd, af529fe5) at 22:07:49 and 22:08:07, both origin: unknown. Attribution NOT established: envelopes also appear for T-3145 at the moment 'fw work-on' ran, so they may be telemetry rather than workers, and no bvp cost_estimate_proposed was written to T-3146 which weakens the bvp-estimator-sweep-15m hypothesis. What IS established: something outside this session rewrote status, horizon and tags on a task under active edit, and the framework surfaced no notice. Sovereignty concern regardless of which sweep did it — status/horizon are the operator's and the owning session's scheduling fields."
+  captured: 2026-08-25T22:13:28Z
+  context_task: T-3146
+  tags: []
+  status: pending
+  promoted_to: null

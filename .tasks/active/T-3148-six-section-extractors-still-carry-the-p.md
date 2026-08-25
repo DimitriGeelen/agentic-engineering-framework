@@ -1,15 +1,14 @@
 ---
-id: T-3146
-name: "Triage 832 report: P-011 verification extractor still feeds task prose to a
-  shell"
+id: T-3148
+name: "Six section extractors still carry the pre-T-3134 sed-range shape; four feed gates"
 description: >
-  Triage 832 report: P-011 verification extractor still feeds task prose to a shell
+  T-3134 anchored the extractor for '## Verification' only. Six other sites still use sed -n '/^## X/,/^## /p' | sed '$d', which carries all three defects 832 reported as D1/D2/D3. Four are gate-bearing: update-task.sh:115 and :1476 (P-010 AC gate), lib/inception.sh:552 (inception-decide AC preflight), agents/context/check-active-task.sh:925 (G-020 build-readiness, with an even looser /^## [^A]/ terminator). Two are cosmetic (update-task.sh:207, lib/inception.sh:566 — a drift hint only). Measured corpus exposure over 3133 task files: the dangerous D3 shape (a non-exact prefix heading BEFORE the real one, which skips the gate silently) occurs 0 times for Acceptance Criteria and 0 for Recommendation. D1 is unreachable for AC (0 files have it as the last section) and reaches only the cosmetic hint for Recommendation (2 files, incl. T-3097). D2 occurs in 3 AC files and 51 Recommendation files, all exact duplicates, which over-includes and therefore blocks — the safe direction. So this is latent, not live. It is filed because the zero is luck: it depends on what headings people happen to write, and the shipped template is exactly what made the Verification number non-zero.
 
-status: started-work
-workflow_type: build
+status: captured
+workflow_type: refactor
 owner: agent
 horizon: now
-tags: [refused-for-this-dispatch]
+tags: []
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -22,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-25T22:07:26Z
-last_update: '2026-08-25T22:15:08Z'
-date_finished:
+created: 2026-08-25T22:15:31Z
+last_update: 2026-08-25T22:15:31Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,74 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-08-25T22:13:32Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-08-25T22:15:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=232,acs=9)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3146: Triage 832 report: P-011 verification extractor still feeds task prose to a shell
+# T-3148: Six section extractors still carry the pre-T-3134 sed-range shape; four feed gates
 
 ## Context
 
-832-Workflow-designer reported on the chat arc (offset 430) that our P-011
-verification extractor feeds task prose to a shell, with three separable defects
-against `lib/verification-port.sh`, and named `.tasks/active/T-3130` as a live
-instance. Triage, not a fix: establish what is true at HEAD, what they got right
-that we had missed, and what they did not look at.
-
-Answered at offset 433.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Each of 832's three defects (D1 final-leg drop, D2 range restart, D3 prefix
-      match) is re-run against the CURRENT `extract_verification_block` with a
-      fixture per defect, and the verdict per defect is recorded as reproduced or
-      closed — with the commit that closed it named, not asserted
-- [x] The fixtures are shown to be discriminating: each one is also run against the
-      pre-T-3134 `sed -n '/^## Verification/,/^## /p' | sed '$d'` form and must
-      behave differently there, otherwise the fixture proves nothing
-- [x] Every other section-extraction site carrying the same sed-range shape is
-      enumerated with file:line, and each is classified as gate-bearing or
-      cosmetic by naming the gate it feeds
-- [x] Corpus exposure for the gate-bearing sites is measured, not estimated:
-      count task files where the extracted section is the file's last `## `
-      section (D1 is reachable) and where a second same-prefix heading exists
-      (D2/D3 reachable)
-- [x] If any gate-bearing site is reachable, a separate fix task is filed with
-      the measured numbers (one bug = one task; this task is triage, not the fix)
-- [x] 832 is answered on the chat arc with the measured verdict, including the
-      correction that their measurement point predates the fix, and including the
-      finding they did not make
-- [x] The differential harness reads both extractor forms from source rather than
-      re-typing either, and aborts if it cannot tell the two apart — a harness that
-      sees neither satisfies "these differ" for free
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -135,75 +80,7 @@ Answered at offset 433.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-## Results
-
-**All three defects are real, and all three are already closed.** 832 measured
-`67aeacc`; the fix is `36b45ab6e` (T-3134), which postdates it. What ships now is
-the anchored, first-range-only awk they independently recommended.
-
-Differential over three fixtures, with the pre-T-3134 expression recovered from
-the source comment rather than re-typed:
-
-| Defect | old form | current |
-|---|---|---|
-| D1 — `## Verification` is the last section | `LEG-THREE-LAST` dropped, heading leaked | all three legs |
-| D2 — range restarts on a second heading | superseded block + `## Context` heading executable | first block only |
-| D3 — prefix heading opens early | template prose returned, real leg never reached | real leg |
-
-On `T-3130` itself the current extractor returns its 12 real legs; the old form
-returns the Human-AC comment, including `1. Open https://example.com/dashboard in
-browser`. Their count of 1 and the file they named are both exactly right.
-
-**What they caught that we had not.** T-3134 aimed at injection and suppression —
-its commit message and the test file's header both say so, and neither mentions
-the final-leg drop. D1 was closed *incidentally* by moving to awk and had no
-test. A behaviour nothing asserts is one the next refactor is free to undo. Two
-tests now cover it, including a control that recovers the old expression from our
-own source comment and asserts it *does* drop the leg; if that comment is
-reworded the control goes red, which is correct.
-
-**The finding they did not make.** T-3134 anchored one section name. Six sites
-still carry the shape; four are gate-bearing:
-
-| Site | Consumer | Class |
-|---|---|---|
-| `agents/task-create/update-task.sh:115` | P-010 AC gate | gate-bearing |
-| `agents/task-create/update-task.sh:1476` | P-010 AC gate | gate-bearing |
-| `lib/inception.sh:552` | inception-decide AC preflight | gate-bearing |
-| `agents/context/check-active-task.sh:925` | G-020 build-readiness (looser `/^## [^A]/` terminator) | gate-bearing |
-| `agents/task-create/update-task.sh:207` | drift-hint string | cosmetic |
-| `lib/inception.sh:566` | drift-hint string | cosmetic |
-
-**Measured exposure over 3133 task files — latent, not live.** The dangerous D3
-shape (a non-exact prefix heading *before* the real one, which skips the gate in
-silence) occurs **0** times for Acceptance Criteria and **0** for Recommendation.
-D1 is unreachable for AC (0 files have it last) and reaches only the cosmetic
-hint for Recommendation (2 files, including T-3097). D2 occurs in 3 AC and 51
-Recommendation files, all exact duplicates — which over-includes and therefore
-*blocks*, the safe direction.
-
-Filed as **T-3148** rather than closed. The zero is luck: it depends on what
-headings people happen to write, and the shipped template is precisely what made
-the Verification number non-zero.
-
-**Not adopted, and they are probably right.** Their sharper point is that
-anchoring fixes D1/D2/D3 while a *separate refusal path* — count headings three
-ways, refuse when they disagree — is what stops the next unanticipated shape
-arriving as a green. We have the anchoring and not the refusal. "No verification
-command failed" and "no verification command ran" are different facts; we hold
-half of that. Deliberately not filed yet.
-
-**Not claimed.** Their `tools/_t588` differential was not run against our tree —
-only our own fixtures plus the file they named. The 51 Recommendation D2 files
-are counted, not individually diagnosed.
-
 ## Verification
-
-bats tests/unit/verification_extractor_anchoring.bats > /tmp/.t3146 2>&1 && grep -q "^ok 12 " /tmp/.t3146
-! grep -q "^not ok" /tmp/.t3146
-grep -q "T-3146/D1: the final leg survives" tests/unit/verification_extractor_anchoring.bats
-grep -q "T-3146/D1 \[control\]" tests/unit/verification_extractor_anchoring.bats
-grep -lq "pre-T-3134 sed-range shape" .tasks/active/T-3148-*.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -356,26 +233,7 @@ grep -lq "pre-T-3134 sed-range shape" .tasks/active/T-3148-*.md
 
 ## Updates
 
-### 2026-08-25T22:07:26Z — task-created [task-create-agent]
+### 2026-08-25T22:15:31Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3146-triage-832-report-p-011-verification-ext.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3148-six-section-extractors-still-carry-the-p.md
 - **Context:** Initial task creation
-
-### 2026-08-25T22:12:28Z — status-update [task-update-agent]
-- **Change:** status: started-work → issues
-- **Change:** horizon: now → later
-- **Change:** tags: +refused-for-this-dispatch
-- **Reason:** outside ewcr-v1-aef-arc0 scope; independently governed follow-up
-
-### 2026-08-25T22:13:32Z — status-update [task-update-agent]
-- **Change:** status: issues → started-work
-- **Change:** horizon: later → now
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-8db1794a
-- **Timestamp:** 2026-08-25T22:17:03Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none

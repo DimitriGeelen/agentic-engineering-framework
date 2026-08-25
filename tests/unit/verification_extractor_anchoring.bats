@@ -221,3 +221,56 @@ for ln in sec.splitlines():
     run check_verification_parseable "$blk"
     [ "$status" -ne 0 ]
 }
+
+# ── T-3146: the final-leg drop, reported by 832 as D1 ─────────────────────────
+#
+# Reported by 832-Workflow-designer on the chat arc (offset 430) against our
+# 67aeacc, which predates T-3134's fix. Their D1: the old form ended
+# `| sed '$d'` to discard the closing `## ` heading that sed's inclusive range
+# re-prints. When `## Verification` is the LAST section there IS no closing
+# heading — sed runs to EOF, and `sed '$d'` deletes a LEG instead.
+#
+# T-3134 replaced the pipeline with awk, which never emits the terminator, so
+# nothing needs discarding and D1 cannot occur. That fix was not aimed at D1 —
+# its commit message and this file's header both speak only of injection and
+# suppression — so D1 was closed incidentally and had no test. A behaviour that
+# nothing asserts is a behaviour the next refactor is free to undo.
+#
+# The measured difference (T-3146): old form on this fixture returns
+# LEG-ONE/LEG-TWO and drops LEG-THREE-LAST; current returns all three.
+
+_verification_is_last_section() {
+    cat > "$T" <<'EOF'
+# T-9998: fixture
+
+## Verification
+
+LEG-ONE
+LEG-TWO
+LEG-THREE-LAST
+EOF
+}
+
+@test "T-3146/D1: the final leg survives when Verification is the last section" {
+    _verification_is_last_section
+    run extract_verification_block "$T"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q '^LEG-THREE-LAST$'
+    [ "$(echo "$output" | grep -c '^LEG-')" -eq 3 ]
+}
+
+@test "T-3146/D1 [control]: the pre-T-3134 form DOES drop it, so the fixture discriminates" {
+    _verification_is_last_section
+    # The old expression is read out of the source comment in
+    # lib/verification-port.sh rather than re-typed here. If that comment is
+    # ever reworded the recovery fails and this test goes red, which is the
+    # correct outcome: the control has lost its reference point.
+    local old_expr
+    old_expr=$(grep "The previous form was" "$FRAMEWORK_ROOT/lib/verification-port.sh" \
+        | sed -E "s/.*\`(sed -n [^\`]*)\`.*/\1/")
+    [[ "$old_expr" == sed\ -n\ * ]]
+    local old_out
+    old_out=$(eval "$old_expr \"\$T\"" | sed '$d')
+    [[ "$old_out" != *LEG-THREE-LAST* ]]
+    [[ "$old_out" == *LEG-TWO* ]]
+}
