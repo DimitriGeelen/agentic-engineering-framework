@@ -1,25 +1,8 @@
 #!/usr/bin/env python3
-"""T-1629 (B-3a of T-1626) — `fw doctor` active hook probe.
+"""T-1629 (B-3a of T-1626) & T-070 — `fw doctor` active hook probe.
 
-Reads $SETTINGS_FILE (.claude/settings.json), invokes every configured
-Claude Code hook from /tmp (a stable foreign CWD that mimics agent
-cd-drift), and reports any whose path doesn't resolve.
-
-Output (machine-readable, parsed by bash):
-  Line 1:    "<total>|<failures>"
-  Lines 2+:  "FAIL|<event>|<short-tag>|<reason>"  (up to 5)
-
-Hooks that exit 0 (clean) or 2 (intentional policy block) are treated
-as healthy. Failure signals: rc==127, or stderr mentions "not found"
-or "no such file" — the T-1626 witness shape (bare-relative
-.agentic-framework/bin/fw paths that break under cd).
-
-Why this is a separate file (L-332): in the hot-path hook dispatcher
-(bin/fw), heredocs inside command substitution ($() subshells)
-parse-error fragilely. A bin/fw parse error is unrecoverable from
-inside Claude Code — every PreToolUse hook routes through bin/fw,
-exit 2 = block. Lesson: keep Python helpers > ~10 lines as standalone
-.py files and invoke as `python3 $FW_LIB_DIR/<helper>.py`.
+Reads $SETTINGS_FILE (.claude/settings.json or .agents/hooks.json), invokes
+every configured hook, and reports any whose path doesn't resolve.
 """
 import json
 import os
@@ -36,6 +19,8 @@ def _tag(cmd: str) -> str:
     for i, p in enumerate(parts):
         if p == "hook" and i + 1 < len(parts):
             return f"{name}:{parts[i + 1]}"
+        if "bridge" in name and i + 1 < len(parts):
+            return f"{name}:{parts[i + 1]}"
     return name
 
 
@@ -49,69 +34,70 @@ def main() -> int:
     except (OSError, json.JSONDecodeError):
         return 0
 
-    # T-2709: Claude Code sets CLAUDE_PROJECT_DIR before invoking any hook, and
-    # the portable hook form (${CLAUDE_PROJECT_DIR}/bin/fw hook <name>) depends on
-    # it. This probe exists to mimic Claude Code invoking hooks from a foreign CWD,
-    # so it must mimic the variable too. Without it the placeholder expands to the
-    # empty string, every command degrades to /bin/fw, and a healthy config reports
-    # 21/21 resolution failures — a false FAIL that would push an operator to
-    # "fix" correct settings back into non-portable absolute paths.
-    #
-    # Derived from the settings file's own location (<root>/.claude/settings.json),
-    # NOT from os.getcwd(): being independent of CWD is this probe's entire point,
-    # so reintroducing a CWD dependency here would defeat T-1626's witness.
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(settings_file)))
-    probe_env = dict(os.environ, CLAUDE_PROJECT_DIR=project_dir)
+    probe_env = dict(os.environ, CLAUDE_PROJECT_DIR=project_dir, PROJECT_ROOT=project_dir)
 
-    # Scope to gate-style events. PreCompact / SessionStart legitimately
-    # run heavy work (full handover, context resume) that exceeds the 5s
-    # probe budget; their failure modes are different and out of scope
-    # here. T-1626's witness was PreToolUse/PostToolUse — those fire on
-    # every tool call and ARE the path-resolution failure surface.
     EXERCISE_EVENTS = {"PreToolUse", "PostToolUse"}
 
     fails = []
     total = 0
-    for event, entries in data.get("hooks", {}).items():
-        if event not in EXERCISE_EVENTS:
-            continue
-        for entry in entries:
-            for hook in entry.get("hooks", []):
-                cmd = hook.get("command", "")
-                if not cmd:
-                    continue
-                total += 1
-                try:
-                    proc = subprocess.run(
-                        ["/bin/sh", "-c", cmd],
-                        input="{}",
-                        capture_output=True,
-                        text=True,
-                        cwd="/tmp",
-                        env=probe_env,
-                        timeout=5,
-                    )
-                except subprocess.TimeoutExpired:
-                    fails.append((event, _tag(cmd), "timeout"))
-                    continue
-                except Exception as e:
-                    fails.append((event, _tag(cmd), f"spawn: {e}"))
-                    continue
-                rc = proc.returncode
-                stderr_low = (proc.stderr or "").lower()
-                if rc in (0, 2):
-                    continue
-                if (
-                    rc == 127
-                    or "not found" in stderr_low
-                    or "no such file" in stderr_low
-                ):
-                    first_err = (
-                        stderr_low.splitlines()[0]
-                        if stderr_low
-                        else f"exit {rc}, no stderr"
-                    )
-                    fails.append((event, _tag(cmd), f"exit {rc}: {first_err}"))
+
+    # Handle Claude Code settings.json format vs Antigravity hooks.json format
+    hook_groups = []
+    if "hooks" in data and isinstance(data["hooks"], dict):
+        hook_groups.append(("", data["hooks"]))
+    else:
+        # Antigravity dictionary of group names
+        for group_name, group_val in data.items():
+            if isinstance(group_val, dict):
+                hook_groups.append((group_name, group_val))
+
+    for group_name, events_dict in hook_groups:
+        for event, entries in events_dict.items():
+            if event not in EXERCISE_EVENTS:
+                continue
+            if not isinstance(entries, list):
+                continue
+            for entry in entries:
+                for hook in entry.get("hooks", []):
+                    cmd = hook.get("command", "")
+                    if not cmd:
+                        continue
+                    total += 1
+                    test_cwd = os.path.join(project_dir, ".agents") if os.path.basename(settings_file) == "hooks.json" else "/tmp"
+                    if not os.path.exists(test_cwd):
+                        test_cwd = "/tmp"
+                    try:
+                        proc = subprocess.run(
+                            ["/bin/sh", "-c", cmd],
+                            input="{}",
+                            capture_output=True,
+                            text=True,
+                            cwd=test_cwd,
+                            env=probe_env,
+                            timeout=5,
+                        )
+                    except subprocess.TimeoutExpired:
+                        fails.append((event, _tag(cmd), "timeout"))
+                        continue
+                    except Exception as e:
+                        fails.append((event, _tag(cmd), f"spawn: {e}"))
+                        continue
+                    rc = proc.returncode
+                    stderr_low = (proc.stderr or "").lower()
+                    if rc in (0, 2):
+                        continue
+                    if (
+                        rc == 127
+                        or "not found" in stderr_low
+                        or "no such file" in stderr_low
+                    ):
+                        first_err = (
+                            stderr_low.splitlines()[0]
+                            if stderr_low
+                            else f"exit {rc}, no stderr"
+                        )
+                        fails.append((event, _tag(cmd), f"exit {rc}: {first_err}"))
 
     print(f"{total}|{len(fails)}")
     for ev, tag, reason in fails[:5]:
