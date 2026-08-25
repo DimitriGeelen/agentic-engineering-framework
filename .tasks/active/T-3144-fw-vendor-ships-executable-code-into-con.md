@@ -6,12 +6,12 @@ description: >
   fw vendor ships executable code into consumer trees without checking git can see
   it
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/vendor-visibility.sh, tests/unit/vendor_visibility.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T20:44:07Z
-last_update: 2026-08-25T22:18:22Z
-date_finished:
+last_update: 2026-08-25T22:28:33Z
+date_finished: 2026-08-25T22:28:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -404,6 +404,44 @@ tools/bats-dead-negation-lint.py tests > /tmp/.t3144l 2>&1 && grep -q "dead 0 in
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+
+**Recommendation:** GO — keep FAIL on both legs, and track the 23 images.
+
+**Rationale:** The two Human ACs are genuine calls, so here is my position on
+both rather than a blank form.
+
+*FAIL, not WARN, including the `fw upgrade` leg.* A WARN re-enters exactly the
+loop this task documents: `tools/`, the designer maps, the pinned build and
+`status-transitions.yaml` were each ADDED to `includes[]` by a task fixing a
+"consumer is missing X" bug, and a stale allowlist silently re-drops each fix on
+the day it ships. It took three separate tasks (T-2942, T-3064, T-2674) to find
+three instances of one class, because the symptom names `python3` and never names
+vendoring. A WARN on an upgrade nobody reads is indistinguishable from the silence
+we already had. The disruption is bounded and self-describing — the FAIL prints
+the exact `!` lines to paste, and re-running with them takes the same call from
+exit 1 to exit 0 (pinned by a test, not just asserted). `FW_ALLOW_INVISIBLE_VENDOR=1`
+unblocks anyone who needs to ship now, and logs Tier-2 so the debt is visible
+rather than absorbed.
+
+*Track our 23 `*.png` files.* A vendored `docs/` whose images are absent from
+every clone is a broken deliverable, and 23 small images is not a repo-weight
+argument worth having. This is the cheaper half of the decision by a wide margin.
+
+The one thing I would not do is quietly narrow the check to executable files to
+dodge the png finding. The check is right and our repo is mildly wrong; that is
+the correct way round.
+
+**Evidence:**
+- Reproduction: 62 of 2649 files invisible in a synthetic consumer while
+  `fw vendor` printed success and exited 0 — `tests/unit/vendor_visibility.bats`
+- Our own tree: 23 of 2505 invisible, all `*.png`, no executable code affected.
+  This CORRECTS the previous session's "not affected", which was measured at
+  directory granularity.
+- 8/8 tests green; 6/6 P-011 verification commands green; reviewer PASS with a
+  cross-project-blast escalation, which is what these two Human ACs answer.
+- Three false positives found by running the check against real trees rather
+  than reading it — each now pinned by an `[instrument]` test.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -434,8 +472,8 @@ tools/bats-dead-negation-lint.py tests > /tmp/.t3144l 2>&1 && grep -q "dead 0 in
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8f0ff95a
-- **Timestamp:** 2026-08-25T22:25:50Z
+- **Scan ID:** R-b2c00636
+- **Timestamp:** 2026-08-25T22:28:35Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -444,3 +482,6 @@ tools/bats-dead-negation-lint.py tests > /tmp/.t3144l 2>&1 && grep -q "dead 0 in
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `consumer project`
+
+### 2026-08-25T22:28:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

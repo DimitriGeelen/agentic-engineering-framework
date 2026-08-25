@@ -1,10 +1,25 @@
 ---
 id: T-3148
-name: "Six section extractors still carry the pre-T-3134 sed-range shape; four feed gates"
+name: "Six section extractors still carry the pre-T-3134 sed-range shape; four feed
+  gates"
 description: >
-  T-3134 anchored the extractor for '## Verification' only. Six other sites still use sed -n '/^## X/,/^## /p' | sed '$d', which carries all three defects 832 reported as D1/D2/D3. Four are gate-bearing: update-task.sh:115 and :1476 (P-010 AC gate), lib/inception.sh:552 (inception-decide AC preflight), agents/context/check-active-task.sh:925 (G-020 build-readiness, with an even looser /^## [^A]/ terminator). Two are cosmetic (update-task.sh:207, lib/inception.sh:566 — a drift hint only). Measured corpus exposure over 3133 task files: the dangerous D3 shape (a non-exact prefix heading BEFORE the real one, which skips the gate silently) occurs 0 times for Acceptance Criteria and 0 for Recommendation. D1 is unreachable for AC (0 files have it as the last section) and reaches only the cosmetic hint for Recommendation (2 files, incl. T-3097). D2 occurs in 3 AC files and 51 Recommendation files, all exact duplicates, which over-includes and therefore blocks — the safe direction. So this is latent, not live. It is filed because the zero is luck: it depends on what headings people happen to write, and the shipped template is exactly what made the Verification number non-zero.
+  T-3134 anchored the extractor for '## Verification' only. Six other sites still
+  use sed -n '/^## X/,/^## /p' | sed '$d', which carries all three defects 832 reported
+  as D1/D2/D3. Four are gate-bearing: update-task.sh:115 and :1476 (P-010 AC gate),
+  lib/inception.sh:552 (inception-decide AC preflight), agents/context/check-active-task.sh:925
+  (G-020 build-readiness, with an even looser /^## [^A]/ terminator). Two are cosmetic
+  (update-task.sh:207, lib/inception.sh:566 — a drift hint only). Measured corpus
+  exposure over 3133 task files: the dangerous D3 shape (a non-exact prefix heading
+  BEFORE the real one, which skips the gate silently) occurs 0 times for Acceptance
+  Criteria and 0 for Recommendation. D1 is unreachable for AC (0 files have it as
+  the last section) and reaches only the cosmetic hint for Recommendation (2 files,
+  incl. T-3097). D2 occurs in 3 AC files and 51 Recommendation files, all exact duplicates,
+  which over-includes and therefore blocks — the safe direction. So this is latent,
+  not live. It is filed because the zero is luck: it depends on what headings people
+  happen to write, and the shipped template is exactly what made the Verification
+  number non-zero.
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -22,8 +37,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T22:15:31Z
-last_update: 2026-08-25T22:15:31Z
-date_finished: null
+last_update: 2026-08-25T22:29:05Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +49,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-08-25T22:29:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3148: Six section extractors still carry the pre-T-3134 sed-range shape; four feed gates
@@ -46,8 +79,25 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Each of the six sites is decided EXPLICITLY as first-wins, last-wins, or
+      refuse-when-ambiguous, and the decision is written in the code beside it.
+      Copying `extract_verification_block`'s awk wholesale is the wrong fix:
+      first-wins is correct for Verification and is precisely what produced the
+      T-3144 false red on Recommendation
+- [ ] The start pattern is anchored at every site, so a heading that merely
+      begins with the section name cannot open a range
+- [ ] No site ends in `sed '$d'`. That expression exists to discard sed's
+      re-printed terminator, and deletes a content line whenever the section is
+      the file's last — 832's D1
+- [ ] The T-3144 shape is a regression test: a file with a template
+      `## Recommendation` stub followed by a real block must yield the real
+      block, not the stub
+- [ ] A control shows each test discriminating — run against the pre-change
+      expression it must behave differently. "Fails against pre-change code" is
+      degenerate for a rewrite; the fixtures must fail for the RIGHT reason
+- [ ] The corpus numbers in the description are re-measured after the change and
+      the new figures recorded, so the claim "0 files in the dangerous shape"
+      is a measurement at fix time rather than an inherited one
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -237,3 +287,30 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3148-six-section-extractors-still-carry-the-p.md
 - **Context:** Initial task creation
+
+### 2026-08-25T22:29:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Observed instance (T-3144, same session)
+
+The Recommendation leg is not latent — it fired within the hour, on T-3144.
+
+That file carries the shipped template's `## Recommendation` stub at line 378 and
+the agent's real block appended at 448. `sed -n '/^## Recommendation/,/^## /p'`
+takes the FIRST range, which is the empty stub, so the recommendation-completeness
+gate refused a task whose recommendation was written, complete and 40 lines long.
+Two close attempts were rejected with "## Recommendation is empty" while the text
+was on screen.
+
+This confirms the direction predicted from the corpus measurement and sharpens it.
+Over-inclusion of a second block is the safe direction. Reading only the FIRST
+block when the real content is in the second is a **false red**: the gate refuses
+correct work and its message names the opposite of the cause. Safe, but it costs
+real time and reads as a content problem rather than an extraction problem.
+
+And it is why AC1 is worded the way it is. `extract_verification_block`'s awk
+takes the first range too. For Verification that is right — a second block is
+superseded. For Recommendation the identical rule produces exactly this. The fix
+is a per-section semantic decision, not a copy of the awk. Recommendation likely
+wants last-wins, or a refusal when two exist; T-3142 already repaired by hand a
+task carrying two conflicting verdicts, for the same underlying reason.
