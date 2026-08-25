@@ -857,6 +857,27 @@ UPSTREAM
         return 1
     fi
 
+    # T-3144: the target's git must be able to SEE what we just wrote. Runs
+    # after FRAMEWORK.md — the sentinel — so the tree being checked is the tree
+    # a consumer will actually have. See lib/vendor-visibility.sh for why a
+    # consumer allowlist goes stale and why this is a FAIL rather than a WARN.
+    if [ -f "$FRAMEWORK_ROOT/lib/vendor-visibility.sh" ]; then
+        # shellcheck source=lib/vendor-visibility.sh
+        source "$FRAMEWORK_ROOT/lib/vendor-visibility.sh"
+        local _vis_rc=0
+        fw_vendor_check_visibility "$dest" "$target" || _vis_rc=$?
+        if [ "$_vis_rc" -ne 0 ]; then
+            if [ "${FW_ALLOW_INVISIBLE_VENDOR:-0}" = "1" ]; then
+                log_gate_bypass "FW_ALLOW_INVISIBLE_VENDOR" \
+                    "vendored files invisible to git in $target" 2>/dev/null || true
+                echo -e "  ${YELLOW}Bypassed${NC} via FW_ALLOW_INVISIBLE_VENDOR (logged Tier-2)" >&2
+            else
+                echo -e "${RED}Vendor incomplete from git's point of view — see above.${NC}" >&2
+                return 1
+            fi
+        fi
+    fi
+
     echo ""
     local final_size
     final_size=$(du -sh "$dest" 2>/dev/null | cut -f1)
