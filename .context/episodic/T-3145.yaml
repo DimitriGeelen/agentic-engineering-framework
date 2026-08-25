@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3145: Ingest T-037 executable workflow-contract runtime source packet (AEF side)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-25T22:06:26Z
+# ============================================================================
+
+task_id: T-3145
+task_name: "Ingest T-037 executable workflow-contract runtime source packet (AEF side)"
+workflow_type: design
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-25T21:28:35Z
+completed: 2026-08-25T22:06:12Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-26T00:05:18+02:00
+last_commit: 2026-08-26T00:05:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ingest the T-037 workflow-contract packet — hash-pinned, reflected, not imported
+
+# Key outcomes
+outcomes:
+  - 'Both source documents stored as immutable hash-addressed snapshots whose'
+  - '`source-manifest.yaml` records source URL, source project, full expected and'
+  - '`operating-digest.md` exists and explicitly declares itself a navigation aid'
+  - '`questions-and-dispositions.md` carries an evidence-cited local'
+  - '`governance-cadence.md` carries the Phase 5 reconciliation triggers, a'
+  - 'The raw-URL transport defect is registered in the concerns register as G-086,'
+  - 'Bounded-scope guard: no arc created for this initiative, no `bvp_scores:`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-25 — Hash mismatch on both declared source URLs'
+    chose: 'Establish the transport''s raw-bytes behaviour before applying the contract''s `VERSION MISMATCH` rule; read authoritative bytes from the peer working tree, and record the incident rather than refusing the packet.'
+    rationale: 'Both URLs returned HTTP 200 with mismatching hashes, but `file(1)` reported "HTML document" and the payload began `<!DOCTYPE html>` with a csrf-token meta tag — the endpoint is a Watchtower HTML viewer, not raw bytes. The peer working-tree bytes matched both expected hashes exactly, proving a transport artifact, not a source revision. Declaring `VERSION MISMATCH` would have refused a byte-for-byte correct document.'
+    alternatives_rejected: ['(a) Declaring `VERSION MISMATCH` as literally instructed — would have been a false negative on a correct document. (b) Silently substituting the filesystem copy without recording the discrepancy — would have hidden a defect that breaks any receiver lacking filesystem reach to the peer.']
+  - decision: '2026-08-25 — Where to file the transport defect'
+    chose: 'Register G-086 locally with `homed_to: 0503-codex-cli-playground`, and request the fix through the ingestion receipt on correlation `t037-aef-ingestion`.'
+    rationale: 'Gap homing (T-1333) puts an entry where the fix lives; the fix is a publishing change in the sending project. But a purely remote entry would be invisible to future AEF receivers of this packet, so the entry is mirrored here as a receiver-side observation with the peer named as owner.'
+    alternatives_rejected: ['Editing the peer repository to fix it directly — prohibited by the arch §5.1 ownership boundary and by the contract''s repository-boundary rule.']
+  - decision: '2026-08-25 — How much of the proposed roadmap to translate into AEF work'
+    chose: 'Propose exactly one arc (Arc 0, revised), with dispositions recorded for the other six and no arc, task, or BVP confirmation created.'
+    rationale: 'Roadmap §7 and the operator dispatch checklist both forbid bulk creation, and the write sets and acceptance criteria of Arcs 1–6 depend on evidence Arc 0 has not yet produced. Arc 0''s own first fence currently fails, so committing downstream structure now would encode an assumption already known to be false.'
+    alternatives_rejected: ['Importing the full 7-arc chain as draft arcs — would create six arcs whose exit gates cannot be evidenced and would misrepresent agent reflection as operator authorisation.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - 'docs/research/executable-workflow/architecture-c9070637.md'
+  - 'docs/research/executable-workflow/governance-cadence.md'
+  - 'docs/research/executable-workflow/operating-digest.md'
+  - 'docs/research/executable-workflow/questions-and-dispositions.md'
+  - 'docs/research/executable-workflow/roadmap-5be23719.md'
+  - 'docs/research/executable-workflow/source-manifest.yaml'
+  - '.tasks/active/T-3145-ingest-t-037-executable-workflow-contrac.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T00:05:18'
+    action: 'T-3145: ingest the T-037 workflow-contract packet — hash-pinned, reflected, not imported'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 37
+  commits: 1
+  files_changed: 8
+  lines_added: 2348
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3145-ingest-t-037-executable-workflow-contrac.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3146: Triage 832 report: P-011 verification extractor still feeds task prose to a shell
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-25T22:17:40Z
+# ============================================================================
+
+task_id: T-3146
+task_name: "Triage 832 report: P-011 verification extractor still feeds task prose to a shell"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-25T22:07:26Z
+completed: 2026-08-25T22:17:24Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-08-26T00:17:18+02:00
+last_commit: 2026-08-26T00:17:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  832's three extractor defects are real, already closed, and pointed at six more
+
+# Key outcomes
+outcomes:
+  - 'Each of 832''s three defects (D1 final-leg drop, D2 range restart, D3 prefix'
+  - 'The fixtures are shown to be discriminating: each one is also run against the'
+  - 'Every other section-extraction site carrying the same sed-range shape is'
+  - 'Corpus exposure for the gate-bearing sites is measured, not estimated:'
+  - 'If any gate-bearing site is reachable, a separate fix task is filed with'
+  - '832 is answered on the chat arc with the measured verdict, including the'
+  - 'The differential harness reads both extractor forms from source rather than'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-3146-triage-832-report-p-011-verification-ext.md'
+  - '.tasks/active/T-3148-six-section-extractors-still-carry-the-p.md'
+  - 'tests/unit/verification_extractor_anchoring.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T00:17:18'
+    action: 'T-3146: 832''s three extractor defects are real, already closed, and pointed at six more'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refused-for-this-dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 4
+  lines_added: 397
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3146-triage-832-report-p-011-verification-ext.md
+generated_by: context-agent-hybrid

@@ -3439,3 +3439,24 @@ decisions:
     date: 2026-08-25
     task: T-3138
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-494
+    decision: "Establish the transport's raw-bytes behaviour before applying the contract's `VERSION MISMATCH` rule; read authoritative bytes from the peer working tree, and record the incident rather than refusing the packet."
+    scope: project
+    date: 2026-08-25
+    task: T-3145
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-495
+    decision: "Register G-086 locally with `homed_to: 0503-codex-cli-playground`, and request the fix through the ingestion receipt on correlation `t037-aef-ingestion`."
+    scope: project
+    date: 2026-08-25
+    task: T-3145
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-496
+    decision: "Propose exactly one arc (Arc 0, revised), with dispositions recorded for the other six and no arc, task, or BVP confirmation created."
+    scope: project
+    date: 2026-08-25
+    task: T-3145
+    rationale: "Auto-captured from task file on completion"

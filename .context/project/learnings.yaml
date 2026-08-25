@@ -4810,3 +4810,9 @@ X'` returning empty group."
   task: T-3138
   date: 2026-08-25
   context: Added via context agent
+- id: L-646
+  learning: "A defect closed INCIDENTALLY by a fix aimed at something else has no test, because nobody was thinking about it when the fix landed. T-3134 replaced a sed range with awk to stop injection and suppression; the same change also closed 832's D1 (the final leg dropped when the section is last, because sed '$d' discards a leg when there is no terminator to discard). T-3134's commit message and its test file's header both mention only injection and suppression. The behaviour was correct and completely unasserted for as long as it existed. The tell is a peer reporting a defect you cannot reproduce: if it is genuinely closed, ask WHICH change closed it and whether that change was AIMED at it. If not, the coverage gap is exactly the size of the difference between what was fixed and what was intended."
+  source: P-011
+  task: T-3146
+  date: 2026-08-25
+  context: Added via context agent
