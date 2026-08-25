@@ -4,9 +4,9 @@ name: "CLAUDE.md instructs agents to default to worktrees — invert it to opt-i
 description: >
   CLAUDE.md instructs agents to default to worktrees — invert it to opt-in only
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T07:28:38Z
-last_update: '2026-08-25T07:30:19Z'
-date_finished:
+last_update: 2026-08-25T07:57:25Z
+date_finished: 2026-08-25T07:57:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,9 +99,27 @@ it. Do not reintroduce a gate under this task.
 
 ### Human
 
-- [ ] [REVIEW] The default is genuinely off and the refusal reads right. **Steps:** run `cd /opt/999-Agentic-Engineering-Framework && bin/fw worktree create scratch-test`. **Expected:** it refuses, and the message tells you how to allow it in one line you can paste. **If not:** say which part read wrong.
+- [ ] [REVIEW] The policy says what you meant, and it is a default rather than a gate.
 
-### Human
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && sed -n '144,180p' CLAUDE.md`
+  2. Read the five-row table. Check the "genuinely major piece of work" row in
+     particular — it says the agent MAY suggest a worktree once, and that silence
+     or anything short of a clear yes means the main checkout.
+  3. Read the closing paragraph beginning "The mechanism is NOT removed and is
+     NOT gated."
+
+  **Expected:** the rule reads as *"unless you tell me to, I don't"*, and nothing
+  in the section reads as a refusal, a fuse, or a switch you would have to flip.
+
+  **If not:** say which row or sentence is wrong and what it should say instead.
+
+  **Note — do NOT test this by running `fw worktree create`.** It will succeed,
+  and that is correct. This task deliberately changed the default only; the
+  mechanism is untouched, per your correction *"we're not gonna take out the
+  option and the mechanism."* An earlier draft of this AC asked you to expect a
+  refusal — that draft was the rejected design, and the AC was stale.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -200,32 +218,52 @@ grep -q 'The mechanism is NOT removed and is NOT gated' CLAUDE.md
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO — the policy is landed and correct as written; the only
+thing outstanding is the operator confirming it says what they meant.
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** The directive was given three times, and the third message was a
+scope correction, not a restatement: *"Not gateway fuses. Just by fucking
+default, you're not creating work trees."* The first draft got that wrong — it
+specced an `FW_ALLOW_WORKTREE` config key, a refusing gate and MCP exposure.
+That draft was cut. What shipped changes the **default** and nothing else:
+`fw worktree create`, `fw worktree gc` and `fw integrate` behave exactly as they
+did yesterday, there is no new switch, and the CLAUDE.md text says so explicitly
+so a later agent cannot read the absence of a gate as permission.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+The honest caveat, stated rather than buried: **this binds on agent discipline,
+not on a gate.** That is what was asked for, and it is the right call for a
+default that the operator wants to be able to override in one sentence — but it
+means the enforcement is a paragraph an agent has to read and honour, not a hook
+that stops it. If worktrees keep appearing after this lands, the diagnosis is
+that documentation was the wrong instrument, and the conversation reopens with
+evidence rather than with the design I already had rejected.
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
+**Evidence:**
 
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+- `CLAUDE.md:144` — new `## Worktree Policy — OPT-IN ONLY (operator directive,
+  2026-08-25)`: the rule, a five-row situation table (ordinary work / parallel
+  edits / major work / explicit instruction / consumer project), the "it would be
+  cleaner in isolation" rationalisation warning, and the damage history.
+- Two prior default-to-worktree instructions inverted, not merely softened —
+  §Execution Model parallelism limits and §Trunk-Based Session Flow. Both old
+  strings are now asserted **absent** by verification, so they cannot creep back.
+- Verification: **10/10 pass**, and mutation-checked — 6 of 10 fail against
+  `CLAUDE.md` at `6b9e2eeb4`. The other 4 are AC4's anti-AC and the FRAMEWORK.md
+  guard, which pass either way by construction, as an anti-AC should.
+- AC4 (anti-AC) holds: no worktree tooling file was touched, and the rejected
+  `FW_ALLOW_WORKTREE` key exists nowhere in `lib/ bin/ agents/ CLAUDE.md`.
+- `FRAMEWORK.md` — the provider-neutral guide vendored to consumers — contains
+  **zero** worktree references, so there was no consumer-facing default to
+  invert. The operator's point that the pain also comes from vendored projects
+  is real; its mechanism is agent behaviour reading CLAUDE.md, not a sentence in
+  the vendored guide. A regression guard keeps it that way.
+- Landed: `96f343d08` (policy) + `619d14eba` (real verification), on
+  `origin/master`, `origin/t2539-staging` and the github mirror.
+
+**What the operator is being asked:** read `CLAUDE.md:144` and confirm the rule
+matches the intent — specifically that "you may suggest once for a major piece
+of work, and silence means no" is the boundary you wanted, and that nothing in
+that section reads as a gate.
 
 ## Decisions
 
@@ -255,7 +293,7 @@ grep -q 'The mechanism is NOT removed and is NOT gated' CLAUDE.md
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3132-claudemd-instructs-agents-to-default-to-.md
 - **Context:** Initial task creation
 
-## Verification Provenance (T-3132)
+## Provenance — the verification block (T-3132)
 
 The `## Verification` block shipped in the first draft was **template boilerplate
 with zero executable lines** — P-011 would have passed it vacuously. That is the
@@ -291,3 +329,20 @@ references — so there was no default to invert there. The operator's point tha
 the pain "also comes from vendor projects" is real, but its mechanism is agent
 behaviour reading CLAUDE.md, not a contradicting sentence in the vendored guide.
 The check is kept as a regression guard so nobody adds one later.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-53bc22df
+- **Timestamp:** 2026-08-25T07:57:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 20
+     - evidence: `! git log --oneline -1 --name-only -- lib/worktree.sh lib/integrate.sh | grep -q 'T-3132'`
+
+### 2026-08-25T07:57:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4053,3 +4053,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-343
+  text: "P-011 extract_verification_block uses a repeating, prefix-unanchored sed range: sed -n '/^## Verification/,/^## /p'. Any SECOND heading beginning '## Verification' (e.g. '## Verification Provenance') opens a second range running to the next '## ' or EOF, injecting that section's PROSE into the block the gate executes. Hit live on T-3132; the T-2991 parseable-check blocked it (gate working) but prose that happens to parse as shell would be executed silently — T-2990 class. lib/reviewer/static_scan.py:extract_section does NOT have this bug (it anchors with \\s*\\n after the name), so the two extractors have diverged. Fix: anchor the range start, or take only the first range."
+  captured: 2026-08-25T07:56:55Z
+  context_task: T-3132
+  tags: [verification]
+  status: pending
+  promoted_to: null
