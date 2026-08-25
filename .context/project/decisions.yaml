@@ -3404,3 +3404,17 @@ decisions:
     date: 2026-08-25
     task: T-3139
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-489
+    decision: "`mitigated` is **outstanding**. The terminal set is exactly"
+    scope: project
+    date: 2026-08-25
+    task: T-3140
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-490
+    decision: "denylist — enumerate the *terminal* statuses, treat everything else"
+    scope: project
+    date: 2026-08-25
+    task: T-3140
+    rationale: "Auto-captured from task file on completion"

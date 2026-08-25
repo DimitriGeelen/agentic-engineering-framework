@@ -36897,3 +36897,39 @@ scan_id: R-cd65ed9a
 task_id: T-3139
 payload:
   task_file: .tasks/active/T-3139-review-queue-predicate-cannot-see-3-unch.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T10:45:39Z'
+scan_id: R-1bd4b260
+task_id: T-3140
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T10:45:39Z'
+scan_id: R-1bd4b260
+task_id: T-3140
+payload:
+  task_file: .tasks/active/T-3140-fw-gaps-renders-only-statuswatching--12-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T10:45:54Z'
+scan_id: R-2a182d43
+task_id: T-3140
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T10:45:54Z'
+scan_id: R-2a182d43
+task_id: T-3140
+payload:
+  task_file: .tasks/active/T-3140-fw-gaps-renders-only-statuswatching--12-.md

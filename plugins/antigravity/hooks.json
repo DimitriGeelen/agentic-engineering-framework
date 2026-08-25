@@ -1,0 +1,72 @@
+{
+  "aef-check-active-task": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command|write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .agentic-framework/lib/antigravity_bridge.py check-active-task",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "aef-check-tier0": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .agentic-framework/lib/antigravity_bridge.py check-tier0",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "aef-budget-gate": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command|write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .agentic-framework/lib/antigravity_bridge.py budget-gate",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "aef-fabric-new-file": {
+    "PostToolUse": [
+      {
+        "matcher": "write_to_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .agentic-framework/lib/antigravity_bridge.py check-fabric-new-file",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "aef-error-watchdog": {
+    "PostToolUse": [
+      {
+        "matcher": "run_command|write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .agentic-framework/lib/antigravity_bridge.py error-watchdog",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

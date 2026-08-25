@@ -1,0 +1,21 @@
+{
+  "name": "aef-governance",
+  "version": "1.0.0",
+  "description": "Agentic Engineering Framework (AEF) Governance, Step Engine & Multi-Agent Mesh for Antigravity",
+  "author": "AEF Core Team",
+  "rules": [
+    "rules/aef-governance.md"
+  ],
+  "skills": [
+    "skills/aef-assistant"
+  ],
+  "hooks": "hooks.json",
+  "mcpServers": {
+    "framework": {
+      "command": "python3",
+      "args": [
+        "${pluginDir}/../../agents/mcp/framework_mcp_server.py"
+      ]
+    }
+  }
+}
