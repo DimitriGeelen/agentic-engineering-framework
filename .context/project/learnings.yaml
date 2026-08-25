@@ -4744,3 +4744,9 @@ X'` returning empty group."
   task: T-3129
   date: 2026-08-25
   context: Added via context agent
+- id: L-635
+  learning: "Backfilling a corpus destroys the evidence for the defect the backfill repairs. The episodic false-zero (commits: 0) has two causes: a guard cause (mining skipped in worktrees) and an ORDERING cause (mining runs before the work commit exists). The ordering cause can only fire at the INSTANT of first generation; regenerate the same episodic later and the commit is in history, so a backfill silently repairs the ordering victims too. A clean post-backfill corpus is therefore evidence for the guard fix ONLY, and OVERSTATES the forward ordering fix. Do not measure the ordering defect on a backfilled corpus — and note that commits==0 is a PROXY that both defects, the guard fix, and the backfill all act on. Measure the ordering property directly at generation time (T-3130's control). Source: consumer 001-CashWeb pre-recorded a prediction (44 false zeros -> ~13 residue), measured 44 -> 0, and reported their own prediction WRONG rather than retrofitting it. Our corpus is 2738 episodics / 697 commits:0 and NOT yet backfilled — the warning arrived before we contaminated it."
+  source: P-001
+  task: T-3130
+  date: 2026-08-25
+  context: Added via context agent
