@@ -121,8 +121,7 @@ EOF
     [ "$status" -eq 0 ]
     # The old gate's own regex must not match this fixture — otherwise the test
     # would pass for the wrong reason.
-    ! grep -qEi 'filed on GO|sub-tasks (filed|created)|build slices (filed|created)|child tasks (filed|spun off)' \
-        "$FIX/.tasks/completed/T-9001-prose-only.md"
+    if grep -qEi 'filed on GO|sub-tasks (filed|created)|build slices (filed|created)|child tasks (filed|spun off)' "$FIX/.tasks/completed/T-9001-prose-only.md" "$FIX/.tasks/completed/T-9001-prose-only.md"; then false; fi
     echo "$output" | grep -q '^WARN|Found 1 GO-scope-not-propagated inception'
     echo "$output" | grep -q '^EVIDENCE|T-9001'
 }
@@ -248,7 +247,7 @@ EOF
         "$REPO_ROOT/agents/audit/audit.sh")
     # Exactly one python3 pre-scan, and no grep fan-out over the task corpus.
     [ "$(echo "$block" | grep -c 'python3 -c')" -eq 1 ]
-    ! echo "$block" | grep -qE 'grep .*\.tasks/(completed|active)'
+    if echo "$block" | grep -qE 'grep .*\.tasks/(completed|active)'; then false; fi
     # Both passes present.
     echo "$block" | grep -q '# Pass 1:'
     echo "$block" | grep -q '# Pass 2:'

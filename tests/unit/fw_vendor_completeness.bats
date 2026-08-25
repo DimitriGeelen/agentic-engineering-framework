@@ -61,7 +61,7 @@ _route() {
     # asserted: a partial vendor must not capture the router.
     run _route ignored-arg
     [ "$status" -eq 127 ]
-    ! echo "$output" | grep -q 'STUB_VENDOR'
+    [[ "$output" != *"STUB_VENDOR"* ]]
     # And it must not reach a global either — there is no longer any to reach.
     ! echo "$output" | grep -q 'STUB_GLOBAL'
 }

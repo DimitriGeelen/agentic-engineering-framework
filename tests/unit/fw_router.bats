@@ -141,7 +141,7 @@ _stub_installer() {
     grep -q "bootstrapping into" "$TEST_TEMP_DIR/err"
     # …and stays OFF stdout: `fw <cmd> --json` from a non-project directory must
     # remain machine-parseable (the T-2769 / T-2771 stdout-purity contract).
-    ! grep -q "bootstrapping into" "$TEST_TEMP_DIR/out"
+    if grep -q "bootstrapping into" "$TEST_TEMP_DIR/out"; then false; fi
     ! grep -q "using global install" "$TEST_TEMP_DIR/out"
 }
 

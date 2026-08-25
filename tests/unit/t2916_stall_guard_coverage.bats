@@ -94,7 +94,7 @@ run_stalled() {  # run_stalled -> JSON on stdout
     mk_task T-9004 "2026-01-01T00:00:00Z"
     mk_dispatches T-9004 2 "2026-06-01T00:00:00Z" 0
     out="$(run_stalled)"
-    ! echo "$out" | grep -q 'T-9004'          # 2 < 5, correctly not stalled
+    [[ "$out" != *"T-9004"* ]]          # 2 < 5, correctly not stalled
     echo "$out" | grep -q '"below_threshold": 1'   # but it IS accounted for
 }
 

@@ -290,7 +290,7 @@ _run_oe_research() {
     # The breakdown line separates the two populations rather than merging them.
     echo "$CLEAN" | grep -qE '^\[INFO\] C-001 population breakdown: 0/0 started-work missing an artefact, 1/1 awaiting-decision missing an artefact$'
     # Hygiene, not a blocker (constraint 1): C-001 never escalates to FAIL.
-    ! echo "$CLEAN" | grep -qE '^\[FAIL\].*C-001'
+    if echo "$CLEAN" | grep -qE '^\[FAIL\].*C-001'; then false; fi
     rm -rf "$AUDIT_ROOT"
 }
 
@@ -326,6 +326,6 @@ EOF
 
     _run_oe_research
     echo "$CLEAN" | grep -qE '^\[PASS\] C-001: All inceptions have research artifacts — 0 started-work, 1 awaiting decision$'
-    ! echo "$CLEAN" | grep -qE '^\[WARN\] C-001: Inception T-9203'
+    if echo "$CLEAN" | grep -qE '^\[WARN\] C-001: Inception T-9203'; then false; fi
     rm -rf "$AUDIT_ROOT"
 }

@@ -69,7 +69,7 @@ _run_fn() { run "$RUNNER" "$REPO_ROOT" "$@"; }
     # set of size 0 — it never measured anything. This is the T-3099 shape.
     _run_fn pass_over "" "python3 pre-scan over .tasks" "No GO-scope-not-propagated inceptions"
     echo "$output" | grep -q 'NOT EVALUATED: could not read python3 pre-scan over .tasks'
-    ! echo "$output" | grep -q 'candidate set empty'
+    [[ "$output" != *"candidate set empty"* ]]
     ! echo "$output" | grep -q '^PASS|'
 }
 
@@ -116,7 +116,7 @@ _run_fn() { run "$RUNNER" "$REPO_ROOT" "$@"; }
     n2=$(find "$d" -maxdepth 1 -name '*.md' -type f | wc -l)
     [ "$n2" -eq 0 ]
     _run_fn pass_over "$n2" "task file(s)" "All task files parse"
-    ! echo "$output" | grep -q 'examined 0'
+    [[ "$output" != *"examined 0"* ]]
     echo "$output" | grep -q 'candidate set empty (0 task file(s))'
 }
 

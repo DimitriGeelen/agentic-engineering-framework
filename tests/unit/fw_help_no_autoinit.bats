@@ -49,7 +49,7 @@ assert_dir_untouched() {
     run env -u FRAMEWORK_ROOT -u PROJECT_ROOT "$(FW)" doctor --help
     [ "$status" -eq 0 ]
     echo "$output" | grep -qi 'usage'
-    ! echo "$output" | grep -q 'Setting up agentic governance'
+    [[ "$output" != *"Setting up agentic governance"* ]]
     assert_dir_untouched
 }
 
@@ -57,7 +57,7 @@ assert_dir_untouched() {
     cd "$TEST_TEMP_DIR"
     run env -u FRAMEWORK_ROOT -u PROJECT_ROOT "$(FW)" doctor -h
     [ "$status" -eq 0 ]
-    ! echo "$output" | grep -q 'Setting up agentic governance'
+    [[ "$output" != *"Setting up agentic governance"* ]]
     assert_dir_untouched
 }
 
@@ -68,7 +68,7 @@ assert_dir_untouched() {
     cd "$TEST_TEMP_DIR"
     for sub in task context fabric audit; do
         run env -u FRAMEWORK_ROOT -u PROJECT_ROOT "$(FW)" "$sub" --help
-        ! echo "$output" | grep -q 'Setting up agentic governance'
+        [[ "$output" != *"Setting up agentic governance"* ]]
         assert_dir_untouched
     done
 }

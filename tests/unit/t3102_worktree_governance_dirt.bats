@@ -255,9 +255,9 @@ _remove() {
     _wt_is_governance_path ".context/working/session.yaml"
     _wt_is_governance_path ".tasks/active/T-1.md"
     _wt_is_governance_path ".context/project/decisions.yaml"
-    ! _wt_is_governance_path "lib/worktree.sh"
-    ! _wt_is_governance_path "docs/context/notes.md"
-    ! _wt_is_governance_path "contextual.py"
+    if _wt_is_governance_path "lib/worktree.sh"; then false; fi
+    if _wt_is_governance_path "docs/context/notes.md"; then false; fi
+    if _wt_is_governance_path "contextual.py"; then false; fi
     ! _wt_is_governance_path "tests/unit/x.bats"
 }
 
@@ -354,7 +354,7 @@ _remove() {
     [[ "$output" == *"lib/foo.sh"* ]]
     # exactly ONE blocking path: VERSION must not be counted or named as source
     [[ "$output" == *"1 uncommitted source file(s)"* ]]
-    ! printf '%s\n' "$output" | grep -qE '^ +VERSION$'
+    if printf '%s\n' "$output" | grep -qE '^ +VERSION$'; then false; fi
     [ -d "$wt" ]
 }
 
@@ -415,12 +415,12 @@ purpose: hand-written prose that scan will never re-derive" > "$wt/.fabric/compo
     done
     # delta +: .tasks/ discardable HERE, deliberately NOT in the gc set
     _wt_is_discardable_dirt ".tasks/active/T-1.md"
-    ! _wt_is_ignorable_path ".tasks/active/T-1.md"
+    if _wt_is_ignorable_path ".tasks/active/T-1.md"; then false; fi
     # delta -: .fabric/ ignorable for gc, NOT discardable here
     _wt_is_ignorable_path ".fabric/components/c1.yaml"
-    ! _wt_is_discardable_dirt ".fabric/components/c1.yaml"
+    if _wt_is_discardable_dirt ".fabric/components/c1.yaml"; then false; fi
     # real work is neither
-    ! _wt_is_discardable_dirt "lib/worktree.sh"
-    ! _wt_is_discardable_dirt "tests/unit/x.bats"
+    if _wt_is_discardable_dirt "lib/worktree.sh"; then false; fi
+    if _wt_is_discardable_dirt "tests/unit/x.bats"; then false; fi
     ! _wt_is_discardable_dirt "docs/context/notes.md"
 }

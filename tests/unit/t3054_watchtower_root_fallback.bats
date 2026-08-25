@@ -80,7 +80,7 @@ _resolve() {
 
 @test "A2 — neither identity site still spells the fallback inline" {
     cd "$FRAMEWORK_ROOT"
-    ! grep -n 'PROJECT_ROOT:-${FRAMEWORK_ROOT:-}' lib/watchtower.sh
+    if grep -n 'PROJECT_ROOT:-${FRAMEWORK_ROOT:-}' lib/watchtower.sh; then false; fi
     # both sites now go through the shared resolver
     [ "$(grep -c '_our_root=$(_watchtower_our_root)' lib/watchtower.sh)" -eq 2 ]
 }

@@ -67,7 +67,7 @@ _is_collectable() {
     # three shapes the runners collect, one known instance each.
     _is_collectable "tests/lint/no-orphaned-test-dirs.bats"
     _is_collectable "tests/unit/test_t3061_audit_wiring.py"
-    ! _is_collectable "tests/scripts/yaml_parse_all_tasks.py"
+    if _is_collectable "tests/scripts/yaml_parse_all_tasks.py"; then false; fi
     ! _is_collectable "tests/README.md"
 }
 

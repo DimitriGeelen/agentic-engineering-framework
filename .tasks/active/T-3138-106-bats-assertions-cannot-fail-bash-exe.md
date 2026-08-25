@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T09:30:27Z
-last_update: 2026-08-25T16:18:54Z
+last_update: 2026-08-25T20:35:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -68,34 +68,46 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Bash's `set -e` documentation says the shell does not exit "if the command's
+return value is being inverted with `!`". Bats runs each `@test` body under
+`set -e` and takes the body's exit status as the verdict. Together those mean a
+`!`-inverted line that is not the last statement of its body is checked by
+nothing — errexit is exempted, and the verdict comes from a later line.
+
+A dead assertion and a passing assertion produce identical output. That is why
+this reached 99 sites across 62 files before anything noticed, and why the
+control shipped here is a source lint rather than a runtime check: at runtime
+there is nothing to see.
+
+The filed count of 106/66 was the first draft's count. Seven of those were the
+lint's own false positives, corrected during the build — see `## Decisions`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] AC1 — The mechanism is pinned, not asserted. A bats fixture demonstrates
+- [x] AC1 — The mechanism is pinned, not asserted. A bats fixture demonstrates
       all three cases in one file: a non-final `! true` does NOT fail its test, a
       final `! true` DOES, and a non-final `[[ a != a ]]` DOES. Anyone reading the
       lint later can re-derive why it exists without trusting this task's prose.
-- [ ] AC2 — A lint enumerates every dead assertion in `tests/**/*.bats`: a line
+- [x] AC2 — A lint enumerates every dead assertion in `tests/**/*.bats`: a line
       whose first token is `!` and which is NOT the last statement of its `@test`
       block. It reports file, line, and total. Final `!` assertions are counted
       separately and NOT flagged — those fire correctly.
-- [ ] AC3 — The lint is wired into `bin/fw test lint` and fails on a non-empty
+- [x] AC3 — The lint is wired into `bin/fw test lint` and fails on a non-empty
       result, so a new dead assertion cannot be added silently. Baseline handling
       is explicit: either the sweep in AC4 lands first (preferred), or the
       remaining count is recorded in the lint itself as a shrinking allowance —
       never an unbounded skip.
-- [ ] AC4 — The 106 existing dead assertions across 66 files are converted to a
+- [x] AC4 — The 106 existing dead assertions across 66 files are converted to a
       form that fires. Report the count actually converted and, for any left
       behind, name the file and why. A dead assertion that is dead *and*
       would fail if revived is a second defect, not a conversion — file it.
-- [ ] AC5 — At least one converted assertion is shown to have been hiding a real
+- [x] AC5 — At least one converted assertion is shown to have been hiding a real
       defect, OR it is reported that none were. This is the point of the task: the
       question is not "are the tests tidy" but "what were these tests not telling
       us". Measure it; do not assume the answer either way.
-- [ ] AC6 — The lint's own control fails against pre-change code. Fixtures only
+- [x] AC6 — The lint's own control fails against pre-change code. Fixtures only
       (L-599) — no assertion pinned to a live test file, since those are exactly
       what this task edits. Report "N of M fail against pre-change" and name
       regression guards separately.
@@ -192,6 +204,24 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# AC2 + AC4: the whole tests/ tree is clean. Asserts the PARTITION, not a count:
+# "dead 0" survives the corpus growing, which a pinned total would not.
+tools/bats-dead-negation-lint.py tests > /tmp/.t3138l 2>&1 && grep -q "dead 0 in 0 file" /tmp/.t3138l
+# AC1: the mechanism, re-derived by running bats on fixtures rather than asserted.
+bats tests/unit/errexit_negation_mechanism.bats > /tmp/.t3138b 2>&1 && grep -q "^ok 7 " /tmp/.t3138b && ! grep -q "^not ok" /tmp/.t3138b
+# AC3: the gate runs under the verb that collects tests/lint/ — proving the wiring,
+# not just the file's existence. `fw test invariants`, not `fw test lint`: see Decisions.
+bin/fw test invariants tests/lint/bats-dead-negation.bats > /tmp/.t3138d 2>&1 && grep -q "^ok 13 " /tmp/.t3138d && ! grep -q "^not ok" /tmp/.t3138d
+# AC4: the one repaired continuation site actually runs. This file's test 5 executed
+# `lib/ agents/ bin/fw` as a command (status 126) after the first sweep orphaned a
+# line continuation; it is the regression anchor for that class.
+bats tests/unit/t3051_exec_bit_gates.bats > /tmp/.t3138e 2>&1 && grep -q "^ok 5 " /tmp/.t3138e && ! grep -q "^not ok" /tmp/.t3138e
+# AC5: the defect the revived assertion exposed is filed, not just described here.
+ls .tasks/active/T-3143-*.md > /dev/null
+# AC6: every mutant of the lint is killed by the lint's own suite. Asserts the
+# ratio the harness prints, not a hand-copied number — a survivor turns this red.
+tools/bats-dead-negation-mutants.py > /tmp/.t3138m 2>&1 && grep -q "^8 of 8 mutants killed" /tmp/.t3138m
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -207,6 +237,29 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 99 assertions across 62 bats files could not fail the tests they
+were written into. Each read as a normal negative assertion.
+
+**Root cause:** bash exempts a `!`-inverted command from errexit. Bats reports a
+test's verdict from its body's exit status, so a non-final `!` line is checked
+by neither mechanism. Measured, not inferred:
+`tests/unit/errexit_negation_mechanism.bats` runs bats on fixtures for all six
+cases and reads the verdicts back.
+
+**Why structurally allowed:** the defect is output-identical to correctness. A
+dead assertion prints nothing, fails nothing and changes no exit code — it is
+indistinguishable at runtime from an assertion that passed. Every existing
+control here (bats itself, `fw test unit`, the audit invariant suite) observes
+runtime behaviour, so none of them could see it. That is the same false-green
+shape as T-3140 (`fw gaps` rendering an allowlist) and L-575: **a check that
+cannot see its subject reports the same thing as one that found nothing.**
+
+**Prevention:** `tools/bats-dead-negation-lint.py`, a source lint, wired into
+`fw test invariants` via `tests/lint/bats-dead-negation.bats` with a
+zero-tolerance assertion and no allowance. An allowance is a number somebody has
+to remember to shrink, and nothing ever prompted anyone to look — which is how
+this reached 99.
 
 ## Evolution
 
@@ -272,6 +325,47 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-08-25 — the filed count was wrong, and correcting it was the work
+
+- **Chose:** report 99 dead across 62 files, not the filed 106 across 66.
+- **Why:** the first draft implemented AC2's literal wording — "a line whose
+  first token is `!` and which is NOT the last statement". Reviewing the flagged
+  sites before converting them showed seven the rule mis-classified. Four are
+  `! cmd || { ...; return 1; }`: the `!` exempts its own pipeline, but that
+  pipeline is not the last command of the `||` list, so the guard branch IS
+  checked and the assertion fires. Three are line-continued statements whose `!`
+  line is not the last PHYSICAL line but is the last LOGICAL one.
+- **Rejected:** converting all 106 as filed. Two of the seven would have been
+  broken by the conversion rather than fixed, and the other five would have been
+  rewritten for no reason — churn presented as remediation.
+- **Note:** the `&&` case is deliberately still flagged. In `! cmd && cmd2`, the
+  failure that matters makes `! cmd` return 1, which short-circuits, so the
+  status reaching errexit IS the inverted one and IS exempt. The asymmetry with
+  `||` was measured, not assumed.
+
+### 2026-08-25 — wired into `fw test invariants`, not `fw test lint`
+
+- **Chose:** `tests/lint/bats-dead-negation.bats`, collected by
+  `fw test invariants` (and by `fw test all`).
+- **Why:** `fw test lint` is shellcheck, by deliberate design — T-2697's own
+  comment in `bin/fw` records that `tests/lint/` was globbed by no runner for
+  months precisely because the obvious verb was taken, and named the new verb
+  `invariants` "so the collision cannot recur". Wiring a second meaning into
+  `lint` would re-create the condition that comment exists to prevent.
+- **Rejected:** editing the `lint)` branch of `bin/fw` as AC3 words it. It would
+  also have meant touching a file carrying another task's uncommitted edits.
+
+### 2026-08-25 — `if X; then false; fi` as the universal conversion
+
+- **Chose:** `[[ a != b ]]` where the negation fits inside one test command (23
+  sites), `if X; then false; fi` everywhere else (76 sites).
+- **Why:** errexit is suppressed only in an `if` CONDITION; the branch body is
+  checked normally. That makes it safe for the shapes `[[ ]]` cannot hold —
+  pipelines, env-var prefixes, redirects. Verified by fixture, not by reasoning.
+- **Rejected:** `! X || false`, which also fires (case E in the mechanism
+  fixture) but reads as a puzzle. The measurement is kept in the fixture anyway
+  so the next reader does not have to redo it to find out why.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -281,6 +375,52 @@ bvp_scores_proposed:
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Results
+
+**AC4 — conversion.** 99 of 99 converted, 0 left behind. 23 became
+`[[ x != y ]]` (the negation moves inside one test command); 76 became
+`if X; then false; fi` (errexit is suppressed only in an `if` condition, never in
+its body). Two needed a second pass: the sweep replaced the first physical line
+of a line-continued statement and orphaned the continuation, which bash then ran
+as its own command — `tests/unit/t3051_exec_bit_gates.bats` executed
+`lib/ agents/ bin/fw` and exited 126. Both repaired and re-run green. The lint
+now carries a note about this for anyone else consuming its output.
+
+**AC5 — what the dead assertions were hiding: one real defect, filed as T-3143.**
+All 62 touched files were re-run and every failure attributed by line number.
+Exactly one failure landed on a converted line:
+`tests/unit/t3073_c001_recommendation_bearing_inceptions.bats:329`. The revived
+assertion says the C-001 audit must not WARN about `T-9203`; it does. Reading
+`agents/audit/audit.sh:4165-4205` explains why — `c001_missing` is incremented
+only for `issue_type = missing`, so an `unreferenced` WARN leaves the counter at
+zero and the run emits **`[PASS] C-001: All inceptions have research artifacts`
+in the same output as its own C-001 WARN.** The PASS line's wording claims more
+than the counter behind it measures. Same false-green family as T-3140 and
+L-575. The assertion that would have caught it has been inert since the file was
+written.
+
+Nine other tests fail across six files (`t100195_diverged_fork`,
+`t2267_self_vendor_web`, `t3095_audit_branch_hygiene`, `task_id_race`,
+`fabric_watch_pattern_fitness`, `t2862_greenfield_first_inception_e2e`) — all at
+lines this task did not touch, and so pre-existing.
+`tests/lint/no-untracked-test-files.bats` failed only while this task's own new
+files were untracked.
+
+**AC6 — control.** "Fails against pre-change code" is degenerate for a net-new
+tool: before this task the lint did not exist, so all 13 tests fail trivially and
+the number says nothing. Reported honestly as 13 of 13, and replaced with the
+control that does discriminate: `tools/bats-dead-negation-mutants.py` disables
+one lint behaviour at a time and requires the suite to go red. **8 of 8 mutants
+killed.** Two are regression guards in the ordinary sense (M7 empty-scan refusal,
+M5 quote-awareness) — each is killed by exactly one test.
+
+That harness earned its place immediately. On its first run M3 SURVIVED, which is
+the only reason anyone re-read the here-string guard — and the guard was wrong,
+matching `<<< hi` and swallowing the rest of a file as heredoc data. Fixing it
+took two rounds: a lookahead alone still matches, because from one character in,
+the second and third `<` form a valid `<<`. M3b now pins that intermediate wrong
+version specifically.
 
 ## Updates
 

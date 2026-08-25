@@ -123,7 +123,7 @@ _iter() {
     # on the ASCII substring downstream consumers actually receive.
     echo "$output" | grep -q "LOOP TERMINATED"
     # The directive itself is NOT surfaced for auto-pickup once terminated.
-    ! echo "$output" | grep -q "Continue the loop. No task ref here."
+    if echo "$output" | grep -q "Continue the loop. No task ref here."; then false; fi
     # Shipped spec (unit test test_loop_terminated_state_records_reason): the
     # counter records the over-cap attempt (new_iter = cap+1 = 3). What the cap
     # withholds is the directive, not the increment.
@@ -157,6 +157,6 @@ _iter() {
     _directive "Continue the loop. No task ref here."
     _run_hook resume
     [ "$status" -eq 0 ]
-    ! echo "$output" | grep -q "## Next Directive"
+    [[ "$output" != *"## Next Directive"* ]]
     [ "$(_iter)" -eq 0 ]
 }

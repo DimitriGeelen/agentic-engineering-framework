@@ -127,7 +127,7 @@ YAML
     [ "$status" -eq 0 ]
     [[ "$output" == *"would sync 2 web/ file(s)"* ]]
     [[ "$output" != *"Self-vendor:"*" synced 2 web/"* ]]
-    ! diff -q "$syn_fw/web/blueprints/x.py" "$syn_fw/.agentic-framework/web/blueprints/x.py" >/dev/null 2>&1
+    if diff -q "$syn_fw/web/blueprints/x.py" "$syn_fw/.agentic-framework/web/blueprints/x.py" >/dev/null 2>&1; then false; fi
     [ ! -f "$syn_fw/.agentic-framework/web/smoke.sh" ]
 }
 

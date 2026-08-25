@@ -102,7 +102,7 @@ commit_all() { git -C "$1" add -A && git -C "$1" commit -qm "${2:-T-3107: fixtur
     echo "$output" | grep -q '2 ID(s) byte-identical in every view'
     echo "$output" | grep -q '^COUNTS|pass=1|warn=0|fail=0$'
     # A replica is NOT a finding: neither ID may be named as a collision.
-    ! echo "$output" | grep -q '^FAIL|'
+    if echo "$output" | grep -q '^FAIL|'; then false; fi
     ! echo "$output" | grep -qi 'collision'
 }
 
@@ -156,7 +156,7 @@ commit_all() { git -C "$1" add -A && git -C "$1" commit -qm "${2:-T-3107: fixtur
     echo "$output" | grep -q "$TEST_DIR/wt1/.tasks/active/T-9-omega.md"
     echo "$output" | grep -q '|warn=1|fail=0$'
     # WARN, not FAIL: a fork artifact is historical, an in-view duplicate is live
-    ! echo "$output" | grep -q '^FAIL|'
+    if echo "$output" | grep -q '^FAIL|'; then false; fi
     ! echo "$output" | grep -q '^PASS|'
 }
 
@@ -191,7 +191,7 @@ commit_all() { git -C "$1" add -A && git -C "$1" commit -qm "${2:-T-3107: fixtur
     scan "$TEST_DIR/main/.tasks"
     echo "$output" | grep -q '^PASS|'
     echo "$output" | grep -q '1 ID(s) byte-identical in every view'
-    ! echo "$output" | grep -q '^WARN|'
+    if echo "$output" | grep -q '^WARN|'; then false; fi
     ! echo "$output" | grep -q '^FAIL|'
 }
 
@@ -207,12 +207,12 @@ commit_all() { git -C "$1" add -A && git -C "$1" commit -qm "${2:-T-3107: fixtur
     # same slug, different bytes.
     mktask "$TEST_DIR/main/.tasks/active" T-5 delta 2026-05-05T00:00:00Z "revised body, much longer than before"
     commit_all "$TEST_DIR/main"
-    ! cmp -s "$TEST_DIR/main/.tasks/active/T-5-delta.md" "$TEST_DIR/wt1/.tasks/active/T-5-delta.md"
+    if cmp -s "$TEST_DIR/main/.tasks/active/T-5-delta.md" "$TEST_DIR/wt1/.tasks/active/T-5-delta.md"; then false; fi
 
     scan "$TEST_DIR/main/.tasks"
     echo "$output" | grep -q '^PASS|'
     echo "$output" | grep -q '1 same-task at differing revisions'
-    ! echo "$output" | grep -q '^WARN|'
+    if echo "$output" | grep -q '^WARN|'; then false; fi
     ! echo "$output" | grep -q 'FORK T-5'
 }
 
@@ -285,7 +285,7 @@ commit_all() { git -C "$1" add -A && git -C "$1" commit -qm "${2:-T-3107: fixtur
     [ -n "$block" ]
     echo "$block" | grep -q 'fw_task_view_dirs'
     # no bare pass "..." — every verdict routes through T-3105's emitters
-    ! echo "$block" | grep -qE '^[[:space:]]*pass "'
+    if echo "$block" | grep -qE '^[[:space:]]*pass "'; then false; fi
     # and no hand-rolled corpus root: the old block hard-coded TASKS_DIR
     ! echo "$block" | grep -q "environ.get('TASKS_DIR'"
 }

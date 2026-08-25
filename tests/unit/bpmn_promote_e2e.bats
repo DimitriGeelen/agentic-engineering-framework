@@ -79,7 +79,7 @@ _promote() {
     grep -q "^owner: human" "$af"
 
     # Real repo untouched: no fixture-derived task leaked into the real .tasks/.
-    ! grep -rlq "uid: u-compile-002" .tasks/active/ 2>/dev/null
+    if grep -rlq "uid: u-compile-002" .tasks/active/ 2>/dev/null; then false; fi
     # Real focus.yaml unchanged by the run.
     diff -q "$FOCUS_BAK" "$REAL_FOCUS" >/dev/null 2>&1 || [ ! -s "$FOCUS_BAK" ]
 }
@@ -192,6 +192,6 @@ PY
     grep -q "Recommendation:.*DEFER" "$inf"
 
     # Real repo untouched.
-    ! grep -rlq "uid: n_plan" .tasks/active/ 2>/dev/null
+    if grep -rlq "uid: n_plan" .tasks/active/ 2>/dev/null; then false; fi
     ! grep -rlq "uid: n_inception" .tasks/active/ 2>/dev/null
 }

@@ -118,7 +118,7 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"WROTE: DEFER stub"* ]] || [[ "$output" == *"Retrofit applied"* ]]
     grep -q "^\*\*Recommendation:\*\* DEFER" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md"
-    ! grep -q "REQUIRED before fw inception decide" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md"
+    if grep -q "REQUIRED before fw inception decide" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md"; then false; fi
     grep -q "T-1716" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md"
 }
 

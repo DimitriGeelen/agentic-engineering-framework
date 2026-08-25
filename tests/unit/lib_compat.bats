@@ -59,6 +59,6 @@ teardown() {
 @test "compat: _sed_i handles delete expression" {
     printf "keep\ndelete_me\nkeep_too\n" > "$TEST_TEMP_DIR/delete.txt"
     _sed_i '/delete_me/d' "$TEST_TEMP_DIR/delete.txt"
-    ! grep -q "delete_me" "$TEST_TEMP_DIR/delete.txt"
+    if grep -q "delete_me" "$TEST_TEMP_DIR/delete.txt"; then false; fi
     grep -q "keep" "$TEST_TEMP_DIR/delete.txt"
 }

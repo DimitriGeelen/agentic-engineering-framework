@@ -46,7 +46,7 @@ teardown() {
     # Frontmatter `id:` updated
     grep -qE "^id: T-999\s*$" "$PROJECT/.tasks/active/T-999-hello-world.md"
     # Old id: is gone
-    ! grep -qE "^id: T-500\s*$" "$PROJECT/.tasks/active/T-999-hello-world.md"
+    if grep -qE "^id: T-500\s*$" "$PROJECT/.tasks/active/T-999-hello-world.md"; then false; fi
     # Update entry appended
     grep -q "reid \[fw-task\]" "$PROJECT/.tasks/active/T-999-hello-world.md"
     grep -q "T-500 → T-999" "$PROJECT/.tasks/active/T-999-hello-world.md"

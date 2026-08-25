@@ -184,7 +184,7 @@ _make_no_rsync_path() {
     mkdir -p "$dest"
     local no_rsync_path
     no_rsync_path="$(_make_no_rsync_path)"
-    ! PATH="$no_rsync_path" command -v rsync >/dev/null 2>&1   # sanity: the farm really hides rsync
+    if PATH="$no_rsync_path" command -v rsync >/dev/null 2>&1; then false; fi   # sanity: the farm really hides rsync
 
     PATH="$no_rsync_path" run "$FW_BIN" vendor --target "$dest" --source "$src"
     [ "$status" -eq 0 ]

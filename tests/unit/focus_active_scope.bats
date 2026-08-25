@@ -107,7 +107,7 @@ _focus() {
     # fail against CORRECT code — a red that sends the next reader to debug working software.
     sed 's|find_task_file "\$task_id" active|find_task_file "$task_id"|' \
         "$FOCUS_SH" > "$mutant"
-    ! diff -q "$FOCUS_SH" "$mutant" >/dev/null   # the mutation actually applied
+    if diff -q "$FOCUS_SH" "$mutant" >/dev/null; then false; fi   # the mutation actually applied
     bash -n "$mutant"                            # a mutant that cannot parse is not evidence (OBS-193)
 
     local root; root=$(_sandbox z)

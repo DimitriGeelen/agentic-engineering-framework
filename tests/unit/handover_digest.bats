@@ -206,7 +206,7 @@ PY
         bash "$FW_ROOT/agents/handover/handover.sh" --session S-EMPTY \
         >/dev/null 2>&1 || true
     [ -s "$empty/out/S-EMPTY.md" ]
-    ! grep -q '^## Observation Inbox' "$empty/out/S-EMPTY.md"
+    if grep -q '^## Observation Inbox' "$empty/out/S-EMPTY.md"; then false; fi
     ! grep -q '^## Awaiting Your Action' "$empty/out/S-EMPTY.md"
 }
 

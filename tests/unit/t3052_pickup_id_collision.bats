@@ -261,7 +261,7 @@ EOF
     run bash -c "PROJECT_ROOT='$TMP_PROJECT' NO_COLOR=1
                  sed 's#pickup_write_breadcrumb \"\$deferred_path\"#pickup_write_breadcrumb \"\$PICKUP_AUTO_DEFERRED/\$basename_f\"#' \
                      '$PICKUP_LIB' > '$TMP_PROJECT/m4.sh'
-                 ! cmp -s '$TMP_PROJECT/m4.sh' '$PICKUP_LIB'
+                 if cmp -s '$TMP_PROJECT/m4.sh' '$PICKUP_LIB'; then false; fi
                  source '$TMP_PROJECT/m4.sh'
                  pickup_process_one '$D/inbox/P-007-learning.yaml' >/dev/null 2>&1"
 

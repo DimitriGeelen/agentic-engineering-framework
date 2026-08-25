@@ -216,7 +216,7 @@ EOF
     grep -q 'owner: agent' .tasks/active/T-9-demo.md
     # body always comes from the branch (ours)
     grep -q 'BODY-OURS' .tasks/active/T-9-demo.md
-    ! grep -q 'BODY-THEIRS' .tasks/active/T-9-demo.md
+    if grep -q 'BODY-THEIRS' .tasks/active/T-9-demo.md; then false; fi
     # ISO Z timestamp preserved (not reformatted to a datetime)
     grep -q '2026-06-02T00:00:00Z' .tasks/active/T-9-demo.md
 }

@@ -95,7 +95,7 @@ run_router_in() {
         bash -c "cd '$BARE' && '$ROUTER' init" \
         >"$BATS_TEST_TMPDIR/out" 2>"$BATS_TEST_TMPDIR/err"
     grep -q "bootstrapping into" "$BATS_TEST_TMPDIR/err"
-    ! grep -q "bootstrapping into" "$BATS_TEST_TMPDIR/out"
+    if grep -q "bootstrapping into" "$BATS_TEST_TMPDIR/out"; then false; fi
     # Non-vacuity: the installer's own output DID reach stdout, so the assertion
     # above is about routing of the announcement, not about an empty stream.
     grep -q "stub-installer-ran" "$BATS_TEST_TMPDIR/out"

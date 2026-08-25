@@ -67,7 +67,7 @@ _start_foreign_watchtower() {
     run env PROJECT_ROOT="$PROJ" FW_PORT="$DEAD_PORT" "$(WT)" url
     [ "$status" -ne 0 ]
     # The old behaviour, spelled out so a regression is unmistakable.
-    ! echo "$output" | grep -q "http://localhost:$DEAD_PORT"
+    if echo "$output" | grep -q "http://localhost:$DEAD_PORT"; then false; fi
     echo "$output" | grep -q 'Nothing is listening'
     echo "$output" | grep -q 'fw serve'
 }
@@ -79,7 +79,7 @@ _start_foreign_watchtower() {
 
     run env PROJECT_ROOT="$PROJ" FW_PORT="$fport" "$(WT)" url
     [ "$status" -ne 0 ]
-    ! echo "$output" | grep -q "http://localhost:$fport"
+    if echo "$output" | grep -q "http://localhost:$fport"; then false; fi
     # Must not read as "not running" — the fix is different (pick another port),
     # and curling it is the actual hazard.
     echo "$output" | grep -q 'not this'

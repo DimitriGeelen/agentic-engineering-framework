@@ -193,7 +193,7 @@ _run_scanner() {
 
     # The mutation must actually have changed something, or this test is vacuous
     # in precisely the way it exists to prevent...
-    ! diff -q "$SCANNER" "$mutant" >/dev/null
+    if diff -q "$SCANNER" "$mutant" >/dev/null; then false; fi
     # ...and the mutant must still be a valid script, so a red finding leg below
     # means "the report was suppressed", not "the scanner failed to parse".
     bash -n "$mutant"

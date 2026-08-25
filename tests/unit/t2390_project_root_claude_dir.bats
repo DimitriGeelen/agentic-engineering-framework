@@ -60,6 +60,6 @@ teardown() {
     run env -u PROJECT_ROOT CLAUDE_PROJECT_DIR="$empty" bash "$FW" version
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "Project:.*$DECOY"
-    ! echo "$output" | grep -q "Project:.*$empty"
+    if echo "$output" | grep -q "Project:.*$empty"; then false; fi
     rm -rf "$empty"
 }

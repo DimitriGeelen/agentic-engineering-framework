@@ -136,7 +136,7 @@ YAML
     # Dry-run must NOT print the real-run verb (catches regression of the split)
     [[ "$output" != *"Self-vendor:"*" synced 2 agents/"* ]]
     # Dry-run: the vendored copy is NOT mutated
-    ! diff -q "$syn_fw/agents/foo/changed.sh" "$syn_fw/.agentic-framework/agents/foo/changed.sh" >/dev/null 2>&1
+    if diff -q "$syn_fw/agents/foo/changed.sh" "$syn_fw/.agentic-framework/agents/foo/changed.sh" >/dev/null 2>&1; then false; fi
     # Dry-run: NOT created in vendored copy either
     [ ! -f "$syn_fw/.agentic-framework/agents/bar/new.py" ]
 }

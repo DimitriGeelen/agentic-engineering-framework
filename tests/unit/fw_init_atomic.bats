@@ -80,10 +80,10 @@ teardown() {
     # keeps bats from reading it as a missing-binary accident (BW01).
     run -127 env FW_GLOBAL_ROOT="$TEST_TEMP_DIR/global" "$(ROUTER)"
     # The partial CLI must NOT have run.
-    ! echo "$output" | grep -q 'ROUTED-TO-VENDOR'
+    [[ "$output" != *"ROUTED-TO-VENDOR"* ]]
     # …and nothing may reach a global either. The stub in setup() is present and
     # executable, so this fires if a fallback is ever reintroduced.
-    ! echo "$output" | grep -q 'ROUTED-TO-GLOBAL'
+    [[ "$output" != *"ROUTED-TO-GLOBAL"* ]]
     # The state must be named, not silently worked around. (T-2805 reworded this
     # from "unfinished init" — the same state arises from debris with no init
     # behind it at all, which the old phrasing misdescribed.)
@@ -119,7 +119,7 @@ teardown() {
     echo "$output" | grep -q 'is incomplete'
     # The generic message would send the user off to install something they
     # already have, hiding that the fix is to finish an init that started.
-    ! echo "$output" | grep -q 'no framework found'
+    [[ "$output" != *"no framework found"* ]]
     # A runnable way out, both directions.
     echo "$output" | grep -q 'install.sh'
     echo "$output" | grep -q 'rm -rf'

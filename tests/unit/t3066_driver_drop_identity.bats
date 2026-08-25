@@ -135,7 +135,7 @@ print(json.loads(open('$SCRATCH/.context/bvp-driver-proposals.jsonl').readlines(
         --drop F2 --drop-name V_BETA --from-watchtower
     [ "$status" -eq 0 ]
     names | grep -q '^V_NEW$'
-    ! names | grep -q '^V_BETA$'
+    if names | grep -q '^V_BETA$'; then false; fi
     [ "$(names | wc -l)" -eq 9 ]
 }
 
@@ -161,7 +161,7 @@ print(json.loads(open('$SCRATCH/.context/bvp-driver-proposals.jsonl').readlines(
     [ "$status" -ne 0 ]
     echo "$output" | grep -q -- "requires --drop-name"
     echo "$output" | grep -q "V_ALPHA"        # tells them what F1 means right now
-    ! names | grep -q '^V_NEW$'
+    if names | grep -q '^V_NEW$'; then false; fi
     names | grep -q '^V_ALPHA$'
 }
 

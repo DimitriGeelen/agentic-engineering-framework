@@ -149,8 +149,8 @@ run_create() {
     # (the upstream do_inception_start may log its own override separately).
     local log="$CONTEXT_DIR/working/.gate-bypass-log.yaml"
     if [ -f "$log" ]; then
-        ! grep -q "FW_INCEPTION_PRE_GATED" "$log"
-        ! grep -q "Pre-gated filing" "$log"
+        if grep -q "FW_INCEPTION_PRE_GATED" "$log"; then false; fi
+        if grep -q "Pre-gated filing" "$log"; then false; fi
     fi
 }
 

@@ -154,7 +154,7 @@ teardown() {
         bash "$FRAMEWORK_ROOT/lib/consumer-recover.sh" \
         testhost /tmp/foo --upstream https://test/repo.git --keep-temp
     [ "$status" -eq 0 ]
-    ! echo "$output" | grep -q "trap 'rm -rf"
+    [[ "$output" != *"trap 'rm -rf"* ]]
     echo "$output" | grep -q "keep-temp: tempdir left on host"
 }
 
@@ -183,7 +183,7 @@ teardown() {
         bash "$FRAMEWORK_ROOT/lib/consumer-recover.sh" \
         testhost /tmp/foo --upstream "https://SECRETTOKEN@host.test/repo.git"
     [ "$status" -eq 0 ]
-    ! echo "$output" | grep -q "SECRETTOKEN"
+    [[ "$output" != *"SECRETTOKEN"* ]]
     echo "$output" | grep -q "https://host.test/repo.git"
 }
 

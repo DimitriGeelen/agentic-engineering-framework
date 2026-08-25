@@ -98,7 +98,7 @@ run_gate() {  # run_gate <gate-script> <project-root> <file-path>
 
 @test "A4 — mutation: dropping the hook-enable mention turns the check red" {
     sed 's/hook-enable/REDACTED-VERB/g' "$GATE" > "$TMP/mutant.sh"
-    ! cmp -s "$TMP/mutant.sh" "$GATE"          # the substitution must have landed
+    if cmp -s "$TMP/mutant.sh" "$GATE"; then false; fi          # the substitution must have landed
     run run_gate "$TMP/mutant.sh" "$FRAMEWORK_ROOT" "$FRAMEWORK_ROOT/.claude/settings.json"
     [[ "$output" != *"hook-enable"* ]]
 }

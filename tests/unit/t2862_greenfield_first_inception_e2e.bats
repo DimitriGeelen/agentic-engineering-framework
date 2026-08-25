@@ -101,8 +101,8 @@ PY
     grep -qE '^\*\*Decision\*\*: *GO' "$TASK"
 
     # And prove it was not reached by tripping any gate along the way.
-    ! echo "$output" | grep -q 'agent AC unchecked'
-    ! echo "$output" | grep -q 'Cannot complete'
+    [[ "$output" != *"agent AC unchecked"* ]]
+    [[ "$output" != *"Cannot complete"* ]]
     ! echo "$output" | grep -q 'Recommendation section required'
 }
 

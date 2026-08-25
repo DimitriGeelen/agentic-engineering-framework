@@ -85,7 +85,7 @@ setup() {
     run fw_branch_hygiene "$CLONE"
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "^remote-contained origin/old-feat$"
-    ! echo "$output" | grep -q "remote-contained origin/ahead-feat"
+    [[ "$output" != *"remote-contained origin/ahead-feat"* ]]
     ! echo "$output" | grep -q "remote-contained origin/master"
 }
 

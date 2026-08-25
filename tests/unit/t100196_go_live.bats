@@ -49,7 +49,7 @@ setup() {
     [ "$status" -eq 1 ]
     echo "$output" | grep -qi "REFUSED"
     echo "$output" | grep -qi "diverged-fork"
-    ! echo "$output" | grep -qi "fast-forward"
+    if echo "$output" | grep -qi "fast-forward"; then false; fi
     # never attempted a merge: HEAD unchanged, no MERGE_HEAD left behind
     [ "$(git -C "$CLONE" rev-parse HEAD)" = "$HEAD_BEFORE" ]
     [ ! -f "$CLONE/.git/MERGE_HEAD" ]
@@ -84,7 +84,7 @@ setup() {
     [ "$status" -eq 0 ]
     echo "$output" | grep -qi "behind-threshold"
     echo "$output" | grep -qi "fw integrate run"
-    ! echo "$output" | grep -qi "REFUSED"
+    if echo "$output" | grep -qi "REFUSED"; then false; fi
     # advisory only — never attempts a merge
     [ "$(git -C "$CLONE" rev-parse HEAD)" = "$HEAD_BEFORE" ]
     [ ! -f "$CLONE/.git/MERGE_HEAD" ]

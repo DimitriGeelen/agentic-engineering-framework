@@ -110,6 +110,6 @@ teardown() {
     # Regression guard — the || true and the `if type keylock_acquire` guard
     # are the exact anti-patterns T-1424 removed. Reintroducing either
     # reopens the silent-race window.
-    ! grep -q 'keylock.sh" 2>/dev/null || true' "$FRAMEWORK_ROOT/agents/task-create/create-task.sh"
+    if grep -q 'keylock.sh" 2>/dev/null || true' "$FRAMEWORK_ROOT/agents/task-create/create-task.sh"; then false; fi
     ! grep -q 'if type keylock_acquire' "$FRAMEWORK_ROOT/agents/task-create/create-task.sh"
 }

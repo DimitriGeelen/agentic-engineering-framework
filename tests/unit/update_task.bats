@@ -180,7 +180,7 @@ EVIDENCE
     # demote should still fire.
     sed -i 's/^- \[ \]/- [x]/' "$TASK_FILE"
     # Confirm no Recommendation marker exists
-    ! grep -q "^\*\*Recommendation:\*\*" "$TASK_FILE"
+    if grep -q "^\*\*Recommendation:\*\*" "$TASK_FILE"; then false; fi
 
     run "$UPDATE_TASK" "$TASK_ID" --horizon next
     [ "$status" -eq 0 ]

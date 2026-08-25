@@ -56,8 +56,8 @@ _require_audit_ran() {
     # fires correctly are indistinguishable.
     _project "$TEST_TEMP_DIR/p"
     local out; out="$(_audit "$TEST_TEMP_DIR/p")"; _require_audit_ran "$out"
-    ! echo "$out" | grep -q "point at files no watch pattern covers"
-    ! echo "$out" | grep -q "matches 0 files while"
+    [[ "$out" != *"point at files no watch pattern covers"* ]]
+    [[ "$out" != *"matches 0 files while"* ]]
     # and the fitting case must actually reach the PASS, not fall out earlier
     echo "$out" | grep -q "Fabric drift: all 1 watched file(s) registered"
 }
@@ -139,6 +139,6 @@ _require_audit_ran() {
     echo "$blk" | grep -q "registered"
     echo "$blk" | grep -q "watched_set"
     for smell in '"web"' '"agents"' '"src"' '"lib"'; do
-        ! echo "$blk" | grep -q "$smell"
+        if echo "$blk" | grep -q "$smell"; then false; fi
     done
 }

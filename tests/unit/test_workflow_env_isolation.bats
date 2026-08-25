@@ -45,7 +45,7 @@ setup() {
     # Privacy guarantee: env values may be secrets (API keys). Only key names land
     # in meta.json so log shipping / Watchtower display can't accidentally exfiltrate.
     grep -q '"env_keys": \$env_keys_json' "$TL_BIN"
-    ! grep -q "env_values" "$TL_BIN"
+    if grep -q "env_values" "$TL_BIN"; then false; fi
     # The construction loop appends keys only, not values, to env_keys_json.
     grep -qE '_key_list\+="\\"\$k\\"' "$TL_BIN"
 }

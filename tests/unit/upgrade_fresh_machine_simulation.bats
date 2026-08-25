@@ -252,7 +252,7 @@ YAML
     # The file the process executed from must now be different (marker gone)
     # AND still be a valid, runnable script (rename-over-open-fd did not
     # leave a truncated/corrupt file).
-    ! grep -q "T2793-SELFREPLACE-MARKER-STALE" "$fw_bin"
+    if grep -q "T2793-SELFREPLACE-MARKER-STALE" "$fw_bin"; then false; fi
     run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" bash -c "cd '$proj' && '$fw_bin' --version"
     [ "$status" -eq 0 ]
     [[ "$output" =~ [0-9]+\.[0-9]+\.[0-9]+ ]]

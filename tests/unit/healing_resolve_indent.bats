@@ -99,7 +99,7 @@ EOF
     run _resolve
     [ "$status" -eq 0 ]
     grep -q "^- id: L-005$" "$CONTEXT_DIR/project/learnings.yaml"
-    ! grep -q "^  - id: L-" "$CONTEXT_DIR/project/learnings.yaml"
+    if grep -q "^  - id: L-" "$CONTEXT_DIR/project/learnings.yaml"; then false; fi
     python3 -c "import yaml; yaml.safe_load(open('$CONTEXT_DIR/project/learnings.yaml'))"
 }
 
@@ -118,7 +118,7 @@ EOF
     run _resolve
     [ "$status" -eq 0 ]
     grep -q "^- id: FP-004$" "$PATTERNS_FILE"
-    ! grep -q "^  - id: FP-004" "$PATTERNS_FILE"
+    if grep -q "^  - id: FP-004" "$PATTERNS_FILE"; then false; fi
     python3 -c "import yaml; yaml.safe_load(open('$PATTERNS_FILE'))"
 }
 

@@ -234,7 +234,7 @@ YAML
     # Correct branch: "No active task"
     echo "$output" | grep -q "No active task"
     # Session ID MUST NOT appear as a task in the error
-    ! echo "$output" | grep -q "Task S-FAKE-SESSION-XYZ is not active"
+    [[ "$output" != *"Task S-FAKE-SESSION-XYZ is not active"* ]]
     ! echo "$output" | grep -q "S-FAKE-SESSION-XYZ is not active"
 }
 

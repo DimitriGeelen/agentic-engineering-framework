@@ -104,8 +104,8 @@ EOF
     run "$FRAMEWORK_ROOT/bin/fw" orchestrator next-dispatch
     [ "$status" -eq 0 ]
     # Neither should appear as `parallel` mode
-    ! [[ "$output" == *"T-OVL-A"$'\t'"parallel"* ]]
-    ! [[ "$output" == *"T-OVL-B"$'\t'"parallel"* ]]
+    [[ "$output" != *"T-OVL-A"$'\t'"parallel"* ]]
+    [[ "$output" != *"T-OVL-B"$'\t'"parallel"* ]]
     [[ "$output" == *"T-OVL-A"$'\t'"serial"* ]]
     [[ "$output" == *"T-OVL-B"$'\t'"serial"* ]]
 }

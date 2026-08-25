@@ -121,6 +121,6 @@ _plant_postscript() {
 @test "T-2990: the /os and /sys ignore rules stay removed" {
     # They were the reason instances 1 and 2 were invisible. Re-adding them
     # would blind git status again, so the absence is pinned, not trusted.
-    ! grep -qx '/os'  "$FRAMEWORK_ROOT/.gitignore"
+    if grep -qx '/os'  "$FRAMEWORK_ROOT/.gitignore"; then false; fi
     ! grep -qx '/sys' "$FRAMEWORK_ROOT/.gitignore"
 }

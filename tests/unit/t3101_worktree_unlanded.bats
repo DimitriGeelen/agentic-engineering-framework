@@ -104,7 +104,7 @@ _strand_worktree() {
     run fw_branch_hygiene "$LOCAL"
     [ "$status" -eq 0 ]
     # no origin/master anywhere in this repo — the finding proves master was used
-    ! git -C "$LOCAL" rev-parse --verify -q origin/master >/dev/null 2>&1
+    if git -C "$LOCAL" rev-parse --verify -q origin/master >/dev/null 2>&1; then false; fi
     echo "$output" | grep -q "^worktree-unlanded $FIX/lo-strand branch=lo-strand ahead=1 days=0$"
 }
 

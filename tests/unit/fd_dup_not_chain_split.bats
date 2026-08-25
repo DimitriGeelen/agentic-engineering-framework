@@ -50,15 +50,15 @@ _segs()    { bash -c "source '$LIB'; _fw_chain_split \"\$1\"" _ "$1"; }
 @test "T-2879: CONTROL — >& file is a WRITE and stays gated" {
     # The whole reason the fix tests the NEXT character rather than only the previous
     # one. `>&` followed by a filename redirects both streams into that file.
-    ! _allowed 'ls >& out.txt'
+    if _allowed 'ls >& out.txt'; then false; fi
     ! _allowed 'bin/fw doctor >& /tmp/captured'
 }
 
 @test "T-2879: CONTROL — && still splits, so an unsafe tail still gates" {
     # If the fix over-matched, the `&&` chain would collapse into one segment and the
     # `rm -rf` would ride in on `fw doctor`'s safety. This is the OBS-184 shape.
-    ! _allowed 'bin/fw doctor 2>&1 && rm -rf /tmp/x'
-    ! _allowed 'bin/fw doctor 2>&1 | python3 -c "import os; os.remove(1)"'
+    if _allowed 'bin/fw doctor 2>&1 && rm -rf /tmp/x'; then false; fi
+    if _allowed 'bin/fw doctor 2>&1 | python3 -c "import os; os.remove(1)"'; then false; fi
     ! _allowed 'bin/fw config set FOO bar 2>&1'
 }
 

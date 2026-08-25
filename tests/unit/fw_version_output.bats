@@ -104,7 +104,7 @@ teardown() {
     run env -u FRAMEWORK_ROOT PROJECT_ROOT="$TEST_TEMP_DIR/legacy" "$(FW)" --version
     [ "$status" -eq 0 ]
     echo "$output" | grep -q 'undetermined'
-    ! echo "$output" | grep -q 'BEHIND'
+    [[ "$output" != *"BEHIND"* ]]
     ! echo "$output" | grep -q 'AHEAD'
 }
 

@@ -147,7 +147,7 @@ PY
 @test "A4 — mutation: removing the drift.sh skip flags the URL again" {
     card saas-billing "Billing SaaS" "https://billing.example.com/account"
     sed 's#\[a-zA-Z\]\*://\*) continue ;;#[a-zA-Z]*://*) : ;;#' "$DRIFT" > "$TMP/m.sh"
-    ! cmp -s "$TMP/m.sh" "$DRIFT"          # the substitution must have landed
+    if cmp -s "$TMP/m.sh" "$DRIFT"; then false; fi          # the substitution must have landed
     run run_drift "$TMP/m.sh"
     [[ "$output" == *"file missing"* ]]
 }
@@ -169,7 +169,7 @@ PY
     card saas-billing "Billing SaaS" "https://billing.example.com/account"
     sed "s#if re.match(r'^\[a-zA-Z\]\[a-zA-Z0-9+.-\]\*://', loc):#if False:#" \
         "$AUDIT" > "$TMP/ma.sh"
-    ! cmp -s "$TMP/ma.sh" "$AUDIT"
+    if cmp -s "$TMP/ma.sh" "$AUDIT"; then false; fi
     run run_audit_count "$TMP/ma.sh"
     [ "$output" = "1 1" ]
 }

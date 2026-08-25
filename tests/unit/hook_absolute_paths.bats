@@ -154,7 +154,7 @@ print(f'OK — {total} hooks, all on the portable placeholder')
 
     bash -c "source '$FRAMEWORK_ROOT/lib/init.sh' && generate_claude_code_config '$fake'" >/dev/null
 
-    ! grep -qE '"command": *"bin/fw hook' "$fake/.claude/settings.json"
+    if grep -qE '"command": *"bin/fw hook' "$fake/.claude/settings.json"; then false; fi
     ! grep -qE '"command": *"\.agentic-framework/bin/fw hook' "$fake/.claude/settings.json"
 }
 

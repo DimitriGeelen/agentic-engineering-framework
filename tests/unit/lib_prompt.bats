@@ -194,7 +194,7 @@ teardown() {
     [ "$status" = 0 ]
     local file="$PROJECT_ROOT/prompts/edit-target.md"
     grep -q "new text with" "$file"
-    ! grep -q "old text no vars" "$file"
+    if grep -q "old text no vars" "$file"; then false; fi
     grep -q '^variables: \[bar,foo\]$' "$file"
 }
 

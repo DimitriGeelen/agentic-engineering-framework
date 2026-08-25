@@ -204,7 +204,7 @@ assert_blocked() {
     dgate "bin/fw handover"
 
     # And it is still a gate, not a pass-through.
-    ! dgate "npm run build"
+    if dgate "npm run build"; then false; fi
     echo "$output" | grep -q "classifier degraded"
 }
 

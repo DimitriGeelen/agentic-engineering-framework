@@ -65,7 +65,7 @@ teardown() {
     run env HOME="$POISON" PROJECT_ROOT="$POISON" CLAUDE_PROJECT_DIR="$REAL2" bash "$FW" version
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "Project:.*$REAL2"
-    ! echo "$output" | grep -q "Project:.*$POISON"
+    if echo "$output" | grep -q "Project:.*$POISON"; then false; fi
     rm -rf "$nowhere"
 }
 
@@ -93,7 +93,7 @@ teardown() {
     run env -u CLAUDE_PROJECT_DIR HOME="/nonexistent-home-xyz" PROJECT_ROOT="$empty" bash "$FW" version
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "Project:.*$REAL"
-    ! echo "$output" | grep -q "Project:.*$empty"
+    if echo "$output" | grep -q "Project:.*$empty"; then false; fi
     rm -rf "$empty"
 }
 

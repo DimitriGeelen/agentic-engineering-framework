@@ -105,7 +105,7 @@ EOF
     fi
 
     # Specifically: no Decision content was written
-    ! grep -q "^\*\*Decision\*\*: GO" "$f"
+    if grep -q "^\*\*Decision\*\*: GO" "$f"; then false; fi
     # No new inception-decision Updates entry
     ! grep -q "inception-decision" "$f"
 }

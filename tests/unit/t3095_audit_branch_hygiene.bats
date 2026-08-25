@@ -51,7 +51,7 @@ _block() { run "$RUNNER" "$REPO_ROOT" "$1"; }
     _block "$FIX/wt"
     [ "$status" -eq 0 ]
     echo "$output" | grep -q '^INFO|Branch hygiene skipped — linked worktree'
-    ! echo "$output" | grep -q '^WARN|'
+    if echo "$output" | grep -q '^WARN|'; then false; fi
     ! echo "$output" | grep -q '^PASS|Branch hygiene'
 }
 

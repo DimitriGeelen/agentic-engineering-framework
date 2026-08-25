@@ -115,7 +115,6 @@ EOF
 @test "A4 — no call site gates one of those three helpers on its exec bit" {
     cd "$FRAMEWORK_ROOT"
     # Catches both spellings: the literal path and the \$bridge indirection.
-    ! grep -rnE '\[ -x .*(pickup-channel-bridge|bvp-estimator|discard-manifest)' \
-        lib/ agents/ bin/fw
+    if grep -rnE '\[ -x .*(pickup-channel-bridge|bvp-estimator|discard-manifest)' lib/ agents/ bin/fw lib/ agents/ bin/fw; then false; fi
     ! grep -n '\[ -x "\$bridge" \]' lib/pickup.sh
 }

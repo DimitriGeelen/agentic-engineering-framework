@@ -79,7 +79,7 @@ EOF
 
     # T-2300 invariant: horizon must be null on the re-close path too
     grep -q "^horizon: null\$" "$PROJECT_ROOT/.tasks/completed/T-9300-test.md"
-    ! grep -q "^horizon: now\$" "$PROJECT_ROOT/.tasks/completed/T-9300-test.md"
+    if grep -q "^horizon: now\$" "$PROJECT_ROOT/.tasks/completed/T-9300-test.md"; then false; fi
 
     # Frontmatter still parses
     python3 -c "

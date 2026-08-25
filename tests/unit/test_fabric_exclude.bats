@@ -76,7 +76,7 @@ YAML
 
     run python3 "$HELPER" "$proj/.fabric/watch-patterns.yaml" "$proj"
     [ "$status" -eq 0 ]
-    ! echo "$output" | grep -q "node_modules"
+    [[ "$output" != *"node_modules"* ]]
     echo "$output" | grep -q "^src/a.js$"
     echo "$output" | grep -q "^web/foo.html$"
 }

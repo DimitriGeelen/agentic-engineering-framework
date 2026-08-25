@@ -130,7 +130,7 @@ EOF
     source "$FRAMEWORK_ROOT/lib/inception_recommendation.sh"
     _emit_missing_inception "T-9103"
     # Pre-retrofit: no ## Recommendation at all
-    ! grep -q "^## Recommendation" "$TEST_DIR/.tasks/active/T-9103-test.md"
+    if grep -q "^## Recommendation" "$TEST_DIR/.tasks/active/T-9103-test.md"; then false; fi
     run "$FRAMEWORK_ROOT/bin/fw" inception retrofit-rec --apply
     [ "$status" -eq 0 ]
     # Post-retrofit: section present + real Recommendation

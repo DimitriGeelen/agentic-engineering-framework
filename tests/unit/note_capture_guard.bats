@@ -135,7 +135,7 @@ _note() {
     # THE DEFECT: silent success, wrong text captured, real observation gone.
     [ "$status" -eq 0 ]
     grep -q "text: \"add\"" "$root/.context/inbox.yaml"
-    ! grep -q "this text is about to be discarded" "$root/.context/inbox.yaml"
+    if grep -q "this text is about to be discarded" "$root/.context/inbox.yaml"; then false; fi
 
     # CONTROL against the same old script — an ordinary capture worked fine, so the
     # red above is the defect and not a script that simply cannot run here.

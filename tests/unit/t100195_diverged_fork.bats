@@ -95,7 +95,7 @@ setup() {
     echo x >> c.txt && git -C "$CLONE" add c.txt && git -C "$CLONE" commit -qm x
     FW_BRANCH_BEHIND_WARN=2 run fw_branch_divergence "$CLONE"
     [ "$status" -eq 0 ]
-    ! echo "$output" | grep -q "^fork "
-    ! echo "$output" | grep -q "^nudge "
+    if echo "$output" | grep -q "^fork "; then false; fi
+    if echo "$output" | grep -q "^nudge "; then false; fi
     echo "$output" | grep -q "^divergence cur-clean "
 }

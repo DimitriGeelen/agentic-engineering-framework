@@ -72,9 +72,9 @@ _branch_exists() { git -C "$MAIN" show-ref --verify --quiet "refs/heads/$1"; }
     [[ "$output" == *"origin/feat  deleted"* ]]
     [[ "$output" == *"worktree $WT_FEAT  removed"* ]]
     [[ "$output" == *"feat  deleted"* ]]
-    ! _branch_exists feat
+    if _branch_exists feat; then false; fi
     [ ! -d "$WT_FEAT" ]
-    ! git -C "$MAIN" show-ref --verify --quiet "refs/remotes/origin/feat"
+    if git -C "$MAIN" show-ref --verify --quiet "refs/remotes/origin/feat"; then false; fi
     # remote side really gone
     ! git -C "$ORIGIN" show-ref --verify --quiet "refs/heads/feat"
 }

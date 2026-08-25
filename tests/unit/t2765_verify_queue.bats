@@ -198,7 +198,7 @@ true')"
     local state="$PROJECT/.context/working/.verify-queue-state.json"
     [ -f "$state" ]
     grep -q 'T-9020' "$state"
-    ! grep -q 'T-9021' "$state"
+    if grep -q 'T-9021' "$state"; then false; fi
     run_vq "$PROJECT" --task T-9021
     grep -q 'T-9021' "$state"
 }
