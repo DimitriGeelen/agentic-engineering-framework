@@ -134,64 +134,29 @@ it. Do not reintroduce a gate under this task.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# AC1 — the policy section exists and states the rule.
+grep -q '^## Worktree Policy — OPT-IN ONLY' CLAUDE.md
+grep -q 'Do not create a git worktree unless the' CLAUDE.md
+
+# AC2 — no line instructs the agent to default to a worktree.
+! grep -qi 'Worktree isolation.*for any parallel work' CLAUDE.md
+! grep -q 'Real code goes through a worktree' CLAUDE.md
+grep -q 'Real code is built in the MAIN CHECKOUT by default' CLAUDE.md
+
+# AC3 — the mechanism is stated as NOT gated (no fuse was invented).
+grep -q 'The mechanism is NOT removed and is NOT gated' CLAUDE.md
+! grep -q 'FW_ALLOW_WORKTREE' CLAUDE.md
+
+# AC4 (anti-AC) — the rejected config key was never introduced.
+# Word-boundary, NOT a prefix match: FW_ALLOW_WORKTREE_CORPUS_COMMIT and
+# FW_ALLOW_WORKTREE_GOVERNANCE_WRITE are pre-existing bypasses from other tasks
+# and must not satisfy this check either way.
+! grep -rqE 'FW_ALLOW_WORKTREE([^A-Z_]|$)' lib/ bin/ agents/ CLAUDE.md 2>/dev/null
+# And the worktree tooling itself carries no commit from this task.
+! git log --oneline -1 --name-only -- lib/worktree.sh lib/integrate.sh | grep -q 'T-3132'
+
+# AC5 — the vendored consumer guide carries no contradicting worktree default.
+! grep -qi 'worktree' FRAMEWORK.md
 
 ## RCA
 
@@ -289,3 +254,40 @@ it. Do not reintroduce a gate under this task.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3132-claudemd-instructs-agents-to-default-to-.md
 - **Context:** Initial task creation
+
+## Verification Provenance (T-3132)
+
+The `## Verification` block shipped in the first draft was **template boilerplate
+with zero executable lines** — P-011 would have passed it vacuously. That is the
+same false-green family this session has been working (T-3125/T-3126/T-3128/
+T-3129, L-575): a check that cannot see its subject reports the same thing as a
+check that found nothing. Replaced with 10 real commands.
+
+**Mutation check (measured, not asserted):** against the pre-change `CLAUDE.md`
+at `6b9e2eeb4`, **6 of 10 fail** — those are the guards that actually bind:
+
+- `^## Worktree Policy — OPT-IN ONLY` present
+- `Do not create a git worktree unless the` present
+- `Worktree isolation.*for any parallel work` absent
+- `Real code goes through a worktree` absent
+- `Real code is built in the MAIN CHECKOUT by default` present
+- `The mechanism is NOT removed and is NOT gated` present
+
+The remaining 4 pass against pre-change code **by construction**, and that is
+correct: they are AC4's anti-AC (the rejected `FW_ALLOW_WORKTREE` key was never
+introduced) plus the FRAMEWORK.md check. An anti-AC's job is to stay green; it
+guards against a future regression, not against the past.
+
+**AC4 predicate was corrected mid-verification.** The first version,
+`! grep -rq 'FW_ALLOW_WORKTREE' lib/ bin/ agents/`, went red — but on
+`FW_ALLOW_WORKTREE_CORPUS_COMMIT` and `FW_ALLOW_WORKTREE_GOVERNANCE_WRITE`,
+two pre-existing bypasses from unrelated tasks. A prefix match answered a
+different question than the one the AC asks. Tightened to a word boundary:
+`FW_ALLOW_WORKTREE([^A-Z_]|$)`.
+
+**FRAMEWORK.md needed no edit.** It is the provider-neutral guide that
+`fw vendor self` ships to consumers, and it contains **zero** worktree
+references — so there was no default to invert there. The operator's point that
+the pain "also comes from vendor projects" is real, but its mechanism is agent
+behaviour reading CLAUDE.md, not a contradicting sentence in the vendored guide.
+The check is kept as a regression guard so nobody adds one later.
