@@ -172,10 +172,40 @@ check_verification_parseable() {
 #
 # Read lib/comment_strip.py for the rule, the DOTALL failure modes, and the
 # three-disposition direction rule (discarded / counted / executed).
+# T-3134: the range start is ANCHORED, and only the FIRST range is taken.
+#
+# The previous form was `sed -n '/^## Verification/,/^## /p'`. Two defects in
+# one expression:
+#
+#   1. The start pattern is a PREFIX match. `## Verification Provenance`,
+#      `## Verification Notes` — anything beginning with those words — opens a
+#      range. So does the shipped task template's own Human-AC comment, which
+#      carries the line `## Verification` instead of a Human AC here...` at
+#      column 0. Every task created from that template inherits it.
+#   2. sed ranges REPEAT. The second match opens a second range running to the
+#      next `## ` or EOF, and every line of that section's prose is handed to
+#      the loop in update-task.sh that evals verification commands.
+#
+# So the gate's execution surface silently included arbitrary task prose. It was
+# reached live on T-3132 and again on T-3130. Both times T-2991's
+# parseable-check refused the block before the read loop evaluated any of it,
+# which is that control doing exactly its job — but it is the LAST line of
+# defence, not the first. Prose that happens to parse as shell runs, and
+# `import` is a screenshot tool: that is how 56MB of PostScript reached this
+# repo's root (T-2990), from a python body, not from a heading.
+#
+# awk rather than sed, because the fix needs state (`seen`) that a sed range
+# cannot hold. `lib/reviewer/static_scan.py:extract_section` has always done
+# this correctly — it anchors with `\\s*\\n` after the name. Two
+# implementations of one job, one right, and nothing compared them; that
+# divergence is the finding under the finding.
 extract_verification_block() {
     local file="$1"
-    sed -n '/^## Verification/,/^## /p' "$file" 2>/dev/null \
-        | sed '$d' | tail -n +2 \
+    awk '
+        /^## Verification[[:space:]]*$/ { if (!seen) { seen=1; inblk=1 }; next }
+        inblk && /^## / { inblk=0 }
+        inblk { print }
+    ' "$file" 2>/dev/null \
         | python3 "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/comment_strip.py" 2>/dev/null \
         | grep -vE '^\s*$|^\s*#|^\s*```' || true
 }
