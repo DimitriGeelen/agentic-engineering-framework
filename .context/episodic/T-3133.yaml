@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3133: concurrent antigravity work reverted check-active-task.sh, dropping T-3038 and T-2987
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-25T08:15:05Z
+# ============================================================================
+
+task_id: T-3133
+task_name: "concurrent antigravity work reverted check-active-task.sh, dropping T-3038 and T-2987"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-25T08:04:16Z
+completed: 2026-08-25T08:14:50Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-25T10:11:15+02:00
+last_commit: 2026-08-25T10:11:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  restore check-active-task.sh — 186 lines of governance were gone, uncommitted
+
+# Key outcomes
+outcomes:
+  - 'AC1 — The working-tree state is preserved before any merge: a patch of'
+  - 'AC2 — `agents/context/check-active-task.sh` contains T-3038''s'
+  - 'AC3 — The T-2987 explain-block is present again. Verified by grep for its'
+  - 'AC4 — The antigravity path case is **still present** after the restore.'
+  - 'AC5 — Source and vendored copy agree: `fw vendor self --check` reports in'
+  - 'AC6 — The hook still parses and runs: `bash -n` clean, and it correctly'
+  - 'AC7 — A detection gap is registered in `concerns.yaml`. The self-vendor gate'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/check-active-task.sh'
+  - '.context/inbox.yaml'
+  - '.context/project/concerns.yaml'
+  - 'docs/reports/T-3133/check-active-task.sh.working-1000'
+  - 'docs/reports/T-3133/working-vs-HEAD.patch'
+  - '.tasks/active/T-3133-concurrent-antigravity-work-reverted-che.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-25T10:11:15'
+    action: 'T-3133: restore check-active-task.sh — 186 lines of governance were gone, uncommitted'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 9
+  lines_added: 1512
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3133-concurrent-antigravity-work-reverted-che.md
+generated_by: context-agent-hybrid

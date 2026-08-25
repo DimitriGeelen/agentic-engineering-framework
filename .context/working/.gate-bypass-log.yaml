@@ -7322,3 +7322,18 @@ aud'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 git add .tasks/active/T-3130-episodic-mining-runs-before-the-completi.md
 FW_SWITCH_FOCUS=1 git commit -m "T-3130: real ACs — the control must measure at gen'
+- timestamp: '2026-08-25T07:58:33Z'
+  task: 'T-3127'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3132'
+  command: 'timeout 300 bin/fw task update T-3132 --status issues --switch-focus 2>&1 | tail -10'
+- timestamp: '2026-08-25T07:59:31Z'
+  task: 'T-3127'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3132'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-3132: the Human AC was stale — it told the operator to expect a refusal
+
+The surviving Human AC came from the REJECTED first draft: it asked the operator
+to run'

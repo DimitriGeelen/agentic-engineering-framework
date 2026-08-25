@@ -36807,3 +36807,39 @@ scan_id: R-2d5c3406
 task_id: T-3126
 payload:
   task_file: .tasks/active/T-3126-the-pre-push-audit-gate-blocks-a-ref-ope.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T07:57:27Z'
+scan_id: R-53bc22df
+task_id: T-3132
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T07:57:27Z'
+scan_id: R-53bc22df
+task_id: T-3132
+payload:
+  task_file: .tasks/active/T-3132-claudemd-instructs-agents-to-default-to-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T08:14:53Z'
+scan_id: R-7a4fd8da
+task_id: T-3133
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T08:14:53Z'
+scan_id: R-7a4fd8da
+task_id: T-3133
+payload:
+  task_file: .tasks/active/T-3133-concurrent-antigravity-work-reverted-che.md
