@@ -256,6 +256,28 @@ likely reading but is not *proven*, and a clean quiet-system run is the evidence
 that would settle it. Ticking on a likely reading is exactly the move the
 false-green work in this task exists to discourage.
 
+**Contention-sensitive test set, observed (run reached 627 tests / 28 failures).**
+Beyond the audit cluster, three more files went red for reasons this session
+caused by running the suite against a live working session:
+
+- `context_learning.bats` (2) — this session ran `fw context add-learning`
+  mid-suite, mutating `.context/learnings.yaml` while the test asserted on it.
+- `checkpoint.bats` (4) — reads budget/session state, which the live session
+  rewrites continuously.
+- `check_render_surface_human_ac_sigpipe.bats` (2) — same suspicion, unconfirmed.
+
+Mid-run the suite **overwrote the live `.context/working/focus.yaml`** with
+fixture values (`current_task: T-001`, `focus_session: unknown`), after which the
+T-560 stale-focus gate blocked this session's own commands. So the suite is not
+merely contending — it is writing live session state. Filed as **T-3131**.
+
+Still **zero failures in any of the 13 files this task changed**, which is the
+AC6 question. But the suite as run is measuring the session as much as the code,
+which is why AC6 stays unticked. The re-run must be quiet: no concurrent `fw`
+invocations, no pushes (their pre-push gate runs an audit), nothing writing
+`.context/` — and ideally not until T-3131 is fixed, since otherwise the suite
+will keep breaking the session that runs it.
+
 Next session: re-run `bin/fw test unit` with nothing else touching the audit lock,
 and tick AC6 only if the audit cluster is green or fails for a named non-lock reason.
 
