@@ -839,6 +839,62 @@ def extract_recommendation_state(body: str) -> str:
     return rec["verdict"]
 
 
+def _strip_html_comments(text: str) -> str:
+    """Remove HTML comments, distinguishing a real opener from a quoted one.
+
+    `re.sub(r"<!--.*?-->", "", text, flags=DOTALL)` is wrong on this corpus.
+    Task bodies quote `<!--` inside backticks when they discuss the template, so
+    openers outnumber closers — T-1545 carries four `<!--` and two `-->`. The
+    naive form pairs the third opener with the second closer and swallows ~3.9KB
+    of real content, including a genuine unchecked Human AC.
+
+    The discriminator is position, not balance: a real comment opener starts its
+    line, or closes on the same line. A `<!--` embedded mid-sentence with its
+    closer lines away is prose ABOUT a comment, not a comment.
+
+      1. `<!--` and `-->` on one line     -> inline comment, strip the span.
+      2. `<!--` at column 0 (after ws)    -> block comment, strip to `-->`;
+                                             with no `-->` at all, bound at the
+                                             next `^#` heading so an unterminated
+                                             comment cannot eat later sections.
+      3. anything else                    -> quoted text, leave it alone.
+
+    A removed span that contained a newline leaves one behind. Without that, the
+    text before the opener is joined onto the line after it, and a `### Human`
+    heading that is no longer at column 0 is invisible to every anchor
+    downstream — silent, and indistinguishable from a task with no Human ACs.
+    """
+    out: list[str] = []
+    i = 0
+    while True:
+        s = text.find("<!--", i)
+        if s < 0:
+            out.append(text[i:])
+            break
+        line_start = text.rfind("\n", 0, s) + 1
+        at_line_start = text[line_start:s].strip() == ""
+        close = text.find("-->", s)
+        eol = text.find("\n", s)
+        same_line = close >= 0 and (eol < 0 or close < eol)
+
+        if not same_line and not at_line_start:
+            # Case 3: quoted. Emit it verbatim and continue past the marker.
+            out.append(text[i:s + 4])
+            i = s + 4
+            continue
+
+        out.append(text[i:s])
+        if close < 0:
+            h = re_mod.search(r"^#", text[s:], re_mod.MULTILINE)
+            nxt = s + h.start() if h else len(text)
+        else:
+            nxt = close + 3
+        if "\n" in text[s:nxt]:
+            out.append("\n")
+        i = nxt
+    return "".join(out)
+
+
 def count_unchecked_human_acs(body: str) -> int:
     """Count unchecked `- [ ]` AC lines inside the `### Human` block.
 
@@ -850,9 +906,14 @@ def count_unchecked_human_acs(body: str) -> int:
     Rules (must stay aligned with `_parse_acceptance_criteria` in tasks.py and
     the inline CLI regex this replaces at bin/fw):
 
-    - Only `- [ ]` lines INSIDE the `### Human` subsection of `## Acceptance Criteria`
-      count. `### Agent` ACs, `## Verification`, and decorative checklists elsewhere
-      are ignored.
+    - Only `- [ ]` lines INSIDE a `### Human` subsection count. `### Agent` ACs,
+      `## Verification`, and decorative checklists elsewhere are ignored.
+    - EVERY `### Human` block counts, wherever it sits, and each is bounded by the
+      next heading of level 1-3. It is deliberately NOT scoped to the
+      `## Acceptance Criteria` block (T-3139): three live tasks carried an
+      intervening `## Status:` / `## Measured Behaviour` heading between the two,
+      which truncated the scope and hid a real operator decision; one carried a
+      SECOND `### Human` block that a single `re.search` never reached.
     - HTML comment blocks (`<!-- ... -->`) are stripped before counting, so the
       `[REVIEW] Voice/tone…` placeholder in the template comment never inflates
       the count (T-1581 fix, also the L-298 cockpit class).
@@ -866,21 +927,17 @@ def count_unchecked_human_acs(body: str) -> int:
     """
     if not body:
         return 0
-    ac_m = re_mod.search(
-        r"^## Acceptance Criteria\s*$(.*?)(?=^## |\Z)",
-        body, re_mod.MULTILINE | re_mod.DOTALL,
-    )
-    if not ac_m:
-        return 0
-    ac_block = ac_m.group(1)
-    human_m = re_mod.search(
-        r"^### Human\s*$(.*?)(?=^### |\Z)",
-        ac_block, re_mod.MULTILINE | re_mod.DOTALL,
-    )
-    if not human_m:
-        return 0
-    human_text = re_mod.sub(r"<!--.*?-->", "", human_m.group(1), flags=re_mod.DOTALL)
-    return len(re_mod.findall(r"^\s*-\s*\[ \]", human_text, re_mod.MULTILINE))
+    # Strip comments FIRST and over the whole body, then find EVERY `### Human`
+    # block wherever it sits. See T-3139 for why each of those three words is
+    # load-bearing; the docstring above carries the summary.
+    text = _strip_html_comments(body)
+    total = 0
+    for m in re_mod.finditer(
+        r"^### Human\s*$(.*?)(?=^#{1,3} |\Z)",
+        text, re_mod.MULTILINE | re_mod.DOTALL,
+    ):
+        total += len(re_mod.findall(r"^\s*-\s*\[ \]", m.group(1), re_mod.MULTILINE))
+    return total
 
 
 def needs_human_review(body: str) -> bool:
