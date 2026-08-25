@@ -4768,3 +4768,9 @@ X'` returning empty group."
   task: T-3139
   date: 2026-08-25
   context: Added via context agent
+- id: L-639
+  learning: "Classify by DENYLIST of terminal states, never by ALLOWLIST of known ones, on any surface whose job is to stop things being forgotten. The two fail in opposite directions: an allowlist meeting an unrecognised value drops the entry silently; a denylist surfaces it for a decision. fw gaps enumerated an allowlist of 4 statuses against a register whose vocabulary had organically grown to 9 (no schema, no validator, no enum) — 30 of 92 entries were invisible, 7 severity high, including the gap CLAUDE.md cites as the origin of its own root-cause-escalation rule. Nothing disagreed with anything, because there was one renderer and no second surface to disagree with. Test: if an unrecognised value appears, does it show up misfiled (survivable) or vanish (not)?"
+  source: P-001
+  task: T-3140
+  date: 2026-08-25
+  context: Added via context agent
