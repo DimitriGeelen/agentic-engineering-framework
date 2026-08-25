@@ -7419,3 +7419,17 @@ bin/fw task update T-3116 --status work-completed --switch-focus 2>&1'
   target: 'T-3116'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 bin/fw task update T-3116 --status work-completed --switch-focus 2>&1'
+- timestamp: '2026-08-25T16:21:30Z'
+  task: 'T-3138'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3142'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+timeout 90 bin/fw context add-learning "A recovery claim is evidence about the past; only a content comparison is evidence about now. T-3097 told the operator'
+- timestamp: '2026-08-25T16:21:37Z'
+  task: 'T-3138'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3142'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add -A && FW_SWITCH_FOCUS=1 git commit -q -m "T-3142: L-641 recovery claims are evidence about the past; L-642 staleness is not conseque'

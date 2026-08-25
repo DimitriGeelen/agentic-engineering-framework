@@ -4780,3 +4780,15 @@ X'` returning empty group."
   task: T-3116
   date: 2026-08-25
   context: Added via context agent
+- id: L-641
+  learning: "A recovery claim is evidence about the past; only a content comparison is evidence about now. T-3097 told the operator two stranded branches were safe to prune, sourced from T-2824's two-week-old report that recovery had happened, never re-derived. fw worktree gc compares content rather than commit identity and said unlanded 28/53 and 3/3 — both KEEP. Executing that handoff as written would have destroyed 31 commits in master nowhere. Before handing the operator a destructive action justified by a prior task's report, re-run the measurement. The report was true when written; the error was treating it as still true."
+  source: P-001
+  task: T-3142
+  date: 2026-08-25
+  context: Added via context agent
+- id: L-642
+  learning: "Reporting staleness is not reporting consequence. The branch-hygiene audit listed all three no-remote branches for weeks, every run. It reports 'behind-threshold' and 'remote-unlanded' — staleness, which reads as untidiness — and nothing distinguished 'this branch is old' from 'this branch is the only copy of 22 commits'. The consequential finding and the cosmetic one were rendered in the same voice, so the consequential one was triaged at the priority of the cosmetic one. Sibling to T-3140 one level up: not a check that cannot see, but one that sees and cannot say which part matters. When adding an audit finding, ask what the worst case behind it is and put that in the line."
+  source: P-001
+  task: T-3142
+  date: 2026-08-25
+  context: Added via context agent
