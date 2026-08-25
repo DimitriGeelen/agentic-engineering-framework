@@ -4792,3 +4792,21 @@ X'` returning empty group."
   task: T-3142
   date: 2026-08-25
   context: Added via context agent
+- id: L-643
+  learning: "For a net-new check, 'does the control fail against pre-change code?' is degenerate — the tool did not exist, so every test fails trivially and the number says nothing about whether the tests can tell a working check from a broken one. Mutation testing is the control that discriminates: disable one behaviour at a time and require the suite to go red. T-3138's M3 mutant SURVIVED, which is the only reason anyone re-read the here-string guard — and the guard was genuinely wrong (matched '<<< hi', swallowing the rest of the file as heredoc data). A green suite, its own fixtures, and a careful read of the regex had all missed it."
+  source: P-011
+  task: T-3138
+  date: 2026-08-25
+  context: Added via context agent
+- id: L-644
+  learning: "Bats rewrites every line starting with @test when it preprocesses a file — including lines inside a QUOTED heredoc, whose quoting it cannot see. A bats fixture written inside a bats test with a literal '@test' reaches disk already transformed into the internal bats_test_function form, so the file under test is not the file that was written. Symptom: fixture-driven assertions invert or go vacuous for no visible reason. Fix: write a marker (BATSTEST) and sed it to @test on the way out. Found in T-3138 by dumping the fixture after every lint assertion inverted at once."
+  source: P-011
+  task: T-3138
+  date: 2026-08-25
+  context: Added via context agent
+- id: L-645
+  learning: "A test suite that runs against the live repo can destroy the session's own governance state. T-3138's bats run rewrote .context/working/focus.yaml to T-001 within seconds, repeatedly, which then made the focus-drift gate block every Write/Edit/Bash-with-redirect in the parent session until the run finished. Hermeticity is not only about the subject's write-set (L-606) — it is also about the framework state the harness itself depends on. Workaround while a run is live: 'bin/fw work-on T-XXX && <command>' with no redirect on the line (a redirect voids the bootstrap exemption, T-2987/L-547)."
+  source: P-009
+  task: T-3138
+  date: 2026-08-25
+  context: Added via context agent

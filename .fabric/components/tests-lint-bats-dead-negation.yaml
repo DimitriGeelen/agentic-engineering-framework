@@ -1,0 +1,20 @@
+id: tests/lint/bats-dead-negation.bats
+name: bats-dead-negation
+type: script
+subsystem: unknown
+location: tests/lint/bats-dead-negation.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-25
+created_by: unknown

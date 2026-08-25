@@ -4067,3 +4067,10 @@ observations:
   tags: [false-green]
   status: pending
   promoted_to: null
+- id: OBS-345
+  text: "Running the bats suite against the live repo rewrites .context/working/focus.yaml (observed: reset to T-001 repeatedly during a 62-file run), which makes the focus-drift gate block every write in the parent session until the run ends. Test harness mutating the framework state the session depends on — hermeticity gap, sibling to L-606. Candidate fix: tests that call fw work-on/context focus must set CONTEXT_DIR or PROJECT_ROOT to their sandbox; a lint could assert no test touches the live focus file. Found during T-3138."
+  captured: 2026-08-25T20:38:53Z
+  context_task: T-3138
+  tags: []
+  status: pending
+  promoted_to: null

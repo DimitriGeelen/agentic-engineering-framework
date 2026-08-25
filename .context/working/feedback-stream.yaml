@@ -36987,3 +36987,57 @@ scan_id: R-4d49ecb1
 task_id: T-3142
 payload:
   task_file: .tasks/active/T-3142-24-commits-on-3-branches-exist-only-on-t.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T20:38:58Z'
+scan_id: R-dcc52490
+task_id: T-3138
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T20:38:58Z'
+scan_id: R-dcc52490
+task_id: T-3138
+payload:
+  task_file: .tasks/active/T-3138-106-bats-assertions-cannot-fail-bash-exe.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T20:39:34Z'
+scan_id: R-5fe93bd7
+task_id: T-3138
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T20:39:34Z'
+scan_id: R-5fe93bd7
+task_id: T-3138
+payload:
+  task_file: .tasks/active/T-3138-106-bats-assertions-cannot-fail-bash-exe.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T20:40:00Z'
+scan_id: R-a0cde07f
+task_id: T-3138
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T20:40:00Z'
+scan_id: R-a0cde07f
+task_id: T-3138
+payload:
+  task_file: .tasks/active/T-3138-106-bats-assertions-cannot-fail-bash-exe.md

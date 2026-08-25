@@ -1,10 +1,10 @@
-# Audit Results - 2026-08-25-1819
-timestamp: 2026-08-25T16:19:32Z
+# Audit Results - 2026-08-25-2151
+timestamp: 2026-08-25T19:51:03Z
 sections: "structure"
 summary:
-  pass: 30
+  pass: 28
   warn: 5
-  fail: 0
+  fail: 2
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -37,18 +37,18 @@ findings:
   - level: INFO
     check: "free driver F2: retire_when text present, no recognition heuristic — manual review"
   - level: PASS
-    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 396 source file(s) under lib/ web/ agents/ bin/ tools/"
+    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 397 source file(s) under lib/ web/ agents/ bin/ tools/"
   - level: PASS
-    check: "No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 137 Python file(s) under web/ + lib/"
+    check: "No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 138 Python file(s) under web/ + lib/"
   - level: PASS
-    check: "No stale-slice-references (L-417) — examined 266 file(s) under web/templates web/blueprints lib"
+    check: "No stale-slice-references (L-417) — examined 267 file(s) under web/templates web/blueprints lib"
   - level: WARN
     check: "Found 181 GO-scope-not-propagated inception(s) of 350 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
     mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
   - level: PASS
-    check: "Fabric: 1111 registered card(s)"
+    check: "Fabric: 1112 registered card(s)"
   - level: WARN
-    check: "Fabric: 29/1024 cards have no edges"
+    check: "Fabric: 30/1025 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 11 source file(s) have no fabric card"
@@ -63,10 +63,12 @@ findings:
     mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"
-  - level: PASS
-    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
-  - level: PASS
-    check: "Invariant suite green — examined 74 structural invariant(s) (tests/lint/)"
+  - level: FAIL
+    check: "Self-vendor drift: libs class — 4 file(s) out of sync (T-2244)"
+    mitigation: "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
+  - level: FAIL
+    check: "Invariant suite: 1 of 74 structural invariant(s) RED (T-2837)"
+    mitigation: "Run: fw test invariants"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS

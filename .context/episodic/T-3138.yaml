@@ -1,0 +1,159 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3138: 106 bats assertions cannot fail: bash exempts !-inverted commands from errexit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-25T20:40:12Z
+# ============================================================================
+
+task_id: T-3138
+task_name: "106 bats assertions cannot fail: bash exempts !-inverted commands from errexit"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-25T09:30:27Z
+completed: 2026-08-25T20:39:38Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-25T22:36:05+02:00
+last_commit: 2026-08-25T22:36:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  99 bats assertions could not fail — a lint, a sweep, and the one defect they were hiding
+
+# Key outcomes
+outcomes:
+  - 'AC1 — The mechanism is pinned, not asserted. A bats fixture demonstrates'
+  - 'AC2 — A lint enumerates every dead assertion in `tests/**/*.bats`: a line'
+  - 'AC3 — The lint is wired into `bin/fw test lint` and fails on a non-empty'
+  - 'AC4 — The 106 existing dead assertions across 66 files are converted to a'
+  - 'AC5 — At least one converted assertion is shown to have been hiding a real'
+  - 'AC6 — The lint''s own control fails against pre-change code. Fixtures only'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-25 — the filed count was wrong, and correcting it was the work'
+    chose: 'report 99 dead across 62 files, not the filed 106 across 66.'
+    rationale: 'the first draft implemented AC2''s literal wording — "a line whose first token is `!` and which is NOT the last statement". Reviewing the flagged sites before converting them showed seven the rule mis-classified. Four are `! cmd || { ...; return 1; }`: the `!` exempts its own pipeline, but that pipeline is not the last command of the `||` list, so the guard branch IS checked and the assertion fires. Three are line-continued statements whose `!` line is not the last PHYSICAL line but is the last LOGICAL one.'
+    alternatives_rejected: ['converting all 106 as filed. Two of the seven would have been broken by the conversion rather than fixed, and the other five would have been rewritten for no reason — churn presented as remediation.']
+  - decision: '2026-08-25 — wired into `fw test invariants`, not `fw test lint`'
+    chose: '`tests/lint/bats-dead-negation.bats`, collected by `fw test invariants` (and by `fw test all`).'
+    rationale: '`fw test lint` is shellcheck, by deliberate design — T-2697''s own comment in `bin/fw` records that `tests/lint/` was globbed by no runner for months precisely because the obvious verb was taken, and named the new verb `invariants` "so the collision cannot recur". Wiring a second meaning into `lint` would re-create the condition that comment exists to prevent.'
+    alternatives_rejected: ['editing the `lint)` branch of `bin/fw` as AC3 words it. It would also have meant touching a file carrying another task''s uncommitted edits.']
+  - decision: '2026-08-25 — `if X; then false; fi` as the universal conversion'
+    chose: '`[[ a != b ]]` where the negation fits inside one test command (23 sites), `if X; then false; fi` everywhere else (76 sites).'
+    rationale: 'errexit is suppressed only in an `if` CONDITION; the branch body is checked normally. That makes it safe for the shapes `[[ ]]` cannot hold — pipelines, env-var prefixes, redirects. Verified by fixture, not by reasoning.'
+    alternatives_rejected: ['`! X || false`, which also fires (case E in the mechanism fixture) but reads as a puzzle. The measurement is kept in the fixture anyway so the next reader does not have to redo it to find out why.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tools-bats-dead-negation-lint.yaml'
+  - '.fabric/components/tools-bats-dead-negation-mutants.yaml'
+  - '.tasks/active/T-3138-106-bats-assertions-cannot-fail-bash-exe.md'
+  - '.tasks/active/T-3143-audit-c-001-emits-pass-all-inceptions-ha.md'
+  - 'tests/integration/continuous_loop.bats'
+  - 'tests/integration/test_single_host_parallel.bats'
+  - 'tests/lint/bats-dead-negation.bats'
+  - 'tests/lint/no-untracked-test-files.bats'
+  - 'tests/unit/bpmn_promote_e2e.bats'
+  - 'tests/unit/create_task_inception_recommendation_gate.bats'
+  - 'tests/unit/errexit_negation_mechanism.bats'
+  - 'tests/unit/fabric_watch_pattern_fitness.bats'
+  - 'tests/unit/fd_dup_not_chain_split.bats'
+  - 'tests/unit/focus_active_scope.bats'
+  - 'tests/unit/focus_drift_gate.bats'
+  - 'tests/unit/fw_help_no_autoinit.bats'
+  - 'tests/unit/fw_init_atomic.bats'
+  - 'tests/unit/fw_router.bats'
+  - 'tests/unit/fw_vendor_completeness.bats'
+  - 'tests/unit/fw_version_output.bats'
+  - 'tests/unit/handover_digest.bats'
+  - 'tests/unit/healing_resolve_indent.bats'
+  - 'tests/unit/hook_absolute_paths.bats'
+  - 'tests/unit/inception_decide_atomicity.bats'
+  - 'tests/unit/inception_retrofit_rec.bats'
+  - 'tests/unit/lib_compat.bats'
+  - 'tests/unit/lib_prompt.bats'
+  - 'tests/unit/note_capture_guard.bats'
+  - 'tests/unit/revisit_undated_signal.bats'
+  - 'tests/unit/router_bootstraps_bare_init.bats'
+  - 'tests/unit/t100142_integrate_run_branch_cleanup.bats'
+  - 'tests/unit/t100143_branch_hygiene.bats'
+  - 'tests/unit/t100195_diverged_fork.bats'
+  - 'tests/unit/t100196_go_live.bats'
+  - 'tests/unit/t2266_self_vendor_agents.bats'
+  - 'tests/unit/t2267_self_vendor_web.bats'
+  - 'tests/unit/t2318_retrofit_injector_append_missing.bats'
+  - 'tests/unit/t2390_project_root_claude_dir.bats'
+  - 'tests/unit/t2391_project_root_inherited_stale.bats'
+  - 'tests/unit/t2473_union_resolve.bats'
+  - 'tests/unit/t2765_verify_queue.bats'
+  - 'tests/unit/t2862_greenfield_first_inception_e2e.bats'
+  - 'tests/unit/t2916_stall_guard_coverage.bats'
+  - 'tests/unit/t2919_budget_gate_command_classify.bats'
+  - 'tests/unit/t2990_root_pollution.bats'
+  - 'tests/unit/t3049_fabric_url_location.bats'
+  - 'tests/unit/t3050_b005_block_message.bats'
+  - 'tests/unit/t3051_exec_bit_gates.bats'
+  - 'tests/unit/t3052_pickup_id_collision.bats'
+  - 'tests/unit/t3054_watchtower_root_fallback.bats'
+  - 'tests/unit/t3066_driver_drop_identity.bats'
+  - 'tests/unit/t3073_c001_recommendation_bearing_inceptions.bats'
+  - 'tests/unit/t3095_audit_branch_hygiene.bats'
+  - 'tests/unit/t3099_go_scope_structural.bats'
+  - 'tests/unit/t3101_worktree_unlanded.bats'
+  - 'tests/unit/t3102_worktree_governance_dirt.bats'
+  - 'tests/unit/t3105_audit_set_reporting.bats'
+  - 'tests/unit/t3107_corpus_duplicate_ids.bats'
+  - 'tests/unit/task_id_race.bats'
+  - 'tests/unit/task_reid.bats'
+  - 'tests/unit/test_consumer_recover.bats'
+  - 'tests/unit/test_fabric_exclude.bats'
+  - 'tests/unit/test_update_task_horizon_null_reclose.bats'
+  - 'tests/unit/test_workflow_env_isolation.bats'
+  - 'tests/unit/update_task.bats'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+  - 'tests/unit/vendor_exclude_anchoring.bats'
+  - 'tests/unit/watchtower_url_no_guess.bats'
+  - 'tools/bats-dead-negation-lint.py'
+  - 'tools/bats-dead-negation-mutants.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-25T22:36:05'
+    action: 'T-3138: 99 bats assertions could not fail — a lint, a sweep, and the one defect they were hiding'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 669 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 669
+  commits: 1
+  files_changed: 70
+  lines_added: 1245
+  lines_removed: 109
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3138-106-bats-assertions-cannot-fail-bash-exe.md
+generated_by: context-agent-hybrid

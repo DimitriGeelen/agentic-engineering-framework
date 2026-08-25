@@ -1,0 +1,53 @@
+# Full-audit run timing - written by agents/audit/audit.sh (T-3127)
+last_run:
+  timestamp: "2026-08-25T18:59:30+02:00"
+  total_seconds: 1781
+  ceiling_seconds: 3000
+  timed_out: false
+  sections:
+    - name: "structure"
+      seconds: 103
+    - name: "tree"
+      seconds: 255
+    - name: "compliance"
+      seconds: 0
+    - name: "quality"
+      seconds: 0
+    - name: "traceability"
+      seconds: 136
+    - name: "corpus-health"
+      seconds: 4
+    - name: "enforcement"
+      seconds: 81
+    - name: "learning"
+      seconds: 24
+    - name: "episodic"
+      seconds: 71
+    - name: "observations"
+      seconds: 2
+    - name: "gaps"
+      seconds: 0
+    - name: "handover"
+      seconds: 0
+    - name: "graduation"
+      seconds: 158
+    - name: "research"
+      seconds: 0
+    - name: "oe-research"
+      seconds: 3
+    - name: "oe-fast"
+      seconds: 0
+    - name: "oe-hourly"
+      seconds: 0
+    - name: "oe-daily"
+      seconds: 876
+    - name: "discovery"
+      seconds: 26
+    - name: "discovery-trends"
+      seconds: 29
+    - name: "oe-weekly"
+      seconds: 0
+    - name: "orchestrator"
+      seconds: 1
+    - name: "arc-completion"
+      seconds: 10

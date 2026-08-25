@@ -35,7 +35,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-24T18:13:40Z
-last_update: 2026-08-24T21:27:11Z
+last_update: '2026-08-25T18:30:15Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,6 +75,23 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-08-25T18:30:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3127: no check asserts the full-audit timeout budget still fits the corpus it must scan
@@ -88,11 +105,11 @@ bvp_scores_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] AC1 — Measure before asserting. Record the current full-audit wall time and the per-section breakdown against the configured ceiling (`FW_AUDIT_FULL_TIMEOUT`, default 3000s). Baseline from T-3070: total 1729s (42% headroom), OE-DAILY alone 824s — 48% of the whole run. Confirm or correct those numbers; do not carry them forward unverified.
-- [ ] AC2 — A check asserts the headroom, and it names the number. Emit a WARN when the last recorded full-audit duration exceeds a configured fraction of the ceiling (propose 70%). The message must state the measured duration, the ceiling, and the fraction — a bare "approaching timeout" cannot be acted on.
-- [ ] AC3 — The duration is actually recorded. `audit.sh` persists per-run total and per-section durations somewhere the check can read (the audit YAML is the obvious home). Without this AC2 has nothing to read, which is how the gap opened in the first place.
-- [ ] AC4 — A section that times out is distinguishable from a section that passed. Confirm what the run currently emits when a section hits the 600s section-scoped timeout, and make it unambiguous in the record. T-3070's whole misdiagnosis came from a killed section reading as a lock-contention failure — the timeout was invisible in what the run left behind.
-- [ ] AC5 — The threshold is a config key with a registry entry and a doctor range-check, not a literal in the script (CLAUDE.md §Configuration — a documented key that does not exist is worse than an undocumented live one, and `tests/lint/config-registry-parity.bats` enforces that direction).
-- [ ] AC6 — Regression test in its own fixture (L-599 — do NOT pin to the live 1729s, which moves every time the corpus grows): a synthetic duration record over threshold → WARN; under → silent; missing/unparseable record → explicit "not measured", never a silent pass. The absent-record case is the one that matters: silence there is exactly what this task exists to fix.
+- [x] AC2 — A check asserts the headroom, and it names the number. Emit a WARN when the last recorded full-audit duration exceeds a configured fraction of the ceiling (propose 70%). The message must state the measured duration, the ceiling, and the fraction — a bare "approaching timeout" cannot be acted on.
+- [x] AC3 — The duration is actually recorded. `audit.sh` persists per-run total and per-section durations somewhere the check can read (the audit YAML is the obvious home). Without this AC2 has nothing to read, which is how the gap opened in the first place.
+- [x] AC4 — A section that times out is distinguishable from a section that passed. Confirm what the run currently emits when a section hits the 600s section-scoped timeout, and make it unambiguous in the record. T-3070's whole misdiagnosis came from a killed section reading as a lock-contention failure — the timeout was invisible in what the run left behind.
+- [x] AC5 — The threshold is a config key with a registry entry and a doctor range-check, not a literal in the script (CLAUDE.md §Configuration — a documented key that does not exist is worse than an undocumented live one, and `tests/lint/config-registry-parity.bats` enforces that direction).
+- [x] AC6 — Regression test in its own fixture (L-599 — do NOT pin to the live 1729s, which moves every time the corpus grows): a synthetic duration record over threshold → WARN; under → silent; missing/unparseable record → explicit "not measured", never a silent pass. The absent-record case is the one that matters: silence there is exactly what this task exists to fix.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -186,6 +203,14 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/audit/audit.sh
+bash -n bin/fw
+python3 -m py_compile lib/audit_timing.py
+out=$(bats tests/unit/t3127_audit_timing_headroom.bats 2>&1); echo "$out" | grep -q "^ok 12 " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/t3070_audit_full_run_timeout.bats 2>&1); echo "$out" | grep -q "^ok 8 " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/lint/config-registry-parity.bats 2>&1); echo "$out" | grep -q "^ok 3 " && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/lint/audit-lock-cron-schedule-collision.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -257,14 +282,38 @@ bvp_scores_proposed:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-08-25 — where to persist the timing record
+- **Chose:** a fixed-path file, `.context/audits/full-audit-timing.yaml`, written
+  fresh by every full (unscoped) `fw audit` run — normal completion writes
+  `timed_out: false`; the watchdog's SIGTERM trap writes `timed_out: true` plus
+  `killed_in_section` before the process dies (AC4).
+- **Why:** manual full runs without `--output` already collide on the
+  date-only `$AUDITS_DIR/$AUDIT_DATE.yaml` filename (multiple runs same day
+  overwrite each other) — piggy-backing the timing record on that file would
+  inherit the same collision and also require `fw doctor` to glob-and-sort for
+  "latest", which is more moving parts than the check needs. A dedicated fixed
+  path is unambiguous, survives `--output`-redirected cron runs untouched
+  (they never write it), and needs no parsing beyond one `yaml.safe_load`.
+- **Rejected:** appending to the dated per-run audit YAML (`AC3`'s "obvious
+  home" suggestion) — correct instinct, wrong mechanism given the existing
+  filename collision; kept the spirit (persisted, machine-readable, audit.sh
+  owns the write) without the collision.
+
+### 2026-08-25 — per-section attribution granularity
+- **Chose:** one `section_mark "<slug>"` call per `should_run_section` gated
+  block (24 call sites), using bash's `SECONDS` builtin rather than
+  `date +%s.%N` subshells.
+- **Why:** matches the actual section vocabulary the `--section` flag and
+  cron registry already use, so a slug in the timing YAML is directly
+  actionable ("oe-daily grew" means `--section oe-daily`, not a guess).
+  Integer-second granularity is sufficient — the smallest section observed
+  (T-3070) was still multiple seconds; sub-second precision buys nothing at
+  824s/48%-of-run scale and costs a subprocess per section (~24 forks) for no
+  measurable benefit.
+- **Rejected:** a DEBUG-trap-based automatic per-line profiler — far more
+  granular than needed, and T-3070 already showed per-line timestamp
+  derivation is possible after the fact when truly required; the recurring
+  need is coarse per-section headroom tracking, not a profiler.
 
 ## Decision
 

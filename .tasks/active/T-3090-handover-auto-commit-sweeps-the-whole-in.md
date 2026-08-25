@@ -14,7 +14,7 @@ tags: [bug, git, handover, concurrency]
 components: [agents/git/lib/commit.sh, agents/handover/handover.sh, tests/unit/handover_commit_scope.bats]
 related_tasks: [T-3089, T-3028]
 created: 2026-08-19T21:41:28Z
-last_update: 2026-08-25T09:17:41Z
+last_update: 2026-08-25T19:50:53Z
 date_finished: 2026-08-19T21:52:38Z
 cost_estimate_proposed:
   - ts: '2026-08-19T21:45:07Z'

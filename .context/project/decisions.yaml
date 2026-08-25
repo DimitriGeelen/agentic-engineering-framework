@@ -3418,3 +3418,24 @@ decisions:
     date: 2026-08-25
     task: T-3140
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-491
+    decision: "report 99 dead across 62 files, not the filed 106 across 66."
+    scope: project
+    date: 2026-08-25
+    task: T-3138
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-492
+    decision: "`tests/lint/bats-dead-negation.bats`, collected by"
+    scope: project
+    date: 2026-08-25
+    task: T-3138
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-493
+    decision: "`[[ a != b ]]` where the negation fits inside one test command (23"
+    scope: project
+    date: 2026-08-25
+    task: T-3138
+    rationale: "Auto-captured from task file on completion"

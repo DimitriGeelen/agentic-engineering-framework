@@ -4,12 +4,12 @@ name: "106 bats assertions cannot fail: bash exempts !-inverted commands from er
 description: >
   106 bats assertions cannot fail: bash exempts !-inverted commands from errexit
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/integration/continuous_loop.bats, tests/lint/bats-dead-negation.bats, tests/unit/errexit_negation_mechanism.bats, tests/unit/fabric_watch_pattern_fitness.bats, tests/unit/focus_drift_gate.bats, tests/unit/fw_init_atomic.bats, tests/unit/fw_vendor_completeness.bats, tests/unit/handover_digest.bats, tests/unit/hook_absolute_paths.bats, tests/unit/inception_decide_atomicity.bats, tests/unit/lib_compat.bats, tests/unit/note_capture_guard.bats, tests/unit/revisit_undated_signal.bats, tests/unit/t2318_retrofit_injector_append_missing.bats, tests/unit/t2391_project_root_inherited_stale.bats, tests/unit/t2473_union_resolve.bats, tests/unit/t2862_greenfield_first_inception_e2e.bats, tests/unit/t2916_stall_guard_coverage.bats, tests/unit/t2919_budget_gate_command_classify.bats, tests/unit/t2990_root_pollution.bats, tests/unit/t3049_fabric_url_location.bats, tests/unit/t3050_b005_block_message.bats, tests/unit/t3051_exec_bit_gates.bats, tests/unit/t3052_pickup_id_collision.bats, tests/unit/t3054_watchtower_root_fallback.bats, tests/unit/t3073_c001_recommendation_bearing_inceptions.bats, tests/unit/task_id_race.bats, tests/unit/task_reid.bats, tests/unit/test_consumer_recover.bats, tests/unit/test_update_task_horizon_null_reclose.bats, tests/unit/test_workflow_env_isolation.bats, tests/unit/update_task.bats, tests/unit/upgrade_fresh_machine_simulation.bats, tests/unit/watchtower_url_no_guess.bats, tools/bats-dead-negation-lint.py, tools/bats-dead-negation-mutants.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T09:30:27Z
-last_update: 2026-08-25T20:35:34Z
-date_finished:
+last_update: 2026-08-25T20:39:38Z
+date_finished: 2026-08-25T20:39:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -217,7 +217,9 @@ bin/fw test invariants tests/lint/bats-dead-negation.bats > /tmp/.t3138d 2>&1 &&
 # line continuation; it is the regression anchor for that class.
 bats tests/unit/t3051_exec_bit_gates.bats > /tmp/.t3138e 2>&1 && grep -q "^ok 5 " /tmp/.t3138e && ! grep -q "^not ok" /tmp/.t3138e
 # AC5: the defect the revived assertion exposed is filed, not just described here.
-ls .tasks/active/T-3143-*.md > /dev/null
+# Asserts the filed task's CONTENT, not just that a filename exists — an empty
+# stub matching the glob would satisfy existence and prove nothing.
+grep -lq "c001_missing counts only" .tasks/active/T-3143-*.md
 # AC6: every mutant of the lint is killed by the lint's own suite. Asserts the
 # ratio the harness prints, not a hand-copied number — a survivor turns this red.
 tools/bats-dead-negation-mutants.py > /tmp/.t3138m 2>&1 && grep -q "^8 of 8 mutants killed" /tmp/.t3138m
@@ -428,3 +430,15 @@ version specifically.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3138-106-bats-assertions-cannot-fail-bash-exe.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a0cde07f
+- **Timestamp:** 2026-08-25T20:40:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-25T20:39:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
