@@ -229,6 +229,36 @@ the record states *why* the counters are null rather than leaving a reader to
 infer it from their absence. Kept — it converts an inference into a statement,
 which is the whole point of the AC.
 
+**AC6 status at hand-off — deliberately NOT ticked.**
+
+What is established: of 22 failures in a 385-test partial run, **zero are in any
+of the 13 files this task changed**. The clusters are
+`tests/unit/audit*.bats` (18), `approvals_close_ready_arcs` (2),
+`atomic_yaml_write_lint` (1, names `lib/corpus-id.sh`), and
+`ac_counter_sed_range_one_line_comment` (1, names `update-task.sh`).
+
+Why the audit cluster is not attributable to this change — by reachability, not
+by assumption: `tests/unit/audit.bats` invokes `agents/audit/audit.sh` and
+contains **zero** references to `self-audit.sh`, which is the only audit file this
+task touched. `audit.sh` is untouched here. The change cannot reach that test file.
+
+The live explanation is lock contention: those tests assert `[ "$status" -le 1 ]`,
+which cannot distinguish exit 2 (audit ran, found FAILs) from exit 75 (audit could
+not run — another audit holds the lock). A direct probe of
+`audit.sh --section structure` with no lock held exited **1** (pass).
+`audit_flock.bats` — a test *about* the lock — is itself in the failing set, which
+corroborates it. Filed as OBS-341.
+
+Why it is still not ticked: part of that contention was **self-inflicted**. This
+session ran the unit suite concurrently with pushes (whose pre-push gate runs an
+audit) and briefly with a second `audit.bats` run. So "pre-existing" is the
+likely reading but is not *proven*, and a clean quiet-system run is the evidence
+that would settle it. Ticking on a likely reading is exactly the move the
+false-green work in this task exists to discourage.
+
+Next session: re-run `bin/fw test unit` with nothing else touching the audit lock,
+and tick AC6 only if the audit cluster is green or fails for a named non-lock reason.
+
 **The worker did not finish.** It was killed by the dispatch watchdog at its 600s
 timeout while running `bin/fw test unit` for AC6 — correctly; the watchdog wrote
 `TIMEOUT` to its stderr log. The 600s budget was the orchestrator's error, not
