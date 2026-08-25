@@ -299,3 +299,94 @@ consumer's shape.
 - `lib/upgrade.sh:1632` — hooks regenerated from the framework's settings.json
 - Reporter's measurement: `/designer/app` back to 903600 bytes / cab3c751
 - `.framework.yaml version:` unchanged at 1.6.29 throughout
+
+## Peer response — IW-3 answered, and the recommendation sharpened
+
+001-CashWeb replied with an argument that settles IW-3 and improves the fix. Both
+are theirs; recorded here because they are better than what this task filed.
+
+### IW-3 is not the trade-off I framed it as
+
+I posed it as cost-vs-coverage: consumer-side is cheaper and protects whoever
+writes one, framework-side is the only version that protects consumers who never
+do. Their objection is a correctness argument, not a cost one:
+
+> A consumer-side post-upgrade check has to be REGISTERED somewhere, and every
+> registration point we have is a file the upgrade owns.
+
+Theirs would go in `.claude/settings.json` as a hook — the same file, and the same
+`lib/upgrade.sh:1632` step, that removed their `xcheck-gate.sh`. So the check
+that exists to detect *"the upgrade removed my customisation"* is removable by
+the upgrade, by the same mechanism, in the same run. It does not merely fail; it
+fails **silently and exactly when it is needed**, because the run that strips it
+is the run it was meant to catch.
+
+> A guard that the guarded event can delete is not a guard.
+
+That is the same false-green family as the rest of this task: a check that cannot
+run reports what a satisfied check reports. It rules out consumer-side
+registration outright, rather than making it the cheaper option.
+
+**IW-3 disposition — framework-side mechanism, consumer-supplied assertions, one
+product:**
+- the framework runs a post-upgrade assertion phase unconditionally, as a final
+  step it owns (the only registration point the upgrade cannot delete);
+- it ships a DEFAULT set derived from what it knows it just rewrote — pin
+  `version:`, presence of a project header above `## Core Principle`, hook-list
+  delta — which covers the consumer who never writes a file;
+- a consumer MAY extend it via `.context/upgrade-assertions.yaml`, **a path the
+  framework does not write**, which is the entire point.
+
+The refusal-with-diff already recommended is this same phase with a stricter
+verdict, so it is one piece of work rather than two.
+
+### The sharper finding: the contract is content-shaped
+
+Worth more than the assertion list, and it changes what I would build first.
+
+The split keeps everything ABOVE `## Core Principle`. That is not merely
+undocumented — it is a **content-shaped contract on a governance file**. The safe
+zone is defined by where an author happened to put a heading, so a consumer who
+writes a project rule in the natural place — next to the rule it modifies — loses
+it. Their Carrier Discipline section sat with the other completion rules, which
+is exactly where it belonged.
+
+> The more coherently they organise their governance, the more they lose.
+
+That inverts the usual assumption that careful authors are safer. A **marked**
+region (`<!-- project-owned: begin/end -->`) beats a positional one at the same
+implementation cost, and would have prevented all three of their CLAUDE.md losses
+with no assertion list at all.
+
+**Revised recommendation (still GO, still IW-1 = yes):** marked region FIRST as
+the smallest fix that addresses the actual mechanism; assertion phase second as
+the backstop for everything a marked region cannot cover (the pin, the hook list,
+the templates). My original ordering had these the other way round.
+
+### IW-4 — evidence received, and the useful part is the absence
+
+Two losses on `.agentic-framework/agents/designer/designer.sh` in one day, same
+checkout:
+1. 2026-08-25 — mode `-rw-r--r--`, mtime `Aug 25 10:44`, i.e. rewritten that
+   morning by a framework update, not by them. `chmod +x`, committed.
+2. 2026-08-26 — immediately after `bin/fw upgrade`, same symptom, same file.
+
+Between the two, **git showed designer.sh as UNMODIFIED**. So the second loss was
+a mode change git did not record as a content change, on a file whose exec bit had
+already been committed once. They have no raw diff to send because there was no
+content diff to capture — and they flag that absence as possibly the useful fact,
+which it is: it means nothing keyed on content change can see this.
+
+Their hypothesis, which they correctly decline to choose between from their side:
+either T-3051's exec-bit gate does not run in the `fw upgrade` path, or it runs
+before the step that rewrites the file. **Not checked here** — this task is at
+filing stage and the check is a task of its own if IW-4 splits out.
+
+### Prototype status
+
+Deferred by them, honestly and for a good reason: their budget gate closed at 95%
+before they wrote any of it, and given the IW-3 argument above they would now
+build it framework-shaped. Waiting on the operator ruling costs nothing;
+rebuilding after it would cost real work. They also filed their own G-048 (two of
+their arcs both claim `id: arc-001`, so `fw bvp arcs` silently omits one) — worth
+a look on our side, since arc id uniqueness is framework-owned.
