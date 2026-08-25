@@ -1,13 +1,12 @@
 ---
-id: T-3143
-name: "audit C-001 emits PASS 'All inceptions have research artifacts' alongside its
-  own WARN"
+id: T-3144
+name: "fw vendor ships executable code into consumer trees without checking git can
+  see it"
 description: >
-  c001_missing counts only issue_type=missing, so an unreferenced-artifact WARN leaves
-  the counter at zero and the PASS line fires in the same run. Found by T-3138 reviving
-  a dead assertion in tests/unit/t3073_c001_recommendation_bearing_inceptions.bats:329.
+  fw vendor ships executable code into consumer trees without checking git can see
+  it
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -24,8 +23,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-25T20:30:30Z
-last_update: '2026-08-25T20:45:13Z'
+created: 2026-08-25T20:44:07Z
+last_update: 2026-08-25T20:46:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -48,7 +47,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=202,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-25T20:45:13Z'
+  - ts: '2026-08-25T20:45:14Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -67,18 +66,74 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3143: audit C-001 emits PASS 'All inceptions have research artifacts' alongside its own WARN
+# T-3144: fw vendor ships executable code into consumer trees without checking git can see it
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reported by 010-termlink on the chat arc (2026-08-25, offsets 415 and 424),
+addressed to 999-AEF. A consumer's `.gitignore` blanket-ignores
+`.agentic-framework/*` and re-includes a FIXED allowlist of directories. The
+file's own comment says that list "is exactly what `git ls-files
+.agentic-framework` already tracks" — i.e. it was generated from a snapshot in
+time. Any directory upstream adds LATER is dropped silently, forever, on every
+vendor event.
+
+`tools/` is not on that list. In their tree that silently dropped 30 files,
+including `corpus_lint.py` (857 lines), `corpus_explain.py` (227) and
+`corpus_spec.py` (799) — which `bin/fw` execs directly at lines 4901/4907/4909.
+They report we had already seen the downstream symptom and left a comment at
+`bin/fw:400-401` quoting the error verbatim, then fixed the *message*.
+
+**Verified independently, 2026-08-25: this repo is NOT affected.** Their check
+run here prints nothing; all nine vendored directories including `tools/` and
+`vendor/` are git-visible. That is a measurement, not an assumption — and it is
+worth stating because absent-from-`git log` and never-vendored read identically,
+which is the instrument problem 010-termlink corrected themselves on twice on
+this same thread.
+
+So there is no generator in this repo emitting that allowlist; it is per-consumer
+and hand-maintained. What belongs here is the other half: **we write executable
+code into a consumer tree and never check the consumer can see it.** A vendor
+step that cannot tell "written and tracked" from "written and ignored" reports
+the same thing for both.
+
+Not acted on from the same thread: their earlier VERSION-downgrade advice, which
+they retracted in offset 424 ("wrong, and harmful if built"). No change was made
+on it here.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] AC1 — Reproduce before fixing. Build a synthetic consumer whose
+      `.gitignore` carries the snapshot-allowlist shape (`.agentic-framework/*`
+      plus `!` re-includes for a fixed set of directories), vendor into it, and
+      show that a file in a directory outside the allowlist lands on disk and is
+      invisible to git. Report which directories of the current framework are
+      NOT on the allowlist shape 010-termlink quoted — `tools/` is the reported
+      one; do not assume it is the only one.
+- [ ] AC2 — `fw vendor` (and the vendoring leg of `fw upgrade`) checks, after
+      writing, that every file it just wrote is visible to git in the target.
+      The check must run in the TARGET repo, not ours: `git check-ignore` is
+      answered by the consumer's `.gitignore`, which is the thing at fault.
+- [ ] AC3 — A dropped file is surfaced as a FAIL, naming the directory and the
+      ignore rule responsible (`git check-ignore -v` gives both). Not a WARN:
+      the framework is shipping code that `bin/fw` then execs by absolute path,
+      so the consequence is a hard runtime error (`python3: can't open file
+      '<proj>/.agentic-framework/tools/corpus_explain.py'`), not untidiness.
+- [ ] AC4 — The check cannot pass vacuously. If it enumerates zero written
+      files it must refuse, not report success — a vendor run that wrote nothing
+      and a vendor run whose file list was never populated are the same output
+      otherwise. Pin that with a fixture, not a comment (L-575, T-3140).
+- [x] AC5 — Say plainly whether OUR repo is affected, with the command's output
+      either way. We self-vendor into `.agentic-framework/`, so the same class
+      applies to us; "not affected" is a finding that has to be measured, since
+      absent-from-`git log` and never-vendored read identically (the exact
+      instrument problem 010-termlink corrected itself on, twice).
+- [ ] AC6 — A test fails against pre-change code. Fixtures only: a synthetic
+      consumer, no assertion pinned to a live consumer project, since consumer
+      `.gitignore` files are edited outside this repo and a control pinned to
+      one is a report about them rather than a check on us.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -264,7 +319,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-25T20:30:30Z — task-created [task-create-agent]
+### 2026-08-25T20:44:07Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3143-audit-c-001-emits-pass-all-inceptions-ha.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3144-fw-vendor-ships-executable-code-into-con.md
 - **Context:** Initial task creation
