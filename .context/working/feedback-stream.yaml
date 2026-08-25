@@ -36933,3 +36933,21 @@ scan_id: R-2a182d43
 task_id: T-3140
 payload:
   task_file: .tasks/active/T-3140-fw-gaps-renders-only-statuswatching--12-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T11:39:21Z'
+scan_id: R-e960815a
+task_id: T-3104
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T11:39:21Z'
+scan_id: R-e960815a
+task_id: T-3104
+payload:
+  task_file: .tasks/active/T-3104-lift-the-task-corpus-view-set-into-a-sha.md

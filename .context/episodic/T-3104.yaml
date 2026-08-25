@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3104: Lift the task-corpus view set into a shared library (slice 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-25T11:39:32Z
+# ============================================================================
+
+task_id: T-3104
+task_name: "Lift the task-corpus view set into a shared library (slice 1)"
+workflow_type: refactor
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T12:14:12Z
+completed: 2026-08-25T11:39:20Z
+duration_days: 5
+updates_count: 1
+first_commit: 2026-08-20T16:38:00+02:00
+last_commit: 2026-08-20T16:38:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lift the task-corpus view set into fw_task_view_dirs (slice 1)
+
+# Key outcomes
+outcomes:
+  - 'A shared library exposes the corpus view set (every worktree''s `.tasks/` plus the local view), with the same semantics `_task_view_dirs` has today including the non-git fallback'
+  - '`agents/task-create/create-task.sh` sources the library instead of defining its own copy; no duplicated pattern list remains'
+  - 'The function is documented with WHY it exists (split-view collision, L-506 leg 2) and WHY consumers may legitimately differ on `.tasks/` (allocation counts replicas; landing decisions treat a `.tasks/` file as a deliverable)'
+  - 'ID allocation behaviour is unchanged — same next-ID for the same corpus before and after the lift, proven by comparison not assertion'
+  - '`tests/unit/t3104_task_corpus_views.bats` covers: main-only repo, repo with N worktrees, non-git directory fallback, worktree lacking `.tasks/`, and de-duplication when the local view is also a listed worktree'
+  - 'Three one-line mutations each kill ≥1 test (named), or are proven equivalent; mutations reverted'
+  - 'Existing task-creation suites remain green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/task-create/create-task.sh'
+  - 'docs/reports/T-3104-task-corpus-views.md'
+  - 'lib/paths.sh'
+  - '.tasks/active/T-3104-lift-the-task-corpus-view-set-into-a-sha.md'
+  - '.tasks/completed/T-3106-task-corpus-concurrency-model--design-re.md'
+  - 'tests/unit/t3104_task_corpus_views.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T16:38:00'
+    action: 'T-3104: lift the task-corpus view set into fw_task_view_dirs (slice 1)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7165 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7165
+  commits: 1
+  files_changed: 6
+  lines_added: 649
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3104-lift-the-task-corpus-view-set-into-a-sha.md
+generated_by: context-agent-hybrid
