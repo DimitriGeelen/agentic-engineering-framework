@@ -1,0 +1,89 @@
+# Source manifest — Executable Workflow Contract Runtime source packet
+#
+# Governed by: T-3145 (AEF-side ingestion, workflow_type: design)
+# Dispatch source task: T-037 (0503-codex-cli-playground)
+# Prompt artifact: /opt/0503-codex-cli-playground/docs/prompts/T-036-aef-workflow-designer-governed-execution-prompts.md
+#
+# IMMUTABILITY RULE (Shared operating contract, Phase 1):
+#   Never overwrite a stored snapshot. A revised source gets a NEW hash-addressed
+#   file plus a NEW entry in `revisions:` below. The filename carries the first 8
+#   hex chars of the full SHA-256 so a stale reference is self-evident.
+
+manifest_version: 1
+initiative: executable-workflow-contract-runtime
+receiver_project: 999-Agentic-Engineering-Framework
+receiver_role: aef-agent
+receiver_task: T-3145
+received_at: 2026-08-25T23:10:00Z
+correlation: t037-aef-ingestion
+
+# Human operator is the decision owner for every gate named in Phase 0.5.
+human_decision_owner: dimitri@geelenandcompany.com
+decision_scope:
+  - architecture GO/NO-GO
+  - BVP confirmation (agent may propose only)
+  - arc start / arc close
+  - autonomy expansion
+  - consequential overrides (Tier 0)
+
+documents:
+  - id: architecture-dossier
+    source_project: 0503-codex-cli-playground
+    source_url: http://192.168.10.107:3001/file/docs/architecture/executable-workflow-contract-runtime.md
+    source_path: /opt/0503-codex-cli-playground/docs/architecture/executable-workflow-contract-runtime.md
+    expected_sha256: c9070637b09493a24abc99982ae966a3b3ae8cd4a358a44fdceb59bdceb6ac2d
+    received_sha256: c9070637b09493a24abc99982ae966a3b3ae8cd4a358a44fdceb59bdceb6ac2d
+    hash_match: true
+    stored_path: docs/research/executable-workflow/architecture-c9070637.md
+    read_back_sha256: c9070637b09493a24abc99982ae966a3b3ae8cd4a358a44fdceb59bdceb6ac2d
+    read_back_ok: true
+    bytes: 62863
+    governance_container_upstream: T-027
+    transport: local-filesystem-read (peer project mounted as additional working directory)
+
+  - id: delivery-roadmap
+    source_project: 0503-codex-cli-playground
+    source_url: http://192.168.10.107:3001/file/docs/architecture/executable-workflow-runtime-delivery-roadmap.md
+    source_path: /opt/0503-codex-cli-playground/docs/architecture/executable-workflow-runtime-delivery-roadmap.md
+    expected_sha256: 5be23719b976e37a6461b4b1f6f309985b5ba033ef0b801769edd2627fbae5b8
+    received_sha256: 5be23719b976e37a6461b4b1f6f309985b5ba033ef0b801769edd2627fbae5b8
+    hash_match: true
+    stored_path: docs/research/executable-workflow/roadmap-5be23719.md
+    read_back_sha256: 5be23719b976e37a6461b4b1f6f309985b5ba033ef0b801769edd2627fbae5b8
+    read_back_ok: true
+    bytes: 21135
+    governance_container_upstream: T-034
+    transport: local-filesystem-read (peer project mounted as additional working directory)
+
+# --- Transport incident (recorded, not a version mismatch) -------------------
+#
+# The declared HTTP source URLs were fetched first. BOTH returned HTTP 200 with
+# a hash mismatch:
+#   architecture : aeb5180a9424af0fa33a6a5647b20789294a6807b621b8cea4b7a5f6d84f3772
+#   roadmap      : 0988d8ac7a6af9009ea1caf1c33a66bb6e6404fd9cf29b2ebc896f558dca8784
+#
+# Root cause established before declaring VERSION MISMATCH: the `/file/...`
+# endpoint on 192.168.10.107:3001 is a Watchtower HTML *viewer*, not a raw-bytes
+# endpoint. `file(1)` reports "HTML document" and the payload begins `<!DOCTYPE
+# html>` with a csrf-token meta tag. `?raw=1` does not change the behaviour.
+# The mismatch was therefore a transport artifact, not a source revision.
+#
+# The authoritative bytes were obtained from the peer project's working tree,
+# which is mounted read-only-by-convention as an additional working directory,
+# and BOTH hashes matched the expected values exactly. No VERSION MISMATCH.
+#
+# ACTION FOR THE SENDING PROJECT (T-037): the operator dispatch checklist item
+# "transfer both documents or provide the verified URLs" is not satisfied by
+# these URLs. A receiver that had no filesystem access to the peer project would
+# have been forced to return VERSION MISMATCH on a document that is in fact
+# correct. Publish a raw endpoint (or attach the files) before dispatching this
+# packet to any receiver without local filesystem reach.
+transport_incident:
+  detected_at: 2026-08-25T23:05:00Z
+  class: html-viewer-wrapping-raw-source
+  declared_urls_usable_for_hash_verification: false
+  resolved_via: peer-project filesystem read
+  version_mismatch_declared: false
+  peer_action_required: true
+
+revisions: []   # append-only; a new source revision adds an entry, never edits one

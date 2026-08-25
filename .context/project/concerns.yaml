@@ -3196,3 +3196,67 @@ concerns:
   - T-2987
   - T-3050
   follow_up_task: T-3133
+- id: G-086
+  type: gap
+  title: Hash-pinned cross-project source packet is transported over an HTML viewer
+    endpoint, so obeying the verification contract produces a false VERSION MISMATCH
+  description: 'The T-037 source packet (0503-codex-cli-playground → AEF, correlation
+    t037-aef-ingestion) declares two documents with expected SHA-256 hashes and the
+    instruction: "If a received document does not match its expected hash, stop and
+    return VERSION MISMATCH with the received hash." Both declared URLs
+    (http://192.168.10.107:3001/file/docs/architecture/...) returned HTTP 200 and BOTH
+    mismatched: architecture received aeb5180a9424af0fa33a6a5647b20789294a6807b621b8cea4b7a5f6d84f3772
+    against expected c9070637...6ac2d, roadmap received 0988d8ac7a6af9009ea1caf1c33a66bb6e6404fd9cf29b2ebc896f558dca8784
+    against expected 5be23719...ae5b8.
+
+    The endpoint is a Watchtower HTML *viewer*, not a raw-bytes endpoint. The payload
+    begins <!DOCTYPE html> with a csrf-token meta tag, file(1) reports "HTML document",
+    and ?raw=1 does not change the behaviour. The bytes hashed were the rendered page,
+    not the document. Reading the authoritative bytes from the peer working tree gave
+    an exact match on both documents, so this was never a source revision and
+    VERSION MISMATCH was correctly NOT declared.
+
+    The gap is that the failure mode is a FALSE NEGATIVE PRODUCED BY OBEYING THE
+    CONTRACT. A receiver with no filesystem reach to the peer project has no way to
+    distinguish "the source was revised" from "the transport wrapped it in HTML" — both
+    present identically as a 200 with a wrong hash. Such a receiver would have followed
+    the instruction correctly and refused a document that is byte-for-byte correct.
+    The hash discipline is sound; the transport silently defeats it. Detection here was
+    incidental to this receiver happening to have the peer mounted as an additional
+    working directory.
+
+    Second, separable transfer gap in the same packet: roadmap §4 Arc 0 candidate task 3
+    requires consolidating review findings from four named external reviews (Claude,
+    Z.ai, DeepSeek, Mistral). Those artefacts were cited but not transferred, so that
+    candidate task is not startable as written.'
+  spec_reference: 'T-036 prompt artifact §Source packet + §Operator dispatch checklist
+    ("transfer both documents or provide the verified URLs")'
+  severity: medium
+  status: open
+  detected_in: T-3145
+  observed: 2026-08-25
+  blast_radius: cross-project
+  homed_to: 0503-codex-cli-playground
+  home_rationale: 'Gap homing (T-1333) — the fix is a publishing change in the sending
+    project (raw-bytes endpoint or direct file attachment) plus a re-issued source
+    packet. Filing it only there would be invisible to AEF receivers, and filing it only
+    here would be invisible to whoever can fix it, so it is homed to the peer and
+    mirrored here as a receiver-side observation. AEF must not edit the peer repository
+    (arch §5.1 ownership boundary), so the peer action is requested via the T-3145
+    ingestion receipt on correlation t037-aef-ingestion, not implemented locally.'
+  what_works_now: 'Ingestion completed without a false refusal because this receiver had
+    the peer project mounted as an additional working directory. Both stored snapshots
+    are hash-verified and immutable; the incident is recorded in
+    docs/research/executable-workflow/source-manifest.yaml:transport_incident with the
+    wrapped hashes preserved.'
+  what_remains: 'Peer must publish a raw-bytes endpoint (or attach the files) and
+    re-issue the source packet before this packet is dispatched to any receiver without
+    local filesystem reach. Peer must also transfer the four cited external review
+    artefacts. Generally: any cross-project hash-pinned handoff should verify that the
+    transport returns raw bytes (Content-Type / leading-bytes check) BEFORE comparing
+    hashes, so transport corruption is distinguishable from source revision.'
+  related:
+  - T-3145
+  - T-037
+  - G-045
+  follow_up_task: T-3145
