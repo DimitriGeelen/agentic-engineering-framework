@@ -802,3 +802,17 @@ bypasses:
   command_hash: 7dabd5c3459e0689f08286ac466c039da44b7899e4acf1530e7d267a790985dc
   authorized_by: human
   mechanism: watchtower
+- timestamp: '2026-08-23T21:25:18Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify origin HEAD:t2539-staging
+  command_hash: b45578ba9ab1a5d1b1ac5f3b0fefdcc2725acb1092bee03b530fa3379c2993c8
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-08-23T21:26:46Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify origin HEAD:t2539-staging
+  command_hash: b45578ba9ab1a5d1b1ac5f3b0fefdcc2725acb1092bee03b530fa3379c2993c8
+  authorized_by: human
+  mechanism: watchtower

@@ -36709,3 +36709,101 @@ scan_id: R-f82cc44e
 task_id: T-3124
 payload:
   task_file: .tasks/active/T-3124-file-viewer-404-says-the-file-does-not-e.md
+---
+kind: scan_emitted
+timestamp: '2026-08-23T21:18:31Z'
+scan_id: R-b2f39d65
+task_id: T-3123
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-23T21:18:31Z'
+scan_id: R-b2f39d65
+task_id: T-3123
+payload:
+  task_file: .tasks/active/T-3123-fabric-shell-detector-models-sourcing-bu.md
+---
+kind: scan_emitted
+timestamp: '2026-08-23T21:23:13Z'
+scan_id: R-691072eb
+task_id: T-3114
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-23T21:23:13Z'
+scan_id: R-691072eb
+task_id: T-3114
+payload:
+  task_file: .tasks/active/T-3114-release-channels-consumers-choose-stable.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-23T21:23:13Z'
+scan_id: RC-4fb86721
+task_id: T-3114
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-23T21:43:06Z'
+scan_id: R-90a3646e
+task_id: T-3125
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-23T21:43:06Z'
+scan_id: R-90a3646e
+task_id: T-3125
+payload:
+  task_file: .tasks/active/T-3125-self-vendor-pre-push-gate-reads-the-work.md
+---
+kind: scan_emitted
+timestamp: '2026-08-24T18:18:05Z'
+scan_id: R-95364734
+task_id: T-3070
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-24T18:18:05Z'
+scan_id: R-95364734
+task_id: T-3070
+payload:
+  task_file: .tasks/active/T-3070-full-fw-audit-cannot-complete-single-pro.md
+---
+kind: scan_emitted
+timestamp: '2026-08-24T21:26:48Z'
+scan_id: R-2d5c3406
+task_id: T-3126
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-24T21:26:48Z'
+scan_id: R-2d5c3406
+task_id: T-3126
+payload:
+  task_file: .tasks/active/T-3126-the-pre-push-audit-gate-blocks-a-ref-ope.md

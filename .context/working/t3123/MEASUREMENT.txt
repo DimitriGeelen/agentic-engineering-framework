@@ -1,0 +1,7 @@
+Population: 246 git-tracked *.sh, vendored .agentic-framework/ excluded
+
+BEFORE  RAW(dedup guard stripped)= 760   DEDUP unique(src,tgt)= 289   files-with-edges=98
+AFTER   RAW(dedup guard stripped)= 839   DEDUP unique(src,tgt)= 302   files-with-edges=106
+
+delta   RAW 760->839  (+79, +10.4%)   DEDUP 289->302  (+13, +4.5%)
+        new pairs=13   lost pairs=0

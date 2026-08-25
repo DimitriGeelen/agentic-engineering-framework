@@ -4032,3 +4032,24 @@ observations:
   tags: [resolver-loop, deploy-drift]
   status: pending
   promoted_to: T-3116
+- id: OBS-340
+  text: "fw tier0 status reports 'Pending block: A command is waiting for approval' from .context/working/.tier0-approval.pending, a record 32.6h old (hash 32c7f5d5, ts 1787520419). /approvals reads .context/approvals/pending-*.yaml instead and correctly shows nothing. Two surfaces for one concept disagree. Per lib/config.sh:278 TIER0_APPROVAL_TTL is explicitly NOT the pending-request staleness window, so a pending request has no expiry by design and reports as live indefinitely. Low severity (operator-facing queue is the clean one) but it trains distrust of the CLI status line."
+  captured: 2026-08-25T06:03:56Z
+  context_task: T-3129
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-341
+  text: "tests/unit/audit.bats asserts [ \"$status\" -le 1 ] on audit.sh runs. That conflates exit 2 (audit ran, found FAILs) with exit 75 (audit COULD NOT RUN - another audit holds the lock, T-2930). Under any concurrency - the unit suite's own audit tests, a concurrent push's pre-push gate, the daily cron - 9 tests in that file go RED for a reason unrelated to the code under test. Observed live 2026-08-25 during T-3129: 9/14 unit-suite failures were this, while a direct probe of 'audit.sh --section structure' with no lock held exited 1 (pass). This is the false-RED mirror of the false-GREEN family (T-1828/T-3125/T-3126/T-3129): the assertion cannot distinguish 'looked and found a problem' from 'could not look'. Consequence is broader than the 9 tests - it makes every AC6-style 'no new failures in fw test unit' claim non-deterministic, so agents learn to discount suite RED. Suggested fix: assert exit != 75 explicitly and skip/retry rather than fail, so contention reports as contention."
+  captured: 2026-08-25T06:44:33Z
+  context_task: T-3129
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-342
+  text: "T-3126 shipped but was never DEPLOYED. The pre-push hook installed at .git/hooks/pre-push was VERSION=1.6 while agents/git/lib/hooks.sh source was 1.7 — the PL-078 marker bump was done correctly, but nothing ran 'fw git install-hooks', so the ref-vs-worktree scope fix was not live for ~2 days. Detected 2026-08-25 when a push blocked on 'AUDIT-SCOPE: fails=1 ref=0 worktree=1' — precisely the case T-3126 makes non-blocking. The audit.sh half of T-3126 WAS live (the AUDIT-SCOPE lines print, because audit.sh is invoked fresh each run), so the feature looked deployed from its most visible surface while the enforcing half was stale. Same class as L-364 (cron: registry->generated->deployed are three states); hooks have the same chain source->installed and no gate covers it. Suggested: doctor WARN when .git/hooks/<hook> VERSION differs from the source marker."
+  captured: 2026-08-25T07:23:42Z
+  context_task: T-3129
+  tags: []
+  status: pending
+  promoted_to: null

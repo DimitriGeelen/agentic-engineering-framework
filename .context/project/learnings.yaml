@@ -4732,3 +4732,15 @@ X'` returning empty group."
   task: T-3095
   date: 2026-08-20
   context: Added via context agent
+- id: L-633
+  learning: "Do not infer a dispatched worker's liveness from the PID that 'termlink list' shows. That PID is the 'termlink register' PTY session wrapper and it OUTLIVES the worker - it stays 'ready' long after the claude -p process is killed. Polling /proc/<that pid> reports ALIVE forever. Authoritative signals instead: (a) $WDIR/stderr.log contains 'TIMEOUT' when the dispatch watchdog fired, (b) $WDIR/result.jsonl stops growing, (c) the worker's own bus post. Observed T-3129: reported a worker as running for ~10 minutes after its watchdog had correctly killed it at the 600s timeout. Same class as a pgrep -f pattern that self-matches its own bash -c command line. Second-order lesson: when a dispatch's ACs require a long command (e.g. AC6 'fw test unit'), raise --timeout to cover it - the default 600s is shorter than the framework's own unit suite, so the worker dies mid-verification with its source changes on disk but uncommitted, unticked and unreported."
+  source: P-001
+  task: T-3129
+  date: 2026-08-25
+  context: Added via context agent
+- id: L-634
+  learning: "Reading a wrapper's exit status as the wrapped command's status produced three wrong claims in one session (T-3129). (1) 'fw termlink dispatch' printed ERROR: Unknown option while the harness showed '[exited with code 0]' - the 0 was the background wrapper; the command itself exited 1. (2) Polled the PID from 'termlink list' to judge worker liveness - that is the 'termlink register' PTY wrapper, which outlives the worker; reported ALIVE for 10 min after the watchdog had correctly killed it. (3) Read '843 tests, exit code 0' as a completed unit suite; the suite exited 124, killed by its own timeout at 843 of 4522 tests, so the task's newly written controls never ran in it. General rule: when a command runs under a wrapper (background harness, timeout, PTY registrar, tee), the status you can see belongs to the outermost layer. Capture the inner status explicitly (echo EXIT=$? into the log, check stderr.log for TIMEOUT, compare bats --count against the number that ran) before drawing any conclusion. A truncated run and a clean run are indistinguishable from the tail of the output."
+  source: P-001
+  task: T-3129
+  date: 2026-08-25
+  context: Added via context agent

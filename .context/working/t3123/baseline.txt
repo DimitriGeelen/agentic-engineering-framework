@@ -1,0 +1,10 @@
+population (tracked .sh, no vendor):  246
+no source/. statement:                89
+invoke-only (no source, refs another):38
+RAW shell edges:                      289
+DEDUP (src,tgt) pairs:                289
+DEDUP pairs both ends carded:         223
+files emitting >=1 edge:              98
+invoke-only files WITH edges:         6
+invoke-only files ZERO edges:         32
+no-source files WITH edges:           17  (of 89)

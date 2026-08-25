@@ -1,0 +1,2 @@
+BEFORE (HEAD):  RAW= 760  DEDUP= 289  unique(src,tgt)= 289  files-with-edges=98
+AFTER  (working tree):  RAW= 839  DEDUP= 302  unique(src,tgt)= 302  files-with-edges=106

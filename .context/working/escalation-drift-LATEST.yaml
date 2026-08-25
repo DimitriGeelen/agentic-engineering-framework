@@ -1,27 +1,21 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-22T03:23:02.878459+00:00
-corpus_total: 2718
+generated: 2026-08-25T03:23:02.444774+00:00
+corpus_total: 2734
 bug_class_total: 495
 bug_class_pct: 18
 h1_flagged: 360
 h1_pct_of_bug_class: 72
-h2_repeat_patterns: 157
+h2_repeat_patterns: 158
 h3_flagged: 265
 h3_pct_of_bug_class: 53
-recent_30d_flagged: 18
+recent_30d_flagged: 15
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
     name: "Fix critical hook PROJECT_ROOT bug for external projects"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
-  - tid: "T-2612-handoff-jump-regression-uuid-form-corpus"
-    name: "handoff jump regression: uuid-form corpus + 0.3.1 no auto-resolve — operator-sur"
-  - tid: "T-2613-aef-audit-cron-warnfail-connector-unwire"
-    name: "aef-audit-cron warn/fail connector unwired — corpus sweep for unlinked handoff-i"
-  - tid: "T-2615-re-pin-designer-032-t-240-uuid-auto-reso"
-    name: "re-pin designer 0.3.2 (T-240 uuid auto-resolve hotfix) — flag flip + alias"
   - tid: "T-2628-corpus-squash-burst-rca--operator-delete"
     name: "Corpus squash burst RCA — operator delete-all+resave regressed task-lifecycle"
   - tid: "T-2676-fix-harvestsh-indent-assumption-greps-de"
@@ -32,17 +26,23 @@ recent_sample:
     name: "fix corpus explain rail arity drift silently downgrading authority stage (OBS-10"
   - tid: "T-2724-fw-init-reports-19-broken-hooks-on-a-cor"
     name: "fw init reports 19 broken hooks on a correct install — validator never expands"
+  - tid: "T-2733-t-1550-rca-gate-invalidated-pre-existing"
+    name: "T-1550 RCA gate invalidated pre-existing test fixtures, red since May"
+  - tid: "T-2740-greenfield-seed-tasks-fail-fw-audit-on-a"
+    name: "greenfield seed tasks fail fw audit on a freshly initialised project"
+  - tid: "T-2792-fresh-install-onboarding-path-broken-mak"
+    name: "Fresh-install onboarding path broken: make the new-project prompt work end"
 h2_top:
   - learning: "P-011"
-    task_count: 2192
+    task_count: 2223
   - learning: "L-387"
-    task_count: 1967
+    task_count: 1999
   - learning: "L-291"
-    task_count: 1036
+    task_count: 1047
   - learning: "L-398"
-    task_count: 788
+    task_count: 798
   - learning: "P-010"
-    task_count: 422
+    task_count: 432
   - learning: "L-399"
     task_count: 91
   - learning: "L-006"
@@ -50,6 +50,6 @@ h2_top:
   - learning: "L-001"
     task_count: 51
   - learning: "L-364"
-    task_count: 44
+    task_count: 45
   - learning: "L-332"
     task_count: 36
