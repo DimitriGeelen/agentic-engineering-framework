@@ -133,12 +133,50 @@ session.
 - **Cap 5** concurrent workers (same limit as sub-agent dispatch).
 - **40K tokens headroom** before dispatching, for result ingestion.
 - **Do not spawn when context > 60%.**
-- **Worktree isolation** (`fw worktree create`) for any parallel work that edits
-  files, then `fw integrate run master --push` from the main checkout.
+- **Worktrees are OPT-IN ONLY — never the default.** See §Worktree Policy below.
+  Parallel work that edits files is serialised in the main checkout unless the
+  operator has explicitly instructed a worktree.
 - Workers write to **repo paths**, never `/tmp/fw-agent-*` (T-818).
 
 Mechanics, prompt structure, and result-ledger discipline: §Sub-Agent Dispatch
 Protocol. Substrate observability: `fw orchestrator status`.
+
+## Worktree Policy — OPT-IN ONLY (operator directive, 2026-08-25)
+
+**The default is the main checkout. Do not create a git worktree unless the
+operator has explicitly instructed one, in this session, in their own words.**
+
+This overrides every other passage in this file. Where older text reads as
+"use a worktree for parallel work" or "real code goes through a worktree", the
+rule below wins.
+
+| Situation | What to do |
+|---|---|
+| Ordinary work, any size | Main checkout. No worktree. |
+| Parallel work that edits files | Serialise it in the main checkout. Converging writes are a reason to go sequential, not a reason to branch the filesystem. |
+| Genuinely major piece of work | You MAY **suggest** a worktree, once, as a suggestion. Silence or anything short of a clear yes = main checkout. |
+| Operator explicitly says to use one | Use it. Land with `fw integrate run master --push` from the main checkout. |
+| Consumer / vendored project | **Same rule.** It is not framework-repo-only — consumer projects are where much of the pain originates. |
+
+**"It would be cleaner in isolation" is the rationalisation this rule exists to
+catch.** So is "the dispatch protocol says to". Neither is an instruction.
+
+**Why this is a standing directive and not a preference.** Worktrees have been a
+sustained, repeated source of operational damage here: divergence between branch
+and worktree, commits stranded in directories that were later torn down,
+`.claude/worktrees/*` entries surviving on disk after leaving `git worktree
+list`, handed-off `cd …/worktrees/…` commands that fail because the path is gone
+(§Copy-Pasteable Commands item 6), and a whole failure class tracked separately.
+The framework's own guidance was a cause: it *instructed* the default that hurt.
+
+**The mechanism is NOT removed and is NOT gated.** `fw worktree create`,
+`fw worktree gc`, `fw integrate` all keep working exactly as they do today. There
+is no new switch to flip, no fuse to trip, nothing to bypass. The only thing that
+changed is the **default**: you no longer reach for it on your own judgement. When
+the operator asks for a worktree, use it — normally, immediately, no ceremony.
+
+This is a behavioural default, so it binds on agent discipline rather than on a
+gate. Do not read the absence of a gate as permission.
 
 ## Watchtower Port (read this FIRST, before any `curl localhost:3000`)
 
@@ -1192,10 +1230,12 @@ nothing and is the sole source of drift.
 - **Session runs on `master`.** Handover / task-sync / context commits go straight
   to master, pushed via `fw sync` (rebase + push — reconciles concurrent sessions
   without merge noise) or `fw handover --commit`.
-- **Real code goes through a worktree.** `fw worktree create <name>` → build →
-  `fw integrate run master --push` (FF-lands + auto-prunes the worktree/branch).
-  Run integrate from the **main checkout**, targeting the worktree — never from
-  inside the worktree it will remove (that self-removal hangs).
+- **Real code is built in the MAIN CHECKOUT by default.** Worktrees are opt-in
+  only — see §Worktree Policy. When the operator HAS explicitly instructed one:
+  `fw worktree create <name>` → build → `fw integrate run master --push`
+  (FF-lands + auto-prunes the worktree/branch). Run integrate from the **main
+  checkout**, targeting the worktree — never from inside the worktree it will
+  remove (that self-removal hangs).
 - **`fw worktree gc`** reclaims landed worktrees/branches by content comparison
   (survives re-derivation, which defeats `git cherry`). Dry-run default; branch
   deletes stay Tier-0.
