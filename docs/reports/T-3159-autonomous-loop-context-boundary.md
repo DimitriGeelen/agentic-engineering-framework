@@ -356,8 +356,14 @@ worse defect and this section needs revisiting.
 
 ### 14.2 Measured this turn
 
-- **This very session runs `claude -c`, PPID 3064411 — NOT under `claude-fw`.** R1 is
-  live right now: if budget-critical fires here, the signal goes into the void.
+- ~~This very session runs `claude -c`, NOT under `claude-fw`.~~ **WRONG — retracted.**
+  Asserted from one `ps` line on the immediate parent, without walking the tree. The
+  operator caught it. Full ancestry: `bash` → `claude -c` (2263192) → **`/bin/bash
+  bin/claude-fw -c` (3064411)** → `bash` → `su` → `sudo su` → xfce4-terminal.
+  **This session IS under `claude-fw` and the wrapper is armed.** R1 does not apply
+  here. Note the inversion: `claude -c` as the parent is *evidence for* the wrapper —
+  it is the exact command `claude-fw` restarts with (`bin/claude-fw:338`) — so the one
+  fact I had pointed the opposite way to the conclusion I drew from it.
 - **No `Stop`, `SubagentStop`, `SessionEnd` or `UserPromptSubmit` hook is registered.**
   `.claude/settings.json` carries `PreToolUse`, `PostToolUse`, `PreCompact`,
   `SessionStart` only.
