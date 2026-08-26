@@ -9,6 +9,7 @@ from flask import Blueprint, abort, redirect, request, url_for
 from markupsafe import Markup
 
 from web.shared import (
+    FRAMEWORK_ROOT,
     PROJECT_ROOT,
     _auto_link_files,
     get_all_task_metadata,
@@ -139,7 +140,9 @@ def _is_decided_unclosed(task_data, task_body):
     """
     import sys
 
-    lib_dir = str(PROJECT_ROOT / "lib")
+    # T-2645 / OBS-097: lib/ is FRAMEWORK-owned, so it resolves from FRAMEWORK_ROOT.
+    # PROJECT_ROOT is the consumer's project in a split-root install and has no lib/.
+    lib_dir = str(FRAMEWORK_ROOT / "lib")
     if lib_dir not in sys.path:
         sys.path.insert(0, lib_dir)
     try:
