@@ -1,8 +1,11 @@
 ---
 id: T-3185
-name: "Master becomes a release train: rename the session branch to bleeding-edge and land it on release only"
+name: "Master becomes a release train: rename the session branch to bleeding-edge
+  and land it on release only"
 description: >
-  Rename t2539-staging to bleeding-edge, make it the sanctioned development branch, and restrict master to receiving FF landings at release. Supersedes T-100196 session-on-master; dissolves the T-100201 PROTECT_MASTER conflict.
+  Rename t2539-staging to bleeding-edge, make it the sanctioned development branch,
+  and restrict master to receiving FF landings at release. Supersedes T-100196 session-on-master;
+  dissolves the T-100201 PROTECT_MASTER conflict.
 
 status: started-work
 workflow_type: refactor
@@ -22,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T21:34:30Z
-last_update: 2026-08-26T21:34:30Z
-date_finished: null
+last_update: '2026-08-26T21:45:07Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +37,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-26T21:45:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:refactor); effort=8 (lines=142,acs=10)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T21:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3185: Master becomes a release train: rename the session branch to bleeding-edge and land it on release only
@@ -123,32 +153,42 @@ git show --stat --format= HEAD > /tmp/.t3185-stat 2>&1 && ! grep -qE "^ +bin/fw 
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:**
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+The policy half is landed and verified; what remains is two operator actions I
+cannot perform. The rename carried zero risk because it happened at the one moment
+`bleeding-edge` was byte-identical to `master` (0 ahead / 0 behind, immediately
+after tonight's fast-forward), so no history question arises. The model was checked
+against the code before being written down, not assumed: consumers do install from
+the GitHub mirror (`lib/consumer-recover.sh:19` calls it the *canonical public
+mirror*), `fw release tag-and-release` exists to be the landing gate, and
+`fw integrate run [target]` already accepts an explicit target, so the worktree
+landing rule is enforceable today without touching `bin/fw`.
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
+The reason this is GO and not DEFER: nothing is waiting on evidence. The two open
+items are a OneDev admin-console setting and a remote-ref deletion — both are yours
+to perform, neither changes the recommendation.
 
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+One honest limitation: the model is currently enforced by **prose only**. The two
+rails that would make it structural (T-3186, T-3187) are blocked because T-3127
+holds `bin/fw` uncommitted, and I deliberately kept this commit off that file
+rather than ship another session's unfinished work under my change. Until T-3187
+lands, a future session sitting on the wrong branch will look exactly like one
+sitting on the right branch — the same blind spot that let this run 41 days. That
+argues for prioritising T-3187, not for withholding the policy.
+
+**Evidence:**
+
+- Rename: `t2539-staging` → `bleeding-edge`, local gone, `origin/bleeding-edge` live and tracked (7/7 P-011 verification lines pass)
+- Release train demonstrably running: `origin/master` = `c0790d322`, `origin/bleeding-edge` = `6a35eea9d`, master behind by 1 — the lag is the product
+- Provenance measured, not guessed: branch created `2026-07-16 07:28:39`; T-2539 `date_finished: 2026-07-16T05:28:58Z` (+02:00) — 19 seconds apart; 1,943 reflog entries since
+- Blind spot measured: `t2539-staging` was 0 behind master, and `fw doctor`'s `diverged-fork` guard fires only when a branch is BOTH ahead and behind — so it never had a reason to speak (filed T-3187)
+- No framework code creates session branches: grep for `checkout -b` / `branch -c` / `switch -c` across `bin/fw`, `bin/claude-fw`, `lib/`, `agents/` returns nothing — this was a one-off human `git checkout -b`, never automated
+- `PROTECT_MASTER: 1` confirmed live in `.framework.yaml:15` with `agents/git/lib/master-guard.sh` present — left armed and unscoped, per the dissolution
+- T-100201 recorded as dissolved with `Superseded-by: T-3185`
+- Commit verified clean of `bin/fw` (AC8, mechanical check in `## Verification`)
 
 ## Decisions
 
