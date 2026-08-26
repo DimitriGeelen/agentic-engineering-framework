@@ -282,6 +282,17 @@ def evaluate(directive_data, state_data, now_utc, source="resume", blast_lookup=
         new_state["last_terminated_reason"] = terminated_reason or ""
     new_state["last_source"] = source
 
+    # T-3167 (arc-012 F3): a recorded termination must disarm the flag in the SAME
+    # write. Before this, `last_terminated_reason` was written and `enabled` left
+    # alone, so the file asserted `enabled: true` next to a death it had just
+    # recorded — found live in this repo, armed-on-paper for 70 days past expiry.
+    # A flag that says "armed" whether or not anything is armed carries no
+    # information, and is indistinguishable from one that checked.
+    # Only a terminating write disarms; an ordinary iteration leaves `enabled`
+    # untouched, which is what stops this from being a blanket `enabled = False`.
+    if new_state.get("last_terminated_reason"):
+        new_state["enabled"] = False
+
     if ceiling_breach:
         _ref, _br, _ceil = ceiling_breach
         section = (
@@ -296,10 +307,14 @@ def evaluate(directive_data, state_data, now_utc, source="resume", blast_lookup=
             f"- Blast-radius (BVP cost_estimate): {_br}\n"
             f"- Tier ceiling: {_ceil}\n"
             "\n"
-            "The pre-filed directive has NOT been surfaced for auto-pickup. To "
-            "proceed, the operator must either raise `tier_ceiling` in "
+            "The pre-filed directive has NOT been surfaced for auto-pickup, and the "
+            "loop has been **disarmed** (`enabled: false`) — a recorded termination "
+            "no longer leaves the flag claiming armed (T-3167).\n"
+            "\n"
+            "To proceed, the operator must raise `tier_ceiling` in "
             "`.context/working/.continuous-mode.yaml`, narrow the planned task's "
-            "scope, or run the next action manually under direct supervision.\n"
+            "scope, or run the next action manually under direct supervision — and "
+            "then set `enabled: true` again to re-arm.\n"
         )
         return new_state, section
 
@@ -313,10 +328,14 @@ def evaluate(directive_data, state_data, now_utc, source="resume", blast_lookup=
             f"- Max iterations: {max_iter if max_iter is not None else 'unset'}\n"
             f"- Expires at: {format_iso8601(expires_at)}\n"
             "\n"
-            "The pre-filed directive has NOT been surfaced for auto-pickup.\n"
+            "The pre-filed directive has NOT been surfaced for auto-pickup, and the "
+            "loop has been **disarmed** (`enabled: false`) — a recorded termination "
+            "no longer leaves the flag claiming armed (T-3167).\n"
+            "\n"
             "Operator continuation required: edit `.context/working/.continuous-mode.yaml`\n"
-            "(reset `current_iteration` to 0, set `enabled: false`, or extend caps) or\n"
-            "remove `.context/working/.next-directive.yaml` to drop the directive.\n"
+            "(reset `current_iteration` to 0 or extend the caps, then set `enabled: true`\n"
+            "to re-arm), or remove `.context/working/.next-directive.yaml` to drop the\n"
+            "directive.\n"
         )
     else:
         max_label = str(max_iter) if max_iter is not None else "∞"
