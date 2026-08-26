@@ -470,16 +470,20 @@ Each component has a YAML card in `.fabric/components/` with: id, name, type, su
 
 ### Work Proposal Rule
 - **Before proposing the next unit of work, check context budget** (`checkpoint.sh status`)
-- Below 60% (120K tokens): proceed normally
-- 60-75% (120K-150K): propose only small, bounded tasks; commit first
-- Above 75% (150K+): propose only wrap-up actions (commit, learnings, handover)
-- Above 85% (170K+): handover immediately, no new work
+- Below 75% of `FW_CONTEXT_WINDOW`: proceed normally
+- 75-85%: propose only small, bounded tasks; commit first
+- Above 85%: propose only wrap-up actions (commit, learnings, handover)
+- Above 95%: handover immediately, no new work
+- The percentages are the contract. Absolute token counts move with `FW_CONTEXT_WINDOW`
+  (300K default → 225K / 255K / 285K) and must not be written down as if fixed.
 - **This applies especially in autonomous mode** — without a human to catch the mistake, proposing work that can't complete in remaining context risks losing all uncommitted work
 
 ### Automated Monitoring (Claude Code)
 - **Primary enforcement:** A PreToolUse hook runs `budget-gate.sh` which reads **actual token usage** from the session JSONL transcript and **blocks** Write/Edit/Bash at critical level (exit code 2)
 - **Fallback:** A PostToolUse hook runs `checkpoint.sh` for warnings and auto-handover (T-136)
-- Escalation ladder: **120K** ok→warn (note), **150K** warn→urgent (warning), **170K** urgent→critical (**BLOCK**)
+- Escalation ladder, as percentages of `FW_CONTEXT_WINDOW` (source of truth:
+  `agents/context/budget-gate.sh`): **75%** ok→warn (note), **85%** warn→urgent
+  (warning), **95%** urgent→critical (**BLOCK**). At the 300K default: 225K / 255K / 285K.
 - At critical, allowed: git commit/add, fw handover/task, reading files, Write/Edit to `.context/` `.tasks/` `.claude/` (wrap-up paths). Blocked: Write/Edit to source files, general Bash
 - Status cached in `.context/working/.budget-status` (JSON: level, tokens, timestamp)
 - Check current usage: `./agents/context/checkpoint.sh status`
@@ -615,7 +619,7 @@ Human ACs represent real verification steps. Unvalidated deliverables carry down
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
 
-**Structural enforcement (T-139):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (>=150K tokens, ~75%). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover.
+**Structural enforcement (T-139):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (>=95% of `FW_CONTEXT_WINDOW` — 285K at the 300K default). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover.
 
 ### Copy-Pasteable Commands (T-609)
 When giving the human a command to run (Tier 0 approvals, inception decisions, verification steps, Human AC instructions), the command MUST be:

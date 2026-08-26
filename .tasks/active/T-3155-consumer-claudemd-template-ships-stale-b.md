@@ -1,10 +1,15 @@
 ---
 id: T-3155
-name: "consumer CLAUDE.md template ships stale budget thresholds and regresses consumers on upgrade"
+name: "consumer CLAUDE.md template ships stale budget thresholds and regresses consumers
+  on upgrade"
 description: >
-  lib/templates/claude-project.md:469-478 carries 120K/150K/170K context-budget thresholds while the framework uses 225K/255K/285K against a 300K window. Every fw upgrade rewrites a consumer CLAUDE.md with the stale numbers, so the consumer is told to hand over at 170K while budget-gate.sh blocks at 285K. Measured by 001-CashWeb: 52 lines removed, 7 added, and the 7 were this regression.
+  lib/templates/claude-project.md:469-478 carries 120K/150K/170K context-budget thresholds
+  while the framework uses 225K/255K/285K against a 300K window. Every fw upgrade
+  rewrites a consumer CLAUDE.md with the stale numbers, so the consumer is told to
+  hand over at 170K while budget-gate.sh blocks at 285K. Measured by 001-CashWeb:
+  52 lines removed, 7 added, and the 7 were this regression.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +27,8 @@ related_tasks: [T-3149, T-3150]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T09:48:50Z
-last_update: 2026-08-26T09:48:50Z
-date_finished: null
+last_update: 2026-08-26T10:11:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +39,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-26T10:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T10:00:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3155: consumer CLAUDE.md template ships stale budget thresholds and regresses consumers on upgrade
@@ -46,8 +79,21 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/templates/claude-project.md` expresses the context-budget ladder as PERCENTAGES of
+      `FW_CONTEXT_WINDOW`, not as absolute token counts. Absolutes are the reason this drifted:
+      the framework moved its window and the template kept shipping the old numbers.
+- [x] No `120K` / `150K` / `170K` literals remain in the template's budget sections, and the
+      stated percentages are 75 / 85 / 95 — the values `agents/context/budget-gate.sh:105-107`
+      actually computes. The template previously said 60 / 75 / 85, describing a 200K window
+      that no longer exists, so both the absolutes AND the percentages were wrong.
+- [x] A test asserts the template's percentages equal the ones budget-gate.sh computes, by
+      reading BOTH files. Not by asserting a hardcoded 75/85/95 in the test — that would drift
+      in exactly the same way and re-create this bug one level up.
+- [x] That test FAILS when budget-gate.sh's percentages change and the template does not follow.
+      This is the anti-staleness control: without it the next window change silently re-opens
+      the defect, which is how it got here.
+- [x] Consumers are not told to hand over at a threshold their own `budget-gate.sh` does not
+      enforce. Verified by the same test, since it compares the two sources rather than prose.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,6 +186,8 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+bats tests/unit/template_budget_parity.bats
 
 ## RCA
 
@@ -237,3 +285,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3155-consumer-claudemd-template-ships-stale-b.md
 - **Context:** Initial task creation
+
+### 2026-08-26T10:11:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
