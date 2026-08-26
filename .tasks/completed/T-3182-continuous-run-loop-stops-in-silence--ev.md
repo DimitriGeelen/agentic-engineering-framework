@@ -4,13 +4,13 @@ name: "continuous-run loop stops in silence — every claude-fw exit path must r
 description: >
   continuous-run loop stops in silence — every claude-fw exit path must record why
 
-status: started-work
+status: work-completed
 arc_id: continuous-run
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/claude-fw, tests/unit/t3182_loop_exit_recorder.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T20:35:23Z
-last_update: 2026-08-26T20:35:23Z
-date_finished: null
+last_update: 2026-08-26T20:39:22Z
+date_finished: 2026-08-26T20:39:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -167,6 +167,24 @@ date_finished: null
 
 ## Evolution
 
+- **Learned during build:** the task was filed to answer *why did the wrapper leave its
+  loop tonight* (T-3181 IW-6). Reading the loop showed that question is not answerable
+  from disk at all — all six exit paths were silent, so the evidence needed to answer it
+  had never been written. The deliverable changed from *find the cause* to *make the
+  cause recordable*, which is the honest scope: I have NOT determined why the wrapper
+  stopped at 21:25, and the instrumentation is what lets the next occurrence answer it
+  instead of costing another round of PID forensics.
+- **Plan impact:** surfacing the log through `fw doctor` was in the original shape and
+  came out. `bin/fw` is held uncommitted by T-3127, and editing it would have shipped
+  another task's unfinished work under this commit. Deferred rather than taken.
+- **Triggered:** T-3183 (Human AC markdown double-escape, reported by 001-CashWeb with a
+  discriminator), T-3184 (BVP ranking is degenerate, blocking the complete-arc work
+  selection the operator specified in T-3181 D-1.1).
+- **Caught by rehearsal:** the `bin/fw` verification line originally asserted a clean
+  working tree and would have blocked the close, because T-3127 holds that file dirty on
+  purpose. Running the lines under the gate's own `set -eo pipefail` before hitting the
+  gate is what surfaced it.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -284,3 +302,22 @@ taken here.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3182-continuous-run-loop-stops-in-silence--ev.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-23093058
+- **Timestamp:** 2026-08-26T20:39:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `bin/claude-fw` defines `_record_loop_event`, appending one JSON line per loop event to `.context/working/continuous-run.jsonl`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/continuous-run.jsonl in: `bin/claude-fw` defines `_record_loop_event`, appending one JSON line per loop event to `.context/working/continuous-run.jsonl``
+- **AC#6 (Agent)** — `tests/unit/t3182_loop_exit_recorder.bats` reads the REAL wrapper (lifts its function, statically scans its loop) rather than a transcribed copy
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/t3182_loop_exit_recorder.bats in: `tests/unit/t3182_loop_exit_recorder.bats` reads the REAL wrapper (lifts its function, statically scans its loop) rather than a transcribed copy`
+
+### 2026-08-26T20:39:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

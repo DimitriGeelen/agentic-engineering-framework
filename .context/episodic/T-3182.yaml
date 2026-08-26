@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3182: continuous-run loop stops in silence — every claude-fw exit path must record why
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T20:39:35Z
+# ============================================================================
+
+task_id: T-3182
+task_name: "continuous-run loop stops in silence — every claude-fw exit path must record why"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-26T20:35:23Z
+completed: 2026-08-26T20:39:22Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-26T22:37:10+02:00
+last_commit: 2026-08-26T22:38:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the continuous-run loop must say why it stopped. correct the bin/fw verification line; file T-3183 and T-3184
+
+# Key outcomes
+outcomes:
+  - '`bin/claude-fw` defines `_record_loop_event`, appending one JSON line per loop event to `.context/working/continuous-run.jsonl`'
+  - 'Every `exit` inside the wrapper''s main loop is preceded by a `_record_loop_event` call — no silent exit path remains'
+  - 'Each exit path records a **distinct** reason (`auto-restart-disabled`, `no-git-repo`, `max-restarts`, `stale-signal`, `no-signal`), so the record says *which* path was taken'
+  - 'Loop **iterations** are recorded too (`event: iterate`), so "went round N times then stopped" is distinguishable from "never started"'
+  - 'The recorder is non-fatal: outside a git repo, or with any internal failure, it returns 0 and does not alter the wrapper''s exit code'
+  - '`tests/unit/t3182_loop_exit_recorder.bats` reads the REAL wrapper (lifts its function, statically scans its loop) rather than a transcribed copy'
+  - 'A control leg asserts reasons are distinct — without it, "record every exit" and "record something on every exit" are the same diff'
+  - 'Mutation-tested: silencing one path reddens the every-path test; collapsing all reasons to one constant reddens ONLY the control leg; dropping a JSON field reddens the shape test'
+  - '`bin/fw` is NOT touched — it is held uncommitted by concurrent task T-3127, so this change is scoped to `bin/claude-fw` and its test'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: 'Record the reason at every exit, including the ordinary one'
+  - decision: 'The control leg is what makes the test mean anything'
+  - decision: 'Scoped away from `bin/fw` deliberately'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/claude-fw'
+  - '.fabric/components/tests-unit-t3182_loop_exit_recorder.yaml'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3181-refine-the-continuous-run-loop-model-nod.md'
+  - '.tasks/active/T-3182-continuous-run-loop-stops-in-silence--ev.md'
+  - '.tasks/active/T-3183-human-ac-markdown-double-escapes-on-appr.md'
+  - '.tasks/active/T-3184-bvp-cannot-select-work-zero-confirmed-sc.md'
+  - 'tests/unit/t3182_loop_exit_recorder.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T22:37:10'
+    action: 'T-3182: the continuous-run loop must say why it stopped'
+  - time: '2026-08-26T22:38:56'
+    action: 'T-3182: correct the bin/fw verification line; file T-3183 and T-3184'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 8
+  lines_added: 887
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3182-continuous-run-loop-stops-in-silence--ev.md
+generated_by: context-agent-hybrid

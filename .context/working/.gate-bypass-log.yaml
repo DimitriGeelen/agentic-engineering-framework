@@ -7551,3 +7551,29 @@ T-3180: /approvals n'
   caller: 'check-active-task focus-drift'
   target: 'T-3180'
   command: 'FW_SWITCH_FOCUS=1 bin/fw fabric register tests/unit/test_inception_close_card.py >/dev/null 2>&1; FW_SWITCH_FOCUS=1 git add -A .tasks/active/ .context/ .fabric/ 2>/dev/null; FW_SWITCH_FOCUS=1 git comm'
+- timestamp: '2026-08-26T19:34:57Z'
+  task: 'T-3179'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3180'
+  command: 'FW_SWITCH_FOCUS=1 git add -A .agentic-framework/ 2>/dev/null; FW_SWITCH_FOCUS=1 git commit -q -m "T-3180: refresh vendored copies (inception blueprint + template)
+
+Live-fire confirmation of T-3165s w'
+- timestamp: '2026-08-26T19:47:50Z'
+  task: 'T-3179'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3180'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add web/blueprints/inception.py
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3180: lib/ is framework-owned — resolve it from FRAMEWORK_ROOT
+
+The close-card hel'
+- timestamp: '2026-08-26T19:48:07Z'
+  task: 'T-3179'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3180'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .agentic-framework/VERSION .agentic-framework/web/blueprints/inception.py
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3180: refresh vendored inception bluep'
