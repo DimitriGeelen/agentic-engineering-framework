@@ -1,0 +1,20 @@
+id: vendor/designer/aef-workflow-designer-0.11.0.html
+name: aef-workflow-designer-0.11.0
+type: script
+subsystem: unknown
+location: vendor/designer/aef-workflow-designer-0.11.0.html
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-26
+created_by: unknown
