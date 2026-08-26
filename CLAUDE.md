@@ -530,7 +530,14 @@ Watchtower `/fabric` surfaces the subsystem overview, filterable component table
 Agent-relevant settings:
 - `FW_CONTEXT_WINDOW` (300000) — budget enforcement ceiling
 - `FW_PORT` (3000) — Watchtower listen port (also resolved via triple-file; see Watchtower Port section)
-- `FW_SAFE_MODE` (0) — bypass task gate (escape hatch)
+- `FW_SAFE_MODE` (0) — bypass task gate (escape hatch). **Must be set on the Claude
+  process itself, not as a command prefix (T-3179).** `check-active-task.sh` reads the
+  hook process's environment, never the command string, so `FW_SAFE_MODE=1 <cmd>` inside
+  a Bash call is silently inert — the agent reads this line, tries the prefix, and stays
+  blocked with no indication why. Set it before launching (`FW_SAFE_MODE=1 claude-fw`),
+  or use the gate-specific mechanism the block message names. Contrast `FW_SWITCH_FOCUS=1`,
+  which the focus-drift gate *does* parse out of the command string (T-1890) — the two
+  look alike and behave oppositely.
 - `FW_DISPATCH_LIMIT` (2) — Agent tool cap before TermLink gate
 - `FW_NTFY_URL` / config `NTFY_URL` (empty) — T-2439: ntfy server base URL for push notifications. Empty = let the skills-manager dispatcher use its own (possibly host-local) default. **Set it per-install (`fw config set NTFY_URL <url>`) so the framework publishes to the chosen ntfy instance and can never silently fall back to a host's local server** — the dispatcher runs locally on whichever host calls `fw_notify`, and inferring the target from another host's config shipped pushes to a decommissioned server (origin). `fw notify status` / `fw notify test` print the resolved server up front. Surfaces in Watchtower `/config`.
 - `FW_BRANCH_BEHIND_WARN` (50) — T-100143: branch-hygiene behind-threshold. `fw doctor` WARNs on live branches more than N commits behind origin/master (shared with the T-100144 handover nudge).

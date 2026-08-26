@@ -35,7 +35,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T18:01:16Z
-last_update: '2026-08-26T18:15:14Z'
+last_update: 2026-08-26T21:54:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,24 +87,24 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `check-active-task` allows `git commit` / `git add` when the focused task's status is
+- [x] `check-active-task` allows `git commit` / `git add` when the focused task's status is
       `work-completed`. T-2054 shipped exactly this allowance for **null** focus and closed
       the deadlock only for the case where focus had already been cleared. A
       partial-complete task keeps focus pointed at itself, so it lands in the residual
       half — and that half is the more common one, because every build task with an
       unchecked Human AC ends there by design.
-- [ ] The allowance is scoped to a `work-completed` focus, not widened generally:
+- [x] The allowance is scoped to a `work-completed` focus, not widened generally:
       `git commit --no-verify` / `-n` stays BLOCKED (P-002 preserved), and the focus-drift
       gate (T-1730) still blocks `git commit "T-B: …"` while focus is T-A.
-- [ ] The commit-msg hook still requires a `T-XXX` reference. The point is to let the work
+- [x] The commit-msg hook still requires a `T-XXX` reference. The point is to let the work
       be committed under the CORRECT task, not to trade traceability away — the gate's own
       current advice ("focus a different task") is what actually loses it.
-- [ ] `FW_SAFE_MODE=1 <cmd>` as a *command prefix* either works for this hook or is
+- [x] `FW_SAFE_MODE=1 <cmd>` as a *command prefix* either works for this hook or is
       documented as not working. Today it is neither: the hook reads the Claude process
       env, not the command string, so the escape hatch CLAUDE.md documents is unreachable
       from inside a Bash call. An agent reads the doc, tries it, and is still blocked —
       worse than having no hatch at all, because it costs a round-trip to discover.
-- [ ] End-to-end bats, both directions: focus=<work-completed task> + `git commit "T-XXX:
+- [x] End-to-end bats, both directions: focus=<work-completed task> + `git commit "T-XXX:
       …"` succeeds, AND the three preserved blocks above still fail. A test that only
       proves the new allowance would be green for a hook that allowed everything.
 
@@ -199,6 +199,15 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+
+bats tests/unit/t3179_partial_complete_commit.bats > /tmp/.t3179-bats 2>&1 && ! grep -q "^not ok" /tmp/.t3179-bats
+bash -n agents/context/check-active-task.sh
+grep -q "T-3179" agents/context/check-active-task.sh
+grep -q "not as a command prefix (T-3179)" CLAUDE.md
+grep -q "^status: work-completed" .tasks/active/T-3185-master-becomes-a-release-train-rename-th.md
+test -f .git/hooks/commit-msg
+for f in check_active_task_cwd_resolution check_active_task_fp_fix check_active_task_memory_exempt check_active_task_switch_focus test_check_active_task_bootstrap; do bats "tests/unit/$f.bats" > /tmp/.t3179-reg 2>&1 && ! grep -q "^not ok" /tmp/.t3179-reg || exit 1; done
 
 ## RCA
 

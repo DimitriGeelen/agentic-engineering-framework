@@ -748,10 +748,49 @@ case "$TASK_STATUS" in
         exit 2
         ;;
     work-completed)
+        # T-3179: partial-complete commit deadlock — the residual half of T-2054.
+        #
+        # T-2054 (line ~506) allows `git commit` when focus is NULL, which is the
+        # state a FULLY completed task leaves behind (moved active/→completed/,
+        # focus nulled). A PARTIAL-complete task never reaches that state: an
+        # unchecked ### Human AC flips status to work-completed while the file
+        # STAYS in active/ and focus keeps pointing at it. So CURRENT_TASK is
+        # non-empty, control arrives here, and the agent's own verified work
+        # cannot be committed under its own task ID.
+        #
+        # That is the common case, not an edge one: every build task touching a
+        # render surface ends in partial-complete BY DESIGN (P-013), so the
+        # deadlock fires on exactly the tasks the framework steers there.
+        #
+        # The allowance is the same trade T-2054 already made, for the same
+        # reason: the work being committed was produced under the Write/Edit task
+        # gate — this is a checkpoint, not new work — and the commit-msg hook
+        # still refuses a message lacking T-XXX, so P-002's actual purpose
+        # (traceability) is preserved. The status quo is what LOSES traceability:
+        # the block's own advice is to focus a different task, which attributes
+        # this task's commit to another one.
+        #
+        # Safe to `exit 0` here: the focus-drift gate (T-1730, line ~605) has
+        # already run, so `git commit -m "T-B: …"` while T-A is focused is still
+        # blocked upstream. `--no-verify`/`-n` is excluded — it would skip the
+        # commit-msg hook that makes this allowance sound, so it falls through to
+        # the block below as a Tier-2 action needing explicit authorisation.
+        if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && \
+           [[ "$BASH_CMD" =~ (^|[[:space:]])git[[:space:]]+commit($|[[:space:]]) ]] && \
+           ! [[ "$BASH_CMD" =~ (^|[[:space:]])(--no-verify|-n)([[:space:]]|$) ]]; then
+            echo "NOTE: $CURRENT_TASK is work-completed (partial-complete) — allowing 'git commit' to checkpoint its own verified work (T-3179). commit-msg hook still enforces T-XXX; drift gate already passed." >&2
+            exit 0
+        fi
+
         echo "" >&2
         echo "BLOCKED: Task $CURRENT_TASK has status 'work-completed'." >&2
         echo "" >&2
-        echo "To unblock:" >&2
+        echo "Note: 'git commit' IS allowed here (T-3179) — a partial-complete task" >&2
+        echo "may always checkpoint its own verified work under its own ID. If you" >&2
+        echo "were trying to commit, drop the redirect/heredoc from the line and" >&2
+        echo "run the commit bare; write patterns void the allowance." >&2
+        echo "" >&2
+        echo "To unblock further EDITS (not commits):" >&2
         echo "  $(_fw_cmd) work-on T-XXX   (resume another task)" >&2
         echo "  $(_fw_cmd) work-on 'name'  (create a new task)" >&2
         _bootstrap_shape_hint "${BASH_CMD:-}"
