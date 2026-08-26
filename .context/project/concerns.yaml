@@ -4320,7 +4320,41 @@ concerns:
     nodes (:424 continue past non-TASK_TAGS), so this entry''s repro is specifically a TASK in an external
     lane, not an external lane in general. Both halves of G-091 stand for that case — wrong message AND
     owner: agent instead of no task. The events-only case is silent instead, and is split out as G-093
-    / T-3173.'
+    / T-3173.
+
+
+    EDITOR EVIDENCE VERIFIED 2026-08-26, AND ONE PROPOSED SHORTCUT REFUSED. The reporter supplied file-level
+    proof of the editor vocabulary after we asked for it. Verified byte-for-byte: vendor/designer/aef-workflow-designer-0.11.0.html,
+    966087 bytes, sha256 prefix 4f20b146def45626436e3b3c, lines 1608 / 1906 / 5506 exactly as reported.
+    Two corrections follow.
+
+
+    (i) The premise of our request was wrong. We told them editor 0.11.0 "is not in this repo". It is —
+    two identical vendored copies at a pinned sha. This entry''s root enabler ("the lane dialect is not
+    covered by the SS6 machine-check against the reference editor") is therefore stronger than written:
+    the reference artifact was never unavailable, so the check has been implementable with no new dependency
+    the whole time. Carried into G-095.
+
+
+    (ii) The reporter reads OWNER_FROM_AUTHORITY''s `external: ''''` (:1906) as "the editor already implements
+    external -> no task; your compiler is the only one of the three that does not; adopting external: ''''
+    is enough." REFUSED on evidence, because adopting it would produce a false green here. The sole consumer
+    of ownerFromAuthority is :5790, a read-only property-panel readout rendering "— none —"; the editor
+    has no task-emission surface at all, so it cannot implement "no task" — there is nothing there to suppress.
+    Its comment at :1902-1905 claims the mapping mirrors the standard; the comment agrees with the standard,
+    the code implements no-owner. The gap is invisible in the editor precisely because nothing downstream
+    of it emits tasks, and load-bearing in our compiler, which does. Mapped into our code, "adopt external:
+    ''''" means adding external to AUTHORITY_NO_OWNER — a class that per T-2567/T-2717 STILL emits the task
+    and falls back to name/type derivation, i.e. owner: agent. That is today''s broken behaviour with a
+    politer message: it satisfies the message half of T-3172 and silently fails the load-bearing AC. The
+    third-branch requirement recorded above is what protects this entry from that shortcut, and it stands
+    unchanged.
+
+
+    So there are four semantics in play, not three vocabularies: no-owner-but-task (compiler, `authority`),
+    no-owner-in-a-readout (editor, `external`), no-task (the frozen standard, `external`), and unset (editor,
+    `none` — now G-095 / T-3176). This entry''s existing instruction that "none must not be folded into
+    this fix" is upheld; what changed is that none now has its own home rather than only a warning.'
   related:
   - G-092
   - G-093
@@ -4503,3 +4537,79 @@ concerns:
   - T-1730
   - T-1890
   - T-679
+- id: G-095
+  type: gap
+  title: The compiler calls the pinned editor's default lane state a probable typo — authority="none"
+    is an unset sentinel, not an out-of-dialect value
+  description: 'Split from G-091 / T-3172 after 001-CashWeb-Lightspeed-Ecwid-integration supplied file-level
+    evidence for the pinned editor''s authority vocabulary, in answer to our own request from the previous
+    round. Their evidence is exact and was verified byte-for-byte here: vendor/designer/aef-workflow-designer-0.11.0.html,
+    966087 bytes, sha256 prefix 4f20b146def45626436e3b3c, lines 1608 / 1906 / 5506 verbatim as reported.
+
+
+    Both projects had been calling `none` "a fifth value the editor adds beyond the frozen standard''s
+    four". It is not a value in that sense — it is the editor''s UNSET SENTINEL, and five sites in the
+    bundle agree: :8245 initialises every new lane to authority:''none''; :10142 reads a lane with no aef:laneMeta
+    authority attribute back as ''none''; :9894 exports authority unconditionally with no filtering, so
+    an untouched lane serialises as authority="none"; :1905 the collapse map''s own comment groups none
+    with external/unknown as "not derivable", making its omission from OWNER_FROM_AUTHORITY deliberate
+    rather than an oversight; and the older 0.2.0 bundle (.context/working/designer-rx/, :1323) already
+    carried all five values while having no OWNER_FROM_AUTHORITY at all — none predates the collapse map
+    rather than extending it.
+
+
+    tools/bpmn_to_tasks.py has no ''none'' in AUTHORITY_DIALECT (:85), so it falls to the else-branch (:511-521)
+    and reports "very likely a typo or an out-of-band value". Reproduced at HEAD on a one-lane fixture
+    (authority="none" + one serviceTask): rc=0, one skeleton with owner: agent, and that WARN. The DEFAULT
+    authoring path of the editor we pin trips our typo accusation. Unlike `external` (G-091), which needs
+    a deliberate dropdown selection, this is what you get by drawing a lane and not touching it — so the
+    false accusation fires more often than the ratified-value one.
+
+
+    The accusation is the defect. The author who has simply not yet assigned an authority is told they
+    made a spelling mistake, and the valid-set list offered back to them (authority, initiative, sovereignty)
+    does not contain a value for "unset" either.'
+  spec_reference: policy/standards/aef-bpmn-mapping-v1-partI.md SS3 (four-value collapse map, frozen);
+    L-527 (a signal that always fires stops meaning anything) — the sibling reasoning that drove the T-2717/OBS-118
+    split this entry extends
+  severity: medium
+  status: open
+  detected_in: T-3176
+  observed: '2026-08-26'
+  reported_by: 001-CashWeb-Lightspeed-Ecwid-integration (third report of 2026-08-26; the finding is ours,
+    surfaced by their evidence)
+  blast_radius: every diagram authored in the pinned editor that has a lane whose Authority dropdown was
+    never touched — the default authoring path, so plausibly the majority of first-draft diagrams
+  what_works_now: 'The T-2717/OBS-118 split established exactly the right precedent: a known value carrying
+    no owner stopped being reported as a probable typo, on the L-527 reasoning that a signal which always
+    fires stops meaning anything. That split is sound and stands. It reasoned about `authority`, a dialect
+    member, and had no reason to consider a sentinel that is not a dialect member and should not become
+    one. Behaviour is also not silently wrong: a skeleton is emitted with owner: agent from name/type derivation,
+    which is the documented fallback and is defensible for a lane that asserts nothing.'
+  what_remains: 'T-3176: a FOURTH reporting class — "this lane has no authority set" — distinct from dialect-member-no-owner
+    (authority), out-of-dialect (overlrd), and the ratified-external case G-091 adds. The fix is explicitly
+    NOT dialect membership: adding none to AUTHORITY_DIALECT would assert it is a ratified authority, which
+    the frozen standard does not say and the editor''s own comment contradicts. Scope is the message; whether
+    owner: agent is the right fallback for an unset lane is a separate judgement and would be a fourth
+    ticket, not a widening of T-3176. Ordering constraint: T-3172, T-3173 and T-3176 all touch the unknown_auth
+    reporting loop (:501-521) and the AUTHORITY_* constants — whichever lands last must not revert the others''
+    fixture expectations.
+
+
+    Root enabler, sharpened from G-091: that entry named "the lane dialect is not covered by the SS6 machine-check
+    against the reference editor" as the enabler, on the assumption that the reference editor was an external
+    artifact. It is not. It is vendored in this repo at a pinned sha (two copies, identical), so the check
+    has been implementable the whole time. Our previous reply to 001-CashWeb told them editor 0.11.0 "is
+    not in this repo" and asked them to prove the fifth value existed — the file was two directories away.
+    A dialect divergence between a vendored producer and our own consumer is machine-checkable with no
+    new dependency; the reason it was not caught is that nobody compared two files we both ship.'
+  related:
+  - G-091
+  - G-093
+  - OBS-118
+  - T-2567
+  - T-2717
+  - T-3172
+  - T-3173
+  - T-3176
+  follow_up_task: T-3176

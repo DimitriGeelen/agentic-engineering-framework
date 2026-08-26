@@ -15,7 +15,7 @@ description: >
   its own non-accusing message did not carry external with it. Vocabularies diverge
   three ways: standard 4, pinned editor 5 (adds none), compiler 3.
 
-status: captured
+status: started-work
 workflow_type: build
 owner:
 horizon: now
@@ -33,7 +33,7 @@ related_tasks: [T-3173, T-2717, T-2567]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T15:00:51Z
-last_update: '2026-08-26T15:15:13Z'
+last_update: 2026-08-26T15:51:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -110,6 +110,83 @@ compiles with zero warnings. Split out as **T-3173 / G-093** per one-bug-one-tas
 
 Ordering: T-3172 changes WHICH values the dialect contains; T-3173 changes WHETHER it is
 consulted. Whichever lands second must not revert the other's fixture expectations.
+
+### Reporter's editor evidence verified locally, 2026-08-26 — and one reversal REFUSED
+
+001-CashWeb supplied file-level evidence for the fifth editor value after the last round
+asked for it. **Their evidence is exact.** Verified here byte-for-byte:
+
+| Claim | Verified |
+|---|---|
+| size 966.087 bytes | `stat -c%s` → 966087 ✓ |
+| sha256 prefix `4f20b146def45626436e3b3c` | ✓ (identical at both vendored paths) |
+| :1608 `AUTHORITIES = [... 'external', 'none']` | ✓ verbatim |
+| :5506 `selectField('Authority', lane.authority, AUTHORITIES, …)` | ✓ — all five are one click away |
+| :1906 `OWNER_FROM_AUTHORITY = {… external: ''}` | ✓ verbatim |
+
+**The premise of our last reply was wrong, and that is the finding worth keeping.** We told
+them editor 0.11.0 "is not in this repo" and asked them to prove it. It IS in this repo —
+`vendor/designer/aef-workflow-designer-0.11.0.html` and the vendored copy under
+`.agentic-framework/`, same size, same sha. The reference artifact §6 says the meta-key list
+is machine-checked against was sitting at a known path the whole time. That removes the last
+excuse for the lane dialect not being machine-checked (G-091 root enabler): this is not a
+remote artifact we lack, it is a pinned file we ship.
+
+**The reversal does NOT hold — and adopting it would have produced a false green.** They read
+`external: ''` as "the editor already implements `external → no task`; your compiler is the
+only one of the three that does not; adopting `external: ''` is enough." Refused on evidence:
+
+1. The **sole consumer** of `ownerFromAuthority` is `:5790`, a **read-only property-panel
+   readout** that renders "— none —" (`:5787` `OWNER_BEARING_TYPES`). The editor has no
+   task-emission surface at all, so it cannot implement "no task" — there is nothing there to
+   suppress. `''` is an empty *owner string in a display field*, not a suppressed task.
+2. The editor's own comment at `:1902-1905` claims the mapping mirrors the standard's
+   `external→no task`. The **comment** agrees with the standard; the **code** implements
+   no-owner. The gap is invisible in the editor precisely because nothing downstream of it
+   emits tasks — and load-bearing in our compiler, which does.
+3. Mapped into our compiler, "adopt `external: ''`" means adding `external` to
+   `AUTHORITY_NO_OWNER`. Per T-2567/T-2717 that class **still emits the task** and falls back
+   to name/type derivation → `owner: agent`. That is today's broken behaviour with a politer
+   message: it satisfies the cosmetic half of this task and silently fails the load-bearing
+   AC ("nodes in an `external` lane emit NO task skeleton at all").
+
+So the third-branch requirement already recorded in G-091 `what_remains` stands unchanged and
+is now the specific thing that protects this task from the reporter's suggestion. Four
+semantics are in play, not three vocabularies: no-owner-but-task (compiler `authority`),
+no-owner-in-a-readout (editor `external`), no-task (the frozen standard), and unset (below).
+
+### `none` is not a fifth authority — it is the editor's unset sentinel. Split out.
+
+Both projects have been calling `none` "a fifth value the editor adds". It is not a value in
+that sense; it is the **default/unset marker**, which changes who must fix what:
+
+- `:8245` a newly created lane is initialised `authority: 'none'`
+- `:10142` on import, a lane with **no** `aef:laneMeta authority` attribute reads back as `'none'`
+- `:9894` the exporter writes `authority="${escAttr(lane.authority)}"` **unconditionally** — no
+  filtering — so an untouched lane is serialised as `authority="none"`
+- `.context/working/designer-rx/…-0.2.0.html:1323` already carried all five, and has no
+  `OWNER_FROM_AUTHORITY` at all — `none` predates the collapse map rather than extending it
+
+Consequence, reproduced at HEAD on a one-lane fixture (`authority="none"` + one `serviceTask`):
+
+```
+WARN: lane 'Untouched' carries unrecognized aef:laneMeta authority='none' — … this is very
+likely a typo or an out-of-band value
+```
+
+**The default authoring path of the pinned editor trips our typo accusation.** `external`
+requires a deliberate dropdown selection; `none` is what you get by drawing a lane and not
+touching it — so the false accusation fires *more* often than the ratified-value one. Distinct
+root cause (unset ≠ out-of-dialect), distinct fix (an "authority not set on this lane"
+advisory, not dialect membership), so per one-bug-one-task it is **not** folded into this
+task — it is split out as **T-3176 / G-095**. G-091's existing "`none` must not be folded into
+this fix" instruction is upheld; what changes is that `none` now has a home rather than a
+warning.
+
+This also corrects the reporter's point 1: they read `none`'s absence from
+`OWNER_FROM_AUTHORITY` as an editor defect to file upstream. The comment directly above the
+map (`:1905`) says "Returns '' (no task / not derivable) for external/**none**/unknown" — the
+fallthrough is deliberate and documented. A defect report framed that way will bounce.
 
 ## Acceptance Criteria
 
@@ -323,3 +400,6 @@ consulted. Whichever lands second must not revert the other's fixture expectatio
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3172-bpmn-compiler-rejects-the-frozen-standar.md
 - **Context:** Initial task creation
+
+### 2026-08-26T15:51:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

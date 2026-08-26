@@ -4828,3 +4828,9 @@ X'` returning empty group."
   task: T-3148
   date: 2026-08-26
   context: Added via context agent
+- id: L-649
+  learning: "Before telling anyone an artifact is absent from this repo, search vendor/ and .agentic-framework/ — not just source paths. We asked 001-CashWeb to prove editor 0.11.0's authority vocabulary because it 'is not in this repo'; it was vendored at two identical paths at a pinned sha. The cost was not only the wasted round-trip: a spec section (SS6) asserting a machine-check against 'the reference editor' had been read as blocked on an external artifact we actually ship, which is how a four-value ratified map and a three-value implementation coexisted undetected."
+  source: P-002
+  task: T-3176
+  date: 2026-08-26
+  context: Added via context agent

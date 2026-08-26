@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- T-3176 / G-095: the pinned editor's DEFAULT authoring path.
+     A lane drawn in aef-workflow-designer-0.11.0 and never assigned an Authority is
+     initialised authority='none' (:8245), and the exporter writes authority
+     unconditionally (:9894) — so this is what an untouched lane serialises to.
+     `none` is the editor's UNSET SENTINEL, not a fifth dialect value: the collapse
+     map's own comment (:1905) groups it with external/unknown as "not derivable".
+     At HEAD the compiler reports it as "very likely a typo or an out-of-band value".
+     That accusation is the defect this fixture guards against. -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="http://agentic.dev/schema/aef"
+                  id="Defs_none_lane" targetNamespace="http://agentic.dev/bpmn">
+  <bpmn:process id="Proc_none" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_untouched" name="Untouched">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="U" authority="none" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>Task_work</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:serviceTask id="Task_work" name="Do the work">
+      <bpmn:extensionElements><aef:uid>u-work-001</aef:uid></bpmn:extensionElements>
+    </bpmn:serviceTask>
+  </bpmn:process>
+</bpmn:definitions>

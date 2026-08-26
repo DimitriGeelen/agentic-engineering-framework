@@ -1,0 +1,160 @@
+---
+id: T-3176
+name: "compiler calls the pinned editors default lane state a typo - authority=none is an unset sentinel not an out-of-dialect value"
+description: >
+  Split from T-3172 / G-091 after 001-CashWeb supplied file-level evidence for the pinned
+  editor's authority vocabulary. Both projects had been calling `none` "a fifth value the
+  editor adds beyond the frozen standard's four". It is not a value in that sense: it is the
+  editor's UNSET SENTINEL. vendor/designer/aef-workflow-designer-0.11.0.html (966087 bytes,
+  sha256 4f20b146def45626436e3b3c) initialises every new lane to authority:'none' (:8245),
+  reads a lane with no aef:laneMeta authority attribute back as 'none' (:10142), and exports
+  authority unconditionally with no filtering (:9894). So an untouched lane serialises as
+  authority="none". tools/bpmn_to_tasks.py has no 'none' in AUTHORITY_DIALECT (:85), so it
+  falls to the else-branch (:511-521) and reports "very likely a typo or an out-of-band
+  value". Reproduced at HEAD. The DEFAULT authoring path of the editor we pin trips our typo
+  accusation - unlike `external` (T-3172) which needs a deliberate dropdown selection, so this
+  fires more often. Distinct root cause from T-3172: unset is not out-of-dialect, and the fix
+  is an "authority not set on this lane" advisory, not dialect membership.
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: [bpmn, compiler, cross-project]
+components: []
+related_tasks: [T-3172, T-3173, T-2717, T-2567]
+created: 2026-08-26T15:52:46Z
+last_update: 2026-08-26T15:52:46Z
+date_finished: null
+---
+
+# T-3176: compiler calls the pinned editors default lane state a typo - authority=none is an unset sentinel not an out-of-dialect value
+
+## Context
+
+### Origin
+
+Third inbound report from 001-CashWeb on 2026-08-26, answering our own request from the
+previous round for proof of a fifth editor authority value. Their evidence was exact and is
+verified byte-for-byte in T-3172. This task is the part of that evidence that turned out to be
+**ours**, and that neither project had framed correctly.
+
+### `none` is an unset sentinel, not a fifth authority
+
+Five independent sites in the pinned bundle agree:
+
+| Site | What it shows |
+|---|---|
+| `:1608` | `AUTHORITIES = ['sovereignty','authority','initiative','external','none']` — offered in the dropdown (`:5506`) |
+| `:8245` | a newly created lane is initialised `authority: 'none'` |
+| `:10142` | on import, a lane with **no** `aef:laneMeta authority` attribute reads back as `'none'` |
+| `:9894` | the exporter writes `authority="${escAttr(lane.authority)}"` **unconditionally** — no filtering of `none` |
+| `:1905` | the collapse map's own comment: "Returns `''` (no task / not derivable) for external/**none**/unknown" — the omission from `OWNER_FROM_AUTHORITY` is deliberate, not an oversight |
+
+`.context/working/designer-rx/aef-workflow-designer-0.2.0.html:1323` already carried all five
+values and has **no** `OWNER_FROM_AUTHORITY` at all — `none` predates the collapse map rather
+than extending it. That is the strongest single argument that it was never intended as a peer
+of the four ratified values.
+
+So: draw a lane, do not touch the Authority dropdown, export. The diagram carries
+`authority="none"`.
+
+### What our compiler does with it — reproduced at HEAD
+
+One-lane fixture, `<aef:laneMeta abbr="U" authority="none" height="130"/>`, one `serviceTask`:
+
+```
+WARN: lane 'Untouched' carries unrecognized aef:laneMeta authority='none' — not a value in
+the AEF lane dialect (authority, initiative, sovereignty); this is very likely a typo or an
+out-of-band value. … affected nodes fell back to name/type derivation: u-work-001→agent
+```
+
+rc=0, one skeleton emitted with `owner: agent`.
+
+**The accusation is the defect.** `none` is not a typo and not out-of-band — it is the
+documented default state of the editor we pin. The author who "forgot to set the authority" is
+told they made a spelling mistake, and the valid-set list offered back to them
+(`authority, initiative, sovereignty`) does not contain the value they would need in order to
+express "unset" either.
+
+### Why this is not T-3172, and not T-3173
+
+Three neighbouring defects on the same code path, three different root causes — kept separate
+per one-bug-one-task:
+
+| | value | class | defect |
+|---|---|---|---|
+| T-3172 / G-091 | `external` | ratified by the frozen standard | wrong message **and** wrong semantics (emits `owner: agent`; standard says no task) |
+| T-3173 / G-093 | `overlrd` | in no vocabulary at all | dialect check unreachable for lanes with no task nodes — even a real typo passes silently |
+| **T-3176 / G-095** | `none` | editor's unset sentinel | a typo accusation levelled at the editor's default state |
+
+Ordering against T-3172: T-3172 adds a value to the dialect **and** a third emission branch;
+this task adds a fourth message class that is not dialect membership. They touch the same
+`unknown_auth` reporting loop (`:501-521`) and the same `AUTHORITY_*` constants, so whichever
+lands second must not revert the other's fixture expectations — same constraint already
+recorded between T-3172 and T-3173.
+
+**`none` must not be folded into T-3172's fix.** Making it a dialect member would assert it is
+a ratified authority, which the frozen standard does not say and the editor's own comment
+contradicts. It is a fourth reporting class, not a fifth dialect entry.
+
+### Open question for the fix (not for this task to settle unilaterally)
+
+Whether `owner: agent` is the right fallback for an unset lane is a **separate** judgement from
+the message. It is defensible (an unset lane is not an assertion of anything, and name/type
+derivation is the documented fallback), and it is not what makes the current behaviour wrong.
+Scope here is the message class. If the fix author concludes the fallback is also wrong, that
+is a fourth ticket, not a widening of this one.
+
+## Acceptance Criteria
+
+### Agent
+- [ ] `tools/bpmn_to_tasks.py` reports `authority="none"` with a message that does **not**
+      contain "typo" and does **not** call it "out-of-band" — it names it as the lane's
+      authority being unset / not yet assigned, and says what to set it to.
+- [ ] `none` is **not** added to `AUTHORITY_DIALECT`, `AUTHORITY_OWNER`, or
+      `AUTHORITY_NO_OWNER` — the fix is a reporting class, not dialect membership. Verified by
+      grepping the constants after the change.
+- [ ] A genuine typo (`overlrd`) still produces the existing "very likely a typo" message —
+      the new class does not swallow the accusing branch it was split from.
+- [ ] Fixture `tests/fixtures/bpmn/none-lane-sample.bpmn` (untouched-lane shape: one lane,
+      `authority="none"`, one `serviceTask`) is committed and asserted on, so the editor's
+      default authoring path has a permanent regression guard.
+- [ ] T-3172's fixture expectations still pass after this lands (and vice-versa) — the two
+      tasks share the `unknown_auth` reporting loop.
+
+### Human
+- [ ] [REVIEW] The replacement wording for an unset lane reads as a prompt to finish the
+      diagram rather than as an error about the author's spelling.
+      **Steps:** 1. `cd /opt/999-Agentic-Engineering-Framework && python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn 2>&1 | head -5`
+      2. Read the WARN line as if you had just drawn your first lane in the designer.
+      **Expected:** it tells you the lane has no authority set and which values are available,
+      without implying you mistyped something.
+      **If not:** note the phrasing that reads as an accusation and hand back for rewording.
+
+## Verification
+
+test -f tests/fixtures/bpmn/none-lane-sample.bpmn
+python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn 2>&1 | grep -q "none"
+! python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn 2>&1 | grep -qi "typo"
+! grep -qE "AUTHORITY_(DIALECT|OWNER|NO_OWNER)[^=]*=.*'none'" tools/bpmn_to_tasks.py
+
+## RCA
+
+Not yet written — this task is filed, not fixed. The RCA belongs with the fix and must answer
+why the dialect check was written against a vocabulary nobody compared to the editor that
+produces the input, when that editor is vendored in this repo at a pinned sha (see G-091 root
+enabler, which this task sharpens: the reference artifact was never unavailable).
+
+## Decisions
+
+- **`none` is a reporting class, not a dialect member.** Adding it to `AUTHORITY_DIALECT`
+  would assert it is a ratified authority. The frozen standard ratifies four values; the
+  editor's own collapse-map comment (`:1905`) explicitly groups `none` with "not derivable".
+  Alternative considered and rejected: fold into T-3172 and add both `external` and `none` to
+  the dialect in one change — rejected because it conflates a ratified value with an unset
+  marker and would make the compiler claim more than the standard says.
+- **Split from T-3172 rather than widening it.** T-3172 is about the semantics of a ratified
+  value; this is about a message class for an unset one. One bug = one task.
+
+## Updates
