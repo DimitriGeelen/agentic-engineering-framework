@@ -467,17 +467,62 @@ handover in.
 Every one of 1-6 is small. The reason this has taken 26 tasks is that the substrate was
 built before the driver, and the driver is the only part that was load-bearing.
 
-## 16. The experiment that settles §15.1
+## 16. MEASURED — the experiment ran (T-3163, 2026-08-26)
 
-Cheap, falsifiable, and **must not run on the operator's live session** (a `Stop` hook
-returning `ok:false` drives turns; a bad one runs away).
+Run in an isolated scratch lab with its own `.claude/settings.json`, double-bounded by a
+fire cap and `stop_hook_active`. One `claude -p` prompt per leg. Raw evidence in the
+lab's `fires.log`; the **control leg is the discriminator** — without it "N fires" cannot
+be distinguished from "N fires *we caused*".
 
-1. In a scratch dir, register a `Stop` hook that appends a line to a file and returns
-   `{"ok": false, "reason": "say NEXT"}` for the first 3 fires, then `{}`.
-2. Run one `claude -p` turn. Count lines.
-3. Expected if the mechanism is real: 4 assistant turns from one prompt.
-4. Then repeat with the context deliberately near critical, to confirm or refute the
-   live-lock in §15.1.
+| Leg | Hook returns | Fires | Final transcript | Continues? |
+|---|---|---:|---|---|
+| **control** | `{}` every fire | 1 | `ONE` | no — baseline |
+| A | `{"ok": false, "reason": …}` | 1 | `ONE` | **NO** |
+| B | `{"decision": "block", "reason": …}` | 2 | `NEXT` | **YES** |
+| C | `exit 2` + stderr | 2 | `NEXT` | **YES** |
+| D | B, cap 4, guard ignored | 5 | `STEP4` | **YES — 4 consecutive** |
+
+**The continuation mechanism is REAL. F1 is a hook registration, not a project.**
+
+**But the contract we were given is wrong.** §12 reported `{"ok": false}` on a docs
+lookup. Leg A shows it is inert — indistinguishable from the control. The shapes that
+actually drive a turn are **`{"decision": "block", "reason": …}`** and **`exit 2` with
+the reason on stderr**. Had this been built from the docs-lookup contract it would have
+shipped a hook that fires, logs, returns cleanly, and drives nothing — a false green of
+exactly the family this whole document is about, and one that leg A alone would not have
+caught either: A and the control produce *identical* observable output.
+
+`stop_hook_active` came back `True` on the second fire in legs B and C, so the documented
+runaway guard is real and works.
+
+### 16.1 Second claim — also measured, and it splits in two
+
+The model's tool list in the lab, asked directly:
+
+> `Agent, Bash, Edit, ListAgents, Read, ReportFindings, ScheduleWakeup, Skill, ToolSearch,
+> Write, CronCreate, CronDelete, CronList, DesignSync, EnterWorktree, ExitWorktree, LSP,
+> Monitor, NotebookEdit, PushNotification, RemoteTrigger, SendMessage, TaskOutput,
+> TaskStop, WebFetch, WebSearch`
+
+- **No `SlashCommand` tool.** `/clear` and `/compact` are built-in CLI commands, not
+  skills — **§15.1 holds**: nothing inside the session can cross its own context
+  boundary. The boundary must be driven from outside, or typed by the operator.
+- **But there IS a `Skill` tool**, and `/resume` is a framework skill. So the model *can*
+  invoke `/resume`, `/start-work` and the rest once a turn is happening. **This narrows
+  T-2404's failure to exactly one cause:** its bootstrap prose was never unreadable or
+  unactionable — it simply never got a turn in which to be read. Fix the driver and that
+  prose starts working as written.
+
+### 16.2 Consequences for §15.4
+
+The work list stands, with two corrections:
+
+1. Slice 1 must use `{"decision": "block"}` / `exit 2`, **never** `{"ok": false}`, and
+   must pin the working contract in a test — the inert shape is silently inert.
+2. Slice 2 (fresh-session respawn) is now **load-bearing rather than merely better**:
+   since the session cannot free its own context, the outer supervisor is the only
+   mechanism that can. `/clear` remains available on the way out (`SessionEnd` matcher
+   `clear`) but still needs something outside the session to type it.
 
 ## 17. Open to the operator (Q4/Q5, sharpened by the Q1 answer)
 

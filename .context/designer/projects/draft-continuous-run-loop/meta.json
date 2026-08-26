@@ -6,9 +6,14 @@
       "v": 1,
       "note": "T-3159 pair-draft \u2014 continuous run loop as the operator specified it; MISSING/DIVERGES status on every node",
       "ts": 1787748503
+    },
+    {
+      "v": 2,
+      "note": "T-3163: Stop-hook contract MEASURED \u2014 decision:block/exit-2 drive turns, ok:false is inert; no SlashCommand tool",
+      "ts": 1787752424
     }
   ],
-  "latest": 1,
-  "updated": 1787748503,
+  "latest": 2,
+  "updated": 1787752424,
   "uuid": "013201da-1193-4459-a1ce-d3981b1b67c2"
 }
