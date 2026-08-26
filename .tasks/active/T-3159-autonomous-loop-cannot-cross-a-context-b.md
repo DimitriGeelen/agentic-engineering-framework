@@ -12,7 +12,7 @@ owner: human
 horizon: now
 tags: [arc:continuous-run]
 components: []
-related_tasks: []
+related_tasks: [T-3163, T-3164, T-3165, T-3166, T-3167, T-3168, T-3169, T-3170]
 created: 2026-08-26T11:58:42Z
 last_update: 2026-08-26T14:27:17Z
 date_finished:
@@ -245,6 +245,30 @@ Four defects measured this session, not hypothesised: (1) no Stop/UserPromptSubm
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+## GO scope — what shipped, and what has not
+
+GO recorded 2026-08-26. Eight tasks carried the scope. Two rows of the §15.4 work
+list did NOT ship, and are not claimed as shipped.
+
+| §15.4 | Task | State |
+|---|---|---|
+| 1 — Stop hook turn driver | T-3164 | landed, shipped disarmed |
+| 2 — fresh-session respawn | T-3166 | landed |
+| 3 — task-keyed ceiling | T-3169 | landed as a *second* ceiling, not the re-key the row asked for |
+| 4 — SessionEnd | T-3170 | **half** — the event is valid now; wiring the handler is the operator's call (T-1459 precondition: read the G-016 commit-storm RCA) |
+| 5 — loud unsupervised launch | — | **NOT FILED** |
+| 6 — enabled / sentinel honesty | T-3167, T-3168 | landed |
+| 7 — designer map + conformance rail | partial | the map `draft-continuous-run-loop` exists; the deliberately-RED conformance entry (IW-3) is **NOT FILED** |
+| — the measurement | T-3163 | landed — the whole run rests on it |
+| — found en route | T-3165 | filed, not started (`fw vendor self` sweeps a concurrent session's files) |
+
+Rows 5 and 7 are open *work*, not open questions: they need filing as build tasks
+before anyone can say §15.4 is drained. IW-1, IW-2 and IW-4 (§17 of the artefact)
+remain undisposed — IW-4 most of all, since nobody has yet taken a handover into a
+genuinely cold session and measured whether it resumes.
+
+The loop is not armed: `enabled: false`, `max_tasks: null`.
 
 ## Decision
 
