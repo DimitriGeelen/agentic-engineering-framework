@@ -62,3 +62,63 @@ fixed problems.
 ## Node decisions
 
 (filled one per exchange)
+
+### Exchange 1 — node 1 `hum_1_operator`, "operator arms the run" (2026-08-26 ~22:0x)
+
+**Agent asked:** is a "run" a session respawn or a task? And should `expires_after_seconds`
+be deleted or demoted?
+
+**Operator (verbatim, mixed NL/EN speech-to-text):** "wat we willen is de mode continuous run,
+en dan zet eider complete the task, of complete the arc, met high value high cost, and high
+value low cost items, tasks completed en ook een limiter voor de amount of runs waardoor, maar
+dat is niet mandatieve[.] wat je dan wilt is de sessie om te adhieren tot het tokenlimit dat is
+geconfigurd, en als we in de urgent zone komen, om de task te [voltooien], om de precompact
+routine te beginnen en dan gaan we naar een situatie waar we kunnen beginnen en beginnen de
+continue commands en we hebben de prompt die de instrucjons in de werk aan de arc of task en
+een heel clear set van instrucjons dat je nu vaak krijgt. De instrucjons ook moeten
+configurablen worden, dus een repeating prompt injection, zo te zeggen."
+
+**The agent's question was the wrong question.** The cap is not the design; the TARGET is.
+
+#### D-1.1 — arming sets a MODE + TARGET, not a counter
+Continuous mode is armed with one of two targets:
+- `complete-task` — drive one task to done.
+- `complete-arc`  — drive an arc until drained.
+
+Within `complete-arc`, work is selected by BVP quadrant: **HV/HC and HV/LC first**.
+Machinery exists: `fw bvp --quadrant {hv-hc|hv-lc}`. Nothing in the loop calls it yet.
+
+#### D-1.2 — the run limiter is OPTIONAL
+`max_iterations` / `max_tasks` stay as optional guards, default unset. They are a
+convenience ("kicked out after five runs"), explicitly *not* mandatory and not the
+terminal condition.
+
+#### D-1.3 — the terminal driver is the TOKEN BUDGET, and the action threshold is URGENT
+The session adheres to the configured token limit. On entering the **urgent** zone:
+1. finish the current task,
+2. run the precompact routine,
+3. cross the boundary,
+4. resume the continue commands.
+
+**This moves the split in the map one notch left.** v5 routes `ok/warn/urgent → Stop hook`
+and `critical → cross the boundary`. Under D-1.3, **urgent** is the *action* threshold and
+critical becomes the *failure* threshold — the place we should never reach, not the place
+where the design fires. Node 5 (`fw_2_budget`) and node 9 (`agt_4_let`) both change.
+
+#### D-1.4 — the continuation prompt must be CONFIGURABLE
+A repeating prompt injection carrying the work-on-arc/task instructions. Today it is a
+hard-coded shell string at `agents/context/stop-driver.sh:207-212` (`next_reason=`), with
+the governance bootstrap baked in. It needs to become operator-editable content.
+
+#### D-1.5 — wall-clock demoted (agent proposal, not operator-stated)
+`expires_after_seconds` was not mentioned. Given D-1.3 it is not a terminal condition.
+Proposed: keep as a runaway fuse only, set far away and renamed so nobody reads it as design.
+NOT operator-confirmed — flagged, not decided.
+
+#### Gap confirmed at this node
+`.context/working/.continuous-mode.yaml` has **no arc field and no target field**, and
+nothing in the loop reads an arc — every `arc` hit in `stop-driver.sh`,
+`lib/continuous-mode.sh` and `inject-next-directive.py` is a comment or a task-ref regex.
+`stop-driver.sh:209` injects the words "toward the current arc" into the continuation
+prompt while nothing computes which arc that is. The good ending ("arc drained") is
+therefore not evaluable today.
