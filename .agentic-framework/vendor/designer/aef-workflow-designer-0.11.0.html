@@ -469,6 +469,10 @@ font-family: 'Outfit';
     z-index: 5;
   }
   .clean-nudge .clean-nudge-msg { white-space: nowrap; }
+  /* T-310: a malformed map can trigger BOTH advisories at once — the lane-fix
+     notice takes the top slot (it reports a change already made to the document's
+     appearance) and pushes the Clean nudge (an offer) below it. */
+  .clean-nudge.stacked { top: 52px; }
   .clean-nudge-x {
     background: transparent;
     border: none;
@@ -569,6 +573,11 @@ font-family: 'Outfit';
   svg[data-lsize="l"] .lane-label { font-size: 11.5px; }
   .node-io-badge { fill: var(--text-dim); font-family: var(--mono); font-size: 8px; pointer-events: none; }
   .node-id-badge { fill: var(--text-faint); font-family: var(--mono); font-size: 9px; pointer-events: none; letter-spacing: 0.02em; }
+  /* T-355: the real tag of a foreign (out-of-allowlist) flow node, drawn above the shape.
+     Mono because it is a literal from the source document, not prose; --text-dim rather
+     than --text-faint so it stays legible — this is the one mark that says what the
+     element actually is. */
+  .node-foreign-tag { fill: var(--text-dim); font-family: var(--mono); font-size: 9px; pointer-events: none; letter-spacing: 0.02em; }
   /* T-258: annotation seam v0 (T-250 GO) — read-only badge layer driven by the
      embedding parent via postMessage. Never serialized; wiped on every render. */
   .aef-annotation { pointer-events: none; }
@@ -1394,6 +1403,14 @@ font-family: 'Outfit';
       <div class="canvas-overlay" id="status">
         Mode: <span class="status-mode" id="status-mode">select</span><span id="status-selection"></span>
       </div>
+      <!-- T-310: shown when the imported map drew nodes outside their DECLARED lane
+           and they were moved back into it. Reuses the clean-nudge chrome so advisory
+           feedback keeps one house style; distinct id so the two can never clobber
+           each other. -->
+      <div class="clean-nudge" id="lane-fix-notice" style="display:none">
+        <span class="clean-nudge-msg" id="lane-fix-msg"></span>
+        <button class="clean-nudge-x" id="lane-fix-dismiss" type="button" title="Dismiss">✕</button>
+      </div>
       <div class="clean-nudge" id="clean-nudge" style="display:none">
         <span class="clean-nudge-msg">✨ This map could use Clean layout</span>
         <button class="btn" id="clean-nudge-apply" type="button">Clean layout</button>
@@ -1648,6 +1665,45 @@ function deriveSlug(displayName) {
   return (words[0] || 'node').slice(0, 16);
 }
 
+// ── Workflow identity: the sanitizer and the validator that judges it (T-562) ──────
+// NOT deriveSlug, and the adjacency is deliberate so the next reader sees the
+// difference. deriveSlug above is a SUMMARISER for node labels — first word longer
+// than one character, truncated to 16. Using it for machine identity collapses
+// distinct documents onto a shared first token: measured over the 14 corpus documents
+// that reach the id fallback it yields 4 ids (`process` ×8, `proc` ×4, `id`, a hash),
+// and all 4 PASS the validator — a loud save-time rejection turned into a silent
+// collision (T-501 §Decision item 1).
+//
+// These two were written inline at three sites (renameActiveWorkflow, the ID property
+// field, createFromPendingRef) and judged by a fourth inline regex in the save guard,
+// and the three disagreed with the judge (T-501 D2). The contract that makes them one
+// unit: sanitizeWorkflowId's output always satisfies isValidWorkflowId, or is the
+// caller's fallback.
+//
+// `fallback` is a parameter rather than a constant because the sites differ in a way
+// that matters: createFromPendingRef needs a usable id ('workflow'), while the two
+// rename paths need '' so an unusable input REFUSES the rename instead of silently
+// renaming the map to "workflow".
+function sanitizeWorkflowId(raw, fallback = '') {
+  const s = String(raw == null ? '' : raw)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_\-]/g, '-')
+    // Leading separators of BOTH kinds. The shipping :9162 rule stripped `-` only, so
+    // `_foo` survived as `_foo` and the validator rejected it on the first character.
+    // The corpus contains no such name, which is why the T-501 census measured 0
+    // invalid and was right about the population it read.
+    .replace(/^[-_]+/, '')
+    // Trailing `-` only. A trailing `_` is legal per the validator and trimming it
+    // would change ids that already round-trip.
+    .replace(/-+$/, '');
+  return s || fallback;
+}
+
+function isValidWorkflowId(id) {
+  return /^[a-z0-9][a-z0-9_-]*$/.test(id);
+}
+
 // Derive a slug that's unique within its lane (among other nodes in that lane).
 // If the base slug collides with siblings, append `-2`, `-3`, ... until unique.
 function deriveUniqueSlug(node, displayName) {
@@ -1768,30 +1824,80 @@ const NODE_DEFAULTS = {
 };
 
 // Which aef:* fields are meaningful for each node type.
+// T-566: `note` is listed on EVERY type, and that is a deliberate departure from how
+// the rest of this table is built. Every other key here is type-specific because it
+// carries type-specific semantics — `emits` on a startEvent would be meaningless, a
+// `timerSpec` on a task has nothing to bind to. `note` carries no semantics the node
+// type could contradict: it is author prose about the node. Restricting it to
+// "task-like and event types" (as requested by 001-CashWeb) would reproduce this same
+// report from the next consumer who put a note on a gateway. T-197's principle is that
+// a field appears where it is AUTHORABLE, not everywhere it can be stored — prose is
+// authorable everywhere. Note the ordering: `note` is LAST in each list so it renders
+// below the structured fields rather than pushing them down.
 const AEF_FIELDS = {
-  startEvent:   ['triggeredBy', 'contextReads'],
-  endEvent:     ['emits'],
+  startEvent:   ['triggeredBy', 'contextReads', 'note'],
+  endEvent:     ['emits', 'note'],
   // T-197 (IW-9 v1.1): node-level `owner` is NOT authorable — it derives from
   // the node's lane authority (Axis 1). The panel shows it read-only via
   // ownerFromAuthority(); it is retained in the metaKeys writer for O-2
   // reverse-render laning, but never offered as an editable field here.
-  serviceTask:  ['horizon', 'workflowType', 'tier', 'agentType', 'endpoint', 'contextReads', 'artifactsWrites'],
-  userTask:     ['horizon', 'workflowType', 'tier', 'endpoint', 'decisionOutputs'],
-  scriptTask:   ['horizon', 'workflowType', 'tier', 'endpoint', 'contextReads', 'artifactsWrites'],
-  exclusiveGateway: ['decisionInput', 'decisionOwner'],
-  parallelGateway: [],
-  linkEventThrow: ['workflowRef', 'name', 'targetWorkflow', 'linkId'],
-  linkEventCatch: ['workflowRef', 'name', 'targetWorkflow', 'linkId'],
+  serviceTask:  ['horizon', 'workflowType', 'tier', 'agentType', 'endpoint', 'contextReads', 'artifactsWrites', 'note'],
+  userTask:     ['horizon', 'workflowType', 'tier', 'endpoint', 'decisionOutputs', 'note'],
+  scriptTask:   ['horizon', 'workflowType', 'tier', 'endpoint', 'contextReads', 'artifactsWrites', 'note'],
+  exclusiveGateway: ['decisionInput', 'decisionOwner', 'note'],
+  parallelGateway: ['note'],
+  linkEventThrow: ['workflowRef', 'name', 'targetWorkflow', 'linkId', 'note'],
+  linkEventCatch: ['workflowRef', 'name', 'targetWorkflow', 'linkId', 'note'],
   // T-204 Slice 1: one kind-specific binding field per typed event (single source
   // of truth is EVENT_BINDING_FIELD, mirrored here for the inspector panel).
   // T-204 Slice 2: additive boundary-attachment fields (hostRef/boundaryPos/
   // interrupting) — an empty hostRef leaves the event in-flow; setting it makes the
   // event a bpmn:boundaryEvent on that host (per the T-081 scopeOf node→node precedent).
-  eventError:   ['errorStatus', 'hostRef', 'boundaryPos', 'interrupting'],
-  eventTimer:   ['timerSpec', 'hostRef', 'boundaryPos', 'interrupting'],
-  eventMessage: ['busTopic', 'hostRef', 'boundaryPos', 'interrupting'],
-  subProcess:   ['horizon', 'workflowType', 'tier', 'endpoint', 'contextReads', 'artifactsWrites', 'scopeOf'],
+  eventError:   ['errorStatus', 'hostRef', 'boundaryPos', 'interrupting', 'note'],
+  eventTimer:   ['timerSpec', 'hostRef', 'boundaryPos', 'interrupting', 'note'],
+  eventMessage: ['busTopic', 'hostRef', 'boundaryPos', 'interrupting', 'note'],
+  subProcess:   ['horizon', 'workflowType', 'tier', 'endpoint', 'contextReads', 'artifactsWrites', 'scopeOf', 'note'],
 };
+
+// T-308 (T-244 GO, path b): neutral presentation for a BARE catch event.
+//
+// A <bpmn:intermediateCatchEvent> carrying no <aef:link> and no recognised
+// <aef:eventDef> decodes to linkEventCatch through the REVERSE_TYPE fallback
+// (see the import block) — there is no neutral landing type. The node is
+// healthy, but it then wears the "← Handoff" glyph and the link property schema
+// whose target fields can never bind, because the source document has no
+// aef:link to bind them to. AEF's operator read exactly that as a broken
+// connector on a healthy map.
+//
+// This is PRESENTATION ONLY. Node type, export path and dialect are untouched:
+// aefExtensionXml emits <aef:link> solely when a binding field is non-empty and
+// linkEventCatch exports as intermediateCatchEvent, so a bare catch event
+// already round-trips byte-clean. Nothing here changes an exported byte, so
+// there is nothing for AEF to ratify.
+const LINK_BIND_FIELDS = ['workflowRef', 'targetWorkflow', 'linkId', 'name'];
+
+// Nodes the author declared as handoffs THIS SESSION — dropped from the palette,
+// or promoted via "Make this a handoff". They keep the handoff UI while live so
+// binding stays discoverable.
+//
+// IW-3 (confidence 3): a palette-created handoff is *equally* unbound, and the
+// distinction cannot survive a save — with no empty <aef:link> emitted, "author
+// placed a handoff, not yet bound" and "bare imported catch event" serialize to
+// an identical <intermediateCatchEvent>. The dialect has no carrier for
+// authorial intent, and no rendering cleverness recovers a distinction the file
+// does not record. So intent lives in SESSION state and dies with the session:
+// after a reload the node renders neutral, which is honest — at that point the
+// document genuinely says nothing about handoff intent. A persisted "intended
+// handoff" marker would be a dialect change, i.e. path (a), explicitly out of
+// scope. Deliberately not a field on `state`/`node`: it must never serialize.
+const sessionAuthoredLinks = new Set();
+
+function isBareCatchEvent(n) {
+  if (!n || n.type !== 'linkEventCatch') return false;
+  if (sessionAuthoredLinks.has(n.uid)) return false;
+  const aef = n.aef || {};
+  return !LINK_BIND_FIELDS.some(f => String(aef[f] || '').trim());
+}
 
 // T-197 (IW-9 v1.1): the authority→owner collapse map. owner is DERIVED from the
 // node's lane authority, never authored per-node. Mirror of the mapping-v1 §3
@@ -1806,6 +1912,10 @@ function ownerFromAuthority(authority) {
 const OWNER_BEARING_TYPES = new Set(['serviceTask', 'userTask', 'scriptTask', 'subProcess']);
 
 const FIELD_META = {
+  // T-566: free author prose. textarea because the content this exists to surface is
+  // multi-line by nature — 001-CashWeb's 27 nodes carry API references, auth rules,
+  // call lines and pseudo code. No `special`, so it takes the plain field() path.
+  note:           { label: 'Note',            hint: 'free notes · multi-line', textarea: true },
   triggeredBy:    { label: 'Triggered by',    hint: 'event or fw command', textarea: false },
   contextReads:   { label: 'Context reads',   hint: 'paths · comma-separated', textarea: true },
   artifactsWrites:{ label: 'Artifacts writes',hint: 'paths · comma-separated', textarea: true },
@@ -2073,15 +2183,39 @@ function contentRightEdge() {
   const authored = state?.workflowMeta?.pageWidth;
   return Math.max(contentRightEdgeNatural(), authored ? POOL_X + authored : 0);
 }
-// Locate which lane a given y-coordinate falls into; returns lane id or first lane id as fallback.
+// Locate which lane a given y-coordinate falls into; returns the lane id, or null
+// when y falls outside every band.
+//
+// T-310: this used to fall back to getLanes()[0]?.id, which meant a node dragged
+// into the void below the pool was silently ADOPTED by the top lane. Lane membership
+// is the `who` in this dialect (T-189), so an accidental gesture must never be able
+// to reassign authority — "outside every lane" is a real answer and callers are
+// expected to handle it. Callers that need a lane for GEOMETRY (snap rows) get []
+// from laneRowYs(null); callers that need one for IDENTITY (createNodeAt) carry
+// their own explicit fallback; callers that reassign membership (drag) leave it
+// unchanged.
 function laneAtY(y) {
   let top = POOL_Y + POOL_HEADER;
   for (const l of getLanes()) {
     if (y >= top && y < top + l.height) return l.id;
     top += l.height;
   }
-  return getLanes()[0]?.id;
+  return null;
 }
+
+// T-310: how many nodes the last parse had to move back into their declared lane.
+// Deliberately module-level and OUTSIDE `state` — it is a report about the import,
+// not a property of the document, and keeping it out of state makes it structurally
+// incapable of reaching the exporter (same discipline as T-308's session-intent Set).
+let _laneReconcileCount = 0;
+
+// T-315: which lanes the last parse had to GROW to contain their own declared
+// members, and by how much. Same discipline as _laneReconcileCount above — a
+// report about the import, kept outside `state` so it is structurally incapable
+// of reaching the exporter. (The grown HEIGHT does reach the exporter, and must:
+// it is a real edit to the document, not a render-time fudge. What stays out is
+// the narration about it.)
+let _laneGrowReport = [];
 
 // ============================================================================
 //  State
@@ -2340,8 +2474,10 @@ function syncOverlayPin() {
   const dx = canvasWrap.scrollLeft, dy = canvasWrap.scrollTop;
   const o = document.querySelector('.canvas-overlay');
   if (o) o.style.transform = (dx || dy) ? `translate(${dx}px, ${dy}px)` : '';
-  const n = $('clean-nudge');
-  if (n) n.style.transform = (dx || dy) ? `translate(calc(-50% + ${dx}px), ${dy}px)` : '';
+  for (const id of ['clean-nudge', 'lane-fix-notice']) {   // T-310: both advisories pin
+    const n = $(id);
+    if (n) n.style.transform = (dx || dy) ? `translate(calc(-50% + ${dx}px), ${dy}px)` : '';
+  }
 }
 // Drag-to-pan: middle-mouse always, or left-drag while Space is held. CAPTURE
 // phase on the wrap + stopPropagation preempts the svg-level rubber-band
@@ -2599,7 +2735,9 @@ function mintUuid() {
 }
 
 function renameActiveWorkflow(newId) {
-  newId = (newId || '').trim().toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
+  // T-562: was an inline sanitizer that disagreed with the save validator. Empty
+  // fallback preserves the refuse-on-unusable-input behaviour below.
+  newId = sanitizeWorkflowId(newId, '');
   if (!newId || newId === activeKey) return false;
   if (library.has(newId)) return false; // collision
   library.delete(activeKey);
@@ -2895,7 +3033,42 @@ function renderNodes() {
     g.addEventListener('click', e => { e.stopPropagation(); onNodeClick(n, e); });
     g.addEventListener('dblclick', e => { e.stopPropagation(); onNodeDblClick(n, e); });   // T-160: handoff jump
 
-    if (n.type === 'startEvent') {
+    // T-355: a FOREIGN flow node — an element outside the import allowlist, preserved
+    // verbatim by T-337 and re-emitted unchanged on export. Drawn here, BEFORE every
+    // type branch, rather than corrected afterwards.
+    //
+    // foreignDisplayTag() (:10027) maps an unknown local name to serviceTask, or to
+    // exclusiveGateway when it ends in "Gateway", purely so the canvas has a shape. Its
+    // comment says the choice is "presentation only" and "moves no bytes", which is true
+    // of the export and false of the reader: the serviceTask branch stamps the blue
+    // service dot (:2982) and the gateway branch stamps the exclusive X (:3002). Those
+    // are the BPMN conventions for "this IS a service task" / "this IS an exclusive
+    // gateway" — a semantics the document never claimed and this designer does not
+    // implement. Painting them and then adding a warning would leave both marks on the
+    // canvas at once, so the branch order is the fix.
+    //
+    // Neutral-and-muted rather than a new colour, following T-308's bare catch event:
+    // the honest reading is "an element of a kind this editor does not model", which is
+    // what --text-dim + dashed says. A fresh accent colour would invent a category.
+    // Three signals, none of them colour alone (T-233's rule): dashed outline, the tag
+    // name rendered verbatim, and a <title> saying what will happen to it on save.
+    if (n.foreignTag) {
+      const cx = n.x + def.w / 2, cy = n.y + def.h / 2;
+      const stroke = 'var(--text-dim)';
+      g.appendChild(/Gateway$/.test(n.foreignTag)
+        ? el('path', { d: `M${cx} ${n.y} L${n.x + def.w} ${cy} L${cx} ${n.y + def.h} L${n.x} ${cy} Z`, class: 'node-shape', fill: 'var(--surface-2)', stroke, 'stroke-width': '1.5', 'stroke-dasharray': '4 3' })
+        : el('rect', { x: n.x, y: n.y, width: def.w, height: def.h, rx: 8, class: 'node-shape', fill: 'var(--surface-2)', stroke, 'stroke-width': '1.5', 'stroke-dasharray': '4 3' }));
+      // The tag itself. "Not a serviceTask" is only half the disclosure — the author
+      // still has to be able to tell a callActivity from a transaction. Truncated and
+      // never wrapped: a long foreign tag must not reflow the node it labels.
+      const tag = String(n.foreignTag);
+      g.appendChild(el('text', { x: n.x, y: n.y - 5, class: 'node-foreign-tag' },
+        [text(`⟨${tag.length > 18 ? tag.slice(0, 17) + '…' : tag}⟩`)]));
+      g.appendChild(el('title', {}, [text(
+        `Foreign BPMN element <bpmn:${tag}> — preserved verbatim on export (T-337). `
+        + `This editor does not implement its semantics, so it is drawn with a neutral `
+        + `dashed shape and none of the marks that would claim it is a task or a gateway.`)]));
+    } else if (n.type === 'startEvent') {
       g.appendChild(el('circle', { cx: n.x + def.w / 2, cy: n.y + def.h / 2, r: def.w / 2, class: 'node-shape', fill: 'var(--green-soft)', stroke: 'var(--green)', 'stroke-width': '1.5' }));
     } else if (n.type === 'endEvent') {
       g.appendChild(el('circle', { cx: n.x + def.w / 2, cy: n.y + def.h / 2, r: def.w / 2, class: 'node-shape', fill: 'var(--red-soft)', stroke: 'var(--red)', 'stroke-width': '3' }));
@@ -2926,6 +3099,15 @@ function renderNodes() {
       const cx = n.x + def.w / 2, cy = n.y + def.h / 2;
       g.appendChild(el('path', { d: `M${cx} ${n.y} L${n.x + def.w} ${cy} L${cx} ${n.y + def.h} L${n.x} ${cy} Z`, class: 'node-shape', fill: 'var(--surface-2)', stroke: 'var(--blue)', 'stroke-width': '1.5' }));
       g.appendChild(el('path', { d: `M${cx} ${cy - 10} V${cy + 10} M${cx - 10} ${cy} H${cx + 10}`, stroke: 'var(--blue)', 'stroke-width': '2', 'stroke-linecap': 'round' }));
+    } else if (isBareCatchEvent(n)) {
+      // T-308: bare catch event — BPMN's plain intermediate event (double ring,
+      // no kind marker) in the muted palette. Reads as "an event of unspecified
+      // kind", which is what the document actually says, instead of "a handoff
+      // whose target is missing". Ordered BEFORE the link-event branch below.
+      const cx = n.x + def.w / 2, cy = n.y + def.h / 2, r = def.w / 2;
+      const stroke = 'var(--text-faint)';
+      g.appendChild(el('circle', { cx, cy, r, class: 'node-shape', fill: 'var(--surface-2)', stroke, 'stroke-width': '1.5' }));
+      g.appendChild(el('circle', { cx, cy, r: r - 3.5, fill: 'none', stroke, 'stroke-width': '1.2' }));
     } else if (n.type === 'linkEventThrow' || n.type === 'linkEventCatch') {
       // Off-page connector: hollow circle with a chevron arrow inside.
       // Throw = chevron pointing right (data leaves); catch = chevron pointing left (data enters).
@@ -5093,7 +5275,7 @@ function renderProperties() {
     // On collision renameActiveWorkflow refuses; surface that instead of silently
     // reverting (T-263 leg3 / the rail-225 overwrite trap).
     sMeta.appendChild(field('ID', wm.id, v => {
-      const trimmed = (v || '').trim().toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
+      const trimmed = sanitizeWorkflowId(v, '');   // T-562: shared helper
       if (!trimmed || trimmed === activeKey) { renderProperties(); return; }
       if (!renameActiveWorkflow(trimmed)) {
         _idRenameNotice = `id "${trimmed}" already exists in this library — rename not applied`;
@@ -5420,7 +5602,10 @@ function renderProperties() {
   const n = findNode(selection.id);
   if (!n) { selection = null; renderProperties(); return; }
 
-  props.appendChild(propsHeader(n.type, displayIdOf(n), () => deleteNode(n.id)));
+  // T-308: a bare catch event is presented as the neutral intermediate event it
+  // actually is — the underlying n.type is unchanged and still exports as
+  // <bpmn:intermediateCatchEvent>.
+  props.appendChild(propsHeader(isBareCatchEvent(n) ? 'intermediateEvent' : n.type, displayIdOf(n), () => deleteNode(n.id)));
 
   // BPMN basics
   const sBpmn = section('BPMN');
@@ -5490,7 +5675,37 @@ function renderProperties() {
   props.appendChild(sBpmn);
 
   // AEF extensions
-  const aefFields = AEF_FIELDS[n.type];
+  // T-308: a bare catch event has no aef:link, so the link schema's target fields
+  // are dead on arrival — offering them is precisely what made a healthy node read
+  // as a broken connector. Hide them, say what the node actually is, and offer an
+  // explicit way to declare handoff intent (session-scoped — sessionAuthoredLinks).
+  const bareCatch = isBareCatchEvent(n);
+  const aefFields = bareCatch ? [] : AEF_FIELDS[n.type];
+  if (bareCatch) {
+    // Not an aef: field group — this node has no aef: extensions at all, which is
+    // the whole point. Passing isAef would badge it as one.
+    const sBare = section('Event kind', false);
+    const note = document.createElement('div');
+    note.className = 'field-hint';
+    note.style.cssText = 'display:block;margin:2px 0 8px;line-height:1.45';
+    note.textContent = 'This event carries no kind and no handoff target — the source says only '
+      + 'that something is awaited here. It is valid as it stands and exports unchanged.';
+    sBare.appendChild(note);
+    const mkBtn = document.createElement('button');
+    mkBtn.className = 'btn';
+    mkBtn.type = 'button';
+    mkBtn.textContent = '← Make this a handoff';
+    mkBtn.title = 'Show the handoff target fields. Setting a target makes it permanent; '
+      + 'left unbound, the node returns to neutral on reload.';
+    mkBtn.onclick = () => { sessionAuthoredLinks.add(n.uid); renderNodes(); renderProperties(); };
+    sBare.appendChild(mkBtn);
+    props.appendChild(sBare);
+  } else if (n.type === 'linkEventCatch') {
+    // Already presenting as a handoff — hold that reading for the rest of the
+    // session so clearing the target field mid-edit doesn't flip the panel out
+    // from under the author.
+    sessionAuthoredLinks.add(n.uid);
+  }
   if (aefFields && aefFields.length) {
     const sAef = section('Extensions', true);
     n.aef = n.aef || {};
@@ -5594,6 +5809,73 @@ function renderProperties() {
     props.appendChild(sAef);
   }
 
+  // T-566: DISCLOSE every aef: key the panel would otherwise drop on the floor.
+  //
+  // `note` was the key that bit two consumers (999-AEF T-2974, 001-CashWeb T-064). The
+  // SHAPE that bit them is this panel: it iterates AEF_FIELDS[n.type] and renders one
+  // control per listed key, so anything the whitelist does not name is invisible —
+  // silently, with no readout and no count. Fixing only `note` leaves that shape intact
+  // and the next project files the same report about a different key. Measured over 91
+  // bpmn files / 714 aef:meta values: 305 (42.7%) sit outside AEF_FIELDS across 14
+  // distinct keys, of which `note` is 92. This branch is what covers the other 213.
+  //
+  // READ-ONLY, and that is a design constraint rather than laziness (T-197). Some of
+  // these keys are DERIVED (`owner` collapses from lane authority) and some are
+  // STRUCTURAL (`gatewayKind`, `scopeOf` — set by the shape of the diagram, not typed
+  // by an author). An edit box on those would be a lie: the value would be overwritten
+  // on the next render or the next export. Disclosure tells the truth about what the
+  // document carries without claiming this panel is where it is authored.
+  //
+  // "They are not lost." WAS FALSE WHEN THIS SHIPPED, and T-570 is what made it true.
+  // At T-566 a key absent from the export metaKeys whitelist was still DROPPED on
+  // re-export, so this panel disclosed content on its way to being destroyed — the
+  // sentence held for every key on metaKeys and failed for exactly the keys this branch
+  // exists to surface. T-570 gave <aef:meta> a carriage path for scalars no other emitter
+  // claims (:9502), so a disclosed key now survives the round trip and the claim is
+  // discharged rather than merely worded carefully.
+  //
+  // The `typeof v !== 'object'` filter below and the carriage filter at :9550 select the
+  // same population BY THE SAME RULE — scalars nothing else owns. That is deliberate:
+  // what this panel says the document carries is exactly what export writes back, so the
+  // two cannot drift into disagreeing about a key.
+  const shownKeys = new Set(aefFields || []);
+  if (OWNER_BEARING_TYPES.has(n.type)) shownKeys.add('owner');
+  // constituents has its own section below; io/link fields are already in AEF_FIELDS.
+  shownKeys.add('constituents');
+  const hiddenKeys = Object.keys(n.aef || {})
+    .filter(k => !shownKeys.has(k))
+    // Objects and arrays are structured payloads with their own surfaces, not scalars
+    // to print. Empty strings are absence, not content.
+    .filter(k => {
+      const v = n.aef[k];
+      return v !== null && v !== undefined && typeof v !== 'object' && String(v).trim() !== '';
+    })
+    .sort();
+  if (hiddenKeys.length) {
+    const sOther = section(`Other extensions · ${hiddenKeys.length}`, false);
+    const why = document.createElement('div');
+    why.className = 'field-hint';
+    why.style.cssText = 'display:block;margin:2px 0 8px;line-height:1.45';
+    why.textContent = 'Carried by this node in the source document. Shown read-only — these '
+      + 'keys are either derived from the diagram or not authored here. They are not lost.';
+    sOther.appendChild(why);
+    for (const k of hiddenKeys) {
+      const row = document.createElement('div');
+      row.className = 'field';
+      const lab = document.createElement('div');
+      lab.className = 'field-label';
+      lab.textContent = k;
+      const val = document.createElement('div');
+      val.className = 'field-input';
+      val.style.cssText = 'background: var(--surface); color: var(--text-faint); '
+        + 'user-select: text; white-space: pre-wrap; word-break: break-word;';
+      val.textContent = String(n.aef[k]);
+      row.append(lab, val);
+      sOther.appendChild(row);
+    }
+    props.appendChild(sOther);
+  }
+
   // Constituents (T-081, FC-11) — what this collapsed composite is composed of.
   // Always offered on subProcess; shown on any other node that already carries
   // them (composites live on gateways too). One line per entry: id | name | ref.
@@ -5660,6 +5942,8 @@ function typeBadgeSvg(t) {
   if (t === 'subProcess') return '<svg viewBox="0 0 28 28"><rect x="2" y="6" width="24" height="16" rx="3" fill="var(--purple-soft)" stroke="var(--purple)" stroke-width="1.5"/><rect x="11" y="15" width="6" height="6" rx="1" fill="none" stroke="var(--purple)" stroke-width="1"/><path d="M14 16.5 V19.5 M12.5 18 H15.5" stroke="var(--purple)" stroke-width="1"/></svg>';
   if (t === 'linkEventThrow') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><path d="M9 8 L17 14 L9 20" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   if (t === 'linkEventCatch') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><path d="M19 8 L11 14 L19 20" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  // T-308: neutral badge for a bare catch event — matches the canvas double ring.
+  if (t === 'intermediateEvent') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--surface-2)" stroke="var(--text-faint)" stroke-width="1.5"/><circle cx="14" cy="14" r="7.5" fill="none" stroke="var(--text-faint)" stroke-width="1.2"/></svg>';
   if (t === 'eventError') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--red-soft)" stroke="var(--red)" stroke-width="1.5"/><path d="M15 7 L9 15 L13 15 L11 21 L18 12 L14 12 Z" fill="var(--red)" stroke="none"/></svg>';
   if (t === 'eventTimer') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/><circle cx="14" cy="14" r="6" fill="none" stroke="var(--blue)" stroke-width="1.2"/><path d="M14 14 V9 M14 14 L17.5 16" stroke="var(--blue)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>';
   if (t === 'eventMessage') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.5"/><rect x="8" y="10" width="12" height="8" rx="1" fill="none" stroke="var(--green)" stroke-width="1.3"/><path d="M8 10.5 L14 15 L20 10.5" stroke="var(--green)" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -6852,13 +7136,97 @@ function redo() {
 const LANE_FIT_MARGIN = 12;   // containment margin, above tidyLane's 8px grow trigger
 const LANE_FIT_LABEL = 18;    // below-shape name line (events/gateways, ly = h+14)
 const LANE_FIT_EMPTY = 80;    // lanes with no nodes collapse to a slim visible band
+
+// T-315: lane OCCUPANCY, hoisted to module scope so Clean's fit pass and the
+// import-time grow pass cannot drift apart. These were local to compactLanesFit;
+// a second copy is exactly the G-009 copy-paste class, and here it would be
+// worse than usual — two functions disagreeing about how tall a node is would
+// make Clean and import fight over the same lane height on every load.
+// Note the shape that surprises: a 48px gateway carries an 18px label below it
+// and so occupies 66, while a 64px task occupies 64. The smallest shapes are
+// NOT the smallest occupants, which is why the lowest-drawn node must be chosen
+// by BOTTOM EDGE and never by y.
+const laneLabelBelow = t => (t === 'startEvent' || t === 'endEvent' ||
+  t === 'linkEventThrow' || t === 'linkEventCatch' ||
+  t.startsWith('event') || t.endsWith('Gateway'));
+const laneTopOf = n => n.y;
+const laneBotOf = n => n.y + (NODE_DEFAULTS[n.type] || NODE_DEFAULTS.serviceTask).h +
+  (laneLabelBelow(n.type) ? LANE_FIT_LABEL : 0);
+
+// T-315: grow a lane that cannot contain its own declared members, at import,
+// BEFORE the T-310 centre-test reconcile decides anything.
+//
+// The distinction this draws is not a heuristic. T-313 established that bands
+// tile the axis contiguously in declaration order, so lane HEIGHTS are the only
+// free variable, and therefore a set of heights that contains every lane's
+// members exists EXACTLY WHEN the lanes are ordering-clean (T-312's
+// lane_geometry predicate). That gives two disjoint worlds:
+//
+//   ordering-clean + a lane over-spilling its height
+//       -> a pure height solve exists. The map never disagreed about WHO; it
+//          under-declared a number. Grow the band, move nothing, lose nothing.
+//   ordering-dirty
+//       -> no set of heights can fix it. It is a genuine membership/authority
+//          conflict and stays T-310's case, untouched.
+//
+// So this returns [] on a dirty map rather than doing a partial job, and the
+// reconcile below behaves exactly as it did before this function existed. That
+// is load-bearing for governance, not just for correctness: T-310's "declared
+// membership wins" default is in front of the operator as an open [REVIEW]
+// question, and the fixture they are asked to load is a two-node swap — dirty,
+// hence provably untouched here.
+//
+// ORIGIN-FREE, deliberately (T-312's trap, in reverse): every number comes from
+// a lane's OWN members, never from a reconstructed band boundary. Growing lane i
+// moves every boundary below it, so band edges are meaningless mid-pass — which
+// is why all lanes are sized from their members first and only then is any node
+// tested against a band. Resize-then-reconcile, never interleaved.
+//
+// Returns [{id, name, from, to, grew}] for the import notice. Silent geometry
+// changes on load are the failure mode; the caller reports this.
+function growUnderDeclaredLanes(lanes, nodes) {
+  const membersOf = id => nodes.filter(n => n.lane === id);
+  const populated = lanes.filter(l => membersOf(l.id).length > 0);
+  if (!populated.length) return [];
+
+  // y === 0 is the designer's "unpositioned" sentinel, not a coordinate (the
+  // parse tail patches those to the lane centre). A lane holding one cannot be
+  // measured, and an ordering claim cannot be backed, so the whole pass stands
+  // down rather than guessing — SKIP, not PASS (T-312's INFO channel, same
+  // reasoning applied to an action instead of a finding).
+  if (nodes.some(n => n.y === 0)) return [];
+
+  // Ordering precondition, over DECLARED membership, adjacent populated pairs
+  // in laneSet declaration order. Equal y counts as a crossing (strict), same
+  // as the validator rule — two lanes' content starting on the same row is not
+  // an ordering a height change can rescue.
+  for (let i = 0; i + 1 < populated.length; i++) {
+    const upper = membersOf(populated[i].id);
+    const lower = membersOf(populated[i + 1].id);
+    if (Math.max(...upper.map(laneTopOf)) >= Math.min(...lower.map(laneTopOf))) return [];
+  }
+
+  const grown = [];
+  for (const lane of lanes) {
+    const ns = membersOf(lane.id);
+    if (!ns.length) continue;                       // no members => no containment claim
+    const extent = Math.max(...ns.map(laneBotOf)) - Math.min(...ns.map(laneTopOf));
+    if (extent <= lane.height) continue;            // STRICT: a bottom edge exactly ON
+                                                    // the edge is contained (T-313)
+    const from = lane.height;
+    lane.height = extent + 2 * LANE_FIT_MARGIN;     // the Clean fixpoint, so a Tidy
+                                                    // straight after load is a no-op
+    grown.push({ id: lane.id, name: lane.name || lane.id, from, to: lane.height,
+                 grew: lane.height - from });
+  }
+  return grown;
+}
+
 function compactLanesFit() {
-  const labelBelow = t => (t === 'startEvent' || t === 'endEvent' ||
-    t === 'linkEventThrow' || t === 'linkEventCatch' ||
-    t.startsWith('event') || t.endsWith('Gateway'));
+  const labelBelow = laneLabelBelow;
   const cyOf = n => n.y + NODE_DEFAULTS[n.type].h / 2;
-  const topOf = n => n.y;
-  const botOf = n => n.y + NODE_DEFAULTS[n.type].h + (labelBelow(n.type) ? LANE_FIT_LABEL : 0);
+  const topOf = laneTopOf;
+  const botOf = laneBotOf;
   let yCursor = POOL_Y + POOL_HEADER;
   for (const lane of state.lanes) {
     const ns = state.nodes.filter(n => n.lane === lane.id);
@@ -7034,6 +7402,37 @@ function maybeShowCleanNudge() {
   const el = $('clean-nudge');
   if (!el) return;
   el.style.display = (viewPrefs.cleanOnImport || mapMessiness() < CLEAN_NUDGE_MIN) ? 'none' : '';
+}
+
+// T-310: report the import-time lane reconciliation. Unlike the Clean nudge this is
+// not an offer — the move has already happened — so it states what changed rather
+// than asking. Threshold is 1: moving even a single node changes where the reader
+// believes responsibility sits, which is never too small to mention.
+function maybeShowLaneFixNotice() {
+  const el = $('lane-fix-notice'), msg = $('lane-fix-msg'), nudge = $('clean-nudge');
+  if (!el) return;
+  const n = _laneReconcileCount;
+  // T-315: two different things can have happened on import, and they must read
+  // differently. A MOVE changes where the reader believes responsibility sits.
+  // A GROW changes nothing but a number — every node is exactly where its author
+  // left it — so it is reported as a repair of the band, not of the work. Both
+  // are stated rather than offered: they have already happened.
+  const g = _laneGrowReport || [];
+  const parts = [];
+  if (n > 0) {
+    parts.push(`${n} node${n === 1 ? ' was' : 's were'} drawn outside ` +
+               `${n === 1 ? 'its' : 'their'} declared lane — moved back into place`);
+  }
+  if (g.length) {
+    const which = g.map(l => `${l.name} (+${l.grew}px)`).join(', ');
+    parts.push(`${g.length} lane${g.length === 1 ? '' : 's'} could not fit ` +
+               `${g.length === 1 ? 'its' : 'their'} own content — band${g.length === 1 ? '' : 's'} ` +
+               `grown, no nodes moved: ${which}`);
+  }
+  const show = parts.length > 0;
+  if (show && msg) msg.textContent = '⚠ ' + parts.join('; ');
+  el.style.display = show ? '' : 'none';
+  if (nudge) nudge.classList.toggle('stacked', show);
 }
 
 // ── Align rows (T-094) ──────────────────────────────────────────────────────
@@ -7403,6 +7802,9 @@ async function jumpToWorkflow(id) {
 function onNodeDblClick(n, e) {
   if (mode === 'connect') return;
   if (!HANDOFF_TYPES.has(n.type)) return;
+  // T-308: a bare catch event is not presented as a handoff, so double-click must
+  // not scold the author about a target field they are not being shown.
+  if (isBareCatchEvent(n)) return;
   // T-240: legacy slug if set, else the uuid workflowRef resolved to a live map.
   jumpToWorkflow(effectiveJumpTarget(n));
 }
@@ -7763,6 +8165,11 @@ function createNodeAt(type, x, y) {
     aef: {},
   };
   state.nodes.push(node);
+  // T-308: dropping a handoff from the palette IS the declaration of intent. Record
+  // it in session state so the node keeps its handoff UI — and stays bindable —
+  // while the author works, even though it is unbound and therefore
+  // indistinguishable from a bare catch event by document state alone (IW-3).
+  if (type === 'linkEventCatch') sessionAuthoredLinks.add(uid);
   // Now that the node is in state, derive a unique-within-lane slug.
   node.slug = deriveUniqueSlug(node, name);
   selection = { kind: 'node', id: uid };
@@ -7901,6 +8308,11 @@ $('clean-nudge-apply').onclick = () => {
   $('clean-nudge').style.display = 'none';
 };
 $('clean-nudge-dismiss').onclick = () => { $('clean-nudge').style.display = 'none'; };
+// T-310: dismissing the lane-fix notice returns the Clean nudge to the top slot.
+$('lane-fix-dismiss').onclick = () => {
+  $('lane-fix-notice').style.display = 'none';
+  const nudge = $('clean-nudge'); if (nudge) nudge.classList.remove('stacked');
+};
 $('btn-reset').onclick = () => {
   // Reset: blow away library and start over with seed
   library.clear();
@@ -8140,7 +8552,7 @@ async function saveToProject() {
   try {
     saveActiveToLibrary();
     const id = state.workflowMeta.id;
-    if (!/^[a-z0-9][a-z0-9_-]*$/.test(id)) {
+    if (!isValidWorkflowId(id)) {   // T-562: was an inline copy of the regex
       alert('To save to the project, the map ID must be lowercase letters, numbers, "-" or "_" (no spaces). Edit the ID field first.');
       return;
     }
@@ -8561,10 +8973,21 @@ async function onDeleteWorkflow(m) {
 async function openProjectModal(opts) {
   if (!_apiAvailable) return;
   const pickMode = opts && typeof opts.pick === 'function';
-  let maps = [];
+  let maps = [], ghosts = [];
   try {
     const res = await fetch('/api/list');
-    if (res.ok) { const d = await res.json(); maps = Array.isArray(d.maps) ? d.maps : []; }
+    if (res.ok) {
+      const d = await res.json();
+      maps = Array.isArray(d.maps) ? d.maps : [];
+      // T-233 (S5b): the SAME response already carried pending off-page refs and this
+      // function threw them away. Only the separate Pending-refs modal (T-228/S4a) read
+      // them, so the one surface an operator opens to see "what is in this project"
+      // omitted every promised-but-unbuilt map.
+      // Pick mode is excluded deliberately: it chooses an off-page TARGET, and a ghost has
+      // a uuid but no map id — offering one there would write a ref resolving to nothing,
+      // which is the very condition this list exists to surface.
+      ghosts = pickMode ? [] : (Array.isArray(d.ghosts) ? d.ghosts : []);
+    }
   } catch (_) { /* fall through to empty state */ }
 
   const backdrop = document.createElement('div');
@@ -8596,7 +9019,10 @@ async function openProjectModal(opts) {
   body.style.cssText = 'overflow:auto;padding:12px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));grid-auto-rows:max-content;gap:12px';
   panel.appendChild(body);
 
-  if (!maps.length) {
+  // T-233: a project holding nothing but pending refs is not an empty project — gate the
+  // empty state on BOTH populations, or the ghost cards render underneath a line denying
+  // they exist.
+  if (!maps.length && !ghosts.length) {
     const empty = document.createElement('div');
     empty.style.cssText = 'grid-column:1/-1;padding:28px 16px;text-align:center;color:var(--muted,#8b95a5)';
     empty.textContent = 'No project maps found.';
@@ -8674,6 +9100,46 @@ async function openProjectModal(opts) {
     }
     card._wrap = wrap;
     body.appendChild(wrap);
+    cards.push(card);
+  }
+
+  // ── Pending-ref (ghost) entries — T-233 / S5b ──────────────────────────────
+  // Appended AFTER the map cards so the grid reads "what exists, then what is promised".
+  // Distinct on FOUR independent signals — dashed border, amber accent, a ◌ glyph tile in
+  // place of a thumbnail, and a "pending ref" badge. Colour alone would be the one signal
+  // a colourblind reader and a greyscale screenshot both lose, and the greyscale case is
+  // not hypothetical: it is how this change gets visually verified.
+  // NO /api/thumb request is issued for a ghost. There is no tile to fetch, and borrowing
+  // the map card's 404 → ▦ fallback would render a ghost as a map whose thumbnail merely
+  // failed to load — the opposite of the distinction this slice exists to draw.
+  for (const g of ghosts.slice().sort((a, b) => (a.name || a.uuid || '').localeCompare(b.name || b.uuid || ''))) {
+    const refs = Array.isArray(g.referenced_by) ? g.referenced_by : [];
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.dataset.ghost = g.uuid || '';
+    card.style.cssText = 'text-align:left;background:var(--bg,#0f1115);color:var(--fg,#e6edf3);'
+      + 'border:1px dashed #d0a227;border-radius:8px;padding:0;cursor:pointer;'
+      + 'display:flex;flex-direction:column;overflow:hidden';
+    card.title = 'Pending off-page reference (uuid ' + (g.uuid || '?') + ') — create a workflow to satisfy it';
+    const tile = document.createElement('div');
+    tile.style.cssText = 'width:100%;height:104px;flex:0 0 auto;display:flex;align-items:center;'
+      + 'justify-content:center;background:#0f1115;border-bottom:1px dashed #d0a227;color:#d0a227;font-size:28px';
+    tile.textContent = '◌';
+    const meta = document.createElement('div');
+    meta.style.cssText = 'padding:8px 10px;min-width:0';
+    meta.innerHTML = `<div style="font-weight:600;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">`
+      + `${String(g.name || g.uuid || 'unnamed').replace(/</g, '&lt;')}</div>`
+      + `<div style="color:var(--muted,#8b95a5);font-size:.85em">${String(g.uuid || '').slice(0, 8).replace(/</g, '&lt;')}…</div>`
+      + `<div style="font-size:.85em;margin-top:2px"><span style="color:#d0a227">◌ pending ref</span>`
+      + `<span style="color:var(--muted,#8b95a5)"> · referenced by ${refs.length}</span></div>`;
+    card.append(tile, meta);
+    // The claim path is T-228's, called — not reimplemented. Seeding a map that adopts the
+    // ghost uuid and letting SAVE be the claim is one behaviour with one owner.
+    card.onclick = () => { closeProjectModal(); createFromPendingRef(g); };
+    card._hay = ((g.name || '') + ' ' + (g.uuid || '') + ' pending ref').toLowerCase();
+    // No 🗑 affordance and no wrapper: there is nothing saved to delete. The filter reads
+    // (c._wrap || c), so an unwrapped card hides itself correctly.
+    body.appendChild(card);
     cards.push(card);
   }
 
@@ -8815,7 +9281,7 @@ function createFromPendingRef(ghost) {
   if (!ghost || !ghost.uuid) return;
   saveActiveToLibrary();
   // Slugify the ghost name for a friendly starting id; fall back to a unique 'workflow_N'.
-  let base = String(ghost.name || 'workflow').trim().toLowerCase().replace(/[^a-z0-9_\-]/g, '-').replace(/^-+|-+$/g, '') || 'workflow';
+  let base = sanitizeWorkflowId(ghost.name, 'workflow');   // T-562: shared helper
   let id = base, n = 2;
   while (library.has(id)) id = `${base}_${n++}`;
   const title = ghost.name || 'Untitled workflow';
@@ -8888,8 +9354,11 @@ function adoptImportedXml(text, opts) {
   }
   // Clean nudge (T-100): offer one-click Clean when a user opens a messy map
   // and clean-on-import is off. Programmatic adoption never nudges.
-  if (opts && opts.userImport) { maybeShowCleanNudge(); }
-  else { const nudge = $('clean-nudge'); if (nudge) nudge.style.display = 'none'; }
+  if (opts && opts.userImport) { maybeShowCleanNudge(); maybeShowLaneFixNotice(); }
+  else {
+    const nudge = $('clean-nudge'); if (nudge) { nudge.style.display = 'none'; nudge.classList.remove('stacked'); }
+    const lf = $('lane-fix-notice'); if (lf) lf.style.display = 'none';   // T-310
+  }
   // T-157: any adoption clears the loaded-snapshot badge; the specific callers that DO
   // load a known snapshot (openProjectMap version, revertToVersion) re-set it afterwards.
   setLoadedSavedVersion(null);
@@ -8966,7 +9435,18 @@ $('btn-pending-refs').onclick = openPendingRefModal; // T-228 (S4a): pending off
 // ============================================================================
 //  BPMN XML build
 // ============================================================================
-function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+// T-521 — the whitespace references are not decoration. XML 1.0 §3.3.3 attribute-value
+// normalisation replaces a literal newline, carriage return or tab in an ATTRIBUTE VALUE with a
+// space before the application ever sees it, so a raw one is destroyed by every conforming
+// parser. T-520 measured this end to end: an aef:uid of "n_a<newline>b" was written raw here and
+// read back as "n_a b" by expat, silently, on the field AEF's reverse renderer keys records on.
+// It looked fine from inside the browser only because Chrome's DOMParser does not apply the
+// rule — the producer's own reader agreeing with the producer's own defect.
+// The `&` replacement MUST stay first, or it re-escapes the ampersands of the references below.
+function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '&#10;').replace(/\r/g, '&#13;').replace(/\t/g, '&#9;'); }
+// escText is deliberately NOT given the same treatment: normalisation applies to attribute
+// values only, and newlines in element text content are legal and preserved. Escaping them here
+// would invent a behaviour rather than restore one.
 function escText(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 const TYPE_TAG = {
@@ -9028,7 +9508,57 @@ function aefExtensionXml(node) {
     'scopeOf',
     // T-177: task-governance scalars — horizon / workflow_type / owner.
     'horizon', 'workflowType', 'owner'];
-  const metaAttrs = metaKeys.filter(k => aefKeys.includes(k)).map(k => `${k}="${escAttr(aef[k])}"`).join(' ');
+
+  // T-570: CARRIAGE. Import reads EVERY <aef:meta> attribute into node.aef (:10255,
+  // unconditional). Export emitted only the whitelist above. A key present in a source
+  // document and absent from metaKeys was therefore loaded, rendered nowhere, and DESTROYED
+  // on the next save — not invisible (that was T-566), destroyed. Measured by an actual
+  // round trip in the page rather than by reading the two lists: of the 4 keys the corpus
+  // carries outside metaKeys, `determinism` (16), `sideEffect` (2) and `emits` (1) do not
+  // survive parse→build→parse; `endpoint` does, because it has its own element emitter.
+  //
+  // THE SKIP SET IS SHAPE-DERIVED, NOT A LIST OF EXCEPTIONS. A key is skipped only when
+  // some other emitter in this function will ACTUALLY emit it for this node's current
+  // value — never merely because an emitter names it. That distinction is load-bearing for
+  // `emits`: the structured exporter at the bottom fires on `Array.isArray(aef.emits)`, so
+  // a SCALAR emits="ev.done" (which is what tests/fixtures/valid/investigate.bpmn carries)
+  // falls through it silently. Filtering carriage on the NAME would re-drop exactly that
+  // value; filtering on the SHAPE carries the scalar and leaves the array to its own
+  // channel. The two are disjoint by construction, which is why no coordination is needed.
+  //
+  // Derived at export from node.aef rather than recorded in a parallel `carried` list: a
+  // side-list has to survive every copy, duplicate and undo path that clones a node, and
+  // the moment one of them clones .aef without it the keys are lost again — the same
+  // two-lists-with-nothing-holding-them-in-correspondence shape this task exists to remove.
+  //
+  // NOT a contract change. No new aef: element, no new key, metaKeys stays at 20 and stays
+  // in ratified parity with tools/yaml-to-bpmn.py META_KEYS. <aef:meta> is already a bag of
+  // scalar attributes; this stops filtering the bag on the way out, so a document the editor
+  // does not fully understand round-trips byte-identically instead of being edited down to
+  // the subset we happen to name. Whether any of these keys is PROMOTED into the frozen v1
+  // contract is the operator's ruling and is deliberately not answered here.
+  const scalarHandled = new Set([...metaKeys,
+    // own element or attribute emitters elsewhere in this function
+    'endpoint', 'contextReads', 'artifactsWrites', 'decisionInput', 'decisionOutputs',
+    'workflowRef', 'targetWorkflow', 'linkId', 'boundaryPos',
+    // <aef:eventDef> passthrough — a dedicated channel; carrying these in meta as well
+    // would give one fact two sources of truth that can then disagree.
+    'eventDefKind', 'eventDefBinding',
+    // `name` rides <aef:link> and only alongside a workflowRef. Excluded rather than
+    // carried because aef.name on a non-link node would shadow node.name on re-import,
+    // and the corpus census found it on no <aef:meta> element (0 of 823 values).
+    'name']);
+  // The kind-specific binding is emitted by <aef:eventDef> ONLY for a typed event node.
+  // On any other type it has no emitter, so it must be carried rather than skipped.
+  if (EVENT_KIND[node.type] && EVENT_BINDING_FIELD[node.type]) scalarHandled.add(EVENT_BINDING_FIELD[node.type]);
+  // typeof !== 'object' excludes arrays and dicts, which belong to the structured
+  // emitters below; String/number/boolean scalars are what <aef:meta> can carry.
+  const carriedKeys = aefKeys.filter(k => !scalarHandled.has(k) && typeof aef[k] !== 'object').sort();
+
+  // Known keys in metaKeys order, carried keys sorted after them — a fixed order so
+  // re-exporting an unchanged document twice yields identical bytes.
+  const metaAttrs = [...metaKeys.filter(k => aefKeys.includes(k)), ...carriedKeys]
+    .map(k => `${k}="${escAttr(aef[k])}"`).join(' ');
   if (metaAttrs) out += `        <aef:meta ${metaAttrs}/>\n`;
   if (aef.endpoint) out += `        <aef:endpoint>${escText(aef.endpoint)}</aef:endpoint>\n`;
   if (aef.contextReads) out += `        <aef:contextReads paths="${escAttr(aef.contextReads)}"/>\n`;
@@ -9135,6 +9665,174 @@ function aefExtensionXml(node) {
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// T-311: the authored doc block (leading comment child of <bpmn:definitions>).
+// ---------------------------------------------------------------------------
+// AEF's corpus_spec treats this comment as SEMANTIC — `fw corpus explain` prints
+// it as the map's rationale. We used to drop it at parse (there was no COMMENT_NODE
+// handling anywhere in this file) and re-synthesise the document on export, so the
+// first UI save destroyed it and every save after inherited the loss. Worse, the
+// one comment we DID emit was our own DI trailer, which their then-guardless reader
+// adopted AS the rationale: 5 of their 11 maps carried our boilerplate as their doc,
+// 2 of them already promoted. Their reader guard is fixed (T-2682) and the promoted
+// maps were restored from git history (T-2683); this is our half.
+//
+// The prefix is split out so the guard below and the emitter at the end of
+// buildBpmnXml share one source of truth — reword the tail and the guard still
+// holds, which is the same prefix-match discipline AEF adopted.
+//
+// T-361: that sentence above was AT BEST aspirational for two months. DI_TRAILER
+// was defined here and READ BY NOTHING; the emitter carried its own hardcoded
+// literal. The two agreed by coincidence, not by construction — so "one source of
+// truth" described an intention, and the code had a duplicate. The emitter now
+// actually uses this constant, which is what makes the claim true.
+//
+// T-361: and the tail itself was FALSE. It said "AEF generates it from node
+// coordinates". AEF measured their own source at rail 417: `bpmndi` occurs exactly
+// once in it, a namespace declaration with no reader and no writer behind it. They
+// never parsed DI and never emitted it, and they hold no record of ever agreeing
+// to. There is no DI generator on our side of the seam either — so the sentence
+// had no referent anywhere, and we shipped it in 11 releases inside bytes AEF pins
+// by sha, including the 0.4.0 they are pinned to today.
+//
+// What makes this worth a comment rather than a quiet edit: this exact string had
+// already been through a two-party incident (their T-2682 reader guard, their
+// T-2683 restore, our guard below). Both investigations asked WHERE the comment
+// appears. Neither asked whether the sentence in it is TRUE. An incident directs
+// attention rather than distributing it — the property that drew scrutiny got
+// fixed while the artifact's central claim walked out of a two-party review still
+// unexamined. The replacement therefore states only what is checkable HERE, and
+// names no other party's behaviour at all.
+//
+// The PREFIX is load-bearing for compatibility and must not change: documents
+// exported by all 11 prior releases carry it, and both readers match on it.
+const DI_TRAILER_PREFIX = 'BPMN DI (visual layout) omitted';
+const DI_TRAILER = `${DI_TRAILER_PREFIX}; node geometry travels as aef:position`;
+
+// T-399: PRODUCER IDENTITY — the answer to "did we export this document?"
+//
+// The T-361 guard needed that answer and did not have one, so it used "the body
+// contains DI_TRAILER_PREFIX" as a proxy. That was a correct identity test for a
+// corpus containing only our own output, and the T-347/T-356/T-372 third-party
+// intake ended that. AEF authored a document to our own mapping standard whose
+// comment opens with the same eight words; it satisfied the proxy and was reported
+// as an unaccounted export of ours. The check did not become wrong — the
+// population it measured did. (Third instance of that shape: T-359, T-337, T-399.)
+//
+// Prose was never going to work here, and neither is any other marker we emit:
+// a peer conforming to our mapping standard produces the SAME namespaces, the SAME
+// targetNamespace and the SAME Definitions_<id> shape, because conformance is the
+// entire point of the standard. Identity has to be a field that is ABOUT THE
+// PRODUCER rather than about the process, and BPMN 2.0 already defines one on
+// <definitions>. A conforming peer sets their own value in it; to collide with us
+// they would have to assert our identity, which is a lie about provenance rather
+// than an accidental overlap of vocabulary.
+//
+// exporterVersion is DELIBERATELY NOT EMITTED. src carries no version constant, so
+// sourcing it would mean a second copy of VERSION living inside this file, kept in
+// step with the real one by good intentions — the exact duplicate-constant class
+// T-361 exists to prevent, ten lines above its own tombstone. Identity does not
+// need the version; if a per-release marker is ever wanted it needs build-time
+// substitution and a guard, which is a separate task.
+const BPMN_EXPORTER = 'aef-workflow-designer';
+
+// A comment is the document's doc block only if it LEADS the document — appears
+// before any element child — and is not our own trailer. Position is the rule AEF's
+// reader uses, so matching it keeps both sides reading the same string. The trailer
+// check is belt-and-braces for the case where a hand-edit hoists our boilerplate to
+// the top: promoting that to rationale is the exact defect that poisoned their
+// corpus, and it must not be reachable from our side either.
+function readDocComment(defsEl) {
+  if (!defsEl || !defsEl.childNodes) return null;
+  for (const c of Array.from(defsEl.childNodes)) {
+    if (c.nodeType === 1) return null;        // ELEMENT_NODE — the document body started, no doc block
+    if (c.nodeType !== 8) continue;           // whitespace/text between the tag and the comment
+    const data = c.data == null ? '' : String(c.data);
+    // T-406: the suppression is gated on the document being OURS.
+    //
+    // It used to fire on prefix alone, which meant a peer whose leading rationale opens
+    // with our eight words had their doc block silently destroyed on import — AEF's own
+    // T-347 loss shape, arriving from a mechanism we built. It is not hypothetical that
+    // the strings collide: the comment in their draft-inception fixture is BYTE-IDENTICAL
+    // to the false trailer we shipped for two months, so no test on the CONTENT can tell
+    // the two apart. Only who produced the document can.
+    //
+    // We suppress unless the document positively names a DIFFERENT producer. An
+    // UNIDENTIFIED document keeps being suppressed, and that asymmetry is the whole
+    // decision — see this task's Decisions for why it is not the other way round.
+    //
+    // Briefly: T-311 is a real incident that propagated a false rationale into AEF's
+    // corpus; T-406 is so far a hypothetical with no live witness. Preferring the
+    // hypothetical would trade a measured harm for an imagined one. So this fixes the
+    // case that can be fixed with evidence — a peer who stamps their own identity, as
+    // Camunda and bpmn-js do — and leaves the identity-less case under T-311's rule.
+    //
+    // T-413 SPENT THAT ARGUMENT AND ITS EXIT PATH. Both halves are now measured false:
+    //
+    //   "no live witness"  — AEF's clean fixture IS real corruption that reached their
+    //                        promoted corpus, and their T-2895 measured real rationale
+    //                        loss in their own corpus from the incidental shape.
+    //   "closing it for them depends on them adopting the producer field, not on further
+    //    work here" — they adopted it at rail 494 and it changed nothing. The stamp lives
+    //                 in their emitter (corpus_spec.py:407, inside generate()) and reaches
+    //                 0 artifacts: 0 of 37 live .bpmn, 0 on disk, 0 on either fixture.
+    //                 Nothing round-trips a stored map through `generate --save`. A stamp
+    //                 emitted by a function nothing calls is not a stamp on the wire.
+    //
+    // So the identity-less branch is not a residual affecting hypothetical documents. It
+    // is the branch that decides EVERY real AEF document, and the line below is what
+    // stopped it destroying their rationale.
+    // T-414: AND ON THE SHAPE OF THE COMMENT, WHICH IS THE PART IDENTITY COULD NOT DO.
+    //
+    // Identity alone was not enough, and T-413 measured it on AEF's own bytes: their real
+    // aef-task-lifecycle rationale opens with our eight words and then continues for seven
+    // more lines. `startsWith` fired, the whole block was dropped, and content nobody can
+    // recover was destroyed on import. The identity gate did not misfire — it was never
+    // consulted about the question that mattered.
+    //
+    // The eight words are not the whole comment. What separates our false trailer from a
+    // real rationale is not who wrote it but whether ANYTHING FOLLOWS IT. So suppress only
+    // when the leading comment is NOTHING BUT the trailer — a single non-blank line. That
+    // test needs no provenance, which is why it works on both sides of this seam while an
+    // identity gate works only for whoever owns the string (AEF, rail 501).
+    //
+    // Prefix matching stays: the tail after the eight words genuinely drifts, three
+    // wordings are live in AEF's corpus, and pinning the full DI_TRAILER would silently
+    // stop matching the older two.
+    //
+    // WE DO NOT STRIP THE TRAILER LINE off a recovered comment. Tidier, and it would mangle
+    // the case this exists to protect — a genuine rationale whose own first line happens to
+    // open with those words. This defect class IS silent deletion; a smaller version of it
+    // is still it. A human can delete a visible junk line and cannot recover a deleted one.
+    // (AEF's decision at rail 501, adopted here on the same reasoning.)
+    //
+    // RESIDUAL, stated rather than discovered later: a rationale prepended on the SAME LINE
+    // as the trailer still suppresses. One non-blank line opening with the prefix is
+    // indistinguishable from the trailer itself by any test on the text, and neither side
+    // of this seam can resolve it — see AEF rail 501.
+    const exporterAttr = typeof defsEl.getAttribute === 'function'
+      ? defsEl.getAttribute('exporter') : null;
+    const someoneElsesDocument = exporterAttr && exporterAttr !== BPMN_EXPORTER;
+    const lines = data.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const nothingButTrailer = lines.length === 1 && lines[0].startsWith(DI_TRAILER_PREFIX);
+    if (!someoneElsesDocument && nothingButTrailer) return null;
+    return data;
+  }
+  return null;
+}
+
+// XML forbids `--` inside a comment and a trailing `-` before the close (either
+// would corrupt or prematurely close it). Data captured from a SUCCESSFUL parse can
+// contain neither, so in the round-trip path this is a no-op — it exists for a
+// programmatically-set doc, where emitting an unparseable document would be a much
+// worse failure than spacing one character. Runs of hyphens are spaced rather than
+// deleted so nothing is silently lost.
+function safeCommentData(raw) {
+  let d = String(raw).replace(/-{2,}/g, m => m.split('').join(' '));
+  if (d.endsWith('-')) d += ' ';
+  return d;
+}
+
 function buildBpmnXml(s) {
   const lines = [];
   lines.push(`<?xml version="1.0" encoding="UTF-8"?>`);
@@ -9144,8 +9842,23 @@ function buildBpmnXml(s) {
   lines.push(`                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"`);
   lines.push(`                  xmlns:aef="http://anchorpoint.framework/aef/extensions"`);
   lines.push(`                  id="Definitions_${escAttr(s.workflowMeta.id)}"`);
+  // T-399: producer identity. BPMN 2.0 defines `exporter` on <definitions> for
+  // exactly this question, so we answer it with the standard's own carrier rather
+  // than inventing one (Portability). Before this, NOTHING in our output said who
+  // produced it — the T-361 guard had to infer authorship from the trailer PROSE,
+  // and a peer authoring to our own mapping standard collides with every other
+  // structural marker we emit (same namespaces, same targetNamespace, same
+  // Definitions_ id shape) because conforming to it is the point.
+  lines.push(`                  exporter="${BPMN_EXPORTER}"`);
   lines.push(`                  targetNamespace="https://aef.anchorpoint.dev/workflows">`);
   lines.push(``);
+  // T-311: the authored rationale leads the document, ahead of the collaboration —
+  // that position is what makes AEF's reader find the doc rather than our trailer.
+  // Absent docComment emits nothing, so maps that never had one stay byte-identical.
+  if (s.docComment != null && String(s.docComment).length) {
+    lines.push(`  <!--${safeCommentData(s.docComment)}-->`);
+    lines.push(``);
+  }
   lines.push(`  <bpmn:collaboration id="Collaboration_${escAttr(s.workflowMeta.id)}">`);
   lines.push(`    <bpmn:participant id="${escAttr(s.pool.id)}" name="${escAttr(s.pool.name)}" processRef="Process_${escAttr(s.workflowMeta.id)}"/>`);
   lines.push(`  </bpmn:collaboration>`);
@@ -9189,7 +9902,10 @@ function buildBpmnXml(s) {
 
   // nodes
   for (const n of s.nodes) {
-    let tag = TYPE_TAG[n.type];
+    // T-337: an element whose BPMN tag is outside the importer's allowlist rides
+    // through as `foreignTag` and is re-emitted verbatim. Absent on every node the
+    // allowlist could type, so this moves no bytes for well-formed input.
+    let tag = n.foreignTag || TYPE_TAG[n.type];
     // T-204 Slice 2: a typed event carrying a host reference is a boundary event —
     // native bpmn:boundaryEvent attachedToRef=<host displayId> + cancelActivity. The
     // kind still rides <aef:eventDef>; only the tag + attachment differ from the
@@ -9268,7 +9984,33 @@ function buildBpmnXml(s) {
 
   lines.push(`  </bpmn:process>`);
   lines.push(``);
-  lines.push(`  <!-- BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates -->`);
+  // T-340 ruling (b), export half: re-emit DI ONLY when the document we imported
+  // carried it. Not "always emit DI" — that would rewrite all 126 aef:position-only
+  // documents in the corpus and force AEF to re-pin bytes for a change none of their
+  // readers asked for.
+  //
+  // The trailer and the DI block are mutually exclusive by construction, and that is
+  // load-bearing rather than tidiness: DI_TRAILER states in prose that DI is OMITTED.
+  // Emitting both would ship a sentence that contradicts the bytes three lines below
+  // it — which is precisely the T-361 defect (a trailer whose claim had no referent)
+  // committed a second time, in the same constant, by the change that was supposed to
+  // make the claim true.
+  if (s.sourceCarriedDi) {
+    const wfId = escAttr(s.workflowMeta.id);
+    lines.push(`  <bpmndi:BPMNDiagram id="BPMNDiagram_${wfId}">`);
+    lines.push(`    <bpmndi:BPMNPlane id="BPMNPlane_${wfId}" bpmnElement="Process_${wfId}">`);
+    for (const n of s.nodes) {
+      const def = NODE_DEFAULTS[n.type] || { w: 120, h: 48 };
+      if (typeof n.x !== 'number' || typeof n.y !== 'number') continue;
+      lines.push(`      <bpmndi:BPMNShape id="BPMNShape_${escAttr(displayIdOf(n))}" bpmnElement="${escAttr(displayIdOf(n))}">`);
+      lines.push(`        <dc:Bounds x="${n.x.toFixed(1)}" y="${n.y.toFixed(1)}" width="${def.w}" height="${def.h}"/>`);
+      lines.push(`      </bpmndi:BPMNShape>`);
+    }
+    lines.push(`    </bpmndi:BPMNPlane>`);
+    lines.push(`  </bpmndi:BPMNDiagram>`);
+  } else {
+    lines.push(`  <!-- ${DI_TRAILER} -->`);   // T-361: was a hardcoded duplicate of DI_TRAILER
+  }
   lines.push(`</bpmn:definitions>`);
   return lines.join('\n');
 }
@@ -9297,9 +10039,78 @@ function parseBpmnXml(text) {
   const byBpmn = (parent, local) => Array.from(parent.getElementsByTagNameNS(BPMN_NS, local));
   const byAef  = (parent, local) => Array.from(parent.getElementsByTagNameNS(AEF_NS, local));
 
+  // ---- BPMN DI intake (T-340, operator ruling 2026-08-14, candidate (b)) ----
+  //
+  // Position precedence on import is: aef:position -> BPMN DI -> auto-layout. Before
+  // this, the entire bpmndi sub-tree was read by NOTHING and every DI-only document
+  // imported as auto-layout — a document authored in a standard BPMN editor lost its
+  // real geometry silently, which is the defect this task is named for.
+  //
+  // GEOMETRY CONVENTION, checked rather than assumed: dc:Bounds x/y is the shape's
+  // TOP-LEFT corner, and so is our node x/y — every renderer computes centres as
+  // `n.x + def.w / 2` (see :2977, :3000). The two conventions coincide, so this is a
+  // COPY and not a conversion. Worth stating because the failure mode of getting it
+  // wrong is a uniform half-node offset: everything still renders, nothing throws,
+  // and the diagram just sits slightly wrong.
+  const DI_NS = 'http://www.omg.org/spec/BPMN/20100524/DI';
+  const DC_NS = 'http://www.omg.org/spec/DD/20100524/DC';
+  const diBounds = new Map();
+  for (const shape of Array.from(doc.getElementsByTagNameNS(DI_NS, 'BPMNShape'))) {
+    const ref = shape.getAttribute('bpmnElement');
+    const b = Array.from(shape.getElementsByTagNameNS(DC_NS, 'Bounds'))[0];
+    if (!ref || !b) continue;
+    const x = parseFloat(b.getAttribute('x'));
+    const y = parseFloat(b.getAttribute('y'));
+    // A shape carrying a non-numeric or absent x/y is skipped rather than defaulted
+    // to 0 — a node silently stacked at the origin is worse than one auto-laid-out.
+    if (Number.isFinite(x) && Number.isFinite(y)) diBounds.set(ref, { x, y });
+  }
+  // Did the INPUT carry DI? The export side re-emits DI only when this is true, which
+  // is the whole of ruling (b)'s export half. Corpus measurement 2026-08-14, 145 .bpmn
+  // files: 126 carry aef:position only, 10 carry DI only, 9 carry neither, and
+  // BOTH = 0. So (i) output stays byte-identical for the 126, and (ii) the precedence
+  // rule above never actually has to arbitrate in the corpus as it stands today — it
+  // is written down for the document that will eventually carry both, not for one
+  // that exists now.
+  const sourceCarriedDi = diBounds.size > 0;
+
   const processes = byBpmn(doc, 'process');
   if (!processes.length) return null;
   const proc = processes[0];
+
+  // ---- uid derivation (T-364) ----
+  // A node or edge that arrives without <aef:uid> still needs an identity, and that
+  // identity is NOT private metadata: computeDisplayId sorts same-lane nodes by x and
+  // breaks ties with uid.localeCompare, so the uid reaches the emitted element `id`,
+  // flowNodeRef, sourceRef/targetRef and attachedToRef. Minting it from Math.random()
+  // made two opens of the same document disagree on the whole identity graph — the
+  // T-364 defect. Derive it from the BPMN element id instead: required and unique per
+  // document, so the value is stable across opens without inventing data.
+  // Operator ruling 2026-08-04, candidate (a). See the task's Decisions section —
+  // in particular that this does NOT settle whether we should emit aef:uid into a
+  // third-party document at all (T-358's question); it only stops the churn.
+  const usedUids = new Set(byAef(proc, 'uid').map(u => u.getAttribute('value')).filter(Boolean));
+  // FNV-1a 32-bit. Same prefix_8hex shape generateUid produces, so nothing downstream
+  // sees a new uid format.
+  const hash32 = s => {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h.toString(16).padStart(8, '0');
+  };
+  // Collisions are reachable two ways — a hash collision, or a derived value equal to
+  // an authored uid elsewhere in the document — and an element carrying no id at all
+  // makes every one of its kind seed identically. All three resolve by salting in
+  // document order, which is fixed by the input bytes, so the result stays
+  // deterministic for a given input rather than falling back to randomness.
+  const deriveUid = (prefix, seed) => {
+    let uid = `${prefix}_${hash32(seed)}`;
+    for (let salt = 1; usedUids.has(uid); salt++) uid = `${prefix}_${hash32(`${seed}#${salt}`)}`;
+    usedUids.add(uid);
+    return uid;
+  };
 
   // ---- workflowMeta ----
   // workflowMeta isn't yet round-tripped through XML — pull what we can from the
@@ -9333,6 +10144,38 @@ function parseBpmnXml(text) {
       });
     }
   }
+  // T-358: make the DEFAULTING PARTITION TOTAL, before anyone chooses a default.
+  //
+  // Three distinct causes reach `!lanes.length` and currently produce byte-identical
+  // output, so no instrument can tell them apart and no repair can be verified:
+  //   (i)   the document carries no <laneSet> at all;
+  //   (ii)  a <laneSet> exists but yields zero <lane> children, and no other does;
+  //   (iii) laneSets[0] is empty while a LATER laneSet has lanes — the T-348
+  //         first-only read, i.e. we had the data and did not look at it.
+  // (iii) is a defect of ours; (i) is a property of the input. Collapsing them into
+  // one silent default is what makes the two indistinguishable in every report.
+  //
+  // This records WHICH cause fired. It deliberately does NOT change which lanes are
+  // chosen — that is T-341's ruling and is the operator's. Separating the causes is
+  // prerequisite under either ruling, which is why it is not blocked behind it.
+  //
+  // NOT EMITTED. `buildBpmnXml` writes an explicit skeleton from named fields and
+  // never serialises unknown state keys, so this is byte-neutral by construction —
+  // asserted in tests/fixtures via the _t308 byte-identity harness, not by hope.
+  //
+  // The branch order matters: (iii) is tested before (ii) because a document that
+  // satisfies (iii) also satisfies (ii)'s surface condition, and reporting it as a
+  // plain empty laneSet would hide our own first-only read behind the input's shape.
+  let laneProvenance;
+  if (lanes.length) {
+    laneProvenance = 'authored';
+  } else if (!laneSets.length) {
+    laneProvenance = 'defaulted:no-laneset';
+  } else if (laneSets.some((ls, i) => i > 0 && byBpmn(ls, 'lane').length > 0)) {
+    laneProvenance = 'defaulted:later-laneset-ignored';
+  } else {
+    laneProvenance = 'defaulted:empty-laneset';
+  }
   if (!lanes.length) lanes.push(...defaultLanes());
 
   // ---- nodes ----
@@ -9355,22 +10198,106 @@ function parseBpmnXml(text) {
                     'exclusiveGateway', 'parallelGateway', 'intermediateThrowEvent', 'intermediateCatchEvent',
                     'linkEventThrow', 'linkEventCatch',
                     'boundaryEvent', 'subProcess'];
-  for (const tag of nodeTags) {
-    for (const el of byBpmn(proc, tag)) {
+
+  // T-337: THE COMPLEMENT BRANCH. Everything above selects elements BY TAG from a
+  // hard-coded allowlist, and an allowlist-driven read has no complement: a flow
+  // node whose tag we do not implement is not rejected, it is never visited. Export
+  // writes only from state.nodes, so "never visited" means DELETED on open→save —
+  // and the saved document then validates CLEAN, because E-XML-NODE-TYPE's evidence
+  // was destroyed along with the node.
+  //
+  // Chosen repair: PRESERVE AND RE-EMIT (option (a); see the task's Decisions). The
+  // element becomes a real node carrying `foreignTag`, and buildBpmnXml emits that
+  // tag verbatim instead of TYPE_TAG[type]. Same shape as the T-259 eventDef
+  // passthrough one granularity down, and it honours the ratified principle at the
+  // head of this function: diagram XML is never silently migrated.
+  //
+  // Why a node and not a verbatim byte-level passthrough: sequenceFlows referencing
+  // the element are resolved through displayIdToUid below, so an element held
+  // outside the node graph would keep its own bytes and take its EDGES down with
+  // it. Node-loss would become edge-loss — a quieter version of the same defect.
+  //
+  // The exclusion set below is itself an allowlist, i.e. the same shape this fix
+  // exists to remove — but its FAILURE DIRECTION is now the safe one. Misclassify a
+  // non-flow-node as a node and it is preserved (re-emitted, drawn, laned);
+  // misclassify a flow node as structure and it is deleted. Preservation is the
+  // recoverable error, so the set stays deliberately small: only children of
+  // <bpmn:process> that BPMN defines as non-flowElements, plus the flowElements
+  // that are not flow NODES.
+  //
+  // Scope boundary, stated rather than implied: this reaches direct children of
+  // <bpmn:process> only. A foreign tag nested inside an accepted subProcess is NOT
+  // covered.
+  //
+  // T-523 CORRECTION — this comment used to continue "the whole interior of an
+  // accepted element is dropped today", and that is FALSE for flow nodes. Measured
+  // (tools/_t523-subprocess-nesting.mjs): the allowlisted loop above uses
+  // byBpmn(proc, tag), a DESCENDANT query, so a serviceTask nested inside a
+  // subProcess IS collected — and since state.nodes is flat and export writes from
+  // it, the node comes back as a direct child of <bpmn:process>. Its aef:uid
+  // survives byte-identical and the sequenceFlow between two such nodes survives
+  // and still connects them. What is lost is CONTAINMENT: the subProcess returns
+  // empty. So the outcome is hoisting, not deletion, and nothing counts down —
+  // which is why no count-based instrument has ever noticed.
+  // The claim was a comment nobody re-checked (the T-509 class); it stayed
+  // plausible for months because it is true of the FOREIGN-tag branch below, which
+  // does only walk proc.children. Interior foreign content and non-flow-node
+  // content remain T-347's population. Foreign-NAMESPACE children of <bpmn:process>
+  // are also left alone: typing a camunda:* element as a BPMN flow node would be a
+  // guess, and root-level foreign content is a separate question (T-340's class).
+  const PROCESS_NON_FLOWNODE = new Set([
+    // structural / metadata children of <bpmn:process>
+    'extensionElements', 'documentation', 'auditing', 'monitoring', 'ioSpecification',
+    'property', 'laneSet', 'resourceRole', 'performer', 'correlationSubscription', 'supports',
+    // flowElements that are not flow NODES
+    'sequenceFlow', 'dataObject', 'dataObjectReference', 'dataStoreReference',
+    // artifacts
+    'association', 'textAnnotation', 'group',
+  ]);
+  const _knownNodeTag = new Set(nodeTags);
+  // Presentation only. The canvas needs a shape to draw, and `foreignTag` — not
+  // this — is what export re-emits, so the choice moves no bytes. Deliberately
+  // two-way rather than clever: a *Gateway gets a diamond, everything else gets the
+  // task rectangle. Mapping a foreign *Event onto intermediateCatchEvent would
+  // silently inherit link-event semantics (REVERSE_TYPE maps that tag to
+  // linkEventCatch), which is a worse lie than a rectangle.
+  const foreignDisplayTag = local => (/Gateway$/.test(local) ? 'exclusiveGateway' : 'serviceTask');
+
+  // [typing-tag, element, foreignTag|null]. Building the work list first is what
+  // lets the whole loop body below be shared: for an allowlisted element the typing
+  // tag IS its tag; for a foreign one it is the shape we draw it as.
+  const nodeWork = [];
+  for (const tag of nodeTags) for (const el of byBpmn(proc, tag)) nodeWork.push([tag, el, null]);
+  for (const el of Array.from(proc.children || [])) {
+    if (el.namespaceURI !== BPMN_NS) continue;
+    const local = el.localName;
+    if (_knownNodeTag.has(local) || PROCESS_NON_FLOWNODE.has(local)) continue;
+    nodeWork.push([foreignDisplayTag(local), el, local]);
+  }
+
+  {
+    for (const [tag, el, foreignTag] of nodeWork) {
       const displayId = el.getAttribute('id') || '';
       const name = el.getAttribute('name') || displayId;
       // let, not const: <aef:eventDef> below can override the shared
       // intermediateCatchEvent tag to a specific typed-event node type (T-204).
       let type = REVERSE_TYPE[tag] || 'serviceTask';
-      // uid from aef:uid extension, else generate
+      // uid from aef:uid extension, else derive it from the element id (T-364)
       const uidEl = byAef(el, 'uid')[0];
-      const uid = uidEl?.getAttribute('value') || generateUid('n');
-      // Position from aef:position extension if present, else lay out automatically
+      const uid = uidEl?.getAttribute('value') || deriveUid('n', displayId);
+      // Position: aef:position, else BPMN DI, else lay out automatically (T-340
+      // ruling (b)). aef:position wins when both are present — DI is the SECOND
+      // source, not a replacement, because aef:position is what our own exports
+      // carry and a document holding both is most likely ours re-tooled elsewhere.
       const posEl = byAef(el, 'position')[0];
       let x, y;
       if (posEl) {
         x = parseFloat(posEl.getAttribute('x'));
         y = parseFloat(posEl.getAttribute('y'));
+      } else if (diBounds.has(displayId)) {
+        const b = diBounds.get(displayId);
+        x = b.x;
+        y = b.y;
       }
 
       // Lane membership: look up which laneSet entry references this displayId
@@ -9512,10 +10439,15 @@ function parseBpmnXml(text) {
         y = 0; // patched below once lanes are inserted into state
       }
 
+      // T-337: `foreignTag` is written ONLY for an out-of-allowlist element. A
+      // well-formed map therefore produces a node object with exactly the fields it
+      // produced before, which is what keeps exported bytes and the saved-project
+      // JSON shape unchanged for everything the corpus contains.
       nodes.push({
         uid, id: uid, slug, type, name, lane: laneId,
         x, y,
         aef, io,
+        ...(foreignTag ? { foreignTag } : {}),
       });
       displayIdToUid.set(displayId, uid);
     }
@@ -9536,7 +10468,7 @@ function parseBpmnXml(text) {
   const edges = [];
   for (const el of byBpmn(proc, 'sequenceFlow')) {
     const uidEl = byAef(el, 'uid')[0];
-    const uid = uidEl?.getAttribute('value') || generateUid('e');
+    const uid = uidEl?.getAttribute('value') || deriveUid('e', el.getAttribute('id') || '');
     const srcDisplayId = el.getAttribute('sourceRef');
     const tgtDisplayId = el.getAttribute('targetRef');
     const source = displayIdToUid.get(srcDisplayId) || srcDisplayId;
@@ -9589,14 +10521,57 @@ function parseBpmnXml(text) {
     lanes,
     nodes,
     edges,
+    // T-358: which of the four lane origins produced `lanes` above. Read by probes
+    // and by nothing in the emitter — the exact opposite of docComment below, which
+    // must reach buildBpmnXml. Kept here rather than module-level (the T-308
+    // reconcile-counter pattern) because it is per-document, not per-session.
+    laneProvenance,
+    // T-340: did the document we parsed carry BPMN DI? This one MUST reach
+    // buildBpmnXml (like docComment below, unlike laneProvenance above) — it is the
+    // input half of "emit DI only when the input carried it". Losing it across a
+    // save/reload would turn a DI-carrying document into a DI-dropping one on its
+    // second export, which is the original defect wearing a different hat.
+    sourceCarriedDi,
+    // T-311: the authored rationale. Unlike T-308's reconcile counter — which lives
+    // module-level precisely so it CANNOT reach the exporter — this value must reach
+    // it, so it belongs on state. Carried verbatim; buildBpmnXml re-emits it as the
+    // leading child. null for maps that never had one, which keeps their bytes exact.
+    docComment: readDocComment(doc.documentElement),
   };
   // Use a temporary state so laneCenterY() resolves correctly during patching
   const prev = state;
   state = { lanes };
+  _laneReconcileCount = 0;
+  // T-315: size every band from its own members BEFORE any node is tested
+  // against a band. A lane that merely under-declared its height is repaired by
+  // the number, not by moving the operator's work — and doing it first means the
+  // reconcile below never sees those nodes as out-of-band at all. On an
+  // ordering-dirty map this is a no-op by construction, so T-310's behaviour
+  // there is byte-identical to before.
+  _laneGrowReport = growUnderDeclaredLanes(lanes, nodes);
   for (const n of nodes) {
+    const def = NODE_DEFAULTS[n.type] || NODE_DEFAULTS.serviceTask;
     if (n.y === 0) {
-      const def = NODE_DEFAULTS[n.type] || NODE_DEFAULTS.serviceTask;
       n.y = laneCenterY(n.lane) - def.h / 2;
+      continue;
+    }
+    // T-310: a map can arrive declaring a node in lane A while its <aef:position>
+    // draws it inside lane B's band (AEF's generator emitted exactly this — laneSet
+    // order agent-then-framework, with the framework nodes at the TOP y-values).
+    // Both truths used to survive into state, and the first drag then resolved the
+    // contradiction in favour of PIXELS via laneAtY, silently rewriting membership
+    // — i.e. rewriting who is responsible for the step. Membership is authoritative
+    // (T-189, Lane=who); position is view-layer. So the declared lane wins and the
+    // geometry is corrected to match, which also removes the contradiction from
+    // state entirely — the silent-rewrite path becomes unreachable rather than
+    // merely discouraged.
+    //
+    // Deliberately NOT silent: the count drives a dismissible notice on user import.
+    // Rewriting the operator's geometry without saying so is the same sin as
+    // rewriting their membership without saying so.
+    if (findLane(n.lane) && laneAtY(n.y + def.h / 2) !== n.lane) {
+      n.y = laneCenterY(n.lane) - def.h / 2;
+      _laneReconcileCount++;
     }
   }
   state = prev;
