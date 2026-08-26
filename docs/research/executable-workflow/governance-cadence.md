@@ -63,6 +63,26 @@ latest evidence | blockers/risks | human decisions needed | next safe action
 | **Human decisions needed** | See §4 — six, none of which an agent may take |
 | **Next safe action** | Operator reviews this ingestion and rules on D1 (arc-start). No further AEF work until then |
 
+### 2026-08-26 — Arc 0 falsifier 1 measured
+
+| Field | Value |
+|-------|-------|
+| **Source revision** | manifest v1, rev 0 — unchanged (`c9070637` / `5be23719`) |
+| **Current arc / task** | arc-019 `ewcr-arc0-contract-evidence` (**draft**). T-3147 (`design`, `started-work`, owner `agent`) |
+| **Gate state** | **Falsifier 1 answered: `fence-1 blocking (3 components in the write set)`** — 4 under the BROAD write set. Fence 1 remains failed, but its measured cost collapses from a feared 512 components to **~28 items** |
+| **Peer contract / receipt state** | Unchanged. Outbound receipt to T-037 on `t037-aef-ingestion` still unacknowledged; no reachable session found for 0503-codex-cli-playground |
+| **Latest evidence** | `arc0-write-set.md` (derivation, §5.1 row per path) · `arc0-falsifier1-result.md` (result + control) · `tools/ewcr-arc0-unknown-overlap.py` · `tools/ewcr-arc0-coverage-check.py` · `.context/audits/ewcr-arc0-unknown-overlap.json` — all re-runnable at commit `ce2987fd2` |
+| **Blockers / risks** | R1 **revised, not cleared** — 519 Unknown cards, but 453 (87%) are `tests/`, which the runtime does not write. Real fence-1 scope: 3 CORE + 17 `agents/` + 8 uncarded `policy/` YAML ≈ 28. **NEW R6: `policy/` has 0% Fabric coverage (0 of 8 YAML files carded)** — §5.1 row 2, the procedure/runtime-semantics surface. The falsifier as posed structurally cannot detect this: a directory with no cards contributes no Unknown cards and therefore reads as clean. R2–R5 unchanged |
+| **Human decisions needed** | D5 (Q-03 coverage threshold) now has a measured number behind it — a **proposal** is stated in `arc0-falsifier1-result.md` and nothing has been applied. D1 (arc-start) still un-ruled; arc-019 remains `draft` |
+| **Next safe action** | Operator rules on D5 using the proposed threshold, and on D1. No implementation, no threshold enforcement, no task creation until then |
+
+**Method note.** The overlap count alone would have been misread. A low overlap is
+produced both by a well-classified write set and by a write set that is barely in the
+Fabric; a control (`ewcr-arc0-coverage-check.py`) was written to discriminate them and
+found the second case in `policy/`. Any future restatement of fence 1 should carry the
+coverage clause, not the Unknown-count clause alone — `policy/` scores a perfect zero
+Unknown today while having no cards at all.
+
 ## 4. Human decisions required (blocking)
 
 Owner: **dimitri@geelenandcompany.com**. None may be taken by an agent.

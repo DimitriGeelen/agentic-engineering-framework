@@ -1,0 +1,12 @@
+{
+  "cards_total": 1121,
+  "unknown_total": 519,
+  "unknown_without_location": 0,
+  "overlap_core": 3,
+  "overlap_broad": 4,
+  "core_paths": [
+    "agents/dispatch/single-host-parallel-demo.sh",
+    "agents/dispatch/yield-point.sh",
+    "policy/standards/aef-bpmn-mapping-v1-partI.md"
+  ]
+}

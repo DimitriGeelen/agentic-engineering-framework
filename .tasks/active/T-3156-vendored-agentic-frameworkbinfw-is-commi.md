@@ -1,22 +1,16 @@
 ---
-id: T-3147
-name: "EWCR Arc 0 evidence baseline: measure Fabric Unknown-subsystem overlap with
-  the runtime write set"
+id: T-3156
+name: "vendored .agentic-framework/bin/fw is committed non-executable — consumers get exit 126"
 description: >
-  Measurement-only evidence baseline for Arc 0 of the Executable Workflow Contract
-  Runtime (initiative ewcr-v1, correlation ewcr-v1-aef-arc0). Falsifier 1 of docs/research/executable-workflow/questions-and-dispositions.md
-  6: determine whether the 512 Unknown-subsystem Component Fabric entries intersect
-  the runtime write set. Produces the measured number that sizes roadmap 6 fence 1
-  and feeds human decision D5 (Q-03 coverage threshold). No runtime code, no schema
-  freeze, no implementation.
+  vendored .agentic-framework/bin/fw is committed non-executable — consumers get exit 126
 
-status: started-work
-workflow_type: design
+status: captured
+workflow_type: build
 owner: agent
-horizon: now
-tags: [ewcr-v1, ewcr-v1-aef-arc0, evidence-baseline, measurement, arc:ewcr-arc0-contract-evidence]
+horizon: next
+tags: []
 components: []
-related_tasks: [T-3145]
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -27,9 +21,9 @@ related_tasks: [T-3145]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-25T22:12:39Z
-last_update: 2026-08-26T11:08:38Z
-date_finished:
+created: 2026-08-26T11:05:49Z
+last_update: 2026-08-26T11:07:32Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -40,114 +34,34 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-25T22:15:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 3
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
-      (workflow:design); effort=8 (lines=287,acs=11)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-25T22:15:14Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 1
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=1 (body/components:component-fabric-incidental)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3147: EWCR Arc 0 evidence baseline: measure Fabric Unknown-subsystem overlap with the runtime write set
+# T-3156: vendored .agentic-framework/bin/fw is committed non-executable — consumers get exit 126
 
 ## Context
 
-Smallest local evidence-baseline unit for **Arc 0 — contract evidence and
-implementation baseline** of the Executable Workflow Contract Runtime.
-
-- **Initiative:** `ewcr-v1`
-- **Correlation:** `ewcr-v1-aef-arc0`
-- **Upstream packet:** ingested under T-3145, manifest v1 rev 0
-  (`docs/research/executable-workflow/source-manifest.yaml`)
-  - architecture dossier — sha256 `c9070637b09493a24abc99982ae966a3b3ae8cd4a358a44fdceb59bdceb6ac2d`
-  - delivery roadmap — sha256 `5be23719b976e37a6461b4b1f6f309985b5ba033ef0b801769edd2627fbae5b8`
-- **Why this task and not the roadmap's candidate task 1:** the roadmap asks to
-  "register/enrich the Component Fabric baseline". `questions-and-dispositions.md`
-  §2 revised that to the runtime write set only, and §6 falsifier 1 says the whole
-  item "shrinks to near-zero" if the `Unknown`-subsystem components turn out not to
-  intersect that write set. Nobody has measured whether they do. This task is that
-  measurement and nothing else — it decides how large Arc 0's first real task is.
-- **Feeds:** roadmap §6 fence 1 (Fabric non-empty, enriched, validated) and human
-  decision **D5** (Q-03 — Fabric coverage threshold and limited-mode policy).
-- **Out of scope, explicitly:** no runtime code, no schema freeze, no refusal
-  matrix, no Fabric enrichment, no arc start, no BVP confirmation. This task
-  produces a number and a written disposition; it does not act on either.
-
-The parent arc could not be created in this session — see `## Decisions`.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The runtime write set is **derived, not assumed**: the set of AEF paths the
-      EWCR runtime would write is enumerated from the architecture dossier
-      (`architecture-c9070637.md`) with a section reference per path, and written to
-      `docs/research/executable-workflow/arc0-write-set.md`
-- [x] The `Unknown`-subsystem Component Fabric population is counted from
-      `.fabric/components/` at a named commit — the count is re-derived in this
-      task, not carried over from the 512/1117 figure recorded in T-3145
-- [x] The **intersection** of those two sets is computed and reported as a count
-      plus the full component-id list, with the empty case stated explicitly if it
-      is empty
-- [x] The measurement is reproducible: the derivation is a committed script or a
-      committed exact command sequence, and re-running it on the same commit
-      reproduces the same numbers
-- [x] Falsifier 1 of `questions-and-dispositions.md` §6 is answered with one of
-      exactly two verdicts — `fence-1 blocking (N components in the write set)` or
-      `fence-1 not blocking (intersection empty)` — and the verdict is written into
-      the status board of `governance-cadence.md` §3 as a **new dated block**
-      (never editing a prior block)
-- [x] A coverage-threshold **proposal** for Q-03/D5 is stated with the measured
-      number behind it, marked explicitly as a proposal the operator decides —
-      no threshold is applied, configured, or enforced by this task
-- [x] No file under `lib/`, `bin/`, `agents/`, `web/` or `tests/` is modified — the
-      deliverable is measurement artefacts under `docs/research/executable-workflow/`
-      plus this task file
+- [ ] Impact established BEFORE any fix. Measured so far: 213 vendored files are committed
+      `100644` whose source counterpart is `100755` (same blob, different mode).
+      `.agentic-framework/bin/fw` fails to exec — verified `exit=126`, Permission denied.
+      NOT yet established: whether the other 212 matter. Hooks are invoked as
+      `${CLAUDE_PROJECT_DIR}/bin/fw hook <name>`, and `lib/upgrade.sh` does
+      `[ -x "$src" ] && chmod +x "$dst"` on copy — so a consumer may well receive correct
+      modes regardless. If the blast radius is only `bin/fw`, say so and fix only that.
+- [ ] Whatever produces the 644 is identified — `fw vendor self`, a historical commit, or
+      a umask — rather than the mode simply being corrected and left to recur.
+- [ ] A test pins the property that the vendored `bin/fw` is executable, and FAILS against
+      the current tree. `git status` is CLEAN here because 644 is the RECORDED mode, so
+      "no change" and "correct" are the same observable — that is why this survived.
+- [ ] Any fix is verified from a consumer's position (exec the vendored path), not from
+      `git ls-files` output, which is what made the defect invisible in the first place.
 
 ### Human
-
-- [ ] [REVIEW] Operator rules on D5 (Q-03) with the measured number in hand
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && cat docs/research/executable-workflow/arc0-write-set.md`
-  2. Read the fence-1 verdict block appended to `docs/research/executable-workflow/governance-cadence.md` §3
-  3. Accept, revise, or reject the proposed Component Fabric coverage threshold
-  **Expected:** a threshold value (or an explicit "limited mode, no threshold yet")
-  recorded by the operator. The agent's number is input, not the decision.
-  **If not:** leave D5 open in `governance-cadence.md` §4 and say what further
-  evidence would settle it — do not let the agent pick a number by default.
-
-- [ ] [REVIEW] Operator rules on D1 — arc-start authorisation for Arc 0
-  **Steps:**
-  1. Review the draft arc once it exists (see `## Decisions` — arc creation is
-     currently blocked in-session)
-  2. Decide whether Arc 0 moves `draft → in-progress`
-  **Expected:** an explicit start or hold. Per `governance-cadence.md` §4 no agent
-  may take this decision.
-  **If not:** Arc 0 stays `draft`; this measurement task may still complete, since
-  it is measurement rather than arc work.
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -239,27 +153,6 @@ The parent arc could not be created in this session — see `## Decisions`.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# ── Fence 1: contract freeze. Both ingested sources still hash to manifest v1 rev 0.
-#    Re-verified at close, per governance-cadence.md §1 ("before any completion claim").
-test "$(sha256sum docs/research/executable-workflow/architecture-c9070637.md | cut -d' ' -f1)" = "c9070637b09493a24abc99982ae966a3b3ae8cd4a358a44fdceb59bdceb6ac2d"
-test "$(sha256sum docs/research/executable-workflow/roadmap-5be23719.md | cut -d' ' -f1)" = "5be23719b976e37a6461b4b1f6f309985b5ba033ef0b801769edd2627fbae5b8"
-
-# ── Fence 2: the write-set derivation artefact exists and is substantive.
-test -f docs/research/executable-workflow/arc0-write-set.md
-test "$(wc -c < docs/research/executable-workflow/arc0-write-set.md)" -ge 1024
-
-# ── Fence 3: the measurement produced an actual number, not prose.
-grep -qE "^unknown_subsystem_count: [0-9]+$" docs/research/executable-workflow/arc0-write-set.md
-grep -qE "^write_set_component_count: [0-9]+$" docs/research/executable-workflow/arc0-write-set.md
-grep -qE "^intersection_count: [0-9]+$" docs/research/executable-workflow/arc0-write-set.md
-grep -qE "^measured_at_commit: [0-9a-f]{7,40}$" docs/research/executable-workflow/arc0-write-set.md
-
-# ── Fence 4: falsifier 1 answered with one of exactly two verdicts, on the status board.
-grep -qE "fence-1 (blocking|not blocking)" docs/research/executable-workflow/governance-cadence.md
-
-# ── Fence 5: no runtime implementation landed under this task ID.
-git log --name-only --format= --grep="T-3147" > /tmp/.t3147-paths 2>&1 && ! grep -qE "^(lib|bin|agents|web|tests)/" /tmp/.t3147-paths
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -331,27 +224,6 @@ git log --name-only --format= --grep="T-3147" > /tmp/.t3147-paths 2>&1 && ! grep
 
 ## Decisions
 
-### 2026-08-26 — draft Arc 0 could not be created in this session
-
-- **Chose:** create the task, leave `arc_id:` unset, and report the blocker.
-- **Why:** every `bin/fw arc …` invocation — including the read-only
-  `bin/fw arc list` — returns `This command requires approval` in this session.
-  `.claude/settings.local.json` carries `Bash(bin/fw task:*)`, `Bash(bin/fw
-  context:*)` and 20-odd sibling `fw` entries but **no `Bash(bin/fw arc:*)`**, and
-  the session is non-interactive, so the approval cannot be granted here. This is
-  a harness permission boundary, not an AEF gate: `arc_create` in `lib/arc.sh:373`
-  has no `$CLAUDECODE` refusal (only `arc_close` (T-1671) and `arc_approve_driver`
-  do), and the two gates it *does* enforce — `--name` required and
-  `_arc_validate_headline_mechanic` (§ACD/G-062, `lib/arc.sh:256`) — were both
-  satisfied by the prepared invocation.
-- **Rejected:** adding `Bash(bin/fw arc:*)` to `.claude/settings.local.json`;
-  invoking `lib/arc.sh` directly; hand-writing `.context/arcs/*.yaml`. All three
-  route around the boundary rather than reporting it, and the third also violates
-  the D-Immutability rule that arc state changes go through `fw arc <verb>`
-  (`lib/arc.sh:20-27`).
-- **Consequence:** `arc_id:` stays unset. Setting it now would trip the
-  `check-arc-id` PreToolUse hook, which is correct — the arc does not exist.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -373,13 +245,11 @@ git log --name-only --format= --grep="T-3147" > /tmp/.t3147-paths 2>&1 && ! grep
 
 ## Updates
 
-### 2026-08-25T22:12:39Z — task-created [task-create-agent]
+### 2026-08-26T11:05:49Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3147-ewcr-arc-0-evidence-baseline-measure-fab.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3156-vendored-agentic-frameworkbinfw-is-commi.md
 - **Context:** Initial task creation
 
-### 2026-08-25T22:17:26Z — status-update [task-update-agent]
-- **Change:** tags: +arc:ewcr-arc0-contract-evidence
-
-### 2026-08-26T11:08:38Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+### 2026-08-26T11:07:32Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
