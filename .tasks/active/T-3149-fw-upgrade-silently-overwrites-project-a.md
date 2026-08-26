@@ -13,7 +13,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-25T22:45:50Z
-last_update: 2026-08-25T22:46:56Z
+last_update: '2026-08-25T23:00:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -39,6 +39,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-25T23:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=8 (lines=349,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -125,15 +135,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -190,7 +200,11 @@ Three instances in one upgrade in a live consumer, mechanism confirmed in our ow
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Three instances in one upgrade in a live consumer, mechanism confirmed in our own source. The seam that decides what survives is positional and unmarked (lib/upgrade.sh:1268 keeps only what sits ABOVE '## Core Principle' in CLAUDE.md), and nothing warns before destroying what sits below it. The peer's reframing is the durable finding and we should adopt it: being outside .agentic-framework/ is not the test for project ownership; whether the framework WRITES the file is. Needs a decision on whether upgrade owns these files wholesale before any patch, which is why this is an inception rather than a build.
+
+**Date**: 2026-08-26T09:28:47Z
 
 ## Updates
 
@@ -390,3 +404,8 @@ build it framework-shaped. Waiting on the operator ruling costs nothing;
 rebuilding after it would cost real work. They also filed their own G-048 (two of
 their arcs both claim `id: arc-001`, so `fw bvp arcs` silently omits one) — worth
 a look on our side, since arc id uniqueness is framework-owned.
+
+### 2026-08-26T09:28:47Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three instances in one upgrade in a live consumer, mechanism confirmed in our own source. The seam that decides what survives is positional and unmarked (lib/upgrade.sh:1268 keeps only what sits ABOVE '## Core Principle' in CLAUDE.md), and nothing warns before destroying what sits below it. The peer's reframing is the durable finding and we should adopt it: being outside .agentic-framework/ is not the test for project ownership; whether the framework WRITES the file is. Needs a decision on whether upgrade owns these files wholesale before any patch, which is why this is an inception rather than a build.
