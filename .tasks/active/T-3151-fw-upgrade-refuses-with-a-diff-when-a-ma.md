@@ -94,7 +94,7 @@ bvp_scores_proposed:
 ## Verification
 
 ```bash
-bash tests/unit/upgrade_refuse_modified.bats
+bats tests/unit/upgrade_refuse_modified.bats
 ```
 
 ## RCA

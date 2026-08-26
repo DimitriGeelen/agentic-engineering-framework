@@ -800,6 +800,88 @@ _fw_classify_upstream_source() {
     return 2
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# T-3150 — project-owned regions in a consumer's CLAUDE.md
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Step [1/10] rebuilds a consumer's CLAUDE.md as (consumer header) + (framework
+# governance). The previous form was `sed -n '1,/^## Core Principle$/{ /^## Core Principle$/d; p; }'`
+# applied to the consumer file: what survived an upgrade was whatever happened
+# to sit ABOVE the line `## Core Principle`. That is a content-shaped contract —
+# a consumer that organised its governance coherently, putting its own
+# completion rules next to the framework's completion rules and therefore BELOW
+# that heading, lost them silently on every upgrade. Observed three times in one
+# upgrade of a live consumer.
+#
+# The markers below make survival DECLARED rather than inferred from position:
+#
+#     <!-- project-owned: begin -->
+#     ...anything...
+#     <!-- project-owned: end -->
+#
+# Semantics (see T-3150):
+#   1. At least one well-formed region  => rebuilt file is
+#      header + framework governance + every region in file order, verbatim,
+#      INCLUDING the marker lines (that is what makes the next upgrade find
+#      them again).
+#   2. ALL regions survive — not just the first.
+#   3. A region that already sits above `## Core Principle` is in the header
+#      already; it is de-duplicated by content so a second upgrade is a no-op.
+#   4. No markers => byte-identical behaviour to the positional path.
+#   5. An unmatched marker REFUSES the rewrite. Guessing at to-EOF, or falling
+#      through to the positional path, would destroy the content the operator
+#      was marking in order to protect.
+
+# Report unmatched project-owned markers in $1. Prints one human-readable line
+# per problem (empty output = well-formed) and always exits 0; the caller
+# decides what an unmatched marker means.
+_fw_project_owned_check() {
+    awk '
+        /^[[:space:]]*<!-- project-owned: begin -->[[:space:]]*$/ {
+            if (open) {
+                print "line " openline ": <!-- project-owned: begin --> has no matching <!-- project-owned: end --> (a second begin opens at line " NR ")"
+                bad = 1
+                exit
+            }
+            open = 1; openline = NR; next
+        }
+        /^[[:space:]]*<!-- project-owned: end -->[[:space:]]*$/ {
+            if (!open) {
+                print "line " NR ": <!-- project-owned: end --> has no matching <!-- project-owned: begin -->"
+                bad = 1
+                exit
+            }
+            open = 0; next
+        }
+        END {
+            if (!bad && open) {
+                print "line " openline ": <!-- project-owned: begin --> has no matching <!-- project-owned: end -->"
+            }
+        }
+    ' "$1"
+}
+
+# Number of project-owned regions opened in $1.
+_fw_project_owned_count() {
+    grep -c '^[[:space:]]*<!-- project-owned: begin -->[[:space:]]*$' "$1" 2>/dev/null || true
+}
+
+# Print the $2'th (1-based) project-owned region of $1, marker lines included.
+# One region per call rather than an array — `mapfile -d ''` needs bash 4.4 and
+# this file still has to run under macOS's bash 3.2 (same reason _sed_i exists).
+_fw_project_owned_region() {
+    awk -v want="$2" '
+        /^[[:space:]]*<!-- project-owned: begin -->[[:space:]]*$/ {
+            idx++
+            if (idx == want) { inr = 1; print; next }
+        }
+        inr {
+            print
+            if ($0 ~ /^[[:space:]]*<!-- project-owned: end -->[[:space:]]*$/) inr = 0
+        }
+    ' "$1"
+}
+
 do_upgrade() {
     local target_dir=""
     local dry_run=false
@@ -1263,6 +1345,20 @@ do_upgrade() {
     local template_file="$FRAMEWORK_ROOT/lib/templates/claude-project.md"
 
     if [ -f "$project_claude" ] && [ -f "$template_file" ]; then
+        # T-3150: refuse before touching anything when a project-owned marker is
+        # unmatched. Both the positional path and a to-EOF guess would drop or
+        # mangle exactly the content the markers were added to protect.
+        local marker_problems
+        marker_problems=$(_fw_project_owned_check "$project_claude")
+        if [ -n "$marker_problems" ]; then
+            echo -e "  ${RED}REFUSED${NC}  Unmatched project-owned marker in $project_claude" >&2
+            printf '        %s\n' "$marker_problems" >&2
+            echo -e "        A project-owned region is \`<!-- project-owned: begin -->\` ... \`<!-- project-owned: end -->\`." >&2
+            echo -e "        Close the region (or remove the stray marker) and re-run \`fw upgrade\`." >&2
+            echo -e "        CLAUDE.md was NOT rewritten — no other upgrade step ran." >&2
+            return 1
+        fi
+
         # Extract project-specific sections (everything before "## Core Principle")
         local project_header
         project_header=$(sed -n '1,/^## Core Principle$/{ /^## Core Principle$/d; p; }' "$project_claude")
@@ -1310,26 +1406,61 @@ plus Claude Code-specific integration notes.
             fi
         fi
 
+        # T-3150: collect the declared project-owned regions that must survive.
+        # Regions already contained in the header sit above `## Core Principle`
+        # and would otherwise be emitted twice — de-duplicating by content is
+        # what makes a second `fw upgrade` a no-op.
+        local project_owned="" _po_count _po_i _po_region
+        _po_count=$(_fw_project_owned_count "$project_claude")
+        _po_i=1
+        while [ "$_po_i" -le "${_po_count:-0}" ]; do
+            _po_region=$(_fw_project_owned_region "$project_claude" "$_po_i")
+            _po_i=$((_po_i + 1))
+            [ -n "$_po_region" ] || continue
+            case "$project_header" in *"$_po_region"*) continue ;; esac
+            if [ -n "$project_owned" ]; then
+                project_owned="$project_owned
+$_po_region"
+            else
+                project_owned="$_po_region"
+            fi
+        done
+
+        # The tail the rebuilt file should carry: framework governance, then the
+        # surviving project-owned regions. With no markers this is byte-for-byte
+        # the pre-T-3150 tail.
+        local governance_tail="$governance"
+        if [ -n "$project_owned" ]; then
+            governance_tail="$governance
+$project_owned"
+        fi
+
         # Compare current governance with template
         local current_governance
         current_governance=$(sed -n '/^## Core Principle$/,$ p' "$project_claude")
 
-        if [ "$current_governance" = "$governance" ]; then
+        if [ "$current_governance" = "$governance_tail" ]; then
             echo -e "  ${GREEN}OK${NC}  Already up to date"
         else
             changes=$((changes + 1))
             if [ "$dry_run" = true ]; then
                 local current_lines new_lines
                 current_lines=$(echo "$current_governance" | wc -l)
-                new_lines=$(echo "$governance" | wc -l)
+                new_lines=$(echo "$governance_tail" | wc -l)
                 echo -e "  ${CYAN}WOULD UPDATE${NC}  Governance sections ($current_lines → $new_lines lines)"
             else
                 # Backup before overwriting
                 cp "$project_claude" "${project_claude}.bak"
                 # Write combined file, fix any leftover placeholders
                 project_header="${project_header//__PROJECT_NAME__/$project_name}"
-                printf '%s\n%s\n' "$project_header" "$governance" > "$project_claude"
+                printf '%s\n%s\n' "$project_header" "$governance_tail" > "$project_claude"
                 echo -e "  ${GREEN}UPDATED${NC}  Governance sections refreshed from framework template. Backup: CLAUDE.md.bak"
+                if [ -n "$project_owned" ]; then
+                    local _po_kept
+                    _po_kept=$(printf '%s\n' "$project_owned" \
+                        | grep -c '^[[:space:]]*<!-- project-owned: begin -->[[:space:]]*$' || true)
+                    echo -e "  ${GREEN}KEPT${NC}     $_po_kept project-owned region(s) preserved verbatim below governance"
+                fi
 
                 # T-1629/G-055: Detect inline-customization regressions in
                 # governance sections. The wholesale-replace above cannot

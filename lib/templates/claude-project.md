@@ -20,6 +20,10 @@ plus Claude Code-specific integration notes.
 
 <!-- Add any project-specific rules that agents must follow -->
 
+<!-- `fw upgrade` replaces everything below `## Core Principle` with framework governance; anything you wrap in the marker pair below survives, wherever in this file it sits (T-3150). -->
+<!-- project-owned: begin -->
+<!-- project-owned: end -->
+
 ## Core Principle
 
 **Nothing gets done without a task.** This is enforced structurally by the framework, not by agent discipline.

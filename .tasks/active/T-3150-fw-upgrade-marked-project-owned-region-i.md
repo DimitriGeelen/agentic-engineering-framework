@@ -1,10 +1,13 @@
 ---
 id: T-3150
-name: "fw upgrade: marked project-owned region in CLAUDE.md replaces the positional split"
+name: "fw upgrade: marked project-owned region in CLAUDE.md replaces the positional
+  split"
 description: >
-  Replace the positional '\''keep everything above ## Core Principle'\'' contract in lib/upgrade.sh with an explicit marked region, so what survives an upgrade is declared rather than inferred from heading placement.
+  Replace the positional '\''keep everything above ## Core Principle'\'' contract
+  in lib/upgrade.sh with an explicit marked region, so what survives an upgrade is
+  declared rather than inferred from heading placement.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +25,8 @@ related_tasks: [T-3149]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T09:31:10Z
-last_update: 2026-08-26T09:31:10Z
-date_finished: null
+last_update: 2026-08-26T09:45:21Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +38,33 @@ date_finished: null
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 unlocks_inception_decision: [T-3149:marked-project-owned-region]
+cost_estimate_proposed:
+  - ts: '2026-08-26T09:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 7
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=7 (lines=127,acs=5)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T09:45:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3150: fw upgrade: marked project-owned region in CLAUDE.md replaces the positional split
@@ -47,24 +77,24 @@ unlocks_inception_decision: [T-3149:marked-project-owned-region]
 
 ### Agent
 
-- [ ] `lib/upgrade.sh` preserves everything between `<!-- project-owned: begin -->` and
+- [x] `lib/upgrade.sh` preserves everything between `<!-- project-owned: begin -->` and
       `<!-- project-owned: end -->` in a consumer `CLAUDE.md`, **regardless of where in the
       file those markers sit** — above or below `## Core Principle`.
-- [ ] A consumer `CLAUDE.md` whose marked region sits BELOW `## Core Principle` survives
+- [x] A consumer `CLAUDE.md` whose marked region sits BELOW `## Core Principle` survives
       `fw upgrade` byte-identical in that region. This is the case that loses content today.
-- [ ] A consumer `CLAUDE.md` with NO markers falls back to the current positional split, so
+- [x] A consumer `CLAUDE.md` with NO markers falls back to the current positional split, so
       no existing consumer changes behaviour on upgrade day.
-- [ ] `tests/unit/upgrade_marked_region.bats` pins all three, and includes a `[control]` test
+- [x] `tests/unit/upgrade_marked_region.bats` pins all three, and includes a `[control]` test
       asserting the PRE-change positional code DROPS the below-the-line region — without it the
       suite cannot tell a working fix from a fixture that never exercised the defect.
-- [ ] The generated consumer `CLAUDE.md` carries the marker pair with a one-line explanation, so
+- [x] The generated consumer `CLAUDE.md` carries the marker pair with a one-line explanation, so
       the seam is discoverable without reading framework source.
 
 ## Verification
 
 ```bash
-bash tests/unit/upgrade_marked_region.bats
-bash tests/unit/upgrade_fresh_machine_simulation.bats
+bats tests/unit/upgrade_marked_region.bats
+bats tests/unit/upgrade_fresh_machine_simulation.bats
 ```
 
 ## RCA
@@ -163,3 +193,6 @@ bash tests/unit/upgrade_fresh_machine_simulation.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3150-fw-upgrade-marked-project-owned-region-i.md
 - **Context:** Initial task creation
+
+### 2026-08-26T09:45:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
