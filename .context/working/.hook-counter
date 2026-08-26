@@ -1,4 +1,4 @@
-error-watchdog=4
+error-watchdog=5
 
 check-onboarding-gate=35
 check-agent-dispatch=4
@@ -6,11 +6,11 @@ check-human-ac-tick=7
 check-arc-id=8
 check-active-completed-dup=1
 check-heredoc-cmd-sub=1
-checkpoint=17
-check-tier0=17
-budget-gate=16
-check-project-boundary=17
-check-active-task=16
-loop-detect=16
+checkpoint=18
+check-tier0=18
+budget-gate=17
+check-project-boundary=18
+check-active-task=17
+loop-detect=17
 error-watchdog=11
-audit-task-tools=3
+audit-task-tools=4
