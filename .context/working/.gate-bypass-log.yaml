@@ -7577,3 +7577,21 @@ The close-card hel'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 git add .agentic-framework/VERSION .agentic-framework/web/blueprints/inception.py
 FW_SWITCH_FOCUS=1 git commit -q -m "T-3180: refresh vendored inception bluep'
+- timestamp: '2026-08-26T20:40:11Z'
+  task: 'T-3181'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3182'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .agentic-framework/
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3182: refresh vendored claude-fw
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>" 2>&'
+- timestamp: '2026-08-26T21:47:37Z'
+  task: 'T-3181'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3185'
+  command: 'FW_SWITCH_FOCUS=1 git add -A .tasks .context && FW_SWITCH_FOCUS=1 git commit -q -m "T-3185: close to partial-complete — two operator actions remain
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.'
