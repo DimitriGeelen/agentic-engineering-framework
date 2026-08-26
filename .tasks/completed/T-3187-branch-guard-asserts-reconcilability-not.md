@@ -1,21 +1,20 @@
 ---
-id: T-3188
-name: "Branch hygiene still measures 'landed' against master, which now lags by design"
+id: T-3187
+name: "Branch guard asserts reconcilability, not identity — 41 days on the wrong branch
+  went unseen"
 description: >
-  lib/branch-hygiene.sh resolves target=origin/master and derives merged-undeleted
-  / behind-threshold / remote-contained from it. Under T-3185's release train master
-  deliberately lags bleeding-edge between releases, so a branch already merged into
-  bleeding-edge is no longer reported as merged-undeleted and lingers uncollected.
-  'Landed' now means 'in the dev branch', not 'in master'. Not fixed in T-3187 because
-  changing target semantics has blast radius across every finding class and deserves
-  its own test pass.
+  fw doctor's diverged-fork guard (T-100195) fires only when a branch is BOTH ahead
+  and behind. t2539-staging was 0 behind, so for 41 days 'on the sanctioned branch'
+  and 'on some clean wrong branch' produced identical output. The guard must assert
+  WHICH branch, not merely that the branch is reconcilable. Per L-497 the rail must
+  live ON the branch it polices. Blocked tonight because T-3127 holds bin/fw uncommitted.
 
-status: captured
-workflow_type: refactor
+status: work-completed
+workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/branch-hygiene.sh, tests/unit/t3187_branch_identity_guard.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,9 +26,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-26T22:42:00Z
-last_update: '2026-08-26T22:45:15Z'
-date_finished:
+created: 2026-08-26T21:41:13Z
+last_update: 2026-08-26T22:47:08Z
+date_finished: 2026-08-26T22:47:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -41,17 +40,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-26T22:45:08Z'
+  - ts: '2026-08-26T21:45:04Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
-      tier: 3
+      tier: 2
       effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
-      (workflow:refactor); effort=8 (lines=202,acs=4)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-26T22:45:15Z'
+  - ts: '2026-08-26T21:45:07Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -70,7 +69,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3188: Branch hygiene still measures 'landed' against master, which now lags by design
+# T-3187: Branch guard asserts reconcilability, not identity — 41 days on the wrong branch went unseen
 
 ## Context
 
@@ -79,9 +78,13 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw_branch_hygiene` emits a `wrong-branch` finding naming BOTH the current branch and the expected one, so "on the sanctioned branch" and "on some clean wrong branch" stop producing identical output — the 41-day blind spot that let `t2539-staging` run unnoticed
+- [x] The guard asserts IDENTITY, not reconcilability: it fires on a 0-behind branch (exactly the state the `diverged-fork` rail cannot see), and on `master` itself, which is merge-only under the release train
+- [x] Self-scoping — silent in any repo with no `bleeding-edge` branch, so consumer projects on a master-only model inherit no false finding
+- [x] Main-checkout only: a linked worktree legitimately sits on a feature branch, so the guard must not fire there (discriminator: `--git-dir` vs `--git-common-dir`)
+- [x] Lands in `lib/branch-hygiene.sh` alone — no `bin/fw` edit (T-3127 holds it dirty), possible because `fw doctor` already renders whatever classes the lib function returns
+- [x] Per L-497 the rail lives ON the branch it polices — verified live: `fw doctor` rendered `wrong-branch bleeding-edge expected=_t3187-probe` from this checkout
+- [x] bats coverage with a control leg: every silent assertion is paired with a firing one over the same fixture, so silence is never the only evidence
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -115,6 +118,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t3187_branch_identity_guard.bats > /tmp/.t3187-bats 2>&1 && ! grep -q "^not ok" /tmp/.t3187-bats
+bash -n lib/branch-hygiene.sh
+grep -q "wrong-branch" lib/branch-hygiene.sh
+bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .' > /tmp/.t3187-live 2>&1 && ! grep -q "^wrong-branch" /tmp/.t3187-live
+git show --stat --format= HEAD > /tmp/.t3187-stat 2>&1 && ! grep -qE "^ +bin/fw " /tmp/.t3187-stat
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -267,7 +276,22 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-26T22:42:00Z — task-created [task-create-agent]
+### 2026-08-26T21:41:13Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3188-branch-hygiene-still-measures-landed-aga.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3187-branch-guard-asserts-reconcilability-not.md
 - **Context:** Initial task creation
+
+### 2026-08-26T22:43:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-df92e269
+- **Timestamp:** 2026-08-26T22:47:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-26T22:47:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3179: close-before-commit strands the work: work-completed is terminal so the active-task gate then refuses the commit for the task whose work it is
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T22:49:43Z
+# ============================================================================
+
+task_id: T-3179
+task_name: "close-before-commit strands the work: work-completed is terminal so the active-task gate then refuses the commit for the task whose work it is"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T18:01:16Z
+completed: 2026-08-26T22:49:08Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-26T20:15:45+02:00
+last_commit: 2026-08-27T00:01:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-3180: file the operator-facing half of T-3175, and T-3179's ordering trap. a partial-complete task may commit its own verified work. refresh the vendored hook copy
+
+# Key outcomes
+outcomes:
+  - '`check-active-task` allows `git commit` / `git add` when the focused task''s status is'
+  - 'The allowance is scoped to a `work-completed` focus, not widened generally:'
+  - 'The commit-msg hook still requires a `T-XXX` reference. The point is to let the work'
+  - '`FW_SAFE_MODE=1 <cmd>` as a *command prefix* either works for this hook or is'
+  - 'End-to-end bats, both directions: focus=<work-completed task> + `git commit "T-XXX:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - 'agents/context/check-active-task.sh'
+  - 'CLAUDE.md'
+  - '.context/audits/2026-08-26.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3179-close-before-commit-strands-the-work-wor.md'
+  - '.tasks/active/T-3180-decided-inception-page-still-offers-reco.md'
+  - 'tests/unit/t3179_partial_complete_commit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T20:15:45'
+    action: 'T-3180: file the operator-facing half of T-3175, and T-3179''s ordering trap'
+  - time: '2026-08-27T00:00:03'
+    action: 'T-3179: a partial-complete task may commit its own verified work'
+  - time: '2026-08-27T00:01:03'
+    action: 'T-3179: refresh the vendored hook copy'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 287 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 287
+  commits: 3
+  files_changed: 15
+  lines_added: 601
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3179-close-before-commit-strands-the-work-wor.md
+generated_by: context-agent-hybrid

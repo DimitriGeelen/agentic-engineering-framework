@@ -1,5 +1,5 @@
-# Audit Results - 2026-08-26-2352
-timestamp: 2026-08-26T21:52:26Z
+# Audit Results - 2026-08-27-0045
+timestamp: 2026-08-26T22:45:17Z
 sections: "structure"
 summary:
   pass: 28
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3174 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3175 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 30 project YAML file(s)"
   - level: PASS
@@ -46,20 +46,20 @@ findings:
     check: "Found 181 GO-scope-not-propagated inception(s) of 353 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
     mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
   - level: PASS
-    check: "Fabric: 1131 registered card(s)"
+    check: "Fabric: 1133 registered card(s)"
   - level: WARN
-    check: "Fabric: 49/1044 cards have no edges"
+    check: "Fabric: 51/1046 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 13 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 747 card(s) point at files no watch pattern covers"
+    check: "Fabric: 749 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
   - level: WARN
-    check: "Branch hygiene: 23 finding(s) — stale branches, worktrees or remote refs"
+    check: "Branch hygiene: 22 finding(s) — stale branches, worktrees or remote refs"
     mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"

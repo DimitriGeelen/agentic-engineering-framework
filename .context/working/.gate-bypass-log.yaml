@@ -7595,3 +7595,8 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>" 2>&'
   command: 'FW_SWITCH_FOCUS=1 git add -A .tasks .context && FW_SWITCH_FOCUS=1 git commit -q -m "T-3185: close to partial-complete — two operator actions remain
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.'
+- timestamp: '2026-08-26T22:49:31Z'
+  task: 'T-3179'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: T-3179 touched no render surface. Its two authored commits (8229a5620, a24323a9a) changed agents/context/check-active-task.sh, CLAUDE.md, tests/unit/t3179_partial_complete_commit.bats and the vendored hook copy. web/blueprints/inception.py entered this task''s file set only because d998545b8 — a T-3180 commit — carries ''Ref: T-3179 (landing thread)'' in its body, and the gate resolves touched files by message-wide grep rather than authorship. Mis-attribution filed as T-3189.'
+  reason: ''

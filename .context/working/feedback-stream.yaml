@@ -37587,3 +37587,39 @@ scan_id: R-03a6fdb0
 task_id: T-3185
 payload:
   task_file: .tasks/active/T-3185-master-becomes-a-release-train-rename-th.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T22:47:14Z'
+scan_id: R-df92e269
+task_id: T-3187
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T22:47:14Z'
+scan_id: R-df92e269
+task_id: T-3187
+payload:
+  task_file: .tasks/active/T-3187-branch-guard-asserts-reconcilability-not.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T22:49:31Z'
+scan_id: R-2b64de77
+task_id: T-3179
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T22:49:31Z'
+scan_id: R-2b64de77
+task_id: T-3179
+payload:
+  task_file: .tasks/active/T-3179-close-before-commit-strands-the-work-wor.md

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3187: Branch guard asserts reconcilability, not identity — 41 days on the wrong branch went unseen
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T22:47:25Z
+# ============================================================================
+
+task_id: T-3187
+task_name: "Branch guard asserts reconcilability, not identity — 41 days on the wrong branch went unseen"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T21:41:13Z
+completed: 2026-08-26T22:47:08Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-27T00:45:00+02:00
+last_commit: 2026-08-27T00:45:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the branch guard now asserts WHICH branch, not just that it reconciles
+
+# Key outcomes
+outcomes:
+  - '`fw_branch_hygiene` emits a `wrong-branch` finding naming BOTH the current branch and the expected one, so "on the sanctioned branch" and "on some clean wrong branch" stop producing identical output — the 41-day blind spot that let `t2539-staging` run unnoticed'
+  - 'The guard asserts IDENTITY, not reconcilability: it fires on a 0-behind branch (exactly the state the `diverged-fork` rail cannot see), and on `master` itself, which is merge-only under the release train'
+  - 'Self-scoping — silent in any repo with no `bleeding-edge` branch, so consumer projects on a master-only model inherit no false finding'
+  - 'Main-checkout only: a linked worktree legitimately sits on a feature branch, so the guard must not fire there (discriminator: `--git-dir` vs `--git-common-dir`)'
+  - 'Lands in `lib/branch-hygiene.sh` alone — no `bin/fw` edit (T-3127 holds it dirty), possible because `fw doctor` already renders whatever classes the lib function returns'
+  - 'Per L-497 the rail lives ON the branch it polices — verified live: `fw doctor` rendered `wrong-branch bleeding-edge expected=_t3187-probe` from this checkout'
+  - 'bats coverage with a control leg: every silent assertion is paired with a firing one over the same fixture, so silence is never the only evidence'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - '.fabric/components/tests-unit-t3187_branch_identity_guard.yaml'
+  - 'lib/branch-hygiene.sh'
+  - '.tasks/active/T-3187-branch-guard-asserts-reconcilability-not.md'
+  - '.tasks/active/T-3188-branch-hygiene-still-measures-landed-aga.md'
+  - 'tests/unit/t3187_branch_identity_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-27T00:45:00'
+    action: 'T-3187: the branch guard now asserts WHICH branch, not just that it reconciles'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 65 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 65
+  commits: 1
+  files_changed: 6
+  lines_added: 487
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3187-branch-guard-asserts-reconcilability-not.md
+generated_by: context-agent-hybrid
