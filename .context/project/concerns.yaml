@@ -3260,3 +3260,167 @@ concerns:
   - T-037
   - G-045
   follow_up_task: T-3145
+- id: G-087
+  type: gap
+  title: A --dry-run flag routes through the writing generator, so the cautious path
+    is the one that mutates git-tracked state
+  description: '`fw cron install --dry-run` (bin/fw:5487-5522) computes its diff by
+    invoking `"$0" cron generate` as step 1 — the same code path the non-dry-run form
+    uses — which writes $PROJECT_ROOT/.context/cron/agentic-audit.crontab. Only step 3
+    is guarded by the dry-run flag. The command then prints "(dry-run — no changes
+    made)" over a file it just rewrote.
+
+    Reproduced at HEAD v1.6.78 in a sandbox project root (/tmp/cronprobe): source file
+    135 bytes / md5 69313a83 before, 389 bytes / md5 4d9e0f04 after, with the
+    "no changes made" line present in the same output. Not version-specific — the
+    reporter hit it on vendored v1.6.29, and the shape is unchanged on trunk.
+
+    In the reporting project the write truncated a 3875-byte crontab source carrying
+    ten running jobs to 450 bytes (39 lines deleted). Recovered with `git checkout
+    HEAD --` and verified byte-identical to /etc/cron.d/; no job missed a cycle. The
+    recovery depended entirely on the file being git-tracked.
+
+    The gap is not the write itself but WHICH path carries it: --dry-run is the flag an
+    operator chooses precisely because they do not yet know what the command will do, so
+    a writing --dry-run punishes the cautious choice specifically. On a path outside git
+    this is silent, unrecoverable data loss with a success message on top.
+
+    A correct comparand already exists and is already used by both drift checks:
+    lib/cron_dry_run.py emits the same generated text to stdout and never writes.'
+  spec_reference: 'CLAUDE.md §Enforcement Tiers (Tier 0 sees the command string and
+    nothing else — a destructive effect reached through a script is outside the gate)'
+  severity: high
+  status: open
+  detected_in: T-3160
+  observed: '2026-08-26'
+  reported_by: 001-CashWeb-Lightspeed-Ecwid-integration (their T-151 / G-050, vendored v1.6.29)
+  blast_radius: cross-project
+  what_works_now: 'The write is idempotent when registry and generated form are already
+    in sync, which is the state most framework-repo sessions are in — this is why it
+    went unnoticed here. lib/cron_dry_run.py already implements the non-writing
+    generator that the fix needs.'
+  what_remains: 'Route the dry-run diff through lib/cron_dry_run.py (or a temp path) so
+    no --dry-run branch reaches a writing generator. Generalise: audit every fw
+    subcommand advertising --dry-run for a write reached before the flag is honoured
+    (fw vendor, fw upgrade, fw harvest, fw triage route, fw integrate run, fw task
+    archive-eligible, fw mcp reap all advertise one). A dry-run that writes is a
+    false-green with the same signature as the port-3000 class: the output asserts
+    safety it did not verify.'
+  related:
+  - T-3160
+  - T-1114
+  - T-1944
+  follow_up_task: T-3160
+- id: G-088
+  type: gap
+  title: The empty-registry skip makes a check that compared nothing render as a check
+    that found nothing, and the remedy it suggests erases the schedule
+  description: 'Second-order residue of OBS-249 / T-3070. T-3070 stopped the two cron
+    lanes from both WRITING (`fw audit schedule install` now execs `fw cron install`
+    when a registry exists), but shipped no transition for projects whose deployed jobs
+    came from the legacy heredoc lane while their .context/cron-registry.yaml is still
+    the `jobs: []` that `fw init` seeds. For those projects the delegation makes the
+    outcome worse, not better: the legacy command now regenerates from an empty registry.
+
+    Reproduced at HEAD v1.6.78: registry `jobs: []`, deployed target carrying two live
+    job lines. `fw cron install` printed the deletion as a diff and replaced both the
+    git-tracked source and the deployed target with a six-line header-only file.
+    No refusal, no warning, exit 0.
+
+    Compounding false-green: the T-2844 empty-registry guard in bin/fw do_doctor
+    (bin/fw:3134) and agents/audit/audit.sh (audit.sh:2350) skips the drift checks
+    whenever job count is 0, without testing whether the deployed target exists. So a
+    project with ten jobs running and 622 cron output files present gets
+    "SKIP Cron drift checks skipped — registry declares no jobs (nothing to generate)"
+    and Watchtower /cron renders "0 jobs — No jobs in cron registry". The page does not
+    hedge; it asserts absence. That assertion is what sent the reporting operator to
+    file a "our cron jobs are not installed" report.
+
+    The dangerous composition: the obvious response to that page is `fw cron install`,
+    the command the page itself suggests — which is the command that erases the ten
+    running jobs.
+
+    T-2844 was right that a freshly initialised project has no generated form and should
+    not WARN. It is wrong that job count alone settles the question: `jobs: [] AND target
+    exists` is not a fresh init, it is an unmigrated project, and those two states are
+    currently indistinguishable to both surfaces.'
+  spec_reference: 'CLAUDE.md §Verification Gate (P-011) — Cron-touching tasks: the chain
+    is registry → generated → deployed, three transitions, three drift classes'
+  severity: high
+  status: open
+  detected_in: T-3161
+  observed: '2026-08-26'
+  reported_by: 001-CashWeb-Lightspeed-Ecwid-integration (their T-151 / G-051, vendored v1.6.29)
+  blast_radius: cross-project
+  what_works_now: 'T-3070 removed the dual-WRITER collision for projects that did
+    migrate, and its regression test (tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats)
+    holds. Framework-repo and any consumer that ran `fw cron generate` after T-448 are
+    unaffected — their registries are populated, so neither the skip nor the wipe fires.'
+  what_remains: '(a) `fw cron install` must refuse when the target exists and was not
+    produced by the registry — the generated header line "managed by cron-registry.yaml"
+    is a sufficient marker, and its absence is exactly the unmigrated case; (b) both
+    drift surfaces must WARN rather than skip when job count is 0 AND the deployed
+    target exists, naming migration as the remedy rather than install; (c) consider
+    rendering /cron from the deployed /etc/cron.d state alongside the registry
+    declaration — the page currently mirrors intent and presents it as world. The
+    reporter''s framing is the one to keep: a check that compared nothing must not render
+    as a check that found nothing.'
+  related:
+  - T-3161
+  - OBS-249
+  - T-3070
+  - T-1112
+  - T-1114
+  - T-2844
+  follow_up_task: T-3161
+- id: G-089
+  type: gap
+  title: The cron generator masks every job's exit status behind a logger pipeline,
+    removing the only machine-readable failure signal
+  description: 'Both generators — bin/fw `cron generate` (bin/fw:5265-5270) and
+    lib/cron_dry_run.py:79-83 — rewrite each command to `<cmd> 2>&1 | logger -t
+    agentic-cron`, replacing any existing `2>/dev/null`. A pipeline exits with the
+    status of its LAST component, and `logger` always succeeds.
+
+    Reproduced, not inferred: `false 2>&1 | logger -t probe` -> status 0;
+    `set -o pipefail; false 2>&1 | logger` -> 1; `false 2>&1 | logger; exit ${PIPESTATUS[0]}`
+    -> 1.
+
+    Consequence: cron still emits "CRON ... exited with status N" for a failing job in
+    the un-piped form, but under the generated form it always sees 0. No MAILTO is set,
+    so no mail is generated either. The only surviving trace is syslog text under tag
+    agentic-cron, which nothing reads on a schedule. A crashed nightly audit is
+    indistinguishable from a successful one at every automated surface.
+
+    This is a partial regression of the intent behind the framework''s own cron
+    drift work: the three-transition chain (registry → generated → deployed) is now
+    gated, but the fourth transition the framework already names as ungated —
+    deployed → executable, L-365 — is precisely the one this masking hides. Every
+    exec-time failure class L-365 describes (cwd, env, missing module) reaches cron as
+    exit 0.'
+  spec_reference: 'L-365 (deployed → executable is a separate state; "wired" is not
+    "deployed", "deployed" is not "executable")'
+  severity: medium
+  status: open
+  detected_in: T-3162
+  observed: '2026-08-26'
+  reported_by: 001-CashWeb-Lightspeed-Ecwid-integration (their T-151 / G-052, vendored v1.6.29)
+  blast_radius: cross-project
+  what_works_now: 'The T-1720 change this stems from is a real gain and must be kept:
+    before it, cron lines ended in `2>/dev/null` and stderr was discarded outright.
+    Piping to logger puts it in `journalctl -t agentic-cron`, which is recoverable
+    forensics. The reporter states this explicitly and does not ask for a revert.'
+  what_remains: 'Append `; exit ${PIPESTATUS[0]}` to each generated line, in BOTH
+    generators, so the job status survives the pipe. Do not use `SHELL=/bin/bash -o
+    pipefail` in the generated header: cron.d treats SHELL as a bare executable path and
+    does not word-split arguments, so that form is not portable — the reporter reached
+    the same conclusion from the other direction and preferred the per-line form.
+    Parity requirement: bin/fw `cron generate` and lib/cron_dry_run.py must change
+    together or the registry→generated drift check will report permanent false drift
+    (they are content-compared).'
+  related:
+  - T-3162
+  - T-1720
+  - T-1944
+  - L-365
+  follow_up_task: T-3162
