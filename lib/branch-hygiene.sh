@@ -93,6 +93,47 @@ fw_branch_hygiene() {
         return 0
     fi
 
+    # ── T-3187: branch IDENTITY, not merely reconcilability ──
+    #
+    # Every finding class below asks "can this branch still be reconciled?".
+    # None asks "is this the branch we are supposed to be on?". Those are
+    # different questions, and the gap between them is measurable: the session
+    # sat on `t2539-staging` for 41 days (cut 2026-07-16 for T-2539, which
+    # closed 19 seconds later, then never left). It was 0 BEHIND master the
+    # whole time — a clean fast-forward — so `diverged-fork` had no reason to
+    # fire and every other class passed it silently. Being on the sanctioned
+    # branch and being on some tidy wrong branch produced identical output.
+    #
+    # That is the false-green shape: a check that cannot see its subject
+    # reports the same thing as a check that looked and was satisfied. The fix
+    # is to name the expected branch, so the finding is about identity.
+    #
+    # Deliberately scoped three ways, because a guard that cries everywhere
+    # gets muted and then it is worse than absent:
+    #   1. Silent unless the repo HAS the dev branch. A consumer project on a
+    #      master-only model never sees this class.
+    #   2. Main checkout only. A linked worktree sits on a feature branch by
+    #      design (§Worktree Policy), so firing there would flag correct work.
+    #      Discriminator: --git-dir == --git-common-dir only in the main tree.
+    #   3. Reports, never blocks. WARN is the right volume for a branch you may
+    #      have switched to on purpose.
+    #
+    # `master` DOES fire: under the release train (§Release-Train Branch Model)
+    # master is merge-only, so a session authoring there is as wrong as one on
+    # a stale feature branch — and PROTECT_MASTER would block its first commit.
+    local _bh_dev="${FW_DEV_BRANCH:-bleeding-edge}"
+    if git -C "$repo" rev-parse --verify -q "refs/heads/$_bh_dev" >/dev/null 2>&1 &&
+       [ "$(git -C "$repo" rev-parse --git-dir 2>/dev/null)" = \
+         "$(git -C "$repo" rev-parse --git-common-dir 2>/dev/null)" ]; then
+        local _bh_cur
+        _bh_cur=$(git -C "$repo" branch --show-current 2>/dev/null)
+        if [ -z "$_bh_cur" ]; then
+            echo "wrong-branch detached-HEAD expected=$_bh_dev"
+        elif [ "$_bh_cur" != "$_bh_dev" ]; then
+            echo "wrong-branch $_bh_cur expected=$_bh_dev"
+        fi
+    fi
+
     local br behind ahead
     # ── local branches: merged-undeleted, else behind-threshold ──
     while IFS= read -r br; do
