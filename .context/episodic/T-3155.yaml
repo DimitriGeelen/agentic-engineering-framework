@@ -74,10 +74,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 26
-  commits: 1
-  files_changed: 7
-  lines_added: 208
-  lines_removed: 19
+  commits: 2
+  files_changed: 19
+  lines_added: 512
+  lines_removed: 44
+  footprint_refreshed_at: '2026-08-26T10:15:15Z'
+  footprint_refreshed_by_commit: ce2987fd2
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3155-consumer-claudemd-template-ships-stale-b.md

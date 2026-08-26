@@ -1,15 +1,17 @@
 ---
 id: T-3157
-name: "Re-pin Workflow Designer 0.8.0 -> 0.11.0 (three releases of consumer-visible fixes unconsumed)"
+name: "Re-pin Workflow Designer 0.8.0 -> 0.11.0 (three releases of consumer-visible
+  fixes unconsumed)"
 description: >
-  Re-pin Workflow Designer 0.8.0 -> 0.11.0 (three releases of consumer-visible fixes unconsumed)
+  Re-pin Workflow Designer 0.8.0 -> 0.11.0 (three releases of consumer-visible fixes
+  unconsumed)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [vendor/designer/aef-workflow-designer-0.11.0.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T11:47:15Z
-last_update: 2026-08-26T11:47:15Z
-date_finished: null
+last_update: 2026-08-26T12:04:09Z
+date_finished: 2026-08-26T12:04:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-26T12:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=10)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T12:00:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3157: Re-pin Workflow Designer 0.8.0 -> 0.11.0 (three releases of consumer-visible fixes unconsumed)
@@ -253,6 +283,40 @@ curl -sf "$(bin/fw watchtower url)/designer" >/dev/null
 
 ## Recommendation
 
+**Recommendation:** GO — accept the re-pin.
+
+**Rationale:** All seven Agent ACs pass and all five verification legs are green. The bytes
+were verified three independent ways before install (our own sha256, the MANIFEST at the
+annotated tag, the pin) rather than taken from the rail announce — 832's own standing
+instruction. The five conformance-rail maps stayed green across the bump, which is the
+check that would have caught a round-trip regression arriving *with* the new build. The
+`resolves_workflow_ref` capability was re-verified against the new bundle rather than
+assumed to carry forward (T-2612 guard), so the dual-form emit and `editor-unbindable` lint
+correctly stay dormant.
+
+The single remaining unknown is **behavioural, not structural**, and it is exactly what the
+`[REVIEW]` AC asks: does the editor feel right in the operator's hands. Three releases of
+change landed at once, one of which (0.8.0's own note) was cut in response to an operator
+field report about endpoint drag. A curl returning 200 cannot answer that. Rollback is
+cheap and clean — `git revert` of the pin commit restores 0.8.0, which stays vendored and
+untouched.
+
+Not DEFER: nothing is waiting on further evidence. The measurement is done.
+
+**Evidence:**
+- Commit `244bc7129`; pin `policy/designer-pin.yaml` → `version: "0.11.0"`, sha256
+  `4f20b146…dc5a39`, bytes `966087`, tag `designer-v0.11.0`
+- `fw designer sync --from-tag` — MANIFEST anchor ✓, pin anchor ✓, installed read-only
+- `fw designer` → `PRESENT ✓ (sha256 matches pin)`
+- Verification gate: **5/5 passed**
+- `fw audit --sections structure` → all 5 `Map conformance: … matches its enforced machine`,
+  zero `diverges`
+- Capability markers in the new bundle: `workflowRef` ×35, `/api/list` ×13,
+  `targetWorkflow` ×25 → `resolves_workflow_ref: true` retained
+- T-570 exposure measured: 38 `aef:meta` occurrences across 8 keys sat off the 20-key export
+  whitelist on 0.8.0 (bounded as *exposure*, not proven loss — see Acceptance Criteria)
+- Unblocks 001-CashWeb T-025; reported to the fleet on agent-chat-arc offset 473
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -307,3 +371,27 @@ curl -sf "$(bin/fw watchtower url)/designer" >/dev/null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3157-re-pin-workflow-designer-080---0110-thre.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3d5e30dc
+- **Timestamp:** 2026-08-26T12:05:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Artifact + `dist/MANIFEST.yaml` fetched AT the annotated tag from `source_origin:`; sha256 computed locally by us matches BOTH the MANIFEST at that same tag AND the `sha256:` written into the pin — an
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=dist/MANIFEST.yaml in: Artifact + `dist/MANIFEST.yaml` fetched AT the annotated tag from `source_origin:`; sha256 computed locally by us matches BOTH the MANIFEST at that sa`
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 69
+     - evidence: `curl -sf "$(bin/fw watchtower url)/designer" >/dev/null`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 67
+     - evidence: `out=$(bin/fw audit --sections structure 2>&1); ! echo "$out" | grep -q "Map conformance:.*diverges"`
+
+### 2026-08-26T12:04:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-26T11:58:42Z
-last_update: '2026-08-26T12:00:09Z'
+last_update: 2026-08-26T12:06:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,7 +57,38 @@ cost_estimate_proposed:
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+**Full artefact: `docs/reports/T-3159-autonomous-loop-context-boundary.md`** (C-001).
+
+The operator reports that continuous/autonomous mode does not continue: at the context
+boundary the session is "kicked out" and returns to an idle prompt they must re-enter by
+hand. Four defects were located in source this session:
+
+- **F1** no `Stop` / `UserPromptSubmit` / `SessionEnd` hook exists among the 28 registered,
+  so `claude-fw`'s auto-restart reopens an **idle** prompt — `FW_NEXT_DIRECTIVE` arrives as
+  `additionalContext`, which does not cause a turn. **The loop has no driver.**
+- **F2** `claude -c` continues the *same* conversation, so the transcript that just hit
+  critical returns whole; `post-compact-resume` resets the budget *gauge* only. It re-crosses
+  critical and restarts until `MAX_RESTARTS=5`. **The exit-and-`-c` path cannot free context
+  by construction.**
+- **F3** `.continuous-mode.yaml` reports `enabled: true` while `last_terminated_reason`
+  records `expires_at 2026-06-17` — 70 days expired.
+- **F4** `.auto-restart-pending` is consumed only on the `startup` branch, so a leftover
+  sentinel makes the next cold start read as a loop continuation.
+
+The operator proposed doing the compaction in-session — precompact, then `/compact` **or**
+`/clear` — with the caveat that under `/clear` our own handover must carry everything. That
+caveat is **literally the current state**: `PreCompact` has no `/clear` counterpart, and
+`post-compact-resume.sh:28` clamps the SessionStart source to `(startup|resume|compact)`, so
+`/clear` today gets **zero hooks on both ends**.
+
+**Why now:** the operator asked, and the loop is currently unusable unattended.
+
+## Deliverable
+
+A designer map of the loop with a `vocabulary-set` conformance-rail entry on the
+SessionStart-source gateway — which converts F1/F2's `clear` gap from prose in a report into
+a rail that goes RED on its own and stays red until the code changes. Authored against
+designer **0.11.0** (T-3157), not the 0.8.0 build that was live when the question was asked.
 
 ## Assumptions
 
@@ -134,7 +165,19 @@ cost_estimate_proposed:
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** locating the defects (done); checking the operator's `/clear` proposal against the
+hook table and source allowlist (done); assessing whether the conformance rail can carry this
+machine (done); the four Open Questions; authoring the map on GO.
+
+**OUT — explicitly, until the operator rules:**
+- No `Stop` hook is written. IW-2 (what terminates a self-driving loop, and who holds that
+  authority) is a **sovereignty** question, not plumbing — a `Stop` hook that re-injects can
+  by construction prevent a session from ever ending.
+- No SessionStart matcher added, no `post-compact-resume.sh:28` allowlist widened.
+- No `.continuous-mode.yaml` re-enable. F3 is reported, not repaired, because re-enabling an
+  expired loop while F1 stands would restart the exact behaviour the operator reported.
+- No registry entry landed while IW-3 (may a rail entry be authored deliberately RED?) is
+  open — T-2619's cascading-detail model assumes entries go green.
 
 ## Acceptance Criteria
 

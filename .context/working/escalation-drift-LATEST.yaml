@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-25T03:23:02.444774+00:00
-corpus_total: 2734
-bug_class_total: 495
+generated: 2026-08-26T03:23:02.131159+00:00
+corpus_total: 2741
+bug_class_total: 497
 bug_class_pct: 18
-h1_flagged: 360
+h1_flagged: 361
 h1_pct_of_bug_class: 72
-h2_repeat_patterns: 158
+h2_repeat_patterns: 159
 h3_flagged: 265
 h3_pct_of_bug_class: 53
-recent_30d_flagged: 15
+recent_30d_flagged: 16
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
@@ -34,15 +34,15 @@ recent_sample:
     name: "Fresh-install onboarding path broken: make the new-project prompt work end"
 h2_top:
   - learning: "P-011"
-    task_count: 2223
+    task_count: 2245
   - learning: "L-387"
-    task_count: 1999
+    task_count: 2015
   - learning: "L-291"
-    task_count: 1047
+    task_count: 1052
   - learning: "L-398"
-    task_count: 798
+    task_count: 803
   - learning: "P-010"
-    task_count: 432
+    task_count: 439
   - learning: "L-399"
     task_count: 91
   - learning: "L-006"

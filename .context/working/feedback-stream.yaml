@@ -37041,3 +37041,147 @@ scan_id: R-a0cde07f
 task_id: T-3138
 payload:
   task_file: .tasks/active/T-3138-106-bats-assertions-cannot-fail-bash-exe.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T22:06:13Z'
+scan_id: R-67c0967c
+task_id: T-3145
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T22:06:13Z'
+scan_id: R-67c0967c
+task_id: T-3145
+payload:
+  task_file: .tasks/active/T-3145-ingest-t-037-executable-workflow-contrac.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T22:17:03Z'
+scan_id: R-8db1794a
+task_id: T-3146
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T22:17:03Z'
+scan_id: R-8db1794a
+task_id: T-3146
+payload:
+  task_file: .tasks/active/T-3146-triage-832-report-p-011-verification-ext.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T22:17:28Z'
+scan_id: R-57df1231
+task_id: T-3146
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T22:17:28Z'
+scan_id: R-57df1231
+task_id: T-3146
+payload:
+  task_file: .tasks/active/T-3146-triage-832-report-p-011-verification-ext.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T22:25:50Z'
+scan_id: R-8f0ff95a
+task_id: T-3144
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T22:25:50Z'
+scan_id: R-8f0ff95a
+task_id: T-3144
+payload:
+  task_file: .tasks/active/T-3144-fw-vendor-ships-executable-code-into-con.md
+---
+kind: scan_emitted
+timestamp: '2026-08-25T22:28:35Z'
+scan_id: R-b2c00636
+task_id: T-3144
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-25T22:28:35Z'
+scan_id: R-b2c00636
+task_id: T-3144
+payload:
+  task_file: .tasks/active/T-3144-fw-vendor-ships-executable-code-into-con.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T10:11:30Z'
+scan_id: R-5887163b
+task_id: T-3150
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T10:11:30Z'
+scan_id: R-5887163b
+task_id: T-3150
+payload:
+  task_file: .tasks/active/T-3150-fw-upgrade-marked-project-owned-region-i.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T10:14:54Z'
+scan_id: R-ed15b0e3
+task_id: T-3155
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T10:14:54Z'
+scan_id: R-ed15b0e3
+task_id: T-3155
+payload:
+  task_file: .tasks/active/T-3155-consumer-claudemd-template-ships-stale-b.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T12:05:48Z'
+scan_id: R-3d5e30dc
+task_id: T-3157
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T12:05:48Z'
+scan_id: R-3d5e30dc
+task_id: T-3157
+payload:
+  task_file: .tasks/active/T-3157-re-pin-workflow-designer-080---0110-thre.md

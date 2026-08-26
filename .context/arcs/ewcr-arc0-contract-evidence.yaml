@@ -1,0 +1,22 @@
+id: arc-019
+slug: ewcr-arc0-contract-evidence
+name: "EWCR Arc 0 \u2014 contract evidence and implementation baseline"
+description: "Initiative ewcr-v1; correlation ewcr-v1-aef-arc0. Draft-only Arc 0 authorized by\
+  \ the human on 2026-08-26. Establish the contract evidence baseline and measure\
+  \ Component Fabric Unknown-subsystem overlap only for the proposed runtime write\
+  \ set. No runtime implementation, autonomy expansion, BVP confirmation, bulk task\
+  \ creation, or supersession of prior DEFER/NO-GO decisions."
+status: draft
+anchor_task: T-3147
+headline_mechanic: "operator opens the Arc 0 page, picks any pilot invariant or review finding, and sees\
+  \ it traced to a versioned contract, a refusal scenario, a responsible component,\
+  \ and an executable verification fence they can run"
+demo_evidence: null
+created: 2026-08-25T22:17:18Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.

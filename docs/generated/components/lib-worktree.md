@@ -17,6 +17,17 @@ on-disk hook here while main sits on a session branch.
 `git checkout master` in main fails — you must `git push origin <branch>:master`.
 - per-worktree merged-into-master? and live-on-this-host? state.
 
+### Framework Reference
+
+**The default is the main checkout. Do not create a git worktree unless the
+operator has explicitly instructed one, in this session, in their own words.**
+
+This overrides every other passage in this file. Where older text reads as
+"use a worktree for parallel work" or "real code goes through a worktree", the
+rule below wins.
+
+*(truncated — see CLAUDE.md for full section)*
+
 ## Used By (2)
 
 | Component | Relationship | Description |

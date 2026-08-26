@@ -7433,3 +7433,52 @@ timeout 90 bin/fw context add-learning "A recovery claim is evidence about the p
   target: 'T-3142'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 FW_SWITCH_FOCUS=1 git add -A && FW_SWITCH_FOCUS=1 git commit -q -m "T-3142: L-641 recovery claims are evidence about the past; L-642 staleness is not conseque'
+- timestamp: '2026-08-25T22:31:40Z'
+  task: 'T-3148'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3144'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3144: refresh vendored copies for the vendor-visibility check
+
+Scoped deliberately to the two files T-3144 changed. fw '
+- timestamp: '2026-08-26T09:28:48Z'
+  task: 'T-3149'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-08-26T09:39:13Z'
+  task: 'T-3149'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3148'
+  command: 'git add .context/project/learnings.yaml 2>/dev/null; git status --short .context/project/ | head -5; FW_SWITCH_FOCUS=1 git commit -q -m "T-3148: capture two false-green rules from 010-termlinks three'
+- timestamp: '2026-08-26T09:49:54Z'
+  task: 'T-3150'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3149'
+  command: 'python3 - <<PY
+import glob,re
+f=glob.glob(".tasks/active/T-3151-*.md")[0]
+s=open(f).read()
+old="- [ ] `fw upgrade` compares each managed file against the content it last wrote, and detects"
+new="""-'
+- timestamp: '2026-08-26T09:50:02Z'
+  task: 'T-3150'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3149'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-3149: ingest 001-CashWeb T-144 assertion run" 2>&1 | head -30'
+- timestamp: '2026-08-26T09:51:00Z'
+  task: 'T-3150'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3149'
+  command: 'git add docs/reports/T-3149-upgrade-ownership.md .tasks/active/T-3151-*.md .tasks/active/T-3154-*.md .tasks/active/T-3155-*.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-3149: ingest 001-CashWebs T-144'
+- timestamp: '2026-08-26T12:06:13Z'
+  task: 'T-3157'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3159'
+  command: 'bin/fw context focus T-3159 >/dev/null 2>&1; git add -A .tasks .context/episodic .fabric 2>/dev/null; FW_SWITCH_FOCUS=1 git commit -q -m "T-3159: T-3157 reaches partial-complete — GO filed, 5/5 veri'

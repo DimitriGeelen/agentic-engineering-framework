@@ -43,7 +43,7 @@ nothing mechanical would gate their close.
 | T-2876 | started-work | inception | Interpreter-mediated writes bypass the Bash task gat... | 3 | **no** |
 | T-2969 | started-work | build | draft arc with all constituents complete is reported... | 5 | yes |
 | T-3097 | started-work | inception | Worktree failure class — ultra-deep RCA and structur... | 3 | **no** |
-| T-3138 | started-work | build | 106 bats assertions cannot fail: bash exempts !-inve... | 6 | yes |
+| T-3149 | started-work | inception | fw upgrade silently overwrites project-authored gove... | 3 | **no** |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |
