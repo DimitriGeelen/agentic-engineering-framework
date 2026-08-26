@@ -174,18 +174,22 @@ is a fourth ticket, not a widening of this one.
 
 ## Verification
 
-python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q 2>&1 | tail -1 | grep -qE "^67 passed"
+# L-387 redirect-then-grep form. P-011 runs each line under `set -eo pipefail`, so
+# `cmd | grep -q` exits 141 on SIGPIPE once output outgrows a pipe buffer — a false RED,
+# which is the one failure mode worse than a false green here. Flagged by the reviewer
+# (l387-sigpipe-risk x5) on the earlier pipe form; the finding was correct.
+python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q > /tmp/.t3176-pytest 2>&1 && grep -qE "^7[0-9] passed" /tmp/.t3176-pytest
 # the unset sentinel is named as unset, and is not accused
-python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn 2>&1 | grep -q "has no authority set"
-! python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn 2>&1 | grep -qiE "typo|out-of-band"
+python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn > /tmp/.t3176-none 2>&1; grep -q "has no authority set" /tmp/.t3176-none
+! grep -qiE "typo|out-of-band" /tmp/.t3176-none
 # behaviour unchanged: the node still compiles, owner still falls back
-test "$(python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn 2>/dev/null | grep -c '^id: ')" = "1"
+test "$(grep -c '^id: ' /tmp/.t3176-none)" = "1"
 # `none` was NOT ratified into the dialect -- reporting class only
 python3 -c "import sys; sys.path.insert(0,'tools'); import bpmn_to_tasks as b; assert 'none' not in b.AUTHORITY_DIALECT | b.AUTHORITY_NO_OWNER | b.AUTHORITY_OWNER.keys() | b.AUTHORITY_NO_TASK"
 # the accusing branch survives the new class (T-2717 split intact)
-python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/out-of-dialect-lane-sample.bpmn 2>&1 | grep -q "very likely a typo"
+python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/out-of-dialect-lane-sample.bpmn > /tmp/.t3176-ood 2>&1; grep -q "very likely a typo" /tmp/.t3176-ood
 # T-3172 still holds
-python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/external-lane-sample.bpmn 2>&1 | grep -q "emitted NO task skeleton"
+python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/external-lane-sample.bpmn > /tmp/.t3176-ext 2>&1; grep -q "emitted NO task skeleton" /tmp/.t3176-ext
 
 ## RCA
 
@@ -252,24 +256,11 @@ tell you the word "typo" is gone (a grep proves that) but not that the tone is r
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-bde1e311
-- **Timestamp:** 2026-08-26T18:04:53Z
+- **Scan ID:** R-930b2d89
+- **Timestamp:** 2026-08-26T18:12:39Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 5
-
-**Verification-level findings:**
-
-  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
-     - evidence: `python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q 2>&1 | tail -1 | grep -qE "^67 passed"`
-  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
-     - evidence: `python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn 2>&1 | grep -q "has no authority set"`
-  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
-     - evidence: `! python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn 2>&1 | grep -qiE "typo|out-of-band"`
-  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
-     - evidence: `python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/out-of-dialect-lane-sample.bpmn 2>&1 | grep -q "very likely a typo"`
-  5. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 12
-     - evidence: `python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/external-lane-sample.bpmn 2>&1 | grep -q "emitted NO task skeleton"`
+- **Findings:** none
 ### 2026-08-26T17:59:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -37497,3 +37497,39 @@ scan_id: R-b1f695c8
 task_id: T-3173
 payload:
   task_file: .tasks/active/T-3173-lane-authority-dialect-check-is-unreacha.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T18:12:05Z'
+scan_id: R-3a30003c
+task_id: T-3176
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T18:12:05Z'
+scan_id: R-3a30003c
+task_id: T-3176
+payload:
+  task_file: .tasks/active/T-3176-compiler-calls-the-pinned-editors-defaul.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T18:12:39Z'
+scan_id: R-930b2d89
+task_id: T-3176
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T18:12:39Z'
+scan_id: R-930b2d89
+task_id: T-3176
+payload:
+  task_file: .tasks/active/T-3176-compiler-calls-the-pinned-editors-defaul.md

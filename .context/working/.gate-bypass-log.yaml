@@ -7529,3 +7529,11 @@ Six ACs, all verified. arc-012 is now blocked on exactl'
   command: 'FW_SWITCH_FOCUS=1 git add -A .tasks/active/ .context/ 2>/dev/null; FW_SWITCH_FOCUS=1 git commit -q -m "T-3176: step 1 of the Human AC was not rendering — the command is the whole point
 
 The AC put s'
+- timestamp: '2026-08-26T18:12:36Z'
+  task: 'T-3179'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3176'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw reviewer T-3176 2>&1 | grep -E "Overall|Findings|Needs Human"
+FW_SWITCH_FOCUS=1 git add -A .tasks/active/ .context/ 2>/dev/null
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3176: ver'
