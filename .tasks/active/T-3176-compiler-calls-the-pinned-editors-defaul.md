@@ -165,7 +165,8 @@ is a fourth ticket, not a widening of this one.
 ### Human
 - [ ] [REVIEW] The replacement wording for an unset lane reads as a prompt to finish the
       diagram rather than as an error about the author's spelling.
-      **Steps:** 1. `cd /opt/999-Agentic-Engineering-Framework && python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn 2>&1 | head -5`
+      **Steps:**
+      1. `cd /opt/999-Agentic-Engineering-Framework && python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/none-lane-sample.bpmn 2>&1 | head -5`
       2. Read the WARN line as if you had just drawn your first lane in the designer.
       **Expected:** it tells you the lane has no authority set and which values are available,
       without implying you mistyped something.
@@ -251,8 +252,8 @@ tell you the word "typo" is gone (a grep proves that) but not that the tone is r
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-396a32ca
-- **Timestamp:** 2026-08-26T17:59:39Z
+- **Scan ID:** R-bde1e311
+- **Timestamp:** 2026-08-26T18:04:53Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -270,6 +271,5 @@ tell you the word "typo" is gone (a grep proves that) but not that the tone is r
      - evidence: `python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/out-of-dialect-lane-sample.bpmn 2>&1 | grep -q "very likely a typo"`
   5. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 12
      - evidence: `python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/external-lane-sample.bpmn 2>&1 | grep -q "emitted NO task skeleton"`
-
 ### 2026-08-26T17:59:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
