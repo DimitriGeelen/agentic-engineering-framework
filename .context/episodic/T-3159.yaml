@@ -1,0 +1,143 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3159: Autonomous loop cannot cross a context boundary unattended — model it in the designer and fix the driver
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T16:26:18Z
+# ============================================================================
+
+task_id: T-3159
+task_name: "Autonomous loop cannot cross a context boundary unattended — model it in the designer and fix the driver"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T11:58:42Z
+completed: 2026-08-26T16:26:05Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-08-26T14:02:33+02:00
+last_commit: 2026-08-26T17:21:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  autonomous loop cannot cross a context boundary — four defects located, GO filed. problem statement, deliverable and scope fence. inception decision GO (via Watchtower). architecture dialogue Part II — arc-012 already built this and it never fired. operator answers Q1/Q2 — per-turn defect, not per-boundary; nested A-in-C architecture recommended. draft-continuous-run-loop map + retract the claude-fw claim. record S6a/S6b landed in the consequent work list. propagate the GO scope — eight tasks named, two rows explicitly not shipped
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/ewcr-arc0-contract-evidence.yaml'
+  - '.context/audits/2026-08-25.yaml'
+  - '.context/audits/2026-08-26.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-08-26.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/designer/projects/draft-continuous-run-loop/meta.json'
+  - '.context/designer/projects/draft-continuous-run-loop/v1.bpmn'
+  - '.context/episodic/T-3155.yaml'
+  - '.context/handovers/S-2026-0825-2247.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0825-2357.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0826-0030.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0826-0033.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0826-1056.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0826-1314.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - 'docs/generated/components/lib-audit_timing.md'
+  - 'docs/generated/components/lib-episodic_footprint.md'
+  - 'docs/generated/components/lib-vendor-visibility.md'
+  - 'docs/generated/components/lib-worktree.md'
+  - 'docs/generated/components/tests-lint-bats-dead-negation.md'
+  - 'docs/generated/components/tests-unit-episodic_footprint_refresh.md'
+  - 'docs/generated/components/tests-unit-episodic_worktree_mining.md'
+  - 'docs/generated/components/tests-unit-errexit_negation_mechanism.md'
+  - 'docs/generated/components/tests-unit-vendor_visibility.md'
+  - 'docs/generated/components/tools-bats-dead-negation-lint.md'
+  - 'docs/generated/components/tools-bats-dead-negation-mutants.md'
+  - 'docs/generated/components/tools-gaps-render-agreement.md'
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'docs/reports/T-3159-autonomous-loop-context-boundary.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3156-vendored-agentic-frameworkbinfw-is-commi.md'
+  - '.tasks/active/T-3157-re-pin-workflow-designer-080---0110-thre.md'
+  - '.tasks/active/T-3158-designer-currency-check--fw-doctor-warns.md'
+  - '.tasks/active/T-3159-autonomous-loop-cannot-cross-a-context-b.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T14:02:33'
+    action: 'T-3159: autonomous loop cannot cross a context boundary — four defects located, GO filed'
+  - time: '2026-08-26T14:07:10'
+    action: 'T-3159: problem statement, deliverable and scope fence'
+  - time: '2026-08-26T14:11:48'
+    action: 'T-3159: inception decision GO (via Watchtower)'
+  - time: '2026-08-26T14:31:10'
+    action: 'T-3159: architecture dialogue Part II — arc-012 already built this and it never fired'
+  - time: '2026-08-26T14:36:03'
+    action: 'T-3159: operator answers Q1/Q2 — per-turn defect, not per-boundary; nested A-in-C architecture recommended'
+  - time: '2026-08-26T14:50:35'
+    action: 'T-3159: draft-continuous-run-loop map + retract the claude-fw claim'
+  - time: '2026-08-26T16:41:10'
+    action: 'T-3159: record S6a/S6b landed in the consequent work list'
+  - time: '2026-08-26T17:21:43'
+    action: 'T-3159: propagate the GO scope — eight tasks named, two rows explicitly not shipped'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 267 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 267
+  commits: 8
+  files_changed: 53
+  lines_added: 12157
+  lines_removed: 4985
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3159-autonomous-loop-cannot-cross-a-context-b.md
+generated_by: context-agent-hybrid

@@ -1,19 +1,31 @@
 ---
 id: T-3176
-name: "compiler calls the pinned editors default lane state a typo - authority=none is an unset sentinel not an out-of-dialect value"
+name: "compiler calls the pinned editors default lane state a typo - authority=none
+  is an unset sentinel not an out-of-dialect value"
 description: >
-  Split from T-3172 / G-091 after 001-CashWeb supplied file-level evidence for the pinned
-  editor's authority vocabulary. Both projects had been calling `none` "a fifth value the
-  editor adds beyond the frozen standard's four". It is not a value in that sense: it is the
-  editor's UNSET SENTINEL. vendor/designer/aef-workflow-designer-0.11.0.html (966087 bytes,
-  sha256 4f20b146def45626436e3b3c) initialises every new lane to authority:'none' (:8245),
-  reads a lane with no aef:laneMeta authority attribute back as 'none' (:10142), and exports
-  authority unconditionally with no filtering (:9894). So an untouched lane serialises as
-  authority="none". tools/bpmn_to_tasks.py has no 'none' in AUTHORITY_DIALECT (:85), so it
+  Split from T-3172 / G-091 after 001-CashWeb supplied file-level evidence for the
+  pinned
+  editor's authority vocabulary. Both projects had been calling `none` "a fifth value
+  the
+  editor adds beyond the frozen standard's four". It is not a value in that sense:
+  it is the
+  editor's UNSET SENTINEL. vendor/designer/aef-workflow-designer-0.11.0.html (966087
+  bytes,
+  sha256 4f20b146def45626436e3b3c) initialises every new lane to authority:'none'
+  (:8245),
+  reads a lane with no aef:laneMeta authority attribute back as 'none' (:10142), and
+  exports
+  authority unconditionally with no filtering (:9894). So an untouched lane serialises
+  as
+  authority="none". tools/bpmn_to_tasks.py has no 'none' in AUTHORITY_DIALECT (:85),
+  so it
   falls to the else-branch (:511-521) and reports "very likely a typo or an out-of-band
-  value". Reproduced at HEAD. The DEFAULT authoring path of the editor we pin trips our typo
-  accusation - unlike `external` (T-3172) which needs a deliberate dropdown selection, so this
-  fires more often. Distinct root cause from T-3172: unset is not out-of-dialect, and the fix
+  value". Reproduced at HEAD. The DEFAULT authoring path of the editor we pin trips
+  our typo
+  accusation - unlike `external` (T-3172) which needs a deliberate dropdown selection,
+  so this
+  fires more often. Distinct root cause from T-3172: unset is not out-of-dialect,
+  and the fix
   is an "authority not set on this lane" advisory, not dialect membership.
 
 status: started-work
@@ -24,8 +36,35 @@ tags: [bpmn, compiler, cross-project]
 components: []
 related_tasks: [T-3172, T-3173, T-2717, T-2567]
 created: 2026-08-26T15:52:46Z
-last_update: 2026-08-26T15:52:46Z
-date_finished: null
+last_update: '2026-08-26T16:00:16Z'
+date_finished:
+cost_estimate_proposed:
+  - ts: '2026-08-26T16:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=131,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T16:00:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3176: compiler calls the pinned editors default lane state a typo - authority=none is an unset sentinel not an out-of-dialect value

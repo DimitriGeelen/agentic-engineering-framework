@@ -1,8 +1,16 @@
 ---
 id: T-3160
-name: "fw cron install --dry-run writes the git-tracked crontab source before printing 'no changes made'"
+name: "fw cron install --dry-run writes the git-tracked crontab source before printing
+  'no changes made'"
 description: >
-  Inbound field report from 001-CashWeb-Lightspeed-Ecwid-integration (their G-050). 'fw cron install --dry-run' runs 'fw cron generate' as step 1 to compute its diff, which WRITES $PROJECT_ROOT/.context/cron/agentic-audit.crontab, then prints '(dry-run — no changes made)'. Reproduced at HEAD v1.6.78 in a sandbox project root: 135 bytes -> 389 bytes, md5 changed, message still claimed no changes. In their project it truncated a 3875-byte file carrying ten running jobs to 450 bytes; recovered only because the file was git-tracked. Fix: dry-run must not call the writing generator — route through lib/cron_dry_run.py (stdout-only) for the diff comparand.
+  Inbound field report from 001-CashWeb-Lightspeed-Ecwid-integration (their G-050).
+  'fw cron install --dry-run' runs 'fw cron generate' as step 1 to compute its diff,
+  which WRITES $PROJECT_ROOT/.context/cron/agentic-audit.crontab, then prints '(dry-run
+  — no changes made)'. Reproduced at HEAD v1.6.78 in a sandbox project root: 135 bytes
+  -> 389 bytes, md5 changed, message still claimed no changes. In their project it
+  truncated a 3875-byte file carrying ten running jobs to 450 bytes; recovered only
+  because the file was git-tracked. Fix: dry-run must not call the writing generator
+  — route through lib/cron_dry_run.py (stdout-only) for the diff comparand.
 
 status: captured
 workflow_type: build
@@ -22,8 +30,8 @@ related_tasks: [T-3161, T-3162, T-3149]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T12:08:35Z
-last_update: 2026-08-26T12:08:35Z
-date_finished: null
+last_update: '2026-08-26T12:15:15Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +42,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-26T12:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=152,acs=5)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T12:15:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3160: fw cron install --dry-run writes the git-tracked crontab source before printing 'no changes made'

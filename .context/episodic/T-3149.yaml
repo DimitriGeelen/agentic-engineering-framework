@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3149: fw upgrade silently overwrites project-authored governance in files it manages
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T16:26:59Z
+# ============================================================================
+
+task_id: T-3149
+task_name: "fw upgrade silently overwrites project-authored governance in files it manages"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-25T22:45:50Z
+completed: 2026-08-26T16:26:46Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-08-26T00:48:32+02:00
+last_commit: 2026-08-26T11:51:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade owns CLAUDE.md and settings.json without saying so. IW-3 settled by the peer — a guard the guarded event can delete is not a guard. inception decision GO (via Watchtower). dispose IW-1..IW-4 — operator GO on IW-1, peer settles IW-3. propagate the GO — four build slices with machine-readable scope. ingest 001-CashWeb's T-144 assertion run — two findings confirmed as our bugs
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'ingest 001-CashWeb''s T-144 assertion run — two findings confirmed as our bugs'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3149-upgrade-ownership.md'
+  - '.tasks/active/T-3149-fw-upgrade-silently-overwrites-project-a.md'
+  - '.tasks/active/T-3150-fw-upgrade-marked-project-owned-region-i.md'
+  - '.tasks/active/T-3151-fw-upgrade-refuses-with-a-diff-when-a-ma.md'
+  - '.tasks/active/T-3152-framework-side-post-upgrade-assertion-ph.md'
+  - '.tasks/active/T-3153-enumerate-the-complete-set-of-framework-.md'
+  - '.tasks/active/T-3154-fw-doctor-reports-all-agent-scripts-exec.md'
+  - '.tasks/active/T-3155-consumer-claudemd-template-ships-stale-b.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T00:48:32'
+    action: 'T-3149: fw upgrade owns CLAUDE.md and settings.json without saying so'
+  - time: '2026-08-26T00:52:40'
+    action: 'T-3149: IW-3 settled by the peer — a guard the guarded event can delete is not a guard'
+  - time: '2026-08-26T11:28:50'
+    action: 'T-3149: inception decision GO (via Watchtower)'
+  - time: '2026-08-26T11:29:55'
+    action: 'T-3149: dispose IW-1..IW-4 — operator GO on IW-1, peer settles IW-3'
+  - time: '2026-08-26T11:33:25'
+    action: 'T-3149: propagate the GO — four build slices with machine-readable scope'
+  - time: '2026-08-26T11:51:02'
+    action: 'T-3149: ingest 001-CashWeb''s T-144 assertion run — two findings confirmed as our bugs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 1060 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1060
+  commits: 6
+  files_changed: 8
+  lines_added: 1774
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3149-fw-upgrade-silently-overwrites-project-a.md
+generated_by: context-agent-hybrid

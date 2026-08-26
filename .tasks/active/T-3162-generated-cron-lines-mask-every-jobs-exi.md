@@ -2,7 +2,16 @@
 id: T-3162
 name: "generated cron lines mask every job's exit status behind the logger pipeline"
 description: >
-  Inbound field report from 001-CashWeb (their G-052). Both generators (bin/fw cron generate and lib/cron_dry_run.py:79-83) append '2>&1 | logger -t agentic-cron' to each command, replacing any existing 2>/dev/null. A pipeline's exit status is the last component's, so cron always sees 0. Reproduced: 'false 2>&1 | logger' -> status 0; with '; exit ${PIPESTATUS[0]}' -> status 1. No MAILTO is set, so a crashed nightly audit is indistinguishable from a successful one; the only remaining trace is unmonitored syslog text. Reporter's preferred fix (per-line '; exit ${PIPESTATUS[0]}') is the correct one — 'SHELL=/bin/bash -o pipefail' does not work in cron.d, where SHELL must be a bare executable path. The stderr-capture gain of T-1720 is real and should be kept.
+  Inbound field report from 001-CashWeb (their G-052). Both generators (bin/fw cron
+  generate and lib/cron_dry_run.py:79-83) append '2>&1 | logger -t agentic-cron' to
+  each command, replacing any existing 2>/dev/null. A pipeline's exit status is the
+  last component's, so cron always sees 0. Reproduced: 'false 2>&1 | logger' -> status
+  0; with '; exit ${PIPESTATUS[0]}' -> status 1. No MAILTO is set, so a crashed nightly
+  audit is indistinguishable from a successful one; the only remaining trace is unmonitored
+  syslog text. Reporter's preferred fix (per-line '; exit ${PIPESTATUS[0]}') is the
+  correct one — 'SHELL=/bin/bash -o pipefail' does not work in cron.d, where SHELL
+  must be a bare executable path. The stderr-capture gain of T-1720 is real and should
+  be kept.
 
 status: captured
 workflow_type: build
@@ -22,8 +31,8 @@ related_tasks: [T-3160, T-3161, T-3149]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T12:09:12Z
-last_update: 2026-08-26T12:09:12Z
-date_finished: null
+last_update: '2026-08-26T12:15:15Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +43,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-26T12:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=164,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T12:15:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3162: generated cron lines mask every job's exit status behind the logger pipeline

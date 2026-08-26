@@ -5,16 +5,16 @@ description: >
   Inception: fw upgrade silently overwrites project-authored governance in files it
   manages
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: [T-3150, T-3151, T-3152, T-3153, T-3155]
 created: 2026-08-25T22:45:50Z
-last_update: 2026-08-26T15:36:27Z
-date_finished:
+last_update: 2026-08-26T16:26:46Z
+date_finished: 2026-08-26T16:26:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -457,3 +457,30 @@ a look on our side, since arc id uniqueness is framework-owned.
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Three instances in one upgrade in a live consumer, mechanism confirmed in our own source. The seam that decides what survives is positional and unmarked (lib/upgrade.sh:1268 keeps only what sits ABOVE '## Core Principle' in CLAUDE.md), and nothing warns before destroying what sits below it. The peer's reframing is the durable finding and we should adopt it: being outside .agentic-framework/ is not the test for project ownership; whether the framework WRITES the file is. Needs a decision on whether upgrade owns these files wholesale before any patch, which is why this is an inception rather than a build.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fd249466
+- **Timestamp:** 2026-08-26T16:26:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-4a40c74d
+- **Timestamp:** 2026-08-26T16:26:48Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-08-26T16:26:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

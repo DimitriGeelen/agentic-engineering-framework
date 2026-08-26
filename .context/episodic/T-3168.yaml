@@ -66,10 +66,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 1
+  files_changed: 7
+  lines_added: 533
+  lines_removed: 4
+  footprint_refreshed_at: '2026-08-26T14:40:58Z'
+  footprint_refreshed_by_commit: eec387e4f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3168-arc-012-s6b-auto-restart-pending-sentine.md

@@ -65,10 +65,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 19
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 1
+  files_changed: 9
+  lines_added: 532
+  lines_removed: 6
+  footprint_refreshed_at: '2026-08-26T15:13:24Z'
+  footprint_refreshed_by_commit: 433b49180
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3170-arc-012-s4-wire-session-endsh-and-add-se.md

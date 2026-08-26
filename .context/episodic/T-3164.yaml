@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3164: Stop-hook turn driver — the continuous loop takes its own next turn (arc-012 S1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T14:00:22Z
+# ============================================================================
+
+task_id: T-3164
+task_name: "Stop-hook turn driver — the continuous loop takes its own next turn (arc-012 S1)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T13:55:01Z
+completed: 2026-08-26T13:59:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-26T15:59:47+02:00
+last_commit: 2026-08-26T15:59:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Stop-hook turn driver — the loop can take its own next turn
+
+# Key outcomes
+outcomes:
+  - '`agents/context/stop-driver.sh` exists, is executable, and is registered on the `Stop` event in `.claude/settings.json`'
+  - '**Disarmed by default:** with `.continuous-mode.yaml` absent, malformed, or `enabled: false`, the hook emits `{}` and exits 0 — one test per state'
+  - '**Halt beats continue:** with the halt file present the hook emits `{}` even when enabled and under cap, asserted by a test that would fail if the checks were ordered the other way'
+  - '`stop_hook_active: true` in the payload always yields `{}` — the platform runaway guard is honoured, not just our own counter'
+  - 'Caps enforced: continuation stops at `max_iterations` and at `expires_at`/`expires_after_seconds` — a test per cap'
+  - '**The working contract is pinned:** a test asserts the continue payload is `decision: block` with a non-empty `reason`, and a second test asserts the inert `{"ok": false}` shape is never emitted (T-3163 leg A)'
+  - 'Every continue/stop decision is appended to a log with its reason, so a stalled or runaway loop is diagnosable after the fact instead of by re-running it'
+  - '**Fails closed:** any error, unreadable state, or missing dependency yields `{}` (stop), never a continue — forced by a test that corrupts the state file'
+  - '`bats tests/unit/stop_driver.bats` passes'
+  - 'Registering the hook leaves this repo''s ordinary sessions unchanged — `.continuous-mode.yaml` ships `enabled: false`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/stop-driver.sh'
+  - '.claude/settings.json'
+  - '.context/working/.continuous-mode.yaml'
+  - '.fabric/components/agents-context-stop-driver.yaml'
+  - '.tasks/active/T-3164-stop-hook-turn-driver--the-continuous-lo.md'
+  - '.tasks/completed/T-3163-falsify-the-stop-hook-continuation-mecha.md'
+  - 'tests/unit/stop_driver.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T15:59:47'
+    action: 'T-3164: Stop-hook turn driver — the loop can take its own next turn'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 7
+  lines_added: 738
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3164-stop-hook-turn-driver--the-continuous-lo.md
+generated_by: context-agent-hybrid

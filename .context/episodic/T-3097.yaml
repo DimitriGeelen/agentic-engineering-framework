@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3097: Worktree failure class — ultra-deep RCA and structural fix
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T16:27:40Z
+# ============================================================================
+
+task_id: T-3097
+task_name: "Worktree failure class — ultra-deep RCA and structural fix"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-20T07:03:07Z
+completed: 2026-08-26T16:27:28Z
+duration_days: 6
+updates_count: 1
+first_commit: 2026-08-20T09:16:38+02:00
+last_commit: 2026-08-26T17:38:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  worktree RCA — the fix was approved two weeks ago and never built. recommendation GO, and file T-3100 for the errors-register gap. inception decision GO (via Watchtower). repair the Recommendation section my own edit destroyed. propagate both GO scopes — nine slices named, three explicitly unshipped
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'recommendation GO, and file T-3100 for the errors-register gap'
+    source: git-mined
+  - description: 'worktree RCA — the fix was approved two weeks ago and never built'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-3100.yaml'
+  - 'docs/reports/T-3097-worktree-rca.md'
+  - '.tasks/active/T-3097-worktree-failure-class--ultra-deep-rca-a.md'
+  - '.tasks/active/T-3098-refuse-governance-writes-from-a-linked-w.md'
+  - '.tasks/active/T-3099-go-scope-not-propagated-detector-is-pros.md'
+  - '.tasks/active/T-3100-no-error-incident-register--counter-dead.md'
+  - '.tasks/active/T-3149-fw-upgrade-silently-overwrites-project-a.md'
+  - '.tasks/completed/T-3100-no-error-incident-register--counter-dead.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-20T09:16:38'
+    action: 'T-3097: worktree RCA — the fix was approved two weeks ago and never built'
+  - time: '2026-08-20T09:18:51'
+    action: 'T-3097: recommendation GO, and file T-3100 for the errors-register gap'
+  - time: '2026-08-20T10:05:23'
+    action: 'T-3097: inception decision GO (via Watchtower)'
+  - time: '2026-08-20T10:07:06'
+    action: 'T-3097: repair the Recommendation section my own edit destroyed'
+  - time: '2026-08-26T17:38:47'
+    action: 'T-3097: propagate both GO scopes — nine slices named, three explicitly unshipped'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 9204 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9204
+  commits: 5
+  files_changed: 8
+  lines_added: 1460
+  lines_removed: 172
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3097-worktree-failure-class--ultra-deep-rca-a.md
+generated_by: context-agent-hybrid

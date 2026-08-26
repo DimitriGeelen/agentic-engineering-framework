@@ -4,12 +4,12 @@ name: "Worktree failure class — ultra-deep RCA and structural fix"
 description: >
   Inception: Worktree failure class — ultra-deep RCA and structural fix
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-009]
 related_tasks: [T-3098, T-3099, T-3142, T-2861]
 # T-3097 GO scope, made machine-readable (T-1984). Backfilled 2026-08-26. This
 # inception's own finding was that T-2822's GO produced no traceable work; leaving
@@ -22,8 +22,8 @@ inception_decisions:
     text: "Leg B — replace the GO-scope detector's prose gate with a structural predicate, so its candidate set is not empty by construction"
     ships_in: T-3099
 created: 2026-08-20T07:03:07Z
-last_update: '2026-08-21T07:15:07Z'
-date_finished:
+last_update: 2026-08-26T16:27:28Z
+date_finished: 2026-08-26T16:27:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -346,3 +346,36 @@ from T-2822, is still only captured.
      parser reading "the" recommendation can get either. Measured across all 3126
      task files: this was the only file with conflicting verdicts, so it is a
      repair rather than a class. -->
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-64771f14
+- **Timestamp:** 2026-08-26T16:27:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-4d0f980b
+- **Timestamp:** 2026-08-26T16:27:29Z
+- **Overall:** CONFIRMED
+- **Claims:** 11
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2822-worktree-policy.md` | file | ✓ pass |
+| `agents/audit/audit.sh:1545` | file_line | ✓ pass |
+| `T-2822` | task | ✓ pass |
+| `T-2861` | task | ✓ pass |
+| `T-3098` | task | ✓ pass |
+| `T-3099` | task | ✓ pass |
+| `T-2824` | task | ✓ pass |
+| `T-3142` | task | ✓ pass |
+| `T-100201` | task | ✓ pass |
+| `T-100196` | task | ✓ pass |
+| `T-2394` | task | ✓ pass |
+
+### 2026-08-26T16:27:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

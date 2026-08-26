@@ -6,16 +6,16 @@ description: >
   Inception: Autonomous loop cannot cross a context boundary unattended — model it
   in the designer and fix the driver
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [arc:continuous-run]
-components: []
+components: [agents/context/inject-next-directive.py, agents/context/stop-driver.sh, agents/task-create/update-task.sh, bin/claude-fw, C-009, tests/unit/stop_driver.bats]
 related_tasks: [T-3163, T-3164, T-3165, T-3166, T-3167, T-3168, T-3169, T-3170]
 created: 2026-08-26T11:58:42Z
-last_update: 2026-08-26T14:27:17Z
-date_finished:
+last_update: 2026-08-26T16:26:05Z
+date_finished: 2026-08-26T16:26:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -113,9 +113,14 @@ designer **0.11.0** (T-3157), not the 0.8.0 build that was live when the questio
 -->
 
 - **IW-1: Is the boundary crossing `/compact` or an own-both-ends `/clear`?**
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: dissolved
+  rationale: Neither. T-3166 made the budget auto-restart launch a FRESH session
+    (bin/claude-fw, FW_RESTART_MODE=fresh) instead of `claude -c`, so the crossing
+    is the restart wrapper, which owns both ends already — handover at exit,
+    SessionStart reinjection at entry. `/clear` stays unhooked
+    (post-compact-resume.sh:28 clamps to startup|resume|compact) and is not on the
+    path, so the fork the question poses no longer has to be chosen.
   <!-- Operator proposed `/clear` and their caveat is literally correct: PreCompact does
        not fire on it, and post-compact-resume.sh:28 clamps the source allowlist to
        (startup|resume|compact), so `clear` gets NO hooks on either end today. `/clear` is
@@ -123,9 +128,16 @@ designer **0.11.0** (T-3157), not the 0.8.0 build that was live when the questio
        works now. This is the operator's fork, not the agent's. -->
 
 - **IW-2: What terminates a self-driving loop, and who holds that authority?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: The operator holds it, out of band. T-3164 shipped the Stop driver with
+    three independent brakes checked in order — halt file FIRST (agents/context/
+    stop-driver.sh:81, read before anything else can vote, so it works precisely when
+    the model is the thing misbehaving), then our caps (max_iterations, expires_at),
+    then the platform's stop_hook_active. T-3169 added a second ceiling counted in
+    tasks, reported by its own name so "finished the work" is distinguishable in the
+    log from "ran out of windows". Disarmed by default and fails closed: every
+    ambiguous path emits {}.
   <!-- A `Stop` hook that re-injects a directive can, by construction, prevent a session
        from ever ending. Existing caps (max_iterations, expires_at, tier_ceiling in
        .continuous-mode.yaml) were designed for the restart path, not for a turn-driver.
@@ -133,9 +145,14 @@ designer **0.11.0** (T-3157), not the 0.8.0 build that was live when the questio
        without killing the process — is unresolved and is a sovereignty question. -->
 
 - **IW-3: Should the map's `clear` branch be authored RED deliberately?**
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 1
+  disposition: deferred
+  rationale: Still unruled, and deliberately not assumed. IW-1 dissolving removes the
+    urgency — the `clear` branch is no longer on the implemented path — but the general
+    question (may a conformance-rail entry be authored RED as a tracking mechanism?)
+    survives it and contradicts T-2619's cascading-detail model, where an entry earns
+    detail-authority only by staying green. Needs a ruling, not a default. The
+    conformance entry is NOT filed; §15.4 row 7 records that.
   <!-- If the map asserts a `clear` branch before the code supports it, the conformance rail
        goes red immediately and stays red until leg 2 lands — the divergence becomes the
        tracking mechanism. T-2619's cascading-detail model says a map graduates to
@@ -144,8 +161,15 @@ designer **0.11.0** (T-3157), not the 0.8.0 build that was live when the questio
 
 - **IW-4: Does the re-injected handover carry enough to resume cold?**
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: Unmeasured, and the reason it stays open is that no proxy for it is
+    admissible. T-3166 makes the fresh session the normal path, so LATEST.md is now
+    the SOLE carrier in the ordinary case rather than the fallback — which raises the
+    stakes rather than settling them. The SessionStart banner is truncated by the
+    harness (docs/context-compaction.md), so "the banner appeared" is not evidence the
+    content arrived; that is the same false-green shape as the rest of this arc.
+    Requires someone to take a handover into a genuinely cold session and measure what
+    survives. Deferred to its own task, not folded into this GO.
   <!-- Under `/compact` the model summary covers the gap. Under `/clear` there is no summary
        — LATEST.md is the only carrier. It has never been tested as a SOLE carrier, and the
        SessionStart preview is truncated by the harness (docs/context-compaction.md), so
@@ -293,3 +317,23 @@ The loop is not armed: `enabled: false`, `max_tasks: null`.
 
 ### 2026-08-26T14:27:17Z — status-update [task-update-agent]
 - **Change:** tags: +arc:continuous-run
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-70837463
+- **Timestamp:** 2026-08-26T16:26:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-10811b6e
+- **Timestamp:** 2026-08-26T16:26:06Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-08-26T16:26:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

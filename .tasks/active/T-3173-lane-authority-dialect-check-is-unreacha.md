@@ -1,17 +1,25 @@
 ---
 id: T-3173
-name: "lane authority dialect check is unreachable for lanes with no task nodes, so real typos compile silently"
+name: "lane authority dialect check is unreachable for lanes with no task nodes, so
+  real typos compile silently"
 description: >
   Inbound correction from 001-CashWeb-Lightspeed-Ecwid-integration (2026-08-26,
-  follow-up to their G-055 / our G-091). They narrowed their own repro and withdrew a
-  prediction; measuring the narrowed form at HEAD surfaced a DISTINCT defect they did
+  follow-up to their G-055 / our G-091). They narrowed their own repro and withdrew
+  a
+  prediction; measuring the narrowed form at HEAD surfaced a DISTINCT defect they
+  did
   not claim. tools/bpmn_to_tasks.py collects lane-authority folds INSIDE the task-node
-  loop, which `continue`s at :424 on every node whose tag is not in TASK_TAGS (:51 =
-  userTask/serviceTask/scriptTask). unknown_auth is populated at :481, downstream of
+  loop, which `continue`s at :424 on every node whose tag is not in TASK_TAGS (:51
+  =
+  userTask/serviceTask/scriptTask). unknown_auth is populated at :481, downstream
+  of
   that guard, and the dialect WARNs at :501-521 are emitted from unknown_auth alone.
-  Consequence: a lane whose flowNodeRefs are all events or gateways never reaches the
-  check, so its <aef:laneMeta authority> is never read and never validated. This is not
-  only the `external` case (T-3172) - it swallows GENUINE typos. Measured at HEAD on a
+  Consequence: a lane whose flowNodeRefs are all events or gateways never reaches
+  the
+  check, so its <aef:laneMeta authority> is never read and never validated. This is
+  not
+  only the `external` case (T-3172) - it swallows GENUINE typos. Measured at HEAD
+  on a
   two-lane fixture whose second lane holds only intermediateCatchEvents:
   authority="external" -> rc 0, zero warnings; the same fixture with authority="overlrd"
   (an unambiguous misspelling, in no vocabulary) -> rc 0, zero warnings. The
@@ -37,8 +45,8 @@ related_tasks: [T-3172, T-2717, T-2567]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T15:37:21Z
-last_update: 2026-08-26T15:37:21Z
-date_finished: null
+last_update: '2026-08-26T15:45:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -49,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-26T15:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=247,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T15:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3173: lane authority dialect check is unreachable for lanes with no task nodes, so real typos compile silently

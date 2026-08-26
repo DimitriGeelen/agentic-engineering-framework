@@ -1,23 +1,30 @@
 ---
 id: T-3174
-name: "partial-complete state revokes a task's authority to commit its own closure artefacts"
+name: "partial-complete state revokes a task's authority to commit its own closure
+  artefacts"
 description: >
   Inbound field report from 001-CashWeb-Lightspeed-Ecwid-integration (their G-053,
   three incidents in one day), reproduced independently at HEAD. A task in
-  partial-complete (status work-completed + owner human + still in .tasks/active/) is
+  partial-complete (status work-completed + owner human + still in .tasks/active/)
+  is
   refused by agents/context/check-active-task.sh :750 for any non-exempt Bash command,
   including the git commit that would land the closure artefacts the transition itself
   just wrote. The block message offers `fw work-on T-XXX`, but status-transitions.yaml
-  gives work-completed NO outgoing transition, so `fw work-on <that task>` exits 1 with
+  gives work-completed NO outgoing transition, so `fw work-on <that task>` exits 1
+  with
   "Invalid transition 'work-completed' -> 'started-work'". The only exit is attributing
   the commit to a different task, destroying the traceability P-002 protects. Three
-  findings beyond their report: (1) Write/Edit to .context/, .tasks/, .claude/ is already
-  exempt at :441 and exits 0 in the same state - the gate implements the proposed boundary
+  findings beyond their report: (1) Write/Edit to .context/, .tasks/, .claude/ is
+  already
+  exempt at :441 and exits 0 in the same state - the gate implements the proposed
+  boundary
   on one side only, so the fix is parity not new policy; (2) the :750 branch is
   unreachable for genuinely-archived tasks, which exit at :718 with a different message,
-  so :750 fires ONLY for partial-complete; (3) no graduated bypass exists - unlike the
+  so :750 fires ONLY for partial-complete; (3) no graduated bypass exists - unlike
+  the
   sibling focus-drift gate's --switch-focus / FW_SWITCH_FOCUS=1, the only escape is
-  FW_SAFE_MODE=1, which disables the whole gate. Prevalence: they report 19; our own repo
+  FW_SAFE_MODE=1, which disables the whole gate. Prevalence: they report 19; our own
+  repo
   has 243 of 409 active tasks (59%) in this state. Same class as G-092.
 
 status: started-work
@@ -25,7 +32,8 @@ workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: [agents/context/check-active-task.sh, status-transitions.yaml, agents/task-create/update-task.sh]
+components: [agents/context/check-active-task.sh, status-transitions.yaml, 
+      agents/task-create/update-task.sh]
 related_tasks: [T-1730, T-1890, T-679]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -38,8 +46,8 @@ related_tasks: [T-1730, T-1890, T-679]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T15:39:11Z
-last_update: 2026-08-26T15:39:11Z
-date_finished: null
+last_update: '2026-08-26T15:45:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-26T15:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (3-components); tier=2 (workflow:build); effort=8 
+      (lines=298,acs=9)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T15:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3174: partial-complete state revokes a task's authority to commit its own closure artefacts

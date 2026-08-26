@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3163: Falsify the Stop-hook continuation mechanism in an isolated sandbox (arc-012 S8)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T13:54:54Z
+# ============================================================================
+
+task_id: T-3163
+task_name: "Falsify the Stop-hook continuation mechanism in an isolated sandbox (arc-012 S8)"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T13:48:52Z
+completed: 2026-08-26T13:54:41Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-26T15:54:33+02:00
+last_commit: 2026-08-26T15:54:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Stop-hook continuation MEASURED — mechanism real, contract we were given is inert
+
+# Key outcomes
+outcomes:
+  - 'Isolated lab exists outside the repo: scratch dir with its own `.claude/settings.json` registering a `Stop` hook, and a probe script bounded by BOTH a fire cap and `stop_hook_active`'
+  - 'Probe is run with a single `claude -p` prompt and a hard `timeout`; the run terminates on its own (no orphan, no manual kill)'
+  - '`fires.log` records how many times the Stop hook fired and the `stop_hook_active` value on each fire — the raw evidence, not a summary'
+  - 'The continuation claim is answered YES or NO from that evidence, with the fire count and the assistant transcript both cited'
+  - 'The **control** is recorded: a run of the same prompt with the hook returning `{}` on every fire, so "N fires" is distinguishable from "N fires *caused by us*" — without it a single fire proves nothing'
+  - 'The JSON contract that actually worked is recorded verbatim (`{"ok": false}` vs `{"decision": "block"}` — the docs lookup was uncertain between them; if the first shape fails, the second is tried before declaring NO)'
+  - 'Result is written back into `docs/reports/T-3159-autonomous-loop-context-boundary.md` §16 as MEASURED, replacing the reported-not-verified wording, and `draft-continuous-run-loop`''s `fw_3_stop` note is updated to match'
+  - 'If the answer is NO, the six-slice work list in T-3159 §15.4 is re-planned in the same commit rather than left standing on a disproved assumption'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/designer/projects/draft-continuous-run-loop/meta.json'
+  - '.context/designer/projects/draft-continuous-run-loop/v2.bpmn'
+  - 'docs/reports/T-3159-autonomous-loop-context-boundary.md'
+  - '.tasks/active/T-3163-falsify-the-stop-hook-continuation-mecha.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T15:54:33'
+    action: 'T-3163: Stop-hook continuation MEASURED — mechanism real, contract we were given is inert'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 4
+  lines_added: 698
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3163-falsify-the-stop-hook-continuation-mecha.md
+generated_by: context-agent-hybrid
