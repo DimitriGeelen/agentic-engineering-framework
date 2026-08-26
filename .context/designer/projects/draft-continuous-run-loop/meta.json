@@ -11,9 +11,24 @@
       "v": 2,
       "note": "T-3163: Stop-hook contract MEASURED \u2014 decision:block/exit-2 drive turns, ok:false is inert; no SlashCommand tool",
       "ts": 1787752424
+    },
+    {
+      "v": 3,
+      "note": "",
+      "ts": 1787752665
+    },
+    {
+      "v": 4,
+      "note": "",
+      "ts": 1787753050
+    },
+    {
+      "v": 5,
+      "note": "",
+      "ts": 1787753267
     }
   ],
-  "latest": 2,
-  "updated": 1787752424,
+  "latest": 5,
+  "updated": 1787753267,
   "uuid": "013201da-1193-4459-a1ce-d3981b1b67c2"
 }

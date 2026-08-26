@@ -4834,3 +4834,9 @@ X'` returning empty group."
   task: T-3176
   date: 2026-08-26
   context: Added via context agent
+- id: L-650
+  learning: "A standard that names its own machine-check is not machine-checked: policy/standards/aef-bpmn-mapping-v1-partI.md §6 cites tests/test_mapping_standard_conformance.py, which does not exist in this repo — so a three-value compiler ran against a four-value frozen standard for four months with every test green, because every test restated the compiler's own vocabulary back to itself. Before trusting a documented parity check, confirm the named file exists and runs. Prevention: parse the standard's prose in the test rather than restating it."
+  source: P-001
+  task: T-3172
+  date: 2026-08-26
+  context: Added via context agent

@@ -37185,3 +37185,261 @@ scan_id: R-3d5e30dc
 task_id: T-3157
 payload:
   task_file: .tasks/active/T-3157-re-pin-workflow-designer-080---0110-thre.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T13:54:43Z'
+scan_id: R-5582cd2e
+task_id: T-3163
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T13:54:43Z'
+scan_id: R-5582cd2e
+task_id: T-3163
+payload:
+  task_file: .tasks/active/T-3163-falsify-the-stop-hook-continuation-mecha.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T14:00:06Z'
+scan_id: R-5fe35f8f
+task_id: T-3164
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T14:00:06Z'
+scan_id: R-5fe35f8f
+task_id: T-3164
+payload:
+  task_file: .tasks/active/T-3164-stop-hook-turn-driver--the-continuous-lo.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T14:32:36Z'
+scan_id: R-44e33f3c
+task_id: T-3166
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T14:32:36Z'
+scan_id: R-44e33f3c
+task_id: T-3166
+payload:
+  task_file: .tasks/active/T-3166-arc-012-s2-budget-auto-restart-must-star.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T14:37:02Z'
+scan_id: R-86175455
+task_id: T-3167
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T14:37:02Z'
+scan_id: R-86175455
+task_id: T-3167
+payload:
+  task_file: .tasks/active/T-3167-arc-012-s6a-continuous-mode-enabled-must.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T14:40:20Z'
+scan_id: R-f40cc84b
+task_id: T-3168
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T14:40:20Z'
+scan_id: R-f40cc84b
+task_id: T-3168
+payload:
+  task_file: .tasks/active/T-3168-arc-012-s6b-auto-restart-pending-sentine.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T14:48:29Z'
+scan_id: R-f22f38cb
+task_id: T-3169
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T14:48:29Z'
+scan_id: R-f22f38cb
+task_id: T-3169
+payload:
+  task_file: .tasks/active/T-3169-arc-012-s3-re-key-currentiteration-from-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T15:12:44Z'
+scan_id: R-d9c0c73c
+task_id: T-3170
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T15:12:44Z'
+scan_id: R-d9c0c73c
+task_id: T-3170
+payload:
+  task_file: .tasks/active/T-3170-arc-012-s4-wire-session-endsh-and-add-se.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T16:26:06Z'
+scan_id: R-70837463
+task_id: T-3159
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T16:26:06Z'
+scan_id: R-70837463
+task_id: T-3159
+payload:
+  task_file: .tasks/active/T-3159-autonomous-loop-cannot-cross-a-context-b.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-26T16:26:06Z'
+scan_id: RC-10811b6e
+task_id: T-3159
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-26T16:26:48Z'
+scan_id: R-fd249466
+task_id: T-3149
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T16:26:48Z'
+scan_id: R-fd249466
+task_id: T-3149
+payload:
+  task_file: .tasks/active/T-3149-fw-upgrade-silently-overwrites-project-a.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-26T16:26:48Z'
+scan_id: RC-4a40c74d
+task_id: T-3149
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-26T16:27:29Z'
+scan_id: R-64771f14
+task_id: T-3097
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T16:27:29Z'
+scan_id: R-64771f14
+task_id: T-3097
+payload:
+  task_file: .tasks/active/T-3097-worktree-failure-class--ultra-deep-rca-a.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-26T16:27:29Z'
+scan_id: RC-4d0f980b
+task_id: T-3097
+payload:
+  overall: CONFIRMED
+  claim_count: 11
+---
+kind: scan_emitted
+timestamp: '2026-08-26T16:40:27Z'
+scan_id: R-b5bc5f40
+task_id: T-3165
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T16:40:27Z'
+scan_id: R-b5bc5f40
+task_id: T-3165
+payload:
+  task_file: .tasks/active/T-3165-fw-vendor-self-sweeps-another-sessions-u.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T16:48:14Z'
+scan_id: R-33698188
+task_id: T-3177
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T16:48:14Z'
+scan_id: R-33698188
+task_id: T-3177
+payload:
+  task_file: .tasks/active/T-3177-arc-012-live-fire-runbook-is-stale-in-fo.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T17:55:35Z'
+scan_id: R-921d2462
+task_id: T-3172
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T17:55:35Z'
+scan_id: R-921d2462
+task_id: T-3172
+payload:
+  task_file: .tasks/active/T-3172-bpmn-compiler-rejects-the-frozen-standar.md

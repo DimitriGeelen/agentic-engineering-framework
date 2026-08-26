@@ -70,10 +70,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 3
-  commits: 1
-  files_changed: 2
-  lines_added: 430
-  lines_removed: 13
+  commits: 2
+  files_changed: 5
+  lines_added: 532
+  lines_removed: 21
+  footprint_refreshed_at: '2026-08-26T16:48:56Z'
+  footprint_refreshed_by_commit: 613f6e7f9
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3177-arc-012-live-fire-runbook-is-stale-in-fo.md

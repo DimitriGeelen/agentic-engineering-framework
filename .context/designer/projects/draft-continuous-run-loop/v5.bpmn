@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_draft-continuous-run-loop"
+                  exporter="aef-workflow-designer"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- T-3159 pair-draft v1 — the continuous run loop AS THE OPERATOR SPECIFIED IT,
+       2026-08-26. Sibling of aef-session-lifecycle (which draws today's single-session
+       reality); this map draws the MULTI-session, multi-turn run that arc-012 set out
+       to build and never landed.
+
+       TWO NESTED LOOPS. Reading them is the point of the map:
+         INNER (f7): work turn -> Stop-hook gateway -> work turn. Iteration = ONE TURN.
+           This edge DOES NOT EXIST TODAY. No Stop hook is registered in
+           .claude/settings.json (PreToolUse, PostToolUse, PreCompact, SessionStart
+           only), so control returns to the idle prompt after every assistant turn.
+           That is the operator's "it kicks out at the end of each turn".
+         OUTER (f18-f21): boundary crossing -> SessionStart -> session init.
+           Iteration = ONE SESSION. This is what arc-012 built. Because
+           inject-next-directive.py only runs on SessionStart, current_iteration
+           advances once per session, so a 5-run instruction costs 5 x 285K of
+           context to express.
+
+       OPERATOR SPEC, verbatim intent: measure context against the settings ladder
+       (3 levels); at the last level LET THE CURRENT TASK OR PROMPT COMPLETE; then
+       invoke the handover protocol beginning with the precompact command; that
+       routine must be compaction-grade (either the standard compaction, or our
+       precompact already suffices, or we extend it); then /clear (or another
+       boundary primitive); then /resume, whose SessionStart sets focus and injects
+       both the prompt and the arc.
+
+       DIVERGENCE FROM TODAY, measured this session, not asserted:
+         - agt_3 (let the unit complete) does NOT exist. bin/claude-fw
+           _terminator_watch SIGTERMs claude the moment a fresh .restart-requested
+           appears, so work is cut mid-unit — the direct opposite of the spec.
+         - fw_boundary is `claude -c` today (bin/claude-fw:338). -c RELOADS the
+           transcript, so the boundary frees nothing and the run thrashes to
+           MAX_RESTARTS=5 (bin/claude-fw:209).
+         - fw_stop has no implementation at all.
+       Nodes carry status="PRESENT|MISSING|DIVERGES" in their note field.
+
+       CONFORMANCE (not yet registered - IW-3 is undecided):
+         fw_budget  -> vocabulary-set against budget-gate.sh:106-108 (ok/warn/
+                       urgent/critical). Would go GREEN.
+         fw_sessionstart -> vocabulary-set against post-compact-resume.sh:28
+                       (startup|resume|compact). The `clear` branch f20 is the
+                       operator's route and the allowlist has no `clear`, so this
+                       entry would land RED ON PURPOSE. Registering a deliberately
+                       red rail is exactly the question IW-3 asks; the entry is
+                       therefore NOT in tools/conformance-registry.yaml yet.
+
+       aef:meta keys restricted to the 20-key export whitelist of designer 0.11.0
+       (T-570) so nothing is destroyed on the first editor save. -->
+
+  <bpmn:collaboration id="Collaboration_draft-continuous-run-loop">
+    <bpmn:participant id="Pool_continuous_run" name="AEF continuous run loop (T-3159 draft)" processRef="Process_draft-continuous-run-loop"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_draft-continuous-run-loop" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="draft-continuous-run-loop" uuid="f32b11ca-61cc-4829-9428-52a6e80dab52" version="1" schemaVersion="2" title="Continuous run loop — turn driver inside session respawn, bounded by arc drain and run cap" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="180"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_operator</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_3_run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_2_operator</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="fw" authority="authority" height="200"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>fw_1_supervisor</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_5_handover</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_6_cross</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_2_budget</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_stop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_4_run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_7_sessionstart</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="351"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_3_run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_session</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_work</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_let</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="hum_1_operator" name="operator arms the run — arc + run cap">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_arm"/>
+        <aef:position x="121.7" y="133.7"/>
+        <aef:meta triggeredBy="operator names the arc to drain and the run cap; caps live in .context/working/.continuous-mode.yaml (max_iterations, expires_after_seconds, tier_ceiling)" note="status=DIVERGES. Wall-clock is explicitly NOT the terminal condition — the operator's words: 'whether it is all night or not, it does not really matter'. Today expires_after_seconds is a clock cap and enabled: true persisted for 70 days past its own expiry (F3)."/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:endEvent id="agt_3_run" name="run complete — arc drained">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_done_arc"/>
+        <aef:position x="1009.4" y="534.0"/>
+        <aef:meta terminalKind="success" state="arc-drained" note="The intended terminal state. NOTE the sovereignty boundary: 'arc drained' means its constituent tasks are done — it does NOT mean the arc may close. fw arc close is human-only under $CLAUDECODE=1 (T-1671) and needs a --demo artefact (G-062). A run that drains an arc still ends with a handoff, never a closure."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_13</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="agt_5_run" name="run complete — cap reached">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_done_cap"/>
+        <aef:position x="2054.2" y="555.6"/>
+        <aef:meta terminalKind="success" state="cap-reached" note="The operator's 'kicked out after five runs, or an amount of runs we set'. This is a WANTED ejection — the run ending on its own cap is success, and must read differently from the unwanted per-turn ejection this whole map exists to remove."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_14</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="hum_3_run" name="run halted — operator kill switch">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_done_halt"/>
+        <aef:position x="2066.0" y="133.7"/>
+        <aef:meta decisionOwner="human" terminalKind="success" state="halted" note="status=MISSING (IW-2, the sovereignty question). A driver that decides whether to continue can, by construction, decide not to stop. The halt must therefore be checked by the Stop hook itself before every continuation, out of band from the model's own reasoning — a file the hook reads, plus a Watchtower control — so that it works precisely when the model is the thing misbehaving."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_10</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:serviceTask id="fw_1_supervisor" name="supervisor spawns a FRESH session (claude-fw)">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_spawn"/>
+        <aef:position x="245.3" y="300.0"/>
+        <aef:meta note="status=DIVERGES. bin/claude-fw is already the outer supervisor and IS live — this session's ancestry is claude -c &lt;- /bin/bash bin/claude-fw -c. The defect is the flag, not the wrapper: line 338 sets CLAUDE_ARGS=(-c), and -c reloads the prior transcript, so the respawn frees no context. Fresh-session-seeded-by-handover is the fix."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_1_session" name="session init — /resume: set focus, inject prompt, inject arc">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_init"/>
+        <aef:position x="245.3" y="520.0"/>
+        <aef:meta note="status=DIVERGES. SessionStart surfaces the directive as additionalContext, but additionalContext does not cause a turn. T-2404 saw this exactly and fixed it by appending prose asking the agent to invoke /resume — a repair that presumes the very turn it is trying to cause. Injecting the ARC (not just a task ref) is new in this spec: the run's terminal condition is arc drain, so the arc must be in scope from turn one."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:incoming>flow_18</bpmn:incoming>
+      <bpmn:incoming>flow_19</bpmn:incoming>
+      <bpmn:incoming>flow_20</bpmn:incoming>
+      <bpmn:incoming>flow_21</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_2_work" name="work turn — task-gated work on the arc, commit cadence P-009">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_work"/>
+        <aef:position x="417.3" y="520.0"/>
+        <aef:meta note="status=PRESENT. One turn. Everything the framework already enforces applies unchanged — task gate, commit cadence, verification gate. The loop adds no new authority to the turn; it only decides whether another one happens."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:incoming>flow_11</bpmn:incoming>
+      <bpmn:incoming>flow_12</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_4_let" name="let the current task or prompt COMPLETE">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_finish"/>
+        <aef:position x="1176.9" y="520.0"/>
+        <aef:meta note="status=MISSING — and today's behaviour is the direct OPPOSITE. The operator's spec: at the last level we let the task complete, or the prompt complete, and only then hand over. Today bin/claude-fw _terminator_watch SIGTERMs claude as soon as a fresh .restart-requested appears, cutting work mid-unit. budget-gate.sh compounds it by blocking Write/Edit/Bash at critical, so the agent cannot finish even if it wanted to. Both must yield to a drain-then-hand-over posture."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_5_handover" name="handover protocol — precompact routine, compaction-grade">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_handover"/>
+        <aef:position x="1347.1" y="292.0"/>
+        <aef:meta note="status=OPEN QUESTION (IW-4) — this is the node the operator asked the question about. Is our PreCompact routine already good enough to carry a handover across a boundary, do we need the standard compaction as well, or do we extend our own until it is compaction-grade? UNTESTED EITHER WAY: nobody has ever taken LATEST.md into a genuinely cold session and measured whether it resumes. Falsifiable cheaply and it should be, before anything is built on top of it. Note the constraint if /clear is the boundary: SessionEnd hooks share a 1.5s budget (raisable ~60s), and fw handover takes far longer — so the handover must be pre-staged, not started here."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_15</bpmn:incoming>
+      <bpmn:outgoing>flow_16</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="fw_6_cross" name="cross the boundary — /clear, or respawn">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_boundary"/>
+        <aef:position x="1530.2" y="292.0"/>
+        <aef:meta note="status=MISSING. The operator's route is /clear. CONSTRAINT MEASURED (T-3163): the model's tool list contains no SlashCommand tool, and /clear and /compact are built-in CLI commands rather than skills — so nothing inside the session can invoke /clear on its own. Note the split: a Skill tool DOES exist, so framework skills like /resume ARE invocable once a turn is happening — which narrows T-2404's failure to the missing turn alone, not to unreadable prose — the boundary has to be driven from outside the session or typed by the operator. That is the argument for respawn over /clear: a fresh process frees memory with nobody having to type anything. Whichever wins, /clear IS ownable on the way out — SessionEnd supports matcher 'clear', and we already wrote agents/context/session-end.sh (T-1212) and never registered it; bin/hook-enable.sh cannot even register it, SessionEnd is absent from its VALID_EVENTS."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_16</bpmn:incoming>
+      <bpmn:outgoing>flow_17</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="hum_2_operator" name="operator rules on the blocking gate">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_gate"/>
+        <aef:position x="789.1" y="119.7"/>
+        <aef:meta decisionOwner="human" note="status=OPEN QUESTION (Q5). Tier-0, a [REVIEW] Human AC, an inception go/no-go, an arc close. With 48 started-work tasks, most human-owned, an arc drain hits one of these almost immediately. UNDECIDED: does the run park this task and take the next one, or stop and notify? Park-and-next keeps the run alive but silently grows a pile the operator never asked for; stop-and-notify is honest but may end the run in its first minutes."/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="fw_2_budget" name="budget level?">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_gw_budget"/>
+        <aef:position x="448.3" y="308.0"/>
+        <aef:meta note="status=PRESENT. The operator's 'we measure context based on what is set in the settings, 3 levels'. Three thresholds, four states: budget-gate.sh:106-108 reads FW_CONTEXT_WINDOW and computes 75/85/95%. This gateway is the clean vocabulary-set conformance candidate — its four branch labels versus that enum would go GREEN today." gatewayKind="data"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:exclusiveGateway id="fw_3_stop" name="Stop hook — continue this session?">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_gw_stop"/>
+        <aef:position x="645.2" y="308.0"/>
+        <aef:meta decisionOwner="framework" note="status=MISSING — THE LOAD-BEARING GAP, and the mechanism is now MEASURED (T-3163). Fires after every assistant turn. The contract that DRIVES a turn is {&quot;decision&quot;:&quot;block&quot;,&quot;reason&quot;:...} or exit 2 with the reason on stderr — measured 5 fires / 4 consecutive continuations from a single prompt. {&quot;ok&quot;:false} is INERT: it produced 1 fire and 1 turn, identical to the control leg, so a hook built on it would fire, log, return clean and drive nothing. Returning {} yields the prompt. Nothing is registered: .claude/settings.json carries PreToolUse, PostToolUse, PreCompact, SessionStart only. We have ALREADY WRITTEN one — agents/context/stop-guard.sh — whose header reads 'REFERENCE ONLY - not registered (see T-1459)'. Platform caps continuation at 8 consecutive blocks (CLAUDE_CODE_STOP_HOOK_BLOCK_CAP). Recommendation: do not raise that cap — let this gateway count and stop, and leave the platform cap as the backstop we did not write." gatewayKind="data" gate="Stop"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:exclusiveGateway id="fw_4_run" name="run cap / arc drained?">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_gw_run"/>
+        <aef:position x="1003.4" y="308.0"/>
+        <aef:meta note="status=DIVERGES. The operator's terminal condition is 'drive the arc to completion... until that is completed and drained, and then keep running it, or with a limited amount'. Two independent stops: arc drained, or run cap. Today the counter is keyed to SESSIONS and only advances inside inject-next-directive.py on SessionStart — so it cannot count turns or tasks, and a 5-run instruction costs 5 x 285K of context. Re-keying the counter to a TASK is one of the six small fixes." gatewayKind="data"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+      <bpmn:outgoing>flow_13</bpmn:outgoing>
+      <bpmn:outgoing>flow_14</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:exclusiveGateway id="fw_7_sessionstart" name="SessionStart source?">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_gw_source"/>
+        <aef:position x="1721.3" y="308.0"/>
+        <aef:meta note="status=DIVERGES — and this is the deliberately-RED conformance candidate (IW-3). agents/context/post-compact-resume.sh:28 clamps the source to (startup|resume|compact) and silently rewrites anything else to 'resume'. The operator's route is the fourth branch, `clear`, which that allowlist does not contain. Registering this gateway as a vocabulary-set entry would therefore go RED on the day it lands, and stay red until the allowlist is widened — converting this paragraph into a finding the daily audit reports on its own. Whether a deliberately-red rail entry is a legitimate use of the rail is IW-3, undecided, which is why no registry entry exists yet." gatewayKind="data"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_17</bpmn:incoming>
+      <bpmn:outgoing>flow_18</bpmn:outgoing>
+      <bpmn:outgoing>flow_19</bpmn:outgoing>
+      <bpmn:outgoing>flow_20</bpmn:outgoing>
+      <bpmn:outgoing>flow_21</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="hum_1_operator" targetRef="fw_1_supervisor">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e1"/>
+        <aef:anchors sourcePort="S" targetPort="W"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" sourceRef="fw_1_supervisor" targetRef="agt_1_session">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e2"/>
+        <aef:anchors sourcePort="S" targetPort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" sourceRef="agt_1_session" targetRef="agt_2_work">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e3"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_2_work" targetRef="fw_2_budget">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e4"/>
+        <aef:anchors sourcePort="N" targetPort="SE"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_5" name="ok / warn / urgent — below 95%" sourceRef="fw_2_budget" targetRef="fw_3_stop">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e5"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_6" name="critical — cross the boundary" sourceRef="fw_2_budget" targetRef="agt_4_let">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e6"/>
+        <aef:anchors sourcePort="E" targetPort="W"/>
+        <aef:forceStraight value="true"/>
+        <aef:routingHint role="seg_mid" offset="-50.3"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_7" name="continue — work remains in this unit" sourceRef="fw_3_stop" targetRef="agt_2_work">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e7"/>
+        <aef:anchors sourcePort="SE" targetPort="E"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_8" name="blocked — human gate reached" sourceRef="fw_3_stop" targetRef="hum_2_operator">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e8"/>
+        <aef:anchors sourcePort="N" targetPort="W"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_9" name="unit done — check run state" sourceRef="fw_3_stop" targetRef="fw_4_run">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e9"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_10" name="halt requested — kill switch set" sourceRef="fw_3_stop" targetRef="hum_3_run">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e10"/>
+        <aef:anchors targetPort="W"/>
+        <aef:routingHint role="seg_mid" offset="-27.6"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_11" name="operator unblocks — resume the run" sourceRef="hum_2_operator" targetRef="agt_2_work">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e11"/>
+        <aef:anchors sourcePort="S" targetPort="E"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_12" name="work remains — next task in the arc" sourceRef="fw_4_run" targetRef="agt_2_work">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e12"/>
+        <aef:anchors targetPort="E"/>
+        <aef:routingHint role="seg_mid" offset="29.1"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_13" name="arc drained" sourceRef="fw_4_run" targetRef="agt_3_run">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e13"/>
+        <aef:anchors sourcePort="SE" targetPort="N"/>
+        <aef:forceStraight value="true"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_14" name="run cap reached" sourceRef="fw_4_run" targetRef="agt_5_run">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e14"/>
+        <aef:anchors sourcePort="N" targetPort="N"/>
+        <aef:routingHint role="seg_last" offset="-119.9"/>
+        <aef:routingHint role="seg_mid" offset="522.1"/>
+        <aef:routingHint role="seg_first" offset="1.8"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_15" sourceRef="agt_4_let" targetRef="fw_5_handover">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e15"/>
+        <aef:anchors sourcePort="E" targetPort="S"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_16" sourceRef="fw_5_handover" targetRef="fw_6_cross">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e16"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_17" sourceRef="fw_6_cross" targetRef="fw_7_sessionstart">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e17"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_18" name="startup — cold, sentinel consumed" sourceRef="fw_7_sessionstart" targetRef="agt_1_session">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e18"/>
+        <aef:anchors sourcePort="SE" targetPort="S"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_19" name="resume — transcript restored" sourceRef="fw_7_sessionstart" targetRef="agt_1_session">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e19"/>
+        <aef:anchors sourcePort="SE" targetPort="S"/>
+        <aef:loopDetour y="652.8"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_20" name="clear — handover is the whole memory" sourceRef="fw_7_sessionstart" targetRef="agt_1_session">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e20"/>
+        <aef:anchors sourcePort="SE" targetPort="S"/>
+        <aef:loopDetour y="681.0"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_21" name="compact — summary injected" sourceRef="fw_7_sessionstart" targetRef="agt_1_session">
+      <bpmn:extensionElements>
+        <aef:uid value="crl_e21"/>
+        <aef:anchors sourcePort="SE" targetPort="S"/>
+        <aef:loopDetour y="703.7"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+
+  <!-- BPMN DI (visual layout) omitted; node geometry travels as aef:position -->
+</bpmn:definitions>
