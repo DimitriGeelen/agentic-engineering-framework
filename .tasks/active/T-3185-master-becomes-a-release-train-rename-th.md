@@ -52,7 +52,7 @@ date_finished: null
 - [x] T-100201 recorded as DISSOLVED — the PROTECT_MASTER conflict needs no resolving, because master-as-merge-only IS the release-train policy
 - [x] §Worktree Policy states that an explicitly-instructed worktree lands on `bleeding-edge`, never on `master` — a worktree landing on master would inject unreleased work into the consumer install surface
 - [x] Follow-ups filed for tooling that cannot change in this task, each naming the reason: T-3186 (`fw sync` branch-nag + `fw integrate` default target) and T-3187 (doctor branch-identity guard, L-497) — both blocked tonight because T-3127 holds `bin/fw` uncommitted
-- [ ] This task's commit does not touch `bin/fw` (T-3127 holds it dirty; same trap as T-3182)
+- [x] This task's commit does not touch `bin/fw` (T-3127 holds it dirty; same trap as T-3182)
 
 ### Human
 - [ ] [REVIEW] GitHub mirror carries `bleeding-edge`
