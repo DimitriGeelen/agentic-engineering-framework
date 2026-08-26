@@ -68,9 +68,12 @@ cost_estimate_proposed:
   wholesale?** This is the operator's call and everything else follows from it.
   Yes means consumers need a named include seam for their own governance. No
   means upgrade needs a three-way merge or a refusal-with-diff.
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Operator ruled GO 2026-08-26: yes, upgrade owns both files
+    wholesale, so consumers need a named include seam. Marked region (<!--
+    project-owned: begin/end -->) is slice 1 per the peer's content-shaped-
+    contract argument.
 
 - **IW-2: What is the complete list of framework-WRITTEN files in a consumer?**
   The reporter's reframing — location is not the test, authorship is — is only
@@ -79,8 +82,12 @@ cost_estimate_proposed:
   nothing here enumerates the rest, so a consumer cannot tell which of its files
   are safe to edit.
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: The enumeration does not exist yet — four members known
+    (CLAUDE.md, .claude/settings.json, .tasks/templates/*, policy/designer-
+    pin.yaml), rest unenumerated. Deferred to the first build slice, which
+    must derive the list from what upgrade actually writes rather than
+    asserting one.
 
 - **IW-3: Should the post-upgrade assertion list live in the consumer or the
   framework?** The reporter offers to prototype it there. Consumer-side is
@@ -88,16 +95,26 @@ cost_estimate_proposed:
   that protects consumers who never write one. These are not the same product
   and picking the cheap one by default is how the seam ends up defined by one
   consumer's shape.
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Settled on correctness, not cost, by 001-CashWeb: every
+    consumer-side registration point is a file the upgrade owns, so a
+    consumer-side check is deletable by the run it exists to catch — 'a
+    guard the guarded event can delete is not a guard'. Framework-side
+    mechanism, consumer-supplied assertions at a path the framework does not
+    write, default set derived from what upgrade just rewrote.
 
 - **IW-4: Is the exec-bit loss on `agents/designer/designer.sh` the same defect
   or a separate one?** T-3051 gates exec bits and this is the second loss in one
   day in that consumer. Not reproduced here. If separate, it is its own task.
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: Not reproduced here. Peer reports two exec-bit losses on
+    agents/designer/designer.sh in one day with git showing the file
+    UNMODIFIED between them — a mode change with no content change, so
+    nothing keyed on content diff can see it. Their hypothesis (T-3051's
+    gate does not run in the fw upgrade path, or runs before the rewrite) is
+    unverified here. Splits to its own task if confirmed.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
