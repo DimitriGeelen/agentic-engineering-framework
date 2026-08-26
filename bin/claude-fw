@@ -159,6 +159,51 @@ _terminator_watch() {
     done
 }
 
+# T-3182 (arc-012): record WHY the continuous-run loop stopped.
+#
+# Every exit path out of the main loop below used to `exit` in silence. When the
+# loop stopped, nothing on disk said so — which makes "the loop stopped" and "the
+# loop was never armed" the same observable state. That is the false-green shape:
+# a supervisor that quit reports exactly what a supervisor that had nothing to do
+# reports. Answering "why is the loop not running?" then costs process forensics
+# on PIDs and file mtimes, and only works while the evidence happens to survive.
+#
+# One line per loop event, appended to .context/working/continuous-run.jsonl.
+# ITERATIONS are recorded too, not only exits — "it went round 3 times and then
+# stopped because max-restarts" is a different fact from "it never started", and
+# a log that only records endings cannot tell them apart either.
+#
+# Never fatal: this runs on exit paths, and a broken recorder must not change the
+# wrapper's exit code or block a restart. Whole body is guarded.
+_record_loop_event() {
+    local event="$1" reason="$2" detail="${3:-}" code="${4:-}"
+    {
+        local root logf
+        root=$(git rev-parse --show-toplevel 2>/dev/null) || return 0
+        [ -n "$root" ] || return 0
+        [ -d "$root/.context/working" ] || return 0
+        logf="$root/.context/working/continuous-run.jsonl"
+        python3 - "$logf" "$event" "$reason" "$detail" "${code}" "${restart_count:-0}" "$$" <<'PY' 2>/dev/null || true
+import json, sys, time
+logf, event, reason, detail, code, count, pid = sys.argv[1:8]
+rec = dict(
+    ts=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    event=event,
+    reason=reason,
+    restart_count=int(count) if str(count).isdigit() else 0,
+    wrapper_pid=int(pid) if str(pid).isdigit() else 0,
+)
+if detail:
+    rec["detail"] = detail
+if str(code).lstrip("-").isdigit():
+    rec["exit_code"] = int(code)
+with open(logf, "a", encoding="utf-8") as f:
+    f.write(json.dumps(rec) + "\n")
+PY
+    } 2>/dev/null || true
+    return 0
+}
+
 # Set higher bash timeout for long framework operations (audit, fabric, embeddings)
 # Default is 120s which is too short. T-501/T-435.
 export BASH_DEFAULT_TIMEOUT_MS="${BASH_DEFAULT_TIMEOUT_MS:-300000}"
@@ -281,12 +326,14 @@ while true; do
 
     # Don't auto-restart if disabled
     if [ "$AUTO_RESTART" = false ]; then
+        _record_loop_event exit auto-restart-disabled "--no-restart or FW_NO_RESTART" "$exit_code"
         exit "$exit_code"
     fi
 
     # Check for restart signal
     signal_file=$(find_signal_file 2>/dev/null) || {
         # Not in a git repo — no signal file possible
+        _record_loop_event exit no-git-repo "cwd is not inside a git worktree" "$exit_code"
         exit "$exit_code"
     }
 
@@ -298,6 +345,7 @@ while true; do
             echo "claude-fw: Max restarts ($MAX_RESTARTS) reached. Stopping."
             echo "  Remove $signal_file to reset, then run 'claude -c' manually."
             rm -f "$signal_file"
+            _record_loop_event exit max-restarts "restart_count reached MAX_RESTARTS=$MAX_RESTARTS" 0
             exit 0
         fi
 
@@ -311,6 +359,7 @@ while true; do
         local_directive=$(python3 -c "import json,sys; d=json.load(open('$signal_file')); v=d.get('directive',''); print(v if isinstance(v,str) else '')" 2>/dev/null) || local_directive=""
 
         echo ""
+        _record_loop_event iterate restart "session=${local_session} tokens=${local_tokens}"
         echo "claude-fw: Auto-restart #${restart_count} (session: ${local_session}, tokens: ${local_tokens})"
         if [ -n "$local_directive" ]; then
             echo "  Directive: ${local_directive}"
@@ -379,9 +428,14 @@ while true; do
         echo ""
         echo "claude-fw: Stale restart signal (${local_age}s old). Ignoring."
         rm -f "$signal_file"
+        _record_loop_event exit stale-signal "signal ${local_age}s old, freshness window 300s" "$exit_code"
         exit "$exit_code"
     else
-        # No signal — normal exit
+        # No signal — normal exit. This is the ORDINARY end of a supervised
+        # session: claude exited and nothing asked for a restart. Recorded
+        # anyway, because "the operator quit" and "the loop broke" are the two
+        # readings of a stopped loop and only the record separates them.
+        _record_loop_event exit no-signal "claude exited without a restart signal" "$exit_code"
         exit "$exit_code"
     fi
 done
