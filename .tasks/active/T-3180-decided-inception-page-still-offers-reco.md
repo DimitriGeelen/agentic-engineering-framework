@@ -18,12 +18,12 @@ description: >
   predicate and is imported by web/blueprints/approvals.py - the inception render
   surface does not consult it.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -36,8 +36,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T18:15:16Z
-last_update: 2026-08-26T19:18:37Z
-date_finished:
+last_update: 2026-08-26T19:33:00Z
+date_finished: 2026-08-26T19:33:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -148,6 +148,17 @@ reason that rule exists.
       present; pending / DEFER / completed → absent.
 
 ### Human
+- [ ] [REVIEW] The close card reads as *finish this* rather than *decide this again*, and
+      sits where you would look for it.
+      **Steps:**
+      1. Open http://192.168.10.107:3000/inception/T-2715
+      2. Read down the page from the green "Decision: GO" banner.
+      **Expected:** the first action you meet is "Decision recorded — one step left" with a
+      `Close T-2715` button; the "Record Superseding Decision" form is below it and reads
+      as the rarer option. You should not feel asked to re-decide anything.
+      **If not:** say whether the problem is the order of the two cards or the wording of
+      the first one — they are separate fixes.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -197,6 +208,33 @@ the two surfaces cannot drift. Drift between surfaces answering the same questio
 produced the original T-3175 gap; a second copy here would have guaranteed a third one.
 Mutation-verified: replacing the delegation with a local re-derivation turns that test red.
 
+## Recommendation
+
+**Recommendation:** GO — close it.
+
+**Rationale:** All six Agent ACs pass, verified against the live page rather than the
+source. The one thing left is a placement-and-tone judgment: whether the close card reads
+as *finish this* rather than *decide this again*, and whether putting it above the
+superseding-decision form is the right order. That is exactly the perception this whole
+task exists to fix, and I am the wrong party to score it — I am the one who mis-read the
+page in the first place.
+
+**Evidence:**
+- `/inception/T-2715` and `/inception/T-2876` now render `close-inception` +
+  `/api/task/<id>/complete`; before this change the only `action=` on either page was
+  `/inception/<id>/decide`.
+- Three silence controls hold on the live server: pending (T-2668), DEFER (T-2670), and
+  already-closed (T-3097) all render no close card.
+- Closing routes through the existing `/api/task/<id>/complete`, i.e. `fw task update
+  --status work-completed` with the human-action flags — every gate still fires, and a
+  refusal renders instead of being swallowed.
+- The blueprint imports `lib/decided_unclosed.is_decided_unclosed`;
+  `test_blueprint_helper_agrees_with_the_shared_predicate` fails if it ever re-derives.
+- Mutation-tested, 3 legs: always-true predicate (3 red), card removed (1 red — the
+  defect itself), re-derived predicate (1 red, caught by the agreement test).
+- Correction recorded in `## RCA`: this task's original framing was wrong and I had
+  already stated it to you as measured. Two greps are not a measurement.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -227,3 +265,15 @@ Mutation-verified: replacing the delegation with a local re-derivation turns tha
 
 ### 2026-08-26T19:18:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d09f0984
+- **Timestamp:** 2026-08-26T19:33:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-26T19:33:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
