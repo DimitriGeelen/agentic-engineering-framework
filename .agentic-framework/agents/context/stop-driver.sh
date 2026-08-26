@@ -149,6 +149,16 @@ max_iter = as_int(directive.get("max_iterations"), as_int(state.get("max_iterati
 if max_iter is not None and cur + 1 > max_iter:
     out("stop", f"max_iterations-reached({cur + 1}>{max_iter})")
 
+# T-3169 (arc-012 S3): the TASK ceiling, counted in units of work rather than
+# context windows. Reported by its own name so a run that stopped because it
+# finished the work it was given is distinguishable in the log from one that
+# stopped because it ran out of windows — the two mean opposite things to the
+# operator. An unset max_tasks is unbounded-by-tasks, NOT a ceiling of zero.
+done_tasks = as_int(state.get("tasks_completed"), 0) or 0
+max_tasks = as_int(directive.get("max_tasks"), as_int(state.get("max_tasks")))
+if max_tasks is not None and done_tasks >= max_tasks:
+    out("stop", f"max_tasks-reached({done_tasks}>={max_tasks})")
+
 now = datetime.datetime.now(datetime.timezone.utc)
 
 def parse_ts(v):

@@ -1557,6 +1557,17 @@ if [ -n "$NEW_STATUS" ]; then
                 if [ -x "$FW_BIN" ] && [ -f "$PROJECT_ROOT/.context/dispatches.jsonl" ]; then
                     PROJECT_ROOT="$PROJECT_ROOT" "$FW_BIN" outcome backprop "$TASK_ID" --skip-verification >/dev/null 2>&1 || true
                 fi
+
+                # T-3169 (arc-012 S3): advance the TASK-keyed continuous-run counter.
+                # Branch 1 of 2 — see the T-1698 note on the Trigger 2 path; both
+                # completion branches must carry this or the counter is half-wired
+                # in exactly the way that shipped T-1697 broken. No-op when the
+                # loop is disarmed, and never blocks a close.
+                if [ -f "$FRAMEWORK_ROOT/lib/continuous-mode.sh" ]; then
+                    # shellcheck source=/dev/null
+                    . "$FRAMEWORK_ROOT/lib/continuous-mode.sh"
+                    fw_continuous_note_task_completed "$TASK_ID" "$PROJECT_ROOT" || true
+                fi
             else
                 echo -e "${YELLOW}Still $ALL_UNCHECKED/$ALL_TOTAL ACs unchecked — task stays in active/${NC}"
                 echo "Check human ACs in the task file, then re-run this command."
@@ -2321,6 +2332,16 @@ with open(path, 'w') as f:
         FW_BIN="$FRAMEWORK_ROOT/bin/fw"
         if [ -x "$FW_BIN" ] && [ -f "$PROJECT_ROOT/.context/dispatches.jsonl" ]; then
             PROJECT_ROOT="$PROJECT_ROOT" "$FW_BIN" outcome backprop "$TASK_ID" --skip-verification >/dev/null 2>&1 || true
+        fi
+
+        # T-3169 (arc-012 S3): advance the TASK-keyed continuous-run counter.
+        # Branch 2 of 2 — the sibling call is on the partial-complete re-run path
+        # above. The counter is idempotent per task id, so a task that reaches
+        # completion through both branches is still counted once.
+        if [ -f "$FRAMEWORK_ROOT/lib/continuous-mode.sh" ]; then
+            # shellcheck source=/dev/null
+            . "$FRAMEWORK_ROOT/lib/continuous-mode.sh"
+            fw_continuous_note_task_completed "$TASK_ID" "$PROJECT_ROOT" || true
         fi
     fi
 

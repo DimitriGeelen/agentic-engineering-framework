@@ -458,7 +458,7 @@ handover in.
 |---|---|---|---|---|
 | 1 | Register a `Stop` hook as the turn driver, reading `.continuous-mode.yaml` | F1 — the reported symptom | small | **S1 — landed** (T-3164, `3dcef93a2`) |
 | 2 | `claude-fw` restart: fresh session seeded by handover, not `claude -c` | F2 / R3 — the thrash | small | **S2 — landed** (T-3166) |
-| 3 | Re-key `current_iteration` from session to **task** | the 285 K-per-run absurdity | small | open |
+| 3 | Re-key `current_iteration` from session to **task** | the 285 K-per-run absurdity | small | **landed** — T-3169, as a *second* ceiling, not a re-key (see its Evolution) |
 | 4 | Wire `session-end.sh`; add `SessionEnd` to `hook-enable.sh` `VALID_EVENTS` | §9 outbound half | small | open |
 | 5 | Make an unsupervised launch refuse-or-warn loudly, not just stderr | R1 | small | open |
 | 6 | `enabled:` must reflect terminated state; consume the sentinel on every branch | F3, F4 | trivial | **landed** — F3 T-3167, F4 T-3168 |

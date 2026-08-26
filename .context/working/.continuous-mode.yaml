@@ -15,3 +15,6 @@ last_source: resume
 disarmed_reason: "T-3164: shipped disarmed. Previously enabled: true while last_terminated_reason\
   \ showed expiry 70 days past \u2014 the flag asserted armed while the loop was structurally\
   \ terminated."
+tasks_completed: 0
+max_tasks: null
+completed_task_ids: []

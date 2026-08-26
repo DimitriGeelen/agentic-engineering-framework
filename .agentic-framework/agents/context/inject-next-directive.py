@@ -44,12 +44,34 @@ except ImportError:
     sys.exit(0)
 
 
+# `.continuous-mode.yaml` schema (T-2365 S3, extended by T-3169).
+#
+# TWO ceilings, counted in DIFFERENT units — neither substitutes for the other:
+#
+#   current_iteration / max_iterations  SESSIONS. Advanced here, on SessionStart.
+#                                       Bounds how many context windows a run may
+#                                       consume. One window costs ~285K tokens.
+#   tasks_completed   / max_tasks       TASKS. Advanced by
+#                                       lib/continuous-mode.sh on the
+#                                       work-completed transition. Bounds how much
+#                                       WORK a run may do. Unset = unbounded.
+#
+# Before T-3164 these were the same number by accident: a session could take one
+# turn, so a window was spent per unit of work. With a Stop hook driving turns
+# inside one window, many tasks now fit in one session and the session counter can
+# no longer see any of them. The operator reasons in tasks; the budget is spent in
+# sessions.
+#
+# `completed_task_ids` backs the task counter's per-id idempotency —
+# work-completed is a re-runnable transition (partial-completes return through it).
 CONFIG_DEFAULTS = {
     "enabled": False,
     "max_iterations": 10,
     "tier_ceiling": 1,
     "expires_after_seconds": 86400,
     "current_iteration": 0,
+    "tasks_completed": 0,
+    "max_tasks": None,
 }
 
 
