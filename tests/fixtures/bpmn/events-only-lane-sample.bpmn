@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- T-3173 / G-093: a lane whose flowNodeRefs are ALL non-task nodes.
+     TASK_TAGS excludes events and gateways, so the task-node loop `continue`s past
+     every member of this lane and never reaches the dialect check. At HEAD this file
+     compiled with rc 0 and ZERO warnings despite carrying `authority="overlrd"` — a
+     real typo, silently accepted, because the population that could exercise the check
+     was empty.
+
+     Lane_real is the control: an out-of-dialect value on a lane that DOES hold a task
+     must keep its original message (with the fallback detail), and must not be
+     double-reported by the lifted check. -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="http://agentic.dev/schema/aef"
+                  id="Defs_events_only" targetNamespace="http://agentic.dev/bpmn">
+  <bpmn:process id="Proc_events" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_events" name="Signals only">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="S" authority="overlrd" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>Evt_catch</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gw_split</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_ok" name="Agent (initiative)">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="A" authority="initiative" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>Task_ok</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:intermediateCatchEvent id="Evt_catch" name="Stock changed">
+      <bpmn:extensionElements><aef:uid>u-evt-001</aef:uid></bpmn:extensionElements>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="Gw_split" name="In stock?"/>
+    <bpmn:serviceTask id="Task_ok" name="Recalculate availability">
+      <bpmn:extensionElements><aef:uid>u-ok-001</aef:uid></bpmn:extensionElements>
+    </bpmn:serviceTask>
+  </bpmn:process>
+</bpmn:definitions>

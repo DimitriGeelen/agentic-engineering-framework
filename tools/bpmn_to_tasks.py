@@ -266,6 +266,35 @@ def _constituents(node: ET.Element) -> list[str]:
     return out
 
 
+def _lane_declarations(root: ET.Element) -> list[tuple[str, str]]:
+    """Every lane that DECLARES an authority, as (lane_label, authority).
+
+    T-3173 / G-093. Deliberately node-independent, which is the entire point. The
+    dialect check used to live inside the task-node loop, and that loop `continue`s on
+    anything not in TASK_TAGS — so a lane whose flowNodeRefs are all events or gateways
+    was never visited and its authority was never validated. A genuine typo on such a
+    lane compiled silently with rc 0.
+
+    That is a false green of the worst kind: the population that could exercise the
+    check was empty, so the check reported the same thing as one that looked and was
+    satisfied. 832 named the same shape independently on agent-chat-arc @535 — "nothing
+    compiles, so nothing warns... a blind spot, not a tolerated deviation, and latent
+    only by accident of the current drawing".
+    """
+    out: list[tuple[str, str]] = []
+    for lane in root.iter():
+        if _local(lane.tag) != "lane":
+            continue
+        authority: str | None = None
+        for desc in lane.iter():
+            if _local(desc.tag) == "laneMeta" and desc.get("authority"):
+                authority = desc.get("authority")
+        if authority is None:
+            continue
+        out.append((lane.get("name") or lane.get("id") or "", authority))
+    return out
+
+
 def _lane_map(root: ET.Element) -> dict[str, str]:
     """Build nodeId -> lane-name from every <lane><flowNodeRef> in the document."""
     mapping: dict[str, str] = {}
@@ -601,6 +630,39 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
                 f"provenance is not representable in task skeletons; surfaced here, not "
                 f"folded silently"
             )
+
+    # T-3173 / G-093: the dialect check, lifted out of the task-node loop.
+    #
+    # Everything above only ever saw lanes that CONTAINED a task node, because the loop
+    # `continue`s on anything not in TASK_TAGS. A lane holding only events or gateways
+    # was never visited, so its authority was never validated — a real typo on such a
+    # lane compiled clean, rc 0, no output. The check was not lenient; it was
+    # unreachable, which looks identical from the outside.
+    #
+    # Scope is deliberately narrow: ONLY values that are in no vocabulary at all.
+    #   - dialect values stay silent here (a valid lane with no tasks has nothing to
+    #     report; `authority` keeps its T-2567/OBS-118 message where it actually fired,
+    #     i.e. where nodes really did fall back)
+    #   - `none` stays silent here too. Its advisory (T-3176) exists to explain an owner
+    #     fallback that took place; on a lane that emitted no tasks there was no
+    #     fallback to explain, and firing on every untouched events-only lane would
+    #     rebuild the always-fires noise the split was meant to remove (L-527).
+    reported_lanes = {lname for (_a, lname) in unknown_auth}
+    for lane_label, auth_val in _lane_declarations(root):
+        if auth_val in AUTHORITY_DIALECT or auth_val in AUTHORITY_UNSET:
+            continue
+        if lane_label in reported_lanes:
+            continue  # already reported above, with its fallback detail
+        reported_lanes.add(lane_label)  # warn-once even if the doc declares it twice
+        valid = ", ".join(sorted(AUTHORITY_DIALECT))
+        warnings.append(
+            f"lane {lane_label!r} carries unrecognized aef:laneMeta "
+            f"authority={auth_val!r} \u2014 not a value in the AEF lane dialect "
+            f"({valid}); this is very likely a typo or an out-of-band value. No task "
+            f"nodes in this lane, so nothing fell back \u2014 the value is reported on "
+            f"the LANE, not on its nodes, because a lane with no task nodes used to "
+            f"escape this check entirely (T-3173)"
+        )
 
     task_ids = set(uid_by_node)
 

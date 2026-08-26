@@ -3460,3 +3460,17 @@ decisions:
     date: 2026-08-25
     task: T-3145
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-497
+    decision: "land T-3172 first (dialect membership), then T-3176 (unset reporting class),"
+    scope: project
+    date: 2026-08-26
+    task: T-3173
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-498
+    decision: "dialect-valid values and the `none` unset sentinel stay silent on a lane"
+    scope: project
+    date: 2026-08-26
+    task: T-3173
+    rationale: "Auto-captured from task file on completion"

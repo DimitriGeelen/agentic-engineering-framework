@@ -1,16 +1,16 @@
-audit-task-tools=53
+error-watchdog=4
 
-check-inception-schema=27
 check-onboarding-gate=35
 check-agent-dispatch=4
 check-human-ac-tick=7
 check-arc-id=8
 check-active-completed-dup=1
 check-heredoc-cmd-sub=1
-checkpoint=3
-check-tier0=4
-budget-gate=4
-check-project-boundary=4
-check-active-task=3
-loop-detect=2
-error-watchdog=2
+checkpoint=17
+check-tier0=17
+budget-gate=16
+check-project-boundary=17
+check-active-task=16
+loop-detect=16
+error-watchdog=11
+audit-task-tools=3

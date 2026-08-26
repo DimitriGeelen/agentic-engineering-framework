@@ -27,10 +27,10 @@ description: >
   Distinct from T-3172, which fixes WHICH values the dialect contains; this fixes
   WHETHER the dialect is consulted at all.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tools/bpmn_to_tasks.py, tests/unit/test_bpmn_to_tasks.py]
 related_tasks: [T-3172, T-2717, T-2567]
@@ -45,8 +45,8 @@ related_tasks: [T-3172, T-2717, T-2567]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T15:37:21Z
-last_update: '2026-08-26T15:45:13Z'
-date_finished:
+last_update: 2026-08-26T18:08:18Z
+date_finished: 2026-08-26T18:08:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -122,26 +122,26 @@ and T-2557 (semantics dropped without a surface), except here the dropped thing 
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Lane-authority validation is lifted OUT of the task-node loop in
+- [x] Lane-authority validation is lifted OUT of the task-node loop in
       `tools/bpmn_to_tasks.py`. Every lane carrying `<aef:laneMeta authority="...">`
       has its value checked against the dialect exactly once, regardless of what its
       flowNodeRefs contain — the check must not depend on the `continue` at :424
-- [ ] A lane whose flowNodeRefs are ALL non-task nodes (events, gateways) and whose
+- [x] A lane whose flowNodeRefs are ALL non-task nodes (events, gateways) and whose
       `authority` is out-of-dialect (e.g. `overlrd`) emits the typo-suspecting WARN.
       Measured today at HEAD: it emits nothing, rc 0 — that is the regression this
       task closes
-- [ ] Warn-once semantics survive the lift: a lane is reported once, not once per
+- [x] Warn-once semantics survive the lift: a lane is reported once, not once per
       node. Existing aggregation (`unknown_auth` keyed by `(authority, lane)`) already
       guarantees this for task lanes; the lifted check must not double-report a lane
       that has both task and non-task nodes
-- [ ] The dialect-valid cases stay silent on non-task lanes — `sovereignty`,
+- [x] The dialect-valid cases stay silent on non-task lanes — `sovereignty`,
       `initiative` and `authority` on an events-only lane produce no NEW warning
       (`authority` keeps its existing T-2567/OBS-118 non-accusing message only where
       it already fired, i.e. where nodes actually fell back to name/type derivation)
-- [ ] Regression test in `tests/unit/test_bpmn_to_tasks.py` pins BOTH halves against
+- [x] Regression test in `tests/unit/test_bpmn_to_tasks.py` pins BOTH halves against
       an events-only-lane fixture: out-of-dialect value → exactly one WARN naming the
       lane; in-dialect value → zero WARNs. The fixture is committed, not inlined
-- [ ] Ordering with T-3172 is recorded in `## Decisions`: T-3172 changes WHICH values
+- [x] Ordering with T-3172 is recorded in `## Decisions`: T-3172 changes WHICH values
       are in the dialect, this task changes WHETHER the dialect is consulted. Whichever
       lands second must not silently revert the other's fixture expectations
 
@@ -153,89 +153,19 @@ and T-2557 (semantics dropped without a surface), except here the dropped thing 
      ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
      If your Expected clause is grep-able / file-exists / structural (a deterministic
      shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+     command in `## Verification
 
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
-
-## Verification
-
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# L-387: redirect then grep the file. P-011 runs each line under `set -eo pipefail`,
+# so `cmd | grep -q` can exit 141 on SIGPIPE once the output grows past a pipe buffer.
+python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q > /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.out 2>&1 && tail -1 /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.out | grep -qE "^72 passed"
+# the regression: a typo on an events-only lane is now caught (was silent, rc 0)
+python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/events-only-lane-sample.bpmn > /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.a 2>&1; grep -q "overlrd" /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.a && grep -q "very likely a typo" /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.a
+# the silence control: a VALID value on the same shape stays quiet
+python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/events-only-valid-lane-sample.bpmn > /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.b 2>&1; test "$(grep -c 'laneMeta authority' /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.b)" = "0"
+# warn-once: a lane WITH tasks is reported by the loop, not again by the lifted check
+python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/out-of-dialect-lane-sample.bpmn > /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.c 2>&1; test "$(grep -c 'laneMeta authority' /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.c)" = "1"
+# T-3172's external case is undisturbed by the shared reporting region
+python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/external-lane-sample.bpmn > /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.d 2>&1; grep -q "emitted NO task skeleton" /tmp/claude-0/-opt-999-Agentic-Engineering-Framework/6f13df8a-65bc-4ac4-9bc8-cde8c902f86b/scratchpad/t3173.d
 
 ## RCA
 
@@ -308,6 +238,34 @@ and T-2557 (semantics dropped without a surface), except here the dropped thing 
 
 ## Decisions
 
+### 2026-08-26 — ordering against T-3172 and T-3176
+
+- **Chose:** land T-3172 first (dialect membership), then T-3176 (unset reporting class),
+  then this task (dialect *reachability*). All three edit the same `unknown_auth`
+  reporting region and the same `AUTHORITY_*` constants.
+- **Why:** the three answer different questions and must not be conflated. T-3172 changes
+  WHICH values are in the dialect; T-3176 adds a class that is deliberately NOT in the
+  dialect; this task changes WHETHER the dialect is consulted at all. Landing
+  reachability first would have made the check reachable while still holding the wrong
+  set — a lane laned `external` would have been loudly accused on more surfaces, not
+  fewer. Each of the three has fixture assertions the other two must not revert;
+  `test_lifted_check_does_not_disturb_the_t3172_external_case` pins that explicitly.
+- **Rejected:** one combined fix. It would have produced a single diff in which the
+  wrong-owner defect, the wording defect and the reachability defect were
+  indistinguishable, and no mutation could have isolated any of them.
+
+### 2026-08-26 — the lifted check fires ONLY on genuinely out-of-vocabulary values
+
+- **Chose:** dialect-valid values and the `none` unset sentinel stay silent on a lane
+  with no task nodes. Only a value in no vocabulary at all is reported there.
+- **Why:** the two existing messages both explain something that HAPPENED — an owner
+  fallback, or a dropped node. On a lane that emitted nothing there is no fallback to
+  explain, so firing would say nothing and would fire on essentially every untouched
+  events-only lane. That is the always-fires noise (L-527) the T-2717 split was built to
+  remove, and rebuilding it here would have undone that work sideways.
+- **Rejected:** reporting every lane whose authority is not in `AUTHORITY_OWNER`.
+  Mutation-tested: 7 tests go red, including three that predate this task.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -333,3 +291,15 @@ and T-2557 (semantics dropped without a surface), except here the dropped thing 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3173-lane-authority-dialect-check-is-unreacha.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b1f695c8
+- **Timestamp:** 2026-08-26T18:08:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-26T18:08:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

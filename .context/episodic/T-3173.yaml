@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3173: lane authority dialect check is unreachable for lanes with no task nodes, so real typos compile silently
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T18:08:31Z
+# ============================================================================
+
+task_id: T-3173
+task_name: "lane authority dialect check is unreachable for lanes with no task nodes, so real typos compile silently"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-26T15:37:21Z
+completed: 2026-08-26T18:08:18Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inbound correction from 001-CashWeb-Lightspeed-Ecwid-integration (2026-08-26, follow-up to their G-055 / our G-091). They narrowed their own repro and withdrew a prediction; measuring the narrowed form at HEAD surfaced a DISTINCT defect they did not claim. tools/bpmn_to_tasks.py collects lane-authority folds INSIDE the task-node loop, which continues at :424 on every node whose tag is not in TASK_TAGS (:51 = userTask/serviceTask/scriptTask). unknown_auth is populated at :481, downstream of that guard, and the dialect WARNs at :501-521 are emitted from unknown_auth alone. Consequence: a lane whose flowNodeRefs are all events or gateways never reaches the check, so its <aef:laneMeta authority> is never read and never validated. This is not only the external case (T-3172) - it swallows GENUINE typos. Measured at HEAD on a two-lane fixture whose second lane holds only intermediateCatchEvents: authority="external" -> rc 0, zero warnings; the same fixture with authority="overlrd" (an unambiguous misspelling, in no vocabulary) -> rc 0, zero warnings. The typo-suspecting else-branch that exists precisely to catch that value is unreachable. Distinct from T-3172, which fixes WHICH values the dialect contains; this fixes WHETHER the dialect is consulted at all.
+
+# Key outcomes
+outcomes:
+  - 'Lane-authority validation is lifted OUT of the task-node loop in'
+  - 'A lane whose flowNodeRefs are ALL non-task nodes (events, gateways) and whose'
+  - 'Warn-once semantics survive the lift: a lane is reported once, not once per'
+  - 'The dialect-valid cases stay silent on non-task lanes — `sovereignty`,'
+  - 'Regression test in `tests/unit/test_bpmn_to_tasks.py` pins BOTH halves against'
+  - 'Ordering with T-3172 is recorded in `## Decisions`: T-3172 changes WHICH values'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-26 — ordering against T-3172 and T-3176'
+    chose: 'land T-3172 first (dialect membership), then T-3176 (unset reporting class), then this task (dialect *reachability*). All three edit the same `unknown_auth` reporting region and the same `AUTHORITY_*` constants.'
+    rationale: 'the three answer different questions and must not be conflated. T-3172 changes WHICH values are in the dialect; T-3176 adds a class that is deliberately NOT in the dialect; this task changes WHETHER the dialect is consulted at all. Landing reachability first would have made the check reachable while still holding the wrong set — a lane laned `external` would have been loudly accused on more surfaces, not fewer. Each of the three has fixture assertions the other two must not revert; `test_lifted_check_does_not_disturb_the_t3172_external_case` pins that explicitly.'
+    alternatives_rejected: ['one combined fix. It would have produced a single diff in which the wrong-owner defect, the wording defect and the reachability defect were indistinguishable, and no mutation could have isolated any of them.']
+  - decision: '2026-08-26 — the lifted check fires ONLY on genuinely out-of-vocabulary values'
+    chose: 'dialect-valid values and the `none` unset sentinel stay silent on a lane with no task nodes. Only a value in no vocabulary at all is reported there.'
+    rationale: 'the two existing messages both explain something that HAPPENED — an owner fallback, or a dropped node. On a lane that emitted nothing there is no fallback to explain, so firing would say nothing and would fire on essentially every untouched events-only lane. That is the always-fires noise (L-527) the T-2717 split was built to remove, and rebuilding it here would have undone that work sideways.'
+    alternatives_rejected: ['reporting every lane whose authority is not in `AUTHORITY_OWNER`. Mutation-tested: 7 tests go red, including three that predate this task.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 150 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 150
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3173-lane-authority-dialect-check-is-unreacha.md
+generated_by: context-agent-hybrid

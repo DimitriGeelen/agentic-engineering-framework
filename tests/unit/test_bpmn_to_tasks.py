@@ -1026,3 +1026,71 @@ def test_unset_class_does_not_swallow_the_accusing_branch():
     joined = " ".join(warnings)
     assert "very likely a typo" in joined
     assert "no authority set" not in joined
+
+
+# ---------------------------------------------------------------------------
+# T-3173 / G-093: the dialect check was UNREACHABLE, not lenient.
+#
+# It lived inside the task-node loop, which `continue`s on anything not in TASK_TAGS.
+# A lane holding only events or gateways was never visited, so a genuine typo on it
+# compiled clean with rc 0. The population that could exercise the check was empty —
+# indistinguishable from a check that looked and was satisfied.
+#
+# The silence control is the load-bearing half here. "Report every out-of-dialect lane"
+# and "report every lane" produce identical output on the typo fixture alone.
+# ---------------------------------------------------------------------------
+
+FIXTURE_EVENTS_ONLY = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "events-only-lane-sample.bpmn"
+)
+FIXTURE_EVENTS_ONLY_VALID = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "events-only-valid-lane-sample.bpmn"
+)
+
+
+def _auth_warnings(warnings):
+    return [w for w in warnings if "laneMeta authority" in w]
+
+
+def test_typo_on_an_events_only_lane_is_now_caught():
+    """The regression this task closes. At HEAD this emitted nothing, rc 0."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_EVENTS_ONLY)
+    auth = _auth_warnings(warnings)
+    assert len(auth) == 1
+    assert "overlrd" in auth[0]
+    assert "very likely a typo" in auth[0]
+    assert "Signals only" in auth[0]
+
+
+def test_events_only_lane_still_emits_no_task_for_its_events():
+    """The lift is a REPORTING change. Events were never tasks and still are not."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_EVENTS_ONLY)
+    assert [s["uid"] for s in skeletons] == ["u-ok-001"]
+
+
+def test_valid_authority_on_an_events_only_lane_stays_silent():
+    """The silence control.
+
+    A dialect-valid lane with no task nodes has nothing to report, and the unset
+    sentinel has no owner-fallback to explain. Firing on either would rebuild the
+    always-fires noise the T-2717 split removed (L-527).
+    """
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_EVENTS_ONLY_VALID)
+    assert _auth_warnings(warnings) == []
+
+
+def test_lane_with_tasks_is_not_double_reported():
+    """Warn-once survives the lift: the loop reports it, the lifted check must not."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_OUT_OF_DIALECT)
+    auth = _auth_warnings(warnings)
+    assert len(auth) == 1
+    # …and it is the ORIGINAL message, the one that carries the fallback detail.
+    assert "fell back to name/type derivation" in auth[0]
+
+
+def test_lifted_check_does_not_disturb_the_t3172_external_case():
+    """The three neighbouring fixes share one reporting region; none may revert another."""
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_EXTERNAL)
+    assert [s["uid"] for s in skeletons] == ["u-ours-001"]
+    assert len(_auth_warnings(warnings)) == 1
+    assert "emitted NO task skeleton" in " ".join(warnings)

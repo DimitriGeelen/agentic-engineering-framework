@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- T-3173: the silence control. Same events-only shape, but a VALID dialect value.
+     The lifted check must stay quiet here. Without this fixture, "report every
+     out-of-dialect lane" and "report every lane" are the same diff. -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="http://agentic.dev/schema/aef"
+                  id="Defs_events_valid" targetNamespace="http://agentic.dev/bpmn">
+  <bpmn:process id="Proc_events_valid" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_events" name="Signals only">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="S" authority="initiative" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>Evt_catch</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_unset" name="Not yet assigned">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="U" authority="none" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>Evt_catch_2</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:intermediateCatchEvent id="Evt_catch" name="Stock changed">
+      <bpmn:extensionElements><aef:uid>u-evt-001</aef:uid></bpmn:extensionElements>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Evt_catch_2" name="Timer fired">
+      <bpmn:extensionElements><aef:uid>u-evt-002</aef:uid></bpmn:extensionElements>
+    </bpmn:intermediateCatchEvent>
+  </bpmn:process>
+</bpmn:definitions>
