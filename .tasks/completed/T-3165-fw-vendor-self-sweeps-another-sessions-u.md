@@ -6,12 +6,12 @@ description: >
   fw vendor self sweeps another session's uncommitted files into the vendored tree
   (3rd occurrence)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run]
-components: []
+components: [agents/git/lib/hooks.sh, bin/claude-fw, lib/upgrade.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T14:01:18Z
-last_update: 2026-08-26T14:27:18Z
-date_finished:
+last_update: 2026-08-26T16:40:22Z
+date_finished: 2026-08-26T16:40:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -231,6 +231,41 @@ bin/fw vendor self --dry-run >/dev/null 2>&1
 
 ## Evolution
 
+### 2026-08-26 — the fix had to route around the files it was fixing
+
+- **What changed:** The obvious home for the withholding logic was `bin/fw`, where
+  `fw vendor self` dispatches, and for the fix-suggestion message it was
+  `agents/audit/audit.sh`. Both are held uncommitted by T-3127 — they are two of the
+  four files named in this task's own Context as the ones being swept. Editing either
+  would have meant committing the bug while fixing it, or sweeping T-3127's work under
+  this task's commit.
+- **Plan impact:** The guard lives entirely in `lib/upgrade.sh` (where the eight
+  `_self_vendor_*` helpers already are) and the push-gate message in
+  `agents/git/lib/hooks.sh`. Reporting had to become inline — emitted at the moment a
+  file is withheld — rather than a single end-of-run summary, because a summary hook
+  would have needed a call site in `bin/fw`. The inline form is arguably better: the
+  name appears next to the decision it explains.
+- **Triggered:** No new task. `agents/audit/audit.sh:2677` still suggests the bare
+  sweeping form and is deliberately left alone. That is a known, named residue rather
+  than an oversight — and it is a live demonstration of the defect, since the reason
+  it cannot be fixed here is precisely that another session holds the file.
+
+### 2026-08-26 — the detectors must NOT be guarded, which inverted one AC's shape
+
+- **What changed:** The first shape of the guard applied everywhere, which would have
+  made `fw vendor self --check` stop reporting drift on any dirty file. That is the
+  same blindness this task is about: a detector that hides drift because a file is
+  uncommitted reports "in sync" precisely when it should not.
+- **Plan impact:** The guard now applies only on the mutating path; dry-run and
+  `--check` are exempt by construction, and the exemption is asserted at all six call
+  sites by both the test and the Verification block. AC4 stopped being a "do not
+  regress" check and became a structural property of where the guard is allowed to sit.
+- **Triggered:** The parity assertion in `tests/unit/vendor_self_withhold.bats` test 10
+  and two Verification lines that count call sites, so a seventh helper added without
+  the guard fails loudly instead of silently re-opening the hole (the T-2711/T-2793
+  naming lesson applied ahead of time).
+
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -312,3 +347,22 @@ bin/fw vendor self --dry-run >/dev/null 2>&1
 
 ### 2026-08-26T14:27:18Z — status-update [task-update-agent]
 - **Change:** tags: +arc:continuous-run
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b5bc5f40
+- **Timestamp:** 2026-08-26T16:40:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 13
+     - evidence: `bin/fw vendor self --dry-run >/dev/null 2>&1`
+  2. **skip-as-pass** (severe, deterministic) @ Verification:line 13
+     - evidence: `bin/fw vendor self --dry-run >/dev/null 2>&1`
+
+### 2026-08-26T16:40:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

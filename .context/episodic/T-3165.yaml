@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3165: fw vendor self sweeps another session's uncommitted files into the vendored tree (3rd occurrence)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T16:40:38Z
+# ============================================================================
+
+task_id: T-3165
+task_name: "fw vendor self sweeps another session's uncommitted files into the vendored tree (3rd occurrence)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T14:01:18Z
+completed: 2026-08-26T16:40:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-26T16:02:51+02:00
+last_commit: 2026-08-26T18:39:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  vendor the Stop driver; file the sweep that made this manual. fw vendor self stops sweeping a concurrent task's uncommitted files
+
+# Key outcomes
+outcomes:
+  - '`fw vendor self` refuses to sync a vendored-class file whose working-tree copy differs from HEAD and which is **not** part of the current task''s changes — or syncs only the files the caller names'
+  - 'The refusal (or skip) **names each withheld file and why**, so the agent does not have to already know which files belong to a concurrent task'
+  - 'An explicit opt-in exists to sync everything anyway, logged Tier-2 — the current behaviour stays reachable, it just stops being the default'
+  - '`fw vendor self --check` still reports true drift; narrowing the sync must not blind the detector that motivated the gate'
+  - 'Regression test: with an unrelated file dirty in the working tree, `fw vendor self` leaves that file''s vendored copy at its HEAD content'
+  - 'Regression test: the file the caller IS working on still syncs, so the push gate can be cleared normally'
+  - 'The push gate''s suggested fix message points at the narrowed invocation, not the sweeping one'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/stop-driver.sh'
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/git/lib/hooks.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3165-fw-vendor-self-sweeps-another-sessions-u.md'
+  - '.tasks/completed/T-3164-stop-hook-turn-driver--the-continuous-lo.md'
+  - 'tests/unit/vendor_self_withhold.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T16:02:51'
+    action: 'T-3165: vendor the Stop driver; file the sweep that made this manual'
+  - time: '2026-08-26T18:39:41'
+    action: 'T-3165: fw vendor self stops sweeping a concurrent task''s uncommitted files'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 159 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 159
+  commits: 2
+  files_changed: 9
+  lines_added: 827
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3165-fw-vendor-self-sweeps-another-sessions-u.md
+generated_by: context-agent-hybrid

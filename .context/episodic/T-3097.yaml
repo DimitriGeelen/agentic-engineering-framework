@@ -85,10 +85,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 9204
-  commits: 5
-  files_changed: 8
-  lines_added: 1460
-  lines_removed: 172
+  commits: 6
+  files_changed: 31
+  lines_added: 2436
+  lines_removed: 269
+  footprint_refreshed_at: '2026-08-26T16:27:58Z'
+  footprint_refreshed_by_commit: 44a832816
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3097-worktree-failure-class--ultra-deep-rca-a.md
