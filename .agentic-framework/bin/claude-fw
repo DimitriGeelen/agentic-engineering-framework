@@ -316,6 +316,13 @@ while true; do
             echo "  Directive: ${local_directive}"
             export FW_NEXT_DIRECTIVE="$local_directive"
         fi
+        # T-3166: name the mode, so which kind of restart fired is visible in the
+        # operator's terminal without reading the source.
+        if [ "${FW_RESTART_MODE:-fresh}" = "continue" ]; then
+            echo "  Restart mode: continue (claude -c — transcript restored, context NOT freed)"
+        else
+            echo "  Restart mode: fresh (new session, seeded from the handover)"
+        fi
         echo "  Handover committed. Continuing in 3 seconds..."
         echo "  Press Ctrl+C to cancel."
         echo ""
@@ -335,8 +342,28 @@ while true; do
         # Brief pause for user to cancel
         sleep 3
 
-        # Continue with -c flag (resume most recent session)
-        CLAUDE_ARGS=("-c")
+        # T-3166 (arc-012 S2): start a FRESH session, not `claude -c`.
+        #
+        # The restart fires because context hit critical. `-c` continues the most
+        # recent conversation, which restores the transcript — so the session comes
+        # back holding the very context it restarted to escape, and the next
+        # budget check is critical again. T-3163 measured that a session cannot
+        # free its own context from the inside; the supervisor is the only thing
+        # that can, and `-c` was it handing the context straight back.
+        #
+        # Nothing else has to change for the fresh session to know where it is:
+        # T-2376 already wired SessionStart source "startup" behind the
+        # .auto-restart-pending sentinel written just above, and
+        # post-compact-resume.sh injects the handover, the directive and the
+        # iteration counter on that branch.
+        #
+        # FW_RESTART_MODE=continue restores the pre-T-3166 behaviour for anyone
+        # who wants transcript continuity and accepts that the budget does not drop.
+        if [ "${FW_RESTART_MODE:-fresh}" = "continue" ]; then
+            CLAUDE_ARGS=("-c")
+        else
+            CLAUDE_ARGS=()
+        fi
         # Note: next loop iteration will use termlink_inject if TERMLINK_ENABLED
     elif [ -f "$signal_file" ]; then
         # Stale signal — clean up and exit

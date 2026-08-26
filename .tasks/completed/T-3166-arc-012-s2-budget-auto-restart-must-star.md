@@ -1,15 +1,15 @@
 ---
-id: T-3164
-name: "Stop-hook turn driver — the continuous loop takes its own next turn (arc-012 S1)"
+id: T-3166
+name: "arc-012 S2: budget auto-restart must start a FRESH session, not claude -c"
 description: >
-  Stop-hook turn driver — the continuous loop takes its own next turn (arc-012 S1)
+  arc-012 S2: budget auto-restart must start a FRESH session, not claude -c
 
 status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
 tags: [arc:continuous-run]
-components: [agents/context/stop-driver.sh, C-009, tests/unit/stop_driver.bats]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-26T13:55:01Z
-last_update: 2026-08-26T14:27:18Z
-date_finished: 2026-08-26T13:59:58Z
+created: 2026-08-26T14:28:00Z
+last_update: 2026-08-26T14:32:34Z
+date_finished: 2026-08-26T14:32:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,43 +34,73 @@ date_finished: 2026-08-26T13:59:58Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-26T14:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=237,acs=9)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T14:30:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3164: Stop-hook turn driver — the continuous loop takes its own next turn (arc-012 S1)
+# T-3166: arc-012 S2: budget auto-restart must start a FRESH session, not claude -c
 
 ## Context
 
-arc-012 S1 — the load-bearing gap. T-3163 measured the mechanism: a `Stop` hook returning
-`{"decision": "block", "reason": …}` (or `exit 2` with the reason on stderr) drives another
-turn — 5 fires / 4 consecutive continuations from one prompt. `{"ok": false}` is **inert**,
-producing output identical to the control leg, so the working contract must be pinned by a
-test rather than by memory.
+The budget-critical auto-restart in `bin/claude-fw` re-launches with `CLAUDE_ARGS=("-c")`
+— continue the most recent conversation. `-c` restores the transcript, so the session comes
+back holding the same context it just tried to escape: the restart cannot free the one
+resource it fired to reclaim. T-3163 promoted this from "better" to **load-bearing** — the
+measurement showed a session cannot free its own context from the inside, so the outer
+supervisor is the only mechanism that can, and today it hands the context straight back.
 
-This ships the driver **disarmed**. Registering it must be a no-op for every ordinary
-session: it continues only when `.continuous-mode.yaml` says `enabled: true` AND caps are
-unbreached AND no halt file is present. A driver that continued by default would take the
-operator's session away from them.
+Everything the fresh path needs already exists. T-2376 built the `SessionStart` source
+`startup` branch and the `.auto-restart-pending` sentinel precisely so an auto-restart
+continuation can be told apart from a cold start; `post-compact-resume.sh` injects the
+handover, the directive and the iteration counter on that branch. Dropping `-c` changes
+what the model carries, not what the hooks do.
 
-Sovereignty (IW-2): a component that decides whether to continue can decide not to stop.
-The halt is therefore checked **first, before any continue decision**, out of band from the
-model's own reasoning — a file the hook reads. The platform's 8-consecutive-block cap is
-deliberately **not** raised: our counter stops the loop first, leaving the vendor cap as
-the backstop we did not write.
+Slice S2 of T-3159 §15.4 (arc-012).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `agents/context/stop-driver.sh` exists, is executable, and is registered on the `Stop` event in `.claude/settings.json`
-- [x] **Disarmed by default:** with `.continuous-mode.yaml` absent, malformed, or `enabled: false`, the hook emits `{}` and exits 0 — one test per state
-- [x] **Halt beats continue:** with the halt file present the hook emits `{}` even when enabled and under cap, asserted by a test that would fail if the checks were ordered the other way
-- [x] `stop_hook_active: true` in the payload always yields `{}` — the platform runaway guard is honoured, not just our own counter
-- [x] Caps enforced: continuation stops at `max_iterations` and at `expires_at`/`expires_after_seconds` — a test per cap
-- [x] **The working contract is pinned:** a test asserts the continue payload is `decision: block` with a non-empty `reason`, and a second test asserts the inert `{"ok": false}` shape is never emitted (T-3163 leg A)
-- [x] Every continue/stop decision is appended to a log with its reason, so a stalled or runaway loop is diagnosable after the fact instead of by re-running it
-- [x] **Fails closed:** any error, unreadable state, or missing dependency yields `{}` (stop), never a continue — forced by a test that corrupts the state file
-- [x] `bats tests/unit/stop_driver.bats` passes
-- [x] Registering the hook leaves this repo's ordinary sessions unchanged — `.continuous-mode.yaml` ships `enabled: false`
+- [x] Auto-restart starts a FRESH session by default: the restart path passes no `-c`, and
+      `FW_RESTART_MODE=continue` is the documented escape hatch restoring the old behaviour.
+- [x] `bash -n bin/claude-fw` passes (L-408 — never edit `bin/` without a syntax check).
+- [x] `tests/unit/claude_fw_restart_mode.bats` asserts BOTH branches — default yields no
+      `-c`, `FW_RESTART_MODE=continue` yields `-c`. The control leg is required: a test that
+      only asserts the default passes against a build that ignores the variable entirely.
+- [x] The restart banner names the mode that fired, so fresh-vs-continue is visible in the
+      operator's terminal without reading the source.
+- [x] `.auto-restart-pending` is still written on the restart path — the `SessionStart`
+      `startup` branch in `post-compact-resume.sh` is gated on that sentinel, so dropping it
+      would silently disable directive injection. Pinned by test.
+- [x] `.agentic-framework/bin/claude-fw` matches `bin/claude-fw`, updated by targeted copy
+      and NOT by `fw vendor self` (T-3165: it sweeps a concurrent session's uncommitted files
+      into the vendored tree).
+- [x] T-3159 §15.4 records S2 as landed with the commit ref.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -105,15 +135,12 @@ the backstop we did not write.
 
 ## Verification
 
-bats tests/unit/stop_driver.bats
-test -x agents/context/stop-driver.sh
-python3 -c "import json; d=json.load(open('.claude/settings.json')); assert any(h.get('command','').endswith('stop-driver.sh') for e in d['hooks'].get('Stop',[]) for h in e.get('hooks',[])), 'stop-driver not registered on the Stop event'"
-python3 -c "import yaml; d=yaml.safe_load(open('.context/working/.continuous-mode.yaml')) or {}; assert d.get('enabled') is not True, 'continuous mode must ship disarmed'"
-# Live disarmed check: the registered hook, run as Claude Code runs it, must be a no-op here.
-echo '{}' | agents/context/stop-driver.sh | python3 -c "import json,sys; d=json.load(sys.stdin); assert d == {}, f'disarmed hook must emit an empty object, got {d}'"
-# The inert contract from T-3163 leg A must not be EMITTABLE. Comments are stripped:
-# the driver's header documents the inert shape deliberately, as a warning.
-! grep -vE '^[[:space:]]*#' agents/context/stop-driver.sh | grep -qE '"ok"[[:space:]]*:[[:space:]]*false'
+bash -n bin/claude-fw
+out=$(bats tests/unit/claude_fw_restart_mode.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+diff -q bin/claude-fw .agentic-framework/bin/claude-fw
+grep -q "FW_RESTART_MODE" bin/claude-fw
+grep -q "auto-restart-pending" bin/claude-fw
+grep -q "S2 .*landed\|S2 — landed" docs/reports/T-3159-autonomous-loop-context-boundary.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -192,6 +219,30 @@ echo '{}' | agents/context/stop-driver.sh | python3 -c "import json,sys; d=json.
 
 ## Evolution
 
+### 2026-08-26 — the knob had to skip the config registry, and the test had to be mutated to be believed
+
+- **What changed:** the plan at filing was to register `FW_RESTART_MODE` in
+  `lib/config.sh` `FW_CONFIG_REGISTRY` so it would surface in `fw config list`,
+  `fw doctor` and Watchtower `/config` like every other setting. That file is one of
+  the four `bin/`+`lib/` files T-3127 is holding uncommitted in this working tree —
+  the same set `fw vendor self` swept twice already (T-3165). Editing it would have
+  entangled another session's in-flight work with this commit.
+- **Plan impact:** shipped as a bare environment variable read at the point of use,
+  with the default and the escape hatch both documented in the code and named in the
+  restart banner. It is therefore NOT discoverable via `fw config list`. Deliberately
+  not documented in CLAUDE.md either, because the registry-parity lint (correctly)
+  refuses an `FW_` key that CLAUDE.md names and the registry does not define — so
+  documenting it there would have traded a discoverability gap for a red test.
+- **What was learned:** a bats test written against a transcription of the decision
+  block would have been a false green of exactly the family this arc keeps producing.
+  The test lifts the `if` block out of `bin/claude-fw` at run time instead, and the
+  claim was checked by mutating the source (`CLAUDE_ARGS=()` → `("-c")`): tests 2 and
+  4 went red, the other five stayed green, and restoring returned 7/7. An assertion
+  nobody has seen fail is not yet evidence.
+- **Triggered:** registry registration for `FW_RESTART_MODE` deferred until T-3127
+  lands its `lib/config.sh` edits — recorded here rather than filed as a task, since
+  it is a one-line follow-on to an existing blocked file rather than its own unit.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -266,27 +317,22 @@ echo '{}' | agents/context/stop-driver.sh | python3 -c "import json,sys; d=json.
 
 ## Updates
 
-### 2026-08-26T13:55:01Z — task-created [task-create-agent]
+### 2026-08-26T14:28:00Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3164-stop-hook-turn-driver--the-continuous-lo.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3166-arc-012-s2-budget-auto-restart-must-star.md
 - **Context:** Initial task creation
+
+### 2026-08-26T14:30:05Z — status-update [task-update-agent]
+- **Change:** tags: +arc:continuous-run
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5fe35f8f
-- **Timestamp:** 2026-08-26T14:00:06Z
+- **Scan ID:** R-44e33f3c
+- **Timestamp:** 2026-08-26T14:32:36Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** none
 
-**Verification-level findings:**
-
-  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 9
-     - evidence: `! grep -vE '^[[:space:]]*#' agents/context/stop-driver.sh | grep -qE '"ok"[[:space:]]*:[[:space:]]*false'`
-
-### 2026-08-26T13:59:58Z — status-update [task-update-agent]
+### 2026-08-26T14:32:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
-
-### 2026-08-26T14:27:18Z — status-update [task-update-agent]
-- **Change:** tags: +arc:continuous-run

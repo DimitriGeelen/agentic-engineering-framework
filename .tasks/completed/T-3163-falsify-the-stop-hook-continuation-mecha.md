@@ -4,11 +4,11 @@ name: "Falsify the Stop-hook continuation mechanism in an isolated sandbox (arc-
 description: >
   Falsify the Stop-hook continuation mechanism in an isolated sandbox (arc-012 S8)
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
-tags: []
+horizon: null
+tags: [arc:continuous-run]
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T13:48:52Z
-last_update: 2026-08-26T13:48:52Z
-date_finished: null
+last_update: 2026-08-26T14:27:18Z
+date_finished: 2026-08-26T13:54:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -308,3 +308,23 @@ grep -q "crl_gw_stop" .context/designer/projects/draft-continuous-run-loop/v1.bp
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3163-falsify-the-stop-hook-continuation-mecha.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5582cd2e
+- **Timestamp:** 2026-08-26T13:54:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Isolated lab exists outside the repo: scratch dir with its own `.claude/settings.json` registering a `Stop` hook, and a probe script bounded by BOTH a fire cap and `stop_hook_active`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: Isolated lab exists outside the repo: scratch dir with its own `.claude/settings.json` registering a `Stop` hook, and a probe script bounded by BOTH a`
+
+### 2026-08-26T13:54:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+### 2026-08-26T14:27:18Z — status-update [task-update-agent]
+- **Change:** tags: +arc:continuous-run

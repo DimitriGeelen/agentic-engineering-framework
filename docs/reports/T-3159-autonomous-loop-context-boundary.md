@@ -454,15 +454,15 @@ handover in.
 
 ### 15.4 Consequent work list
 
-| # | Change | Closes | Size |
-|---|---|---|---|
-| 1 | Register a `Stop` hook as the turn driver, reading `.continuous-mode.yaml` | F1 — the reported symptom | small |
-| 2 | `claude-fw` restart: fresh session seeded by handover, not `claude -c` | F2 / R3 — the thrash | small |
-| 3 | Re-key `current_iteration` from session to **task** | the 285 K-per-run absurdity | small |
-| 4 | Wire `session-end.sh`; add `SessionEnd` to `hook-enable.sh` `VALID_EVENTS` | §9 outbound half | small |
-| 5 | Make an unsupervised launch refuse-or-warn loudly, not just stderr | R1 | small |
-| 6 | `enabled:` must reflect terminated state; consume the sentinel on every branch | F3, F4 | trivial |
-| 7 | Author the designer map + conformance entry | T-3159's original deliverable | medium |
+| # | Change | Closes | Size | Status |
+|---|---|---|---|---|
+| 1 | Register a `Stop` hook as the turn driver, reading `.continuous-mode.yaml` | F1 — the reported symptom | small | **S1 — landed** (T-3164, `3dcef93a2`) |
+| 2 | `claude-fw` restart: fresh session seeded by handover, not `claude -c` | F2 / R3 — the thrash | small | **S2 — landed** (T-3166) |
+| 3 | Re-key `current_iteration` from session to **task** | the 285 K-per-run absurdity | small | open |
+| 4 | Wire `session-end.sh`; add `SessionEnd` to `hook-enable.sh` `VALID_EVENTS` | §9 outbound half | small | open |
+| 5 | Make an unsupervised launch refuse-or-warn loudly, not just stderr | R1 | small | open |
+| 6 | `enabled:` must reflect terminated state; consume the sentinel on every branch | F3, F4 | trivial | open |
+| 7 | Author the designer map + conformance entry | T-3159's original deliverable | medium | open |
 
 Every one of 1-6 is small. The reason this has taken 26 tasks is that the substrate was
 built before the driver, and the driver is the only part that was load-bearing.
