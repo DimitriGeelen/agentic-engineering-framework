@@ -80,10 +80,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 159
-  commits: 2
-  files_changed: 9
-  lines_added: 827
-  lines_removed: 10
+  commits: 3
+  files_changed: 12
+  lines_added: 983
+  lines_removed: 20
+  footprint_refreshed_at: '2026-08-26T16:40:55Z'
+  footprint_refreshed_by_commit: 2c6808d7e
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3165-fw-vendor-self-sweeps-another-sessions-u.md

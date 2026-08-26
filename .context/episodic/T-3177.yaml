@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3177: arc-012 live-fire runbook is stale in four ways that each block the demo it exists to enable
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T16:48:25Z
+# ============================================================================
+
+task_id: T-3177
+task_name: "arc-012 live-fire runbook is stale in four ways that each block the demo it exists to enable"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T16:44:25Z
+completed: 2026-08-26T16:48:12Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-26T18:48:08+02:00
+last_commit: 2026-08-26T18:48:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the live-fire runbook described a loop that no longer exists
+
+# Key outcomes
+outcomes:
+  - 'The runbook no longer instructs `claude -c` as the restart shape — T-3166 made'
+  - 'The three first-run gates T-2389 measured (trust dialog, FleetView launcher, MCP'
+  - 'The runbook does not present a worktree or isolated clone as the path — that'
+  - '`max_tasks` (T-3169''s second ceiling) appears alongside `max_iterations`, and the'
+  - 'The runbook states plainly that the demo must run from the operator''s own'
+  - 'Every `arc-012` claim in the runbook that this session''s tasks changed is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/runbooks/arc-012-continuous-mode-live-fire.md'
+  - '.tasks/active/T-3177-arc-012-live-fire-runbook-is-stale-in-fo.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T18:48:08'
+    action: 'T-3177: the live-fire runbook described a loop that no longer exists'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 430
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3177-arc-012-live-fire-runbook-is-stale-in-fo.md
+generated_by: context-agent-hybrid
