@@ -202,3 +202,118 @@ T-3159 (this inception).
 **Consequence for this inception:** the map in §4 should be authored on 0.11.0, not on the
 0.8.0 build that was live when the question was asked — which is why the re-pin was
 sequenced first rather than alongside.
+
+---
+
+# Part II — Architecture dialogue (2026-08-26)
+
+Operator: *"on one, the continuous mode, I really want us to have a drill me
+conversation that we think about how we're going to architect that"*.
+
+This part disposes IW-1 and IW-2. It is dialogue, captured as it happens (C-001).
+
+## 9. Correction to §3 — `/clear` IS ownable on the way out
+
+§3 concluded "`/clear` today gives zero hooks on both ends". The *"today"* is true —
+`.claude/settings.json` registers only `PreCompact`, `SessionStart`, `PreToolUse`,
+`PostToolUse`. The implied *availability* claim is wrong:
+
+- **`SessionEnd` supports `matcher: "clear"`** — it fires on `/clear` specifically, and
+  also on process exit / SIGTERM. We register no `SessionEnd` hook at all.
+- Constraint: `SessionEnd` hooks share a **1.5 s** default timeout budget (raisable to
+  ~60 s per-hook). Our handover agent takes far longer than 1.5 s, so a full
+  `fw handover` cannot simply be hung off `SessionEnd` — it would have to be
+  pre-staged, or spawned detached.
+- There is still no `PreClear`, and `SessionStart`'s source allowlist is a separate
+  question (`post-compact-resume.sh:28` clamps to `startup|resume|compact`).
+
+Source: docs lookup, **not verified against this runtime**. Cheap to falsify — register a
+`SessionEnd` hook that touches a file, run `/clear`, look for the file.
+
+## 10. The finding that reframes the whole question
+
+**arc-012 (`continuous-run`) already built this. It has never fired once.**
+
+- **26 completed tasks**, including four explicitly named *live fire*: T-2381
+  ("controlled live-fire"), T-2387 ("live-fire readiness"), T-2389 ("execute live
+  fire"), T-2424 ("live-fire precondition").
+- Arc status: **`in-progress`**, `demo_evidence:` **empty**, `closed_at:` empty. The
+  §ACD gate is doing its job — nobody could produce the artefact.
+- Its `headline_mechanic` is written precisely, and is exactly what the operator asked
+  for: *"agent crosses the context-budget threshold without operator relay →
+  checkpoint.sh fires self-trigger → handover + resume via claude-fw → operator
+  observes multi-cycle continuous session whose iteration counter, directive, and
+  bounded tier-ceiling are visible in `fw resume status`"*.
+
+So the architecture question is **not** "what do we build". Every component ships:
+budget gauge, auto-handover, `.restart-requested`, the `claude-fw` wrapper, iteration
+counter, tier ceiling, blast-radius resolver, directive injector, discard manifest.
+
+The question is **which of the built things cannot work, and why that was invisible for
+ten weeks.**
+
+## 11. Three reasons it never fired — each measured, not hypothesised
+
+**R1 — the signal is written into a void when the wrapper is absent (T-2499).**
+`.restart-requested` is consumed *only* by `bin/claude-fw`. Sessions launched as plain
+`claude` write the signal and nothing reads it. T-2499's own RCA found the proof: a
+stale signal from Jun-24 sitting at 294K, and the only live `claude-fw` an idle orphan.
+
+**R2 — the fix for the missing driver presumes the thing it is trying to cause
+(T-2404).** T-2404 saw the defect exactly and said so: *"the substrate delivers the
+directive into `additionalContext` but nothing fires `/resume` or `/start-work` — those
+are skills, not hooks, so the agent reads injected text without auto-invoking the
+governance ceremony… the loop arms but stalls waiting for human input."* The fix
+shipped was to **append a sentence to the injected prose** asking the agent to invoke
+`/resume`. That text is only read if a turn happens; the missing thing *is* the turn.
+
+> A fix that presumes its own precondition. Same family as the false greens in Part I,
+> one level up: not a check that cannot see its subject, but a repair that cannot reach
+> the fault.
+
+**R3 — `claude -c` restores the transcript rather than freeing it (§F2).** Confirmed
+independently: `--continue` and `--resume` both reload the prior transcript. The
+exit-and-restart path can never free context *by construction*, so it re-crosses
+critical and repeats until `MAX_RESTARTS=5`.
+
+R1 and R2 are independent single points of failure. R3 means that even with both fixed,
+the loop would thrash rather than continue.
+
+## 12. The platform may now provide the primitive
+
+Reported by a docs-lookup agent — **not verified here**, and it must be before anything
+is designed on top of it:
+
+| Primitive | What it does | Guard |
+|---|---|---|
+| `Stop` hook returning `{"ok": false, "reason": …}` | tells Claude to **keep working** instead of returning to the prompt — this is the missing driver (F1) | `stop_hook_active` flag; hard cap of **8 consecutive blocks**, raisable via `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` |
+| `/goal <condition>` | runs until a stated condition is met; works headless | one active goal per session; idle check-in every 30 min; pauses after 3 idle check-ins |
+| `/loop` | re-runs a prompt on a fixed interval | interval-driven |
+| `SessionEnd` `matcher: "clear"` | outbound hook for `/clear` | 1.5 s shared budget |
+| `--permission-mode dontAsk` / `acceptEdits` | unattended permission posture | — |
+
+If the `Stop` hook continuation is real, **F1 is a hook registration, not a project** —
+and arc-012's whole restart-based architecture is solving a problem that no longer
+needs solving that way.
+
+## 13. Questions put to the operator
+
+Filed as the disposition path for IW-1/IW-2. Answers recorded in §14 as they arrive.
+
+- **Q1 — what is the loop actually for?** (a) unattended overnight worker; (b) attended
+  endurance — operator is present and simply must not be ejected; (c) fleet member
+  driven from outside. The reported symptom is literally (b); arc-012's ceiling and
+  blast-radius machinery is built for (a). If that mismatch is the root cause, most of
+  the built substrate is answering a question nobody asked.
+- **Q2 — does the loop live inside the session or outside it?** In-session driver keeps
+  context and can never free it; external supervisor seeding fresh sessions from the
+  handover frees context by construction but makes the handover the entire memory.
+- **Q3 — what is the unit of iteration:** budget threshold (current) or task boundary?
+  Crossing at 285 K lands mid-edit; crossing at task-close lands on a seam.
+- **Q4 — IW-2, termination and the kill switch.** A `Stop`-hook driver can, by
+  construction, stop the operator from stopping it.
+- **Q5 — what may it do alone** when it hits a human gate, which it will?
+
+## 14. Dialogue log — Part II
+
+*(appended as the conversation proceeds)*
