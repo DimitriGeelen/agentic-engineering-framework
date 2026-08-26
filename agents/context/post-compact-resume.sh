@@ -39,9 +39,20 @@ except Exception:
 # startup is a loop auto-restart continuation); otherwise no-op. compact/resume
 # are unaffected.
 RESTART_SENTINEL="$PROJECT_ROOT/.context/working/.auto-restart-pending"
+# T-3168: the sentinel also needs a TTL. claude-fw's restart *signal* has carried a
+# 300s one from the start; the sentinel that gates this same path had none, so any
+# leak — a cancelled countdown, a crash between write and relaunch, a machine that
+# went to sleep — steered the next cold start days later. Stale is treated as absent,
+# and removed rather than left to mislead the start after this one too.
+RESTART_SENTINEL_TTL="${FW_RESTART_SENTINEL_TTL:-300}"
 if [ "$SOURCE_TAG" = "startup" ]; then
     if [ -f "$RESTART_SENTINEL" ]; then
-        rm -f "$RESTART_SENTINEL" 2>/dev/null   # one-shot: consume the marker
+        _sentinel_mt=$(stat -c %Y "$RESTART_SENTINEL" 2>/dev/null || echo 0)
+        _sentinel_age=$(( $(date +%s) - _sentinel_mt ))
+        rm -f "$RESTART_SENTINEL" 2>/dev/null    # one-shot either way: consume the marker
+        if [ "$_sentinel_age" -ge "$RESTART_SENTINEL_TTL" ]; then
+            exit 0                               # stale — treat as a cold start
+        fi
     else
         exit 0                                   # cold start — preserve pre-T-2376 no-op
     fi

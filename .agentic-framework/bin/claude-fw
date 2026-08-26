@@ -337,10 +337,18 @@ while true; do
         # start. The sentinel sits beside the restart signal in .context/working/
         # and is consumed (rm) by post-compact-resume.sh on the next startup.
         restart_sentinel="$(dirname "$signal_file")/.auto-restart-pending"
-        : > "$restart_sentinel" 2>/dev/null || true
 
         # Brief pause for user to cancel
         sleep 3
+
+        # T-3168 (arc-012 F4): write the sentinel AFTER the cancel window, never
+        # before it. It used to be written above the `sleep`, so pressing Ctrl+C at
+        # the prompt that invites you to press Ctrl+C left it on disk with nothing
+        # coming to consume it — and the operator's next cold `claude` start was then
+        # read as a loop continuation: counter advanced, an old directive injected
+        # into a session that never asked for one. On disk, a cancelled restart is
+        # now indistinguishable from a restart that never fired.
+        : > "$restart_sentinel" 2>/dev/null || true
 
         # T-3166 (arc-012 S2): start a FRESH session, not `claude -c`.
         #
