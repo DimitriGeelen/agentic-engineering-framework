@@ -317,3 +317,169 @@ Filed as the disposition path for IW-1/IW-2. Answers recorded in §14 as they ar
 ## 14. Dialogue log — Part II
 
 *(appended as the conversation proceeds)*
+
+## 14. Dialogue log — Part II
+
+**Operator, on Q1:** *"we are meant to be kicked out after five runs or an amount of runs
+we set or we want to drive an arc to completion. Whether it's all night or not, it
+doesn't really matter. We set or drive the arc to completion to a high value, low cost
+or high value, high cost task until that's completed and drained and then keep running
+it or with a limited amount. But now it kicks out at the end of each turn. Do you
+understand?"*
+
+**Operator, on Q2:** *"How should I know? Whatever we need to make it work. Please
+elaborate on this. Pros, cons, directives, whatever."* — architecture delegated to the
+agent; this is an engineering call, not a sovereignty call.
+
+### 14.1 The framing correction — this is a per-TURN defect, not a per-BOUNDARY defect
+
+Part I titled this *"cannot cross a context boundary unattended"*. **That is the second
+problem, not the first.** The operator's *"it kicks out at the end of each turn"* is
+literally accurate: with no `Stop` hook registered, control returns to the idle prompt
+after **every** assistant turn. No context boundary is required to produce the symptom.
+
+The consequence for the built design is sharper than Part I said:
+
+> **arc-012's unit of iteration is a SESSION.** `current_iteration` advances only in
+> `inject-next-directive.py`, which runs only on `SessionStart`. To advance the counter
+> by one you must restart the session — and the only automatic restart trigger is
+> budget-critical. **So "5 runs" costs 5 × 285 K of context to express.**
+
+What the operator described — *drive an arc to completion / drain the high-value tasks /
+bounded by a run cap* — is **task-unit** work. This answers Q3 without needing to ask it:
+the unit is a task, the terminal condition is drained-or-capped, and wall-clock is
+explicitly irrelevant.
+
+Ambiguity flagged, not blocking: *"general menu"* is read here as the idle prompt inside
+a live session. If the process is actually exiting each turn, that is a different and
+worse defect and this section needs revisiting.
+
+### 14.2 Measured this turn
+
+- **This very session runs `claude -c`, PPID 3064411 — NOT under `claude-fw`.** R1 is
+  live right now: if budget-critical fires here, the signal goes into the void.
+- **No `Stop`, `SubagentStop`, `SessionEnd` or `UserPromptSubmit` hook is registered.**
+  `.claude/settings.json` carries `PreToolUse`, `PostToolUse`, `PreCompact`,
+  `SessionStart` only.
+- **We have already written both missing halves and wired neither:**
+  - `agents/context/stop-guard.sh` — a Stop hook, header reads *"REFERENCE ONLY — not
+    registered in .claude/settings.json (see T-1459)"*.
+  - `agents/context/session-end.sh` — *"SessionEnd hook — S1 reason logger + S2 handover
+    trigger (T-1212)"*, unregistered. This is the outbound half of the `/clear` route
+    from §9.
+- **`bin/hook-enable.sh` cannot wire the SessionEnd one:** its `VALID_EVENTS` is
+  `PostToolUse PreToolUse SessionStart PreCompact Stop SubagentStop UserPromptSubmit` —
+  `SessionEnd` is absent.
+
+## 15. Architecture options, and the recommendation
+
+### 15.1 The constraint that eliminates the simple answer
+
+**A hook cannot type a slash command, and neither can the model.** So an in-session turn
+driver *cannot free its own context*: at critical, `budget-gate.sh` blocks Write/Edit/Bash
+while the `Stop` hook keeps pushing the session on — a live-lock, with the loop unable to
+reach the `/compact` that would release it. High confidence, not yet falsified here;
+listed as a test in §16.
+
+**Therefore no single-layer design works.** The turn driver and the boundary crossing are
+different problems and need different mechanisms.
+
+### 15.2 The three candidates
+
+**A — in-session turn driver (`Stop` hook returns `{"ok": false, "reason": …}`)**
+
+| | |
+|---|---|
+| Pro | Directly removes the reported symptom (F1); zero re-orientation cost — full context retained across turns; cheap (one hook + policy file); we already have the harness (`stop-guard.sh`, `fw hook-enable --event Stop`) |
+| Con | Cannot free context (§15.1); a driver that decides when to continue can prevent the operator from stopping it; platform caps continuations at 8 consecutive blocks |
+| D1 Antifragility | Neutral — a stall is silent unless the hook logs each decision |
+| D2 Reliability | Good: every continuation is a hook decision, so it is loggable and auditable |
+| D3 Usability | Best of the three — it is the thing the operator asked for, and it just works |
+| D4 Portability | Weak — Claude Code-specific hook contract |
+
+**B — native `/goal <condition>`**
+
+| | |
+|---|---|
+| Pro | Vendor-maintained; no custom substrate; has idle check-ins and its own guards |
+| Con | The completion condition is judged by an **external evaluator model** — for us that judge would be ruling on *"is this arc complete?"*, which is precisely the question §ACD exists to stop being answered loosely. One goal per session. |
+| D2 Reliability | Poor **for our terminal condition** — arc completion is a gated, evidence-backed verdict, not a model's opinion |
+| D4 Portability | Worst — a provider feature with no equivalent elsewhere |
+
+Verdict: usable as a *driver*, unusable as a *judge*. If adopted, the condition must be a
+shell predicate we own (`fw arc show <slug>` drained), never prose.
+
+**C — external supervisor spawning FRESH sessions**
+
+| | |
+|---|---|
+| Pro | **The only option that actually frees context** — a new process starts empty; survives anything, including the session wedging; observable from outside; provider-agnostic (it shells out) |
+| Con | Full re-orientation cost per iteration (read handover → `fw resume` → set focus); `-p` cannot clear gates that want a human; handover becomes the **entire** memory |
+| D1 Antifragility | Best — each iteration is a clean room; a poisoned session cannot propagate |
+| D2 Reliability | Good, and the boundary is deterministic rather than model-mediated |
+| D4 Portability | Best |
+
+### 15.3 Recommendation — nest A inside C
+
+They are not competing; they are **the inner and outer loop of one machine**.
+
+```
+OUTER (C): supervisor  ─ while work remains and run-cap not hit:
+             spawn a FRESH session seeded by the handover   ← frees context
+             │
+             INNER (A): Stop hook  ─ after each turn:
+                          work left in this unit?  → {"ok": false, "reason": next step}
+                          unit done / context high / gate hit → allow stop
+             │
+             session ends → supervisor writes handover, advances counter, loops
+```
+
+- Shared ledger: `.continuous-mode.yaml` — both loops read the same caps and state.
+- Inter-session carrier: the handover.
+- **`claude-fw` is already the outer supervisor.** The single change that matters is
+  `bin/claude-fw:338`: `CLAUDE_ARGS=("-c")` must become a *fresh* session seeded by the
+  handover. `-c` reloads the transcript, which is why the current loop thrashes to
+  `MAX_RESTARTS=5` instead of continuing.
+
+This is the operator's `/clear` instinct, implemented as **respawn** rather than in-session
+clear — and strictly better than `/clear`, because a new process genuinely frees memory
+while `/clear`'s outbound `SessionEnd` hook has only a 1.5 s shared budget to write a
+handover in.
+
+### 15.4 Consequent work list
+
+| # | Change | Closes | Size |
+|---|---|---|---|
+| 1 | Register a `Stop` hook as the turn driver, reading `.continuous-mode.yaml` | F1 — the reported symptom | small |
+| 2 | `claude-fw` restart: fresh session seeded by handover, not `claude -c` | F2 / R3 — the thrash | small |
+| 3 | Re-key `current_iteration` from session to **task** | the 285 K-per-run absurdity | small |
+| 4 | Wire `session-end.sh`; add `SessionEnd` to `hook-enable.sh` `VALID_EVENTS` | §9 outbound half | small |
+| 5 | Make an unsupervised launch refuse-or-warn loudly, not just stderr | R1 | small |
+| 6 | `enabled:` must reflect terminated state; consume the sentinel on every branch | F3, F4 | trivial |
+| 7 | Author the designer map + conformance entry | T-3159's original deliverable | medium |
+
+Every one of 1-6 is small. The reason this has taken 26 tasks is that the substrate was
+built before the driver, and the driver is the only part that was load-bearing.
+
+## 16. The experiment that settles §15.1
+
+Cheap, falsifiable, and **must not run on the operator's live session** (a `Stop` hook
+returning `ok:false` drives turns; a bad one runs away).
+
+1. In a scratch dir, register a `Stop` hook that appends a line to a file and returns
+   `{"ok": false, "reason": "say NEXT"}` for the first 3 fires, then `{}`.
+2. Run one `claude -p` turn. Count lines.
+3. Expected if the mechanism is real: 4 assistant turns from one prompt.
+4. Then repeat with the context deliberately near critical, to confirm or refute the
+   live-lock in §15.1.
+
+## 17. Open to the operator (Q4/Q5, sharpened by the Q1 answer)
+
+- **Q4a — the block cap is the vendor's only safety net.** Continuations are capped at 8
+  consecutive, raisable via `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`. A 5-run arc drain will
+  exceed 8 turns easily. Recommendation: **do not raise it globally** — let our own hook
+  count and stop, and leave the platform cap as the backstop it was designed to be.
+- **Q4b — kill switch.** Needs to work when the model is misbehaving: a file the hook
+  checks before every continuation, plus a Watchtower control. Sovereignty question.
+- **Q5 — behaviour at a human gate.** With 48 `started-work` tasks, most human-owned, the
+  loop will hit one almost immediately. Park-and-next, or stop-and-notify?
