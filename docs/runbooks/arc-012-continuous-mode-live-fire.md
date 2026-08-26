@@ -22,7 +22,28 @@ Arc: `arc-012` (`continuous-run`). Anchor: `T-2158`. Slices: S0–S5.
 
 1. **Launched via the wrapper.** The auto-restart only happens if the session
    runs under `claude-fw` (not plain `claude`). The wrapper watches for
-   `.context/working/.restart-requested` on exit and relaunches `claude -c`.
+   `.context/working/.restart-requested` on exit and relaunches.
+
+   **T-3166 changed what the relaunch IS, and it changes what you should expect
+   to see.** The wrapper used to run `claude -c`, which restores the previous
+   transcript — so the restarted session came back with the context it had just
+   exhausted, and the loop could not actually cross a budget boundary. It now
+   starts a **FRESH** session seeded from the handover, which is the only shape
+   that frees context. The banner names the mode on every restart:
+
+   ```
+   Restart mode: fresh (new session, seeded from the handover)
+   ```
+
+   If you see `Restart mode: continue (claude -c — transcript restored, context
+   NOT freed)`, something set `FW_RESTART_MODE=continue`; the live-fire will not
+   demonstrate the mechanic in that mode, because nothing is released.
+
+   The practical consequence for the demo: **the restarted session will not
+   remember the conversation.** That is the point being demonstrated, not a
+   fault — what carries across the boundary is `LATEST.md` and the injected
+   directive, and whether that is sufficient is exactly what the run measures
+   (T-3159 IW-4, still open and deliberately unmeasured).
 2. **`claude-fw` on PATH.** Verify:
    ```
    cd /opt/999-Agentic-Engineering-Framework && command -v claude-fw && echo OK
@@ -40,17 +61,37 @@ Arc: `arc-012` (`continuous-run`). Anchor: `T-2158`. Slices: S0–S5.
      worktree, every background job), so critical was never detected. Deployed to
      master (`6c43bd5f0`).
    - **T-2376** — the `startup` SessionStart matcher is wired in `.claude/settings.json`.
-     The auto-restart's `claude -c` emits source `startup` (not `resume`); without the
+     The auto-restart emits source `startup` (not `resume`); without the
      matcher the loop restarts but never re-injects the directive / advances the counter.
      Verify: `grep -q '"matcher": "startup"' .claude/settings.json && echo OK`.
-5. **Clean-ish git state.** The auto-handover commits and pushes. Run from a
+   - **T-3168** — the `.auto-restart-pending` sentinel carries a TTL. A cancelled
+     restart used to leave the sentinel behind, so the NEXT ordinary session start
+     was mistaken for a loop continuation. If a run behaves as though it resumed a
+     loop you never armed, look here first.
+
+5. **Claude Code first-run gates — three of them, and each one silently ends the
+   run (T-2389, measured).** None of these are loop bugs; all three stop the
+   session before a single turn happens, which looks identical to a loop that
+   never armed:
+   - **Trust dialog.** A directory absent from `~/.claude.json` prompts on launch.
+     A non-interactive launch simply exits on it. Launch once by hand in the
+     directory first and accept, before the live-fire.
+   - **FleetView launcher.** `claude` with no arguments opens the multi-agent
+     launcher, where anything you type becomes a *separate child task* whose
+     context does not climb the parent transcript the gauge reads — so the gauge
+     stays flat no matter how much work happens. Launch with a **positional
+     prompt** (`claude-fw "<prompt>"`) to get a classic single session.
+   - **MCP approval.** "N new MCP servers found in this project" blocks startup,
+     and `disabledMcpjsonServers` does not suppress the dialog. Dismiss with
+     `Esc`. The loop needs no MCP.
+6. **Clean-ish git state.** The auto-handover commits and pushes. Run from a
    branch you're happy to receive handover commits on.
-6. **Know the safety rails** (from the auto-restart design, T-179):
+7. **Know the safety rails** (from the auto-restart design, T-179):
    - Restart signal has a **5-minute TTL** (stale signals are ignored).
    - Max **5 consecutive** auto-restarts, then the wrapper stops.
    - **3-second cancel window** before each restart (Ctrl-C to abort).
    - Opt out entirely with `claude-fw --no-restart`.
-7. **Quiet repo — no OTHER `claude-fw` wrappers running on this repo** (OBS-075,
+8. **Quiet repo — no OTHER `claude-fw` wrappers running on this repo** (OBS-075,
    discovered in the T-2381 controlled live-fire). The loop's coordination files
    are **repo-global, not per-session**: `.context/working/.restart-requested`,
    `.tool-counter`, and `.budget-status` are shared by every session on the repo.
@@ -63,9 +104,25 @@ Arc: `arc-012` (`continuous-run`). Anchor: `T-2158`. Slices: S0–S5.
    ```
    Expected: only the wrapper(s) of your own live-fire session. If you see others
    (e.g. other terminals or background jobs running `claude-fw` on this repo),
-   either stop them first or run the live-fire on an isolated clone/worktree of the
-   repo. (A per-session signal namespace would lift this constraint — tracked as a
-   possible follow-up; today the file is global.)
+   **stop them first.** (A per-session signal namespace would lift this constraint
+   — tracked as a possible follow-up; today the file is global.)
+
+   **Do NOT run this on a worktree or an isolated clone**, which earlier revisions
+   of this runbook suggested. Two independent reasons:
+
+   1. **It is where the demo failed.** T-2389 ran exactly that way and the loop
+      never armed. A session spawned into a worktree via tmux/TermLink resolved
+      `PROJECT_ROOT` to `/root`, so every fw-backed hook — the budget gauge
+      included — read and wrote the wrong location. The gauge never saw critical,
+      `checkpoint.sh` never reached its auto-handover block, `.restart-requested`
+      was never written. ~179K real tokens burned and `current_iteration` stayed
+      `0`. The failure is silent and looks exactly like "the loop is not wired".
+   2. **It contradicts the operator's standing directive** (CLAUDE.md §Worktree
+      Policy, T-3132): worktrees are opt-in only, never a default, and never on
+      an agent's own judgement.
+
+   The reliable path is the one below: **your own interactive terminal, on the
+   main checkout**, which propagates `CLAUDE_PROJECT_DIR` correctly.
 
 ---
 
@@ -105,11 +162,35 @@ Write the unified config (`enabled: true`, a small cap, a tier-ceiling):
 cd /opt/999-Agentic-Engineering-Framework && cat > .context/working/.continuous-mode.yaml <<'EOF'
 enabled: true
 max_iterations: 3
+max_tasks: 2
 tier_ceiling: 1
 expires_after_seconds: 86400
 current_iteration: 0
+tasks_completed: 0
 EOF
 ```
+
+**Two ceilings, and they mean opposite things (T-3169).** `max_iterations` counts
+**context windows** — how much budget the run may spend. `max_tasks` counts **work
+completed**. A run that stops on `max_tasks` finished what it was given; a run that
+stops on `max_iterations` ran out of room mid-job. Reporting both as "the loop
+stopped" would hide the distinction that matters most to you, so the driver names
+which one fired:
+
+```
+grep decision=stop .context/working/.stop-driver.log | tail -3
+# ... reason=max_tasks-reached(2>=2)        <- finished the work
+# ... reason=max_iterations-reached(4>3)    <- ran out of windows
+```
+
+An unset `max_tasks` means unbounded-by-tasks, **not** a ceiling of zero. Leave it
+unset only if you want the run bounded purely by budget.
+
+**`enabled:` is self-disarming (T-3167).** When the loop records a terminating
+reason it sets `enabled: false` in the same write. A config showing `enabled: true`
+next to a `last_terminated_reason` is a state the framework no longer produces — if
+you see one, the file was hand-edited. Re-arming is deliberate: set `enabled: true`
+and clear `last_terminated_reason`.
 
 ### 2. File a directive for the loop to pick up on resume
 
@@ -171,12 +252,17 @@ AUTO-RESTART: Signal written — wrapper will auto-restart on exit.
 ```
 
 When the session exits, the wrapper prints its 3-second cancel countdown and then
-relaunches `claude -c`. **Do not relay anything** — the point is that the loop
-continues without you. The resumed session's `SessionStart` hook injects the
+relaunches — a FRESH session, not `claude -c` (T-3166; see Prerequisite 1).
+**Do not relay anything** — the point is that the loop continues without you.
+The new session's `SessionStart` hook injects the
 `## Next Directive (iteration N/3, tier_ceiling 1)` block automatically.
 
-Let it cycle at least twice (iteration 1 → 2). The `expires_after_seconds` and
-`max_iterations: 3` cap bound the run.
+Expect the new session NOT to remember the conversation. That is the mechanic,
+not a fault: the handover and the directive are what cross the boundary.
+
+Let it cycle at least twice (iteration 1 → 2). `expires_after_seconds`,
+`max_iterations: 3` and `max_tasks: 2` each bound the run independently — the
+first to trip wins, and the stop-driver log names which.
 
 ### 5. (Optional) demonstrate the bounded-autonomy ceiling
 
@@ -299,7 +385,7 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw config set CONTEXT_WINDOW 30
 
 ## See also
 
-**Per-link automated coverage** (everything except the live `claude -c` restart this
+**Per-link automated coverage** (everything except the live restart this
 runbook covers — all four links of the loop are unit/integration tested):
 
 - `tests/integration/budget_gauge_stdin_transcript.bats` — link #1: gauge reads stdin `transcript_path` (T-2377)
