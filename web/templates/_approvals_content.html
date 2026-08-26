@@ -2,10 +2,10 @@
 
 <!-- Summary counts bar — T-1416 (T-1388 B6 / F5): split into Decisions vs Verifications -->
 <div class="approvals-summary">
-    <a href="#section-decisions" class="approval-stat approval-stat-group {{ 'decisions-active' if (tier0_count + go_count) else '' }}" style="text-decoration:none; color:inherit;">
-        <span class="stat-value">{{ tier0_count + go_count }}</span>
+    <a href="#section-decisions" class="approval-stat approval-stat-group {{ 'decisions-active' if (tier0_count + go_count + decided_unclosed_count) else '' }}" style="text-decoration:none; color:inherit;">
+        <span class="stat-value">{{ tier0_count + go_count + decided_unclosed_count }}</span>
         <span class="stat-label">Decisions</span>
-        <span class="stat-breakdown">{{ tier0_count }} Tier 0 · {{ go_count }} GO/NO-GO</span>
+        <span class="stat-breakdown">{{ tier0_count }} Tier 0 · {{ go_count }} GO/NO-GO{% if decided_unclosed_count %} · {{ decided_unclosed_count }} to close{% endif %}</span>
     </a>
     {% if paused_count and paused_count > 0 %}
     <a href="#section-paused" class="approval-stat approval-stat-group ac-active" style="text-decoration:none; color:inherit;">
@@ -232,6 +232,34 @@
             </button>
         </div>
     </form>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- T-3175: DECIDED but still open. The exact complement of the Decisions
+     section above: a task leaves that one the moment a decision is recorded, and
+     used to arrive nowhere. The sovereignty gate (update-task.sh:87) refuses agent
+     closure on owner: human, so the single remaining action is the operator's —
+     and it was on no surface at all. Measured: three inceptions invisible here,
+     one of them for six days. -->
+{% if decided_unclosed %}
+<h2 id="section-decided-unclosed" class="approvals-group-heading">Decided — awaiting closure</h2>
+<div class="section-header">
+    <h3>You already decided these</h3>
+    <small>{{ decided_unclosed_count }} inception{{ '' if decided_unclosed_count == 1 else 's' }} — decision recorded, task still open. One step left.</small>
+</div>
+{% for t in decided_unclosed %}
+<div class="approval-card">
+    <div class="approval-header">
+        <a href="/inception/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>
+        <span class="badge badge-{{ 'go' if t.decision == 'GO' else 'nogo' }}">{{ t.decision }}</span>
+        <span class="muted">{{ t.status }}{% if t.owner %} · owner: {{ t.owner }}{% endif %}</span>
+    </div>
+    <div class="approval-body">
+        <div>{{ t.name }}</div>
+        <small class="muted">Decision is recorded; the task is still in <code>active/</code>.
+        Close it from <a href="/inception/{{ t.task_id }}">/inception/{{ t.task_id }}</a>.</small>
+    </div>
 </div>
 {% endfor %}
 {% endif %}

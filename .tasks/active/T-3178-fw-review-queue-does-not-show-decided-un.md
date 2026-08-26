@@ -1,12 +1,10 @@
 ---
-id: T-3175
-name: "A decided inception still owned by human appears on no review queue — /approvals
-  and fw review-queue both drop it"
+id: T-3178
+name: "fw review-queue does not show decided-unclosed inceptions — wire it to lib/decided_unclosed (T-3175 split)"
 description: >
-  A decided inception still owned by human appears on no review queue — /approvals
-  and fw review-queue both drop it
+  T-3175 shipped the shared predicate and the /approvals section. The CLI mirror is unwired because fw review-queue is an inline python heredoc inside bin/fw, which T-3127 holds uncommitted.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-26T15:40:57Z
-last_update: '2026-08-26T15:45:14Z'
-date_finished:
+created: 2026-08-26T17:01:54Z
+last_update: 2026-08-26T17:01:54Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,68 +34,11 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-26T15:45:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=241,acs=6)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-26T15:45:14Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3175: A decided inception still owned by human appears on no review queue — /approvals and fw review-queue both drop it
+# T-3178: fw review-queue does not show decided-unclosed inceptions — wire it to lib/decided_unclosed (T-3175 split)
 
 ## Context
-
-Found 2026-08-26 while landing three GO'd inceptions (T-3159, T-3149, T-3097).
-
-All three are in the same state: the operator recorded a decision, the decision is
-in the task body, and `agents/task-create/update-task.sh:87` (Human Sovereignty Gate,
-R-033/T-198) correctly refuses to let an agent close them because `owner: human`.
-So each needs exactly one operator action — and **no surface shows it to them.**
-
-Measured, not assumed:
-
-| Surface | T-3159 | T-3149 | T-3097 |
-|---|---|---|---|
-| `/approvals` (all 5 sections) | absent | absent | absent |
-| `fw review-queue` | absent | absent | absent |
-
-`/approvals` §Decisions holds 12 entries — all with `pending` decisions. §Verifications
-holds 391 — partial-complete build tasks. A **decided** inception that is still
-`started-work` and human-owned falls between the two and is dropped by both. Both
-surfaces agree, so this is one shared predicate gap, not two rendering bugs.
-
-The consequence is the same shape this whole cluster keeps producing: the queue is
-not wrong-looking, it is *complete-looking*. An operator reading `/approvals` sees no
-outstanding inception closures and concludes there are none. T-3097 has been sitting
-in this state since 2026-08-20.
-
-Sibling to T-2125 (inception handoffs routed to the wrong URL class) — same seam,
-different failure: T-2125 was a wrong link, this is no link at all.
-
-
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
@@ -105,24 +46,8 @@ different failure: T-2125 was a wrong link, this is no link at all.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] A predicate exists that selects inceptions in `.tasks/active/` with a recorded
-      `**Decision**: GO|NO-GO|DEFER` AND `owner: human` AND status ≠ `work-completed`,
-      and it returns the decided-unclosed set on the live corpus (measured: T-2715,
-      T-2876 — the three originally named, T-3159/T-3149/T-3097, were closed by this
-      same session, so the corpus moved under the AC)
-- [x] `/approvals` renders that set in a named section, distinct from the
-      pending-decision "Decisions" section (a decided item is a different operator
-      action from an undecided one)
-- [x] The predicate lives in ONE importable place (`lib/decided_unclosed.py`) with no
-      second copy inside the blueprint, so `fw review-queue` can consume the same one
-- [ ] `fw review-queue` renders the section too — **SPLIT to T-3178**, blocked: the
-      command is an inline python heredoc inside `bin/fw`, which T-3127 holds
-      uncommitted. Editing it would sweep another task's work, which is the defect
-      T-3165 just fixed. Named here rather than silently dropped.
-- [x] A test pins the empty-candidate-set failure: seed a decided+human-owned inception
-      into a scratch corpus, assert the predicate returns it, then mutate the predicate
-      and assert the test goes RED. An always-empty queue is indistinguishable from a
-      correctly-empty one without that control leg (same class as T-3099)
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -156,21 +81,6 @@ different failure: T-2125 was a wrong link, this is no link at all.
 -->
 
 ## Verification
-
-python3 -m pytest tests/unit/test_decided_unclosed.py -q
-# One predicate, not two: the blueprint must import it, never restate it.
-grep -q 'import decided_unclosed' web/blueprints/approvals.py
-! grep -q 'CONCLUDING' web/blueprints/approvals.py
-# The section exists and is DISTINCT from the pending-decisions section.
-grep -q 'section-decided-unclosed' web/templates/_approvals_content.html
-grep -q 'section-decisions' web/templates/_approvals_content.html
-# DEFER stays out — it is a park with its own revisit machinery, not a pending action.
-python3 -c "import sys;sys.path.insert(0,'lib');import decided_unclosed;assert 'DEFER' not in decided_unclosed.CONCLUDING"
-# The control legs exist. Without them an always-true predicate passes everything.
-grep -q 'test_control_defer_is_not_selected' tests/unit/test_decided_unclosed.py
-grep -q 'test_control_work_completed_is_not_selected' tests/unit/test_decided_unclosed.py
-# The page renders the section (server is a third deployment surface — L-587).
-curl -sf "$(bin/fw watchtower url)/approvals" | grep -q 'section-decided-unclosed'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -249,45 +159,6 @@ curl -sf "$(bin/fw watchtower url)/approvals" | grep -q 'section-decided-unclose
 
 ## Evolution
 
-### 2026-08-26 — the AC named three tasks that the same session then closed
-
-- **What changed:** AC1 was written as "returns T-3159, T-3149 and T-3097 on today's
-  corpus". Those three were the motivating instances, and cycle 1 of this same session
-  closed all three. By the time the predicate existed, the corpus no longer contained
-  the examples the AC pinned it to.
-- **Plan impact:** A corpus-dependent AC is fragile by construction — it measures the
-  world rather than the code. Re-pointed at the live set (T-2715, T-2876 — two more that
-  were stuck the whole time and that nobody had seen either) and moved the real pinning
-  into fixtures, where mutation can reach it.
-- **Triggered:** No new task. Recorded because the failure mode is instructive: an AC
-  that cites live data ages out, and a later reader would have found it unsatisfiable
-  with no explanation.
-
-### 2026-08-26 — the CLI half could not be landed, and pretending otherwise was the temptation
-
-- **What changed:** AC3 wanted `/approvals` and `fw review-queue` to return the same set.
-  `fw review-queue` turns out to be an inline python heredoc inside `bin/fw` — a file
-  T-3127 holds uncommitted. Editing it would have swept another task's work into this
-  commit, which is precisely the defect T-3165 fixed forty minutes earlier.
-- **Plan impact:** Split rather than rewritten. The predicate was built as an importable
-  module (`lib/decided_unclosed.py`) instead of a private function in the blueprint, so
-  the CLI can consume the identical one when `bin/fw` is free — the anti-duplication
-  half of AC3 IS landed and verified. The wiring half is T-3178, named in the AC rather
-  than quietly deleted.
-- **Triggered:** T-3178.
-
-### 2026-08-26 — the fix looked broken because the server had not reloaded
-
-- **What changed:** With the predicate correct and the template written, `/approvals`
-  still did not show the section. The predicate proved out standalone (2 selected from
-  28 candidates), so the source was right and the running Flask process was serving old
-  code — L-587, a running server is a third deployment surface.
-- **Plan impact:** A Verification line now curls the live page, so "it works in the
-  source" cannot be mistaken for "the operator can see it". That distinction is the
-  entire subject of this task, and it nearly repeated itself inside the fix.
-- **Triggered:** No new task; L-587 already names the class.
-
-
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -362,7 +233,7 @@ curl -sf "$(bin/fw watchtower url)/approvals" | grep -q 'section-decided-unclose
 
 ## Updates
 
-### 2026-08-26T15:40:57Z — task-created [task-create-agent]
+### 2026-08-26T17:01:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3175-a-decided-inception-still-owned-by-human.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3178-fw-review-queue-does-not-show-decided-un.md
 - **Context:** Initial task creation

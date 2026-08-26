@@ -521,6 +521,40 @@ def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
     return out
 
 
+def _load_decided_unclosed():
+    """T-3175: inceptions the operator has DECIDED that are still open.
+
+    Sibling of `_load_pending_go_decisions` and its exact complement: that one
+    keeps `decision == "pending"`, this one keeps the concluding decisions. A
+    task leaving the first section used to arrive nowhere, so the single
+    remaining action — the operator closing it — was on no surface at all.
+
+    Predicate lives in `lib/decided_unclosed.py` so `fw review-queue` can import
+    the same one. Two surfaces disagreeing about what is outstanding is how this
+    class of gap survives; a second copy here would guarantee it.
+    """
+    import sys
+
+    lib_dir = str(Path(__file__).resolve().parents[2] / "lib")
+    if lib_dir not in sys.path:
+        sys.path.insert(0, lib_dir)
+    try:
+        import decided_unclosed
+    except Exception:
+        # Never take the page down for a missing helper — an approvals page that
+        # 500s hides EVERY section, which is worse than the gap being closed.
+        return []
+
+    candidates = [
+        fm for fm in get_all_task_metadata()
+        if fm.get("_location") == "active" and fm.get("workflow_type") == "inception"
+    ]
+    try:
+        return decided_unclosed.scan(candidates, _get_body_cached)
+    except Exception:
+        return []
+
+
 def _build_approvals_context(expand_overflow: bool = False):
     """Build template context for approvals page.
 
@@ -534,6 +568,7 @@ def _build_approvals_context(expand_overflow: bool = False):
     resolved_tier0 = _load_resolved_approvals()
     pending_go = _load_pending_go_decisions()
     pending_acs = _load_pending_human_acs()
+    decided_unclosed = _load_decided_unclosed()  # T-3175
     deferred_count = _count_deferred_inceptions()
     paused_dispatches = _load_paused_dispatches()  # T-1808
     arcs_close_ready = _load_close_ready_arcs()  # T-1961
@@ -554,8 +589,13 @@ def _build_approvals_context(expand_overflow: bool = False):
     paused_count = len(paused_dispatches)  # T-1808
     arc_close_count = len(arcs_close_ready)  # T-1961
     bvp_proposal_count = len(bvp_proposals)  # T-2335
+    # T-3175: a decided-but-unclosed inception is one outstanding operator
+    # action, so it counts toward the badge like every other section. Omitting
+    # it from the total was how the queue read "complete" while three of these
+    # sat open.
+    decided_unclosed_count = len(decided_unclosed)
     total = (tier0_count + go_count + len(pending_acs) + paused_count
-             + arc_close_count + bvp_proposal_count)
+             + arc_close_count + bvp_proposal_count + decided_unclosed_count)
 
     # Count tasks ready for batch completion (all human ACs checked)
     ready_count = sum(
@@ -567,6 +607,8 @@ def _build_approvals_context(expand_overflow: bool = False):
         pending_tier0=pending_tier0,
         resolved_tier0=resolved_tier0,
         pending_go=pending_go,
+        decided_unclosed=decided_unclosed,          # T-3175
+        decided_unclosed_count=decided_unclosed_count,  # T-3175
         pending_acs=pending_acs,
         paused_dispatches=paused_dispatches,
         arcs_close_ready=arcs_close_ready,
