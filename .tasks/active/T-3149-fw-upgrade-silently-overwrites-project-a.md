@@ -50,6 +50,19 @@ cost_estimate_proposed:
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=8 (lines=349,acs=4)
     rubric_sha: e4a00f38e801
+inception_decisions:
+  - id: marked-project-owned-region
+    text: "Replace the positional CLAUDE.md split with an explicit marked project-owned region"
+    ships_in: deferred:T-3150
+  - id: refuse-with-diff
+    text: "Upgrade refuses with a readable diff when a managed file is locally modified"
+    ships_in: deferred:T-3151
+  - id: framework-side-assertion-phase
+    text: "Assertion mechanism ships framework-side; consumer supplies assertions at a path upgrade never writes"
+    ships_in: deferred:T-3152
+  - id: enumerate-framework-written-files
+    text: "Enumerate the complete set of framework-written files in a consumer (IW-2)"
+    ships_in: deferred:T-3153
 ---
 
 # T-3149: fw upgrade silently overwrites project-authored governance in files it manages
