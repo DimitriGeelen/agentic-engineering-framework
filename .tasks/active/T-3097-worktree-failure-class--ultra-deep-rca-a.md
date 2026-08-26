@@ -10,7 +10,17 @@ owner: human
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-3098, T-3099, T-3142, T-2861]
+# T-3097 GO scope, made machine-readable (T-1984). Backfilled 2026-08-26. This
+# inception's own finding was that T-2822's GO produced no traceable work; leaving
+# T-3097's own related_tasks empty would have reproduced the defect it diagnosed.
+inception_decisions:
+  - id: refuse-governance-writes-from-worktree
+    text: "Leg A — refuse governance writes from a linked worktree, behind a logged bypass so a legitimate need appears as data"
+    ships_in: T-3098
+  - id: structural-go-scope-predicate
+    text: "Leg B — replace the GO-scope detector's prose gate with a structural predicate, so its candidate set is not empty by construction"
+    ships_in: T-3099
 created: 2026-08-20T07:03:07Z
 last_update: '2026-08-21T07:15:07Z'
 date_finished:
@@ -308,6 +318,26 @@ review rather than after it.
 **What would change this recommendation:** evidence that a real workflow needs governance
 writes from inside a worktree. Leg A ships behind a logged bypass precisely so that, if
 one exists, it appears in the bypass log as data rather than as a silent workaround.
+
+## GO scope — what shipped, and what has not
+
+Backfilled 2026-08-26. This inception's own finding was that T-2822's GO produced no
+traceable work; leaving `related_tasks:` empty here would have reproduced the exact
+defect it diagnosed.
+
+| Decision from the GO | Slice | State |
+|---|---|---|
+| Leg A — refuse governance writes from a linked worktree, behind a logged bypass | T-3098 | **landed** |
+| Leg B — structural predicate replaces the detector's prose gate | T-3099 | **landed** |
+| Corrected worktree triage — push-then-triage, not prune | T-3142 | work-completed, **awaiting the operator's Human AC** |
+| Slice 3 — `fw init` does not set `bgIsolation none` | T-2861 | filed, **captured, not started** |
+
+**Adjacent, not a slice:** T-3132 inverted CLAUDE.md's worktree default to opt-in. It
+came from the operator's standing directive rather than from this GO, so it is recorded
+here as context and deliberately kept out of `related_tasks:`.
+
+**Not shipped:** T-2861. Both legs the GO named are landed; the third slice, inherited
+from T-2822, is still only captured.
 
 
 <!-- T-3142: a stale `**Recommendation:** DEFER` stub sat here below the real GO,

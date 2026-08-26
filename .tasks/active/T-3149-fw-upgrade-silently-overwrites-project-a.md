@@ -11,9 +11,9 @@ owner: human
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-3150, T-3151, T-3152, T-3153, T-3155]
 created: 2026-08-25T22:45:50Z
-last_update: '2026-08-25T23:00:08Z'
+last_update: 2026-08-26T15:36:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -216,6 +216,24 @@ Three instances in one upgrade in a live consumer, mechanism confirmed in our ow
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation
      can be revised before fw inception decide. -->
+
+## GO scope — what shipped, and what has not
+
+Backfilled 2026-08-26. The slices existed before this table did; what was missing was
+any link from the GO to them, which is the condition the audit's
+GO-scope-not-propagated detector exists to catch.
+
+| Decision from the GO | Slice | State |
+|---|---|---|
+| Name the seam — marked project-owned region replaces the positional split | T-3150 | **landed** (`19ecdb1c6`) |
+| Refuse-with-diff on a locally-modified managed file | T-3151 | filed, **not started** |
+| Framework-side post-upgrade assertion phase (the reporter's offer — cheapest first slice) | T-3152 | filed, **not started** |
+| IW-2 — enumerate the complete set of framework-written files | T-3153 | filed, **not started** — four members known, the rest unenumerated |
+| Consumer CLAUDE.md template shipping stale thresholds (found via the seam work) | T-3155 | **landed** (`05d1d8f46`, `ce2987fd2`) |
+
+**Not shipped, and deliberately named as such:** three of the five slices are filed and
+unstarted. The GO authorised them; nothing has built them. Recording that here is the
+point — folding them into "landed" is how the previous 181 inceptions lost their scope.
 
 ## Decisions
 
