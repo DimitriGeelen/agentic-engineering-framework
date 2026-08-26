@@ -485,6 +485,34 @@
 </article>
 {% endif %}
 
+{# T-3180: the close card. A decided inception still sitting in active/ needs exactly
+   one thing — closing — and until now that action existed on no page. /review/<id>
+   302s here, so both routes landed on a form that only re-decides. This card is
+   deliberately ABOVE the superseding-decision form: the common case for a decided
+   inception is finishing it, not changing your mind, and putting the rarer action
+   first is what made the operator feel re-asked. #}
+{% if decided_unclosed %}
+<article class="section-card" id="close-inception" style="border-left:4px solid #10b981;">
+    <header>Decision recorded — one step left</header>
+    <p style="font-size:0.9rem; margin-bottom:0.75rem;">
+        You decided this: <strong>{{ dec | upper }}</strong>. The task is still in
+        <code>active/</code>. Closing it runs the same path as
+        <code>fw task update --status work-completed</code>, so every gate still fires —
+        if one refuses, the reason appears below rather than the task closing quietly.
+    </p>
+    <div id="complete-button">
+    <form hx-post="/api/task/{{ task_id }}/complete" hx-target="#complete-result" hx-swap="innerHTML">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="primary"
+                style="background:#10b981; border-color:#10b981; padding:0.5rem 1.5rem;">
+            Close {{ task_id }}
+        </button>
+    </form>
+    </div>
+    <div id="complete-result"></div>
+</article>
+{% endif %}
+
 {% if task._location == 'active' %}
 <article class="section-card">
     <header>{% if dec == 'pending' %}Record Decision{% else %}Record Superseding Decision{% endif %}</header>

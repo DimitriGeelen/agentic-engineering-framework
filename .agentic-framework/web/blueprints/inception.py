@@ -125,6 +125,32 @@ def _extract_decision(body):
     return "pending"
 
 
+def _is_decided_unclosed(task_data, task_body):
+    """T-3180: does this inception need exactly one thing — the operator closing it?
+
+    Imports the SAME predicate `/approvals` uses (`lib/decided_unclosed.py`) rather than
+    re-deriving it here. A fourth reimplementation of "is this decided" is precisely what
+    produced the bug: `/approvals` told the operator the decision was recorded while this
+    page offered only to re-decide it, because the two surfaces answered the question
+    independently. Sharing the predicate makes them agree by construction.
+
+    Fails CLOSED (returns False) on any error — a missing helper must not add a close
+    button to a page that should not have one, and must never take the page down.
+    """
+    import sys
+
+    lib_dir = str(PROJECT_ROOT / "lib")
+    if lib_dir not in sys.path:
+        sys.path.insert(0, lib_dir)
+    try:
+        import decided_unclosed
+
+        return decided_unclosed.is_decided_unclosed(task_data or {}, task_body or "")
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("decided-unclosed predicate unavailable: %s", e)
+        return False
+
+
 def _extract_section(body, section_name):
     """Extract content of a markdown section (## heading) from body."""
     lines = body.split("\n")
@@ -413,6 +439,12 @@ def inception_detail(task_id):
 
     decision_state = _extract_decision(task_body)
 
+    # T-3180: a decided inception that is still in active/ needs closing, and until now
+    # that action was on no button anywhere. /review/<id> 302s here, so both routes
+    # converged on a page whose only form re-decides. The gap was introduced by T-3175's
+    # own copy ("Close it from /inception/T-XXXX") pointing at a page that could not.
+    decided_unclosed = _is_decided_unclosed(task_data, task_body)
+
     # T-1391 (F3 fix): compute rec_stance + decision_matches_recommendation so
     # the template can collapse the duplicate Recommendation card when the
     # human adopted the recommendation, or label both cards when overridden.
@@ -454,6 +486,7 @@ def inception_detail(task_id):
         sections=sections,
         extra_sections=extra_sections,
         decision_state=decision_state,
+        decided_unclosed=decided_unclosed,
         linked_assumptions=linked_assumptions,
         episodic=episodic,
         task_id=task_id,
