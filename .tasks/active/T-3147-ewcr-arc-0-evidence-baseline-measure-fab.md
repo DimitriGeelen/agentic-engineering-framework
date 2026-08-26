@@ -14,7 +14,7 @@ status: captured
 workflow_type: design
 owner: agent
 horizon: now
-tags: [ewcr-v1, ewcr-v1-aef-arc0, evidence-baseline, measurement]
+tags: [ewcr-v1, ewcr-v1-aef-arc0, evidence-baseline, measurement, arc:ewcr-arc0-contract-evidence]
 components: []
 related_tasks: [T-3145]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -28,7 +28,7 @@ related_tasks: [T-3145]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T22:12:39Z
-last_update: '2026-08-25T22:15:14Z'
+last_update: 2026-08-25T22:17:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -377,3 +377,6 @@ git log --name-only --format= --grep="T-3147" > /tmp/.t3147-paths 2>&1 && ! grep
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3147-ewcr-arc-0-evidence-baseline-measure-fab.md
 - **Context:** Initial task creation
+
+### 2026-08-25T22:17:26Z — status-update [task-update-agent]
+- **Change:** tags: +arc:ewcr-arc0-contract-evidence

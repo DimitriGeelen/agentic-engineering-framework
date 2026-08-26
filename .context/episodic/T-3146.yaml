@@ -73,10 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 9
-  commits: 1
-  files_changed: 4
-  lines_added: 397
-  lines_removed: 8
+  commits: 2
+  files_changed: 10
+  lines_added: 635
+  lines_removed: 18
+  footprint_refreshed_at: '2026-08-25T22:18:03Z'
+  footprint_refreshed_by_commit: ea1c42a93
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3146-triage-832-report-p-011-verification-ext.md

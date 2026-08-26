@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3155: consumer CLAUDE.md template ships stale budget thresholds and regresses consumers on upgrade
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T10:15:05Z
+# ============================================================================
+
+task_id: T-3155
+task_name: "consumer CLAUDE.md template ships stale budget thresholds and regresses consumers on upgrade"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T09:48:50Z
+completed: 2026-08-26T10:14:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-26T12:14:39+02:00
+last_commit: 2026-08-26T12:14:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  template budget ladder becomes percentages, pinned against the gate
+
+# Key outcomes
+outcomes:
+  - '`lib/templates/claude-project.md` expresses the context-budget ladder as PERCENTAGES of'
+  - 'No `120K` / `150K` / `170K` literals remain in the template''s budget sections, and the'
+  - 'A test asserts the template''s percentages equal the ones budget-gate.sh computes, by'
+  - 'That test FAILS when budget-gate.sh''s percentages change and the template does not follow.'
+  - 'Consumers are not told to hand over at a threshold their own `budget-gate.sh` does not'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.fabric/components/tests-unit-template_budget_parity.yaml'
+  - '.fabric/components/tests-unit-upgrade_marked_region.yaml'
+  - 'lib/templates/claude-project.md'
+  - '.tasks/active/T-3155-consumer-claudemd-template-ships-stale-b.md'
+  - '.tasks/completed/T-3150-fw-upgrade-marked-project-owned-region-i.md'
+  - 'tests/unit/template_budget_parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T12:14:39'
+    action: 'T-3155: template budget ladder becomes percentages, pinned against the gate'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upgrade, template, drift]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 1
+  files_changed: 7
+  lines_added: 208
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3155-consumer-claudemd-template-ships-stale-b.md
+generated_by: context-agent-hybrid
