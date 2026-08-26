@@ -1,27 +1,32 @@
 ---
-id: T-3172
-name: "BPMN compiler rejects the frozen-standard lane value external as a typo and
-  emits a task the standard says must not exist"
+id: T-3174
+name: "partial-complete state revokes a task's authority to commit its own closure artefacts"
 description: >
-  Inbound field report from 001-CashWeb (their G-055). policy/standards/aef-bpmn-mapping-v1-partI.md
-  is 'Part I - Frozen (v1)'; SS3 line 68 ratifies a four-value collapse map: sovereignty->human,
-  initiative->agent, authority->agent, external->no task. tools/bpmn_to_tasks.py knows
-  three: AUTHORITY_OWNER (:71) has sovereignty+initiative, AUTHORITY_NO_OWNER (:83)
-  has authority, AUTHORITY_DIALECT (:85) is their union. external is absent, so it
-  falls to the else-branch (:511-521) and is reported as 'very likely a typo or an
-  out-of-band value'. Reproduced at HEAD on a minimal external-laned diagram: besides
-  the wrong message, the node COMPILES TO A TASK with owner: agent agent - the exact
-  inverse of the ratified external->no task. The T-2717/OBS-118 split that gave 'authority'
-  its own non-accusing message did not carry external with it. Vocabularies diverge
-  three ways: standard 4, pinned editor 5 (adds none), compiler 3.
+  Inbound field report from 001-CashWeb-Lightspeed-Ecwid-integration (their G-053,
+  three incidents in one day), reproduced independently at HEAD. A task in
+  partial-complete (status work-completed + owner human + still in .tasks/active/) is
+  refused by agents/context/check-active-task.sh :750 for any non-exempt Bash command,
+  including the git commit that would land the closure artefacts the transition itself
+  just wrote. The block message offers `fw work-on T-XXX`, but status-transitions.yaml
+  gives work-completed NO outgoing transition, so `fw work-on <that task>` exits 1 with
+  "Invalid transition 'work-completed' -> 'started-work'". The only exit is attributing
+  the commit to a different task, destroying the traceability P-002 protects. Three
+  findings beyond their report: (1) Write/Edit to .context/, .tasks/, .claude/ is already
+  exempt at :441 and exits 0 in the same state - the gate implements the proposed boundary
+  on one side only, so the fix is parity not new policy; (2) the :750 branch is
+  unreachable for genuinely-archived tasks, which exit at :718 with a different message,
+  so :750 fires ONLY for partial-complete; (3) no graduated bypass exists - unlike the
+  sibling focus-drift gate's --switch-focus / FW_SWITCH_FOCUS=1, the only escape is
+  FW_SAFE_MODE=1, which disables the whole gate. Prevalence: they report 19; our own repo
+  has 243 of 409 active tasks (59%) in this state. Same class as G-092.
 
-status: captured
+status: started-work
 workflow_type: build
-owner:
+owner: agent
 horizon: now
 tags: []
-components: []
-related_tasks: [T-3173, T-2717, T-2567]
+components: [agents/context/check-active-task.sh, status-transitions.yaml, agents/task-create/update-task.sh]
+related_tasks: [T-1730, T-1890, T-679]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -32,9 +37,9 @@ related_tasks: [T-3173, T-2717, T-2567]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-26T15:00:51Z
-last_update: '2026-08-26T15:15:13Z'
-date_finished:
+created: 2026-08-26T15:39:11Z
+last_update: 2026-08-26T15:39:11Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -45,95 +50,116 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-26T15:15:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=219,acs=8)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-26T15:15:13Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3172: BPMN compiler rejects the frozen-standard lane value external as a typo and emits a task the standard says must not exist
+# T-3174: partial-complete state revokes a task's authority to commit its own closure artefacts
 
 ## Context
 
-### Repro narrowed by the reporter, 2026-08-26 — confirmed locally at HEAD
+Inbound field report from 001-CashWeb-Lightspeed-Ecwid-integration (their G-053, three
+incidents in one day), reproduced independently at HEAD before registration.
 
-001-CashWeb returned the same day to narrow their own repro and withdraw a prediction.
-Their correction is **correct**; re-measured here before accepting it.
+**The trap.** `fw task update T-XXX --status work-completed` with an unchecked Human AC
+produces partial-complete: `status: work-completed`, `owner: human`, file stays in
+`.tasks/active/`. From that moment `agents/context/check-active-task.sh` refuses any
+non-exempt Bash command while focus is on that task — including the `git commit` that
+would land the closure artefacts the transition itself just wrote
+(`.context/project/decisions.yaml`, `.context/working/feedback-stream.yaml`, the task file).
 
-The authority check runs only for task nodes. `for node in root.iter()` (:421) hits
-`if ntype not in TASK_TAGS and not is_inception: continue` (:424) with
-`TASK_TAGS = {userTask, serviceTask, scriptTask}` (:51). `unknown_auth` is populated at
-:481, downstream of that guard, and the else-branch that emits "very likely a typo"
-(:501-521) reads `unknown_auth` alone. Events and gateways never reach it.
+**Reproduced at HEAD, scratch PROJECT_ROOT, verbatim:**
 
-**The repro for THIS task is therefore: a TASK in a lane with `authority="external"`** —
-not an external lane in general. Measured on a two-lane fixture:
+```
+$ echo '{"cwd":"…","tool_name":"Bash","tool_input":{"command":"git commit -m \"T-900: close artefacts\""}}' \
+    | CLAUDECODE=1 bin/fw hook check-active-task
+BLOCKED: Task T-900 has status 'work-completed'.
 
-| external lane contains | rc | warning | skeletons |
-|---|---|---|---|
-| two `intermediateCatchEvent`s only | 0 | none | none — silent |
-| one `serviceTask` | 0 | the "very likely a typo" WARN | `owner: agent` |
+To unblock:
+  fw work-on T-XXX   (resume another task)
+  fw work-on 'name'  (create a new task)
+…
+Policy: P-002 (Cannot modify files under a completed task)
+exit 2
+```
 
-The second row is this task and is unchanged: both halves of the defect stand — the
-message is wrong AND the node compiles to `owner: agent`, the exact inverse of
-`external→no task`. So **no AC here needs to change**; the existing "ratified semantics
-are implemented, not just the message" AC is what makes the fix behavioural rather than
-cosmetic, which is precisely the reporter's first concern.
+**The offered remedy does not exist.** `status-transitions.yaml` gives `work-completed`
+**no outgoing transition** — it is terminal in the table. Measured:
 
-**The first row is NOT this task.** It is a separate defect — the dialect check is
-unreachable for lanes with no task nodes, so even a plain misspelling (`overlrd`)
-compiles with zero warnings. Split out as **T-3173 / G-093** per one-bug-one-task.
+```
+$ fw work-on T-900
+ERROR: Invalid transition 'work-completed' → 'started-work'
+work-on: status transition for T-900 failed — focus will NOT be set
+exit 1
+```
 
-Ordering: T-3172 changes WHICH values the dialect contains; T-3173 changes WHETHER it is
-consulted. Whichever lands second must not revert the other's fixture expectations.
+So the only exit is attributing the commit to a *different* task — which destroys exactly
+the traceability P-002 exists to protect. 001-CashWeb did this three times today (T-154
+and T-156 both committed under T-155; T-012 same shape).
+
+**Three findings they did not report, measured while verifying:**
+
+1. **The gate already implements the boundary they proposed as a caveat — on one side
+   only.** `Write`/`Edit` to `.context/*`, `.tasks/*`, `.claude/*` is exempted at :441 and
+   exits 0 even under partial-complete; only source writes are blocked. Bash has no
+   `file_path`, so `git commit` falls through to the status gate at :750. Same task, same
+   state, opposite answers. The fix is **parity**, not a new policy.
+
+2. **The `work-completed)` branch is unreachable for genuinely-finished tasks.** An
+   archived task fails the `find_task_file … active` lookup at :715 and exits at :718 with
+   *"is not active (may be completed or missing)"*. So :750 fires **only** for
+   partial-complete — the code comment at :731 even says so — and its message is the only
+   advice the framework gives for a state that is by construction unfinished.
+
+3. **There is no graduated bypass.** Unlike the sibling focus-drift gate (`--switch-focus`
+   / `FW_SWITCH_FOCUS=1`, both Tier-2 logged), this branch offers none. The only escape is
+   `FW_SAFE_MODE=1`, which disables the entire task gate.
+
+**Prevalence.** They report 19 partial-complete tasks. Our own repo: **243 of 409 active
+tasks (59%)** are `status: work-completed` still sitting in `active/`. This is the majority
+state of our task set, not an edge case.
+
+**Why (c) is a no-op.** They proposed "write the closure artefacts before the status
+flips". Measured: those artefacts are written by `agents/task-create/update-task.sh`
+*in-process* (decision capture ~:2235, episodic/backprop ~:2278/:2331), and the PreToolUse
+hook gates *tool calls*, not a script's own writes. Those writes are never blocked. What is
+blocked is the subsequent `git commit`, and any later correction — neither of which (c)
+reaches. Recommending (a), scoped as above.
+
+**Class.** Same shape as G-092: the write side accepts a state the read side then refuses.
+Here the *same file* is writable via one tool and unreachable via another.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `external` is a recognised member of the AEF lane dialect in
-      `tools/bpmn_to_tasks.py` — compiling a diagram with
-      `<aef:laneMeta authority="external">` no longer emits the "unrecognized …
-      very likely a typo or an out-of-band value" warning
-- [ ] The ratified semantics are implemented, not just the message: nodes in an
-      `external` lane emit NO task skeleton at all (§3 line 68, `external→no task`).
-      This is a third branch — `AUTHORITY_OWNER` and `AUTHORITY_NO_OWNER` both still
-      emit a task, so neither existing set is the right home for it
-- [ ] A genuinely out-of-dialect value (e.g. `authority="overlord"`) still produces the
-      typo-suspecting warning, and the "valid set" it prints now lists all four ratified
-      values — the T-2717/OBS-118 split stays intact and does not regress to one channel
-- [ ] `none` is explicitly NOT added — it appears in the pinned reference editor (0.11.0)
-      but not in the frozen standard, so it is an editor deviation and belongs in its own
-      task; folding it in here would ratify it by implementation
-- [ ] A regression test compiles a fixture with an `external` lane and asserts both halves:
-      zero task skeletons emitted for that lane's nodes, and no "unrecognized" warning
-- [ ] The `external` case is covered by whatever check §6 of the standard uses for the
-      frozen meta-key list, so the lane dialect can no longer drift from the standard
-      silently — this is the leg that stops the next value from diverging
+- [ ] `agents/context/check-active-task.sh` distinguishes **partial-complete**
+      (`status: work-completed` AND file still in `.tasks/active/` AND `owner: human`)
+      from a task that is genuinely finished. The `work-completed)` branch at :750 is
+      reached ONLY in the partial-complete case today — a fully-completed task exits
+      earlier at :716 with a different message — so the branch can be specialised
+      without touching the archived-task path
+- [ ] Under partial-complete, a Bash command is allowed when it writes only governance
+      paths (`.context/`, `.tasks/`, `.claude/`), matching the exemption Write/Edit
+      already gets at :441. Source-file writes stay blocked. This is **parity with an
+      existing decision**, not a new policy: today `Write` to `.tasks/active/T-900.md`
+      exits 0 while `git commit -m "T-900: ..."` exits 2, for the same task in the same
+      state
+- [ ] `git commit` referencing the partial-complete task is permitted under that rule,
+      so the task can commit its own closure artefacts under its own id. Verified by
+      the probe that currently fails (see `## Context`)
+- [ ] The block message no longer offers a remedy that cannot be executed. Today it
+      prints `fw work-on T-XXX   (resume another task)`; `fw work-on <the-task-itself>`
+      exits 1 with `Invalid transition 'work-completed' → 'started-work'` because
+      `status-transitions.yaml` gives `work-completed` no outgoing edge at all. Whatever
+      the message ends up saying must be executable as printed — L-399 / T-1890 contract
+- [ ] Whatever escape remains for the genuinely-blocked case names a mechanism that
+      works for `git commit` (external parser — flags are rejected, so env-var form per
+      T-1890 leg 3), and logs Tier-2 to `.context/working/.gate-bypass-log.yaml`.
+      `FW_SAFE_MODE=1` is not an acceptable answer: it disables the whole task gate
+- [ ] Bats coverage pins the matrix end-to-end: {partial-complete, archived} ×
+      {governance-path write, source write, `git commit`}. The partial-complete ×
+      `git commit` cell is the regression cell
+- [ ] `## Decisions` records why (a) was chosen over (b) and (c), including the measured
+      reason (c) is a no-op — see `## Context`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -319,7 +345,7 @@ consulted. Whichever lands second must not revert the other's fixture expectatio
 
 ## Updates
 
-### 2026-08-26T15:00:51Z — task-created [task-create-agent]
+### 2026-08-26T15:39:11Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3172-bpmn-compiler-rejects-the-frozen-standar.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3174-partial-complete-state-revokes-a-tasks-a.md
 - **Context:** Initial task creation
