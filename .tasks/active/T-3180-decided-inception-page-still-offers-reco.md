@@ -1,10 +1,24 @@
 ---
 id: T-3180
-name: "decided inception page still offers Record decision as its only affordance - the one remaining action is closure and it is on no button"
+name: "decided inception page still offers Record decision as its only affordance
+  - the one remaining action is closure and it is on no button"
 description: >
-  Operator-facing half of T-3175. T-3175 made decided-but-unclosed inceptions VISIBLE (/approvals section 'Decided — awaiting closure', 2 entries: T-2715, T-2876). But the page that section links to still renders the pre-decision form. Measured 2026-08-26 on a running Watchtower: /inception/T-2715 and /inception/T-2876 both return 200 and both carry name="decision" + a 'Record decision' control, despite each already carrying a recorded GO in its body. There is no close control on either. So the operator follows a link that says 'you already decided this' and arrives at a form asking them to decide it. This is the exact shape that produced the 2026-08-26 pushback ('Why the fucking hell do you keep asking for these inceptions? I've go'd them several times'): the framework re-presents a decision the operator already made, because the render is keyed on the page's route rather than on whether a decision exists in the body. lib/decided_unclosed.py:extract_decision already computes the needed predicate and is imported by web/blueprints/approvals.py - the inception render surface does not consult it.
+  Operator-facing half of T-3175. T-3175 made decided-but-unclosed inceptions VISIBLE
+  (/approvals section 'Decided — awaiting closure', 2 entries: T-2715, T-2876). But
+  the page that section links to still renders the pre-decision form. Measured 2026-08-26
+  on a running Watchtower: /inception/T-2715 and /inception/T-2876 both return 200
+  and both carry name="decision" + a 'Record decision' control, despite each already
+  carrying a recorded GO in its body. There is no close control on either. So the
+  operator follows a link that says 'you already decided this' and arrives at a form
+  asking them to decide it. This is the exact shape that produced the 2026-08-26 pushback
+  ('Why the fucking hell do you keep asking for these inceptions? I've go'd them several
+  times'): the framework re-presents a decision the operator already made, because
+  the render is keyed on the page's route rather than on whether a decision exists
+  in the body. lib/decided_unclosed.py:extract_decision already computes the needed
+  predicate and is imported by web/blueprints/approvals.py - the inception render
+  surface does not consult it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +36,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T18:15:16Z
-last_update: 2026-08-26T18:15:16Z
-date_finished: null
+last_update: 2026-08-26T19:18:37Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +48,104 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-26T18:30:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T18:30:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3180: decided inception page still offers Record decision as its only affordance - the one remaining action is closure and it is on no button
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+### Correction to this task's original framing
+
+Filed 2026-08-26 claiming the page "still renders a pre-decision form" and that the
+banner had not noticed the recorded GO. **That was wrong, and the error was mine.** The
+original claim came from a case-insensitive grep for `record decision` which matched
+*prose inside the task body* ("Record decision via the Watchtower form or the…"), plus
+`name="decision"` which is present on any decision form including the superseding one.
+
+Re-measured properly against the running Watchtower:
+
+- `/inception/T-2715` renders `decision-banner go`. The banner is correct.
+- The form header renders **"Record Superseding Decision"**, not "Record Decision", and
+  carries an explanatory note. `web/templates/inception_detail.html:490` already branches
+  on `dec == 'pending'`. That part of the UI was built correctly and I mis-read it.
+
+### What is actually wrong, verified
+
+Enumerating every `action=` on the page returns exactly one: `/inception/<id>/decide`.
+**There is no close control anywhere on it.** And `/review/T-2715` 302s to
+`/inception/T-2715` (the T-2125/T-2129 class-correct redirect), so both routes converge
+on the same page.
+
+So a decided-but-unclosed inception has **no closing affordance in Watchtower at all**.
+The one remaining action — the whole point of T-3175's new section — is on no button on
+any page. `fw task update --status work-completed` from a terminal is the only way, and
+that is a CLI handoff, which §T-679 exists to prevent.
+
+### This is a defect I shipped
+
+T-3175's `/approvals` section says, in copy I wrote: *"Close it from
+`/inception/T-XXXX`."* That instruction points at a page that cannot do it. Making the
+state visible without making it actionable moves the operator from "I can't find it" to
+"I found it and there is no button", which is a smaller problem but the same shape — and
+it is worse for having been introduced by the fix for the original one.
+
+Sibling to T-2347 (arc actions surfaced as CLI instead of Watchtower URLs), and the
+reason that rule exists.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `/inception/<id>` renders a **close** control when the task is in `active/` AND
+      carries a concluding decision (GO or NO-GO) AND its status is not already
+      `work-completed`. Today the only `action=` on that page is
+      `/inception/<id>/decide` — measured, not assumed.
+- [x] The close control is absent on a `pending` inception (nothing to close), absent on
+      a DEFER (a park, not a pending closure — same exclusion as
+      `lib/decided_unclosed.py:CONCLUDING`), and absent on a task already in `completed/`.
+      Three silence controls; without them "show a close button when decided" and "show a
+      close button" are the same diff.
+- [x] The predicate is `lib/decided_unclosed.is_decided_unclosed`, imported — NOT a
+      fourth reimplementation of "is this decided". `/approvals` and `/inception` must
+      agree by construction, because a disagreement is exactly what produced this bug:
+      one surface said "you already decided this", the other offered to re-decide it.
+- [x] Closing from the page routes through the same path as
+      `fw task update --status work-completed`, so every gate still fires (Human ACs,
+      Verification, sovereignty). The button must not be a way to skip what the CLI
+      enforces — if a gate refuses, the page shows the refusal.
+- [x] The `/approvals` "Decided — awaiting closure" copy is verified against the page it
+      names. It currently reads "Close it from /inception/T-XXXX" and that page has no
+      close control, so the instruction I shipped in T-3175 points at a dead end.
+- [x] A test pins BOTH halves against the live blueprint: decided+active → close control
+      present; pending / DEFER / completed → absent.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -57,158 +155,47 @@ date_finished: null
      ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
      If your Expected clause is grep-able / file-exists / structural (a deterministic
      shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+     command in `## Verification
 
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
-
-## Verification
-
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_inception_close_card.py tests/unit/test_decided_unclosed.py -q > /tmp/.t3180 2>&1 && grep -qE "^1[0-9] passed" /tmp/.t3180
+# the close card renders on a decided-unclosed inception (live page, not source)
+curl -sf "$(bin/fw watchtower url)/inception/T-2715" -o /tmp/.t3180a && grep -q "close-inception" /tmp/.t3180a && grep -q "/api/task/T-2715/complete" /tmp/.t3180a
+# silence control: a pending inception has no close card
+curl -sf "$(bin/fw watchtower url)/inception/T-2668" -o /tmp/.t3180b && ! grep -q "close-inception" /tmp/.t3180b
+# silence control: a DEFER is a park, not a pending closure
+curl -sf "$(bin/fw watchtower url)/inception/T-2670" -o /tmp/.t3180c && ! grep -q "close-inception" /tmp/.t3180c
+# silence control: an already-closed inception
+curl -sf "$(bin/fw watchtower url)/inception/T-3097" -o /tmp/.t3180d && ! grep -q "close-inception" /tmp/.t3180d
+# one predicate, not two: the blueprint delegates to lib/ rather than re-deriving
+grep -q "decided_unclosed.is_decided_unclosed" web/blueprints/inception.py
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom.** `/approvals` told the operator "you already decided these — close it from
+`/inception/T-XXXX`", and that page had no close control. `/review/<id>` 302s to the same
+page, so a decided-but-unclosed inception had no closing affordance anywhere in
+Watchtower.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause.** T-3175 solved *visibility* and stopped there. Making a stuck state
+visible is not the same as making it actionable, and the copy I shipped asserted an
+affordance that did not exist. The operator moves from "I can't find it" to "I found it
+and there is no button" — smaller, same shape, and worse for having been introduced by
+the fix for the original.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**A wrong diagnosis on the way, recorded because it matters.** This task was first filed
+claiming the page rendered a *pre-decision* form and had not noticed the recorded GO.
+That was false. It came from a case-insensitive grep for `record decision` that matched
+prose inside the task body, plus `name="decision"` which any decision form carries. The
+template already branched correctly on `dec == 'pending'` and rendered "Record
+Superseding Decision". Two greps are not a measurement; enumerating every `action=` on
+the page was, and it is what found the real defect. The claim had already been stated to
+the operator as measured before it was checked.
 
-## Evolution
-
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
-
-## Recommendation
-
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
-
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
-
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
-
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Prevention.** The blueprint imports `lib/decided_unclosed.is_decided_unclosed` rather
+than re-deriving it, and `test_blueprint_helper_agrees_with_the_shared_predicate` asserts
+the two surfaces cannot drift. Drift between surfaces answering the same question is what
+produced the original T-3175 gap; a second copy here would have guaranteed a third one.
+Mutation-verified: replacing the delegation with a local re-derivation turns that test red.
 
 ## Decisions
 
@@ -237,3 +224,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3180-decided-inception-page-still-offers-reco.md
 - **Context:** Initial task creation
+
+### 2026-08-26T19:18:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
