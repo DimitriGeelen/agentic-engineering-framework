@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3172: BPMN compiler rejects the frozen-standard lane value external as a typo and emits a task the standard says must not exist
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-26T17:55:47Z
+# ============================================================================
+
+task_id: T-3172
+task_name: "BPMN compiler rejects the frozen-standard lane value external as a typo and emits a task the standard says must not exist"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T15:00:51Z
+completed: 2026-08-26T17:55:32Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inbound field report from 001-CashWeb (their G-055). policy/standards/aef-bpmn-mapping-v1-partI.md is 'Part I - Frozen (v1)'; SS3 line 68 ratifies a four-value collapse map: sovereignty->human, initiative->agent, authority->agent, external->no task. tools/bpmn_to_tasks.py knows three: AUTHORITY_OWNER (:71) has sovereignty+initiative, AUTHORITY_NO_OWNER (:83) has authority, AUTHORITY_DIALECT (:85) is their union. external is absent, so it falls to the else-branch (:511-521) and is reported as 'very likely a typo or an out-of-band value'. Reproduced at HEAD on a minimal external-laned diagram: besides the wrong message, the node COMPILES TO A TASK with owner: agent agent - the exact inverse of the ratified external->no task. The T-2717/OBS-118 split that gave 'authority' its own non-accusing message did not carry external with it. Vocabularies diverge three ways: standard 4, pinned editor 5 (adds none), compiler 3.
+
+# Key outcomes
+outcomes:
+  - '`external` is a recognised member of the AEF lane dialect in'
+  - 'The ratified semantics are implemented, not just the message: nodes in an'
+  - 'A genuinely out-of-dialect value (e.g. `authority="overlord"`) still produces the'
+  - '`none` is explicitly NOT added — it appears in the pinned reference editor (0.11.0)'
+  - 'A regression test compiles a fixture with an `external` lane and asserts both halves:'
+  - 'The `external` case is covered by whatever check §6 of the standard uses for the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 174 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 174
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3172-bpmn-compiler-rejects-the-frozen-standar.md
+generated_by: context-agent-hybrid

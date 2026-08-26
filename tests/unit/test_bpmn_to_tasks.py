@@ -846,3 +846,124 @@ def test_parallel_smells_fire_condition_noop_unbalanced():
     for w in warnings:
         if "T-2570" in w:
             assert "decision semantics" not in w  # concurrency vocab only
+
+
+# ---------------------------------------------------------------------------
+# T-3172 / G-091: `external` is ratified, and it means NO TASK.
+#
+# The bug this guards: `external` was in none of the compiler's authority sets, so it
+# fell to the out-of-dialect branch, was called "very likely a typo", and — far worse
+# than the wording — still emitted a skeleton with `owner: agent`. That authored a
+# governed task for a step the diagram explicitly places outside the boundary.
+#
+# Every assertion below is paired with a control, because the two obvious wrong fixes
+# are both green under a naive test: silencing the accusing branch entirely (caught by
+# test_out_of_dialect_authority_still_accused) and skipping too many nodes (caught by
+# the Task_ours leg of test_external_lane_emits_no_task).
+# ---------------------------------------------------------------------------
+
+FIXTURE_EXTERNAL = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "external-lane-sample.bpmn"
+)
+FIXTURE_OUT_OF_DIALECT = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "out-of-dialect-lane-sample.bpmn"
+)
+STANDARD_PART_I = os.path.join(
+    REPO_ROOT, "policy", "standards", "aef-bpmn-mapping-v1-partI.md"
+)
+
+
+def test_external_lane_emits_no_task():
+    """external -> no task, and ONLY the external lane is dropped."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_EXTERNAL)
+    uids = [s["uid"] for s in skeletons]
+    assert "u-theirs-001" not in uids
+    assert "u-theirs-002" not in uids
+    # The control. A fix that drops everything satisfies the two lines above.
+    assert uids == ["u-ours-001"]
+
+
+def test_external_lane_emits_no_typo_accusation():
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_EXTERNAL)
+    joined = " ".join(warnings)
+    assert "typo" not in joined
+    assert "unrecognized" not in joined
+    # Surfaced, not silent: the drop is reported and names what it dropped.
+    assert "no task" in joined
+    assert "u-theirs-001" in joined and "u-theirs-002" in joined
+
+
+def test_external_drop_is_reported_once_per_lane_not_once_per_node():
+    """Two dropped nodes, one lane, one line — the L-527 always-fires failure mode."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_EXTERNAL)
+    assert sum(1 for w in warnings if "external" in w) == 1
+
+
+def test_out_of_dialect_authority_still_accused():
+    """The OBS-118/T-2717 two-channel split must not collapse back to one.
+
+    Widening the dialect is only correct if a value OUTSIDE it still draws the
+    accusing message. Without this, "stop accusing external" and "stop accusing
+    anything" are the same diff.
+    """
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_OUT_OF_DIALECT)
+    joined = " ".join(warnings)
+    assert "typo" in joined
+    assert "overlord" in joined
+    # An out-of-dialect value still emits its task (fallback owner, T-2567 behaviour).
+    assert [s["uid"] for s in skeletons] == ["u-bogus-001"]
+
+
+def test_typo_message_lists_all_four_ratified_values():
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_OUT_OF_DIALECT)
+    joined = " ".join(warnings)
+    for value in ("sovereignty", "initiative", "authority", "external"):
+        assert value in joined, f"valid-set listing omits ratified value {value!r}"
+
+
+def test_none_is_not_silently_ratified_by_this_change():
+    """T-3176's territory, kept out of T-3172's.
+
+    `none` is the pinned editor's UNSET SENTINEL, not a dialect value. Folding it into
+    any authority set here would ratify an editor deviation by implementation — the
+    quiet way a frozen standard drifts.
+    """
+    assert "none" not in bpmn_to_tasks.AUTHORITY_DIALECT
+    assert "none" not in bpmn_to_tasks.AUTHORITY_NO_TASK
+
+
+def test_lane_dialect_matches_the_frozen_standard():
+    """Anti-drift leg: read the collapse map out of the standard, compare to the code.
+
+    The standard names `tests/test_mapping_standard_conformance.py` as the machine check
+    for its frozen meta-key list (§6) — that file does not exist in this repo, which is
+    how a three-value compiler survived four months against a four-value standard. This
+    test is the lane-dialect half of that missing check, parsing §3's prose rather than
+    restating it, so the next value added to the standard fails here instead of being
+    discovered by a consumer in the field.
+    """
+    import re
+
+    text = open(STANDARD_PART_I, encoding="utf-8").read()
+    pairs = dict(re.findall(r"`([a-z]+)→([a-z ]+)`", text))
+    assert len(pairs) == 4, f"expected 4 collapse-map entries in the standard, got {pairs}"
+
+    for authority, target in pairs.items():
+        if target == "no task":
+            assert authority in bpmn_to_tasks.AUTHORITY_NO_TASK, (
+                f"standard maps {authority}->no task; compiler does not"
+            )
+        elif authority in bpmn_to_tasks.AUTHORITY_NO_OWNER:
+            # `authority->agent` is a documented fallback, not an owner derivation:
+            # the framework is the executor, so there is no owner to derive (T-2717).
+            assert target == "agent"
+        else:
+            assert bpmn_to_tasks.AUTHORITY_OWNER.get(authority) == target, (
+                f"standard maps {authority}->{target}; compiler maps "
+                f"{authority}->{bpmn_to_tasks.AUTHORITY_OWNER.get(authority)}"
+            )
+
+    assert set(pairs) == bpmn_to_tasks.AUTHORITY_DIALECT, (
+        f"standard dialect {sorted(pairs)} != compiler dialect "
+        f"{sorted(bpmn_to_tasks.AUTHORITY_DIALECT)}"
+    )

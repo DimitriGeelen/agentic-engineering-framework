@@ -15,10 +15,10 @@ description: >
   its own non-accusing message did not carry external with it. Vocabularies diverge
   three ways: standard 4, pinned editor 5 (adds none), compiler 3.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner:
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: [T-3173, T-2717, T-2567]
@@ -33,8 +33,8 @@ related_tasks: [T-3173, T-2717, T-2567]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T15:00:51Z
-last_update: 2026-08-26T15:51:26Z
-date_finished:
+last_update: 2026-08-26T17:55:32Z
+date_finished: 2026-08-26T17:55:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -192,23 +192,23 @@ fallthrough is deliberate and documented. A defect report framed that way will b
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `external` is a recognised member of the AEF lane dialect in
+- [x] `external` is a recognised member of the AEF lane dialect in
       `tools/bpmn_to_tasks.py` — compiling a diagram with
       `<aef:laneMeta authority="external">` no longer emits the "unrecognized …
       very likely a typo or an out-of-band value" warning
-- [ ] The ratified semantics are implemented, not just the message: nodes in an
+- [x] The ratified semantics are implemented, not just the message: nodes in an
       `external` lane emit NO task skeleton at all (§3 line 68, `external→no task`).
       This is a third branch — `AUTHORITY_OWNER` and `AUTHORITY_NO_OWNER` both still
       emit a task, so neither existing set is the right home for it
-- [ ] A genuinely out-of-dialect value (e.g. `authority="overlord"`) still produces the
+- [x] A genuinely out-of-dialect value (e.g. `authority="overlord"`) still produces the
       typo-suspecting warning, and the "valid set" it prints now lists all four ratified
       values — the T-2717/OBS-118 split stays intact and does not regress to one channel
-- [ ] `none` is explicitly NOT added — it appears in the pinned reference editor (0.11.0)
+- [x] `none` is explicitly NOT added — it appears in the pinned reference editor (0.11.0)
       but not in the frozen standard, so it is an editor deviation and belongs in its own
       task; folding it in here would ratify it by implementation
-- [ ] A regression test compiles a fixture with an `external` lane and asserts both halves:
+- [x] A regression test compiles a fixture with an `external` lane and asserts both halves:
       zero task skeletons emitted for that lane's nodes, and no "unrecognized" warning
-- [ ] The `external` case is covered by whatever check §6 of the standard uses for the
+- [x] The `external` case is covered by whatever check §6 of the standard uses for the
       frozen meta-key list, so the lane dialect can no longer drift from the standard
       silently — this is the leg that stops the next value from diverging
 
@@ -245,133 +245,47 @@ fallthrough is deliberate and documented. A defect report framed that way will b
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q 2>&1 | tail -1 | grep -qE "^62 passed"
+python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/external-lane-sample.bpmn 2>&1 | grep -q "emitted NO task skeleton"
+! python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/external-lane-sample.bpmn 2>&1 | grep -qi "typo"
+# the external lane's two nodes emit nothing; the control lane's one node still does
+test "$(python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/external-lane-sample.bpmn 2>/dev/null | grep -c '^id: ')" = "1"
+# an out-of-dialect value is still accused -- the T-2717 two-channel split holds
+python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/out-of-dialect-lane-sample.bpmn 2>&1 | grep -q "very likely a typo"
+# `none` was not ratified by implementation (T-3176 territory)
+! grep -q '"none"' tools/bpmn_to_tasks.py
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom.** A diagram lane carrying the ratified value `authority="external"` compiled
+to a task with `owner: agent` — the exact inverse of the standard's `external->no task`
+— and the compiler additionally called the value "very likely a typo".
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause.** `AUTHORITY_DIALECT` was built as `AUTHORITY_OWNER | AUTHORITY_NO_OWNER`,
+i.e. as the union of the two sets that answer *where does owner come from*. `external`
+is not an owner question at all, so it had no set to belong to and fell to the
+out-of-dialect else-branch. The wording defect and the wrong-owner defect are the same
+line of code.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why the framework did not detect it for four months.** Part I §6 names
+`tests/test_mapping_standard_conformance.py` as the machine check for standard-vs-
+implementation parity. **That file does not exist in this repo.** The standard asserts it
+is machine-checked; nothing checks it. A three-value compiler therefore sat against a
+four-value frozen standard with every test green, because every test restated the
+compiler's own vocabulary back to itself. This is the session's recurring shape: a check
+whose population cannot exercise the thing it claims to cover reports the same result as
+one that looked and was satisfied.
 
-## Evolution
+Two independent parties found it before we did — 001-CashWeb hit it in the field
+(their G-055) and 832, the contract owner, confirmed the diagnosis unprompted on
+agent-chat-arc @535.
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
-
-## Recommendation
-
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
-
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
-
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
-
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Prevention, not mitigation.** `test_lane_dialect_matches_the_frozen_standard` parses
+the collapse map out of §3's prose and compares it to the compiler's constants. It reads
+the standard rather than restating it, so adding a fifth value to the standard turns this
+test red instead of leaving the gap for a consumer to find. That is the lane-dialect half
+of the check §6 promised; the frozen meta-key half is still missing and is filed
+separately.
 
 ## Decisions
 
@@ -403,3 +317,26 @@ fallthrough is deliberate and documented. A defect report framed that way will b
 
 ### 2026-08-26T15:51:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-921d2462
+- **Timestamp:** 2026-08-26T17:55:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q 2>&1 | tail -1 | grep -qE "^62 passed"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/external-lane-sample.bpmn 2>&1 | grep -q "emitted NO task skeleton"`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `! python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/external-lane-sample.bpmn 2>&1 | grep -qi "typo"`
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/out-of-dialect-lane-sample.bpmn 2>&1 | grep -q "very likely a typo"`
+
+### 2026-08-26T17:55:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

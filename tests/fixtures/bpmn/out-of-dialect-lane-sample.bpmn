@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- T-3172: the NEGATIVE control for the dialect widening. `overlord` is in no
+     vocabulary — not the frozen standard's four, not the editor's unset sentinel.
+     It MUST still draw the typo-suspecting message. Without this fixture, a fix that
+     silenced the accusing branch entirely would look identical to a fix that widened
+     the dialect correctly (OBS-118 / T-2717 split regressing to one channel). -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="http://agentic.dev/schema/aef"
+                  id="Defs_out_of_dialect" targetNamespace="http://agentic.dev/bpmn">
+  <bpmn:process id="Proc_ood" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_bogus" name="Bogus">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="B" authority="overlord" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>Task_bogus</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:serviceTask id="Task_bogus" name="Do the thing">
+      <bpmn:extensionElements><aef:uid>u-bogus-001</aef:uid></bpmn:extensionElements>
+    </bpmn:serviceTask>
+  </bpmn:process>
+</bpmn:definitions>

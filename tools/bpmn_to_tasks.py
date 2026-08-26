@@ -81,8 +81,22 @@ AUTHORITY_OWNER = {"sovereignty": "human", "initiative": "agent"}
 # line fired on EVERY compile of any map with a Framework lane and could no longer
 # distinguish anything (L-527: a signal that always fires stops meaning anything).
 AUTHORITY_NO_OWNER = {"authority"}
+# T-3172 / G-091: the fourth ratified value, and the only one that is not an owner
+# question at all. mapping-v1-partI §3 fixes the collapse map as
+#   sovereignty->human, initiative->agent, authority->agent, external->NO TASK
+# `external` says "not us": the step is performed by a system or party outside the
+# governed boundary, so there is no task to author — not a task with a fallback owner.
+# It therefore needs its own set: AUTHORITY_OWNER and AUTHORITY_NO_OWNER both still
+# EMIT a skeleton (they differ only in where `owner` comes from), so neither is the
+# right home. Before this, `external` was absent from every set, fell to the
+# out-of-dialect branch, and emitted `owner: agent` — the exact inverse of the rule.
+# Reported from the field by 001-CashWeb (their G-055) and independently confirmed by
+# 832, the contract owner, on agent-chat-arc @535: "external must produce no task,
+# never owner: agent". Deliberately NOT extended to `none` — that is the pinned
+# editor's unset sentinel, a different root cause, handled by T-3176.
+AUTHORITY_NO_TASK = {"external"}
 # The full dialect, so an out-of-dialect value can be told what the valid set is.
-AUTHORITY_DIALECT = set(AUTHORITY_OWNER) | AUTHORITY_NO_OWNER
+AUTHORITY_DIALECT = set(AUTHORITY_OWNER) | AUTHORITY_NO_OWNER | AUTHORITY_NO_TASK
 
 
 class MalformedInceptionError(ValueError):
@@ -418,6 +432,11 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
     # Design ratified by 832 (rail offset 95): agent-fallback + WARN, no synthetic
     # "framework" owner — the executor is still the agent; what's lost is provenance.
     unknown_auth: dict[tuple[str, str], list[str]] = {}
+    # T-3172: nodes dropped because their lane is `external` (ratified collapse map:
+    # external -> no task). Collected per lane so the drop is REPORTED rather than
+    # silent — a compiler that quietly emits fewer tasks than the diagram has nodes is
+    # indistinguishable from one that failed to parse them.
+    no_task_auth: dict[tuple[str, str], list[str]] = {}
     for node in root.iter():
         ntype = _local(node.tag)
         is_inception = _is_inception_subprocess(node)
@@ -432,6 +451,21 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
 
         lane_name = lanes.get(node_id)
         authority = lane_auth.get(node_id)
+        # T-3172: `external` -> no task (mapping-v1-partI §3). Drop the node before any
+        # owner derivation runs, because owner derivation is precisely the step that was
+        # wrong: it fell through to the name/type heuristic and authored `owner: agent`
+        # for work the diagram assigns OUTSIDE the governed boundary.
+        #
+        # Deliberately NOT applied to an inception subProcess. O-3/§7 requires an
+        # inception's go/no-go boundary to be sovereignty-laned; an inception in an
+        # external lane is a structural defect that must keep raising
+        # MalformedInceptionError below, not be silently dropped. Skipping it here would
+        # convert a hard failure into a missing task — the quieter and worse outcome.
+        if authority in AUTHORITY_NO_TASK and not is_inception:
+            no_task_auth.setdefault((authority, lane_name or node_id), []).append(
+                uid or node_id
+            )
+            continue
         # Authority-of-record (aef:laneMeta) is explicit and wins over the name heuristic.
         auth_owner = AUTHORITY_OWNER.get(authority) if authority else None
         lane_owner = auth_owner or (
@@ -493,6 +527,20 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
             }
         )
         uid_by_node[node_id] = uid
+
+    # T-3172: report the external-lane drops. This is EXPECTED behaviour, so the
+    # wording carries no accusation and no "unrecognized" — it states the ratified rule
+    # and names what was dropped, so an author who laned a node externally by mistake
+    # can still see that it produced nothing.
+    for (auth_val, lname), dropped in no_task_auth.items():
+        warnings.append(
+            f"lane {lname!r} carries aef:laneMeta authority={auth_val!r} — the ratified "
+            f"collapse map (mapping-v1-partI \u00a73) maps external\u2192no task, so "
+            f"{len(dropped)} node(s) in this lane emitted NO task skeleton: "
+            f"{', '.join(dropped)} (expected, not a defect \u2014 the work sits outside "
+            f"the governed boundary). If one of these IS ours, re-lane it "
+            f"sovereignty/initiative (T-3172)"
+        )
 
     # OBS-118 / T-2717: split the ONE channel T-2567 created into two messages. A
     # dialect value with no owner is EXPECTED; a value outside the dialect is a defect.

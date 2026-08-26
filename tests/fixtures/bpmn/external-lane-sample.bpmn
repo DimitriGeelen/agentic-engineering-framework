@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- T-3172 / G-091: `external` is a RATIFIED member of the lane dialect.
+     policy/standards/aef-bpmn-mapping-v1-partI.md §3 (Part I — Frozen, v1.1) fixes the
+     collapse map as sovereignty->human, initiative->agent, authority->agent,
+     external->NO TASK. At HEAD the compiler knew three of the four, so an external
+     lane fell to the typo branch AND emitted `owner: agent` — authoring a task for a
+     step the diagram says we do not perform (the exact inverse of the ratified rule).
+     Confirmed independently by 832 (contract owner) on agent-chat-arc @535:
+     "external must produce no task, never owner: agent".
+
+     THE CONTROL LANE IS LOAD-BEARING. A fix that simply stopped emitting task
+     skeletons would satisfy every "did the external node vanish?" assertion in this
+     file and be catastrophically wrong. Lane_partner must keep emitting exactly one
+     task, so an over-broad skip goes red instead of green. -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="http://agentic.dev/schema/aef"
+                  id="Defs_external_lane" targetNamespace="http://agentic.dev/bpmn">
+  <bpmn:process id="Proc_external" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_partner" name="Agent (initiative)">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="A" authority="initiative" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>Task_ours</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_ext" name="Cash · Ecwid (extern)">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="X" authority="external" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>Task_theirs</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_theirs_2</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:serviceTask id="Task_ours" name="Read stock from Cash">
+      <bpmn:extensionElements><aef:uid>u-ours-001</aef:uid></bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_theirs" name="Ecwid recalculates availability">
+      <bpmn:extensionElements><aef:uid>u-theirs-001</aef:uid></bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_theirs_2" name="Lightspeed posts the settlement">
+      <bpmn:extensionElements><aef:uid>u-theirs-002</aef:uid></bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="F1" sourceRef="Task_ours" targetRef="Task_theirs"/>
+    <bpmn:sequenceFlow id="F2" sourceRef="Task_theirs" targetRef="Task_theirs_2"/>
+  </bpmn:process>
+</bpmn:definitions>
