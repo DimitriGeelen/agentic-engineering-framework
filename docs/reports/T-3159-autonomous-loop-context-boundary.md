@@ -461,7 +461,7 @@ handover in.
 | 3 | Re-key `current_iteration` from session to **task** | the 285 K-per-run absurdity | small | open |
 | 4 | Wire `session-end.sh`; add `SessionEnd` to `hook-enable.sh` `VALID_EVENTS` | §9 outbound half | small | open |
 | 5 | Make an unsupervised launch refuse-or-warn loudly, not just stderr | R1 | small | open |
-| 6 | `enabled:` must reflect terminated state; consume the sentinel on every branch | F3, F4 | trivial | open |
+| 6 | `enabled:` must reflect terminated state; consume the sentinel on every branch | F3, F4 | trivial | **landed** — F3 T-3167, F4 T-3168 |
 | 7 | Author the designer map + conformance entry | T-3159's original deliverable | medium | open |
 
 Every one of 1-6 is small. The reason this has taken 26 tasks is that the substrate was
