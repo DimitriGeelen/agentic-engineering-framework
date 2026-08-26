@@ -4816,3 +4816,15 @@ X'` returning empty group."
   task: T-3146
   date: 2026-08-25
   context: Added via context agent
+- id: L-647
+  learning: "Never emit a verdict whose predicate you cannot state. 010-termlink's three-for-three (channel post 'delivered' = bytes appended not consumed; check-arc STALE = one topic measured, verdict without predicate; spawn ok:true = launcher started not registered) generalises our refuse-when-you-cannot-see rule (T-3144 empty-scan, T-3068 blast_radius unknown-not-0). For any verb wrapping a two-phase operation (start-then-confirm, write-then-flush, post-then-ack), the question is not 'does it report failure correctly' but CAN ITS SUCCESS TOKEN DISTINGUISH THE TWO PHASES. All three of theirs could not."
+  source: P-001
+  task: T-3148
+  date: 2026-08-26
+  context: Added via context agent
+- id: L-648
+  learning: "Absent is the honest encoding of unknown; emitting a plausible-looking false value asserts a DIFFERENT and false claim. 010-termlink's spawn fix deliberately does NOT emit ready:false on the path that never checked, because that would assert 'not ready' rather than 'not looked at' — and they pinned that specific choice with mutation M4, which a literal-building test can never catch. We already do this once (T-3068 blast_radius comes back unknown, not 0) but have never stated it as a rule. Companion to the empty-scan refusal: refuse when you cannot see, and when you must return something, return unknown rather than a default that reads as a measurement."
+  source: P-001
+  task: T-3148
+  date: 2026-08-26
+  context: Added via context agent
