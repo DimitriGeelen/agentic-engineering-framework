@@ -1,21 +1,19 @@
 ---
-id: T-3181
-name: "Refine the continuous-run loop model node by node into a buildable spec (arc-012)"
+id: T-3184
+name: "BVP cannot select work: zero confirmed scores, every proposed score identical"
 description: >
-  Inception: Refine the continuous-run loop model node by node into a buildable spec
-  (arc-012)
+  fw bvp --quadrant hv-lc|hv-hc returns 'No tasks have bvp_scores: set yet' — zero confirmed across the corpus. With --include-proposed every task ties at BVP 108 / norm 0.40 / cost 3.6, and 83% (138/166) carry no cost at all because components: is unresolved (T-3068). The operator's arm-the-run design (T-3181 D-1.1) selects arc work HV/HC then HV/LC, so a degenerate ranking makes complete-arc mode unbuildable.
 
-status: started-work
-arc_id: continuous-run
+status: captured
 workflow_type: inception
 owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-08-26T20:00:07Z
-last_update: '2026-08-26T20:15:08Z'
-date_finished:
+created: 2026-08-26T20:38:36Z
+last_update: 2026-08-26T20:38:36Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -24,36 +22,9 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
-bvp_scores_proposed:
-  - ts: '2026-08-26T20:01:12Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 2
-      F3: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
-      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-08-26T20:15:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 4
-      effort: 7
-    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
-      (workflow:inception); effort=7 (lines=171,acs=4)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3181: Refine the continuous-run loop model node by node into a buildable spec (arc-012)
+# T-3184: BVP cannot select work: zero confirmed scores, every proposed score identical
 
 ## Problem Statement
 
@@ -80,54 +51,6 @@ cost_estimate_proposed:
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
-
-- **IW-1: Which caps may end a run, and what does the "run cap" count — turns, tasks, or sessions?**
-  Four caps now exist in `.context/working/.continuous-mode.yaml` (`max_iterations`,
-  `max_tasks`, `tier_ceiling`, `expires_after_seconds`). The operator's stated terminal
-  conditions are arc-drained or run-cap, and wall-clock is explicitly NOT one of them —
-  yet `expires_after_seconds` is the last thing that actually terminated a run.
-  confidence: 1
-  disposition:
-  rationale:
-
-- **IW-2: Does the halt mechanism satisfy the sovereignty requirement now that it is built?**
-  v5 filed this MISSING. `stop-driver.sh:60,80-82` reads a halt file as Brake 1, before
-  anything else votes. Open: is a file enough without a Watchtower control, and is it
-  reachable when the model is the thing misbehaving?
-  confidence: 2
-  disposition:
-  rationale:
-
-- **IW-3: Is a deliberately-RED conformance rail entry a legitimate use of the rail?**
-  Registering the `SessionStart source?` gateway as a vocabulary-set entry would go red on
-  landing (the `clear` branch is not in `post-compact-resume.sh`'s allowlist) and stay red
-  until the allowlist widens — converting prose into a self-reporting audit finding.
-  confidence: 1
-  disposition:
-  rationale:
-
-- **IW-4: Is our PreCompact handover already compaction-grade, and how would we know?**
-  Nobody has taken `LATEST.md` into a genuinely cold session and measured whether it
-  resumes. Cheap to falsify; nothing should be built on top of it before it is.
-  confidence: 0
-  disposition:
-  rationale:
-
-- **IW-5: On hitting a human gate mid-run, does the run park the task and take the next, or stop and notify?**
-  (v5's Q5.) With ~48 started-work tasks, most human-owned, an arc drain hits one almost
-  immediately. Park-and-next keeps the run alive but grows a pile nobody asked for;
-  stop-and-notify is honest but may end the run in its first minutes.
-  confidence: 1
-  disposition:
-  rationale:
-
-- **IW-6: Why did the claude-fw wrapper leave its restart loop instead of iterating?**
-  Measured tonight: restart branch ran at 21:25:46 (sentinel written), but the wrapper
-  running now is a different PID started by hand at 21:39:52. Links 1-4 fired; link 5
-  did not. Not in v5 — v5 records the supervisor as live with only a flag defect.
-  confidence: 1
-  disposition:
-  rationale:
 
 ## Exploration Plan
 
@@ -191,15 +114,7 @@ cost_estimate_proposed:
 
 **Recommendation:** DEFER
 
-**Rationale:**
-
-Filed at the start of the walkthrough — the operator and I are about to go through draft-continuous-run-loop v5 node by node. The four open questions (IW-2 halt authority, IW-3 deliberately-red rail entry, IW-4 is PreCompact compaction-grade, Q5 park-vs-notify on a human gate) are genuine evidence gaps, not confidence gaps: none has been walked yet. This DEFER is expected to resolve to GO or NO-GO per node as the dialogue produces evidence.
-
-**Evidence:**
-
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+**Rationale:** Evidence gap, not a hedge: confirming scores is a sovereignty boundary (fw bvp confirm --i-am-human), so the corpus cannot be populated agent-side. Whether to score by hand, fix the estimator's degeneracy, or resolve components: first is an operator call that has not been put to them yet.
 
 ## Decisions
 
@@ -220,6 +135,3 @@ Filed at the start of the walkthrough — the operator and I are about to go thr
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
-
-### 2026-08-26T20:01:12Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

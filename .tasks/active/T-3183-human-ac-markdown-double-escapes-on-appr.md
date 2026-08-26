@@ -1,11 +1,10 @@
 ---
-id: T-3182
-name: "continuous-run loop stops in silence — every claude-fw exit path must record why"
+id: T-3183
+name: "Human AC markdown double-escapes on /approvals and /tasks/<id>"
 description: >
-  continuous-run loop stops in silence — every claude-fw exit path must record why
+  Reported by 001-CashWeb over TermLink (agent-chat-arc offset 556). Backticks in Human AC Steps render as visible <code> tags: the markdown becomes <code>, then <code> is escaped as text. Confirmed by them on /approvals and /tasks/<id>. Discriminator handed to us: /project/<doc_id> renders the SAME class of content correctly, so it is one shared AC/markdown rendering path rather than one bad template. Fix where the escaping happens, not per-template.
 
-status: started-work
-arc_id: continuous-run
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-26T20:35:23Z
-last_update: 2026-08-26T20:35:23Z
+created: 2026-08-26T20:38:23Z
+last_update: 2026-08-26T20:38:23Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -37,7 +36,7 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-3182: continuous-run loop stops in silence — every claude-fw exit path must record why
+# T-3183: Human AC markdown double-escapes on /approvals and /tasks/<id>
 
 ## Context
 
@@ -47,15 +46,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `bin/claude-fw` defines `_record_loop_event`, appending one JSON line per loop event to `.context/working/continuous-run.jsonl`
-- [x] Every `exit` inside the wrapper's main loop is preceded by a `_record_loop_event` call — no silent exit path remains
-- [x] Each exit path records a **distinct** reason (`auto-restart-disabled`, `no-git-repo`, `max-restarts`, `stale-signal`, `no-signal`), so the record says *which* path was taken
-- [x] Loop **iterations** are recorded too (`event: iterate`), so "went round N times then stopped" is distinguishable from "never started"
-- [x] The recorder is non-fatal: outside a git repo, or with any internal failure, it returns 0 and does not alter the wrapper's exit code
-- [x] `tests/unit/t3182_loop_exit_recorder.bats` reads the REAL wrapper (lifts its function, statically scans its loop) rather than a transcribed copy
-- [x] A control leg asserts reasons are distinct — without it, "record every exit" and "record something on every exit" are the same diff
-- [x] Mutation-tested: silencing one path reddens the every-path test; collapsing all reasons to one constant reddens ONLY the control leg; dropping a JSON field reddens the shape test
-- [x] `bin/fw` is NOT touched — it is held uncommitted by concurrent task T-3127, so this change is scoped to `bin/claude-fw` and its test
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -218,46 +210,7 @@ date_finished: null
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-out=$(bats tests/unit/t3182_loop_exit_recorder.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-bash -n bin/claude-fw
-grep -q '_record_loop_event()' bin/claude-fw
-test "$(grep -c '_record_loop_event' bin/claude-fw)" -ge 7
-# NOT `git diff HEAD -- bin/fw`: T-3127 holds bin/fw dirty in the WORKING TREE on
-# purpose. The claim is that THIS COMMIT does not touch it, which is a property of
-# the diff I authored, not of the tree I authored it in.
-git show --stat --format= HEAD > /tmp/.t3182-stat 2>&1 && ! grep -qE "^ +bin/fw " /tmp/.t3182-stat
-
 ## Decisions
-
-### Record the reason at every exit, including the ordinary one
-
-The loop had six ways out and all six were silent. The temptation is to record only
-the *abnormal* endings — max-restarts, stale signal — and let a clean exit pass
-without comment. That reproduces the defect: "claude exited normally and nobody asked
-for a restart" and "the supervisor broke" both then leave nothing behind, and the
-operator's question ("why isn't the loop running?") is unanswerable from disk in
-exactly the case that matters.
-
-Iterations are recorded for the same reason. A log that only records endings cannot
-distinguish *went round three times then hit the valve* from *never started*, which
-is the specific ambiguity that cost this session process forensics on PIDs and file
-mtimes tonight.
-
-### The control leg is what makes the test mean anything
-
-Asserting "every exit path is recorded" is satisfied by a recorder wired with one
-constant string, which tells the operator nothing about which path was taken. The
-distinct-reasons test is the discriminator. Mutation M2 confirms the split: collapsing
-all five reasons to one constant leaves the every-path test GREEN and reddens only the
-control leg.
-
-### Scoped away from `bin/fw` deliberately
-
-`bin/fw`, `lib/config.sh`, `agents/audit/audit.sh`, `web/blueprints/config.py` and
-`lib/audit_timing.py` are held uncommitted by concurrent task T-3127. Surfacing this
-log through `fw doctor` would have meant editing `bin/fw` and shipping another task's
-unfinished work under this commit. The surface is deferred to a follow-up rather than
-taken here.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -280,7 +233,7 @@ taken here.
 
 ## Updates
 
-### 2026-08-26T20:35:23Z — task-created [task-create-agent]
+### 2026-08-26T20:38:23Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3182-continuous-run-loop-stops-in-silence--ev.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3183-human-ac-markdown-double-escapes-on-appr.md
 - **Context:** Initial task creation
