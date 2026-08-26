@@ -149,6 +149,88 @@ print('JSON_END')
 #        be synced without copying files.
 # Return:
 #   0 — sync completed (or nothing to sync, or consumer-skip)
+# ---------------------------------------------------------------------------
+# T-3165 (arc-012): the concurrent-session withholding guard.
+#
+# THE PROBLEM. The T-2240 pre-push gate refuses a push when a vendored-class file
+# is stale in the COMMITTED tree, and prescribes `fw vendor self` as the fix. That
+# command syncs every vendored class from the WORKING tree — including files a
+# concurrent task has uncommitted. So the remedy for my drift silently stages
+# someone else's unfinished work into `.agentic-framework/`, which is exactly
+# where consumers pull from. Third occurrence in three consecutive sessions.
+#
+# It is a false-green of the usual family: the signal that would reveal the
+# problem — a stale-vendor warning — has just been cleared by the command that
+# caused it. Nothing objects, and the agent only avoids it by already knowing
+# which files belong to another task. Nothing surfaces that list.
+#
+# THE RULE. A source file that differs from HEAD is by construction not yet
+# committed, so vendoring it ships uncommitted work across a trust boundary.
+# Real runs therefore withhold dirty vendored-class files by default. The caller
+# names their own via FW_VENDOR_ONLY so the push gate can still be cleared
+# normally, and FW_VENDOR_ALL=1 restores the old sweep as a logged, explicit act.
+#
+# DRY-RUN AND --check ARE DELIBERATELY NOT GUARDED. They are drift DETECTORS, and
+# a detector that hides drift because the file is dirty is the very blindness this
+# guard exists to prevent (T-3165 AC4). They report what is truly out of sync;
+# only the mutating path withholds.
+# ---------------------------------------------------------------------------
+_SV_DIRTY_SET=""
+_SV_WITHHELD=""
+_SV_GUARD_READY=false
+
+# Build the dirty set once per process. Any failure leaves the set empty, which
+# means "withhold nothing" — the guard fails OPEN, because refusing to sync on a
+# git hiccup would break the push-gate remedy for everyone.
+_sv_guard_init() {
+    [ "$_SV_GUARD_READY" = true ] && return 0
+    _SV_GUARD_READY=true
+    _SV_DIRTY_SET=""
+    command -v git >/dev/null 2>&1 || return 0
+    git -C "$FRAMEWORK_ROOT" rev-parse --git-dir >/dev/null 2>&1 || return 0
+    # Porcelain v1: XY<space>path. Rename rows carry "old -> new"; keep the new
+    # path, which is the one on disk. Untracked ("??") counts as dirty — an
+    # untracked lib/*.py is uncommitted work exactly like a modified one.
+    _SV_DIRTY_SET=$(git -C "$FRAMEWORK_ROOT" status --porcelain 2>/dev/null \
+        | cut -c4- | sed 's/.* -> //')
+    return 0
+}
+
+# 0 = withhold this file, 1 = sync it.
+_sv_is_withheld() {
+    local src="$1" rel
+    [ "${FW_VENDOR_ALL:-0}" = "1" ] && return 1
+    _sv_guard_init
+    [ -n "$_SV_DIRTY_SET" ] || return 1
+    rel="${src#$FRAMEWORK_ROOT/}"
+    # The caller's own in-flight files. Space-separated repo-relative paths.
+    case " ${FW_VENDOR_ONLY:-} " in
+        *" $rel "*) return 1 ;;
+    esac
+    printf '%s\n' "$_SV_DIRTY_SET" | grep -qxF -- "$rel" || return 1
+
+    # Already reported? Withhold silently — helpers may re-examine a path.
+    if printf '%s\n' "$_SV_WITHHELD" | grep -qxF -- "$rel"; then
+        return 0
+    fi
+    _SV_WITHHELD="${_SV_WITHHELD}${rel}
+"
+    # AC2: name each withheld file AT the moment it is withheld. Reporting from a
+    # single end-of-run hook would need a call site in bin/fw — a file a concurrent
+    # task holds uncommitted, which is the exact hazard this guard exists to stop.
+    # The preamble prints once; the file lines accumulate under it.
+    if [ "${_SV_GUARD_BANNER:-0}" != "1" ]; then
+        _SV_GUARD_BANNER=1
+        echo -e "  ${YELLOW}Self-vendor: withholding uncommitted file(s) not named by this caller${NC}" >&2
+        echo "  Each differs from HEAD, so vendoring it would ship another task's" >&2
+        echo "  unfinished work to consumers under your commit." >&2
+        echo "    if one is YOURS:  FW_VENDOR_ONLY=\"<path> <path>\" bin/fw vendor self" >&2
+        echo "    sync anyway:      FW_VENDOR_ALL=1 bin/fw vendor self   (logged Tier-2)" >&2
+    fi
+    echo "      withheld: $rel" >&2
+    return 0
+}
+
 _self_vendor_libs() {
     local dry_run="${1:-false}"
     local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
@@ -175,6 +257,9 @@ _self_vendor_libs() {
     # subdirs at real-run only.
     while IFS= read -r _sv_src; do
         [ -f "$_sv_src" ] || continue
+        # T-3165: real runs withhold a concurrent task's uncommitted files.
+        # Detectors (dry-run / --check) are deliberately exempt.
+        [ "$dry_run" = true ] || ! _sv_is_withheld "$_sv_src" || continue
         _sv_rel="${_sv_src#$FRAMEWORK_ROOT/lib/}"
         _sv_dst="$_self_vendor/lib/$_sv_rel"
         if [ ! -f "$_sv_dst" ] || ! diff -q "$_sv_src" "$_sv_dst" > /dev/null 2>&1; then
@@ -234,6 +319,9 @@ _self_vendor_templates() {
     local _svt_src _svt_name _svt_dst
     for _svt_src in "$FRAMEWORK_ROOT/.tasks/templates/"*.md; do
         [ -f "$_svt_src" ] || continue
+        # T-3165: real runs withhold a concurrent task's uncommitted files.
+        # Detectors (dry-run / --check) are deliberately exempt.
+        [ "$dry_run" = true ] || ! _sv_is_withheld "$_svt_src" || continue
         _svt_name=$(basename "$_svt_src")
         _svt_dst="$_self_vendor/.tasks/templates/$_svt_name"
         if [ ! -f "$_svt_dst" ] || ! diff -q "$_svt_src" "$_svt_dst" > /dev/null 2>&1; then
@@ -307,6 +395,9 @@ _self_vendor_policy() {
         _svp_src="$FRAMEWORK_ROOT/policy/$_svp_name"
         _svp_dst="$_self_vendor/policy/$_svp_name"
         [ -f "$_svp_src" ] || continue
+        # T-3165: real runs withhold a concurrent task's uncommitted files.
+        # Detectors (dry-run / --check) are deliberately exempt.
+        [ "$dry_run" = true ] || ! _sv_is_withheld "$_svp_src" || continue
         if [ ! -f "$_svp_dst" ] || ! diff -q "$_svp_src" "$_svp_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
                 _svp_dst_dir="$(dirname "$_svp_dst")"
@@ -376,6 +467,9 @@ _self_vendor_shim() {
     local _svs_src _svs_rel _svs_dst
     while IFS= read -r _svs_src; do
         [ -f "$_svs_src" ] || continue
+        # T-3165: real runs withhold a concurrent task's uncommitted files.
+        # Detectors (dry-run / --check) are deliberately exempt.
+        [ "$dry_run" = true ] || ! _sv_is_withheld "$_svs_src" || continue
         _svs_rel="${_svs_src#$FRAMEWORK_ROOT/bin/}"
         _svs_dst="$_self_vendor/bin/$_svs_rel"
         if [ ! -f "$_svs_dst" ] || ! diff -q "$_svs_src" "$_svs_dst" > /dev/null 2>&1; then
@@ -458,6 +552,9 @@ _self_vendor_agents() {
     local _sva_src _sva_rel _sva_dst _sva_dst_dir
     while IFS= read -r _sva_src; do
         [ -f "$_sva_src" ] || continue
+        # T-3165: real runs withhold a concurrent task's uncommitted files.
+        # Detectors (dry-run / --check) are deliberately exempt.
+        [ "$dry_run" = true ] || ! _sv_is_withheld "$_sva_src" || continue
         _sva_rel="${_sva_src#$FRAMEWORK_ROOT/agents/}"
         _sva_dst="$_self_vendor/agents/$_sva_rel"
         if [ ! -f "$_sva_dst" ] || ! diff -q "$_sva_src" "$_sva_dst" > /dev/null 2>&1; then
@@ -520,6 +617,9 @@ _self_vendor_web() {
     local _svw_src _svw_rel _svw_dst _svw_dst_dir
     while IFS= read -r _svw_src; do
         [ -f "$_svw_src" ] || continue
+        # T-3165: real runs withhold a concurrent task's uncommitted files.
+        # Detectors (dry-run / --check) are deliberately exempt.
+        [ "$dry_run" = true ] || ! _sv_is_withheld "$_svw_src" || continue
         _svw_rel="${_svw_src#$FRAMEWORK_ROOT/web/}"
         _svw_dst="$_self_vendor/web/$_svw_rel"
         if [ ! -f "$_svw_dst" ] || ! diff -q "$_svw_src" "$_svw_dst" > /dev/null 2>&1; then

@@ -985,7 +985,15 @@ EOF
             echo "  file matches its vendored copy in that commit, so consumers vendoring" >&2
             echo "  from origin inherit nothing stale. The drift above lives only in" >&2
             echo "  uncommitted edits — yours or a concurrent session's." >&2
-            echo "  Run 'bin/fw vendor self' before COMMITTING those edits." >&2
+            # T-3165: point at the NARROWED invocation. The bare form used to sweep
+            # every dirty vendored-class file, including a concurrent task's, so this
+            # remedy for your drift silently staged someone else's unfinished work.
+            # `fw vendor self` now withholds those by default and names them; naming
+            # your own paths is what actually clears the gate.
+            echo "  Before COMMITTING your edits, sync only YOUR files:" >&2
+            echo "    FW_VENDOR_ONLY=\"<your-path> <your-path>\" bin/fw vendor self" >&2
+            echo "  The bare form withholds any dirty file you did not name and lists it," >&2
+            echo "  so you no longer have to already know which files are someone else's." >&2
             echo "" >&2
         fi
     fi

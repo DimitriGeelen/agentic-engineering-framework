@@ -99,13 +99,13 @@ would catch it reports satisfied *because* of the action that broke it.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw vendor self` refuses to sync a vendored-class file whose working-tree copy differs from HEAD and which is **not** part of the current task's changes — or syncs only the files the caller names
-- [ ] The refusal (or skip) **names each withheld file and why**, so the agent does not have to already know which files belong to a concurrent task
-- [ ] An explicit opt-in exists to sync everything anyway, logged Tier-2 — the current behaviour stays reachable, it just stops being the default
-- [ ] `fw vendor self --check` still reports true drift; narrowing the sync must not blind the detector that motivated the gate
-- [ ] Regression test: with an unrelated file dirty in the working tree, `fw vendor self` leaves that file's vendored copy at its HEAD content
-- [ ] Regression test: the file the caller IS working on still syncs, so the push gate can be cleared normally
-- [ ] The push gate's suggested fix message points at the narrowed invocation, not the sweeping one
+- [x] `fw vendor self` refuses to sync a vendored-class file whose working-tree copy differs from HEAD and which is **not** part of the current task's changes — or syncs only the files the caller names
+- [x] The refusal (or skip) **names each withheld file and why**, so the agent does not have to already know which files belong to a concurrent task
+- [x] An explicit opt-in exists to sync everything anyway, logged Tier-2 — the current behaviour stays reachable, it just stops being the default
+- [x] `fw vendor self --check` still reports true drift; narrowing the sync must not blind the detector that motivated the gate
+- [x] Regression test: with an unrelated file dirty in the working tree, `fw vendor self` leaves that file's vendored copy at its HEAD content
+- [x] Regression test: the file the caller IS working on still syncs, so the push gate can be cleared normally
+- [x] The push gate's suggested fix message points at the narrowed invocation, not the sweeping one
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -139,6 +139,20 @@ would catch it reports satisfied *because* of the action that broke it.
 -->
 
 ## Verification
+
+bash -n lib/upgrade.sh
+bash -n agents/git/lib/hooks.sh
+bats tests/unit/vendor_self_withhold.bats
+# The guard is consulted by every file-loop helper, and every call site exempts
+# the detectors. Counted from source so a seventh helper added without the guard
+# fails here rather than silently re-opening the hole (T-2711/T-2793 lesson).
+test "$(grep -c '_sv_is_withheld "\$' lib/upgrade.sh)" -eq 6
+test "$(grep -c '\[ "\$dry_run" = true \] || ! _sv_is_withheld' lib/upgrade.sh)" -eq 6
+# AC7: the push gate points at the narrowed invocation, not the sweeping one.
+grep -q 'FW_VENDOR_ONLY' agents/git/lib/hooks.sh
+# AC4: --check stays a detector. It must still SEE drift it is not allowed to hide,
+# so the guard must not appear on the dry-run path.
+bin/fw vendor self --dry-run >/dev/null 2>&1
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
