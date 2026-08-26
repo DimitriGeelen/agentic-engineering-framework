@@ -6,6 +6,7 @@ description: >
   (arc-012)
 
 status: started-work
+arc_id: continuous-run
 workflow_type: inception
 owner: human
 horizon: now
