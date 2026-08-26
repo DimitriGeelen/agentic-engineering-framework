@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.8.0"
-sha256: "cab3c75183979b0e15e23192518f9360ea12fe33b6a4f78641d7e264f6110935"
-bytes: 903600
+version: "0.11.0"
+sha256: "4f20b146def45626436e3b3ccc1b049a335254845eeafa755f4760a357dc5a39"
+bytes: 966087
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.8.0.html"
-source_tag: "designer-v0.8.0"
+source_artifact: "dist/aef-workflow-designer-0.11.0.html"
+source_tag: "designer-v0.11.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -31,6 +31,41 @@ source_origin: "ssh://git@192.168.10.201:6611/workflow-designer"
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).
+#
+# ── T-3157 re-pin, 2026-08-26: 0.8.0 → 0.11.0, THREE releases of catch-up ────
+# Why three at once: nothing on our side asked "is a newer editor available?".
+# `fw designer` reports PRESENT ✓ (sha256 matches pin) — true about INTEGRITY,
+# read as a statement about CURRENCY. 832 registered the producer half of this
+# blindness as their G-024; T-3158 builds our consumer half.
+# NOTE the intake trap (PL-021, three independent instances in one week — 832,
+# 001-CashWeb, and this session): `git ls-remote --tags` sorts LEXICALLY, so
+# 0.9.0 sorts AFTER 0.10.0/0.11.0. Reading the tail reports CURRENT while you
+# are three behind — silent and inverted. Always `sort -V`. T-3157 pins that
+# command as an AC.
+#
+# 0.11.0 = 0.10.0 + five product commits (released 2026-08-23, src ff4b3265):
+#   T-566 aef:meta `note` in AEF_FIELDS for all 13 node types, rendered as a
+#     textarea; multi-line survives (escAttr emits &#10;), pinned on the BYTES
+#     after a re-parse rather than on what the panel displays. 832's framing:
+#     "46% of what our maps carry was unreadable in the editor that owns it."
+#   T-570 THE ONE THAT MATTERS FOR CONSUMERS. Import read EVERY aef:meta
+#     attribute; export filtered through a 20-key whitelist — so NINE keys were
+#     absorbed on load and DESTROYED on save: determinism, authority, endpoint,
+#     sideEffect, autoTriggerKind, restoresFrom, compensationSnapshot,
+#     compensatedBy, advisory. All nine now round-trip. metaKeys stays 20, no
+#     aef: key added, no Mapping Standard bump. 832's guard named `parity`
+#     asserted a SUBSET, which is why it stayed green for 47 days — the same
+#     false-green shape as the `fw designer` line above, one repo over.
+#   T-562 hole in the rule T-501 called "already correct and shipping".
+#   T-523 a node nested in a subProcess keeps its uid.
+#   T-521 the escaping fix AEF ruled on at rail 11909.
+# 0.10.0 = 0.9.0 + T-355 callActivity preserved instead of redrawn as a
+#   serviceTask; T-233 pending off-page refs surfaced where an operator looks;
+#   T-340 DI drop repaired. (Released 2026-08-15, src 3f2bb993.)
+# 0.9.0 = cut 2026-08-08, superseded by 0.10.0 on 08-15. Its distinct contents
+#   are NOT itemised in any announce we hold, and we never consumed it as a
+#   build — recorded as unknown rather than guessed.
+#
 # 0.8.0 = 0.7.1 + four zero-seam-surface fixes (832 T-296, re-pinned T-2673;
 #   no BPMN serialization, aef:* vocabulary, or consumer-API change):
 #   (1) 832 T-264 save-target guard set — ID-collision notice, ID commit-on-blur/
@@ -106,7 +141,7 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   derived from lane authority (sovereignty→human, initiative/authority→agent);
 #   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
 #   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
-vendored_path: "vendor/designer/aef-workflow-designer-0.8.0.html"
+vendored_path: "vendor/designer/aef-workflow-designer-0.11.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
