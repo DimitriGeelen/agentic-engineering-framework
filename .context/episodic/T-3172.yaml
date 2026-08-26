@@ -66,12 +66,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 174
-  commits: 1
-  files_changed: 8
-  lines_added: 426
-  lines_removed: 135
-  footprint_refreshed_at: '2026-08-26T17:56:16Z'
-  footprint_refreshed_by_commit: d5ef22134
+  commits: 2
+  files_changed: 44
+  lines_added: 4905
+  lines_removed: 2770
+  footprint_refreshed_at: '2026-08-26T17:56:26Z'
+  footprint_refreshed_by_commit: 451b2324a
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3172-bpmn-compiler-rejects-the-frozen-standar.md

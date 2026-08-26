@@ -37443,3 +37443,21 @@ scan_id: R-921d2462
 task_id: T-3172
 payload:
   task_file: .tasks/active/T-3172-bpmn-compiler-rejects-the-frozen-standar.md
+---
+kind: scan_emitted
+timestamp: '2026-08-26T17:59:39Z'
+scan_id: R-396a32ca
+task_id: T-3176
+payload:
+  overall: CONCERN
+  finding_count: 5
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-26T17:59:39Z'
+scan_id: R-396a32ca
+task_id: T-3176
+payload:
+  task_file: .tasks/active/T-3176-compiler-calls-the-pinned-editors-defaul.md

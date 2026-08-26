@@ -95,6 +95,20 @@ AUTHORITY_NO_OWNER = {"authority"}
 # never owner: agent". Deliberately NOT extended to `none` — that is the pinned
 # editor's unset sentinel, a different root cause, handled by T-3176.
 AUTHORITY_NO_TASK = {"external"}
+# T-3176 / G-095: `none` is the pinned reference editor's UNSET SENTINEL, not a fifth
+# dialect value. aef-workflow-designer-0.11.0 initialises every new lane to
+# authority:'none' (:8245), reads a lane with no @authority attribute back as 'none'
+# (:10142), and exports authority unconditionally (:9894) — so an untouched lane
+# serialises as authority="none". That is the editor's DEFAULT authoring path, which
+# means this fired more often than `external` ever did, and it accused the author of a
+# spelling mistake for having drawn a lane and not yet filled it in.
+#
+# Deliberately NOT a member of AUTHORITY_DIALECT / _OWNER / _NO_OWNER / _NO_TASK. It is
+# not in the frozen standard's four; adding it to any of those sets would ratify an
+# editor deviation by implementation, which is the quiet way a frozen standard drifts.
+# This is a REPORTING class only — behaviour is unchanged, an unset lane still falls
+# back to name/type derivation exactly as before.
+AUTHORITY_UNSET = {"none"}
 # The full dialect, so an out-of-dialect value can be told what the valid set is.
 AUTHORITY_DIALECT = set(AUTHORITY_OWNER) | AUTHORITY_NO_OWNER | AUTHORITY_NO_TASK
 
@@ -547,7 +561,27 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
     # Both stay in `warnings` (signature unchanged, "surfaced not silent" preserved) —
     # what changes is that they no longer read identically.
     for (auth_val, lname), entries in unknown_auth.items():
-        if auth_val in AUTHORITY_NO_OWNER:
+        if auth_val in AUTHORITY_UNSET:
+            # T-3176: an unfinished diagram, not a mistyped one. The wording must read as
+            # a prompt to finish the lane — it is the first thing a new author sees.
+            options = ", ".join(
+                f"{v} ({d})"
+                for v, d in (
+                    ("sovereignty", "human owns"),
+                    ("initiative", "agent owns"),
+                    ("authority", "the framework executes"),
+                    ("external", "outside the boundary \u2014 no task authored"),
+                )
+            )
+            warnings.append(
+                f"lane {lname!r} has no authority set \u2014 aef:laneMeta "
+                f"authority={auth_val!r} is the reference editor's unset sentinel, "
+                f"written on every lane you have not yet assigned. Owner could not be "
+                f"derived from the lane, so {len(entries)} node(s) fell back to "
+                f"name/type derivation: {', '.join(entries)}. Set the lane's Authority "
+                f"to one of: {options} (T-3176)"
+            )
+        elif auth_val in AUTHORITY_NO_OWNER:
             warnings.append(
                 f"lane {lname!r} carries aef:laneMeta authority={auth_val!r} — the "
                 f"framework is the executor, so there is no human/agent owner to derive "

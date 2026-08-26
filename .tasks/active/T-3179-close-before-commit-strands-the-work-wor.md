@@ -1,13 +1,10 @@
 ---
-id: T-3178
-name: "fw review-queue does not show decided-unclosed inceptions — wire it to lib/decided_unclosed
-  (T-3175 split)"
+id: T-3179
+name: "close-before-commit strands the work: work-completed is terminal so the active-task gate then refuses the commit for the task whose work it is"
 description: >
-  T-3175 shipped the shared predicate and the /approvals section. The CLI mirror is
-  unwired because fw review-queue is an inline python heredoc inside bin/fw, which
-  T-3127 holds uncommitted.
+  Ordering trap hit live in T-3176. fw task update --status work-completed moves a task to a TERMINAL state (no transition back: started-work -> captured|issues|work-completed, issues -> started-work|work-completed, nothing FROM work-completed). The PreToolUse check-active-task gate then refuses any git commit while that task is focused, with P-002 'Cannot modify files under a completed task'. So an agent that closes before committing has verified, finished work it cannot commit under its own task ID. FW_SAFE_MODE=1 as a command prefix does NOT help: the hook reads the Claude process env, not the command string, so the documented escape hatch is unreachable from inside a Bash call. The gate's own advice is to focus a different task, which is exactly the traceability loss P-002 exists to prevent. Partial-complete makes this worse, not better: a build task with an unchecked Human AC flips to work-completed while STAYING in active/, which is the normal, correct outcome for render/wording work -- so this is not an edge case.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -24,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-26T17:01:54Z
-last_update: '2026-08-26T17:15:14Z'
-date_finished:
+created: 2026-08-26T18:01:16Z
+last_update: 2026-08-26T18:01:16Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -37,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-26T17:15:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=202,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-26T17:15:14Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3178: fw review-queue does not show decided-unclosed inceptions — wire it to lib/decided_unclosed (T-3175 split)
+# T-3179: close-before-commit strands the work: work-completed is terminal so the active-task gate then refuses the commit for the task whose work it is
 
 ## Context
 
@@ -77,8 +46,26 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `check-active-task` allows `git commit` / `git add` when the focused task's status is
+      `work-completed`. T-2054 shipped exactly this allowance for **null** focus and closed
+      the deadlock only for the case where focus had already been cleared. A
+      partial-complete task keeps focus pointed at itself, so it lands in the residual
+      half — and that half is the more common one, because every build task with an
+      unchecked Human AC ends there by design.
+- [ ] The allowance is scoped to a `work-completed` focus, not widened generally:
+      `git commit --no-verify` / `-n` stays BLOCKED (P-002 preserved), and the focus-drift
+      gate (T-1730) still blocks `git commit "T-B: …"` while focus is T-A.
+- [ ] The commit-msg hook still requires a `T-XXX` reference. The point is to let the work
+      be committed under the CORRECT task, not to trade traceability away — the gate's own
+      current advice ("focus a different task") is what actually loses it.
+- [ ] `FW_SAFE_MODE=1 <cmd>` as a *command prefix* either works for this hook or is
+      documented as not working. Today it is neither: the hook reads the Claude process
+      env, not the command string, so the escape hatch CLAUDE.md documents is unreachable
+      from inside a Bash call. An agent reads the doc, tries it, and is still blocked —
+      worse than having no hatch at all, because it costs a round-trip to discover.
+- [ ] End-to-end bats, both directions: focus=<work-completed task> + `git commit "T-XXX:
+      …"` succeeds, AND the three preserved blocks above still fail. A test that only
+      proves the new allowance would be green for a hook that allowed everything.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -264,7 +251,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-26T17:01:54Z — task-created [task-create-agent]
+### 2026-08-26T18:01:16Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3178-fw-review-queue-does-not-show-decided-un.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3179-close-before-commit-strands-the-work-wor.md
 - **Context:** Initial task creation

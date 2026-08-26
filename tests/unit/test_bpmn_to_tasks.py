@@ -967,3 +967,62 @@ def test_lane_dialect_matches_the_frozen_standard():
         f"standard dialect {sorted(pairs)} != compiler dialect "
         f"{sorted(bpmn_to_tasks.AUTHORITY_DIALECT)}"
     )
+
+
+# ---------------------------------------------------------------------------
+# T-3176 / G-095: `none` is the pinned editor's UNSET SENTINEL, not a typo.
+#
+# Sibling to T-3172 and deliberately a different fix. `external` was a MEANING defect
+# (wrong task emitted); `none` is a REPORTING defect (right task, accusing message).
+# Conflating them would have ratified an editor deviation into the frozen dialect, so
+# these tests assert the separation as hard as they assert the wording.
+# ---------------------------------------------------------------------------
+
+FIXTURE_NONE_LANE = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "none-lane-sample.bpmn"
+)
+
+
+def test_unset_lane_is_not_called_a_typo():
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_NONE_LANE)
+    joined = " ".join(warnings)
+    assert "typo" not in joined
+    assert "out-of-band" not in joined
+    assert "unrecognized" not in joined
+
+
+def test_unset_lane_message_says_what_to_set():
+    """Actionability is the point: it is the first message a new author ever sees."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_NONE_LANE)
+    joined = " ".join(warnings)
+    assert "no authority set" in joined
+    for value in ("sovereignty", "initiative", "authority", "external"):
+        assert value in joined, f"unset-lane message does not offer {value!r}"
+
+
+def test_unset_lane_behaviour_is_unchanged():
+    """Reporting class only. The node still compiles, still falls back to name/type."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_NONE_LANE)
+    assert [s["uid"] for s in skeletons] == ["u-work-001"]
+    assert skeletons[0]["owner"] == "agent"
+
+
+def test_none_is_not_a_dialect_member():
+    """The separation leg. `none` must be reachable ONLY as a reporting class.
+
+    If it ever lands in AUTHORITY_DIALECT, the standard-parity test below goes red too —
+    two independent tests have to be defeated to ratify it by accident.
+    """
+    assert "none" not in bpmn_to_tasks.AUTHORITY_DIALECT
+    assert "none" not in bpmn_to_tasks.AUTHORITY_OWNER
+    assert "none" not in bpmn_to_tasks.AUTHORITY_NO_OWNER
+    assert "none" not in bpmn_to_tasks.AUTHORITY_NO_TASK
+    assert bpmn_to_tasks.AUTHORITY_UNSET == {"none"}
+
+
+def test_unset_class_does_not_swallow_the_accusing_branch():
+    """The control. A real typo must still be accused after the new branch is added."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_OUT_OF_DIALECT)
+    joined = " ".join(warnings)
+    assert "very likely a typo" in joined
+    assert "no authority set" not in joined
