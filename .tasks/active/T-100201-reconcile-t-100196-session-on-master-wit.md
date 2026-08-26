@@ -340,3 +340,21 @@ done) and (2) surface the options with a recommendation (this section). The oper
 
 ### 2026-07-21T18:33:11Z — status-update [task-update-agent]
 - **Change:** owner: agent → human
+
+## Dissolved by T-3185 (2026-08-26)
+
+This task asked how to reconcile T-100196's "session commits directly on `master`"
+with T-2394's master-merge-only gate (`PROTECT_MASTER=1`). The three candidate
+resolutions on file were all mechanism-level: scope the guard, bypass it in
+`fw sync`, or exempt the persistent session.
+
+**None is needed.** T-3185 replaced the contradicted mechanism instead of the gate.
+Under the release-train model (CLAUDE.md §Release-Train Branch Model) development
+runs on `bleeding-edge` and `master` receives fast-forward landings at release
+only — so "master is merge-only" is no longer a constraint fighting the flow, it
+**is** the flow. The gate was never the wrong half; the mechanism it contradicted
+was.
+
+Action: leave `PROTECT_MASTER=1` armed. Do not scope, bypass, or exempt it.
+
+Superseded-by: T-3185

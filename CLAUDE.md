@@ -155,7 +155,7 @@ rule below wins.
 | Ordinary work, any size | Main checkout. No worktree. |
 | Parallel work that edits files | Serialise it in the main checkout. Converging writes are a reason to go sequential, not a reason to branch the filesystem. |
 | Genuinely major piece of work | You MAY **suggest** a worktree, once, as a suggestion. Silence or anything short of a clear yes = main checkout. |
-| Operator explicitly says to use one | Use it. Land with `fw integrate run master --push` from the main checkout. |
+| Operator explicitly says to use one | Use it. Land with `fw integrate run bleeding-edge --push` from the main checkout — **`bleeding-edge`, never `master`**. Name the target explicitly; a worktree landing on `master` injects unreleased work straight into the consumer install surface (§Release-Train Branch Model). |
 | Consumer / vendored project | **Same rule.** It is not framework-repo-only — consumer projects are where much of the pain originates. |
 
 **"It would be cleaner in isolation" is the rationalisation this rule exists to
@@ -766,7 +766,7 @@ fw inception decide T-608 go --rationale "approved"
 a Tier 0 approval, a review handoff — anything the human might run minutes, hours, or
 days later), use the **durable main-repo path plus an explicit branch ref** instead.
 A worktree is ephemeral by construction (`fw worktree remove` / `fw worktree gc` can
-delete the directory at any time — see §Trunk-Based Session Flow); the branch survives
+delete the directory at any time — see §Release-Train Branch Model); the branch survives
 teardown, the directory does not. Handing off a `cd .../.claude/worktrees/<name> && …`
 one-liner for anything other than immediate, same-session use bets the command on a
 path that may already be gone by the time the human runs it.
@@ -1189,62 +1189,77 @@ Use `bin/fw task create --name "task name"` for more options.
 
 If you need a scratchpad during complex multi-step work, use conversation text or write notes to `.context/working/` — never use Claude Code's built-in todo system.
 
-## Trunk-Based Session Flow (T-100196, keystone)
+## Release-Train Branch Model (T-3185, keystone — supersedes T-100196)
 
-> **⚠ KNOWN CONFLICT — read before following this section (T-100201).** The
-> "session runs on `master`, commits go straight to master" mechanism below
-> **contradicts the T-2394 master-merge-only gate** (`agents/git/lib/master-guard.sh`),
-> which is **live in this repo** (`PROTECT_MASTER=1`) and structurally BLOCKS any
-> direct authored commit on `master`. A fast-forward never fires the guard; a direct
-> commit does. This conflict was hit live on 2026-07-05 (operator got
-> `BLOCKED: direct commit on 'master' — master is merge-only`).
->
-> **Interim safe rule (until T-100201 resolves the mechanism):** the *invariant*
-> below still holds — the session must never hold a commit that isn't on
-> origin/master. But do **NOT** commit governance state directly on `master` while
-> `PROTECT_MASTER=1`. Work in a worktree/branch and **FF-land** to master
-> (`fw integrate` / a scoped `git push origin <branch>:master` that FFs) — FF is the
-> one path that satisfies BOTH T-100196's invariant and T-2394's gate. Precedence:
-> T-2394 is a *structural* gate; T-100196's "commit on master" is *advisory* text —
-> the structural gate wins (see Instruction Precedence + L-405). The mechanism
-> reconciliation (scope the guard / bypass in `fw sync` / exempt the persistent
-> session) is an open operator decision tracked in **T-100201**.
+**Development runs on `bleeding-edge`. `master` is the release train: it receives
+fast-forward landings at RELEASE only, and authors nothing.**
 
-**The persistent session runs on `master`. There is no long-lived session branch.**
+Two branches, two jobs:
 
-This is the permanent fix for the branch/worktree divergence class (T-100194 fork,
-T-100199 strands). The invariant it buys:
+| Branch | Role | Who writes it |
+|---|---|---|
+| `bleeding-edge` | The sanctioned development branch. The persistent session runs here; handovers, task files, `.context/` memory and landed code all commit here. | The session, plus worktrees landing back (§Worktree Policy). |
+| `master` | The **consumer install surface**. `lib/consumer-recover.sh:19` calls the GitHub remote the *canonical public mirror*, and that is what consumers `fw upgrade` / `fw vendor` from. | Nothing authors it. It only ever fast-forwards from `bleeding-edge`, at a release. |
 
-> The persistent session never holds a commit that is not already on origin/master.
+**The landing gate is RELEASE, not handover.** This is the whole point, and it is
+the part that is easy to erode. If `bleeding-edge` fast-forwards onto `master` at
+every handover, the two branches are byte-identical forever and "stable master" is
+a story rather than a property. Land when you cut a release:
 
-If that holds, divergence is impossible *by construction* — no session branch to
-fork, nothing to strand, nothing to reconcile.
+```
+bin/fw release tag-and-release [--bump patch|minor|major]
+```
 
-**Why a session branch is pure liability here:** real code lands on `origin/master`
-via **worktree + `fw integrate`** (gated, FF-only) — never from the session directly.
-So the session only ever commits *governance state* (handovers, task files,
-`.context/` memory), which belongs on master anyway. A session branch protects
-nothing and is the sole source of drift.
+Between releases `master` deliberately lags. That lag **is** the product: a
+consumer running `fw upgrade` inherits the last released state, not tonight's
+half-finished refactor.
+
+**Why this DISSOLVES T-100201 rather than resolving it.** T-100201 was filed
+because T-100196's "session commits straight to master" collided with the T-2394
+master-merge-only gate (`agents/git/lib/master-guard.sh`, `PROTECT_MASTER=1`),
+which structurally blocks any direct authored commit on `master`. Under the
+release-train model there is no collision to resolve: **master-as-merge-only IS
+the policy.** The gate was never wrong — the mechanism it contradicted was. Do not
+scope the guard, do not carve a session exemption, do not bypass it in `fw sync`.
+Leave `PROTECT_MASTER=1` on; it is the enforcement arm of this section.
+
+**What this KEEPS from T-100196.** Its invariant was *the session must never hold
+a commit that can strand*, and its fear was divergence. Both survive, by a
+different construction: divergence needs `bleeding-edge` to fall **behind**
+`master`, and since `bleeding-edge` is master's **only** writer, master can never
+lead it. A clean fast-forward is available at every moment by construction. What is
+discarded is only T-100196's *mechanism* — "no long-lived session branch" — which
+was itself the source of the 41-day blind spot described below.
 
 **The flow:**
-- **Session runs on `master`.** Handover / task-sync / context commits go straight
-  to master, pushed via `fw sync` (rebase + push — reconciles concurrent sessions
-  without merge noise) or `fw handover --commit`.
-- **Real code is built in the MAIN CHECKOUT by default.** Worktrees are opt-in
-  only — see §Worktree Policy. When the operator HAS explicitly instructed one:
-  `fw worktree create <name>` → build → `fw integrate run master --push`
-  (FF-lands + auto-prunes the worktree/branch). Run integrate from the **main
-  checkout**, targeting the worktree — never from inside the worktree it will
-  remove (that self-removal hangs).
+- **Session runs on `bleeding-edge`.** Handover / task-sync / context commits go
+  here, pushed with `fw handover --commit` or `git push origin bleeding-edge`.
+- **Real code is built in the MAIN CHECKOUT by default.** Worktrees are opt-in only
+  — see §Worktree Policy. When the operator HAS explicitly instructed one, it lands
+  on **`bleeding-edge`, never on `master`**:
+  `fw worktree create <name>` → build → `fw integrate run bleeding-edge --push`.
+  **Always name the target explicitly.** A worktree landing on `master` injects
+  unreleased work straight into the consumer install surface, which is the exact
+  failure the release train exists to prevent.
+  Run integrate from the **main checkout**, targeting the worktree — never from
+  inside the worktree it will remove (that self-removal hangs).
 - **`fw worktree gc`** reclaims landed worktrees/branches by content comparison
   (survives re-derivation, which defeats `git cherry`). Dry-run default; branch
   deletes stay Tier-0.
-- **Guard:** `fw doctor` WARNs (`diverged-fork`, T-100195) if a session ever sits
-  on a divergent non-master branch — the regression signal back into the antipattern.
+- **Release:** `fw release tag-and-release` cuts the tag and fast-forwards `master`.
 
-**Do NOT** create a persistent session branch (`t<NNNN>-<topic>`). If you find the
-main checkout on one, reconcile it to master: `git merge --ff-only origin/master`
-(when it's a clean ancestor) or land its unique commits via a worktree first.
+**Do NOT** create a per-task session branch (`t<NNNN>-<topic>`) and live on it. That
+is what happened for 41 days: `t2539-staging` was cut on 2026-07-16 for T-2539,
+that task closed 19 seconds later, and the branch was simply never left. Every
+session since committed to it by inheritance.
+
+**Why nothing caught it — the false-green worth remembering.** The guard that
+existed (`fw doctor`'s `diverged-fork`, T-100195) fires only on a branch that is
+**both ahead and behind**. `t2539-staging` was 0 behind — a clean fast-forward — so
+for 41 days *being on the sanctioned branch* and *being on some clean wrong branch*
+produced identical output. The check could not see its own subject. A branch guard
+must assert **which** branch, not merely that the branch is reconcilable. (Fix
+tracked separately; per L-497 that rail must live ON the branch it polices.)
 
 ## Session Start Protocol
 
