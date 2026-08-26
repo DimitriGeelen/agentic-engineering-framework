@@ -11,7 +11,11 @@
 
 set -euo pipefail
 
-VALID_EVENTS="PostToolUse PreToolUse SessionStart PreCompact Stop SubagentStop UserPromptSubmit"
+# T-3170 (arc-012 S4): SessionEnd was missing, so this tool refused to enable an
+# event Claude Code actually fires. That is a gap in the tool, and it is separate
+# from whether we choose to register anything on it — our own SessionEnd handler
+# (agents/context/session-end.sh) stays deliberately unregistered per T-1459.
+VALID_EVENTS="PostToolUse PreToolUse SessionStart SessionEnd PreCompact Stop SubagentStop UserPromptSubmit"
 
 name=""
 script=""

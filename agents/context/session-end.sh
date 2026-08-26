@@ -1,5 +1,12 @@
 #!/bin/bash
-# REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
+# REFERENCE ONLY — deliberately NOT registered in .claude/settings.json.
+#
+# T-1459 reached GO on Option D (reference-only) and set a precondition for ever
+# re-enabling this: read the G-016 RCA first. G-016 was a handover COMMIT STORM, and
+# the last action taken on this script cluster was defensive capping (2199ccba), not
+# decommissioning. Registering this hook without working through that RCA re-opens
+# the hazard the decision parked. `tests/unit/hook_enable_events.bats` asserts the
+# absence, so reversing the decision fails loudly rather than quietly.
 # SessionEnd hook — S1 reason logger + S2 handover trigger (T-1212)
 #
 # Fires on session termination. Always exits 0.
