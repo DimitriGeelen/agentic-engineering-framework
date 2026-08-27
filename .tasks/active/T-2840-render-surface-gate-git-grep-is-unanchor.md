@@ -205,6 +205,41 @@ bats tests/unit/t3198_render_surface_attribution.bats > /tmp/.t2840.out 2>&1 && 
 
 ## RCA
 
+**Symptom:** the P-013 render-surface gate refused closes citing files the task
+never touched. First recorded here on T-2837 (donor commit `8b41090b4`), then
+again on T-3186 and T-3194 three weeks later.
+
+**Root cause (code):** `_render_surface_git_touched_paths` matched the task id
+against the whole commit message, so a body cross-reference read as authorship.
+Fixed in T-3198; the full technical RCA lives there.
+
+**Root cause (process) — the part specific to this ticket:** the defect was
+diagnosed correctly on 2026-08-06, down to the exact file, line, mechanism and
+fix, and then sat in `captured` for 21 days while continuing to fire. It was
+independently rediscovered on 2026-08-27 and re-filed as T-3198. The framework
+found this defect twice and landed it zero times.
+
+**Why structurally allowed:** nothing costs anything to leave a captured task
+captured. A false-positive gate is the worst shape for this, because each firing
+has a cheap local workaround — `--skip-render-review` — that resolves the
+immediate blockage and leaves the cause untouched. The bypass log recorded three
+uses; no surface reads that log and asks whether the same gate keeps being
+bypassed for the same reason. So the signal that should have promoted this task
+was being generated and discarded each time.
+
+Note the recorded prediction — *"likely to misfire broadly, not just on
+T-2837"* — was accurate. The gap was not diagnostic, it was in whether an
+accurate diagnosis gets scheduled.
+
+**Prevention:** the code half is pinned by
+`tests/unit/t3198_render_surface_attribution.bats` (control legs, mutation-
+verified). The process half is **not** fixed by this task and should not be
+recorded as if it were: no rail yet reads `.gate-bypass-log.yaml` for repeated
+bypasses of the same gate for the same reason. That is the honest residual, and
+it is what a repeat of this 21-day gap would need.
+
+
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
