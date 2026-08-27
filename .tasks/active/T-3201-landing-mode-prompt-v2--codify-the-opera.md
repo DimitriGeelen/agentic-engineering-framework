@@ -30,7 +30,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T11:49:54Z
-last_update: '2026-08-27T12:00:20Z'
+last_update: 2026-08-27T13:14:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -181,6 +181,15 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+test -f policy/prompts/landing-mode.md
+grep -q "Filing budget" policy/prompts/landing-mode.md
+grep -q "mutation-tested" policy/prompts/landing-mode.md
+grep -q "verify the flag exists" policy/prompts/landing-mode.md
+grep -q "hv-hc" policy/prompts/landing-mode.md
+grep -q "one participant" policy/prompts/landing-mode.md
+grep -q "0/122" policy/prompts/landing-mode.md
+git log --oneline -- policy/prompts/landing-mode.md > /tmp/.t3201.out 2>&1 && test -s /tmp/.t3201.out
 
 ## RCA
 
