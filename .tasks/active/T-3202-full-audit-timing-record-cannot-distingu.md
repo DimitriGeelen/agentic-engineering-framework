@@ -1,26 +1,13 @@
 ---
-id: T-3127
-name: "no check asserts the full-audit timeout budget still fits the corpus it must
-  scan"
+id: T-3202
+name: "full-audit timing record cannot distinguish an external kill from exhausting its own ceiling"
 description: >
-  T-3070 measured an uncontended full 'fw audit' at 1729s against a 3000s FW_AUDIT_FULL_TIMEOUT
-  default - 58 percent of budget, 42 percent headroom. The budget is a constant; the
-  corpus it scans grows with every task, learning, episodic and fabric card. Nothing
-  asserts the two still fit. When headroom reaches zero the failure mode is a timeout
-  kill mid-section, which is exactly what T-3070 spent months misattributing to lock
-  contention - the audit died at 590s, at the 600s section cap, and the plausible-but-wrong
-  explanation held because no one had ever timed an uncontended run. The same misdiagnosis
-  is available again the moment 1729s becomes 3001s, and it will look identical. Options:
-  assert measured-runtime-under-budget as an audit check of itself, emit native per-section
-  timings so the growth is visible before it bites (T-3070 had to derive them from
-  per-line timestamps), or scale the budget from corpus size rather than pinning a
-  constant. OE-DAILY alone is 824s, 48 percent of the run, so it is where the headroom
-  will go first.
+  The prior record in .context/audits/full-audit-timing.yaml read total_seconds: 900, ceiling_seconds: 3000, timed_out: true. Those three cannot all describe one internal timeout — a 900s run does not exhaust a 3000s ceiling. Likely an external 'timeout 900' wrapper killing the run while _audit_write_timing_yaml recorded the CONFIGURED AUDIT_TIMEOUT. Consequence: T-3127 AC4 claims a timed-out section is unambiguous in the record, but the record is ambiguous about WHICH ceiling killed it, and the FAIL message it drives ('TIMED OUT mid-section X at 900s / 3000s ceiling') sends a reader to raise a limit that was never the binding constraint. First step is to REPRODUCE — the originating command was not captured, so the cause above is inferred, not diagnosed. Found while measuring T-3127 AC1 (that run completed cleanly at 1895s/3000s, timed_out: false).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -34,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-24T18:13:40Z
-last_update: 2026-08-27T08:44:32Z
-date_finished:
+created: 2026-08-27T20:13:21Z
+last_update: 2026-08-27T20:13:21Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -47,54 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-24T18:15:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=202,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-24T18:15:14Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-08-25T18:30:15Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3127: no check asserts the full-audit timeout budget still fits the corpus it must scan
+# T-3202: full-audit timing record cannot distinguish an external kill from exhausting its own ceiling
 
 ## Context
 
@@ -104,12 +46,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] AC1 — Measure before asserting. Record the current full-audit wall time and the per-section breakdown against the configured ceiling (`FW_AUDIT_FULL_TIMEOUT`, default 3000s). Baseline from T-3070: total 1729s (42% headroom), OE-DAILY alone 824s — 48% of the whole run. Confirm or correct those numbers; do not carry them forward unverified.
-- [x] AC2 — A check asserts the headroom, and it names the number. Emit a WARN when the last recorded full-audit duration exceeds a configured fraction of the ceiling (propose 70%). The message must state the measured duration, the ceiling, and the fraction — a bare "approaching timeout" cannot be acted on.
-- [x] AC3 — The duration is actually recorded. `audit.sh` persists per-run total and per-section durations somewhere the check can read (the audit YAML is the obvious home). Without this AC2 has nothing to read, which is how the gap opened in the first place.
-- [x] AC4 — A section that times out is distinguishable from a section that passed. Confirm what the run currently emits when a section hits the 600s section-scoped timeout, and make it unambiguous in the record. T-3070's whole misdiagnosis came from a killed section reading as a lock-contention failure — the timeout was invisible in what the run left behind.
-- [x] AC5 — The threshold is a config key with a registry entry and a doctor range-check, not a literal in the script (CLAUDE.md §Configuration — a documented key that does not exist is worse than an undocumented live one, and `tests/lint/config-registry-parity.bats` enforces that direction).
-- [x] AC6 — Regression test in its own fixture (L-599 — do NOT pin to the live 1729s, which moves every time the corpus grows): a synthetic duration record over threshold → WARN; under → silent; missing/unparseable record → explicit "not measured", never a silent pass. The absent-record case is the one that matters: silence there is exactly what this task exists to fix.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -203,14 +141,6 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bash -n agents/audit/audit.sh
-bash -n bin/fw
-python3 -m py_compile lib/audit_timing.py
-out=$(bats tests/unit/t3127_audit_timing_headroom.bats 2>&1); echo "$out" | grep -q "^ok 12 " && ! echo "$out" | grep -q "^not ok"
-out=$(bats tests/unit/t3070_audit_full_run_timeout.bats 2>&1); echo "$out" | grep -q "^ok 8 " && ! echo "$out" | grep -q "^not ok"
-out=$(bats tests/lint/config-registry-parity.bats 2>&1); echo "$out" | grep -q "^ok 3 " && ! echo "$out" | grep -q "^not ok"
-out=$(bats tests/lint/audit-lock-cron-schedule-collision.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -226,44 +156,6 @@ out=$(bats tests/lint/audit-lock-cron-schedule-collision.bats 2>&1); echo "$out"
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-### 2026-08-27 — AC1 measured: baseline confirmed in direction, corrected in value
-
-Uncapped full run, `FW_AUDIT_FULL_TIMEOUT=3000 bin/fw audit` (no `--section`), on this
-host, this corpus. Record: `.context/audits/full-audit-timing.yaml`, `timed_out: false`.
-
-| | T-3070 baseline | Measured 2026-08-27 | Δ |
-|---|---|---|---|
-| total | 1729s (57.6% of ceiling) | **1895s (63.2%)** | +166s, +9.6% |
-| headroom | 42.4% | **36.8%** | −5.6pp |
-| oe-daily | 824s (47.7% of run) | **945s (49.9%)** | +121s, +14.7% |
-
-Classifier: `OK|1895|3000|0.6317` — below the 0.70 WARN threshold, so `fw doctor`
-reports OK. **Confirmed, not carried forward:** both T-3070 figures were in the right
-direction and both were stale. oe-daily remains the single dominant section at half the
-run, so it is where any future headroom is won or lost.
-
-The growth rate is the actionable part. +9.6% on total over the T-3070→now interval puts
-the 70% threshold roughly one interval away. The check built under AC2-AC6 is therefore
-not speculative infrastructure — it is expected to fire on its own soon, which is the
-outcome that makes it worth having rather than a rail nobody trips.
-
-**Full-run FAILs are not a regression from this task.** The run exited 2 with Pass 763 /
-Warn 111 / Fail 3: a decisionless inception (T-3097), the 190-deep >30d human review
-queue, and one unroutable dispatcher worker_kind. All corpus state, none touched here.
-Worth stating plainly: the pre-push gate's `AUDIT-SCOPE: fails=0` means zero fails **in
-the sections that ran**, not zero fails — the full run and the push-time run are
-different scopes, and only the full one produced these three.
-
-**Observed, filed separately, NOT fixed here (T-3202):** the prior record in this same
-file read `total_seconds: 900`, `ceiling_seconds: 3000`, `timed_out: true`. Those three
-cannot all be true of one internal timeout — a 900s run does not exhaust a 3000s ceiling.
-The likely reading is an external `timeout 900` wrapper killing the run while the trap
-recorded the *configured* ceiling. That makes AC4's record ambiguous about which ceiling
-did the killing, and the FAIL message it drives ("TIMED OUT ... at 900s / 3000s ceiling")
-would send a reader to raise a limit that was never the binding constraint. Stated as a
-reading, not a diagnosis: the originating command was not captured, so the cause is
-inferred and the filed task's first step is to reproduce it.
 
 ## Evolution
 
@@ -320,38 +212,14 @@ inferred and the filed task's first step is to reproduce it.
 
 ## Decisions
 
-### 2026-08-25 — where to persist the timing record
-- **Chose:** a fixed-path file, `.context/audits/full-audit-timing.yaml`, written
-  fresh by every full (unscoped) `fw audit` run — normal completion writes
-  `timed_out: false`; the watchdog's SIGTERM trap writes `timed_out: true` plus
-  `killed_in_section` before the process dies (AC4).
-- **Why:** manual full runs without `--output` already collide on the
-  date-only `$AUDITS_DIR/$AUDIT_DATE.yaml` filename (multiple runs same day
-  overwrite each other) — piggy-backing the timing record on that file would
-  inherit the same collision and also require `fw doctor` to glob-and-sort for
-  "latest", which is more moving parts than the check needs. A dedicated fixed
-  path is unambiguous, survives `--output`-redirected cron runs untouched
-  (they never write it), and needs no parsing beyond one `yaml.safe_load`.
-- **Rejected:** appending to the dated per-run audit YAML (`AC3`'s "obvious
-  home" suggestion) — correct instinct, wrong mechanism given the existing
-  filename collision; kept the spirit (persisted, machine-readable, audit.sh
-  owns the write) without the collision.
-
-### 2026-08-25 — per-section attribution granularity
-- **Chose:** one `section_mark "<slug>"` call per `should_run_section` gated
-  block (24 call sites), using bash's `SECONDS` builtin rather than
-  `date +%s.%N` subshells.
-- **Why:** matches the actual section vocabulary the `--section` flag and
-  cron registry already use, so a slug in the timing YAML is directly
-  actionable ("oe-daily grew" means `--section oe-daily`, not a guess).
-  Integer-second granularity is sufficient — the smallest section observed
-  (T-3070) was still multiple seconds; sub-second precision buys nothing at
-  824s/48%-of-run scale and costs a subprocess per section (~24 forks) for no
-  measurable benefit.
-- **Rejected:** a DEBUG-trap-based automatic per-line profiler — far more
-  granular than needed, and T-3070 already showed per-line timestamp
-  derivation is possible after the fact when truly required; the recurring
-  need is coarse per-section headroom tracking, not a profiler.
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
 
 ## Decision
 
@@ -365,11 +233,7 @@ inferred and the filed task's first step is to reproduce it.
 
 ## Updates
 
-### 2026-08-24T18:13:40Z — task-created [task-create-agent]
+### 2026-08-27T20:13:21Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3127-no-check-asserts-the-full-audit-timeout-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3202-full-audit-timing-record-cannot-distingu.md
 - **Context:** Initial task creation
-
-### 2026-08-24T18:22:27Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
