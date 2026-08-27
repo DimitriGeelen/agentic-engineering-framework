@@ -1,0 +1,133 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2715: first-run experience: why four green install surfaces missed a blocked user
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-27T16:49:28Z
+# ============================================================================
+
+task_id: T-2715
+task_name: "first-run experience: why four green install surfaces missed a blocked user"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-01T10:01:22Z
+completed: 2026-08-27T16:49:13Z
+duration_days: 26
+updates_count: 2
+first_commit: 2026-08-01T12:06:19+02:00
+last_commit: 2026-08-02T02:16:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  first-run experience inception opened — D-1 two-tier isolation recorded. D-4 keep-and-deepen onboarding; F-7 the scenario teaches the AGENT not the human. grill IW-2..IW-10 answered; D-5 BVP-gated serial arc progression. IW-19/20 answered, IW-21 filed (BVP wire-in at arc assignment). handover addendum — 832 rails 360/361 unread, sweep owed with corrected discriminator; IW-21 next. IW-21/22/23 — arc exit is a recalc gate (D-6). IW-22 scope correction — BVP scoring is NOT retired, one field is. F-9 RETRACTED — existing-project/ has 6 seeds, check read a path that never existed. IW-11 carried open w/ checked premise; IW-12 premise corrected — Escalation Ladder measured DEAD. IW-12a — ladder rationale is SOUND, engine is COMPLETE, trigger has fired zero times. OBS-117 + teeth-vs-correctness learning from 832 rail 368. D-7 — IW-12's classification axis is SUBJECT, not cause. IW-13 evidence — 38 Agent ACs vs 1 Human AC across all 11 seeded onboarding tasks. IW-13 RESOLVED (both curricula) + IW-14 derived constraint from the T-532 gate. IW-13 AMENDED — the human curriculum is training, not testing; no Human ACs. D-8 — reflection on the operator's teach-alongside mechanism. D-8 CORRECTION — once-only was an authority error, not just a pedagogy error. IW-15 premise verified — routing is RATIFIED (T-2622), the open question is the destination. IW-15a — yes the pointer is mandatory in option 4; map extension raises a carrier question that is 832's to rule. OBS-118 — authority enum gap found by running 832's E-AUTHORITY probe locally. close out OBS-118 (fixed in T-2717) + task-state sync. D-8 registry must be checked BIDIRECTIONALLY (832 rail 372). IW-16 RESOLVED — F-8 RETRACTED, the block message names 'fw onboarding skip' verbatim. grill COMPLETE 23/23, GO recorded, disposition gate satisfied
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'close out OBS-118 (fixed in T-2717) + task-state sync'
+    source: git-mined
+  - description: 'D-8 CORRECTION — once-only was an authority error, not just a pedagogy error'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-2717.yaml'
+  - '.context/handovers/S-2026-0801-1540.md'
+  - '.context/inbox.yaml'
+  - '.context/project/learnings.yaml'
+  - 'docs/reports/T-2715-first-run-experience.md'
+  - '.tasks/active/T-100196-safe-go-live-path-reconciling-fw-go-live.md'
+  - '.tasks/active/T-2715-first-run-experience-why-four-green-inst.md'
+  - '.tasks/completed/T-2717-obs-118-split-known-no-owner-authority-f.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-01T12:06:19'
+    action: 'T-2715: first-run experience inception opened — D-1 two-tier isolation recorded'
+  - time: '2026-08-01T12:17:35'
+    action: 'T-2715: D-4 keep-and-deepen onboarding; F-7 the scenario teaches the AGENT not the human'
+  - time: '2026-08-01T13:12:58'
+    action: 'T-2715: grill IW-2..IW-10 answered; D-5 BVP-gated serial arc progression'
+  - time: '2026-08-01T15:38:10'
+    action: 'T-2715: IW-19/20 answered, IW-21 filed (BVP wire-in at arc assignment)'
+  - time: '2026-08-01T16:00:46'
+    action: 'T-2715: handover addendum — 832 rails 360/361 unread, sweep owed with corrected discriminator; IW-21 next'
+  - time: '2026-08-01T21:30:32'
+    action: 'T-2715: IW-21/22/23 — arc exit is a recalc gate (D-6)'
+  - time: '2026-08-01T21:41:23'
+    action: 'T-2715: IW-22 scope correction — BVP scoring is NOT retired, one field is'
+  - time: '2026-08-01T23:23:49'
+    action: 'T-2715: F-9 RETRACTED — existing-project/ has 6 seeds, check read a path that never existed'
+  - time: '2026-08-01T23:34:51'
+    action: 'T-2715: IW-11 carried open w/ checked premise; IW-12 premise corrected — Escalation Ladder measured DEAD'
+  - time: '2026-08-01T23:45:42'
+    action: 'T-2715: IW-12a — ladder rationale is SOUND, engine is COMPLETE, trigger has fired zero times'
+  - time: '2026-08-01T23:47:43'
+    action: 'T-2715: OBS-117 + teeth-vs-correctness learning from 832 rail 368'
+  - time: '2026-08-01T23:51:30'
+    action: 'T-2715: D-7 — IW-12''s classification axis is SUBJECT, not cause'
+  - time: '2026-08-02T00:11:29'
+    action: 'T-2715: IW-13 evidence — 38 Agent ACs vs 1 Human AC across all 11 seeded onboarding tasks'
+  - time: '2026-08-02T00:15:19'
+    action: 'T-2715: IW-13 RESOLVED (both curricula) + IW-14 derived constraint from the T-532 gate'
+  - time: '2026-08-02T00:20:33'
+    action: 'T-2715: IW-13 AMENDED — the human curriculum is training, not testing; no Human ACs'
+  - time: '2026-08-02T00:25:39'
+    action: 'T-2715: D-8 — reflection on the operator''s teach-alongside mechanism'
+  - time: '2026-08-02T00:33:53'
+    action: 'T-2715: D-8 CORRECTION — once-only was an authority error, not just a pedagogy error'
+  - time: '2026-08-02T00:39:41'
+    action: 'T-2715: IW-15 premise verified — routing is RATIFIED (T-2622), the open question is the destination'
+  - time: '2026-08-02T00:43:28'
+    action: 'T-2715: IW-15a — yes the pointer is mandatory in option 4; map extension raises a carrier question that is 832''s to rule'
+  - time: '2026-08-02T00:51:43'
+    action: 'T-2715: OBS-118 — authority enum gap found by running 832''s E-AUTHORITY probe locally'
+  - time: '2026-08-02T01:03:41'
+    action: 'T-2715: close out OBS-118 (fixed in T-2717) + task-state sync'
+  - time: '2026-08-02T01:06:57'
+    action: 'T-2715: D-8 registry must be checked BIDIRECTIONALLY (832 rail 372)'
+  - time: '2026-08-02T01:34:12'
+    action: 'T-2715: IW-16 RESOLVED — F-8 RETRACTED, the block message names ''fw onboarding skip'' verbatim'
+  - time: '2026-08-02T02:16:37'
+    action: 'T-2715: grill COMPLETE 23/23, GO recorded, disposition gate satisfied'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 24 commit(s), 37847 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 37847
+  commits: 24
+  files_changed: 8
+  lines_added: 1296
+  lines_removed: 91
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2715-first-run-experience-why-four-green-inst.md
+generated_by: context-agent-hybrid

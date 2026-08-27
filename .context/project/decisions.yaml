@@ -3474,3 +3474,17 @@ decisions:
     date: 2026-08-26
     task: T-3173
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-499
+    decision: "a fixed-path file, `.context/audits/full-audit-timing.yaml`, written"
+    scope: project
+    date: 2026-08-27
+    task: T-3127
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-500
+    decision: "one `section_mark \"<slug>\"` call per `should_run_section` gated"
+    scope: project
+    date: 2026-08-27
+    task: T-3127
+    rationale: "Auto-captured from task file on completion"

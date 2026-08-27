@@ -17,12 +17,12 @@ description: >
   constant. OE-DAILY alone is 824s, 48 percent of the run, so it is where the headroom
   will go first.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [C-004, agents/git/lib/hooks.sh, bin/claude-fw, bin/fw, lib/audit_timing.py, lib/branch-hygiene.sh, lib/config.sh, lib/upgrade.sh, tests/unit/t3182_loop_exit_recorder.bats, web/blueprints/approvals.py, web/blueprints/config.py, web/templates/_approvals_content.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -35,8 +35,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-24T18:13:40Z
-last_update: 2026-08-27T08:44:32Z
-date_finished:
+last_update: 2026-08-27T20:15:35Z
+date_finished: 2026-08-27T20:15:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -92,6 +92,23 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-08-27T20:15:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3127: no check asserts the full-audit timeout budget still fits the corpus it must scan
@@ -112,6 +129,25 @@ bvp_scores_proposed:
 - [x] AC6 — Regression test in its own fixture (L-599 — do NOT pin to the live 1729s, which moves every time the corpus grows): a synthetic duration record over threshold → WARN; under → silent; missing/unparseable record → explicit "not measured", never a silent pass. The absent-record case is the one that matters: silence there is exactly what this task exists to fix.
 
 ### Human
+- [ ] [REVIEW] The `AUDIT_TIMEOUT_WARN_FRACTION` row reads cleanly on `/config`
+
+  This task added one row to `SETTINGS` in `web/blueprints/config.py`, so P-013 fired
+  and it fired correctly — the row genuinely renders. I verified it is PRESENT and the
+  page returns 200; I cannot verify it *reads* well, which is the half that needs you.
+  Its description is the longest in the list, so wrapping is the plausible failure.
+
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row `AUDIT_TIMEOUT_WARN_FRACTION` (it is the last entry in the block that
+     includes `TIER0_APPROVAL_TTL`, `HANDOVER_DIGEST`, `HANDOVER_DIGEST_TOP_N`)
+  3. Compare its wrapping and column alignment against those three neighbours
+
+  **Expected:** the row sits in the same column grid as its neighbours; the description
+  wraps inside its cell rather than widening the table or spilling; default `0.70` is
+  visible in the value column.
+
+  **If not:** note which column breaks and paste the row — the fix is in the description
+  string length, not in layout code, so it is a one-line edit.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -291,32 +327,29 @@ inferred and the filed task's first step is to reproduce it.
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** All six Agent ACs are met and AC1 — the one this task stayed open for —
+is now a real measurement rather than an inherited number. The headroom check ships,
+reads a record that exists, and classifies it correctly. The single Human AC is a
+rendering look at one config table row; it does not gate the mechanism, only its
+presentation.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
-
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Evidence:**
+- Full uncapped audit run: 1895s against a 3000s ceiling, `timed_out: false`,
+  36.8% headroom. Record at `.context/audits/full-audit-timing.yaml`.
+- T-3070's baseline confirmed in direction, corrected in value: 1729s→1895s (+9.6%),
+  oe-daily 824s→945s (+14.7%, still ~half the run).
+- Classifier: `python3 lib/audit_timing.py … 0.70` → `OK|1895|3000|0.6317`.
+- AC5 registry entry present (`lib/config.sh:295`); `tests/lint/config-registry-parity.bats`
+  3/3 green, so the key exists in every source that claims it.
+- `/config` returns 200 with the row present — presence verified by me, legibility is
+  the Human AC.
+- Growth rate is the argument for the check rather than against it: +9.6% over one
+  interval puts the 70% threshold roughly one interval out, so this rail is expected
+  to fire on its own.
+- Filed but deliberately not fixed here: T-3202 (a timing record cannot currently
+  distinguish an external kill from exhausting its own ceiling).
 
 ## Decisions
 
@@ -373,3 +406,15 @@ inferred and the filed task's first step is to reproduce it.
 ### 2026-08-24T18:22:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-776402f3
+- **Timestamp:** 2026-08-27T20:15:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-27T20:15:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

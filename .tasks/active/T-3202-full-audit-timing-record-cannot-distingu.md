@@ -1,8 +1,19 @@
 ---
 id: T-3202
-name: "full-audit timing record cannot distinguish an external kill from exhausting its own ceiling"
+name: "full-audit timing record cannot distinguish an external kill from exhausting
+  its own ceiling"
 description: >
-  The prior record in .context/audits/full-audit-timing.yaml read total_seconds: 900, ceiling_seconds: 3000, timed_out: true. Those three cannot all describe one internal timeout — a 900s run does not exhaust a 3000s ceiling. Likely an external 'timeout 900' wrapper killing the run while _audit_write_timing_yaml recorded the CONFIGURED AUDIT_TIMEOUT. Consequence: T-3127 AC4 claims a timed-out section is unambiguous in the record, but the record is ambiguous about WHICH ceiling killed it, and the FAIL message it drives ('TIMED OUT mid-section X at 900s / 3000s ceiling') sends a reader to raise a limit that was never the binding constraint. First step is to REPRODUCE — the originating command was not captured, so the cause above is inferred, not diagnosed. Found while measuring T-3127 AC1 (that run completed cleanly at 1895s/3000s, timed_out: false).
+  The prior record in .context/audits/full-audit-timing.yaml read total_seconds: 900,
+  ceiling_seconds: 3000, timed_out: true. Those three cannot all describe one internal
+  timeout — a 900s run does not exhaust a 3000s ceiling. Likely an external 'timeout
+  900' wrapper killing the run while _audit_write_timing_yaml recorded the CONFIGURED
+  AUDIT_TIMEOUT. Consequence: T-3127 AC4 claims a timed-out section is unambiguous
+  in the record, but the record is ambiguous about WHICH ceiling killed it, and the
+  FAIL message it drives ('TIMED OUT mid-section X at 900s / 3000s ceiling') sends
+  a reader to raise a limit that was never the binding constraint. First step is to
+  REPRODUCE — the originating command was not captured, so the cause above is inferred,
+  not diagnosed. Found while measuring T-3127 AC1 (that run completed cleanly at 1895s/3000s,
+  timed_out: false).
 
 status: captured
 workflow_type: build
@@ -22,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T20:13:21Z
-last_update: 2026-08-27T20:13:21Z
-date_finished: null
+last_update: '2026-08-27T20:15:16Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +45,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-27T20:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-27T20:15:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3202: full-audit timing record cannot distinguish an external kill from exhausting its own ceiling

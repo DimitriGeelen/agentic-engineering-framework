@@ -73,10 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 85
-  commits: 2
-  files_changed: 2
-  lines_added: 362
-  lines_removed: 1
+  commits: 3
+  files_changed: 16
+  lines_added: 548
+  lines_removed: 43
+  footprint_refreshed_at: '2026-08-27T13:17:01Z'
+  footprint_refreshed_by_commit: 968378738
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3201-landing-mode-prompt-v2--codify-the-opera.md

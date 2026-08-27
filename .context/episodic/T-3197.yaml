@@ -71,10 +71,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 604
-  commits: 1
-  files_changed: 4
-  lines_added: 309
-  lines_removed: 9
+  commits: 3
+  files_changed: 10
+  lines_added: 514
+  lines_removed: 28
+  footprint_refreshed_at: '2026-08-27T19:33:20Z'
+  footprint_refreshed_by_commit: d31822376
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3197-fw-worktree-create-still-branches-from-m.md
