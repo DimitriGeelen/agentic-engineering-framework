@@ -52,6 +52,7 @@ SETTINGS = [
     ("HANDOVER_DIGEST", "1", "Digest the three handover state dumps (Observation Inbox, Work in Progress, Awaiting Your Action) to count + regenerating command + top-N. 0 emits the full dumps as before. Narrative sections are unaffected either way. T-3028"),
     ("HANDOVER_DIGEST_TOP_N", "5", "How many entries each digested handover section retains in full before referring the reader to the regenerating command. T-3028"),
     ("TIER0_APPROVAL_TTL", "300", "Seconds a granted Tier 0 approval admits the command, for BOTH the 'fw tier0 approve' and Watchtower legs (agents/context/check-tier0.sh). Legacy TIER0_WATCHTOWER_TTL still wins when explicitly set. NOT the pending-request staleness window. T-3080"),
+    ("AUDIT_TIMEOUT_WARN_FRACTION", "0.70", "Fraction of AUDIT_TIMEOUT (or FW_AUDIT_FULL_TIMEOUT) at which fw doctor WARNs that the last recorded full-audit run is eating into its timeout headroom (agents/audit/audit.sh, bin/fw do_doctor). T-3127"),
 ]
 
 
