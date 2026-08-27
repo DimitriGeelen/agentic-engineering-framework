@@ -8,16 +8,16 @@ description: >
   is unresolved (T-3068). The operator's arm-the-run design (T-3181 D-1.1) selects
   arc work HV/HC then HV/LC, so a degenerate ranking makes complete-arc mode unbuildable.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-26T20:38:36Z
-last_update: '2026-08-26T20:45:14Z'
-date_finished:
+last_update: 2026-08-27T11:11:53Z
+date_finished: 2026-08-27T11:11:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -103,15 +103,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -160,9 +160,43 @@ bvp_scores_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Evidence gap, not a hedge: confirming scores is a sovereignty boundary (fw bvp confirm --i-am-human), so the corpus cannot be populated agent-side. Whether to score by hand, fix the estimator's degeneracy, or resolve components: first is an operator call that has not been put to them yet.
+
+**Date**: 2026-08-27T11:11:51Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-08-27T11:11:51Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Evidence gap, not a hedge: confirming scores is a sovereignty boundary (fw bvp confirm --i-am-human), so the corpus cannot be populated agent-side. Whether to score by hand, fix the estimator's degeneracy, or resolve components: first is an operator call that has not been put to them yet.
+
+### 2026-08-27T11:11:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0a6dc9e7
+- **Timestamp:** 2026-08-27T11:11:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-2afd1069
+- **Timestamp:** 2026-08-27T11:11:54Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-08-27T11:11:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
