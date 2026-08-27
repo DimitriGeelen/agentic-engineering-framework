@@ -16,7 +16,7 @@ description: >
   commit SUBJECT's task-id prefix (e.g. --grep '^T-XXXX:' or parse the subject line
   specifically) instead of matching the whole message body.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -34,7 +34,7 @@ related_tasks: [T-2837, T-1766, T-2838]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-06T21:38:56Z
-last_update: '2026-08-17T12:36:09Z'
+last_update: 2026-08-27T12:49:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The unanchored `--grep` is replaced by a commit-SUBJECT match, so a body-prose citation no longer misattributes another commit's files (shipped in T-3198, `lib/render_surface.sh`)
+- [x] The T-2837 instance recorded here is pinned as a regression with a control leg (`tests/unit/t3198_render_surface_attribution.bats`; verified live: `_render_surface_git_touched_paths T-2837` no longer returns `web/blueprints/config.py`, while its true owner T-2838 still does)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -130,6 +130,13 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+# Superseded by T-3198 — these assert the fix that landed there.
+bash -n lib/render_surface.sh
+bash -c 'source lib/render_surface.sh; test "$(_render_surface_git_touched_paths T-2837 | grep -c "web/blueprints/config.py")" = "0"'
+bash -c 'source lib/render_surface.sh; test "$(_render_surface_git_touched_paths T-2838 | grep -c "web/blueprints/config.py")" != "0"'
+bats tests/unit/t3198_render_surface_attribution.bats > /tmp/.t2840.out 2>&1 && grep -q '^ok 8 ' /tmp/.t2840.out && ! grep -q '^not ok' /tmp/.t2840.out
+
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -263,3 +270,26 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2840-render-surface-gate-git-grep-is-unanchor.md
 - **Context:** Initial task creation
+
+### 2026-08-27T12:49:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Resolution — superseded by T-3198
+
+Closed as **superseded**, not duplicate-and-discard: the fix this task asked for
+shipped in T-3198, and this task's evidence went into it.
+
+The two were filed 21 days apart against the same file, the same line, the same
+root cause and the same proposed fix (anchor to the subject). This one is the
+original — 2026-08-06, from the T-2837 instance where commit `8b41090b4` (a
+T-2838 commit) donated `web/blueprints/config.py` to T-2837 purely because its
+body read *"...was failing unread (T-2837)."*
+
+It sat `captured` while the defect went on firing. T-3186 and T-3194 each hit it
+again on 2026-08-27 and each spent a `--skip-render-review` Tier-2 bypass. The
+prediction recorded here — *"likely to misfire broadly, not just on T-2837"* —
+was correct, and was not acted on for three weeks.
+
+The T-2837 instance is now a pinned regression case, so this task's contribution
+outlived its ticket. Verified live at close: T-2837 no longer inherits the file;
+T-2838, its true author, still does.
