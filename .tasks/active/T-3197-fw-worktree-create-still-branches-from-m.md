@@ -80,8 +80,23 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_wt_dev_ref()` exists in `lib/worktree.sh` and resolves the trunk through
+      `FW_DEV_BRANCH` (default `bleeding-edge`), preferring the remote-tracking ref over
+      the local bookmark — the same preference order and the same reason `_wt_master_ref`
+      already documents at lib/worktree.sh:30-35.
+- [x] `fw worktree create` branches a new worktree from the dev ref, not from master.
+      Asserted on a synthetic repo where the two refs are at *different* commits, so
+      "used the dev branch" and "used master" are distinguishable — a fixture where both
+      refs point at the same commit cannot tell the branches apart and proves nothing.
+- [x] The `merged?` / landed determination resolves the same trunk, so `fw worktree
+      status` and `lib/branch-hygiene.sh` (which already reads `FW_DEV_BRANCH` since
+      T-3188) cannot disagree about whether a worktree has landed. Control leg: a branch
+      landed on the dev branch but NOT yet released reads `merged? = yes`.
+- [x] Fallback preserved: in a repo with no dev branch at all, every consumer still
+      resolves master/main exactly as before, and `fw worktree create` still works.
+      This is what keeps the change strictly a widening rather than a swap.
+- [x] Every assertion above is mutation-tested: reverting each leg of the fix reddens a
+      named test. Stated per-mutation in the task Updates, not claimed in aggregate.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -174,6 +189,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# --- T-3197 verification (rehearsed under `bash -c 'set -eo pipefail; ...'`) ---
+bash -n lib/worktree.sh
+out=$(timeout 300 bats tests/unit/t3197_worktree_dev_branch_base.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+grep -q "_wt_dev_ref" lib/worktree.sh && [ "$(grep -c "_wt_dev_ref" lib/worktree.sh)" -ge 4 ]
+out=$(timeout 300 bats tests/unit/t2469_worktree_create.bats tests/unit/t2466_worktree_status.bats tests/unit/t100196_worktree_gc.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
 
 ## RCA
 
