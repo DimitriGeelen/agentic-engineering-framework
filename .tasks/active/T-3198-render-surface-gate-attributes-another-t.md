@@ -2,12 +2,23 @@
 id: T-3198
 name: "render-surface gate attributes another task's files via commit-body cross-references"
 description: >
-  lib/render_surface.sh:91 derives a task's footprint from 'git log --all --grep <task_id> --name-only'. That matches the task id ANYWHERE in a commit message, including a prose cross-reference in another task's body. T-3186 was blocked from closing on web/blueprints/config.py, a file its own commit (325b7edc2) never touched: two other commits (T-3190 261cf6de7, T-3127 f0fec8e43) mention T-3186 in their bodies and do touch config.py, so the union dragged it in. The gate fired for a real reason in its own terms but named the wrong owner, and the fix an agent reaches for is --skip-render-review, which is exactly the habit P-013 exists to prevent: every false positive spends bypass credibility that the true positives need. Likely fix: match the SUBJECT line (or a leading 'T-XXX:' prefix) rather than the whole message, with the current broad grep as fallback when the narrow one finds nothing. Same class affects any consumer of _render_surface_git_touched_paths.
+  lib/render_surface.sh:91 derives a task's footprint from 'git log --all --grep <task_id>
+  --name-only'. That matches the task id ANYWHERE in a commit message, including a
+  prose cross-reference in another task's body. T-3186 was blocked from closing on
+  web/blueprints/config.py, a file its own commit (325b7edc2) never touched: two other
+  commits (T-3190 261cf6de7, T-3127 f0fec8e43) mention T-3186 in their bodies and
+  do touch config.py, so the union dragged it in. The gate fired for a real reason
+  in its own terms but named the wrong owner, and the fix an agent reaches for is
+  --skip-render-review, which is exactly the habit P-013 exists to prevent: every
+  false positive spends bypass credibility that the true positives need. Likely fix:
+  match the SUBJECT line (or a leading 'T-XXX:' prefix) rather than the whole message,
+  with the current broad grep as fallback when the narrow one finds nothing. Same
+  class affects any consumer of _render_surface_git_touched_paths.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T09:29:59Z
-last_update: 2026-08-27T09:29:59Z
-date_finished: null
+last_update: 2026-08-27T10:16:53Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +45,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-27T09:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-27T09:45:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3198: render-surface gate attributes another task's files via commit-body cross-references
@@ -46,8 +85,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_render_surface_git_touched_paths` matches the commit SUBJECT line (a leading `T-XXX` reference), not the whole message, so a prose cross-reference in another task's body no longer donates its footprint
+- [ ] The broad whole-message grep is retained as a FALLBACK, used only when the subject-scoped match finds nothing — so tasks whose commits predate the subject-prefix convention behave exactly as they do today
+- [ ] Regression pinned with a fixture reproducing the observed shape: task A's commit touches no render surface, task B's commit mentions A in its body AND touches `web/blueprints/`; the gate must fire for B and not for A
+- [ ] Control leg: a commit that genuinely IS task A's (subject `T-A: …`) and touches a render surface still fires the gate — narrowing must not turn the rail off
+- [ ] Every other consumer of `_render_surface_git_touched_paths` is identified and named in the task body, since the helper is shared and the fix moves all of them at once
+- [ ] `bash -n lib/render_surface.sh` passes (L-408) and the existing render-surface suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -237,3 +280,50 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3198-render-surface-gate-attributes-another-t.md
 - **Context:** Initial task creation
+
+### 2026-08-27T10:16:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Evidence — two independent instances in one session
+
+Both blocked on the same file (`web/blueprints/config.py`), from donor commits
+neither blocked task authored:
+
+| Blocked task | Its own commit | Donor commit that mentioned it | Donor's subject |
+|---|---|---|---|
+| T-3186 | `325b7edc2` (no render surface) | `261cf6de7`, `f0fec8e43` | T-3190, T-3127 |
+| T-3194 | `b4304ab0a` (no render surface) | `f0fec8e43` | T-3127 |
+
+`f0fec8e43` is a T-3127 commit whose body names T-3186 and T-3194 as blocked
+dependents — the ordinary, desirable habit of recording what a commit unblocks.
+The gate reads that prose as authorship.
+
+Both closes therefore spent a `--skip-render-review` Tier-2 bypass on a false
+positive. That is the cost worth naming: the gate exists because three render
+fixes shipped unlooked-at (T-1763/4/5), and every false positive teaches the
+reflex of bypassing it. A gate that fires on prose cross-references trains
+agents out of the habit it was built to install.
+
+Neither close simply asserted the gate was noisy — the actual /config rows were
+opened and checked by hand, which is how OBS-349 (Watchtower serving 13h-stale
+Python) surfaced.
+
+## Recommendation
+
+**Recommendation:** GO — narrow the match to the commit SUBJECT line, with the
+current whole-message grep retained as fallback when the narrow form finds
+nothing.
+
+**Rationale:** The repo's commit convention is a leading `T-XXX:` on the subject
+(P-002 enforces the reference; the subject prefix is universal in practice), so
+subject-matching recovers true authorship without a schema change. Falling back
+to the broad grep when the narrow one is empty preserves every case that works
+today — including commits predating the convention — so the change can only
+reduce false positives, never introduce false negatives.
+
+**Evidence:**
+- `lib/render_surface.sh:91` — `git log --all --grep "$task_id" --name-only`
+- Two blocked closes above, both with clean own-commit footprints
+- `_render_surface_git_touched_paths` is a shared helper, so one fix covers
+  every consumer rather than the render gate alone
