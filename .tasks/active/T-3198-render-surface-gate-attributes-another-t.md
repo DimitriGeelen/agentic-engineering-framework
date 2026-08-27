@@ -85,12 +85,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_render_surface_git_touched_paths` matches the commit SUBJECT line (a leading `T-XXX` reference), not the whole message, so a prose cross-reference in another task's body no longer donates its footprint
-- [ ] The broad whole-message grep is retained as a FALLBACK, used only when the subject-scoped match finds nothing — so tasks whose commits predate the subject-prefix convention behave exactly as they do today
-- [ ] Regression pinned with a fixture reproducing the observed shape: task A's commit touches no render surface, task B's commit mentions A in its body AND touches `web/blueprints/`; the gate must fire for B and not for A
-- [ ] Control leg: a commit that genuinely IS task A's (subject `T-A: …`) and touches a render surface still fires the gate — narrowing must not turn the rail off
-- [ ] Every other consumer of `_render_surface_git_touched_paths` is identified and named in the task body, since the helper is shared and the fix moves all of them at once
-- [ ] `bash -n lib/render_surface.sh` passes (L-408) and the existing render-surface suites stay green
+- [x] `_render_surface_git_touched_paths` matches the commit SUBJECT line (a leading `T-XXX` reference), not the whole message, so a prose cross-reference in another task's body no longer donates its footprint
+- [x] The broad whole-message grep is retained as a FALLBACK, used only when the subject-scoped match finds nothing — so tasks whose commits predate the subject-prefix convention behave exactly as they do today
+- [x] Regression pinned with a fixture reproducing the observed shape: task A's commit touches no render surface, task B's commit mentions A in its body AND touches `web/blueprints/`; the gate must fire for B and not for A
+- [x] Control leg: a commit that genuinely IS task A's (subject `T-A: …`) and touches a render surface still fires the gate — narrowing must not turn the rail off
+- [x] Every other consumer of `_render_surface_git_touched_paths` is identified and named in the task body, since the helper is shared and the fix moves all of them at once
+- [x] `bash -n lib/render_surface.sh` passes (L-408) and the existing render-surface suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -184,21 +184,71 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n lib/render_surface.sh
+bats tests/unit/t3198_render_surface_attribution.bats > /tmp/.t3198.out 2>&1 && grep -q '^ok 8 ' /tmp/.t3198.out && ! grep -q '^not ok' /tmp/.t3198.out
+bats tests/unit/test_render_surface_gate.bats > /tmp/.t3198b.out 2>&1 && grep -q '^ok 1 ' /tmp/.t3198b.out && ! grep -q '^not ok' /tmp/.t3198b.out
+bash -c 'source lib/render_surface.sh; test "$(_render_surface_git_touched_paths T-3186 | grep -c "web/blueprints/config.py")" = "0"'
+bash -c 'source lib/render_surface.sh; test "$(_render_surface_git_touched_paths T-3194 | grep -c "web/blueprints/config.py")" = "0"'
+bash -c 'source lib/render_surface.sh; test "$(_render_surface_git_touched_paths T-2837 | grep -c "web/blueprints/config.py")" = "0"'
+bash -c 'source lib/render_surface.sh; test "$(_render_surface_git_touched_paths T-3127 | grep -c "web/blueprints/config.py")" != "0"'
+bash -c 'source lib/render_surface.sh; test "$(_render_surface_git_touched_paths T-3190 | grep -c "web/blueprints/config.py")" != "0"'
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `--status work-completed` refused on T-3186 and T-3194 (and earlier
+T-2837) citing `web/blueprints/config.py`, a file none of those tasks touched.
+Each close spent a `--skip-render-review` Tier-2 bypass.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `_render_surface_git_touched_paths` derived a task's footprint
+from `git log --all --grep "$task_id" --name-only`. `--grep` matches the whole
+commit message, so a commit that merely *cited* a task in its body donated its
+entire changed-file list to that task. The subject line records authorship in
+this repo; the body records cross-references. The helper read them as the same
+thing.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+A second, independent defect was found while pinning the first: the match was a
+bare substring, so `T-900` inherited `T-9001`'s footprint. That one was live in
+the original code and would have survived a subject-only fix — it was caught by
+this task's own regression test, not by inspection.
+
+**Why structurally allowed:** the gate's own predicate had no notion of
+authorship to be wrong about. It asked "does this id appear near these files?",
+which is a genuinely different question from "did this task change these files?"
+— and the two agree often enough that the divergence only shows up on tasks
+whose commits happen to be cross-referenced. Nothing compared the gate's answer
+against the task's actual diff, so a wrong answer was indistinguishable from a
+right one from outside.
+
+The compounding harm is specific to a *gate*: P-013 exists because three render
+fixes shipped unlooked-at (T-1763/4/5). Every false positive spends the bypass
+credibility the true positives depend on, and trains the reflex the gate was
+built to prevent. A rail that cries wolf is weaker than no rail, because its
+silence stops carrying information (L-527).
+
+**Prevention:** `tests/unit/t3198_render_surface_attribution.bats` pins the
+donor shape *and* the control legs. The controls are the load-bearing half:
+"narrows correctly" and "turned the rail off" produce an identical diff and an
+identical green suite, so only the paired assertion — the true owner still fires
+— tells them apart. Verified by mutation, not by inspection:
+
+| Mutation | Tests reddened |
+|---|---|
+| Pre-fix semantics (whole message decides authorship) | 1, 2, 7 |
+| Fallback removed | 6 |
+| Narrow-path digit boundary removed | 7 |
+| Rail disabled entirely (helper always empty) | 1, 3, 4, 5, 6 |
+
+The first mutation attempt reddened only test 7 and was discarded as invalid:
+it mutated the awk filter, whose input is already subject-only, so it could not
+have exercised the subject-vs-body claim at all. That near-miss is the same
+"test measures its callee, not its subject" shape recorded on T-3186.
+
+**Duplicate note:** filed twice. T-2840 (2026-08-06) recorded this exact defect
+— same file, same line, same proposed fix, same collateral file — from a third
+instance (T-2837, donor commit `8b41090b4`). It sat `captured` for 21 days and
+was independently rediscovered as T-3198. The framework found this defect twice
+and landed it zero times; T-2840 is closed as superseded by this task rather
+than worked in parallel.
 
 ## Evolution
 
@@ -327,3 +377,18 @@ reduce false positives, never introduce false negatives.
 - Two blocked closes above, both with clean own-commit footprints
 - `_render_surface_git_touched_paths` is a shared helper, so one fix covers
   every consumer rather than the render gate alone
+
+## Consumers of the shared helper (AC5)
+
+`_render_surface_git_touched_paths` has exactly two callers, both in
+`lib/render_surface.sh`, so one fix moves both:
+
+| Caller | Line | What it decides |
+|---|---|---|
+| `task_touches_render_surface` | 143 | the P-013 gate predicate — whether a close is refused |
+| `render_surface_files_in` | 182 | the file list shown to the operator in the block message |
+
+No caller outside this file (verified: `grep -rn _render_surface_git_touched_paths`
+over `lib/ web/ agents/ bin/ tools/` returns only the definition and these two).
+Both were exercised in the regression suite — `task_touches_render_surface` by
+tests 2 and 4, `render_surface_files_in` by test 5.
