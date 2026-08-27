@@ -17,12 +17,12 @@ description: >
   a denial-of-service on your own agent, so it needs whatever auth the rest of Watchtower's
   mutating routes use.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/approvals.py, web/templates/approvals.html, web/templates/_continuous_halt.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -35,8 +35,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T11:17:12Z
-last_update: 2026-08-27T12:51:36Z
-date_finished:
+last_update: 2026-08-27T13:11:38Z
+date_finished: 2026-08-27T13:11:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -292,3 +292,20 @@ continuous-mode's CLI surface.
 
 ### 2026-08-27T12:51:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a8cc38eb
+- **Timestamp:** 2026-08-27T13:11:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — State-changing requests go through Watchtower's existing CSRF layer (`web/app.py:130` `before_request`) rather than inventing an auth story for one endpoint
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/app.py in: State-changing requests go through Watchtower's existing CSRF layer (`web/app.py:130` `before_request`) rather than inventing an auth story for one en`
+
+### 2026-08-27T13:11:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

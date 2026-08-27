@@ -7628,3 +7628,23 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>" 2>&1 | tail -3; git push 
   flag: '--skip-sovereignty'
   caller: 'check_human_sovereignty'
   reason: 'Inception decision: GO'
+- timestamp: '2026-08-27T12:54:30Z'
+  task: 'T-3200'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3198'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .agentic-framework/lib/render_surface.sh
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3198: sync vendored render_surface.sh (missed at close)
+
+The vendored c'
+- timestamp: '2026-08-27T13:03:47Z'
+  task: 'T-3200'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3198'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add tests/unit/t3198_render_surface_attribution.bats
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3198: repair a dead assertion in the new regression suite
+
+Line'

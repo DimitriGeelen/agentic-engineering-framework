@@ -37775,3 +37775,21 @@ scan_id: R-311bd783
 task_id: T-2840
 payload:
   task_file: .tasks/active/T-2840-render-surface-gate-git-grep-is-unanchor.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T13:11:46Z'
+scan_id: R-a8cc38eb
+task_id: T-3200
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T13:11:46Z'
+scan_id: R-a8cc38eb
+task_id: T-3200
+payload:
+  task_file: .tasks/active/T-3200-the-continuous-run-halt-has-no-watchtowe.md

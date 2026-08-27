@@ -68,10 +68,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 29711
-  commits: 3
-  files_changed: 3
-  lines_added: 392
-  lines_removed: 11
+  commits: 4
+  files_changed: 36
+  lines_added: 2626
+  lines_removed: 235
+  footprint_refreshed_at: '2026-08-27T12:51:08Z'
+  footprint_refreshed_by_commit: ed722d977
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2840-render-surface-gate-git-grep-is-unanchor.md
