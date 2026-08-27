@@ -9,7 +9,7 @@ description: >
   in the tree unnoticed is the same shape as the unwired linter in T-3191: the check
   exists, nothing makes anyone look at it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T08:05:16Z
-last_update: '2026-08-27T08:15:14Z'
+last_update: 2026-08-27T19:38:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -79,8 +79,23 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] AC1 — Root cause named, not just the symptom. `tests/helpers/audit-branch-hygiene-block.sh:20`
+      extracts `fw_is_linked_worktree` from `lib/paths.sh`, but T-3111 moved that function to
+      `lib/worktree-identity.sh`. The `sed` range matches nothing, `eval` defines nothing, the
+      predicate is undefined, and the block falls through to the live-hygiene path — so test 3
+      gets WARN where it asserts INFO.
+- [x] AC2 — The extraction points at the file that actually defines the function, and test 3
+      goes green without weakening its assertions.
+- [x] AC3 — THE ONE THAT MATTERS: the harness fails LOUDLY when an extraction comes back empty.
+      A helper whose stated purpose is "keep the assertions pinned to the real file" must not
+      silently unpin itself the next time a function moves. Every `eval "$(sed ...)"` in the
+      helper is guarded so an empty extraction aborts with a message naming the symbol and the
+      file it was sought in — a non-zero exit, never a fall-through.
+- [x] AC4 — Mutation-tested: re-pointing the extraction back at `lib/paths.sh` reddens a named
+      test, and emptying the *other* extraction reddens a different named test. If AC3's guard
+      only fires for the symbol that happened to break today, it is not a guard.
+- [x] AC5 — The full `t3095_audit_branch_hygiene.bats` suite is green (was 10 ok / 1 not ok),
+      and no other suite regresses.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -174,21 +189,43 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# --- T-3195 verification (rehearsed under `bash -c 'set -eo pipefail; ...'`) ---
+bash -n tests/helpers/audit-branch-hygiene-block.sh
+out=$(timeout 300 bats tests/unit/t3095_audit_branch_hygiene.bats 2>&1); echo "$out" | grep -q "^ok 1 " && ! echo "$out" | grep -q "^not ok"
+grep -q "worktree-identity.sh" tests/helpers/audit-branch-hygiene-block.sh
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `t3095_audit_branch_hygiene.bats` test 3 ("linked worktree: INFO skip, never WARN")
+red at HEAD for days. It asserts `^INFO|Branch hygiene skipped — linked worktree`; the block
+emitted a WARN instead. It read as a defect in the branch-hygiene code.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** not the code — the HARNESS. `tests/helpers/audit-branch-hygiene-block.sh:20` did
+`eval "$(sed -n '/^fw_is_linked_worktree() {/,/^}/p' "$REPO_ROOT/lib/paths.sh")"`. T-3111 moved
+`fw_is_linked_worktree` out of `lib/paths.sh` into `lib/worktree-identity.sh`, leaving only a
+pointer comment behind. The sed range matched nothing, `eval ""` defined nothing, and the
+extracted audit block then ran with the predicate **absent** — so the `if fw_is_linked_worktree`
+branch could not be taken and control fell through to the live-hygiene path, which correctly
+emitted a WARN for the fixture's real branch state.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the helper's stated purpose is "keep the assertions pinned to the
+real file … a copy in the test would pass forever after audit.sh changed". It enforced that with
+an unguarded `eval "$(sed …)"`, which fails in the quietest possible way: an extraction that
+matches nothing is indistinguishable from one that matches, right up until behaviour differs.
+T-3111 had no reason to know a test helper reached into `lib/paths.sh` by line-shape, and nothing
+connected the move to the harness. Same family as this session's other finds — a check that
+answers the question next to the one it appears to answer.
+
+**Prevention (distinct from the fix):** `_extract` + `_load` refuse an empty extraction, exit 3,
+and name both the symbol and the file it was sought in. `_load` exists separately because
+`exit 3` inside `$( )` exits only the subshell — the first cut of the guard reproduced the very
+fall-through it was written to stop, and the two new guard tests caught it. Consequence: the next
+time a construct moves, the suite reports `HARNESS-ERROR: <symbol>: extraction matched nothing`
+across every test rather than one ambiguous red that looks like a code bug.
+
+**Residual, not fixed here:** nothing *surfaces* a red unit suite. This task was filed because a
+red test sat in the tree unnoticed — the guard makes the next occurrence legible, not noticed.
+That is the same gap as T-3191 (unwired linter) and is the class, not this instance.
 
 ## Evolution
 
@@ -270,3 +307,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3195-t3095auditbranchhygiene-test-3-is-red-at.md
 - **Context:** Initial task creation
+
+### 2026-08-27T19:38:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

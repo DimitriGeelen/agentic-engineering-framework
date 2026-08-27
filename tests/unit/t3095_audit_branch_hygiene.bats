@@ -137,3 +137,44 @@ _block() { run "$RUNNER" "$REPO_ROOT" "$1"; }
     run bash -c "grep -nE '^[[:space:]]*echo \"(merged-undeleted|behind-threshold|diverged-fork|worktree-merged|remote-contained|remote-unlanded) ' '$REPO_ROOT/agents/audit/audit.sh'"
     [ "$status" -ne 0 ]
 }
+
+# ── T-3195: the harness must fail loudly when an extraction goes empty ────────
+#
+# Test 3 was red at HEAD for days and read as a CODE defect. It was a HARNESS
+# defect: T-3111 moved fw_is_linked_worktree from lib/paths.sh to
+# lib/worktree-identity.sh, the extraction kept pointing at the old file, the
+# sed range matched nothing, and eval defined nothing. The block then ran with
+# the predicate ABSENT — not erroring, just taking a different branch and
+# emitting a confident wrong verdict.
+#
+# These two tests are what stop that recurring. They assert the guard fires for
+# EACH extraction independently: a guard that only covers the symbol that
+# happened to break today is not a guard.
+
+@test "T-3195: harness aborts loudly when the predicate extraction matches nothing" {
+    local fake="$FIX/fake-identity.sh"
+    echo "# no fw_is_linked_worktree here" > "$fake"
+    run env T3095_IDENTITY_SRC="$fake" "$RUNNER" "$REPO_ROOT" "$CLONE"
+    [ "$status" -eq 3 ]
+    echo "$output" | grep -q "HARNESS-ERROR: fw_is_linked_worktree"
+    echo "$output" | grep -q "extraction matched nothing"
+    # It must not silently produce a verdict — that is the failure being fixed.
+    [[ "$output" != *"COUNTS|"* ]]
+}
+
+@test "T-3195: harness aborts loudly when the audit-block extraction matches nothing" {
+    local fake="$FIX/fake-audit.sh"
+    echo "# no branch-hygiene block here" > "$fake"
+    run env T3095_AUDIT_SRC="$fake" "$RUNNER" "$REPO_ROOT" "$CLONE"
+    [ "$status" -eq 3 ]
+    echo "$output" | grep -q "HARNESS-ERROR: branch-hygiene-block"
+    [[ "$output" != *"COUNTS|"* ]]
+}
+
+@test "T-3195: the extraction names the file that actually defines the predicate" {
+    # Pins the re-point itself. lib/paths.sh carries only a pointer comment
+    # since T-3111; extracting from it is what produced the silent empty.
+    grep -q 'worktree-identity.sh' "$REPO_ROOT/tests/helpers/audit-branch-hygiene-block.sh"
+    run grep -c 'fw_is_linked_worktree() {' "$REPO_ROOT/lib/worktree-identity.sh"
+    [ "$output" -eq 1 ]
+}
