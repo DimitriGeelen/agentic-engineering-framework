@@ -84,8 +84,26 @@ fw_branch_hygiene() {
     local behind_warn="${FW_BRANCH_BEHIND_WARN:-50}"
     local stale_days="${FW_BRANCH_STALE_DAYS:-30}"
 
+    # ── T-3188: "landed" means landed on the DEV branch, not on master ──
+    #
+    # Under the release train (§Release-Train Branch Model) master only
+    # fast-forwards at a release, so between releases it deliberately lags.
+    # Judging "landed" against master therefore reports every branch that HAS
+    # landed on bleeding-edge as unlanded, and reports master's own lag — the
+    # release train's product — as drift. The target has to be the branch work
+    # actually lands on.
+    #
+    # Fallback is preserved exactly: a repo with no dev branch (every
+    # master-only consumer) resolves to the pre-T-3188 target and behaves as
+    # before. FW_DEV_BRANCH is the same knob the T-3187 identity guard reads,
+    # not a second one.
+    local _bh_dev="${FW_DEV_BRANCH:-bleeding-edge}"
     local target
-    if git -C "$repo" rev-parse --verify -q origin/master >/dev/null 2>&1; then
+    if git -C "$repo" rev-parse --verify -q "origin/$_bh_dev" >/dev/null 2>&1; then
+        target="origin/$_bh_dev"
+    elif git -C "$repo" rev-parse --verify -q "refs/heads/$_bh_dev" >/dev/null 2>&1; then
+        target="$_bh_dev"
+    elif git -C "$repo" rev-parse --verify -q origin/master >/dev/null 2>&1; then
         target=origin/master
     elif git -C "$repo" rev-parse --verify -q master >/dev/null 2>&1; then
         target=master
@@ -139,6 +157,10 @@ fw_branch_hygiene() {
     while IFS= read -r br; do
         [ -z "$br" ] && continue
         [ "$br" = "master" ] && continue
+        # T-3188: the dev branch is the trunk, not a feature branch. It is
+        # ahead of master by construction between releases, so scanning it for
+        # "unlanded" would report the release train working as designed.
+        [ "$br" = "$_bh_dev" ] && continue
         if git -C "$repo" merge-base --is-ancestor "refs/heads/$br" "$target" 2>/dev/null; then
             echo "merged-undeleted $br"
         else
@@ -306,11 +328,21 @@ fw_branch_divergence() {
     local repo="${1:-.}"
     local br behind ahead warn
     br=$(git -C "$repo" branch --show-current 2>/dev/null)
-    if [ -z "$br" ] || [ "$br" = "master" ]; then
+    # T-3188: silent on the DEV branch, which is where the session is supposed
+    # to be. Measuring bleeding-edge against origin/master would report the
+    # release train's deliberate lag as divergence at every handover.
+    local _bh_dev="${FW_DEV_BRANCH:-bleeding-edge}"
+    local dtarget
+    if git -C "$repo" rev-parse --verify -q "origin/$_bh_dev" >/dev/null 2>&1; then
+        dtarget="origin/$_bh_dev"
+    else
+        dtarget=origin/master
+    fi
+    if [ -z "$br" ] || [ "$br" = "master" ] || [ "$br" = "$_bh_dev" ]; then
         return 0
     fi
-    git -C "$repo" rev-parse --verify -q origin/master >/dev/null 2>&1 || return 0
-    set -- $(git -C "$repo" rev-list --left-right --count origin/master...HEAD 2>/dev/null)
+    git -C "$repo" rev-parse --verify -q "$dtarget" >/dev/null 2>&1 || return 0
+    set -- $(git -C "$repo" rev-list --left-right --count "$dtarget"...HEAD 2>/dev/null)
     behind="${1:-0}"; ahead="${2:-0}"
     warn="${FW_BRANCH_BEHIND_WARN:-50}"
     echo "divergence $br ahead=$ahead behind=$behind"
