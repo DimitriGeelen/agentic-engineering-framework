@@ -10,7 +10,7 @@ description: >
   changing target semantics has blast radius across every finding class and deserves
   its own test pass.
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T22:42:00Z
-last_update: '2026-08-26T22:45:15Z'
+last_update: 2026-08-26T22:50:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -271,3 +271,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3188-branch-hygiene-still-measures-landed-aga.md
 - **Context:** Initial task creation
+
+### 2026-08-26T22:50:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

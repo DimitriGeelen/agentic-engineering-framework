@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3192: Cut the first release under the release train — advance master to bleeding-edge
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-27T07:52:13Z
+# ============================================================================
+
+task_id: T-3192
+task_name: "Cut the first release under the release train — advance master to bleeding-edge"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-27T07:40:43Z
+completed: 2026-08-27T07:52:00Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-08-27T09:52:00+02:00
+last_commit: 2026-08-27T09:52:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cut v1.6.768 — the first release under the release train; file T-3193
+
+# Key outcomes
+outcomes:
+  - '`origin/master` advances to the commit `origin/bleeding-edge` names — the install surface actually moves'
+  - 'A new `v*` tag exists and points at that same commit'
+  - 'The tag is present on `origin`, so `fw upgrade` / `fw vendor` consumers can reach the release'
+  - '`master` remains merge-only: no authored commit is created on it, and `PROTECT_MASTER` is neither disabled nor bypassed'
+  - 'After the release, `master` and `bleeding-edge` agree — the lag resets to zero and starts accumulating again from the next commit'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-3191-bats-dead-negation-lint-is-wired-into-no.md'
+  - '.tasks/active/T-3192-cut-the-first-release-under-the-release-.md'
+  - '.tasks/active/T-3193-a-release-can-advance-master-and-then-fa.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-27T09:52:00'
+    action: 'T-3192: cut v1.6.768 — the first release under the release train; file T-3193'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 4
+  lines_added: 406
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3192-cut-the-first-release-under-the-release-.md
+generated_by: context-agent-hybrid

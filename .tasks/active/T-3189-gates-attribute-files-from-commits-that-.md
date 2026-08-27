@@ -1,8 +1,18 @@
 ---
 id: T-3189
-name: "Gates attribute files from commits that merely REFERENCE a task, not only those authoring it"
+name: "Gates attribute files from commits that merely REFERENCE a task, not only those
+  authoring it"
 description: >
-  The P-013 render-surface gate (and any check resolving a task's touched files via git log --grep) treats a commit mentioning T-XXX anywhere in its message as a commit BELONGING to T-XXX. Measured on T-3179: 6 commits matched the grep, only 2 were authored under it; d998545b8 is a T-3180 commit whose body reads 'Ref: T-3179 (landing thread)' and it dragged web/blueprints/inception.py into T-3179's blast radius, firing the render gate on a task that touched no render surface. The framework ENCOURAGES cross-references for traceability, so this penalises exactly the habit it asks for, and the penalty is a bypass — which trains agents to reach for --skip flags on correct work. Fix direction: attribute by subject-line prefix (^T-XXX:) rather than message-wide grep, or by trailer.
+  The P-013 render-surface gate (and any check resolving a task's touched files via
+  git log --grep) treats a commit mentioning T-XXX anywhere in its message as a commit
+  BELONGING to T-XXX. Measured on T-3179: 6 commits matched the grep, only 2 were
+  authored under it; d998545b8 is a T-3180 commit whose body reads 'Ref: T-3179 (landing
+  thread)' and it dragged web/blueprints/inception.py into T-3179's blast radius,
+  firing the render gate on a task that touched no render surface. The framework ENCOURAGES
+  cross-references for traceability, so this penalises exactly the habit it asks for,
+  and the penalty is a bypass — which trains agents to reach for --skip flags on correct
+  work. Fix direction: attribute by subject-line prefix (^T-XXX:) rather than message-wide
+  grep, or by trailer.
 
 status: captured
 workflow_type: build
@@ -22,8 +32,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T22:48:50Z
-last_update: 2026-08-26T22:48:50Z
-date_finished: null
+last_update: '2026-08-26T23:00:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +44,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-26T23:00:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-26T23:00:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3189: Gates attribute files from commits that merely REFERENCE a task, not only those authoring it
