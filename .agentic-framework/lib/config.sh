@@ -244,6 +244,13 @@ FW_CONFIG_REGISTRY=(
     "BRANCH_BEHIND_WARN|50|Commits-behind-origin/master threshold for the branch-hygiene WARN and the handover merge-back nudge (agents/handover/handover.sh). T-100143/T-100144."
     "STALE_ARC_DAYS|30|Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale (agents/audit/audit.sh). T-1855."
     "BRANCH_STALE_DAYS|30|Days without a commit ON a branch before its behind-count is allowed to raise a branch-hygiene staleness finding (lib/branch-hygiene.sh). Gates BRANCH_BEHIND_WARN: master moves ~41 commits/day here, so the commit threshold alone trips in ~1.2 days and fires on every healthy branch. Same unit and default as STALE_ARC_DAYS. T-3094 (T-3093 slice 1)."
+    # Release-train branch model (T-3185 keystone). Two branches, two jobs:
+    # DEV_BRANCH authors, RELEASE_BRANCH only ever fast-forwards from it at a
+    # release. They are separate keys on purpose — collapsing them into one
+    # would make "which branch is the install surface" unanswerable, which is
+    # the question the release train exists to answer.
+    "DEV_BRANCH|bleeding-edge|The sanctioned development branch — what the persistent session commits to, what branch-hygiene measures 'landed' against, and the only writer of RELEASE_BRANCH (lib/branch-hygiene.sh). T-3185/T-3187/T-3188."
+    "RELEASE_BRANCH|master|The consumer install surface — the branch fw release tag-and-release fast-forwards before cutting the tag. Nothing authors it directly (lib/release.sh, agents/git/lib/master-guard.sh). T-3185/T-3190."
     "RETIRE_WHEN_ADVISORY|1|Enable the audit retire_when advisory rail for free drivers; 0 silences the section entirely (agents/audit/audit.sh). T-2169."
     "GITIGNORE_REGISTER_ADVISORY|1|Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it (agents/audit/audit.sh, lib/gitignore-register.sh). T-2994."
     # T-3024 (T-3022 slice E'). Handovers are 68% of indexed corpus volume and 79%

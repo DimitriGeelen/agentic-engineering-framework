@@ -7,7 +7,7 @@ description: >
   session belongs on bleeding-edge and worktrees must land there. Blocked tonight
   because T-3127 holds bin/fw uncommitted.
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T21:40:56Z
-last_update: '2026-08-26T21:45:07Z'
+last_update: 2026-08-27T08:46:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -77,8 +77,16 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw integrate check` and `fw integrate run` default to the dev branch, not master, so a landing cannot inject unreleased work into the consumer install surface
+- [ ] `fw sync` reconciles against the dev branch (fetch + rebase + push), not `origin/master` — rebasing onto master between releases would replay local commits onto an OLDER tree
+- [ ] `fw sync`'s branch warning is INVERTED: it fires when you are NOT on the dev branch, and no longer tells the operator to `git checkout master`
+- [ ] No surface still instructs the operator to run the persistent session on master (that is the T-100196 model the release train replaced)
+- [ ] An explicit target argument still wins — `fw integrate run master` remains possible for anyone who means it
+- [ ] `FW_DEV_BRANCH` is the resolution knob, same as T-3187 and T-3188; no second mechanism
+- [ ] Fallback: a repo with no dev branch resolves to master exactly as before
+- [ ] Tests in `tests/unit/t3186_sync_integrate_target.bats`, every silent assertion paired with a firing one
+- [ ] Mutation-tested: reverting each default back to master reddens only its own tests
+- [ ] `bash -n bin/fw` passes after every edit (L-408) and `tools/bats-dead-negation-lint.py` reports clean (L-651)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -268,3 +276,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3186-fw-sync-and-fw-integrate-still-point-at-.md
 - **Context:** Initial task creation
+
+### 2026-08-27T08:46:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
