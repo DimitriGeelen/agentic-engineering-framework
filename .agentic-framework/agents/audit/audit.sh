@@ -372,6 +372,64 @@ else
     AUDIT_TIMEOUT="${FW_AUDIT_TIMEOUT:-600}"
 fi
 
+# T-3127: per-section + total-run timing capture. The full-run timeout budget
+# (AUDIT_TIMEOUT above) is a pinned constant while the corpus it scans grows
+# with every task/learning/episodic/fabric card (T-3070: 1729s measured
+# against a 3000s ceiling, 42% headroom, OE-DAILY alone 824s/48%). Nothing
+# asserted that headroom before this — when it reaches zero the failure mode
+# is a mid-section timeout kill that reads exactly like the lock-contention
+# misdiagnosis T-3070 spent months chasing. Uses bash's SECONDS builtin
+# (integer seconds since shell start) rather than `date +%s.%N` subshells —
+# sub-second precision buys nothing at this scale (sections run 1s-824s).
+declare -a SECTION_NAMES=()
+declare -a SECTION_DURATIONS=()
+_SECTION_MARK_NAME=""
+_SECTION_MARK_START=0
+section_mark() {
+    if [ -n "$_SECTION_MARK_NAME" ]; then
+        SECTION_NAMES+=("$_SECTION_MARK_NAME")
+        SECTION_DURATIONS+=("$(( SECONDS - _SECTION_MARK_START ))")
+    fi
+    _SECTION_MARK_NAME="$1"
+    _SECTION_MARK_START=$SECONDS
+}
+
+# Fixed path (not date-stamped) so `fw doctor` always reads the latest full
+# run without globbing $AUDITS_DIR. Full (unscoped) runs only — section-scoped
+# cron runs don't answer the timeout-headroom question this exists for, and
+# writing from them would make "latest" mean "latest of either kind", which
+# is not a number anyone could compare against AUDIT_TIMEOUT meaningfully.
+AUDIT_TIMING_FILE="$CONTEXT_DIR/audits/full-audit-timing.yaml"
+AUDIT_RUN_START_ISO="$(date -Iseconds)"
+
+# _audit_write_timing_yaml TIMED_OUT[0|1] KILLED_SECTION TOTAL_SECONDS
+# TIMED_OUT=1 (called from the TERM trap below) makes a killed section
+# unambiguous in the record — distinguishing it from a section that ran to
+# completion was exactly what T-3070's own run left no trace of (AC4).
+_audit_write_timing_yaml() {
+    local timed_out="$1" killed_section="$2" total="$3"
+    mkdir -p "$(dirname "$AUDIT_TIMING_FILE")" 2>/dev/null
+    {
+        echo "# Full-audit run timing - written by agents/audit/audit.sh (T-3127)"
+        echo "last_run:"
+        echo "  timestamp: \"$AUDIT_RUN_START_ISO\""
+        echo "  total_seconds: $total"
+        echo "  ceiling_seconds: $AUDIT_TIMEOUT"
+        if [ "$timed_out" = 1 ]; then
+            echo "  timed_out: true"
+            echo "  killed_in_section: \"$killed_section\""
+        else
+            echo "  timed_out: false"
+        fi
+        echo "  sections:"
+        local i
+        for i in "${!SECTION_NAMES[@]}"; do
+            echo "    - name: \"${SECTION_NAMES[$i]}\""
+            echo "      seconds: ${SECTION_DURATIONS[$i]}"
+        done
+    } > "$AUDIT_TIMING_FILE.tmp" && mv "$AUDIT_TIMING_FILE.tmp" "$AUDIT_TIMING_FILE"
+}
+
 # Clean up stale lock files (older than timeout + 60s buffer)
 if [ -f "$AUDIT_LOCK_FILE" ]; then
     lock_age=$(( $(date +%s) - $(stat -c %Y "$AUDIT_LOCK_FILE" 2>/dev/null || echo 0) ))
@@ -408,6 +466,17 @@ if command -v flock >/dev/null 2>&1; then
     ) </dev/null >/dev/null 2>&1 &
     AUDIT_TIMEOUT_PID=$!
     trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null; rm -f '$AUDIT_LOCK_FILE'" EXIT
+    # T-3127/AC4: the watchdog above kills via SIGTERM. Without this trap, a
+    # timeout kill leaves NO trace of which section died — which is precisely
+    # how T-3070's mid-EPISODIC-MEMORY kill was misread as lock contention for
+    # months. Record the in-flight section as timed_out before exiting; the
+    # EXIT trap above still runs afterward and cleans up the lock as normal.
+    trap '
+        if [ -z "$SECTIONS" ] && [ -n "${_SECTION_MARK_NAME:-}" ]; then
+            _audit_write_timing_yaml 1 "$_SECTION_MARK_NAME" "$SECONDS"
+        fi
+        exit 124
+    ' TERM
 else
     # Fallback: simple lock file (less robust but prevents most zombies).
     # Same 75 as the flock arm — "in ALL modes" is the point. A fix applied to only
@@ -698,6 +767,7 @@ fi
 # SECTION 1: STRUCTURE CHECKS
 # ============================================
 if should_run_section "structure"; then
+section_mark "structure"
 echo "=== STRUCTURE CHECKS ==="
 
 # Check .tasks/ directory
@@ -2941,6 +3011,7 @@ fi # end structure
 # to daily — which is the horizon T-1845 asked for in the first place. To run
 # them on demand: `fw audit --section tree`.
 if should_run_section "tree"; then
+section_mark "tree"
 echo "=== WHOLE-TREE SCANS ==="
 
 SECRET_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
@@ -2978,6 +3049,7 @@ fi # end tree
 # SECTION 2: TASK COMPLIANCE CHECKS
 # ============================================
 if should_run_section "compliance"; then
+section_mark "compliance"
 echo "=== TASK COMPLIANCE CHECKS ==="
 
 # Check each active task (T-955: uses single-pass scan)
@@ -3021,6 +3093,7 @@ fi # end compliance
 # SECTION 2B: TASK QUALITY CHECKS (P-001, P-004)
 # ============================================
 if should_run_section "quality"; then
+section_mark "quality"
 echo "=== TASK QUALITY CHECKS ==="
 
 # Quality checks (T-955: uses single-pass scan)
@@ -3160,6 +3233,7 @@ fi # end unclosed-satisfied
 # SECTION 3: GIT TRACEABILITY CHECKS
 # ============================================
 if should_run_section "traceability"; then
+section_mark "traceability"
 echo "=== GIT TRACEABILITY CHECKS ==="
 
 if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
@@ -3338,6 +3412,7 @@ fi # end traceability
 # (OBS-253); two embed round-trips would make a bad situation worse and would
 # couple every push to Ollama being up. This runs on the 6-hourly cron instead.
 if should_run_section "corpus-health"; then
+section_mark "corpus-health"
 echo "=== CORPUS HEALTH ==="
 
 _ch_json=$(cd "$PROJECT_ROOT" && timeout 90 python3 -c '
@@ -3390,6 +3465,7 @@ fi
 # SECTION 4: ENFORCEMENT CHECKS
 # ============================================
 if should_run_section "enforcement"; then
+section_mark "enforcement"
 echo "=== ENFORCEMENT CHECKS ==="
 
 # Check for bypass log
@@ -3514,6 +3590,7 @@ fi # end enforcement
 # SECTION 5: LEARNING CAPTURE CHECKS
 # ============================================
 if should_run_section "learning"; then
+section_mark "learning"
 echo "=== LEARNING CAPTURE CHECKS ==="
 
 # Check practices file (supports both 015-Practices.md and practices.yaml)
@@ -3637,6 +3714,7 @@ fi # end learning
 # SECTION 6: EPISODIC MEMORY CHECKS
 # ============================================
 if should_run_section "episodic"; then
+section_mark "episodic"
 echo "=== EPISODIC MEMORY CHECKS ==="
 
 episodic_dir="$CONTEXT_DIR/episodic"
@@ -3739,6 +3817,7 @@ fi # end episodic
 # SECTION 7: OBSERVATION INBOX CHECKS
 # ============================================
 if should_run_section "observations"; then
+section_mark "observations"
 echo "=== OBSERVATION INBOX CHECKS ==="
 
 INBOX_FILE="$CONTEXT_DIR/inbox.yaml"
@@ -3837,6 +3916,7 @@ fi # end observations
 # SECTION 8: CONCERNS REGISTER CHECKS (T-397: was gaps register)
 # ============================================
 if should_run_section "gaps"; then
+section_mark "gaps"
 echo "=== CONCERNS REGISTER CHECKS ==="
 
 # T-397: Unified concerns register (was gaps.yaml)
@@ -3936,6 +4016,7 @@ fi # end gaps
 # SECTION 8b: HANDOVER OPEN QUESTIONS (G-002)
 # ============================================
 if should_run_section "handover"; then
+section_mark "handover"
 echo "=== HANDOVER OPEN QUESTIONS CHECK ==="
 
 HANDOVER_FILE="$CONTEXT_DIR/handovers/LATEST.md"
@@ -3998,6 +4079,7 @@ fi # end handover
 # SECTION 9: GRADUATION PIPELINE CHECK
 # ============================================
 if should_run_section "graduation"; then
+section_mark "graduation"
 echo "=== GRADUATION PIPELINE CHECKS ==="
 
 LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
@@ -4038,6 +4120,7 @@ fi # end graduation
 # SECTION 10: INCEPTION RESEARCH ARTIFACT CHECK (T-178/T-185)
 # ============================================
 if should_run_section "research"; then
+section_mark "research"
 echo "=== INCEPTION RESEARCH CHECKS ==="
 
 # Check completed inception tasks for research artifacts (T-955: uses single-pass scan)
@@ -4069,6 +4152,7 @@ fi # end research
 # SECTION 11: RESEARCH PERSISTENCE OE TESTS (C-001/C-002/C-003, T-194)
 # ============================================
 if should_run_section "oe-research"; then
+section_mark "oe-research"
 echo "=== RESEARCH PERSISTENCE OE CHECKS ==="
 
 # C-001 OE: Inceptions being WORKED (started-work) or being DECIDED (carrying a
@@ -4197,6 +4281,7 @@ fi # end oe-research
 # CTL-001, CTL-003, CTL-004, CTL-018
 # ============================================
 if should_run_section "oe-fast"; then
+section_mark "oe-fast"
 echo "=== OE-FAST: 30-MINUTE CONTROL CHECKS ==="
 
 # CTL-001 OE: Task-First Gate — focus file exists when source commits happen
@@ -4279,6 +4364,7 @@ fi # end oe-fast
 # CTL-008, CTL-020
 # ============================================
 if should_run_section "oe-hourly"; then
+section_mark "oe-hourly"
 echo "=== OE-HOURLY: HOURLY CONTROL CHECKS ==="
 
 # CTL-008 OE: Task Reference Gate — recent commits have T-XXX prefix
@@ -4347,6 +4433,7 @@ fi # end oe-hourly
 # CTL-002, CTL-005, CTL-006, CTL-007, CTL-009, CTL-010, CTL-011, CTL-012, CTL-013, CTL-019
 # ============================================
 if should_run_section "oe-daily"; then
+section_mark "oe-daily"
 echo "=== OE-DAILY: DAILY CONTROL CHECKS ==="
 
 # CTL-002 OE: Tier 0 Guard — hook script exists + settings wired
@@ -4998,6 +5085,7 @@ fi
 # D8 (handover quality decay)
 # ============================================
 if should_run_section "discovery"; then
+section_mark "discovery"
 echo "=== DISCOVERY: OMISSION DETECTION ==="
 
 # D1: Episodic Quality Decay (Score 25)
@@ -5294,6 +5382,7 @@ fi # end discovery
 # D6 (completion velocity trends), D9 (control drift), D12 (bypass growth)
 # ============================================
 if should_run_section "discovery-trends"; then
+section_mark "discovery-trends"
 echo "=== DISCOVERY: TREND DETECTION ==="
 
 # D4: Audit Trend Regression (Score 20)
@@ -6117,6 +6206,7 @@ fi # end discovery-trends
 # CTL-016
 # ============================================
 if should_run_section "oe-weekly"; then
+section_mark "oe-weekly"
 echo "=== OE-WEEKLY: WEEKLY CONTROL CHECKS ==="
 
 # CTL-016 OE: Hypothesis Debugging — healing patterns resolved with mitigation
@@ -6151,6 +6241,7 @@ fi # end oe-weekly
 # Not included in default full audit or pre-push checks
 # ============================================
 if [ -n "$SECTIONS" ] && should_run_section "deployment"; then
+section_mark "deployment"
 echo "=== DEPLOYMENT CHECKS ==="
 
 # Check active task exists (must deploy under a task)
@@ -6228,6 +6319,7 @@ fi # end deployment
 # Origin: T-1641 W10. Probes /opt/termlink, classifies MCP tools, surfaces drift.
 # ============================================
 if should_run_section "orchestrator"; then
+section_mark "orchestrator"
 echo "=== ORCHESTRATOR ARC CHECKS ==="
 
 ORCH_SCRIPT="$FRAMEWORK_ROOT/agents/audit/orchestrator-mcp-scan.sh"
@@ -6395,6 +6487,7 @@ fi # end orchestrator
 # check" failure mode codified in CLAUDE.md §Arc Completion Discipline.
 # ============================================
 if should_run_section "arc-completion" || should_run_section "oe-daily"; then
+section_mark "arc-completion"
 echo "=== ARC-COMPLETION CHECKS ==="
 
 ARC_DIR="$CONTEXT_DIR/arcs"
@@ -6490,6 +6583,20 @@ fi
 
 echo ""
 fi # end arc-completion
+
+# T-3127: flush the last section's timing and persist the full-run record.
+# Full (unscoped) runs only — section-scoped cron runs don't answer the
+# timeout-headroom question this exists for (see AUDIT_TIMING_FILE comment
+# above). Reaching this line means the run was NOT killed by the watchdog —
+# the TERM trap owns that path and writes timed_out: true instead.
+# (Trailing comment on the `if` line below is deliberate — t3070's regression
+# test extracts the AUDIT_TIMEOUT resolution block via an exact-line sed
+# match on `if [ -z "$SECTIONS" ]; then`; an identical bare line here would
+# re-trigger that same sed range and pull this block into the extraction.)
+if [ -z "$SECTIONS" ]; then  # T-3127: full runs only
+    section_mark ""
+    _audit_write_timing_yaml 0 "" "$SECONDS"
+fi
 
 # ============================================
 # SUMMARY (always runs)

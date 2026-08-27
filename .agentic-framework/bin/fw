@@ -3088,6 +3088,15 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
             echo -e "  ${YELLOW}WARN${NC}  FW_DISPATCH_LIMIT=$dl — very high, risk of context explosion"
             warnings=$((warnings + 1))
         fi
+        # T-3127: AUDIT_TIMEOUT_WARN_FRACTION is a fraction of a timeout ceiling
+        # (0 < f <= 1) — outside that range the headroom WARN below either never
+        # fires (f>1, or f<=0 always-fires nonsensically) or fires on install.
+        local atwf
+        atwf=$(fw_config "AUDIT_TIMEOUT_WARN_FRACTION" 0.70)
+        if ! awk -v f="$atwf" 'BEGIN{exit !(f+0>0 && f+0<=1)}' 2>/dev/null; then
+            echo -e "  ${YELLOW}WARN${NC}  FW_AUDIT_TIMEOUT_WARN_FRACTION=$atwf is out of range (expected 0 < f <= 1)"
+            warnings=$((warnings + 1))
+        fi
     else
         echo -e "  ${GREEN}OK${NC}  Configuration: all defaults (no FW_* overrides)"
     fi
@@ -3605,6 +3614,49 @@ except Exception as e:
     else
         echo -e "  ${GREEN}OK${NC}  No stale gauge-READY gaps"
     fi
+
+    # T-3127: full-audit timeout headroom. AUDIT_TIMEOUT (agents/audit/audit.sh,
+    # section-scoped default 600s / full-run default 3000s via
+    # FW_AUDIT_FULL_TIMEOUT) is a pinned constant while the corpus a full
+    # 'fw audit' scans grows with every task/learning/episodic/fabric card
+    # (T-3070: 1729s measured against a 3000s ceiling — 58%, 42% headroom;
+    # OE-DAILY alone 824s/48% of the run). Nothing asserted that headroom
+    # before this check; when it reaches zero the failure mode is a
+    # mid-section timeout kill that reads exactly like the lock-contention
+    # misdiagnosis T-3070 spent months chasing. Classification logic lives in
+    # lib/audit_timing.py (regression-fixture-friendly, see AC6).
+    local _at_timing_file="$PROJECT_ROOT/.context/audits/full-audit-timing.yaml"
+    local _at_fraction _at_out _at_pct _at_thr_pct
+    _at_fraction=$(fw_config "AUDIT_TIMEOUT_WARN_FRACTION" 0.70)
+    if [ -f "$_at_timing_file" ]; then
+        _at_out=$(python3 "$FRAMEWORK_ROOT/lib/audit_timing.py" "$_at_timing_file" "$_at_fraction" 2>/dev/null)
+    else
+        _at_out=""
+    fi
+    case "$_at_out" in
+        TIMED_OUT\|*)
+            IFS='|' read -r _ _at_total _at_ceiling _at_section <<< "$_at_out"
+            echo -e "  ${RED}FAIL${NC}  Last full audit TIMED OUT mid-section '$_at_section' at ${_at_total}s / ${_at_ceiling}s ceiling"
+            echo -e "         Raise FW_AUDIT_FULL_TIMEOUT, or investigate why '$_at_section' grew: .context/audits/full-audit-timing.yaml"
+            issues=$((issues + 1))
+            ;;
+        WARN\|*)
+            IFS='|' read -r _ _at_total _at_ceiling _at_frac <<< "$_at_out"
+            _at_pct=$(awk -v f="$_at_frac" 'BEGIN{printf "%.0f", f*100}')
+            _at_thr_pct=$(awk -v f="$_at_fraction" 'BEGIN{printf "%.0f", f*100}')
+            echo -e "  ${YELLOW}WARN${NC}  Full-audit headroom low: last run ${_at_total}s of ${_at_ceiling}s ceiling (${_at_pct}% >= ${_at_thr_pct}% threshold)"
+            echo -e "         Raise FW_AUDIT_FULL_TIMEOUT, or reduce the corpus scanned, before headroom hits 0 (T-3127)"
+            warnings=$((warnings + 1))
+            ;;
+        OK\|*)
+            IFS='|' read -r _ _at_total _at_ceiling _at_frac <<< "$_at_out"
+            _at_pct=$(awk -v f="$_at_frac" 'BEGIN{printf "%.0f", f*100}')
+            echo -e "  ${GREEN}OK${NC}  Full-audit headroom: last run ${_at_total}s of ${_at_ceiling}s ceiling (${_at_pct}%)"
+            ;;
+        *)
+            echo -e "  ${CYAN}INFO${NC}  Full-audit timing not measured yet — run 'fw audit' (no --section) once to populate .context/audits/full-audit-timing.yaml"
+            ;;
+    esac
 
     # Summary (T-1707: break out host_warnings count when > 0)
     local _scope_breakdown=""

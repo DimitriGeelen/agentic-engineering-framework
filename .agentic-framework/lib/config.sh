@@ -276,6 +276,16 @@ FW_CONFIG_REGISTRY=(
     # This is the GRANT clock, not the request-staleness clock (how long a pending
     # card stays offerable: web/blueprints/approvals.py EXPIRY_SECONDS, T-3079).
     "TIER0_APPROVAL_TTL|300|Seconds a granted Tier 0 approval admits the command, for BOTH the 'fw tier0 approve' and Watchtower legs (agents/context/check-tier0.sh). Legacy TIER0_WATCHTOWER_TTL still wins when explicitly set. NOT the pending-request staleness window. T-3080."
+    # T-3127. AUDIT_TIMEOUT (section-scoped default 600, full-run default 3000
+    # via FW_AUDIT_FULL_TIMEOUT, T-3070) is a pinned constant; the corpus a
+    # full 'fw audit' scans grows with every task/learning/episodic/fabric
+    # card. This fraction is the headroom threshold 'fw doctor' compares the
+    # last recorded full-run duration (.context/audits/full-audit-timing.yaml,
+    # written by agents/audit/audit.sh) against — WARN when
+    # last_run.total_seconds / last_run.ceiling_seconds >= this value. 0.70
+    # chosen so the WARN fires with real runway left to raise the ceiling or
+    # investigate, rather than at the T-3070 measurement itself (0.58).
+    "AUDIT_TIMEOUT_WARN_FRACTION|0.70|Fraction of AUDIT_TIMEOUT (or FW_AUDIT_FULL_TIMEOUT) at which fw doctor WARNs that the last recorded full-audit run is eating into its timeout headroom (agents/audit/audit.sh, bin/fw do_doctor). T-3127."
 )
 
 # fw_config_registry — Print all known settings with current values
