@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3199: t100195 diverged-fork suite has been red since T-3094 added days= to the finding format
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-27T21:22:24Z
+# ============================================================================
+
+task_id: T-3199
+task_name: "t100195 diverged-fork suite has been red since T-3094 added days= to the finding format"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-27T09:56:12Z
+completed: 2026-08-27T21:22:07Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tests/unit/t100195_diverged_fork.bats tests 1 and 2 assert on anchored strings that no longer exist: 'diverged-fork fork-feat ahead=3 behind=3 (threshold 2)$' and 'behind-threshold lag-feat behind=3 (threshold 2)$'. T-3094 inserted 'days=<d>' before the threshold clause, and the trailing $ anchor means neither pattern can ever match again. Red since T-3094, unnoticed because the suite is not in any gate's path. Verified pre-existing: stashing the T-3194 edits leaves the same 2 failures. Sibling to T-3195 (t3095 hygiene test 3) but a DIFFERENT root cause - that one is a T-3188 retarget, this one is a T-3094 format change. Fix is to update both patterns to tolerate the days= field, not to drop the anchor: the anchor is what makes them assert the WHOLE line rather than a prefix.
+
+# Key outcomes
+outcomes:
+  - 'Red state reproduced and root cause measured BEFORE any edit: probe shows'
+  - '`tests/unit/t100195_diverged_fork.bats` runs with zero failures (6 tests —'
+  - 'Both repaired assertions still pin the finding format exactly — anchored'
+  - 'Mutation-tested: with the fix in place, breaking the emission in'
+  - 'The recency-gate trap is documented in the suite header, so the next author'
+  - '`lib/branch-hygiene.sh` is unmodified by this task — test-side defect'
+  - 'The five inert `! cmd` assertions found while mutation-testing are converted'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 685 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 685
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3199-t100195-diverged-fork-suite-has-been-red.md
+generated_by: context-agent-hybrid

@@ -15,10 +15,10 @@ description: >
   not diagnosed. Found while measuring T-3127 AC1 (that run completed cleanly at 1895s/3000s,
   timed_out: false).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T20:13:21Z
-last_update: '2026-08-27T20:15:16Z'
+last_update: 2026-08-27T20:21:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,8 +85,27 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] AC1 — REPRODUCE FIRST. The cause below is inferred, not diagnosed: the originating
+      command was never captured. Run a full audit under an external `timeout N` where
+      N < the configured ceiling, and confirm the record lands as
+      `total_seconds: ~N / ceiling_seconds: 3000 / timed_out: true`. If it does not
+      reproduce, this task is wrong and closes as such — do not proceed to AC2 on the
+      strength of the inference.
+- [ ] AC2 — The record distinguishes the two kills. An externally-killed run and a run
+      that genuinely exhausted `AUDIT_TIMEOUT` must not serialise identically. Whatever
+      the field is called, `total_seconds` materially below `ceiling_seconds` while
+      `timed_out: true` must be self-evidently an external kill in the file itself.
+- [ ] AC3 — The FAIL message stops misdirecting. `bin/fw` currently renders
+      "TIMED OUT mid-section '<s>' at <total>s / <ceiling>s ceiling" and tells the reader
+      to raise `FW_AUDIT_FULL_TIMEOUT`. For an external kill that advice is wrong — the
+      configured ceiling was never the binding constraint. The message must name the
+      constraint that actually fired.
+- [ ] AC4 — Regression fixture, not the live file (L-599): synthetic records for
+      (a) internal timeout, (b) external kill, (c) clean completion, each classified
+      distinctly by `lib/audit_timing.py`. The external-kill case is the one that
+      currently has no test.
+- [ ] AC5 — Mutation-tested: collapsing the external-kill branch back into the internal
+      one reddens a named test. Without that, AC2 and AC4 could both ship inert.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,3 +295,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3202-full-audit-timing-record-cannot-distingu.md
 - **Context:** Initial task creation
+
+### 2026-08-27T20:21:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

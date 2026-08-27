@@ -14,12 +14,12 @@ description: >
   not to drop the anchor: the anchor is what makes them assert the WHOLE line rather
   than a prefix.
 
-status: captured
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, agents/handover/handover.sh, bin/fw, lib/branch-hygiene.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -32,8 +32,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T09:56:12Z
-last_update: '2026-08-27T10:00:20Z'
-date_finished:
+last_update: 2026-08-27T21:22:07Z
+date_finished: 2026-08-27T21:22:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -78,14 +78,67 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`tests/unit/t100195_diverged_fork.bats` has 2 of 5 tests red. Reproduced
+2026-08-27 before any edit:
+
+```
+not ok 1 hygiene: branch ahead>threshold AND behind>threshold → diverged-fork
+not ok 2 hygiene: small-ahead branch behind>threshold → behind-threshold
+```
+
+**The title's diagnosis is incomplete — measured, not assumed.** T-3094's
+`days=` field is the *second* cause. The dominant one is T-3094's other half:
+the recency gate at `lib/branch-hygiene.sh:175`.
+
+```
+_days=$(_bh_days_since_commit "$repo" "refs/heads/$br")
+if [ -n "$_days" ] && [ "$_days" -lt "$stale_days" ]; then continue; fi
+```
+
+Every commit in a bats fixture is made *now*, so `_days=0`, which is `< 30`
+(`FW_BRANCH_STALE_DAYS` default). The branch is skipped before either finding
+is reached. The suite is not asserting on a changed string — it is asserting
+against **empty output**. Probe:
+
+```
+FW_BRANCH_BEHIND_WARN=2                        fw_branch_hygiene $FIX  →  (nothing)
+FW_BRANCH_BEHIND_WARN=2 FW_BRANCH_STALE_DAYS=0 fw_branch_hygiene $FIX  →  diverged-fork fork-feat ahead=3 behind=3 days=0 (threshold 2)
+```
+
+So the fix is two-part, and a one-part fix stays red: neutralise the recency
+gate in the fixture (`FW_BRANCH_STALE_DAYS=0`) *and* pin the current
+`days=<n>` format. Repairing only the format leaves the tests comparing
+against no output at all.
+
+This matters beyond the two tests. The recency gate makes **every fresh
+fixture invisible** to `fw_branch_hygiene`'s all-branches scan, so any future
+test of that function silently exercises the `continue` path unless it opts
+out. That is the false-green shape: a suite that looks like it covers the scan
+and covers nothing.
+
+Scope: release-train branch model — this is the guard that polices which
+branches are stranded.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Red state reproduced and root cause measured BEFORE any edit: probe shows
+      `fw_branch_hygiene` emits nothing on a fresh fixture at the default
+      `FW_BRANCH_STALE_DAYS`, and emits the `days=` finding at 0
+- [x] `tests/unit/t100195_diverged_fork.bats` runs with zero failures (6 tests —
+      the 5 originals plus the recency-gate pin this task adds)
+- [x] Both repaired assertions still pin the finding format exactly — anchored
+      `^...$`, `days=` present. No assertion is loosened to a bare substring
+- [x] Mutation-tested: with the fix in place, breaking the emission in
+      `lib/branch-hygiene.sh` reddens the repaired tests. Which mutation reddened
+      which test is recorded in `## RCA`
+- [x] The recency-gate trap is documented in the suite header, so the next author
+      of a `fw_branch_hygiene` test does not silently re-enter the `continue` path
+- [x] `lib/branch-hygiene.sh` is unmodified by this task — test-side defect
+      (`git diff --stat` names no lib file)
+- [x] The five inert `! cmd` assertions found while mutation-testing are converted
+      to the `if <cmd>; then false; fi` form, and a mutation proves each converted
+      assertion now fires
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -119,6 +172,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n lib/branch-hygiene.sh
+out=$(timeout 300 bats tests/unit/t100195_diverged_fork.bats 2>&1); echo "$out" | grep -q "^ok 6" && ! echo "$out" | grep -q "^not ok"
+grep -q "days=" tests/unit/t100195_diverged_fork.bats
+grep -q "FW_BRANCH_STALE_DAYS" tests/unit/t100195_diverged_fork.bats
+test -z "$(git diff --stat -- lib/branch-hygiene.sh)"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -194,6 +253,69 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `tests/unit/t100195_diverged_fork.bats` 2 of 5 red since T-3094.
+
+**Root cause — two, where the task title named one.** T-3094 made two changes
+in one commit and the filed diagnosis caught only the second:
+
+1. **A recency gate** (`lib/branch-hygiene.sh:175`) that skips any branch whose
+   last commit is newer than `FW_BRANCH_STALE_DAYS` (default 30). Every commit a
+   bats fixture makes is seconds old, so the fixture branch is skipped and the
+   scan emits **nothing at all**. This is the dominant cause: the tests were not
+   comparing against a changed string, they were comparing against empty output.
+2. **A `days=<n>` field** inserted into both finding formats, which the anchored
+   `^...$` patterns could no longer match.
+
+Fixing only (2) — what the title prescribed — leaves both tests red.
+
+**Why structurally allowed:** the suite is in no gate's path, so red is
+indistinguishable from unrun. Sibling to T-3195 (same week, same shape,
+different cause: a harness that had silently unpinned itself).
+
+**The second defect, found by mutation and not by reading.** Mutation M2
+(delete the recency gate) left the entire repaired suite green. The assertion
+that should have caught it was `! echo "$output" | grep -q "fresh-fork"`, and
+**`! cmd` does not fail a bats test**. POSIX: *"the -e setting shall be ignored
+when executing … any command preceded by `!`"*. bats reads only the last
+command's status, so a negated assertion mid-body aborts nothing. Measured in
+an isolated two-test file rather than inferred:
+
+```
+{ output="PRESENT"; ! echo "$output" | grep -q PRESENT; true; }                    → ok       (inert)
+{ output="PRESENT"; if echo "$output" | grep -q PRESENT; then false; fi; true; }   → not ok   (fires)
+```
+
+Five assertions in this file were in the inert form — four pre-existing, one I
+had just written. All five converted to `if <cmd>; then false; fi`. Note test 5
+already used the correct form, so the file contained both spellings and looked
+internally consistent to a reader who was not counting.
+
+**Mutation battery** (each applied to `lib/branch-hygiene.sh`, then reverted;
+`git diff --stat` verified clean after every one):
+
+| Mutation | Reddened |
+|---|---|
+| M1 — drop `days=` from the `diverged-fork` line | tests 1, 6 |
+| M2 — delete the recency gate (`if false; then continue`) | test 6 **only after the negation fix; nothing before** |
+| M3 — emit `behind-threshold` where `diverged-fork` belongs | tests 1, 6 |
+| M4 — `fw_branch_divergence` emits `nudge` instead of `fork` | test 3 |
+| M5b — `behind-threshold` branch also emits `diverged-fork $br` | test 2 (converted negation) |
+| M6 — emit `fork` alongside `nudge` | test 4 (converted negation) |
+
+M5's first attempt reddened nothing because the perl one-liner interpolated
+`$br` as an empty Perl variable and emitted `diverged-fork  BOGUS` with no
+branch name — a malformed mutation, not a passing test. Re-run via awk with the
+literal preserved, it reddened test 2. Worth recording: a mutation that fails to
+mutate is a false green about the test, in exactly the way the test is a false
+green about the code.
+
+**Prevention:** (a) the suite header now documents both traps — the recency gate
+and the inert `!` — at the point of use; (b) test 6 pins the recency gate as
+covered behaviour with an explicit control leg, so "suppressed by recency" and
+"emits nothing ever" are no longer the same observation; (c) the structural
+catch for the negation class is a lint wired into a gate, which is **T-3191**
+and already filed — this task does not duplicate it. No new task filed.
 
 ## Evolution
 
@@ -275,3 +397,18 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3199-t100195-diverged-fork-suite-has-been-red.md
 - **Context:** Initial task creation
+
+### 2026-08-27T21:15:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-67c1940c
+- **Timestamp:** 2026-08-27T21:22:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-27T21:22:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
