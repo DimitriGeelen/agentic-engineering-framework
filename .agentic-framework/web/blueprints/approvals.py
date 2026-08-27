@@ -38,6 +38,35 @@ bp = Blueprint("approvals", __name__)
 APPROVALS_DIR = PROJECT_ROOT / ".context" / "approvals"
 APPROVAL_FILE = PROJECT_ROOT / ".context" / "working" / ".tier0-approval"
 
+# T-3200: the continuous-run brake. Resolution MIRRORS agents/context/stop-driver.sh:60
+#   HALT_FILE="${FW_CONTINUOUS_HALT:-${WORKING_DIR}/.continuous-halt}"
+# and must stay mirrored: a button that writes a path the driver does not read is
+# worse than no button, because it reports success while the loop keeps running.
+#
+# Deliberately the SAME file, not a parallel mechanism. The driver checks it as
+# Brake 1 ahead of every other vote, and its trustworthiness comes from being a
+# file written outside the model's mediation. Watchtower is a second WRITER of
+# that file, never a second brake — so there is no new precedence question for
+# stop-driver.sh to resolve.
+def _halt_file() -> Path:
+    override = os.environ.get("FW_CONTINUOUS_HALT", "").strip()
+    if override:
+        return Path(override)
+    return PROJECT_ROOT / ".context" / "working" / ".continuous-halt"
+
+
+def _halt_state() -> dict:
+    """Current brake state, for the /approvals card."""
+    hf = _halt_file()
+    halted = hf.exists()
+    since = None
+    if halted:
+        try:
+            since = datetime.fromtimestamp(hf.stat().st_mtime, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        except OSError:
+            since = None
+    return {"halted": halted, "path": str(hf), "since": since}
+
 # Approvals older than this are considered expired (seconds)
 EXPIRY_SECONDS = 3600  # 1 hour
 
@@ -626,6 +655,7 @@ def _build_approvals_context(expand_overflow: bool = False):
         ready_count=ready_count,
         deferred_count=deferred_count,
         expand_overflow=expand_overflow,
+        continuous=_halt_state(),          # T-3200
     )
 
 
@@ -826,3 +856,58 @@ def complete_batch():
         parts.append(f'<p style="color:var(--pico-del-color);">Errors ({len(errors)}): {"<br>".join(errors)}</p>')
 
     return "\n".join(parts)
+
+
+# ---------------------------------------------------------------------------
+# T-3200: continuous-run brake, reachable without shell access.
+#
+# Sovereignty says the human can override anything. Before this, the only
+# override was `touch .context/working/.continuous-halt` — which means an
+# operator watching a runaway loop from a phone had no brake at all.
+#
+# Both routes are state-changing POSTs and so pass through Watchtower's global
+# CSRF check (web/app.py before_request, T-1343) like every other mutating
+# route here. No bespoke auth: a one-off auth story for one endpoint is how
+# surfaces drift apart.
+#
+# On the DoS shape flagged when this was filed: the halt endpoint is fail-safe
+# in the direction that matters — the worst an unauthorised caller achieves is
+# STOPPING your agent, never starting one or approving anything. It is strictly
+# less dangerous than /api/approvals/decide, which already sits on this posture.
+# ---------------------------------------------------------------------------
+
+@bp.route("/api/continuous/halt", methods=["POST"])
+def continuous_halt():
+    """Engage the brake by writing the file stop-driver.sh reads as Brake 1."""
+    hf = _halt_file()
+    try:
+        hf.parent.mkdir(parents=True, exist_ok=True)
+        hf.write_text(
+            "halted via Watchtower /approvals at %s\n"
+            % datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+    except OSError as exc:
+        return '<p style="color:var(--pico-del-color);">Could not write halt file: %s</p>' % exc, 500
+    return _halt_fragment()
+
+
+@bp.route("/api/continuous/resume", methods=["POST"])
+def continuous_resume():
+    """Release the brake. A brake with no release is a brake nobody dares use."""
+    hf = _halt_file()
+    try:
+        hf.unlink(missing_ok=True)
+    except OSError as exc:
+        return '<p style="color:var(--pico-del-color);">Could not remove halt file: %s</p>' % exc, 500
+    return _halt_fragment()
+
+
+@bp.route("/approvals/continuous-state")
+def continuous_state_fragment():
+    """Read-only fragment, so the card can refresh without a full page load."""
+    return _halt_fragment()
+
+
+def _halt_fragment():
+    from flask import render_template
+    return render_template("_continuous_halt.html", continuous=_halt_state())

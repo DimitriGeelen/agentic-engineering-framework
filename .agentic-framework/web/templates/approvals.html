@@ -224,11 +224,28 @@
 }
 .section-header h3 { margin: 0; }
 .section-header small { color: var(--pico-muted-color); font-weight: 400; }
+
+/* T-3200: continuous-run brake. Colour carries the state so it is readable at a
+   glance on a phone; the label repeats it in words so colour is never the only
+   channel. */
+.continuous-halt { padding: .75rem 1rem; margin-bottom: 1rem; border-left: 4px solid var(--pico-muted-border-color); }
+.continuous-halt.is-halted { border-left-color: var(--pico-del-color); }
+.continuous-halt.is-running { border-left-color: var(--pico-ins-color); }
+.continuous-halt__state { margin-bottom: .5rem; display: flex; gap: .6rem; align-items: baseline; flex-wrap: wrap; }
+.continuous-halt__state small { color: var(--pico-muted-color); }
+.continuous-halt form { margin: 0; }
+.continuous-halt button { width: auto; margin: 0; }
+.continuous-halt footer { margin-top: .5rem; }
+.continuous-halt footer small { color: var(--pico-muted-color); }
 </style>
 
 <div class="page-header">
     <h1>Approvals {% if total_count %}<small>({{ total_count }} pending)</small>{% endif %}</h1>
 </div>
+
+{# T-3200: brake first — deliberately OUTSIDE the 10s polling container, so a
+   refresh can never blank it at the moment someone is reaching for it. #}
+{% include '_continuous_halt.html' %}
 
 <!-- Polling container: auto-refreshes every 10s (T-669)
      hx-target="this" override required — base.html sets body-level hx-target="#content",
