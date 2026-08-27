@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3188: Branch hygiene still measures 'landed' against master, which now lags by design
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-27T08:05:03Z
+# ============================================================================
+
+task_id: T-3188
+task_name: "Branch hygiene still measures 'landed' against master, which now lags by design"
+workflow_type: refactor
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T22:42:00Z
+completed: 2026-08-27T08:04:41Z
+duration_days: 1
+updates_count: 0
+first_commit: 2026-08-27T10:04:28+02:00
+last_commit: 2026-08-27T10:04:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  branch hygiene measures 'landed' against the dev branch
+
+# Key outcomes
+outcomes:
+  - '`fw_branch_hygiene` judges "landed" against the dev branch (`origin/bleeding-edge`, then local) when one exists, falling back to master for repos that have no dev branch'
+  - '`fw_branch_divergence` measures the checkout against the dev branch, and is SILENT on the dev branch itself — the handover must stay neutral on a correct checkout'
+  - 'The dev branch is never itself reported as unlanded or stale; it is the trunk, not a feature branch'
+  - '`master` lagging the dev branch between releases produces NO finding — that lag is the release train''s product, not drift'
+  - 'CONTROL LEG: a genuinely unlanded feature branch still fires, over the same fixture, so "quiet about master" is not "quiet about everything"'
+  - 'Fallback preserved: a repo with no dev branch behaves exactly as before (master-only consumers are unaffected)'
+  - '`FW_DEV_BRANCH` overrides the dev branch name here too, matching the T-3187 guard rather than inventing a second knob'
+  - 'Tests in `tests/unit/t3188_hygiene_release_train.bats`, every silent assertion paired with a firing one'
+  - 'Mutation-tested: reverting the target back to master reddens only the release-train tests, not the fallback ones'
+  - 'No `! cmd` assertions in dead position — `tools/bats-dead-negation-lint.py` reports clean (L-651)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - 'lib/branch-hygiene.sh'
+  - '.tasks/active/T-3188-branch-hygiene-still-measures-landed-aga.md'
+  - '.tasks/active/T-3194-branch-hygiene-remediation-text-still-te.md'
+  - 'tests/unit/t3188_hygiene_release_train.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-27T10:04:28'
+    action: 'T-3188: branch hygiene measures ''landed'' against the dev branch'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 562 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 562
+  commits: 2
+  files_changed: 8
+  lines_added: 980
+  lines_removed: 168
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3188-branch-hygiene-still-measures-landed-aga.md
+generated_by: context-agent-hybrid

@@ -71,10 +71,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 11
-  commits: 1
-  files_changed: 4
-  lines_added: 406
-  lines_removed: 4
+  commits: 2
+  files_changed: 11
+  lines_added: 558
+  lines_removed: 20
+  footprint_refreshed_at: '2026-08-27T07:52:21Z'
+  footprint_refreshed_by_commit: fcaf44fce
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3192-cut-the-first-release-under-the-release-.md

@@ -10,12 +10,12 @@ description: >
   changing target semantics has blast radius across every finding class and deserves
   its own test pass.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/branch-hygiene.sh, tests/unit/t3187_branch_identity_guard.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -28,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T22:42:00Z
-last_update: 2026-08-27T07:54:08Z
-date_finished:
+last_update: 2026-08-27T08:04:41Z
+date_finished: 2026-08-27T08:04:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -159,3 +159,15 @@ bats tests/unit/t100143_branch_hygiene.bats > /tmp/.t3188-b3 2>&1 && grep -q "^o
 bash -n lib/branch-hygiene.sh
 grep -q "FW_DEV_BRANCH" lib/branch-hygiene.sh
 python3 tools/bats-dead-negation-lint.py tests/unit/t3188_hygiene_release_train.bats > /tmp/.t3188-lint 2>&1 && grep -q "dead 0" /tmp/.t3188-lint
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-521c773e
+- **Timestamp:** 2026-08-27T08:04:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-27T08:04:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
