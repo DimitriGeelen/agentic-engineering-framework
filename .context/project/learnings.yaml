@@ -4840,3 +4840,9 @@ X'` returning empty group."
   task: T-3172
   date: 2026-08-26
   context: Added via context agent
+- id: L-651
+  learning: "A linter that no gate runs is documentation, not a control. T-3138 measured the bats dead-negation class, swept 106 sites, and shipped tools/bats-dead-negation-lint.py — wired into no audit section, no fw test lint, no cron, no hook. T-3190 reintroduced the class two days later in a new suite and it went green; only mutation testing caught it. When a sweep fixes N existing instances, ask separately what stops instance N+1, and treat the answer 'we built a tool for it' as unfinished until something runs the tool without a human choosing to."
+  source: P-001
+  task: T-3191
+  date: 2026-08-27
+  context: Added via context agent

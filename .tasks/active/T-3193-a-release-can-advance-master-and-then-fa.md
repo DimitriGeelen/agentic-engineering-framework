@@ -1,13 +1,8 @@
 ---
-id: T-3191
-name: "bats-dead-negation-lint is wired into no gate, so the 107th inert assertion
-  lands unchallenged"
+id: T-3193
+name: "A release can advance master and then fail to publish its tag, and the GitHub Release still gets created"
 description: >
-  T-3138 measured the class, swept 106 inert '! cmd' assertions, and shipped tools/bats-dead-negation-lint.py.
-  Nothing runs it: no audit section, no fw test lint, no cron, no hook. T-3190 reintroduced
-  the class two days later in a brand-new suite and it went green; only mutation testing
-  exposed it. The sweep cleaned the existing sites but left no rail against the next
-  one.
+  T-3190 guarded one direction: no tag survives publication if master cannot advance. The first real release hit the mirror image. The release-branch push to origin succeeded, the pre-push audit lock then blocked the TAG push, and release_tag_and_release carried on to create a GitHub Release for a tag origin does not have. Consumers see master at the new commit with no tag naming it; the GitHub Release page says the release shipped. The command does return non-zero, but any caller that pipes it (fw release ... | tail) sees the pipeline's 0 instead.
 
 status: captured
 workflow_type: build
@@ -26,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-27T07:40:03Z
-last_update: '2026-08-27T07:45:15Z'
-date_finished:
+created: 2026-08-27T07:50:47Z
+last_update: 2026-08-27T07:50:47Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-27T07:45:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=206,acs=8)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-27T07:45:15Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3191: bats-dead-negation-lint is wired into no gate, so the 107th inert assertion lands unchallenged
+# T-3193: A release can advance master and then fail to publish its tag, and the GitHub Release still gets created
 
 ## Context
 
@@ -79,12 +46,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `tools/bats-dead-negation-lint.py` runs from a gate that fires without anyone choosing to run it (audit section, `fw test lint`, or pre-push) — decide which, and say why in the task
-- [ ] The gate scans the whole `tests/` tree, not a pinned list, so a newly-added suite is covered on its first run
-- [ ] A newly-introduced dead negation makes the gate go RED, proven by adding one to a scratch fixture and watching it fire — not by reading the linter's exit code
-- [ ] CONTROL LEG: the same gate is GREEN on the tree as it stands today, so RED means "new dead negation" and not "gate is always red"
-- [ ] The T-3190 suite (`tests/unit/t3190_release_master_ff.bats`) is covered by whatever scan path is chosen
-- [ ] Wiring is recorded where the next person looks: the linter's own header says what runs it
+- [ ] A release that cannot publish its tag to a remote does not report success, and does not create a GitHub Release for a tag that remote lacks
+- [ ] The tag push is retried, or its precondition (the pre-push audit lock) is waited on, rather than failing on first contention — the lock is routinely held by cron and this is the common case, not the rare one
+- [ ] Decide and record which invariant wins when master has already advanced: roll master back, or hold the release open and retry the tag. Both are defensible; pick one and say why in `## Decisions`
+- [ ] `bin/fw release` propagates the function's non-zero exit, so a piped caller cannot read a failed release as a successful one
+- [ ] Test covers: branch push succeeds + tag push fails → no GitHub Release, non-zero exit
+- [ ] CONTROL LEG: branch push succeeds + tag push succeeds → GitHub Release created, exit 0, so the test above measures the failure and not the absence of the feature
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -270,7 +237,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-27T07:40:03Z — task-created [task-create-agent]
+### 2026-08-27T07:50:47Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3191-bats-dead-negation-lint-is-wired-into-no.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3193-a-release-can-advance-master-and-then-fa.md
 - **Context:** Initial task creation
