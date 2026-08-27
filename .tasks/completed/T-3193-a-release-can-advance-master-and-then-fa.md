@@ -1,16 +1,22 @@
 ---
-id: T-3028
-name: "T-3025 GO: handover digest-plus-reference for the three dump sections"
+id: T-3193
+name: "A release can advance master and then fail to publish its tag, and the GitHub
+  Release still gets created"
 description: >
-  T-3025 GO: handover digest-plus-reference for the three dump sections
+  T-3190 guarded one direction: no tag survives publication if master cannot advance.
+  The first real release hit the mirror image. The release-branch push to origin succeeded,
+  the pre-push audit lock then blocked the TAG push, and release_tag_and_release carried
+  on to create a GitHub Release for a tag origin does not have. Consumers see master
+  at the new commit with no tag naming it; the GitHub Release page says the release
+  shipped. The command does return non-zero, but any caller that pipes it (fw release
+  ... | tail) sees the pipeline's 0 instead.
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon:
+owner: agent
+horizon: null
 tags: []
-components: [agents/handover/handover.sh, lib/config.sh, 
-      tests/unit/handover_digest.bats, web/blueprints/config.py]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,9 +28,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-16T07:56:57Z
-last_update: 2026-08-27T21:36:00Z
-date_finished: 2026-08-16T08:38:36Z
+created: 2026-08-27T07:50:47Z
+last_update: 2026-08-27T21:52:13Z
+date_finished: 2026-08-27T21:52:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,131 +42,53 @@ date_finished: 2026-08-16T08:38:36Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-16T08:00:08Z'
+  - ts: '2026-08-27T08:00:09Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
-      blast_radius: 0
+      blast_radius:
       tier: 2
       effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=206,acs=8)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-16T08:00:16Z'
+  - ts: '2026-08-27T08:00:21Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 0
       D3: 3
-      D4: 3
-      F-RECALL: 2
+      D4: 2
+      F-RECALL: 0
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=3 (body:portability-abstraction); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-08-16T22:24:15Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 3
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 1
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=3 (body:portability-abstraction); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
-      (no-signal)
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3028: T-3025 GO: handover digest-plus-reference for the three dump sections
+# T-3193: A release can advance master and then fail to publish its tag, and the GitHub Release still gets created
 
 ## Context
 
-Implements the T-3025 GO: **option (3), digest-plus-reference, scoped to the three
-dump sections only.** Decision recorded by the operator via Watchtower (`5148d07f6`).
-
-The measured case (T-3022 §Spike 9-10, T-3025 §Spike 11-12): `.context/handovers` is
-68% of the indexed corpus and 79% of the last month's growth. Section accounting of a
-265,888-byte handover shows **state dumps are 97.3%** of it — Observation Inbox
-137,505 B, Work in Progress 69,568 B, Awaiting Your Action 48,355 B — against ~2 KB of
-session narrative. Consecutive handovers are byte-identical across those three
-sections. The prototype at `docs/reports/T-3025-digest-spike.py` reduced a real
-handover 273,761 → 18,762 B (14.6×) with **all 14 narrative sections byte-identical
-by md5**.
-
-The GO's reasoning, which sets the scope: narrative is what a cold reader needs and it
-is preserved in full; what gets referenced is enumerated live state — a queue snapshot
-that is stale the moment it is written and that every consumer re-derives anyway.
-Referencing the part that goes stale and embedding the part that does not is the split,
-not a compromise.
-
-**GO condition 2 is already satisfied** by T-3027: `tasks_active:` now means active, so
-frontmatter carries correct identity + state for every in-flight task. That is what
-makes eliding the WIP dump safe — the T-3025 IW-2 probe's digest arm failed precisely
-because the surviving carrier asserted a false status, and it no longer does. Condition 1
-(digest must carry per-task Status) is subsumed, but the retained top-N entries carry
-Status anyway.
-
-**Reversibility is a requirement, not a nicety.** The whole chain (E′ → F → A) was
-ordered to put subtraction before construction. `FW_HANDOVER_DIGEST=0` must restore the
-full dumps with no other change.
-
-Not in scope: candidate A (binary quantization), and any change to the 14 narrative
-sections.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] All three dump sections digest to `count + regenerating command + top-N entries`: Observation Inbox (`fw note triage`), Work in Progress (`fw task list --status started-work`), Awaiting Your Action (`fw review-queue`)
-- [x] The partial-complete footer inside Work in Progress — which re-lists the same set as Awaiting Your Action — is digested too, since leaving it whole would keep ~40% of the savings on the table
-- [x] Every digested section states its own total, so a reader can tell a truncated list from a complete one; a section listing fewer than it claims says so (preserving the T-2927 mismatch line, which is the control that made the last silent-truncation bug visible)
-- [x] `FW_HANDOVER_DIGEST=0` restores byte-identical full dumps — verified by generating both ways and diffing, not by reading the code
-- [x] `FW_HANDOVER_DIGEST` and `FW_HANDOVER_DIGEST_TOP_N` are registered in **both** `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` (the two are pinned equal by `config registry key count matches across sources`; a one-sided registration fails the pre-push audit — T-3024 origin)
-- [x] All 14 narrative sections are byte-identical between digested and undigested output, checked by md5 per section rather than by eyeball
-- [x] A real generated handover is ≥5× smaller than the same handover undigested, measured on this repo's live corpus
-- [x] `tests/unit/handover_digest.bats` pins: digest on/off parity for narrative, count-vs-listed honesty, top-N respected, and that an empty section digests to nothing rather than to a "0 items" stub
-
+- [x] A release that cannot publish its tag to a remote does not report success, and does not create a GitHub Release for a tag that remote lacks
+- [x] The tag push is retried, or its precondition (the pre-push audit lock) is waited on, rather than failing on first contention — the lock is routinely held by cron and this is the common case, not the rare one
+- [x] Decide and record which invariant wins when master has already advanced: roll master back, or hold the release open and retry the tag. Both are defensible; pick one and say why in `## Decisions`
+- [x] `bin/fw release` propagates the function's non-zero exit, so a piped caller cannot read a failed release as a successful one
+- [x] Test covers: branch push succeeds + tag push fails → no GitHub Release, non-zero exit
+- [x] CONTROL LEG: branch push succeeds + tag push succeeds → GitHub Release created, exit 0, so the test above measures the failure and not the absence of the feature
 
 ### Human
-
-- [ ] [REVIEW] The digested handover still gives you what you open a handover for
-
-  This is the one thing no measurement settles, and it is the open half of the
-  T-3025 GO. Byte counts and md5 parity say the narrative survived; they cannot say
-  whether a session start reads *well*. You are also the party IW-1 was left to —
-  whether the handover's primary consumer is a cold reader (narrative) or a live
-  session (enumerations). If the enumerations turn out to be what you actually
-  reach for, this is the wrong trade and `HANDOVER_DIGEST=0` is the answer, not a
-  tweak.
-
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw handover`
-  2. Open the newest file in `.context/handovers/` and read it as if you had been
-     away a week.
-  3. For contrast, generate the old shape and open it too:
-     `cd /opt/999-Agentic-Engineering-Framework && FW_HANDOVER_DIGEST=0 bin/fw handover`
-
-  **Expected:** the digested one answers "where am I, what must I not do, what next"
-  without your needing the full dumps; where it truncates, it says so and names the
-  command that gives you the rest.
-
-  **If not:** say which section you missed and whether you wanted *more entries*
-  (raise `HANDOVER_DIGEST_TOP_N`) or *the whole dump back* (set `HANDOVER_DIGEST=0`
-  — that path is tested and restores the previous output unchanged). Either is one
-  `bin/fw config set` away; nothing needs rebuilding.
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -191,30 +119,16 @@ sections.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-## Measured Result
-
-Generated both ways against this repo's live corpus, same session, minutes apart:
-
-| | full (`FW_HANDOVER_DIGEST=0`) | digested | ratio |
-|---|---|---|---|
-| **whole file** | 270,039 B | 17,643 B | **15.3×** |
-| `## Observation Inbox` | 141,774 B | 1,504 B | 94× |
-| `## Work in Progress` | 69,198 B | 5,279 B | 13× |
-| `## Awaiting Your Action (Human)` | 48,566 B | 1,635 B | 30× |
-| 14 narrative sections | — | — | **byte-identical (md5)** |
-
-Close to the prototype's prediction (273,761 → 18,762 B, 14.6×), which is the
-useful part: the spike measured a post-processed handover, this is the generator
-producing it directly, and they agree.
-
-**Reversibility proven against the pre-change script, not against the code.**
-Generated a handover with `git show HEAD:agents/handover/handover.sh` and compared
-section-by-section with `FW_HANDOVER_DIGEST=0` output: **16 of 17 sections
-md5-identical, section sets equal.** The one difference is `## Token Usage`, which
-carries live session metrics (turn counts moved 5827 → 5823 between the two runs) —
-not a structural difference.
-
 ## Verification
+
+bash -n lib/release.sh
+out=$(timeout 600 bats tests/unit/t3193_release_tag_push_failure.bats 2>&1); echo "$out" | grep -q "^ok 10" && ! echo "$out" | grep -q "^not ok"
+out=$(timeout 600 bats tests/unit/t3190_release_master_ff.bats tests/unit/lib_release.bats 2>&1); ! echo "$out" | grep -q "^not ok"
+# T-3193: single command, own exit IS the verdict — a `cmd; test $?` chain passes
+# at the gate (errexit suppressed in an if-condition) but fails a documented
+# rehearsal under `set -eo pipefail`. Measured this session.
+if bin/fw release nosuchsubcmd >/dev/null 2>&1; then exit 1; fi
+
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,19 +189,6 @@ not a structural difference.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bash -n agents/handover/handover.sh
-out=$(bats tests/unit/handover_digest.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# T-3027's classifier must keep passing — this task changed the same generator.
-out=$(bats tests/unit/handover_task_classification.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# Both config keys registered on BOTH sides. A one-sided registration is green
-# locally and red only at the pre-push audit's cross-source parity invariant,
-# where it reads as a hung push rather than a config error (T-3024 origin).
-[ "$(grep -c '"HANDOVER_DIGEST|' lib/config.sh)" -eq 1 ]
-[ "$(grep -c '"HANDOVER_DIGEST_TOP_N|' lib/config.sh)" -eq 1 ]
-[ "$(grep -c '("HANDOVER_DIGEST",' web/blueprints/config.py)" -eq 1 ]
-[ "$(grep -c '("HANDOVER_DIGEST_TOP_N",' web/blueprints/config.py)" -eq 1 ]
-bash -c 'source lib/config.sh; [ "$(fw_config HANDOVER_DIGEST)" = "1" ] && [ "$(fw_config HANDOVER_DIGEST_TOP_N)" = "5" ]'
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -303,6 +204,42 @@ bash -c 'source lib/config.sh; [ "$(fw_config HANDOVER_DIGEST)" = "1" ] && [ "$(
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the first real release pushed `master` to origin, then failed to push
+the tag (pre-push audit lock, held by the daily cron), then created a GitHub Release
+naming a tag origin does not have. Consumers saw the install surface at the new
+commit, nothing naming it, and a release page asserting the release shipped.
+
+**Root cause:** `lib/release.sh` guarded one direction only. T-3190 added a refusal
+for the release-branch push — if it reaches no remote, roll back and publish nothing.
+The tag push, twenty lines later, only set `failed=1` and fell through to
+`gh release create`. Two pushes, one guard.
+
+**Why structurally allowed:** the asymmetry is invisible while both pushes succeed,
+which is every run until a remote refuses exactly one of them. The audit lock does
+precisely that — it is a *pre-push* gate, so it blocks the second push of a
+two-push sequence after the first has already landed. The condition that produces
+the bug is one the framework creates for itself, on a schedule, via cron.
+
+**Prevention:** the tag leg now mirrors the branch leg's refusal, and 10 tests pin
+it — including a control leg proving the happy path still publishes, without which
+"correctly refused" and "never ran" would be the same observation.
+
+**Mutations** (each applied to `lib/release.sh`, reverted after; `RELEASE_TAG_RETRY_SLEEP=0`):
+
+| Mutation | Reddened |
+|---|---|
+| M1 — delete the refusal (restore pre-T-3193 behaviour) | tests 2, 4, 8 |
+| M2 — refuse, but still create the GitHub Release | test 2 |
+| M3 — force-push the release branch back (the rejected AC3 option) | test 6 |
+| M4 — single attempt instead of 3 | test 9 |
+| M5 — print the retry line unconditionally | test 10 (control leg) |
+
+M1 is worth reading closely: it did **not** redden test 3 (exit non-zero). The old
+code already returned non-zero, because `failed=1` was set. So the defect was never
+"the command reports success" in the exit-status sense — it was the GitHub Release
+being created anyway, plus a piped caller reading the pipeline's 0. Had the suite
+asserted only on exit status it would have passed against the broken code.
 
 ## Evolution
 
@@ -357,48 +294,39 @@ bash -c 'source lib/config.sh; [ "$(fw_config HANDOVER_DIGEST)" = "1" ] && [ "$(
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO — keep the digest on, at `HANDOVER_DIGEST_TOP_N=5`.
-
-**Rationale:**
-
-Your GO on T-3025 authorised this shape and this scope, and the build came in where
-the spike said it would: 15.3× on the whole file, all 14 narrative sections
-byte-identical. The spike measured a post-processed handover; this is the generator
-emitting it directly, and the two agree — which is the part worth trusting, not the
-ratio itself.
-
-The reason I am comfortable recommending GO rather than asking you to pilot it is
-that the failure mode has a proven exit. `HANDOVER_DIGEST=0` was tested against the
-*pre-change script*, not against my reading of the code: 16 of 17 sections
-md5-identical, section sets equal, the one difference being live session metrics that
-moved between two runs seconds apart. If the digest turns out to be wrong for how you
-work, one `bin/fw config set` puts the old handover back exactly.
-
-The one thing I cannot settle is IW-1, and it is genuinely yours: whether the
-handover's primary consumer is a cold reader (narrative — in which case this trade is
-right) or a live session (the enumerations — in which case it is wrong and the growth
-should be attacked elsewhere). The cold-reader probe supports the first reading, but
-it probed an agent, not you. That is what the Human AC asks.
-
-**What I am not claiming:** that this closes the corpus-growth problem. It removes the
-largest term — handovers were 68% of the indexed corpus and 79% of its growth — but
-candidate A (binary quantization, ~10× on recall latency) remains unstarted and
-unauthorised, and E′'s inclusion-set work is T-3024, still with you for review.
-
-**Evidence:**
-
-- Whole file 270,039 → 17,643 B (15.3×); per-section 141,774 → 1,504, 69,198 → 5,279,
-  48,566 → 1,635. Generated both ways against this repo's live corpus, minutes apart.
-- 14/14 narrative sections byte-identical by md5; section sets equal.
-- Reversibility proven against `git show HEAD:agents/handover/handover.sh`, not
-  asserted from the diff.
-- 10 bats tests in `tests/unit/handover_digest.bats` run the real generator against a
-  synthetic corpus; totals are derived from disk so they stay independent oracles.
-- T-3027 landed first and is the precondition: `tasks_active:` now means active, so
-  eliding the WIP dump no longer leaves a false status as the sole carrier.
-- Both config keys registered on both sides; `fw_config` resolves 1 and 5.
-
 ## Decisions
+
+### 2026-08-27 — which invariant wins when the release branch has already advanced
+
+- **Chose:** HOLD THE RELEASE OPEN. Keep the local tag, create no GitHub Release,
+  exit non-zero, and leave the pushed release branch exactly where it is.
+- **Why:** by the time the tag push fails, `master` has been pushed and consumers
+  may already have fetched it. Retracting it means a force-push to the install
+  surface — Tier 0, destructive, and it breaks anyone who pulled in the window.
+  The resulting state, "master advanced, tag pending", is untidy, honest and
+  recoverable by re-running the command. The alternative state, "release
+  published, tag missing", is tidy, false, and is the bug.
+- **Rejected — roll master back:** it is what the *branch-push* guard does one
+  block earlier, which is why it looks consistent. It is not: that guard fires
+  when the branch reached NO remote, so there is nothing published to retract.
+  This one fires after a successful publish. Same-looking situations, opposite
+  safe actions. Pinned by the test "the already-pushed release branch is NOT
+  rolled back", and mutation M3 (force-push the old sha back) reddens it.
+
+### 2026-08-27 — AC4, and the half of it that cannot be fixed here
+
+- **Measured:** `bin/fw release` already propagates. `bin/fw release nosuchsubcmd`
+  exits 2; the case branch's status is the script's status. That half needed no fix
+  and is now pinned in `## Verification`.
+- **The other half is not ours to fix.** `fw release … | tail` reports *tail's*
+  status — a property of shell pipelines, not of `fw`. No change inside the command
+  can make a pipe surface an upstream failure; only the caller's `set -o pipefail`
+  can (measured: piped exit 0, piped+pipefail exit 2).
+- **What was done instead:** the refusal is written to **stderr**, which a
+  `| tail` on stdout never captures, so it stays on the operator's terminal even
+  when the exit status is masked. Saying "AC4 done" without this distinction would
+  have claimed a guarantee the shell does not provide.
+
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -421,26 +349,27 @@ unauthorised, and E′'s inclusion-set work is T-3024, still with you for review
 
 ## Updates
 
-### 2026-08-16T07:56:57Z — task-created [task-create-agent]
+### 2026-08-27T07:50:47Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3193-a-release-can-advance-master-and-then-fa.md
 - **Context:** Initial task creation
+
+### 2026-08-27T21:46:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0ed71de8
-- **Timestamp:** 2026-08-16T08:39:20Z
+- **Scan ID:** R-8419f2be
+- **Timestamp:** 2026-08-27T21:52:25Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
 - **Findings:** 1
 
-**Per-AC findings:**
+**Verification-level findings:**
 
-- **AC#1 (Human)** — [REVIEW] The digested handover still gives you what you open a handover for
-  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='names the\n  c' in Expected: the digested one answers "where am I, what must I not do, what next"   without your needing the full dumps; where it truncates, it says so a`
-### 2026-08-16T08:22:55Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `out=$(timeout 600 bats tests/unit/t3190_release_master_ff.bats tests/unit/lib_release.bats 2>&1); ! echo "$out" | grep -q "^not ok"`
 
-### 2026-08-16T08:38:36Z — status-update [task-update-agent]
+### 2026-08-27T21:52:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

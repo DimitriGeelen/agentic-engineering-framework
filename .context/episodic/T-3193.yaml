@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3193: A release can advance master and then fail to publish its tag, and the GitHub Release still gets created
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-27T21:52:37Z
+# ============================================================================
+
+task_id: T-3193
+task_name: "A release can advance master and then fail to publish its tag, and the GitHub Release still gets created"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-27T07:50:47Z
+completed: 2026-08-27T21:52:13Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-3190 guarded one direction: no tag survives publication if master cannot advance. The first real release hit the mirror image. The release-branch push to origin succeeded, the pre-push audit lock then blocked the TAG push, and release_tag_and_release carried on to create a GitHub Release for a tag origin does not have. Consumers see master at the new commit with no tag naming it; the GitHub Release page says the release shipped. The command does return non-zero, but any caller that pipes it (fw release ... | tail) sees the pipeline's 0 instead.
+
+# Key outcomes
+outcomes:
+  - 'A release that cannot publish its tag to a remote does not report success, and does not create a GitHub Release for a tag that remote lacks'
+  - 'The tag push is retried, or its precondition (the pre-push audit lock) is waited on, rather than failing on first contention — the lock is routinely held by cron and this is the common case, not the rare one'
+  - 'Decide and record which invariant wins when master has already advanced: roll master back, or hold the release open and retry the tag. Both are defensible; pick one and say why in `## Decisions`'
+  - '`bin/fw release` propagates the function''s non-zero exit, so a piped caller cannot read a failed release as a successful one'
+  - 'Test covers: branch push succeeds + tag push fails → no GitHub Release, non-zero exit'
+  - 'CONTROL LEG: branch push succeeds + tag push succeeds → GitHub Release created, exit 0, so the test above measures the failure and not the absence of the feature'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-27 — which invariant wins when the release branch has already advanced'
+    chose: 'HOLD THE RELEASE OPEN. Keep the local tag, create no GitHub Release, exit non-zero, and leave the pushed release branch exactly where it is.'
+    rationale: 'by the time the tag push fails, `master` has been pushed and consumers may already have fetched it. Retracting it means a force-push to the install surface — Tier 0, destructive, and it breaks anyone who pulled in the window. The resulting state, "master advanced, tag pending", is untidy, honest and recoverable by re-running the command. The alternative state, "release published, tag missing", is tidy, false, and is the bug. - **Rejected — roll master back:** it is what the *branch-push* guard does one block earlier, which is why it looks consistent. It is not: that guard fires when the branch reached NO remote, so there is nothing published to retract. This one fires after a successful publish. Same-looking situations, opposite safe actions. Pinned by the test "the already-pushed release branch is NOT rolled back", and mutation M3 (force-push the old sha back) reddens it.'
+  - decision: '2026-08-27 — AC4, and the half of it that cannot be fixed here'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 841 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 841
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3193-a-release-can-advance-master-and-then-fa.md
+generated_by: context-agent-hybrid

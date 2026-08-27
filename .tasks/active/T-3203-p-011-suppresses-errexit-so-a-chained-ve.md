@@ -1,17 +1,10 @@
 ---
-id: T-3193
-name: "A release can advance master and then fail to publish its tag, and the GitHub
-  Release still gets created"
+id: T-3203
+name: "P-011 suppresses errexit so a chained verification line is judged only on its last command, while the template tells authors to rehearse under set -eo pipefail"
 description: >
-  T-3190 guarded one direction: no tag survives publication if master cannot advance.
-  The first real release hit the mirror image. The release-branch push to origin succeeded,
-  the pre-push audit lock then blocked the TAG push, and release_tag_and_release carried
-  on to create a GitHub Release for a tag origin does not have. Consumers see master
-  at the new commit with no tag naming it; the GitHub Release page says the release
-  shipped. The command does return non-zero, but any caller that pipes it (fw release
-  ... | tail) sees the pipeline's 0 instead.
+  P-011 suppresses errexit so a chained verification line is judged only on its last command, while the template tells authors to rehearse under set -eo pipefail
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -28,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-27T07:50:47Z
-last_update: '2026-08-27T08:00:21Z'
-date_finished:
+created: 2026-08-27T21:53:09Z
+last_update: 2026-08-27T21:53:09Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -41,52 +34,80 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-27T08:00:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=206,acs=8)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-27T08:00:21Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3193: A release can advance master and then fail to publish its tag, and the GitHub Release still gets created
+# T-3203: P-011 suppresses errexit so a chained verification line is judged only on its last command, while the template tells authors to rehearse under set -eo pipefail
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reported by 832-Workflow-designer on the chat arc (offset 665) about their own
+tree; verified here, because it is the same shared code.
+
+`agents/task-create/update-task.sh:14` sets `set -euo pipefail`. Line 1215 then
+runs every verification command as the **condition of an `if`**:
+
+```
+if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; cd "$PROJECT_ROOT" && eval "$cmd") >/tmp/… 2>&1; then
+```
+
+POSIX suppresses `-e` for a compound command in an `if` condition, and the
+suppression reaches inside the subshell. `pipefail` is not suppressed. Measured,
+comparing the real gate shape against the rehearsal the template prescribes:
+
+| verification line | gate | documented rehearsal |
+|---|---|---|
+| `false; true` | **PASS** | FAIL |
+| `out=$(exit 3); echo ok` | **PASS** | FAIL |
+| `grep -q nope /etc/hostname; true` | **PASS** | FAIL |
+| `false \| cat` | FAIL | FAIL (pipefail survives) |
+
+So a chained line is judged on its last element alone, while the template tells
+authors to rehearse under conditions stricter than the gate applies.
+
+**Blast radius — small, and the first number was wrong.** First count said 1025 of
+10959 lines had a last element that cannot fail. That count split on `;`, took the
+last fragment, and matched `^echo` — but the dominant pattern is
+`out=$(cmd 2>&1); echo "$out" | grep -q PAT`, whose last element is a *pipeline*
+ending in `grep`, and grep's failure IS caught because pipefail is live. Corrected
+count: **15**, most of them `for`-loops the `;` split mangled, plus several
+`bash -c "set -e -o pipefail; …; echo ok"` lines which are **correct** — an inner
+`bash -c` is a separate shell whose errexit the outer `if` does not suppress.
+
+So this is a documentation-vs-reality gap with a near-zero live footprint, not a
+blocker. It is filed because the template actively teaches the shape it cannot
+enforce, and because a live instance appeared in T-3193's own verification block
+during the same session: `bin/fw release nosuchsubcmd >/dev/null 2>&1; test $? -ne 0`
+passes the gate and fails the rehearsal. It was rewritten to
+`if bin/fw release nosuchsubcmd >/dev/null 2>&1; then exit 1; fi`, which is correct
+under both.
+
+Related but distinct: L-240 and L-613 already record that pipefail is live. Neither
+says errexit is not. That is the gap.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A release that cannot publish its tag to a remote does not report success, and does not create a GitHub Release for a tag that remote lacks
-- [ ] The tag push is retried, or its precondition (the pre-push audit lock) is waited on, rather than failing on first contention — the lock is routinely held by cron and this is the common case, not the rare one
-- [ ] Decide and record which invariant wins when master has already advanced: roll master back, or hold the release open and retry the tag. Both are defensible; pick one and say why in `## Decisions`
-- [ ] `bin/fw release` propagates the function's non-zero exit, so a piped caller cannot read a failed release as a successful one
-- [ ] Test covers: branch push succeeds + tag push fails → no GitHub Release, non-zero exit
-- [ ] CONTROL LEG: branch push succeeds + tag push succeeds → GitHub Release created, exit 0, so the test above measures the failure and not the absence of the feature
+- [ ] REPRODUCE FIRST. A probe demonstrates the divergence before anything is
+      changed: the same verification line judged by the real gate shape and by the
+      rehearsal the task template prescribes. If they agree, this task is wrong and
+      closes as such
+- [ ] The task template's L-387 hint no longer claims P-011 runs commands under
+      `set -eo pipefail`. It states what is actually true: **pipefail is live,
+      errexit is NOT**, because the command runs as the condition of an `if`
+      (`agents/task-create/update-task.sh:1215`), and POSIX suppresses `-e` for a
+      compound command in an `if` condition — including inside a subshell
+- [ ] The template tells authors the safe shape for a multi-command line: one
+      command whose own exit status is the verdict, or an explicit
+      `bash -c 'set -eo pipefail; …'` sub-shell whose errexit the outer `if`
+      cannot suppress. Both forms verified, not asserted
+- [ ] Decide and record in `## Decisions` whether the gate should be changed to
+      match the docs (run each line under errexit) or the docs changed to match the
+      gate. Changing the gate re-judges 10,959 existing verification lines; that
+      blast radius is the argument, and it goes in the decision either way
+- [ ] Blast radius measured and stated with the query that produced it, so the
+      number can be re-derived rather than trusted
+- [ ] CONTROL LEG: a line that SHOULD fail under the corrected guidance is shown
+      failing, so the new advice is demonstrated to bite and not merely to read well
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,7 +293,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-27T07:50:47Z — task-created [task-create-agent]
+### 2026-08-27T21:53:09Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3193-a-release-can-advance-master-and-then-fa.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3203-p-011-suppresses-errexit-so-a-chained-ve.md
 - **Context:** Initial task creation

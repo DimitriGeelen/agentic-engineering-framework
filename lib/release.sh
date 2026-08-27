@@ -241,17 +241,68 @@ release_tag_and_release() {
 
     # Push tag to every remote
     # (failed is declared above, with the release-branch push that also sets it)
+    #
+    # T-3193: this leg is the mirror image of the release-branch guard above,
+    # and it used to have none. The branch push refuses when it reaches no
+    # remote; the tag push only set `failed` and fell through to `gh release
+    # create`, which happily published a GitHub Release naming a tag that no
+    # remote has. Consumers then see the install surface at the new commit,
+    # nothing naming it, and a release page asserting the release shipped.
+    #
+    # Retry before giving up (AC2). The observed cause was not a broken remote
+    # — it was our own pre-push audit lock, held by the daily cron. That is the
+    # COMMON case, not the rare one, and failing a release on first contention
+    # turns a two-minute wait into a half-published release.
+    local tag_pushed=0 tag_attempted=0
     local remote
     while IFS= read -r remote; do
         [ -z "$remote" ] && continue
+        tag_attempted=$((tag_attempted + 1))
         echo -e "${CYAN}Pushing $next to $remote...${NC}"
-        if git -C "$root" push "$remote" "$next" 2>&1; then
+        local _try _ok=0
+        for _try in 1 2 3; do
+            if git -C "$root" push "$remote" "$next" 2>&1; then
+                _ok=1
+                break
+            fi
+            if [ "$_try" -lt 3 ]; then
+                echo -e "  ${YELLOW}retry $_try/3 in ${RELEASE_TAG_RETRY_SLEEP:-20}s${NC} (a held audit lock clears on its own)" >&2
+                sleep "${RELEASE_TAG_RETRY_SLEEP:-20}"
+            fi
+        done
+        if [ "$_ok" -eq 1 ]; then
             echo -e "  ${GREEN}✓ $remote${NC}"
+            tag_pushed=$((tag_pushed + 1))
         else
-            echo -e "  ${YELLOW}WARN: push to $remote failed${NC}" >&2
+            echo -e "  ${YELLOW}WARN: push to $remote failed after 3 attempts${NC}" >&2
             failed=1
         fi
     done < <(git -C "$root" remote 2>/dev/null)
+
+    # T-3193 (AC3): which invariant wins when the branch already advanced?
+    #
+    # HOLD THE RELEASE OPEN. Do NOT roll the release branch back.
+    #
+    # By this point `$release_branch` has been pushed and consumers may already
+    # have fetched it. Retracting it means a force-push to the install surface
+    # — a Tier 0 action, destructive, and one that breaks anyone who pulled in
+    # between. The branch-push guard above CAN roll back precisely because it
+    # fires when the branch reached NO remote, so there is nothing published to
+    # retract. Here there is.
+    #
+    # So the release stays open: the local tag survives, no GitHub Release is
+    # created, the command exits non-zero, and re-running it pushes the tag.
+    # The visible state is "master advanced, tag pending" — untidy, honest, and
+    # recoverable — rather than "release published, tag missing", which is
+    # tidy, false, and the thing this guard exists to prevent.
+    if [ "$tag_attempted" -gt 0 ] && [ "$tag_pushed" -eq 0 ]; then
+        echo -e "${RED}REFUSING to publish:${NC} tag $next reached no remote." >&2
+        echo "  '$release_branch' HAS been pushed and is not being rolled back —" >&2
+        echo "  retracting a published install surface is worse than an untagged one." >&2
+        echo "  No GitHub Release was created; the local tag $next is kept." >&2
+        echo "  Resume with: bin/fw release tag-and-release   (re-pushes the tag)" >&2
+        return 1
+    fi
 
     # Create GitHub Release (best-effort)
     if command -v gh >/dev/null 2>&1; then
