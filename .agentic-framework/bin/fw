@@ -5652,30 +5652,46 @@ except Exception as exc:
         exec "$AGENTS_DIR/git/git.sh" "$@"
         ;;
     sync)
-        # T-100196 slice 1 (keystone): trunk-based session reconcile. In the
-        # session-on-master model the persistent session commits governance state
-        # directly to master; `fw sync` reconciles with origin/master via REBASE
-        # (never a merge — no merge-commit noise, no fork) and pushes. This is the
-        # concurrent-session safety valve: if another session advanced origin/master,
-        # rebase replays local governance commits on top, then push fast-forwards.
+        # T-100196 slice 1 (keystone), retargeted by T-3186 for the release-train
+        # model (T-3185). The session reconcile is unchanged in shape — fetch,
+        # REBASE (never a merge: no merge-commit noise, no fork), push — but it
+        # now reconciles against the DEV branch, not master.
+        #
+        # Why the target had to move: under the release train `master` lags
+        # deliberately between releases, so `git pull --rebase origin master`
+        # from bleeding-edge replays local commits onto an OLDER tree. That is
+        # not a reconcile, it is a rewind wearing a reconcile's output. The
+        # concurrent-session safety valve only works when the branch it replays
+        # onto is the one other sessions are actually advancing.
+        #
+        # FW_DEV_BRANCH is the same single knob lib/branch-hygiene.sh (T-3188)
+        # and lib/integrate.py (T-3186) read; the master fallback preserves
+        # pre-T-3185 behaviour for repos that never adopted the split.
         _sync_branch=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null)
-        echo -e "${BOLD}fw sync${NC} — reconcile ${_sync_branch} with origin/master (rebase + push)"
+        _sync_dev="${FW_DEV_BRANCH:-bleeding-edge}"
+        if ! git -C "$PROJECT_ROOT" rev-parse --verify -q "refs/heads/$_sync_dev" >/dev/null 2>&1 \
+           && ! git -C "$PROJECT_ROOT" rev-parse --verify -q "refs/remotes/origin/$_sync_dev" >/dev/null 2>&1; then
+            _sync_dev=master
+        fi
+        echo -e "${BOLD}fw sync${NC} — reconcile ${_sync_branch} with origin/${_sync_dev} (rebase + push)"
         echo ""
-        if [ "$_sync_branch" != "master" ] && [ "$_sync_branch" != "main" ]; then
-            echo -e "  ${YELLOW}⚠${NC} You are on '${_sync_branch}', not master."
-            echo -e "     Trunk-based session flow (T-100196) runs the persistent session ON master."
-            echo -e "     Code changes belong in a worktree landed via ${BOLD}fw integrate${NC};"
-            echo -e "     the session itself should be on master. Switch: ${BOLD}git checkout master${NC}"
+        if [ "$_sync_branch" != "$_sync_dev" ]; then
+            echo -e "  ${YELLOW}⚠${NC} You are on '${_sync_branch}', not '${_sync_dev}'."
+            echo -e "     The release-train model (T-3185) runs the persistent session ON"
+            echo -e "     '${_sync_dev}'; master is the consumer install surface and only"
+            echo -e "     ever fast-forwards from '${_sync_dev}' at a release."
+            echo -e "     Code changes land via ${BOLD}fw integrate run ${_sync_dev}${NC}."
+            echo -e "     Switch: ${BOLD}git checkout ${_sync_dev}${NC}"
             echo ""
         fi
         if ! git -C "$PROJECT_ROOT" remote 2>/dev/null | grep -qx 'origin'; then
             echo -e "  ${RED}✗${NC} no 'origin' remote — nothing to sync."
             exit 1
         fi
-        echo -e "  ${CYAN}→${NC} git fetch origin master"
-        git -C "$PROJECT_ROOT" fetch origin master 2>&1 | sed 's/^/    /'
-        echo -e "  ${CYAN}→${NC} git pull --rebase origin master"
-        git -C "$PROJECT_ROOT" pull --rebase origin master 2>&1 | sed 's/^/    /'
+        echo -e "  ${CYAN}→${NC} git fetch origin ${_sync_dev}"
+        git -C "$PROJECT_ROOT" fetch origin "$_sync_dev" 2>&1 | sed 's/^/    /'
+        echo -e "  ${CYAN}→${NC} git pull --rebase origin ${_sync_dev}"
+        git -C "$PROJECT_ROOT" pull --rebase origin "$_sync_dev" 2>&1 | sed 's/^/    /'
         if [ "${PIPESTATUS[0]}" -ne 0 ]; then
             echo -e "  ${RED}✗${NC} rebase blocked/conflicted — commit or stash local changes (or 'git rebase --continue'), then re-run 'fw sync'." >&2
             exit 1
@@ -5686,7 +5702,7 @@ except Exception as exc:
             echo -e "  ${RED}✗${NC} push failed — inspect above." >&2
             exit 1
         fi
-        echo -e "  ${GREEN}✓${NC} in sync with origin/master."
+        echo -e "  ${GREEN}✓${NC} in sync with origin/${_sync_dev}."
         exit 0
         ;;
     go-live)

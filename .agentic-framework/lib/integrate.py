@@ -30,6 +30,7 @@ Exit codes (check):
   4  usage / git error
 """
 
+import os
 import subprocess
 import sys
 
@@ -126,14 +127,41 @@ def _changed_files(rev_range):
     return set(f for f in out.splitlines() if f)
 
 
+def _default_target():
+    """The branch an unqualified integrate lands ONTO.
+
+    Under the release-train model (T-3185) `master` is the consumer install
+    surface, not the development trunk: it only ever fast-forwards from the
+    dev branch at a release. So defaulting a landing to `master` injects
+    unreleased worktree work straight into what consumers `fw upgrade` from —
+    the exact failure the release train exists to prevent.
+
+    Resolution mirrors lib/branch-hygiene.sh (T-3188) so there is ONE knob,
+    not two: FW_DEV_BRANCH, else `bleeding-edge`, and only if that branch
+    does not exist do we fall back to `master` — which is the pre-T-3185
+    behaviour, preserved for repos that never adopted the split.
+
+    An explicit positional target always wins; this function is consulted
+    only when the caller named none.
+    """
+    dev = os.environ.get("FW_DEV_BRANCH") or "bleeding-edge"
+    if _git("rev-parse", "--verify", "--quiet", f"refs/heads/{dev}")[0] == 0:
+        return dev
+    if _git("rev-parse", "--verify", "--quiet", "refs/remotes/origin/" + dev)[0] == 0:
+        return dev
+    return "master"
+
+
 # ── check command ───────────────────────────────────────────────────────────
 
-def cmd_check(target="master"):
+def cmd_check(target=None):
+    if target is None:
+        target = _default_target()
     rc, branch = _git("rev-parse", "--abbrev-ref", "HEAD")
     if rc != 0:
         print(f"integrate: not a git repo or detached HEAD ({branch})", file=sys.stderr)
         return 4
-    if branch in ("master", "main"):
+    if branch == target or branch in ("master", "main"):
         print(f"integrate: HEAD is '{branch}' — nothing to integrate.\n"
               f"  Run from a worktree feature branch; integration moves a branch ONTO {target}.",
               file=sys.stderr)
@@ -721,12 +749,14 @@ def _cleanup_branch(branch, target, pushed, keep_branch):
     print(f"  NOTE: this worktree directory is gone — cd {main_path}")
 
 
-def cmd_run(target="master", dry_run=False, push=False, keep_branch=False):
+def cmd_run(target=None, dry_run=False, push=False, keep_branch=False):
+    if target is None:
+        target = _default_target()
     rc, branch = _git("rev-parse", "--abbrev-ref", "HEAD")
     if rc != 0:
         print(f"integrate run: not a git repo or detached HEAD ({branch})", file=sys.stderr)
         return 4
-    if branch in ("master", "main"):
+    if branch == target or branch in ("master", "main"):
         print(f"integrate run: HEAD is '{branch}' — nothing to integrate. Run from a worktree branch.",
               file=sys.stderr)
         return 3
@@ -898,7 +928,7 @@ def main(argv):
         return 4
     sub, rest = argv[0], argv[1:]
     if sub == "check":
-        return cmd_check(rest[0] if rest else "master")
+        return cmd_check(rest[0] if rest else None)
     if sub == "classify":
         if not rest:
             print("usage: integrate.py classify <path>...", file=sys.stderr)
@@ -909,7 +939,7 @@ def main(argv):
         push = "--push" in rest
         keep_branch = "--keep-branch" in rest
         positional = [a for a in rest if not a.startswith("-")]
-        target = positional[0] if positional else "master"
+        target = positional[0] if positional else None
         return cmd_run(target, dry_run=dry_run, push=push, keep_branch=keep_branch)
     print(f"integrate.py: unknown subcommand: {sub}", file=sys.stderr)
     return 4

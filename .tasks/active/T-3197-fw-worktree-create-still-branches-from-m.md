@@ -1,16 +1,13 @@
 ---
-id: T-3186
-name: "fw sync and fw integrate still point at master under the release-train model"
+id: T-3197
+name: "fw worktree create still branches from master under the release train"
 description: >
-  bin/fw:5664-5668 tells the session 'you should be on master' and fw integrate's
-  default landing target is master. Under T-3185's release train both are wrong: the
-  session belongs on bleeding-edge and worktrees must land there. Blocked tonight
-  because T-3127 holds bin/fw uncommitted.
+  lib/worktree.sh:299 (_wt_master_ref) makes master the default base for a new worktree. Under T-3185's release train master lags deliberately between releases, so a worktree branched from it starts behind the dev branch: the merge-base is old, and fw integrate check then reports both-sided files that are not genuinely both-sided, inflating the needs-human verdict. Should resolve through FW_DEV_BRANCH like T-3186/T-3187/T-3188, with the master fallback preserved. Scope-fenced out of T-3186 (one deliverable per task); low urgency because worktrees are opt-in-only per the standing directive.
 
-status: started-work
+status: captured
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -24,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-26T21:40:56Z
-last_update: 2026-08-27T08:46:34Z
-date_finished:
+created: 2026-08-27T09:26:24Z
+last_update: 2026-08-27T09:26:24Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -37,82 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-26T21:45:04Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 3
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
-      (workflow:refactor); effort=8 (lines=202,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-26T21:45:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3186: fw sync and fw integrate still point at master under the release-train model
+# T-3197: fw worktree create still branches from master under the release train
 
 ## Context
 
-T-3185 established the release train: `bleeding-edge` authors, `master` only
-fast-forwards from it at a release. Two commands were still aimed at the old
-trunk, and both of them are *write* paths, which is what makes it more than
-cosmetic:
-
-- **`fw integrate run`** landed worktree branches ONTO master. That is the
-  consumer install surface — an unreleased landing there is inherited by the
-  next `fw upgrade` anywhere in the fleet, which is precisely the failure the
-  release train exists to prevent.
-- **`fw sync`** rebased the session onto `origin/master`. Between releases
-  master lags **by design**, so the reconcile replayed local commits onto an
-  older tree — a rewind wearing a reconcile's output — and then told the
-  operator, in as many words, to `git checkout master`.
-
-Both now resolve through `FW_DEV_BRANCH`, the same single knob T-3187 (branch
-identity guard) and T-3188 (branch hygiene) read, falling back to master when
-no dev branch exists so pre-T-3185 repos are unaffected.
-
-### Scope fence — deliberately NOT in this task
-
-`fw worktree create` still branches from master by default
-(`lib/worktree.sh:299`, `_wt_master_ref`). Under the release train that starts a
-worktree from the lagging surface, which inflates the merge-base and makes
-`fw integrate check` report both-sided files that are not really both-sided. It
-is real and it is the same family, but it is a third surface with its own
-fallback semantics, and worktrees are opt-in-only. Filed as **T-3197** rather
-than widened into here.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw integrate check` and `fw integrate run` default to the dev branch, not master, so a landing cannot inject unreleased work into the consumer install surface
-- [x] `fw sync` reconciles against the dev branch (fetch + rebase + push), not `origin/master` — rebasing onto master between releases would replay local commits onto an OLDER tree
-- [x] `fw sync`'s branch warning is INVERTED: it fires when you are NOT on the dev branch, and no longer tells the operator to `git checkout master`
-- [x] No surface still instructs the operator to run the persistent session on master (that is the T-100196 model the release train replaced)
-- [x] An explicit target argument still wins — `fw integrate run master` remains possible for anyone who means it
-- [x] `FW_DEV_BRANCH` is the resolution knob, same as T-3187 and T-3188; no second mechanism
-- [x] Fallback: a repo with no dev branch resolves to master exactly as before
-- [x] Tests in `tests/unit/t3186_sync_integrate_target.bats`, every silent assertion paired with a firing one
-- [x] Mutation-tested: reverting each default back to master reddens only its own tests
-- [x] `bash -n bin/fw` passes after every edit (L-408) and `tools/bats-dead-negation-lint.py` reports clean (L-651)
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -206,22 +141,6 @@ than widened into here.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# The suite itself, guarded per T-2738 (a pass marker survives a partial failure).
-out=$(bats tests/unit/t3186_sync_integrate_target.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# No regression in the four pre-existing integrate suites that share cmd_check/cmd_run.
-out=$(bats tests/unit/t2399_integrate_check.bats tests/unit/t2471_integrate_run.bats tests/unit/t2474_integrate_run_landing.bats tests/unit/t100142_integrate_run_branch_cleanup.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# L-408: bin/fw must still parse after the sync-block rewrite.
-bash -n bin/fw
-python3 -c "import ast; ast.parse(open('lib/integrate.py').read())"
-# L-651: no assertion left in dead position behind a bare `!`.
-python3 tools/bats-dead-negation-lint.py tests/unit/t3186_sync_integrate_target.bats > /tmp/.t3186-lint 2>&1 && grep -q "dead 0" /tmp/.t3186-lint
-# The defect itself: no live (non-comment) line in bin/fw still reconciles against
-# origin/master. Redirected rather than piped on purpose — as a pipeline under
-# `set -eo pipefail` the REGRESSED case makes grep -q match early, SIGPIPE the
-# producer, and return 141, which the leading `!` then inverts to 0. The form
-# would report PASS in exactly the state it exists to catch.
-grep -vE '^[[:space:]]*#' bin/fw > /tmp/.t3186-code && ! grep -q 'fetch origin master' /tmp/.t3186-code
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -314,10 +233,7 @@ grep -vE '^[[:space:]]*#' bin/fw > /tmp/.t3186-code && ! grep -q 'fetch origin m
 
 ## Updates
 
-### 2026-08-26T21:40:56Z — task-created [task-create-agent]
+### 2026-08-27T09:26:24Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3186-fw-sync-and-fw-integrate-still-point-at-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3197-fw-worktree-create-still-branches-from-m.md
 - **Context:** Initial task creation
-
-### 2026-08-27T08:46:34Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
