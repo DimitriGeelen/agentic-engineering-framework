@@ -2,7 +2,15 @@
 id: T-3201
 name: "Landing-mode prompt v2 — codify the operator's stop-finding-start-landing directive"
 description: >
-  The operator has asked twice for a 'stop finding, start landing' prompt. Both times it lived only in chat, so the second ask had to reconstruct it from scratch. Codify v2 in policy/prompts/landing-mode.md, sharpened by what measurably went wrong on the v1 run: filed 6 new tasks while landing 3 (the directive violated by the agent's own filing rate), two tests shipped inert until mutation-tested, and one verification used a flag that does not exist. Also record the two premises in the operator's directive that do not currently hold - BVP quadrant selection returns nothing (T-3184) and the TermLink chat arc has exactly one participant - so v2 states its own fallbacks instead of silently substituting them.
+  The operator has asked twice for a 'stop finding, start landing' prompt. Both times
+  it lived only in chat, so the second ask had to reconstruct it from scratch. Codify
+  v2 in policy/prompts/landing-mode.md, sharpened by what measurably went wrong on
+  the v1 run: filed 6 new tasks while landing 3 (the directive violated by the agent's
+  own filing rate), two tests shipped inert until mutation-tested, and one verification
+  used a flag that does not exist. Also record the two premises in the operator's
+  directive that do not currently hold - BVP quadrant selection returns nothing (T-3184)
+  and the TermLink chat arc has exactly one participant - so v2 states its own fallbacks
+  instead of silently substituting them.
 
 status: started-work
 workflow_type: build
@@ -22,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T11:49:54Z
-last_update: 2026-08-27T11:49:54Z
-date_finished: null
+last_update: '2026-08-27T12:00:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +42,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-27T12:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=207,acs=9)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-27T12:00:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3201: Landing-mode prompt v2 — codify the operator's stop-finding-start-landing directive

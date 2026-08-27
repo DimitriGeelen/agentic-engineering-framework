@@ -37695,3 +37695,83 @@ scan_id: R-21e9411b
 task_id: T-3186
 payload:
   task_file: .tasks/active/T-3186-fw-sync-and-fw-integrate-still-point-at-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T10:16:25Z'
+scan_id: R-80bc1702
+task_id: T-3194
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T10:16:25Z'
+scan_id: R-80bc1702
+task_id: T-3194
+payload:
+  task_file: .tasks/active/T-3194-branch-hygiene-remediation-text-still-te.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T11:11:54Z'
+scan_id: R-0a6dc9e7
+task_id: T-3184
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T11:11:54Z'
+scan_id: R-0a6dc9e7
+task_id: T-3184
+payload:
+  task_file: .tasks/active/T-3184-bvp-cannot-select-work-zero-confirmed-sc.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-27T11:11:54Z'
+scan_id: RC-2afd1069
+task_id: T-3184
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-08-27T12:48:21Z'
+scan_id: R-43c69bc3
+task_id: T-3198
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T12:48:21Z'
+scan_id: R-43c69bc3
+task_id: T-3198
+payload:
+  task_file: .tasks/active/T-3198-render-surface-gate-attributes-another-t.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T12:50:43Z'
+scan_id: R-311bd783
+task_id: T-2840
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T12:50:43Z'
+scan_id: R-311bd783
+task_id: T-2840
+payload:
+  task_file: .tasks/active/T-2840-render-surface-gate-git-grep-is-unanchor.md

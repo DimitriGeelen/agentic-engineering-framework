@@ -15,9 +15,9 @@ A completed task qualifies when ALL of:
 
 ## Population examined
 
-- completed inceptions: 450
-- with a GO recorded:   353
-- findings:             181
+- completed inceptions: 451
+- with a GO recorded:   354
+- findings:             182
 
 These are candidates for triage, not confirmed abandoned decisions:
 some may have shipped work that was simply never linked back. Deciding
@@ -26,6 +26,7 @@ which is which is the judgement this check exists to force.
 ## Findings (most recent first)
 
 - T-100200 — .tasks/completed/T-100200-enforce-session-on-master-invariant--blo.md
+- T-3184 — .tasks/completed/T-3184-bvp-cannot-select-work-zero-confirmed-sc.md
 - T-3114 — .tasks/completed/T-3114-release-channels-consumers-choose-stable.md
 - T-3108 — .tasks/completed/T-3108-enforcement-code-forks-with-the-branch--.md
 - T-3100 — .tasks/completed/T-3100-no-error-incident-register--counter-dead.md

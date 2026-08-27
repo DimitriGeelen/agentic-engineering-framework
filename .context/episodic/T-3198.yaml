@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3198: render-surface gate attributes another task's files via commit-body cross-references
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-27T12:48:33Z
+# ============================================================================
+
+task_id: T-3198
+task_name: "render-surface gate attributes another task's files via commit-body cross-references"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-27T09:29:59Z
+completed: 2026-08-27T12:48:08Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-27T12:17:45+02:00
+last_commit: 2026-08-27T14:47:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs, second-instance evidence, and the recommended fix. render-surface gate reads the commit subject, not the whole message
+
+# Key outcomes
+outcomes:
+  - '`_render_surface_git_touched_paths` matches the commit SUBJECT line (a leading `T-XXX` reference), not the whole message, so a prose cross-reference in another task''s body no longer donates its footprint'
+  - 'The broad whole-message grep is retained as a FALLBACK, used only when the subject-scoped match finds nothing — so tasks whose commits predate the subject-prefix convention behave exactly as they do today'
+  - 'Regression pinned with a fixture reproducing the observed shape: task A''s commit touches no render surface, task B''s commit mentions A in its body AND touches `web/blueprints/`; the gate must fire for B and not for A'
+  - 'Control leg: a commit that genuinely IS task A''s (subject `T-A: …`) and touches a render surface still fires the gate — narrowing must not turn the rail off'
+  - 'Every other consumer of `_render_surface_git_touched_paths` is identified and named in the task body, since the helper is shared and the fix moves all of them at once'
+  - '`bash -n lib/render_surface.sh` passes (L-408) and the existing render-surface suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'real ACs, second-instance evidence, and the recommended fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/render_surface.sh'
+  - '.tasks/active/T-3198-render-surface-gate-attributes-another-t.md'
+  - '.tasks/completed/T-3194-branch-hygiene-remediation-text-still-te.md'
+  - 'tests/unit/t3198_render_surface_attribution.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-27T12:17:45'
+    action: 'T-3198: real ACs, second-instance evidence, and the recommended fix'
+  - time: '2026-08-27T14:47:57'
+    action: 'T-3198: render-surface gate reads the commit subject, not the whole message'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 198 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 198
+  commits: 2
+  files_changed: 4
+  lines_added: 388
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3198-render-surface-gate-attributes-another-t.md
+generated_by: context-agent-hybrid

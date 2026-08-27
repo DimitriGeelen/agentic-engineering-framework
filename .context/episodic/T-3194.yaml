@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3194: Branch-hygiene remediation text still tells operators to merge origin/master under the release train
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-27T10:16:37Z
+# ============================================================================
+
+task_id: T-3194
+task_name: "Branch-hygiene remediation text still tells operators to merge origin/master under the release train"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-27T08:04:06Z
+completed: 2026-08-27T10:12:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-27T12:07:09+02:00
+last_commit: 2026-08-27T12:07:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  branch-hygiene remediation now names the branch the scan measured
+
+# Key outcomes
+outcomes:
+  - 'Every branch-hygiene remediation string names the RESOLVED dev branch, not a literal `master`: `bin/fw` doctor FORK mitigation, `agents/audit/audit.sh` audit FORK mitigation, `agents/handover/handover.sh` both MERGEBACK_NUDGE arms, and `lib/branch-hygiene.sh` fw_go_live''s refusal + landing advice'
+  - 'No remediation string still says `fw integrate run master --push` — that instruction lands a strand directly on the consumer install surface, which is the exact injection the release train exists to prevent'
+  - 'The branch name is interpolated from the same `FW_DEV_BRANCH` resolution T-3186/T-3187/T-3188 use, so a repo that overrides the knob gets advice naming ITS branch, not ours'
+  - 'Fallback preserved: with no dev branch present every string reads exactly as it did before, so pre-T-3185 repos see no change'
+  - 'The fork advice keeps its substance — reconcile-while-small, merge the target INTO the branch, do NOT use one-way `fw integrate` on a fork (T-100194/T-100195). Retargeting must not quietly drop the T-100194 lesson'
+  - 'Tests in `tests/unit/t3194_remediation_target.bats`, every "no longer says master" assertion paired with one asserting the retargeted string IS present — deleting the advice must not read as a pass'
+  - 'Mutation-tested: reverting each site to its literal-master form reddens only that site''s tests'
+  - '`bash -n bin/fw`, `bash -n agents/audit/audit.sh`, `bash -n agents/handover/handover.sh`, `bash -n lib/branch-hygiene.sh` all pass (L-408), and `tools/bats-dead-negation-lint.py` reports clean (L-651)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - 'agents/audit/audit.sh'
+  - 'agents/handover/handover.sh'
+  - 'bin/fw'
+  - 'lib/branch-hygiene.sh'
+  - '.tasks/active/T-3194-branch-hygiene-remediation-text-still-te.md'
+  - '.tasks/active/T-3199-t100195-diverged-fork-suite-has-been-red.md'
+  - 'tests/unit/t3194_remediation_target.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-27T12:07:09'
+    action: 'T-3194: branch-hygiene remediation now names the branch the scan measured'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 128 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 128
+  commits: 1
+  files_changed: 11
+  lines_added: 669
+  lines_removed: 53
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3194-branch-hygiene-remediation-text-still-te.md
+generated_by: context-agent-hybrid

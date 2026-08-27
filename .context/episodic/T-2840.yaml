@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2840: render-surface gate git-grep is unanchored, misattributes cross-referenced task's commits
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-27T12:50:55Z
+# ============================================================================
+
+task_id: T-2840
+task_name: "render-surface gate git-grep is unanchored, misattributes cross-referenced task's commits"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-06T21:38:56Z
+completed: 2026-08-27T12:50:38Z
+duration_days: 21
+updates_count: 2
+first_commit: 2026-08-27T14:50:01+02:00
+last_commit: 2026-08-27T14:50:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  superseded by T-3198 — same defect, filed 21 days earlier
+
+# Key outcomes
+outcomes:
+  - 'The unanchored `--grep` is replaced by a commit-SUBJECT match, so a body-prose citation no longer misattributes another commit''s files (shipped in T-3198, `lib/render_surface.sh`)'
+  - 'The T-2837 instance recorded here is pinned as a regression with a control leg (`tests/unit/t3198_render_surface_attribution.bats`; verified live: `_render_surface_git_touched_paths T-2837` no longer returns `web/blueprints/config.py`, while its true owner T-2838 still does)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2840-render-surface-gate-git-grep-is-unanchor.md'
+  - '.tasks/completed/T-3198-render-surface-gate-attributes-another-t.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-27T14:50:01'
+    action: 'T-2840: superseded by T-3198 — same defect, filed 21 days earlier'
+  - time: '2026-08-27T14:50:37'
+    action: 'T-2840: superseded by T-3198 — same defect, filed 21 days earlier'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 29711 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [gate-bug, render-surface]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 29711
+  commits: 3
+  files_changed: 3
+  lines_added: 392
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2840-render-surface-gate-git-grep-is-unanchor.md
+generated_by: context-agent-hybrid
