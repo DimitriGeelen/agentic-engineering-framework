@@ -17,7 +17,7 @@ description: >
   a denial-of-service on your own agent, so it needs whatever auth the rest of Watchtower's
   mutating routes use.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -35,7 +35,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T11:17:12Z
-last_update: '2026-08-27T11:30:17Z'
+last_update: 2026-08-27T12:51:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,39 +87,33 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A Watchtower POST route writes the SAME halt file `stop-driver.sh` already reads (`.context/working/.continuous-halt`, `FW_CONTINUOUS_HALT`-overridable) — no second mechanism, no new precedence question for the driver to resolve
+- [ ] The route resolves the halt path from the same env-var-then-default rule as `stop-driver.sh:60`, so an operator who has overridden `FW_CONTINUOUS_HALT` does not get a button that writes a file nothing reads
+- [ ] A matching resume route clears the halt, so the operator who stopped the loop from a phone can also start it again from one — a brake with no release is a brake nobody dares use
+- [ ] The `/approvals` page shows current halt state (halted / running) and the button, since that is where operator actions already live
+- [ ] State-changing requests go through Watchtower's existing CSRF layer (`web/app.py:130` `before_request`) rather than inventing an auth story for one endpoint
+- [ ] End-to-end proof, not route-existence proof: POST halt → the file exists at the path `stop-driver.sh` reads → `stop-driver.sh` actually yields on it → POST resume → the file is gone → the driver stops yielding. Asserted against the driver's real exit behaviour, not against the HTTP status
+- [ ] Control leg: the driver still yields for a halt file created by plain `touch`, so adding the web writer has not made the shell path conditional on it
+- [ ] `curl -sf` against a live Watchtower confirms the rendered page carries the control (guards against the OBS-349 class, where a stale server serves code the change never reached)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+- [ ] [REVIEW] The halt control is findable and unmistakable under pressure
 
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
+  **Steps:**
+  1. Open `http://192.168.10.107:3000/approvals` on a phone (or narrow the browser to phone width).
+  2. Without scrolling past other sections, find the continuous-run halt control.
+  3. Read the current state. Press the button. Read the state again.
 
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+  **Expected:** You can tell at a glance whether the loop is halted or running,
+  the button says which way it will move things, and pressing it visibly changes
+  the state. It should be usable by someone who is worried, on a small screen,
+  without reading documentation.
+
+  **If not:** Say which of the three failed — findability, legibility of state,
+  or feedback after pressing. This AC is human because the question is whether
+  it works for a person under pressure, which no curl can answer.
+
 
 ## Verification
 
@@ -278,3 +272,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3200-the-continuous-run-halt-has-no-watchtowe.md
 - **Context:** Initial task creation
+
+### 2026-08-27T12:51:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
