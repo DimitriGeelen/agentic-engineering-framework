@@ -1276,8 +1276,18 @@ existed (`fw doctor`'s `diverged-fork`, T-100195) fires only on a branch that is
 **both ahead and behind**. `t2539-staging` was 0 behind — a clean fast-forward — so
 for 41 days *being on the sanctioned branch* and *being on some clean wrong branch*
 produced identical output. The check could not see its own subject. A branch guard
-must assert **which** branch, not merely that the branch is reconcilable. (Fix
-tracked separately; per L-497 that rail must live ON the branch it polices.)
+must assert **which** branch, not merely that the branch is reconcilable.
+
+**That rail now exists** (T-3187, `lib/branch-hygiene.sh:142`). It emits
+`wrong-branch <actual> expected=<dev>` — identity, not reconcilability — and
+reports `detached-HEAD` as its own case rather than silently. Scoped three ways so
+it is not muted into uselessness: silent when the repo has no dev branch (a
+master-only consumer), silent in a linked worktree (which sits on a feature branch
+by design), and WARN-only, never blocking. `master` *does* fire: under the release
+train a session authoring there is as wrong as one on a stale feature branch.
+Pinned by `tests/unit/t3187_branch_identity_guard.bats` — 10 tests, including the
+control leg that separates "fires correctly" from "never fires", and the 0-behind
+case that is precisely what `diverged-fork` could not see.
 
 ## Session Start Protocol
 

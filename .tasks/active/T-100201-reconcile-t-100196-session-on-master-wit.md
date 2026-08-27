@@ -23,7 +23,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-05T22:34:27Z
-last_update: '2026-08-17T12:36:03Z'
+last_update: 2026-08-27T21:23:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -169,16 +169,25 @@ and the Human AC below.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-- [ ] [REVIEW] Approve the reconciliation mechanism for how the persistent session commits
-      governance while `PROTECT_MASTER=1`
+- [ ] [REVIEW] Ratify that T-3185 dissolves this task — or name the mechanism you still want
+  **This AC replaced an earlier one (2026-08-27).** The original asked you to pick
+  A/B/C/D: how the persistent session should commit governance while
+  `PROTECT_MASTER=1`. **That question no longer has a subject.** T-3185 replaced the
+  mechanism instead of the gate — under the release train the session commits to
+  `bleeding-edge`, `master` is merge-only *by design*, and there is nothing left to
+  reconcile. Answering A/B/C/D now would be answering a dead question, so the AC was
+  rewritten rather than left standing.
   **Steps:**
-  1. Read `## Recommendation` below (Options A/B/C/D + recommended Option A).
-  2. Decide which mechanism the framework should adopt (or reject all and keep the interim
-     worktree→FF rule permanently).
-  3. Reply with the chosen option (or "keep interim"). A GO on a mechanism spawns a
-     separate build task to implement it and to rewrite the §Trunk-Based mechanism prose.
-  **Expected:** One mechanism chosen (or interim-rule-permanent), recorded here.
-  **If not:** Ask for clarification on a specific option's tradeoffs.
+  1. Read `## Dissolved by T-3185` at the bottom of this file (12 lines), and
+     CLAUDE.md §Release-Train Branch Model if you want the full model.
+  2. Confirm you are content that the release train supersedes the A/B/C/D choice —
+     or say which of A/B/C/D you still want, in which case this reopens as a build task.
+  3. Close it: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task update T-100201 --status work-completed`
+  **Expected:** Either the task closes as dissolved, or you name a mechanism and it
+  reopens with real scope.
+  **If not:** If neither reading fits — e.g. you think a governance-commit mechanism
+  is still needed *under* the release train — say so and this becomes a fresh task
+  against the new model rather than the old one.
 
 ## Verification
 
@@ -279,7 +288,28 @@ Advisory teach alone is insufficient (L-300/L-405) — the durable fix is struct
 
 ## Recommendation
 
-**Recommendation:** ship the interim correction note now (done — Agent ACs), and for the
+**Recommendation (superseded 2026-08-27):** CLOSE AS DISSOLVED. Do not adopt A, B, C or D.
+
+The A/B/C/D options below were all answers to "how does the session reach `master`
+while `PROTECT_MASTER=1` blocks it". T-3185 removed the premise: the session no
+longer needs to reach `master` at all between releases. `master` is the consumer
+install surface, `bleeding-edge` authors, and merge-only stops being a constraint
+fighting the flow and becomes the flow. Option A — scoping a Tier-2 bypass into
+`fw sync` and `fw handover --commit` — would now be *adding* a bypass to a gate
+that has nothing left to obstruct.
+
+The original recommendation is left below unedited, because the reasoning that made
+Option A look right under the old model is worth being able to read.
+
+**Superseded-by:** T-3185. **Evidence it landed:** CLAUDE.md §Release-Train Branch
+Model; `lib/branch-hygiene.sh:142` (T-3187 identity guard, 10/10 in
+`tests/unit/t3187_branch_identity_guard.bats`); `FW_DEV_BRANCH` in
+`lib/config.sh:252`.
+
+---
+
+**Original recommendation (2026-07-05, retained for the record):** ship the interim
+correction note now (done — Agent ACs), and for the
 **final mechanism** adopt **Option A** (scope the existing sanctioned bypass into the
 framework's own governance-commit tooling). Operator picks via the Human [REVIEW] AC.
 
