@@ -44,6 +44,39 @@ _wt_master_ref() {
     return 1
 }
 
+# The TRUNK under the release-train model (T-3185, T-3197).
+#
+# `master` stopped being the trunk when the release train landed: it is the
+# consumer install surface and fast-forwards only at a release, so between
+# releases it deliberately lags. Two things follow, and this repo had both wrong:
+#
+#   1. A worktree branched from master starts behind the dev branch. Its
+#      merge-base is old, so `fw integrate check` reports both-sided files that
+#      are not genuinely both-sided and inflates the needs-human verdict.
+#   2. Work that HAS landed — via `fw integrate run bleeding-edge` — is not in
+#      master until the next release, so a master-based "merged?" test answers
+#      `no` for a branch that is fully landed. `lib/branch-hygiene.sh:100` already
+#      resolves FW_DEV_BRANCH (T-3188); this file did not, so the two rails
+#      disagreed about the same branch.
+#
+# Same remote-preferred order and the same rationale as _wt_master_ref above: a
+# local dev branch that is ahead of origin holds commits that are genuinely not
+# landed yet, and reporting those as landed is the dangerous direction.
+#
+# Falls back to _wt_master_ref when no dev branch exists, which keeps this a
+# widening rather than a swap — a repo that never adopted the release train
+# behaves exactly as it did before.
+_wt_dev_ref() {
+    local dev="${FW_DEV_BRANCH:-bleeding-edge}" r
+    for r in "refs/remotes/origin/$dev" "refs/heads/$dev"; do
+        if git rev-parse --verify --quiet "$r" >/dev/null 2>&1; then
+            printf '%s\n' "$r"
+            return 0
+        fi
+    done
+    _wt_master_ref
+}
+
 # is <a> an ancestor of <b>?  (true when b's history contains a)
 _wt_is_ancestor() {
     git merge-base --is-ancestor "$1" "$2" >/dev/null 2>&1
@@ -85,7 +118,7 @@ do_worktree_status() {
         return 4
     fi
 
-    local master_ref; master_ref="$(_wt_master_ref || true)"
+    local master_ref; master_ref="$(_wt_dev_ref || true)"
 
     local -a _WT_PATH _WT_HEAD _WT_BRANCH
     _wt_parse
@@ -162,7 +195,7 @@ do_worktree_doctor_line() {
     # main checkout: git-dir == git-common-dir. Linked worktree: they differ.
     [ "$gd" != "$cgd" ] || return 1
 
-    local master_ref; master_ref="$(_wt_master_ref || true)"
+    local master_ref; master_ref="$(_wt_dev_ref || true)"
     local head branch
     head="$(git rev-parse --short HEAD 2>/dev/null)"
     branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
@@ -211,6 +244,7 @@ for line in sys.stdin:
         main = {"path": path, "branch": branch, "head": head,
                 "merged": merged, "live": live,
                 "on_master": branch in ("master", "main"),
+                "trunk_ref": master_ref or None,
                 "master_ref": master_ref or None}
     elif kind == "WT":
         _, path, branch, head, merged, live, is_master = parts
@@ -296,8 +330,8 @@ do_worktree_create() {
             echo "worktree create: --from ref not found: $from_ref" >&2; return 1; }
         base="$from_ref"; base_label="$from_ref"
     else
-        base="$(_wt_master_ref)" || {
-            echo "worktree create: no master/main ref to branch from (use --from <ref>)" >&2; return 1; }
+        base="$(_wt_dev_ref)" || {
+            echo "worktree create: no trunk ref to branch from (use --from <ref>)" >&2; return 1; }
         base_label="${base#refs/heads/}"; base_label="${base_label#refs/remotes/}"
     fi
 
@@ -887,7 +921,7 @@ do_worktree_gc() {
     done
 
     git rev-parse --git-dir >/dev/null 2>&1 || { echo "ERROR: not in a git repository" >&2; return 4; }
-    local master_ref; master_ref="$(_wt_master_ref)" || { echo "ERROR: no master/main ref found" >&2; return 4; }
+    local master_ref; master_ref="$(_wt_dev_ref)" || { echo "ERROR: no trunk ref (dev branch, master or main) found" >&2; return 4; }
 
     local -a _WT_PATH _WT_HEAD _WT_BRANCH
     _wt_parse
@@ -903,7 +937,7 @@ do_worktree_gc() {
     for i in "${!_WT_PATH[@]}"; do
         [ "$i" = "0" ] && continue
         wtpath="${_WT_PATH[$i]}"; br="${_WT_BRANCH[$i]}"
-        case "$br" in master|main|"(detached)") continue ;; esac
+        case "$br" in master|main|"${FW_DEV_BRANCH:-bleeding-edge}"|"(detached)") continue ;; esac
         if reason="$(_wt_work_landed "refs/heads/$br" "$master_ref")"; then rc=0; else rc=$?; fi
         has_remote=no
         git rev-parse --verify --quiet "refs/remotes/origin/$br" >/dev/null 2>&1 && has_remote=yes
@@ -920,7 +954,7 @@ do_worktree_gc() {
     local listed
     while IFS= read -r br; do
         [ -z "$br" ] && continue
-        case "$br" in master|main) continue ;; esac
+        case "$br" in master|main|"${FW_DEV_BRANCH:-bleeding-edge}") continue ;; esac
         listed=0
         for i in "${!_WT_BRANCH[@]}"; do [ "${_WT_BRANCH[$i]}" = "$br" ] && listed=1 && break; done
         [ "$listed" = "1" ] && continue
