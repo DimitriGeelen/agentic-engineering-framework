@@ -1,0 +1,40 @@
+{# T-3200 — continuous-run brake.
+
+   Sits at the TOP of /approvals, above the pending sections, because the person
+   who needs it is watching a loop misbehave and should not have to scroll past
+   four queues of things that can wait.
+
+   hx-target="this" is required: base.html sets a body-level hx-target="#content",
+   which would otherwise swap this fragment over the whole page (T-2060).
+#}
+<article id="continuous-halt"
+         class="continuous-halt {{ 'is-halted' if continuous.halted else 'is-running' }}">
+  <header class="continuous-halt__state">
+    {% if continuous.halted %}
+      <strong>&#9632; Continuous run HALTED</strong>
+      {% if continuous.since %}<small>since {{ continuous.since }}</small>{% endif %}
+    {% else %}
+      <strong>&#9654; Continuous run is RUNNING</strong>
+      <small>the agent may continue on its own after each stop</small>
+    {% endif %}
+  </header>
+
+  <form hx-post="{{ '/api/continuous/resume' if continuous.halted else '/api/continuous/halt' }}"
+        hx-target="#continuous-halt"
+        hx-swap="outerHTML">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <button type="submit"
+            class="{{ 'secondary' if continuous.halted else 'contrast' }}">
+      {% if continuous.halted %}Release brake &mdash; let it run{% else %}Halt the run now{% endif %}
+    </button>
+  </form>
+
+  <footer>
+    <small>
+      Writes <code>{{ continuous.path }}</code>, the same file
+      <code>stop-driver.sh</code> checks before anything else. The shell path
+      (<code>touch</code>) keeps working exactly as before &mdash; this is a
+      second way to write one brake, not a second brake.
+    </small>
+  </footer>
+</article>

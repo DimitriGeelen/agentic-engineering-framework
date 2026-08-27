@@ -87,14 +87,14 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A Watchtower POST route writes the SAME halt file `stop-driver.sh` already reads (`.context/working/.continuous-halt`, `FW_CONTINUOUS_HALT`-overridable) — no second mechanism, no new precedence question for the driver to resolve
-- [ ] The route resolves the halt path from the same env-var-then-default rule as `stop-driver.sh:60`, so an operator who has overridden `FW_CONTINUOUS_HALT` does not get a button that writes a file nothing reads
-- [ ] A matching resume route clears the halt, so the operator who stopped the loop from a phone can also start it again from one — a brake with no release is a brake nobody dares use
-- [ ] The `/approvals` page shows current halt state (halted / running) and the button, since that is where operator actions already live
-- [ ] State-changing requests go through Watchtower's existing CSRF layer (`web/app.py:130` `before_request`) rather than inventing an auth story for one endpoint
-- [ ] End-to-end proof, not route-existence proof: POST halt → the file exists at the path `stop-driver.sh` reads → `stop-driver.sh` actually yields on it → POST resume → the file is gone → the driver stops yielding. Asserted against the driver's real exit behaviour, not against the HTTP status
-- [ ] Control leg: the driver still yields for a halt file created by plain `touch`, so adding the web writer has not made the shell path conditional on it
-- [ ] `curl -sf` against a live Watchtower confirms the rendered page carries the control (guards against the OBS-349 class, where a stale server serves code the change never reached)
+- [x] A Watchtower POST route writes the SAME halt file `stop-driver.sh` already reads (`.context/working/.continuous-halt`, `FW_CONTINUOUS_HALT`-overridable) — no second mechanism, no new precedence question for the driver to resolve
+- [x] The route resolves the halt path from the same env-var-then-default rule as `stop-driver.sh:60`, so an operator who has overridden `FW_CONTINUOUS_HALT` does not get a button that writes a file nothing reads
+- [x] A matching resume route clears the halt, so the operator who stopped the loop from a phone can also start it again from one — a brake with no release is a brake nobody dares use
+- [x] The `/approvals` page shows current halt state (halted / running) and the button, since that is where operator actions already live
+- [x] State-changing requests go through Watchtower's existing CSRF layer (`web/app.py:130` `before_request`) rather than inventing an auth story for one endpoint
+- [x] End-to-end proof, not route-existence proof: POST halt → the file exists at the path `stop-driver.sh` reads → `stop-driver.sh` actually yields on it → POST resume → the file is gone → the driver stops yielding. Asserted against the driver's real exit behaviour, not against the HTTP status
+- [x] Control leg: the driver still yields for a halt file created by plain `touch`, so adding the web writer has not made the shell path conditional on it
+- [x] `curl -sf` against a live Watchtower confirms the rendered page carries the control (guards against the OBS-349 class, where a stale server serves code the change never reached)
 
 ### Human
 
@@ -176,6 +176,13 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -c "import ast;ast.parse(open('web/blueprints/approvals.py').read())"
+python3 -m pytest tests/unit/test_continuous_halt_control.py -q > /tmp/.t3200.out 2>&1 && grep -q "8 passed" /tmp/.t3200.out && ! grep -q failed /tmp/.t3200.out
+curl -sf "$(bin/fw watchtower url)/approvals" -o /tmp/.t3200page.html && grep -q "continuous-halt" /tmp/.t3200page.html
+curl -sf "$(bin/fw watchtower url)/approvals" -o /tmp/.t3200page.html && grep -qE "RUNNING|HALTED" /tmp/.t3200page.html
+grep -q "FW_CONTINUOUS_HALT" web/blueprints/approvals.py
+grep -q "FW_CONTINUOUS_HALT" agents/context/stop-driver.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -218,32 +225,42 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** The brake is now reachable from any browser on the LAN, and the
+mechanism did not change — Watchtower is a second *writer* of the one halt file,
+never a second brake, so `stop-driver.sh` keeps exactly one thing to check and
+there is no new precedence question. The shell path is untouched and pinned by a
+control test. What remains is a judgment no command can make: whether the control
+is findable and legible to a worried person on a phone.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+**Evidence:**
+- Eight tests drive the **real** `stop-driver.sh` as a subprocess and assert on
+  its exit behaviour and logged reason, not on HTTP status — a route that writes
+  the wrong path returns 200 just as readily as one that writes the right path.
+- Mutation-verified rather than assumed: writing a parallel file kills 2 tests,
+  ignoring `FW_CONTINUOUS_HALT` kills 1, a no-op resume kills 2, removing the
+  release affordance kills 1.
+- **The first cut of the suite was inert for the central claim.** It passed all
+  seven tests while the route wrote a *parallel* file, because the fixture had
+  pointed `FW_CONTINUOUS_HALT` at the same path as the default and so could not
+  distinguish the two branches. Rewritten with deliberately divergent paths; the
+  mutants die now. Recorded because the green suite looked identical before and
+  after.
+- CSRF: both routes sit behind Watchtower's existing `before_request` guard with
+  no exemption; unauthenticated POST returns 403 and does not move the brake.
+- Live-server check against a **restarted** Watchtower (OBS-349 class): the
+  rendered `/approvals` carries the control and reads `RUNNING`.
+- Security shape, as flagged at filing: the endpoint is fail-safe in the
+  direction that matters. The worst an unauthorised caller achieves is *stopping*
+  your agent — strictly less dangerous than `/api/approvals/decide`, which
+  already runs on this posture.
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Residual, not claimed as done:** there is still no `fw` verb for the halt.
+`grep` over `bin/fw` finds nothing, so on a shell the brake is still bare
+`touch`. Out of scope here (this task is the Watchtower control) and deliberately
+not filed — it is one line of the same file and belongs to whoever next touches
+continuous-mode's CLI surface.
 
 ## Decisions
 
