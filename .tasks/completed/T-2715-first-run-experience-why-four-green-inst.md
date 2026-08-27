@@ -5,16 +5,16 @@ description: >
   Inception: first-run experience: why four green install surfaces missed a blocked
   user
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/blueprints/approvals.py, web/templates/_approvals_content.html]
 related_tasks: []
 created: 2026-08-01T10:01:22Z
-last_update: '2026-08-02T10:15:06Z'
-date_finished:
+last_update: 2026-08-27T16:49:13Z
+date_finished: 2026-08-27T16:49:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -366,3 +366,45 @@ The inception asked why four green install surfaces missed a blocked user. **It 
 - **Rationale:** The grill is complete — **23 of 23 open questions disposed, zero blank** — and the evidence gap that justified the filing-time DEFER is closed. Every scope decision the DEFER named (install path, heal-vs-halt, oracle, arc fence, run budget) now has an operator ruling recorded against it, so DEFER would now be a confidence hedge rather than an evidence gap (T-2144/T-2145).
 
 The inception asked why four green install surfaces missed a blocked user. **It has an answer, and the answer generalised past the installer.** The dominant defect class is *a check that reports success about the wrong object* — eleven instances, of which the last two were produced by this investigation's own instruments and caught in flight. Two of the eleven are reproduced end-to-end dead ends in shipped code, reached by independent routes:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7c6d52e9
+- **Timestamp:** 2026-08-27T16:49:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 6
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-6
+     - evidence: `IW-6 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-7
+     - evidence: `IW-7 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-18
+     - evidence: `IW-18 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  5. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-19
+     - evidence: `IW-19 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  6. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-12
+     - evidence: `IW-12 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-d1969295
+- **Timestamp:** 2026-08-27T16:49:15Z
+- **Overall:** CONFIRMED
+- **Claims:** 4
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2144` | task | ✓ pass |
+| `T-2145` | task | ✓ pass |
+| `T-532` | task | ✓ pass |
+| `T-2717` | task | ✓ pass |
+
+### 2026-08-27T16:49:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

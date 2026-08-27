@@ -10,12 +10,12 @@ description: >
   with the master fallback preserved. Scope-fenced out of T-3186 (one deliverable
   per task); low urgency because worktrees are opt-in-only per the standing directive.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/integrate.py, lib/worktree.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -28,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T09:26:24Z
-last_update: 2026-08-27T13:14:13Z
-date_finished:
+last_update: 2026-08-27T19:31:09Z
+date_finished: 2026-08-27T19:31:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -296,3 +296,15 @@ out=$(timeout 300 bats tests/unit/t2469_worktree_create.bats tests/unit/t2466_wo
 ### 2026-08-27T13:14:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1faf9163
+- **Timestamp:** 2026-08-27T19:31:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-27T19:31:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
