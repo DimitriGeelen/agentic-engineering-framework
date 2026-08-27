@@ -1,19 +1,21 @@
 ---
-id: T-3197
-name: "fw worktree create still branches from master under the release train"
+id: T-3196
+name: "VERSION is incoherent across four sources and vendor self propagates a downgrade"
 description: >
-  lib/worktree.sh:299 (_wt_master_ref) makes master the default base for a new worktree.
-  Under T-3185's release train master lags deliberately between releases, so a worktree
-  branched from it starts behind the dev branch: the merge-base is old, and fw integrate
-  check then reports both-sided files that are not genuinely both-sided, inflating
-  the needs-human verdict. Should resolve through FW_DEV_BRANCH like T-3186/T-3187/T-3188,
-  with the master fallback preserved. Scope-fenced out of T-3186 (one deliverable
-  per task); low urgency because worktrees are opt-in-only per the standing directive.
+  Four different values live at once: VERSION at HEAD is 1.6.72, the working copy
+  reads 1.6.5, .agentic-framework/VERSION is 1.6.129, and the latest tag is v1.6.768.
+  The pre-push hook stamps VERSION on every push (observed: 'VERSION stamped: 1.6.146'
+  then '1.6.768' in the same session) yet the committed value went BACKWARD to 1.6.5.
+  Running 'fw vendor self' then copies root VERSION over the vendored one, so a downgrade
+  propagates into the consumer-facing tree - caught and reverted by hand during T-3127
+  landing. Consumers compare versions on fw upgrade, so a non-monotonic VERSION can
+  make an upgrade look like a downgrade or a no-op. Not a release-tag problem: v1.6.768
+  is correct and points at the right commit.
 
 status: captured
-workflow_type: refactor
+workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -27,8 +29,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-27T09:26:24Z
-last_update: '2026-08-27T09:30:18Z'
+created: 2026-08-27T08:46:12Z
+last_update: '2026-08-27T09:00:18Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -41,17 +43,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-27T09:30:09Z'
+  - ts: '2026-08-27T09:00:09Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
-      tier: 3
+      tier: 2
       effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
-      (workflow:refactor); effort=8 (lines=202,acs=4)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=202,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-27T09:30:18Z'
+  - ts: '2026-08-27T09:00:18Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -70,7 +72,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3197: fw worktree create still branches from master under the release train
+# T-3196: VERSION is incoherent across four sources and vendor self propagates a downgrade
 
 ## Context
 
@@ -267,7 +269,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-27T09:26:24Z — task-created [task-create-agent]
+### 2026-08-27T08:46:12Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3197-fw-worktree-create-still-branches-from-m.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3196-version-is-incoherent-across-four-source.md
 - **Context:** Initial task creation

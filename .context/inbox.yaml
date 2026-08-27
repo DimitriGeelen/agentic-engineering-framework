@@ -4088,3 +4088,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-348
+  text: "Pre-push audit lock routinely blocks pushes, and callers mask it. Four blocked pushes across two sessions today: the S-2026-0827-0859 handover push, the v1.6.768 release tag push (which then created a GitHub Release for a tag origin lacked - T-3193), and two T-3188 closure pushes. The gate is correct to refuse when no verdict was produced, but the cron audit holds .context/locks/audit.lock often enough that 'push, get blocked, hand-retry' is the normal path rather than the exception. Compounding it: every caller that pipes the push (git push ... | tail, fw release ... | tail) reads the pipeline's 0 and reports success. Candidates: have the pre-push hook WAIT briefly on the lock instead of failing immediately; or have it distinguish 'audit could not run' from 'audit failed' at the exit-code level so callers can retry automatically."
+  captured: 2026-08-27T08:07:21Z
+  context_task: T-3181
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-349
+  text: "Watchtower serves the Python it loaded at start, so a change to web/blueprints/*.py is invisible to curl until 'fw watchtower restart'. Hit today: after adding DEV_BRANCH and RELEASE_BRANCH to the config registry, /config showed neither while its sibling keys rendered fine — the code was correct, the process was 13h stale. Cuts both ways and the second way is worse: a P-011 Verification line that curls a page can PASS against pre-change code and report green for a render that was never served. Candidate: fw doctor WARN when the running Watchtower's start time predates the newest mtime under web/."
+  captured: 2026-08-27T09:30:20Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null

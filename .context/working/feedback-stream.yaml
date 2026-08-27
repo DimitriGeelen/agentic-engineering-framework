@@ -37623,3 +37623,75 @@ scan_id: R-2b64de77
 task_id: T-3179
 payload:
   task_file: .tasks/active/T-3179-close-before-commit-strands-the-work-wor.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T07:39:33Z'
+scan_id: R-58fe72a8
+task_id: T-3190
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T07:39:33Z'
+scan_id: R-58fe72a8
+task_id: T-3190
+payload:
+  task_file: .tasks/active/T-3190-fw-release-tag-and-release-never-fast-fo.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T07:52:02Z'
+scan_id: R-b9f951d3
+task_id: T-3192
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T07:52:02Z'
+scan_id: R-b9f951d3
+task_id: T-3192
+payload:
+  task_file: .tasks/active/T-3192-cut-the-first-release-under-the-release-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T08:04:52Z'
+scan_id: R-521c773e
+task_id: T-3188
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T08:04:52Z'
+scan_id: R-521c773e
+task_id: T-3188
+payload:
+  task_file: .tasks/active/T-3188-branch-hygiene-still-measures-landed-aga.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T09:29:36Z'
+scan_id: R-21e9411b
+task_id: T-3186
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T09:29:36Z'
+scan_id: R-21e9411b
+task_id: T-3186
+payload:
+  task_file: .tasks/active/T-3186-fw-sync-and-fw-integrate-still-point-at-.md

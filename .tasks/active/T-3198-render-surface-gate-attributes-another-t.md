@@ -1,17 +1,11 @@
 ---
-id: T-3197
-name: "fw worktree create still branches from master under the release train"
+id: T-3198
+name: "render-surface gate attributes another task's files via commit-body cross-references"
 description: >
-  lib/worktree.sh:299 (_wt_master_ref) makes master the default base for a new worktree.
-  Under T-3185's release train master lags deliberately between releases, so a worktree
-  branched from it starts behind the dev branch: the merge-base is old, and fw integrate
-  check then reports both-sided files that are not genuinely both-sided, inflating
-  the needs-human verdict. Should resolve through FW_DEV_BRANCH like T-3186/T-3187/T-3188,
-  with the master fallback preserved. Scope-fenced out of T-3186 (one deliverable
-  per task); low urgency because worktrees are opt-in-only per the standing directive.
+  lib/render_surface.sh:91 derives a task's footprint from 'git log --all --grep <task_id> --name-only'. That matches the task id ANYWHERE in a commit message, including a prose cross-reference in another task's body. T-3186 was blocked from closing on web/blueprints/config.py, a file its own commit (325b7edc2) never touched: two other commits (T-3190 261cf6de7, T-3127 f0fec8e43) mention T-3186 in their bodies and do touch config.py, so the union dragged it in. The gate fired for a real reason in its own terms but named the wrong owner, and the fix an agent reaches for is --skip-render-review, which is exactly the habit P-013 exists to prevent: every false positive spends bypass credibility that the true positives need. Likely fix: match the SUBJECT line (or a leading 'T-XXX:' prefix) rather than the whole message, with the current broad grep as fallback when the narrow one finds nothing. Same class affects any consumer of _render_surface_git_touched_paths.
 
 status: captured
-workflow_type: refactor
+workflow_type: build
 owner: agent
 horizon: next
 tags: []
@@ -27,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-27T09:26:24Z
-last_update: '2026-08-27T09:30:18Z'
-date_finished:
+created: 2026-08-27T09:29:59Z
+last_update: 2026-08-27T09:29:59Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -40,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-27T09:30:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 3
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
-      (workflow:refactor); effort=8 (lines=202,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-27T09:30:18Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3197: fw worktree create still branches from master under the release train
+# T-3198: render-surface gate attributes another task's files via commit-body cross-references
 
 ## Context
 
@@ -267,7 +233,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-27T09:26:24Z — task-created [task-create-agent]
+### 2026-08-27T09:29:59Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3197-fw-worktree-create-still-branches-from-m.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3198-render-surface-gate-attributes-another-t.md
 - **Context:** Initial task creation

@@ -1,10 +1,10 @@
-# Audit Results - 2026-08-27-0045
-timestamp: 2026-08-26T22:45:17Z
+# Audit Results - 2026-08-27-1117
+timestamp: 2026-08-27T09:17:44Z
 sections: "structure"
 summary:
-  pass: 28
+  pass: 30
   warn: 5
-  fail: 2
+  fail: 0
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3175 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3183 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 30 project YAML file(s)"
   - level: PASS
@@ -63,12 +63,10 @@ findings:
     mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"
-  - level: FAIL
-    check: "Self-vendor drift: libs class — 4 file(s) out of sync (T-2244)"
-    mitigation: "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
-  - level: FAIL
-    check: "Invariant suite: 1 of 87 structural invariant(s) RED (T-2837)"
-    mitigation: "Run: fw test invariants"
+  - level: PASS
+    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
+  - level: PASS
+    check: "Invariant suite green — examined 87 structural invariant(s) (tests/lint/)"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS

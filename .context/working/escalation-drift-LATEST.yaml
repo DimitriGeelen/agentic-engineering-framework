@@ -1,7 +1,7 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-26T03:23:02.131159+00:00
-corpus_total: 2741
+generated: 2026-08-27T03:23:02.448622+00:00
+corpus_total: 2760
 bug_class_total: 497
 bug_class_pct: 18
 h1_flagged: 361
@@ -9,15 +9,13 @@ h1_pct_of_bug_class: 72
 h2_repeat_patterns: 159
 h3_flagged: 265
 h3_pct_of_bug_class: 53
-recent_30d_flagged: 16
+recent_30d_flagged: 15
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
     name: "Fix critical hook PROJECT_ROOT bug for external projects"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
-  - tid: "T-2628-corpus-squash-burst-rca--operator-delete"
-    name: "Corpus squash burst RCA — operator delete-all+resave regressed task-lifecycle"
   - tid: "T-2676-fix-harvestsh-indent-assumption-greps-de"
     name: "fix harvest.sh indent-assumption greps (dead learnings/patterns sub-stages)"
   - tid: "T-2677-fix-dead-audit-graduation-counter-learni"
@@ -32,17 +30,19 @@ recent_sample:
     name: "greenfield seed tasks fail fw audit on a freshly initialised project"
   - tid: "T-2792-fresh-install-onboarding-path-broken-mak"
     name: "Fresh-install onboarding path broken: make the new-project prompt work end"
+  - tid: "T-2830-work-on-switch-focus-fails-silently"
+    name: "fw work-on --switch-focus fails silently (RC=1, zero output)"
 h2_top:
   - learning: "P-011"
-    task_count: 2245
+    task_count: 2288
   - learning: "L-387"
-    task_count: 2015
+    task_count: 2055
   - learning: "L-291"
-    task_count: 1052
+    task_count: 1068
   - learning: "L-398"
-    task_count: 803
+    task_count: 818
   - learning: "P-010"
-    task_count: 439
+    task_count: 448
   - learning: "L-399"
     task_count: 91
   - learning: "L-006"

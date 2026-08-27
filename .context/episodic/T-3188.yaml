@@ -77,10 +77,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 562
-  commits: 2
-  files_changed: 8
-  lines_added: 980
-  lines_removed: 168
+  commits: 3
+  files_changed: 14
+  lines_added: 5379
+  lines_removed: 4112
+  footprint_refreshed_at: '2026-08-27T08:05:34Z'
+  footprint_refreshed_by_commit: 03895b118
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3188-branch-hygiene-still-measures-landed-aga.md
