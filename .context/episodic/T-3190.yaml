@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3190: fw release tag-and-release never fast-forwards master — the release train has no engine
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-27T07:39:44Z
+# ============================================================================
+
+task_id: T-3190
+task_name: "fw release tag-and-release never fast-forwards master — the release train has no engine"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-27T07:26:00Z
+completed: 2026-08-27T07:39:27Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-08-27T09:39:09+02:00
+last_commit: 2026-08-27T09:39:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the release train gets its engine
+
+# Key outcomes
+outcomes:
+  - 'G-096 registered in `.context/project/concerns.yaml` before the fix lands, with `follow_up_task: T-3190`'
+  - '`release_tag_and_release` fast-forwards `master` to the dev branch as part of a release'
+  - 'The fast-forward is checked for cleanliness BEFORE the tag is pushed — a release that cannot advance master must not leave a published tag behind'
+  - 'A non-clean fast-forward (master ahead, or diverged) REFUSES the release with a named reason, rather than tagging and reporting success'
+  - '`--dry-run` reports the master fast-forward it would perform, and mutates nothing'
+  - 'The release path does not weaken, scope, or bypass the T-2394 master-guard — it uses the fast-forward transition the guard already permits'
+  - 'Test suite `tests/unit/t3190_release_master_ff.bats` covers: happy-path FF, refusal on divergence, refusal on master-ahead, no-tag-on-refusal, and dry-run purity'
+  - 'Every silent-pass assertion is paired with a firing control leg over the same fixture (the T-3187 discipline — silence is not evidence)'
+  - 'Mutation-tested: removing the FF leg, and removing the pre-tag ordering guard, each redden only their intended tests'
+  - 'A local advance that reaches NO remote rolls back both the branch and the tag — the local ref moving is not the release'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/release.sh'
+  - 'CLAUDE.md'
+  - '.context/project/concerns.yaml'
+  - 'lib/release.sh'
+  - '.tasks/active/T-3190-fw-release-tag-and-release-never-fast-fo.md'
+  - 'tests/unit/t3190_release_master_ff.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-27T09:39:09'
+    action: 'T-3190: the release train gets its engine'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 6
+  lines_added: 673
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3190-fw-release-tag-and-release-never-fast-fo.md
+generated_by: context-agent-hybrid
