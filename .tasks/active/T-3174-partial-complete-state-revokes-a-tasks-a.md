@@ -46,7 +46,7 @@ related_tasks: [T-1730, T-1890, T-679]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T15:39:11Z
-last_update: '2026-08-26T15:45:13Z'
+last_update: 2026-08-27T07:53:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -385,3 +385,33 @@ Here the *same file* is writable via one tool and unreachable via another.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3174-partial-complete-state-revokes-a-tasks-a.md
 - **Context:** Initial task creation
+
+## Status after T-3179 (2026-08-27)
+
+T-3179 shipped the commit allowance independently and covers this task's first
+three criteria. Measured, not assumed:
+
+- **AC1-3 CLOSED.** `check-active-task.sh` now allows a bare `git commit` under
+  partial-complete, scoped so `--no-verify`/`-n` stay blocked, non-commit writes
+  stay blocked, and the focus-drift gate still fires first. Pinned by
+  `tests/unit/t3179_partial_complete_commit.bats` (11 tests, 3 mutations).
+- **AC4 PARTIAL.** The block message now leads with "'git commit' IS allowed
+  here (T-3179)" and re-labels the rest "To unblock further EDITS (not commits)".
+  The unexecutable-remedy complaint is softened but not removed — see AC5.
+- **AC5 OPEN.** `status-transitions.yaml` still gives `work-completed` **no
+  outgoing transition** (verified: the `transitions:` list has entries *to*
+  work-completed from started-work and issues, and none *from* it). So an agent
+  that needs one more EDIT on a partial-complete task — the reviewer found
+  something, the human has not ticked yet — still cannot resume it. The message
+  points at `fw work-on T-XXX (resume another task)`, which works only by
+  abandoning the task; the only in-place escape remains `FW_SAFE_MODE=1`, which
+  disables the whole task gate. This is the residual hole.
+- **AC6 PARTIAL.** T-3179's suite covers partial-complete thoroughly. The
+  `archived` half of the {partial-complete, archived} matrix is untested here —
+  note the `work-completed)` branch is unreachable for genuinely-archived tasks
+  (they fail the `find_task_file` lookup earlier), so that half may be
+  vacuous rather than missing. Confirm before writing tests for it.
+- **AC7 OPEN.** No `## Decisions` entry yet.
+
+**Remaining scope is therefore AC5 + AC7**, plus confirming AC6 is vacuous.
+Do not close this on T-3179's evidence alone.
