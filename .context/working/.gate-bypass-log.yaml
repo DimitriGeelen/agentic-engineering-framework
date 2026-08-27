@@ -7648,3 +7648,11 @@ git add tests/unit/t3198_render_surface_attribution.bats
 FW_SWITCH_FOCUS=1 git commit -q -m "T-3198: repair a dead assertion in the new regression suite
 
 Line'
+- timestamp: '2026-08-27T13:16:46Z'
+  task: 'T-3181'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3201'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add -A .tasks .context 2>/dev/null
+git diff --cached --quiet || FW_SWITCH_FOCUS=1 git commit -q -m "T-3201: close (landing-mode prompt shipped and verifie'

@@ -1,10 +1,10 @@
-# Audit Results - 2026-08-27-1454
-timestamp: 2026-08-27T12:54:49Z
+# Audit Results - 2026-08-27-1512
+timestamp: 2026-08-27T13:12:14Z
 sections: "structure"
 summary:
-  pass: 29
+  pass: 30
   warn: 5
-  fail: 1
+  fail: 0
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -41,14 +41,14 @@ findings:
   - level: PASS
     check: "No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 139 Python file(s) under web/ + lib/"
   - level: PASS
-    check: "No stale-slice-references (L-417) — examined 270 file(s) under web/templates web/blueprints lib"
+    check: "No stale-slice-references (L-417) — examined 271 file(s) under web/templates web/blueprints lib"
   - level: WARN
     check: "Found 182 GO-scope-not-propagated inception(s) of 354 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
     mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
   - level: PASS
-    check: "Fabric: 1133 registered card(s)"
+    check: "Fabric: 1134 registered card(s)"
   - level: WARN
-    check: "Fabric: 51/1046 cards have no edges"
+    check: "Fabric: 52/1047 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 13 source file(s) have no fabric card"
@@ -65,9 +65,8 @@ findings:
     check: "Hook threshold: no hooks failing over threshold"
   - level: PASS
     check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
-  - level: FAIL
-    check: "Invariant suite: 1 of 87 structural invariant(s) RED (T-2837)"
-    mitigation: "Run: fw test invariants"
+  - level: PASS
+    check: "Invariant suite green — examined 87 structural invariant(s) (tests/lint/)"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS

@@ -10,10 +10,10 @@ description: >
   with the master fallback preserved. Scope-fenced out of T-3186 (one deliverable
   per task); low urgency because worktrees are opt-in-only per the standing directive.
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T09:26:24Z
-last_update: '2026-08-27T09:30:18Z'
+last_update: 2026-08-27T13:14:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -271,3 +271,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3197-fw-worktree-create-still-branches-from-m.md
 - **Context:** Initial task creation
+
+### 2026-08-27T13:14:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

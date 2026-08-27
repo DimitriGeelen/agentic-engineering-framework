@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3201: Landing-mode prompt v2 — codify the operator's stop-finding-start-landing directive
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-27T13:15:44Z
+# ============================================================================
+
+task_id: T-3201
+task_name: "Landing-mode prompt v2 — codify the operator's stop-finding-start-landing directive"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-27T11:49:54Z
+completed: 2026-08-27T13:15:31Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-27T13:51:52+02:00
+last_commit: 2026-08-27T15:15:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  codify landing mode as a file instead of a chat message. real verification lines — the block was empty and asserted nothing
+
+# Key outcomes
+outcomes:
+  - '`policy/prompts/landing-mode.md` exists and carries the pasteable prompt in one block, so the operator''s next ask is a file read rather than a third reconstruction from chat'
+  - 'The prompt states a filing budget (max 2 filings per task landed) — the v1 run filed 6 while landing 3, which is the directive violated by the agent''s own filing rate'
+  - 'The prompt requires mutation testing before any suite is called evidence, citing the two v1 suites that shipped green while asserting nothing'
+  - 'The prompt requires verifying a CLI flag exists before trusting its exit code, citing the `--dry-run` incident where a nonexistent flag exited 0 and was nearly reported as a passing gate'
+  - 'The two premises in the operator''s directive that do NOT currently hold are stated with their fallbacks — BVP quadrant selection returns nothing (T-3184) and the TermLink chat arc has one participant — rather than silently substituted'
+  - 'The file records where TermLink genuinely earns its place (dispatch of specified static-scan work) against where it does not (exploration, 0/122 measured), so "use TermLink" does not degrade into manufactured chatter'
+  - 'Filed under the arc''s own discipline: no bypass used to write it, and the file is committed and pushed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'policy/prompts/landing-mode.md'
+  - '.tasks/active/T-3201-landing-mode-prompt-v2--codify-the-opera.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-27T13:51:52'
+    action: 'T-3201: codify landing mode as a file instead of a chat message'
+  - time: '2026-08-27T15:15:30'
+    action: 'T-3201: real verification lines — the block was empty and asserted nothing'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 85 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 85
+  commits: 2
+  files_changed: 2
+  lines_added: 362
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3201-landing-mode-prompt-v2--codify-the-opera.md
+generated_by: context-agent-hybrid
