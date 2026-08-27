@@ -138,8 +138,12 @@ EOF
     # T-900 is a prefix of T-9001..T-9005. It authored nothing.
     run touched T-900
     [ "$status" -eq 0 ]
-    ! echo "$output" | grep -q "lib/alpha.sh"
-    ! echo "$output" | grep -q "web/templates/collide.html"
+    # [[ != ]] rather than `! ... | grep`: a !-negated command is exempt from
+    # errexit, so in any position but the last it asserts nothing. Caught by
+    # tools/bats-dead-negation-lint.py — mutation testing could not see it,
+    # because the live second assertion reddened for the same mutations.
+    [[ "$output" != *"lib/alpha.sh"* ]]
+    [[ "$output" != *"web/templates/collide.html"* ]]
 }
 
 # ---- Source-level ---------------------------------------------------------
