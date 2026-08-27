@@ -2534,13 +2534,17 @@ if [ -f "$_bh_lib" ] && git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>
                 _bh_shown="$_bh_shown
          … $((_bh_count - 12)) more (shown lines are one-per-class, not the worst)"
             fi
-            _bh_fix="Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back). Full list: $_bh_full"
+            # T-3194: name the branch the scan actually measured against.
+            # A literal `master` here sends the operator to merge the older
+            # tree into the newer one — remediation that undoes the finding.
+            _bh_devname=$(_fw_bh_dev_name "$PROJECT_ROOT")
+            _bh_fix="Cleanup: git branch -d <name> (merged); fw integrate run ${_bh_devname} (overdue merge-back). Full list: $_bh_full"
             if printf '%s\n' "$_bh_out" | grep -q '^diverged-fork '; then
                 # T-100195 (RCA T-100194): a fork is BOTH ahead and behind, so a
-                # go-live `git merge origin/master` conflicts and a one-way
-                # `fw integrate` cannot absorb what master has. Different remedy,
-                # so it has to be named separately or the mitigation is wrong.
-                _bh_fix="$_bh_fix — FORK present: reconcile while small (merge origin/master INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
+                # go-live `git merge` conflicts and a one-way `fw integrate`
+                # cannot absorb what the target has. Different remedy, so it has
+                # to be named separately or the mitigation is wrong.
+                _bh_fix="$_bh_fix — FORK present: reconcile while small (merge origin/${_bh_devname} INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
             fi
             warn "Branch hygiene: $_bh_count finding(s) — stale branches, worktrees or remote refs" \
                  "$_bh_shown" \

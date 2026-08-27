@@ -442,14 +442,20 @@ if [ -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ]; then
                     ;;
             esac
         fi
+        # T-3194: the nudge is the single most-read line in a handover — it is
+        # what SessionStart injects into the next session. Naming a literal
+        # `master` there hands the next agent an instruction that merges the
+        # older tree into the newer one, with the framework's own authority
+        # behind it. It has to name the branch the divergence was measured from.
+        _bd_devname=$(_fw_bh_dev_name "$PROJECT_ROOT")
         if printf '%s\n' "$_bd_out" | grep -q '^fork '; then
-            # T-100195: bidirectional fork — a bare `git merge origin/master`
+            # T-100195: bidirectional fork — a bare `git merge origin/<target>`
             # conflicts (T-100194 origin: 100+ conflicts). Reconcile while small,
             # do NOT recommend a one-way `fw integrate` (it cannot absorb the
-            # ${_bd_behind} commits master has that this branch lacks).
-            MERGEBACK_NUDGE="**⚠ Branch has FORKED from origin/master:** \`$_bd_branch\` is +${_bd_ahead} ahead AND −${_bd_behind} behind (threshold ${FW_BRANCH_BEHIND_WARN:-50}). This is a bidirectional fork, not a lag — a go-live \`git merge origin/master\` will conflict. Reconcile now while the fork is small: merge origin/master INTO this branch and resolve, or reset to origin/master if the unique commits are already landed. (RCA T-100194; safe go-live path: T-100195 Leg 2.)"
+            # ${_bd_behind} commits the target has that this branch lacks).
+            MERGEBACK_NUDGE="**⚠ Branch has FORKED from origin/${_bd_devname}:** \`$_bd_branch\` is +${_bd_ahead} ahead AND −${_bd_behind} behind (threshold ${FW_BRANCH_BEHIND_WARN:-50}). This is a bidirectional fork, not a lag — a go-live \`git merge origin/${_bd_devname}\` will conflict. Reconcile now while the fork is small: merge origin/${_bd_devname} INTO this branch and resolve, or reset to origin/${_bd_devname} if the unique commits are already landed. (RCA T-100194; safe go-live path: T-100195 Leg 2.)"
         elif printf '%s\n' "$_bd_out" | grep -q '^nudge '; then
-            MERGEBACK_NUDGE="**Merge-back overdue:** \`$_bd_branch\` is ${_bd_behind} commits behind origin/master (threshold ${FW_BRANCH_BEHIND_WARN:-50}) — land the strand with \`fw integrate run master --push\` before starting new work."
+            MERGEBACK_NUDGE="**Merge-back overdue:** \`$_bd_branch\` is ${_bd_behind} commits behind origin/${_bd_devname} (threshold ${FW_BRANCH_BEHIND_WARN:-50}) — land the strand with \`fw integrate run ${_bd_devname} --push\` before starting new work."
         fi
     fi
 fi

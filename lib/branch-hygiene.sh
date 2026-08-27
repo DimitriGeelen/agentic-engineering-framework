@@ -378,9 +378,38 @@ fw_branch_divergence() {
 # Exit codes: 0 = no action needed / safely reconciled / advisory printed.
 #             1 = refused (fork) or an attempted fast-forward failed.
 #             2 = usage error (not a repo / no origin / no origin/master).
+# ── T-3194: one name for the branch every remediation string must point at ──
+# fw_branch_hygiene and fw_branch_divergence each resolve their own comparand
+# (they prefer different refs, deliberately, and both are pinned by T-3188's
+# tests — so this helper does NOT try to unify them). What it unifies is the
+# far more error-prone half: the branch NAME that gets interpolated into advice
+# printed by four different files. Before T-3194 those said `master` literally,
+# which under the release train tells the operator to merge the older tree into
+# the newer one — the advice actively undoing what the measurement just found.
+#
+# Echoes the dev branch when one exists locally or on origin, else `master`,
+# which is the pre-T-3185 reading and keeps unsplit repos' output byte-identical.
+_fw_bh_dev_name() {
+    local repo="${1:-.}"
+    local dev="${FW_DEV_BRANCH:-bleeding-edge}"
+    if git -C "$repo" rev-parse --verify -q "origin/$dev" >/dev/null 2>&1 \
+       || git -C "$repo" rev-parse --verify -q "refs/heads/$dev" >/dev/null 2>&1; then
+        echo "$dev"
+    else
+        echo master
+    fi
+}
+
 fw_go_live() {
     local repo="${1:-.}"
     local warn="${FW_BRANCH_BEHIND_WARN:-50}"
+    # T-3194: go-live does not merely ADVISE against a target, it fast-forwards
+    # ONTO one. Retargeting the prose while the `git merge --ff-only` below
+    # still aimed at master would be worse than leaving both wrong: between
+    # releases master is behind, so that merge moves the checkout BACKWARD
+    # while the message says it reconciled.
+    local _gl_dev
+    _gl_dev=$(_fw_bh_dev_name "$repo")
 
     git -C "$repo" rev-parse --git-dir >/dev/null 2>&1 || {
         echo "not a git repository: $repo" >&2
@@ -390,28 +419,28 @@ fw_go_live() {
         echo "no 'origin' remote — nothing to reconcile" >&2
         return 2
     }
-    git -C "$repo" fetch origin master >/dev/null 2>&1
-    git -C "$repo" rev-parse --verify -q origin/master >/dev/null 2>&1 || {
-        echo "origin/master not found — nothing to reconcile against" >&2
+    git -C "$repo" fetch origin "$_gl_dev" >/dev/null 2>&1
+    git -C "$repo" rev-parse --verify -q "origin/$_gl_dev" >/dev/null 2>&1 || {
+        echo "origin/$_gl_dev not found — nothing to reconcile against" >&2
         return 2
     }
 
     local branch ahead behind
     branch=$(git -C "$repo" branch --show-current 2>/dev/null)
-    set -- $(git -C "$repo" rev-list --left-right --count origin/master...HEAD 2>/dev/null)
+    set -- $(git -C "$repo" rev-list --left-right --count "origin/$_gl_dev"...HEAD 2>/dev/null)
     behind="${1:-0}"; ahead="${2:-0}"
 
     if [ "$ahead" -eq 0 ] && [ "$behind" -eq 0 ]; then
-        echo "up to date with origin/master."
+        echo "up to date with origin/$_gl_dev."
         return 0
     fi
 
     if [ "$ahead" -gt "$warn" ] && [ "$behind" -gt "$warn" ]; then
         echo "REFUSED: diverged-fork (ahead=$ahead behind=$behind, threshold $warn)." >&2
-        echo "A bare 'git merge origin/master' will conflict (see T-100194) — not doing that." >&2
+        echo "A bare 'git merge origin/$_gl_dev' will conflict (see T-100194) — not doing that." >&2
         echo "Reconcile while small instead:" >&2
-        echo "  - merge origin/master INTO ${branch:-HEAD} and resolve by hand, or" >&2
-        echo "  - reset ${branch:-HEAD} if its unique commits already landed elsewhere, or" >&2
+        echo "  - merge origin/$_gl_dev INTO ${branch:-HEAD} and resolve by hand, or" >&2
+        echo "  - reset ${branch:-HEAD} to origin/$_gl_dev if its unique commits already landed elsewhere, or" >&2
         echo "  - route through the T-2473 union resolver once it lands." >&2
         echo "See T-100195 (detection) / T-100194 (RCA)." >&2
         return 1
@@ -419,8 +448,8 @@ fw_go_live() {
 
     if [ "$ahead" -eq 0 ]; then
         echo "ff-clean (ahead=0 behind=$behind) — fast-forwarding."
-        if git -C "$repo" merge --ff-only origin/master; then
-            echo "fast-forwarded to origin/master."
+        if git -C "$repo" merge --ff-only "origin/$_gl_dev"; then
+            echo "fast-forwarded to origin/$_gl_dev."
             return 0
         fi
         echo "fast-forward failed unexpectedly — investigate before retrying." >&2
@@ -428,13 +457,13 @@ fw_go_live() {
     fi
 
     if [ "$behind" -eq 0 ]; then
-        echo "ahead of origin/master (ahead=$ahead) — nothing to reconcile; push when ready (fw sync / fw push)."
+        echo "ahead of origin/$_gl_dev (ahead=$ahead) — nothing to reconcile; push when ready (fw sync / fw push)."
         return 0
     fi
 
     if [ "$behind" -gt "$warn" ]; then
         echo "behind-threshold (ahead=$ahead behind=$behind, threshold $warn) — a lag with unique commits, not a fork."
-        echo "Land your unique commits with 'fw integrate run master --push' (one-way) rather than merging origin/master in."
+        echo "Land your unique commits with 'fw integrate run $_gl_dev --push' (one-way) rather than merging origin/$_gl_dev in."
         return 0
     fi
 

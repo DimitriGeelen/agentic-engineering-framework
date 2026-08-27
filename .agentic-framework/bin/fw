@@ -3529,11 +3529,16 @@ if len(rows) > 5:
                 # show remote strands at all.
                 echo -e "         … $((_bh_count - 12)) more (full list: bash -c 'source lib/branch-hygiene.sh; fw_branch_hygiene .')"
             fi
-            echo -e "         Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back)"
+            # T-3194: the advice has to name the branch the SCAN measured
+            # against, or it tells the operator to merge the older tree into
+            # the newer one — the remediation undoing the finding.
+            local _bh_devname
+            _bh_devname=$(_fw_bh_dev_name "$PROJECT_ROOT")
+            echo -e "         Cleanup: git branch -d <name> (merged); fw integrate run ${_bh_devname} (overdue merge-back)"
             if printf '%s\n' "$_bh_out" | grep -q '^diverged-fork '; then
                 # T-100195 (RCA T-100194): a fork needs reconcile-while-small, NOT
-                # a one-way `fw integrate` — that cannot absorb what master has.
-                echo -e "         ${YELLOW}FORK${NC}: a diverged-fork branch is BOTH ahead and behind — a go-live \`git merge origin/master\` will conflict. Reconcile now while small (merge origin/master INTO the branch and resolve, or reset if the unique commits already landed). Do NOT use \`fw integrate\` on a fork (one-way). See T-100195."
+                # a one-way `fw integrate` — that cannot absorb what the target has.
+                echo -e "         ${YELLOW}FORK${NC}: a diverged-fork branch is BOTH ahead and behind — a go-live \`git merge origin/${_bh_devname}\` will conflict. Reconcile now while small (merge origin/${_bh_devname} INTO the branch and resolve, or reset if the unique commits already landed). Do NOT use \`fw integrate\` on a fork (one-way). See T-100195."
             fi
             warnings=$((warnings + 1))
         else

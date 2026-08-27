@@ -1,17 +1,21 @@
 ---
-id: T-3194
-name: "Branch-hygiene remediation text still tells operators to merge origin/master
-  under the release train"
+id: T-3199
+name: "t100195 diverged-fork suite has been red since T-3094 added days= to the finding
+  format"
 description: >
-  T-3188 retargeted the MEASUREMENT to the dev branch, but the advice printed with
-  each finding still names origin/master: bin/fw:3527 (doctor FORK mitigation), agents/audit/audit.sh:2470-2473
-  (audit fork mitigation), agents/handover/handover.sh:446-450 (MERGEBACK_NUDGE).
-  Between releases master is older than bleeding-edge, so following that advice merges
-  a stale tree into a live branch. Not fixed in T-3188 because bin/fw and agents/audit/audit.sh
-  are held dirty by another session's uncommitted T-3127 work - same blocker as T-3186.
+  tests/unit/t100195_diverged_fork.bats tests 1 and 2 assert on anchored strings that
+  no longer exist: 'diverged-fork fork-feat ahead=3 behind=3 (threshold 2)$' and 'behind-threshold
+  lag-feat behind=3 (threshold 2)$'. T-3094 inserted 'days=<d>' before the threshold
+  clause, and the trailing $ anchor means neither pattern can ever match again. Red
+  since T-3094, unnoticed because the suite is not in any gate's path. Verified pre-existing:
+  stashing the T-3194 edits leaves the same 2 failures. Sibling to T-3195 (t3095 hygiene
+  test 3) but a DIFFERENT root cause - that one is a T-3188 retarget, this one is
+  a T-3094 format change. Fix is to update both patterns to tolerate the days= field,
+  not to drop the anchor: the anchor is what makes them assert the WHOLE line rather
+  than a prefix.
 
-status: started-work
-workflow_type: build
+status: captured
+workflow_type: test
 owner: agent
 horizon: now
 tags: []
@@ -27,8 +31,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-27T08:04:06Z
-last_update: 2026-08-27T09:33:23Z
+created: 2026-08-27T09:56:12Z
+last_update: '2026-08-27T10:00:20Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -41,17 +45,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-27T08:15:08Z'
+  - ts: '2026-08-27T10:00:09Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
-      tier: 2
+      tier: 1
       effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=202,acs=4)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=202,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-27T08:15:14Z'
+  - ts: '2026-08-27T10:00:20Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -68,75 +72,20 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-08-27T09:33:24Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 1
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3194: Branch-hygiene remediation text still tells operators to merge origin/master under the release train
+# T-3199: t100195 diverged-fork suite has been red since T-3094 added days= to the finding format
 
 ## Context
 
-T-3188 retargeted branch hygiene's **measurement** to the dev branch. It left
-every string of **advice** printed alongside a finding naming a literal
-`master`. Under the release train master is older than bleeding-edge between
-releases, so the remediation instructed the operator to merge the older tree
-into the newer one — advice that undoes the very state the finding detected.
-
-Six sites, four files:
-
-| Site | What it said |
-|---|---|
-| `bin/fw` doctor cleanup + FORK | `fw integrate run` / `git merge origin/master` |
-| `agents/audit/audit.sh` FORK mitigation | `merge origin/master INTO the branch` |
-| `agents/handover/handover.sh` fork arm | `git merge origin/master` ×3 |
-| `agents/handover/handover.sh` nudge arm | `fw integrate run master --push` |
-| `lib/branch-hygiene.sh` `fw_go_live` refusal | `git merge origin/master` |
-| `lib/branch-hygiene.sh` `fw_go_live` landing | `fw integrate run master --push` |
-
-The handover nudge is the sharpest of these: it is what SessionStart injects,
-so the next agent reads `fw integrate run master --push` as an instruction
-carrying the framework's own authority — landing a strand straight onto the
-consumer install surface.
-
-`fw_go_live` needed more than prose. It does not merely advise a target, it
-`git merge --ff-only`s onto one. Retargeting its messages while the merge still
-aimed at master would have been worse than leaving both wrong: the command
-would move the checkout **backward** while reporting that it reconciled. Its
-comparand moved with its text.
-
-All six now interpolate `_fw_bh_dev_name`, a single helper reading the same
-`FW_DEV_BRANCH` knob as T-3186/T-3187/T-3188. It deliberately does **not** try
-to unify the two comparand resolvers already in this file — those prefer
-different refs on purpose and are pinned by T-3188's tests. It unifies only the
-error-prone half: the branch *name* interpolated into advice across four files.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Every branch-hygiene remediation string names the RESOLVED dev branch, not a literal `master`: `bin/fw` doctor FORK mitigation, `agents/audit/audit.sh` audit FORK mitigation, `agents/handover/handover.sh` both MERGEBACK_NUDGE arms, and `lib/branch-hygiene.sh` fw_go_live's refusal + landing advice
-- [x] No remediation string still says `fw integrate run master --push` — that instruction lands a strand directly on the consumer install surface, which is the exact injection the release train exists to prevent
-- [x] The branch name is interpolated from the same `FW_DEV_BRANCH` resolution T-3186/T-3187/T-3188 use, so a repo that overrides the knob gets advice naming ITS branch, not ours
-- [x] Fallback preserved: with no dev branch present every string reads exactly as it did before, so pre-T-3185 repos see no change
-- [x] The fork advice keeps its substance — reconcile-while-small, merge the target INTO the branch, do NOT use one-way `fw integrate` on a fork (T-100194/T-100195). Retargeting must not quietly drop the T-100194 lesson
-- [x] Tests in `tests/unit/t3194_remediation_target.bats`, every "no longer says master" assertion paired with one asserting the retargeted string IS present — deleting the advice must not read as a pass
-- [x] Mutation-tested: reverting each site to its literal-master form reddens only that site's tests
-- [x] `bash -n bin/fw`, `bash -n agents/audit/audit.sh`, `bash -n agents/handover/handover.sh`, `bash -n lib/branch-hygiene.sh` all pass (L-408), and `tools/bats-dead-negation-lint.py` reports clean (L-651)
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -230,30 +179,6 @@ error-prone half: the branch *name* interpolated into advice across four files.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# The suite, guarded per T-2738 (a pass marker survives a partial failure).
-out=$(bats tests/unit/t3194_remediation_target.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# No regression in the four sibling hygiene suites that share this library.
-# t100195 and t3095 are EXCLUDED on purpose: both carry pre-existing reds
-# (T-3199, T-3195) verified by stashing this task's edits and re-running.
-out=$(bats tests/unit/t100143_branch_hygiene.bats tests/unit/t100196_go_live.bats tests/unit/t3187_branch_identity_guard.bats tests/unit/t3188_hygiene_release_train.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# L-408: all four edited shell files must still parse.
-bash -n bin/fw
-bash -n agents/audit/audit.sh
-bash -n agents/handover/handover.sh
-bash -n lib/branch-hygiene.sh
-# L-651: no assertion left in dead position behind a bare `!`.
-python3 tools/bats-dead-negation-lint.py tests/unit/t3194_remediation_target.bats > /tmp/.t3194-lint 2>&1 && grep -q "dead 0" /tmp/.t3194-lint
-# The defect itself, live: doctor's remediation must name the branch the scan
-# measured against — asked of the resolver rather than hard-coded, so the line
-# still means something in a repo whose dev branch is named something else.
-# Two traps this form avoids, both hit while writing it:
-#   `|| true` — `fw doctor` exits nonzero on WARNs, and under `set -e` that
-#   aborts the line before grep ever runs (observed: rc=2 with the string
-#   present in the file). The producer's exit code is not the assertion here.
-#   redirect, not pipe — as a pipeline under `set -eo pipefail` a match
-#   SIGPIPEs the producer to 141, so the regressed state would report PASS.
-_t3194_dev=$(bash -c 'source lib/branch-hygiene.sh; _fw_bh_dev_name .'); bin/fw doctor > /tmp/.t3194-doctor 2>&1 || true; grep -q "fw integrate run $_t3194_dev" /tmp/.t3194-doctor
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -346,10 +271,7 @@ _t3194_dev=$(bash -c 'source lib/branch-hygiene.sh; _fw_bh_dev_name .'); bin/fw 
 
 ## Updates
 
-### 2026-08-27T08:04:06Z — task-created [task-create-agent]
+### 2026-08-27T09:56:12Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3194-branch-hygiene-remediation-text-still-te.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3199-t100195-diverged-fork-suite-has-been-red.md
 - **Context:** Initial task creation
-
-### 2026-08-27T09:33:23Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
