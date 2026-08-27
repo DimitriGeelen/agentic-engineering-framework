@@ -63,6 +63,46 @@ release_bump_version() {
 }
 
 # ---------------------------------------------------------------------------
+# release_ff_state <root> <release_branch>
+#   Can <release_branch> fast-forward to HEAD? Echoes exactly one of:
+#     missing      — no such local branch (consumer repo, fresh clone)
+#     uptodate     — already at HEAD; nothing to advance
+#     clean        — strict ancestor of HEAD; a fast-forward is available
+#     branch-ahead — HEAD is an ancestor of it; releasing would MOVE IT BACK
+#     diverged     — neither is an ancestor of the other
+#
+#   Read-only by construction: no checkout, no ref write, no network.
+#
+#   G-096: this is the discrimination the release path never made. Under the
+#   release train (T-3185) `master` is the consumer install surface, and a
+#   release whose whole job is to advance it must be able to say whether that
+#   advance is actually possible BEFORE it publishes anything.
+# ---------------------------------------------------------------------------
+release_ff_state() {
+    local root="$1"
+    local rb="$2"
+    if ! git -C "$root" rev-parse --verify -q "refs/heads/$rb" >/dev/null 2>&1; then
+        echo "missing"; return 0
+    fi
+    local head_sha rb_sha
+    head_sha="$(git -C "$root" rev-parse HEAD 2>/dev/null)"
+    rb_sha="$(git -C "$root" rev-parse "refs/heads/$rb" 2>/dev/null)"
+    if [ -z "$head_sha" ] || [ -z "$rb_sha" ]; then
+        echo "missing"; return 0
+    fi
+    if [ "$head_sha" = "$rb_sha" ]; then
+        echo "uptodate"; return 0
+    fi
+    if git -C "$root" merge-base --is-ancestor "$rb_sha" "$head_sha" 2>/dev/null; then
+        echo "clean"; return 0
+    fi
+    if git -C "$root" merge-base --is-ancestor "$head_sha" "$rb_sha" 2>/dev/null; then
+        echo "branch-ahead"; return 0
+    fi
+    echo "diverged"
+}
+
+# ---------------------------------------------------------------------------
 # release_tag_and_release  — main entrypoint
 #   Flags: --dry-run, --bump {patch|minor|major}, --repo <owner/name>
 # ---------------------------------------------------------------------------
@@ -100,8 +140,48 @@ release_tag_and_release() {
     local next
     next="$(release_bump_version "$latest" "$bump")"
 
+    # ── Release-train leg (G-096, T-3190) ────────────────────────────────
+    # Under T-3185 a release IS the fast-forward of the install surface; the
+    # tag merely names it. So the advance is decided FIRST, before a tag
+    # exists and long before one is published. A release that cannot move
+    # `master` must fail loudly here rather than tag, push, exit 0, and leave
+    # the operator with every signal saying it worked.
+    local release_branch="${FW_RELEASE_BRANCH:-master}"
+    # Declared here, not at the tag-push loop below: the release-branch push
+    # runs FIRST and must be able to record its own failure. A `local failed=0`
+    # after that point would silently reset it.
+    local failed=0
+    local ff_state ff_count=0
+    ff_state="$(release_ff_state "$root" "$release_branch")"
+    if [ "$ff_state" = "clean" ]; then
+        ff_count="$(git -C "$root" rev-list --count "refs/heads/${release_branch}..HEAD" 2>/dev/null || echo 0)"
+    fi
+
+    case "$ff_state" in
+        branch-ahead)
+            echo -e "${RED}REFUSING to release:${NC} '$release_branch' is AHEAD of HEAD." >&2
+            echo "  Releasing would move the install surface BACKWARD — consumers would" >&2
+            echo "  receive an older tree than they already have." >&2
+            echo "  No tag was created. Merge or rebase '$release_branch' first, then retry." >&2
+            return 1
+            ;;
+        diverged)
+            echo -e "${RED}REFUSING to release:${NC} '$release_branch' has DIVERGED from HEAD." >&2
+            echo "  Neither is an ancestor of the other, so no fast-forward exists and a" >&2
+            echo "  release cannot advance the install surface without a merge decision" >&2
+            echo "  that is not this command's to make." >&2
+            echo "  No tag was created. Reconcile the branches first, then retry." >&2
+            return 1
+            ;;
+    esac
+
     if $dry_run; then
         echo -e "${CYAN}would tag $next${NC} ($commits commits since $latest, bump=$bump)"
+        case "$ff_state" in
+            clean)    echo -e "${CYAN}would fast-forward $release_branch${NC} by $ff_count commit(s) to $next" ;;
+            uptodate) echo "$release_branch is already at HEAD — no fast-forward needed" ;;
+            missing)  echo -e "${YELLOW}no local '$release_branch'${NC} — would skip the fast-forward" ;;
+        esac
         return 0
     fi
 
@@ -112,8 +192,55 @@ release_tag_and_release() {
         return 1
     fi
 
+    # Advance the install surface BEFORE publishing the tag. A tag pushed to a
+    # commit that `master` never received is worse than no tag: it advertises a
+    # release that consumers cannot obtain. If the advance fails, the local tag
+    # is removed so a retry is clean.
+    if [ "$ff_state" = "clean" ]; then
+        echo -e "${CYAN}Fast-forwarding $release_branch ($ff_count commit(s))...${NC}"
+        local rb_before
+        rb_before="$(git -C "$root" rev-parse "refs/heads/${release_branch}" 2>/dev/null)"
+        if ! git -C "$root" branch -f "$release_branch" HEAD 2>&1; then
+            echo -e "${RED}Failed to advance local '$release_branch'${NC} — is it checked out in a worktree?" >&2
+            git -C "$root" tag -d "$next" >/dev/null 2>&1
+            echo "  Tag $next was removed; nothing was published." >&2
+            return 1
+        fi
+        # The LOCAL fast-forward succeeding does not mean the install surface
+        # moved — release_ff_state only inspects the local ref. A remote can
+        # still reject the push as non-fast-forward (someone else wrote the
+        # branch), so reaching NO remote at all means the release did not
+        # happen and the tag must not survive to advertise it.
+        local rb_pushed=0 rb_attempted=0
+        while IFS= read -r remote; do
+            [ -z "$remote" ] && continue
+            rb_attempted=$((rb_attempted + 1))
+            echo -e "${CYAN}Pushing $release_branch to $remote...${NC}"
+            if git -C "$root" push "$remote" "refs/heads/${release_branch}:refs/heads/${release_branch}" 2>&1; then
+                echo -e "  ${GREEN}✓ $remote${NC}"
+                rb_pushed=$((rb_pushed + 1))
+            else
+                echo -e "  ${YELLOW}WARN: push of $release_branch to $remote failed${NC}" >&2
+                failed=1
+            fi
+        done < <(git -C "$root" remote 2>/dev/null)
+        if [ "$rb_attempted" -gt 0 ] && [ "$rb_pushed" -eq 0 ]; then
+            echo -e "${RED}REFUSING to publish:${NC} '$release_branch' reached no remote." >&2
+            echo "  The local branch advanced but no consumer can see it, so the tag" >&2
+            echo "  would advertise a release nobody can obtain." >&2
+            git -C "$root" branch -f "$release_branch" "$rb_before" >/dev/null 2>&1
+            git -C "$root" tag -d "$next" >/dev/null 2>&1
+            echo "  Rolled back: $release_branch restored, tag $next removed; nothing was published." >&2
+            return 1
+        fi
+    elif [ "$ff_state" = "missing" ]; then
+        echo -e "${YELLOW}No local '$release_branch' — skipping the fast-forward${NC}" >&2
+    else
+        echo -e "${GREEN}$release_branch already at HEAD — no fast-forward needed${NC}"
+    fi
+
     # Push tag to every remote
-    local failed=0
+    # (failed is declared above, with the release-branch push that also sets it)
     local remote
     while IFS= read -r remote; do
         [ -z "$remote" ] && continue

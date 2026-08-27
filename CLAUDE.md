@@ -1253,7 +1253,18 @@ was itself the source of the 41-day blind spot described below.
 - **`fw worktree gc`** reclaims landed worktrees/branches by content comparison
   (survives re-derivation, which defeats `git cherry`). Dry-run default; branch
   deletes stay Tier-0.
-- **Release:** `fw release tag-and-release` cuts the tag and fast-forwards `master`.
+- **Release:** `fw release tag-and-release` fast-forwards `master` and cuts the tag —
+  **in that order** (T-3190). The advance is the release; the tag only names it. If
+  `master` is ahead of HEAD or has diverged, the command **refuses** and creates no
+  tag, because a release that cannot advance the install surface is not a release.
+  `--dry-run` reports the fast-forward it would perform and mutates nothing.
+  Override the branch with `FW_RELEASE_BRANCH`.
+
+  This sentence used to describe a fast-forward that `lib/release.sh` did not
+  implement — it tagged HEAD, pushed, exited 0, and never touched `master` (G-096).
+  The command reported success while the one thing a release exists to do silently
+  did not happen. Same false-green family as the branch guard above: a command
+  answering the question next to the one it appears to answer.
 
 **Do NOT** create a per-task session branch (`t<NNNN>-<topic>`) and live on it. That
 is what happened for 41 days: `t2539-staging` was cut on 2026-07-16 for T-2539,
