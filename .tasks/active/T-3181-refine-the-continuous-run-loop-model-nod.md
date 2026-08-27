@@ -86,48 +86,102 @@ cost_estimate_proposed:
   `max_tasks`, `tier_ceiling`, `expires_after_seconds`). The operator's stated terminal
   conditions are arc-drained or run-cap, and wall-clock is explicitly NOT one of them —
   yet `expires_after_seconds` is the last thing that actually terminated a run.
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: deferred
+  rationale: The MEASUREMENT half is now settled and was worth settling separately —
+    `.context/working/.continuous-mode.yaml` reads `last_terminated_reason: expires_at
+    2026-06-17T00:00:00Z passed`, `max_tasks: null` (never configured), `max_iterations: 10`
+    with `current_iteration: 3`, `tier_ceiling: 1`. So of the four caps, exactly one has
+    ever ended a run, and it is the one the operator says is NOT a terminal condition;
+    the other three have never fired because two are unreached and one is unset. The
+    DESIGN half — what a "run cap" should count — is a D-1.5 call the operator has not
+    made, and node 2 of 15 has not reached it. Deferring the design half rather than
+    inferring it from the GO: the GO's own rationale says these are unwalked evidence
+    gaps. Evidence needed to close: the operator picks turns | tasks | sessions.
 
 - **IW-2: Does the halt mechanism satisfy the sovereignty requirement now that it is built?**
   v5 filed this MISSING. `stop-driver.sh:60,80-82` reads a halt file as Brake 1, before
   anything else votes. Open: is a file enough without a Watchtower control, and is it
   reachable when the model is the thing misbehaving?
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Yes on reachability, no on sufficiency — and the second half is now a
+    verified gap rather than a suspicion. Verified: `agents/context/stop-driver.sh:80-82`
+    is "Brake 1: the halt file, before anything else gets a vote", ahead of the enabled
+    flag and caps (Brake 2, line 107) and the platform runaway guard (Brake 3a, line 86),
+    so a halt cannot be outvoted. Reachability holds precisely BECAUSE it is a file: it
+    is written from a shell the model does not mediate, so a misbehaving model cannot
+    suppress it — which a model-issued halt could not claim. Sufficiency does not:
+    `grep -rln halt web/blueprints/ web/templates/` returns NOTHING, so there is no
+    Watchtower control at all and the only halt affordance requires shell access. Filed
+    as T-3200 rather than left inside this question — an operator watching a runaway from
+    a phone has no brake.
 
 - **IW-3: Is a deliberately-RED conformance rail entry a legitimate use of the rail?**
   Registering the `SessionStart source?` gateway as a vocabulary-set entry would go red on
   landing (the `clear` branch is not in `post-compact-resume.sh`'s allowlist) and stay red
   until the allowlist widens — converting prose into a self-reporting audit finding.
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: Rail policy is the operator's call and node 2 of 15 has not reached it, so
+    recording an answer here would be inventing one. What the walkthrough should weigh is
+    stated, so the deferral is not empty: a deliberately-RED entry trades a durable,
+    self-reporting finding against the cost every standing red imposes — teaching readers
+    that red is the resting state, which is how the t100195 suite (T-3199, filed today)
+    stayed broken since T-3094 with nobody noticing. Evidence needed to close: whether
+    the rail is treated as must-be-green (then a planted red is corrosive) or as a
+    findings surface (then it is exactly the right instrument).
 
 - **IW-4: Is our PreCompact handover already compaction-grade, and how would we know?**
   Nobody has taken `LATEST.md` into a genuinely cold session and measured whether it
   resumes. Cheap to falsify; nothing should be built on top of it before it is.
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 1
+  disposition: deferred
+  rationale: Still unfalsified, but no longer at confidence 0 — this session compacted
+    mid-flight and continued through four task closes without re-deriving established
+    facts, which is weak POSITIVE evidence. Weak because it is the wrong experiment: a
+    `/compact` resume reinjects a SessionStart banner, so it never tested LATEST.md
+    standing alone, and the banner itself was truncated by the harness. The question asks
+    about a genuinely cold session and that has still never been run. Deliberately not
+    upgraded to "answered" on the strength of a session that had help. Evidence needed to
+    close, unchanged and still cheap: open a cold session with LATEST.md as its only
+    input and record what it cannot reconstruct.
 
 - **IW-5: On hitting a human gate mid-run, does the run park the task and take the next, or stop and notify?**
   (v5's Q5.) With ~48 started-work tasks, most human-owned, an arc drain hits one almost
   immediately. Park-and-next keeps the run alive but grows a pile nobody asked for;
   stop-and-notify is honest but may end the run in its first minutes.
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: Explicitly the operator's call — it is a sovereignty question wearing a
+    scheduling question's clothes, and picking a default here would be the agent deciding
+    how much unreviewed work it may pile up. Node 2 of 15 has not reached it. One datum
+    added since v5 that sharpens the choice: today's `fw review-queue` shows 280 tasks
+    already awaiting human verification, so park-and-next would not START growing a pile
+    nobody asked for, it would feed an existing one — which weakens the "keeps the run
+    alive" argument considerably. Evidence needed to close: the operator picks, and if
+    park-and-next, names the cap on parked tasks per run.
 
 - **IW-6: Why did the claude-fw wrapper leave its restart loop instead of iterating?**
   Measured tonight: restart branch ran at 21:25:46 (sentinel written), but the wrapper
   running now is a different PID started by hand at 21:39:52. Links 1-4 fired; link 5
   did not. Not in v5 — v5 records the supervisor as live with only a flag defect.
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: Open, but narrowed by two eliminations today rather than restated. (a) The
+    shim-fallback hypothesis is DEAD: `claude-fw` on PATH falls back to `exec claude`
+    with no restart loop when it finds no wrapper, which would explain link 5 exactly —
+    but this repo has FRAMEWORK.md, an executable `bin/fw`, and an executable
+    `bin/claude-fw`, so the shim resolves to the real wrapper and the fallback never
+    fires. (b) The exhausted-safety-valve hypothesis is DEAD: `bin/claude-fw:253` sets
+    `restart_count=0` as a process-local variable persisted nowhere, so MAX_RESTARTS=5
+    cannot carry across invocations and cannot explain a loop that stopped. Both
+    eliminations point the same way and reframe the question: the loop did not DECIDE to
+    exit, the wrapper PROCESS ended — `while true` at :136 cannot outlive its own shell.
+    Evidence needed to close: whether the 21:25:46 wrapper was still alive after the
+    sentinel was written, which needs process-exit evidence the sentinel does not carry.
+    That absence is itself the finding — nothing records why a supervisor stopped
+    supervising.
 
 ## Exploration Plan
 
@@ -149,15 +203,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -214,7 +268,25 @@ Filed at the start of the walkthrough — the operator and I are about to go thr
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Operator recorded GO on 2026-08-27 — the walkthrough of
+draft-continuous-run-loop v5 proceeds node by node.
+
+Note on the record: the verdict flipped DEFER → GO but this rationale text was
+carried over verbatim from the DEFER filing, so it read as a deferral under a GO
+heading. Rewritten here rather than left standing, because the stale wording said
+the opposite of the decision it was filed under.
+
+The GO authorises the walkthrough; it does not retroactively answer the open
+questions. Their dispositions are recorded per-question in §Open Questions: one
+answered on verified evidence (IW-2), five deferred with the specific evidence
+each still needs. The original rationale's own claim — that these are genuine
+evidence gaps, not confidence gaps, and that none had been walked — remains true
+of the five, and is the reason they were not upgraded to "answered" on the
+strength of the GO alone.
+
+**Date**: 2026-08-27T11:12:10Z (verdict), disposition pass 2026-08-27
 
 ## Updates
 
@@ -223,3 +295,8 @@ Filed at the start of the walkthrough — the operator and I are about to go thr
 
 ### 2026-08-26T20:01:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-08-27T11:12:10Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Filed at the start of the walkthrough — the operator and I are about to go through draft-continuous-run-loop v5 node by node. The four open questions (IW-2 halt authority, IW-3 deliberately-red rail entry, IW-4 is PreCompact compaction-grade, Q5 park-vs-notify on a human gate) are genuine evidence gaps, not confidence gaps: none has been walked yet. This DEFER is expected to resolve to GO or NO-GO per node as the dialogue produces evidence.
