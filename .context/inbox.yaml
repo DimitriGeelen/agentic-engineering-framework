@@ -4102,3 +4102,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-350
+  text: "status"
+  captured: 2026-08-27T21:12:59Z
+  context_task: T-3202
+  tags: []
+  status: pending
+  promoted_to: null

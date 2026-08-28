@@ -1,17 +1,7 @@
-check-tier0=17
+error-watchdog=10
 
-check-arc-id=5
-check-onboarding-gate=6
-check-inception-schema=6
-check-human-ac-tick=5
-check-heredoc-cmd-sub=6
-check-worktree-governance-write=6
-audit-task-tools=22
-checkpoint=23
-check-fabric-new-file=1
-check-tier0=8
-budget-gate=25
-loop-detect=22
-check-project-boundary=17
-check-active-task=14
-error-watchdog=13
+checkpoint=137
+check-tier0=1
+budget-gate=1
+check-project-boundary=1
+check-active-task=1

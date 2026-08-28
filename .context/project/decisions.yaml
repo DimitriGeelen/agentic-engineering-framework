@@ -3488,3 +3488,24 @@ decisions:
     date: 2026-08-27
     task: T-3127
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-501
+    decision: "HOLD THE RELEASE OPEN. Keep the local tag, create no GitHub Release,"
+    scope: project
+    date: 2026-08-27
+    task: T-3193
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-502
+    decision: "retract the original framing and reduce the task to legibility."
+    scope: project
+    date: 2026-08-28
+    task: T-3204
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-503
+    decision: "reword four additional `(~N%)` messages that named no denominator."
+    scope: project
+    date: 2026-08-28
+    task: T-3204
+    rationale: "Auto-captured from task file on completion"

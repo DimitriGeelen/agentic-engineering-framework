@@ -37811,3 +37811,173 @@ scan_id: R-11fa19bc
 task_id: T-3201
 payload:
   task_file: .tasks/active/T-3201-landing-mode-prompt-v2--codify-the-opera.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T16:49:15Z'
+scan_id: R-7c6d52e9
+task_id: T-2715
+payload:
+  overall: CONCERN
+  finding_count: 6
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T16:49:15Z'
+scan_id: R-7c6d52e9
+task_id: T-2715
+payload:
+  task_file: .tasks/active/T-2715-first-run-experience-why-four-green-inst.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-27T16:49:15Z'
+scan_id: RC-d1969295
+task_id: T-2715
+payload:
+  overall: CONFIRMED
+  claim_count: 4
+---
+kind: scan_emitted
+timestamp: '2026-08-27T19:31:19Z'
+scan_id: R-1faf9163
+task_id: T-3197
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T19:31:19Z'
+scan_id: R-1faf9163
+task_id: T-3197
+payload:
+  task_file: .tasks/active/T-3197-fw-worktree-create-still-branches-from-m.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T19:46:20Z'
+scan_id: R-2c82af99
+task_id: T-3195
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T19:46:20Z'
+scan_id: R-2c82af99
+task_id: T-3195
+payload:
+  task_file: .tasks/active/T-3195-t3095auditbranchhygiene-test-3-is-red-at.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T20:06:10Z'
+scan_id: R-1006c064
+task_id: T-2017
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T20:06:10Z'
+scan_id: R-1006c064
+task_id: T-2017
+payload:
+  task_file: .tasks/active/T-2017-arc-007-s4b----inline-edit-task-meta-cel.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T20:06:37Z'
+scan_id: R-c5ee6989
+task_id: T-2018
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T20:06:37Z'
+scan_id: R-c5ee6989
+task_id: T-2018
+payload:
+  task_file: .tasks/active/T-2018-arc-007-s4es6c----bulk-multi-select--flo.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T20:15:43Z'
+scan_id: R-776402f3
+task_id: T-3127
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T20:15:43Z'
+scan_id: R-776402f3
+task_id: T-3127
+payload:
+  task_file: .tasks/active/T-3127-no-check-asserts-the-full-audit-timeout-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T21:22:12Z'
+scan_id: R-67c1940c
+task_id: T-3199
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T21:22:12Z'
+scan_id: R-67c1940c
+task_id: T-3199
+payload:
+  task_file: .tasks/active/T-3199-t100195-diverged-fork-suite-has-been-red.md
+---
+kind: scan_emitted
+timestamp: '2026-08-27T21:52:25Z'
+scan_id: R-8419f2be
+task_id: T-3193
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-27T21:52:25Z'
+scan_id: R-8419f2be
+task_id: T-3193
+payload:
+  task_file: .tasks/active/T-3193-a-release-can-advance-master-and-then-fa.md
+---
+kind: scan_emitted
+timestamp: '2026-08-28T12:51:33Z'
+scan_id: R-b9c9d6c2
+task_id: T-3204
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-28T12:51:33Z'
+scan_id: R-b9c9d6c2
+task_id: T-3204
+payload:
+  task_file: .tasks/active/T-3204-budget-gauge-divides-by-a-constant-windo.md

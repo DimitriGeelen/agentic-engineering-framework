@@ -15,9 +15,9 @@ A completed task qualifies when ALL of:
 
 ## Population examined
 
-- completed inceptions: 451
-- with a GO recorded:   354
-- findings:             182
+- completed inceptions: 452
+- with a GO recorded:   355
+- findings:             183
 
 These are candidates for triage, not confirmed abandoned decisions:
 some may have shipped work that was simply never linked back. Deciding
@@ -53,6 +53,7 @@ which is which is the judgement this check exists to force.
 - T-2800 — .tasks/completed/T-2800-should-the-home-framework-install-exist-.md
 - T-2761 — .tasks/completed/T-2761-fw-upgrade-should-refuse-to-run-a-consum.md
 - T-2757 — .tasks/completed/T-2757-fw-upgrade-does-not-ship-the-pinned-work.md
+- T-2715 — .tasks/completed/T-2715-first-run-experience-why-four-green-inst.md
 - T-2703 — .tasks/completed/T-2703-greenfield-seeding-emits-tasks-that-fail.md
 - T-2679 — .tasks/completed/T-2679-determinism-graduation-tripwire--structu.md
 - T-2608 — .tasks/completed/T-2608-single-stored-representation-for-corpus-.md

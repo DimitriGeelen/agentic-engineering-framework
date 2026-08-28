@@ -26,7 +26,7 @@ alone (CLAUDE.md Human Task Completion Rule).
 Rows with an empty `## Verification` block need that scrutiny most —
 nothing mechanical would gate their close.
 
-## Qualifying tasks (17)
+## Qualifying tasks (15)
 
 | Task | Status | Workflow | Name | Agent ACs | Verification cmds? |
 |------|--------|----------|------|----------:|--------------------|
@@ -36,14 +36,12 @@ nothing mechanical would gate their close.
 | T-2200 | started-work | build | dispatch AEF setup worker on /opt/fan-dashboard | 4 | **no** |
 | T-2202 | started-work | build | dispatch AEF setup worker on /opt/832-Workflow-designer | 4 | **no** |
 | T-2410 | started-work | build | check-active-task hook: false positives block legiti... | 4 | yes |
-| T-2715 | started-work | inception | first-run experience: why four green install surface... | 3 | **no** |
 | T-2801 | started-work | build | fw init is not atomic and its debris is not fw-recov... | 5 | yes |
 | T-2802 | started-work | build | fw watchtower url returns http://localhost:3000 from... | 6 | yes |
 | T-2871 | started-work | build | corpus depends 91% on non-frozen aef:meta keys — no ... | 6 | yes |
 | T-2876 | started-work | inception | Interpreter-mediated writes bypass the Bash task gat... | 3 | **no** |
 | T-2969 | started-work | build | draft arc with all constituents complete is reported... | 5 | yes |
 | T-3181 | started-work | inception | Refine the continuous-run loop model node by node in... | 3 | **no** |
-| T-3201 | started-work | build | Landing-mode prompt v2 — codify the operator's stop-... | 7 | **no** |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |

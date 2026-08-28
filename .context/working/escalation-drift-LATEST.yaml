@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-27T03:23:02.448622+00:00
-corpus_total: 2760
-bug_class_total: 497
-bug_class_pct: 18
-h1_flagged: 361
+generated: 2026-08-28T03:23:02.820604+00:00
+corpus_total: 2774
+bug_class_total: 499
+bug_class_pct: 17
+h1_flagged: 362
 h1_pct_of_bug_class: 72
-h2_repeat_patterns: 159
+h2_repeat_patterns: 160
 h3_flagged: 265
 h3_pct_of_bug_class: 53
-recent_30d_flagged: 15
+recent_30d_flagged: 16
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
@@ -34,15 +34,15 @@ recent_sample:
     name: "fw work-on --switch-focus fails silently (RC=1, zero output)"
 h2_top:
   - learning: "P-011"
-    task_count: 2288
+    task_count: 2319
   - learning: "L-387"
-    task_count: 2055
+    task_count: 2082
   - learning: "L-291"
-    task_count: 1068
+    task_count: 1079
   - learning: "L-398"
-    task_count: 818
+    task_count: 827
   - learning: "P-010"
-    task_count: 448
+    task_count: 459
   - learning: "L-399"
     task_count: 91
   - learning: "L-006"
@@ -51,5 +51,5 @@ h2_top:
     task_count: 51
   - learning: "L-364"
     task_count: 45
-  - learning: "L-332"
-    task_count: 36
+  - learning: "L-408"
+    task_count: 41

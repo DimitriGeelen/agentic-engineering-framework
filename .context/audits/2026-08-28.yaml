@@ -1,5 +1,5 @@
-# Audit Results - 2026-08-27-2357
-timestamp: 2026-08-27T21:57:08Z
+# Audit Results - 2026-08-28-1432
+timestamp: 2026-08-28T12:32:39Z
 sections: "structure"
 summary:
   pass: 30
@@ -80,4 +80,4 @@ findings:
   - level: PASS
     check: "Map conformance: aef-tier0-escalation matches its enforced machine"
   - level: INFO
-    check: "Stale draft(s), 30d+ untouched: draft-t2584-scratch draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"
+    check: "Stale draft(s), 30d+ untouched: draft-exception-handling draft-t2584-scratch draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"

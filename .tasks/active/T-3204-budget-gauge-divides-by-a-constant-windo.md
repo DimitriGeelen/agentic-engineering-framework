@@ -6,12 +6,12 @@ description: >
   budget gauge divides by a constant window while knowing the model - continuous-run
   self-trigger fires at 2 percent of real capacity
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [C-007, C-008, lib/context_tokens.py]
 related_tasks: [T-2377, T-2885, T-3182]
 arc_id: continuous-run
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -25,8 +25,8 @@ arc_id: continuous-run
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-28T12:39:01Z
-last_update: '2026-08-28T12:45:16Z'
-date_finished:
+last_update: 2026-08-28T12:51:29Z
+date_finished: 2026-08-28T12:51:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -321,3 +321,15 @@ which it was not before.
 ### 2026-08-28T12:39:01Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b9c9d6c2
+- **Timestamp:** 2026-08-28T12:51:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-28T12:51:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
