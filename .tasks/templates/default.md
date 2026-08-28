@@ -98,8 +98,8 @@ date_finished: null
 # Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
 # the verdict. Reach for this first; the alternative below is the special case.
 #
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
+# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line with PIPEFAIL LIVE
+# (errexit is not — see below). When grep matches it exits and closes stdin while cmd is still
 # writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
 # the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
 #
@@ -129,9 +129,42 @@ date_finished: null
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
 #
 # REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
+# shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
+# the same directory, the same second. To rehearse for real:
+#     bash -c 'set -o pipefail; <your verification line>'
+#
+# NOTE THE MISSING `-e` — it is not a typo (T-3203). This file used to prescribe
+# `set -eo pipefail` here, which is NOT the gate: it adds errexit the gate does
+# not have, so it FAILS lines the gate PASSES. Measured, 10 lines, 3 diverged:
+#     line                            gate    set -eo (old)   set -o (this)
+#     false; true                     PASS    FAIL  wrong     PASS  ok
+#     cd /nonexistent; echo ok        PASS    FAIL  wrong     PASS  ok
+#     grep -q MISS file; true         PASS    FAIL  wrong     PASS  ok
+# The divergence is one-directional and that is the trap: the old rehearsal only
+# ever fails lines the gate accepts, so it produces false REDS, and an author
+# who "fixes" a line to satisfy it is fixing something that was never broken —
+# while the line that actually is broken (`cmd1; cmd2` where cmd1 fails) passes
+# both. Re-derive rather than trust this table — it is pinned, not asserted:
+#     bats tests/unit/t3203_p011_gate_semantics.bats
+#
+# ── `cmd1; cmd2` IS JUDGED ONLY ON cmd2 (T-3203) ──────────────────────────────
+#
+# The gate runs each line as the CONDITION of an `if` (update-task.sh:1215), and
+# POSIX suppresses errexit for a compound command in an `if` condition — through
+# the subshell. So pipefail applies and `set -e` does not, and in a sequence only
+# the LAST command's status reaches the verdict. `cd /nonexistent; echo ok` passes.
+# 2,644 of 10,997 verification lines in this corpus contain `;` (re-derive with
+# the query in docs/reports/T-3203-p011-gate-semantics.md).
+#
+# SAFE SHAPES — both verified biting, each against a passing control:
+#   A. one command whose own status is the verdict (prefer this):
+#        out=$(cmd 2>&1); echo "$out" | grep -q PAT && ! echo "$out" | grep -q BAD
+#      the leading assignments are setup; the trailing `&&` chain is the verdict.
+#   B. an explicit sub-shell, whose errexit the outer `if` cannot reach into:
+#        bash -c 'set -eo pipefail; cmd1; cmd2'
+#      use when you genuinely need every command in the sequence to count.
+#
+# The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
