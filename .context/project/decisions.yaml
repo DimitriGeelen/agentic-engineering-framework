@@ -3523,3 +3523,24 @@ decisions:
     date: 2026-08-28
     task: T-3205
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-506
+    decision: "each test slices the real block out of `bin/fw` / `bin/claude-fw`"
+    scope: project
+    date: 2026-08-28
+    task: T-3206
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-507
+    decision: "leave `.agentic-framework/bin/fw` and `.agentic-framework/bin/claude-fw`"
+    scope: project
+    date: 2026-08-28
+    task: T-3206
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-508
+    decision: "correct the template and pin the gate's real semantics. The gate's"
+    scope: project
+    date: 2026-08-28
+    task: T-3203
+    rationale: "Auto-captured from task file on completion"

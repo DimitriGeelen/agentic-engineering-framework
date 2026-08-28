@@ -37999,3 +37999,75 @@ scan_id: R-d9724fe6
 task_id: T-3205
 payload:
   task_file: .tasks/active/T-3205-landing-mode-prompt-v3---both-v2-premise.md
+---
+kind: scan_emitted
+timestamp: '2026-08-28T14:15:15Z'
+scan_id: R-6bcbecdf
+task_id: T-3206
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-28T14:15:15Z'
+scan_id: R-6bcbecdf
+task_id: T-3206
+payload:
+  task_file: .tasks/active/T-3206-continuous-run-loop-cannot-report-that-i.md
+---
+kind: scan_emitted
+timestamp: '2026-08-28T14:20:54Z'
+scan_id: R-1c4a9100
+task_id: T-3207
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-28T14:20:54Z'
+scan_id: R-1c4a9100
+task_id: T-3207
+payload:
+  task_file: .tasks/active/T-3207-vendored-bin-copies-are-85-lines-behind-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-28T14:43:54Z'
+scan_id: R-2d44d7c0
+task_id: T-3203
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-28T14:43:54Z'
+scan_id: R-2d44d7c0
+task_id: T-3203
+payload:
+  task_file: .tasks/active/T-3203-p-011-suppresses-errexit-so-a-chained-ve.md
+---
+kind: scan_emitted
+timestamp: '2026-08-28T14:46:31Z'
+scan_id: R-2346cad1
+task_id: T-3208
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-28T14:46:31Z'
+scan_id: R-2346cad1
+task_id: T-3208
+payload:
+  task_file: .tasks/active/T-3208-sync-vendored-copies-for-t-3203-and-reco.md
