@@ -98,8 +98,12 @@ _supervision_notice() {
     fi
 }
 
-# Context window size — conservative default, override via FW_CONTEXT_WINDOW.
-# Opus 4.6 supports 1M but 300K is a safe default for quality + cost control.
+# CONFIGURED BUDGET CAP — not a measurement of the model's context window.
+# A deliberate quality-and-cost dial, override via FW_CONTEXT_WINDOW / fw config set
+# CONTEXT_WINDOW. Every percentage derived from it is a percentage OF THIS CAP, and
+# the reader-facing messages say so (T-3204) — "~95% of context window" read as a
+# hard limit approaching, when it is a policy dial at its configured value, and the
+# two license opposite actions.
 CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 300000)
 
 # Token thresholds (autoCompact disabled — D-027)
@@ -247,12 +251,12 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             exit 0
             ;;
         warn)
-            echo "Note: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))%). Commit before starting new work. (docs/context-compaction.md)" >&2
+            echo "Note: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))% of the ${CONTEXT_WINDOW}-token budget cap). Commit before starting new work. (docs/context-compaction.md)" >&2
             _supervision_notice
             exit 0
             ;;
         urgent)
-            echo "WARNING: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))%). Do not start new work. Commit and handover." >&2
+            echo "WARNING: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))% of the ${CONTEXT_WINDOW}-token budget cap). Do not start new work. Commit and handover." >&2
             echo "  Details: docs/context-compaction.md (budget ladder, what to do at each level)" >&2
             _supervision_notice
             exit 0
@@ -267,7 +271,7 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             echo "  SESSION WRAPPING UP (~${STATUS_TOKENS} tokens)" >&2
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
-            echo "  Context is at ~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))% of context window." >&2
+            echo "  Context is at ~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))% of the ${CONTEXT_WINDOW}-token budget cap." >&2
             echo "  Task files already have all essential state. Time to wrap up." >&2
             echo "" >&2
             echo "  ALLOWED: git commit/push, $(_fw_cmd) handover, reading files," >&2
@@ -381,12 +385,12 @@ case "$LEVEL" in
         exit 0
         ;;
     warn)
-        echo "Note: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))%). Commit before starting new work. (docs/context-compaction.md)" >&2
+        echo "Note: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))% of the ${CONTEXT_WINDOW}-token budget cap). Commit before starting new work. (docs/context-compaction.md)" >&2
         _supervision_notice
         exit 0
         ;;
     urgent)
-        echo "WARNING: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))%). Do not start new work. Commit and handover." >&2
+        echo "WARNING: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))% of the ${CONTEXT_WINDOW}-token budget cap). Do not start new work. Commit and handover." >&2
         echo "  Details: docs/context-compaction.md (budget ladder, what to do at each level)" >&2
         _supervision_notice
         exit 0
@@ -401,7 +405,7 @@ case "$LEVEL" in
         echo "  SESSION WRAPPING UP (${TOKENS} tokens)" >&2
         echo "══════════════════════════════════════════════════════════" >&2
         echo "" >&2
-        echo "  Context is at ~$((TOKENS * 100 / CONTEXT_WINDOW))% of context window." >&2
+        echo "  Context is at ~$((TOKENS * 100 / CONTEXT_WINDOW))% of the ${CONTEXT_WINDOW}-token budget cap." >&2
         echo "  Task files already have all essential state. Time to wrap up." >&2
         echo "" >&2
         echo "  ALLOWED: git commit/push, $(_fw_cmd) handover, reading files," >&2

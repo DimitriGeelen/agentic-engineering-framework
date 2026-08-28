@@ -26,8 +26,12 @@ fw_hook_crash_trap "checkpoint"
 COUNTER_FILE="$CONTEXT_DIR/working/.tool-counter"
 PREV_TOKENS_FILE="$CONTEXT_DIR/working/.prev-token-reading"
 
-# Context window size — conservative default, override via FW_CONTEXT_WINDOW.
-# Opus 4.6 supports 1M but 300K is a safe default for quality + cost control.
+# CONFIGURED BUDGET CAP — not a measurement of the model's context window.
+# A deliberate quality-and-cost dial, override via FW_CONTEXT_WINDOW / fw config set
+# CONTEXT_WINDOW. Every percentage derived from it is a percentage OF THIS CAP, and
+# the reader-facing messages say so (T-3204) — "~95% of context window" read as a
+# hard limit approaching, when it is a policy dial at its configured value, and the
+# two license opposite actions.
 CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 300000)
 
 # Token thresholds (autoCompact disabled — D-027)
@@ -114,7 +118,7 @@ warn_by_tokens() {
     if [ "$tokens" -ge "$TOKEN_CRITICAL" ]; then
         echo "" >&2
         echo "===========================================" >&2
-        echo "Session wrapping up: ${tokens} tokens (~${pct}% of context window)." >&2
+        echo "Session wrapping up: ${tokens} tokens (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap)." >&2
         echo "Task files have all essential state. Commit and handover." >&2
         echo "Details: docs/context-compaction.md (budget ladder, what handover/compact capture)" >&2
         echo "===========================================" >&2
@@ -211,7 +215,7 @@ SIGNAL_EOF
         fi
     elif [ "$tokens" -ge "$TOKEN_URGENT" ]; then
         echo "" >&2
-        echo "WARNING: Context at ${tokens} tokens (~${pct}% of context window)." >&2
+        echo "WARNING: Context at ${tokens} tokens (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap)." >&2
         echo "BUDGET: Do not start new implementation work. Commit and handover." >&2
         echo "ACTION: Commit work, then '$(_fw_cmd) handover --checkpoint'" >&2
         echo "Details: docs/context-compaction.md (budget ladder, what to do at each level)" >&2
@@ -443,10 +447,19 @@ except Exception: print('')
         # runs; falls back to reconstruction when unset.
         transcript=$(find_transcript "${FW_TRANSCRIPT_PATH:-}" 2>/dev/null) || true
         if [ -n "${transcript:-}" ]; then
-            tokens=$(get_context_tokens "$transcript") || true
+            # T-3204: `status` is where a human asks "where am I", so it is the one
+            # caller that opts in to the model. The cap is a dial, and a dial you
+            # cannot see the units of is not tunable — naming the model it is
+            # currently being applied to is what makes the number actionable.
+            detail=$(tail -c 10000000 "$transcript" 2>/dev/null \
+                | python3 "$FRAMEWORK_ROOT/lib/context_tokens.py" "$(cat "$CONTEXT_DIR/working/.session-start-ts" 2>/dev/null | tr -d '[:space:]')" --with-model 2>/dev/null) || true
+            tokens=$(printf '%s' "${detail:-}" | cut -f1)
+            model=$(printf '%s' "${detail:-}" | cut -f2)
             if [ "${tokens:-0}" -gt 0 ]; then
                 pct=$((tokens * 100 / CONTEXT_WINDOW))
-                echo "Context tokens: ${tokens} (~${pct}% of context window)"
+                echo "Context tokens: ${tokens} (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap)"
+                echo "Model: ${model:-unknown} — the cap is a configured dial, not this model's window."
+                echo "  Raise or lower it with: $(_fw_cmd) config set CONTEXT_WINDOW <tokens>"
             else
                 echo "Context tokens: unavailable (no usage data)"
             fi

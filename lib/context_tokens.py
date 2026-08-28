@@ -32,6 +32,24 @@ from collections import Counter
 def compute_context_tokens(lines, session_start_ts=""):
     """Return the current context-window token count for THIS conversation.
 
+    Thin wrapper over compute_context_tokens_detail for the many callers that
+    only want the number. The default stdout of this module is likewise a bare
+    integer — see main().
+    """
+    return compute_context_tokens_detail(lines, session_start_ts)[0]
+
+
+def compute_context_tokens_detail(lines, session_start_ts=""):
+    """Return (tokens, dominant_model) for THIS conversation.
+
+    The dominant model is computed anyway, to scope usage entries (T-2885). It
+    is returned here rather than discarded because the gauges that consume this
+    module apply a CONFIGURED BUDGET CAP (CONTEXT_WINDOW, default 300000) and
+    could not previously say which model the cap was being applied to — the cap's
+    own justifying comment still named a model two releases old. Returned as ""
+    whenever tokens are 0, since a count we refused to trust carries no model
+    we should report either (T-3204).
+
     `lines` is an iterable of JSONL transcript lines (already position-scoped
     by the caller, e.g. via `tail -c`). `session_start_ts` (ISO-8601 Z,
     T-1088) excludes entries from before the current session started — e.g.
@@ -69,7 +87,7 @@ def compute_context_tokens(lines, session_start_ts=""):
             entries.append((model, total))
 
     if not entries:
-        return 0
+        return (0, "")
 
     counts = Counter(model for model, _ in entries)
     dominant_model, _ = counts.most_common(1)[0]
@@ -77,16 +95,29 @@ def compute_context_tokens(lines, session_start_ts=""):
 
     # Fail-open, not fail-guess: too few entries to trust a scope decision.
     if len(in_scope) < 2:
-        return 0
+        return (0, "")
 
-    return in_scope[-1]
+    return (in_scope[-1], dominant_model)
 
 
 def main():
-    session_start_ts = ""
-    if len(sys.argv) > 1:
-        session_start_ts = sys.argv[1].strip()
-    print(compute_context_tokens(sys.stdin, session_start_ts))
+    # Flags are parsed OUT of argv rather than positionally: callers pass the
+    # session-start timestamp as the first argument and it is frequently the
+    # empty string, so a flag must never be mistaken for it.
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    flags = {a for a in sys.argv[1:] if a.startswith("--")}
+    session_start_ts = args[0].strip() if args else ""
+
+    tokens, model = compute_context_tokens_detail(sys.stdin, session_start_ts)
+
+    # DEFAULT STDOUT IS A BARE INTEGER AND MUST STAY THAT WAY. Both gauges
+    # (checkpoint.sh, budget-gate.sh) capture this straight into a shell integer;
+    # an unconditional extra field would corrupt CONTEXT_TOKENS in both at once.
+    # The model is therefore strictly opt-in (T-3204).
+    if "--with-model" in flags:
+        print(f"{tokens}\t{model}")
+    else:
+        print(tokens)
 
 
 if __name__ == "__main__":
