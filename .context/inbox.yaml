@@ -4109,3 +4109,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-351
+  text: "Cron audit runs are stacking: three concurrent agents/audit/audit.sh --section traceability,episodic,discovery-trends --cron processes observed at 15:07, elapsed 04:04 / 04:04 / 00:06. The cron interval is shorter than the run takes on the current corpus, so instances pile up and audit.lock is held continuously. Downstream effect measured this session: the pre-push gate refuses every push while the lock is held (correctly - no verdict was produced), so pushes are blocked not by a failing audit but by audit throughput. Blocked two pushes ~15 minutes apart today, and the same shape blocked the S-2026-0828-1405 handover push earlier. Adjacent to T-3127 (no check asserts the full-audit timeout budget still fits the corpus) and T-3202 (timing record cannot distinguish external kill from exhaustion), but distinct: this is arrival rate vs service time, not a single run's duration. Suggested check before filing: compare the cron schedule interval against the p95 full-audit duration in .context/audits/. Not investigated - observed at 87 percent of the budget cap, past the stop line."
+  captured: 2026-08-28T13:04:25Z
+  context_task: T-3203
+  tags: [cron]
+  status: pending
+  promoted_to: null
+- id: OBS-352
+  text: "A test leaked a consumer fixture CLAUDE.md to filesystem root: /CLAUDE.md, 470 bytes, contains PROJECT_HEADER_MARKER_LINE and 'fixture-consumer'. Any claude session started anywhere on this host inherits it via the upward CLAUDE.md walk. Found while building a deliberately-cold worker for T-3181 IW-4. Also: a full 119KB copy of the project CLAUDE.md sits in the session scratchpad from 2026-08-25, which would have silently invalidated the cold-session experiment."
+  captured: 2026-08-28T15:32:00Z
+  context_task: T-3181
+  tags: []
+  status: pending
+  promoted_to: null

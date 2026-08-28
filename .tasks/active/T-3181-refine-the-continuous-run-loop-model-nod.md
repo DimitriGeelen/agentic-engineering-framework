@@ -142,19 +142,26 @@ cost_estimate_proposed:
     findings surface (then it is exactly the right instrument).
 
 - **IW-4: Is our PreCompact handover already compaction-grade, and how would we know?**
-  Nobody has taken `LATEST.md` into a genuinely cold session and measured whether it
-  resumes. Cheap to falsify; nothing should be built on top of it before it is.
-  confidence: 1
-  disposition: deferred
-  rationale: Still unfalsified, but no longer at confidence 0 — this session compacted
-    mid-flight and continued through four task closes without re-deriving established
-    facts, which is weak POSITIVE evidence. Weak because it is the wrong experiment: a
-    `/compact` resume reinjects a SessionStart banner, so it never tested LATEST.md
-    standing alone, and the banner itself was truncated by the harness. The question asks
-    about a genuinely cold session and that has still never been run. Deliberately not
-    upgraded to "answered" on the strength of a session that had help. Evidence needed to
-    close, unchanged and still cheap: open a cold session with LATEST.md as its only
-    input and record what it cannot reconstruct.
+  Nobody has taken `LATEST.md` into a genuinely cold session and measured whether
+  it resumes. Cheap to falsify; nothing should be built on top of it before it is.
+  confidence: 3
+  disposition: answered
+  rationale: MEASURED, and the answer is no — PARTIALLY at best. Two TermLink workers,
+    same five questions, one variable: arm A saw `LATEST.md` and nothing else (verified
+    cold by an upward CLAUDE.md scan); arm B saw the repo, so the 119KB CLAUDE.md
+    auto-loaded, as a control. Both returned PARTIALLY. The control not rescuing it is
+    the load-bearing result: the deficiency is the handover's own content, not a reader
+    lacking framework knowledge, and a single-arm run could not have established that.
+    Four defects, both arms converging on the first two: (1) "Suggested First Action"
+    names T-1719, which appears nowhere else in the document except as a bare ID and is
+    unrelated to the arc the session actually worked — arm B: "state is transmitted,
+    intent is not"; (2) ~430 bare task IDs across three frontmatter arrays, roughly a
+    third of the document, unusable to both arms; (3) the diffstat says 13 files changed
+    and names 4, truncating 9 with no ellipsis — so it reads exactly like a complete
+    list; (4) Decisions/failures/blockers all read "None", indistinguishable from an
+    unfilled template. Full write-up + reproduction recipe:
+    docs/reports/T-3181-iw4-cold-resume.md. NOTE: these are handover-GENERATOR defects,
+    separable from arc-012's loop work — they are recorded, not fixed here.
 
 - **IW-5: On hitting a human gate mid-run, does the run park the task and take the next, or stop and notify?**
   (v5's Q5.) With ~48 started-work tasks, most human-owned, an arc drain hits one almost
@@ -175,22 +182,27 @@ cost_estimate_proposed:
   Measured tonight: restart branch ran at 21:25:46 (sentinel written), but the wrapper
   running now is a different PID started by hand at 21:39:52. Links 1-4 fired; link 5
   did not. Not in v5 — v5 records the supervisor as live with only a flag defect.
-  confidence: 1
+  confidence: 2
   disposition: deferred
-  rationale: Open, but narrowed by two eliminations today rather than restated. (a) The
-    shim-fallback hypothesis is DEAD: `claude-fw` on PATH falls back to `exec claude`
-    with no restart loop when it finds no wrapper, which would explain link 5 exactly —
-    but this repo has FRAMEWORK.md, an executable `bin/fw`, and an executable
-    `bin/claude-fw`, so the shim resolves to the real wrapper and the fallback never
-    fires. (b) The exhausted-safety-valve hypothesis is DEAD: `bin/claude-fw:253` sets
-    `restart_count=0` as a process-local variable persisted nowhere, so MAX_RESTARTS=5
-    cannot carry across invocations and cannot explain a loop that stopped. Both
-    eliminations point the same way and reframe the question: the loop did not DECIDE to
-    exit, the wrapper PROCESS ended — `while true` at :136 cannot outlive its own shell.
-    Evidence needed to close: whether the 21:25:46 wrapper was still alive after the
-    sentinel was written, which needs process-exit evidence the sentinel does not carry.
-    That absence is itself the finding — nothing records why a supervisor stopped
-    supervising.
+  rationale: Still open on its original question, but the EVIDENCE GAP it named is now
+    half-closed and the remaining half is measured rather than asserted. T-3206 shipped
+    the arm-time `start` event this question implied was missing, so a supervisor now
+    records that it armed, and a start line whose pid is dead reads "killed, not stopped"
+    instead of green. Re-measured today: `.context/working/continuous-run.jsonl` STILL
+    does not exist. Discriminated rather than assumed — the two explanations (the running
+    wrapper predates the change / the start event does not fire) are not equally likely
+    but are equally consistent with an empty directory. Verified: this session's
+    supervisor is pid 1851680, started 2026-08-27 10:52:14; T-3206 landed b072d815f at
+    2026-08-28 16:14:24, twenty-nine hours later, so the live wrapper never executed the
+    new line; and `tests/unit/t3206_continuous_run_ledger.bats` is 12/12 green, so the
+    shipped path does fire. The absence is the old process, not a false green. What
+    remains open is the original question — WHY the 21:25:46 wrapper's process ended —
+    and that needs a run armed after T-3206 to answer, which no restart has yet produced.
+    Evidence needed to close, unchanged: one wrapper lifecycle recorded end to end.
+    Found while re-measuring: the doctor surface reports "Expected when the session was
+    not launched via claude-fw" while claude-fw IS running and supervising, and would say
+    the same thing if the deliberately non-fatal recorder had silently failed to write.
+    Filed separately rather than fixed here.
 
 ## Exploration Plan
 
