@@ -1,11 +1,12 @@
 ---
-id: T-XXX
-name:
+id: T-3208
+name: "sync vendored copies for T-3203 and record the close-then-push ordering trap"
 description: >
+  sync vendored copies for T-3203 and record the close-then-push ordering trap
 
-status: captured
-workflow_type:
-owner:
+status: started-work
+workflow_type: build
+owner: agent
 horizon: now
 tags: []
 components: []
@@ -20,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created:
-last_update:
+created: 2026-08-28T14:44:51Z
+last_update: 2026-08-28T14:44:51Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -35,7 +36,7 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-XXX: [Task Name]
+# T-3208: sync vendored copies for T-3203 and record the close-then-push ordering trap
 
 ## Context
 
@@ -44,9 +45,26 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `.agentic-framework/` vendored copies match their repo sources for everything T-3203 touched
+- [x] The self-vendor push gate (T-2240) passes without a bypass
+- [x] The ordering trap is recorded here, with both instances from this session
+
+**Context — second occurrence in one session, same shape.** Both T-3206 and
+T-3203 followed the sequence: edit a vendored-class file, commit, close the task,
+then push — and the push was refused by the self-vendor gate (T-2240) *after* the
+task was already in `completed/`. At that point the task cannot be reopened
+(`fw work-on` refuses), so finishing the landing requires a new task. That is how
+T-3207 came to exist, and it is how this one did.
+
+**The trap is ordering, not the gate.** `fw vendor self` must run *before* the
+close commit, not after the push is refused. Nothing prompts for it: the close
+gate runs verification and never checks vendor parity, and the push gate that
+does check it fires one step too late to be actionable inside the task that
+caused it.
+
+Recording rather than fixing: adding a vendor-parity check at close time is a
+real change to `update-task.sh` with its own blast radius, and this session is at
+82% of its budget cap. Surfaced to the operator as a candidate, not started here.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,97 +99,9 @@ date_finished: null
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line with PIPEFAIL LIVE
-# (errexit is not — see below). When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
-# the same directory, the same second. To rehearse for real:
-#     bash -c 'set -o pipefail; <your verification line>'
-#
-# NOTE THE MISSING `-e` — it is not a typo (T-3203). This file used to prescribe
-# `set -eo pipefail` here, which is NOT the gate: it adds errexit the gate does
-# not have, so it FAILS lines the gate PASSES. Measured, 10 lines, 3 diverged:
-#     line                            gate    set -eo (old)   set -o (this)
-#     false; true                     PASS    FAIL  wrong     PASS  ok
-#     cd /nonexistent; echo ok        PASS    FAIL  wrong     PASS  ok
-#     grep -q MISS file; true         PASS    FAIL  wrong     PASS  ok
-# The divergence is one-directional and that is the trap: the old rehearsal only
-# ever fails lines the gate accepts, so it produces false REDS, and an author
-# who "fixes" a line to satisfy it is fixing something that was never broken —
-# while the line that actually is broken (`cmd1; cmd2` where cmd1 fails) passes
-# both. Re-derive rather than trust this table — it is pinned, not asserted:
-#     bats tests/unit/t3203_p011_gate_semantics.bats
-#
-# ── `cmd1; cmd2` IS JUDGED ONLY ON cmd2 (T-3203) ──────────────────────────────
-#
-# The gate runs each line as the CONDITION of an `if` (update-task.sh:1215), and
-# POSIX suppresses errexit for a compound command in an `if` condition — through
-# the subshell. So pipefail applies and `set -e` does not, and in a sequence only
-# the LAST command's status reaches the verdict. `cd /nonexistent; echo ok` passes.
-# 2,644 of 10,997 verification lines in this corpus contain `;` (re-derive with
-# the query in docs/reports/T-3203-p011-gate-semantics.md).
-#
-# SAFE SHAPES — both verified biting, each against a passing control:
-#   A. one command whose own status is the verdict (prefer this):
-#        out=$(cmd 2>&1); echo "$out" | grep -q PAT && ! echo "$out" | grep -q BAD
-#      the leading assignments are setup; the trailing `&&` chain is the verdict.
-#   B. an explicit sub-shell, whose errexit the outer `if` cannot reach into:
-#        bash -c 'set -eo pipefail; cmd1; cmd2'
-#      use when you genuinely need every command in the sequence to count.
-#
-# The rule of thumb: put the assertion LAST, and make sure it is an assertion.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+diff -q .tasks/templates/default.md .agentic-framework/.tasks/templates/default.md || diff -q .tasks/templates/default.md .agentic-framework/templates/default.md
+grep -q 'ordering, not the gate' .tasks/active/T-3208-sync-vendored-copies-for-t-3203-and-reco.md
+grep -q "bash -c 'set -o pipefail; <your verification line>'" .tasks/templates/default.md
 
 ## RCA
 
@@ -265,5 +195,7 @@ date_finished: null
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-08-28T14:44:51Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3208-sync-vendored-copies-for-t-3203-and-reco.md
+- **Context:** Initial task creation
