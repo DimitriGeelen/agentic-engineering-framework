@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3205: landing-mode prompt v3 - both v2 premises re-measured, one now false
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-28T12:59:55Z
+# ============================================================================
+
+task_id: T-3205
+task_name: "landing-mode prompt v3 - both v2 premises re-measured, one now false"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-28T12:55:14Z
+completed: 2026-08-28T12:59:40Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  landing-mode prompt v3 - both v2 premises re-measured, one now false
+
+# Key outcomes
+outcomes:
+  - 'Both premises re-measured and the results written into the file, with the'
+  - 'The false premise is removed as the file itself instructs, and replaced by'
+  - 'The surviving premise (dead BVP quadrants) is kept, with its re-measurement'
+  - '§The Prompt gains a rule for the premise-collapse case: a task whose own'
+  - 'The v1→v2→v3 provenance stays legible: a reader can see what each revision'
+  - 'Verified by re-reading the rendered file end to end — the prompt is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-28 — delete the false premise rather than soften it'
+    chose: 'remove the "nobody to talk to" premise outright, strike it through in place, and say what replaced it and why.'
+    rationale: 'the file''s own instruction was *"if either premise changes, this section is what should be deleted first"*. Softening it to "there may be little traffic" would preserve the reading that licensed skipping the inbox, which is the actual cost — the run that checked found a peer finding at offset 689 that shaped the other task landed this session.'
+    alternatives_rejected: ['deleting the premise section wholesale. The surviving premise (dead BVP quadrants) is still true and still needs stating; a reader who finds no premise section will re-derive the quadrant dead-end from scratch every run.']
+  - decision: '2026-08-28 — the blockquote check was inert, caught by mutation not review'
+    chose: 'drop `END{exit 0}` from the awk that verifies every line of §The Prompt is blockquoted.'
+    rationale: 'in awk, `exit 1` transfers to the `END` block, and `END{exit 0}` then overwrites the status. Mutation M1 — inject an unquoted line into §The Prompt — left the check green. It was inert for precisely the case it existed to catch, on a block whose whole purpose is to be pasted verbatim by a human.'
+    alternatives_rejected: ['trusting the check because it passed on the clean file. "Passes on good input" and "asserts nothing" are indistinguishable without the paired broken-input run — the same shape as T-3199''s inert `!` assertions and T-3204''s M3/M4. Third and fourth instance this session, three different mechanisms.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3205-landing-mode-prompt-v3---both-v2-premise.md
+generated_by: context-agent-hybrid

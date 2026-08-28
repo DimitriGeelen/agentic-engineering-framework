@@ -37981,3 +37981,21 @@ scan_id: R-b9c9d6c2
 task_id: T-3204
 payload:
   task_file: .tasks/active/T-3204-budget-gauge-divides-by-a-constant-windo.md
+---
+kind: scan_emitted
+timestamp: '2026-08-28T12:59:43Z'
+scan_id: R-d9724fe6
+task_id: T-3205
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-28T12:59:43Z'
+scan_id: R-d9724fe6
+task_id: T-3205
+payload:
+  task_file: .tasks/active/T-3205-landing-mode-prompt-v3---both-v2-premise.md

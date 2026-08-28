@@ -3509,3 +3509,17 @@ decisions:
     date: 2026-08-28
     task: T-3204
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-504
+    decision: "remove the \"nobody to talk to\" premise outright, strike it through in"
+    scope: project
+    date: 2026-08-28
+    task: T-3205
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-505
+    decision: "drop `END{exit 0}` from the awk that verifies every line of §The Prompt"
+    scope: project
+    date: 2026-08-28
+    task: T-3205
+    rationale: "Auto-captured from task file on completion"
