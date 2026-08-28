@@ -2458,8 +2458,48 @@ PY
                 ;;
         esac
     else
-        echo -e "  ${CYAN}SKIP${NC}  Continuous-run loop never recorded (no ledger at .context/working/continuous-run.jsonl)"
-        echo -e "         Expected when the session was not launched via claude-fw. Launch with: claude-fw"
+        # T-3209: a missing ledger has TWO causes and they need opposite advice.
+        # The old single message inferred "you did not launch via claude-fw" from
+        # the absence of a file. That inference is false whenever a wrapper IS
+        # running, which is exactly the state this project was in the day after
+        # T-3206 shipped: the live supervisor armed 29h before the start event
+        # existed, so it never wrote a line, and doctor told an operator already
+        # inside claude-fw to "Launch with: claude-fw".
+        #
+        # The transient cause clears on the next restart. The permanent one does
+        # not: _record_loop_event is deliberately non-fatal (T-3206), so a
+        # recorder that cannot write fails SILENTLY and lands in this same branch
+        # -- and the old message blamed the operator for a tooling failure.
+        # Absence of a line is not evidence of absence of a loop; ask the process
+        # table before attributing a cause.
+        # Match the wrapper by ARGUMENT POSITION, not by substring. `pgrep -af
+        # claude-fw | grep -F "$PROJECT_ROOT"` looks equivalent and is not: it
+        # matches any process whose command line merely MENTIONS the wrapper —
+        # a grep, an editor, a test run, or this agent's own `bash -c` shell,
+        # which is how the false positive was found. argv[0]/argv[1] is the
+        # process's own identity; the rest of the line is just text it happens
+        # to carry.
+        local _crl_pids=""
+        if command -v ps >/dev/null 2>&1; then
+            _crl_pids=$(ps -eo pid=,args= 2>/dev/null | awk \
+                -v w1="$PROJECT_ROOT/bin/claude-fw" \
+                -v w2="$PROJECT_ROOT/.agentic-framework/bin/claude-fw" \
+                '($2 == w1 || $2 == w2 || $3 == w1 || $3 == w2) { printf "%s ", $1 }' \
+                | sed 's/ $//') || _crl_pids=""
+        fi
+        if [ -n "$_crl_pids" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Continuous-run loop is RUNNING (pid ${_crl_pids}) but recorded no start event"
+            echo -e "         No ledger at .context/working/continuous-run.jsonl, yet a claude-fw"
+            echo -e "         wrapper for this project is alive. Two causes:"
+            echo -e "           1. it armed before the start event shipped (T-3206) - restart to arm it"
+            echo -e "           2. the recorder could not write - it is non-fatal by design, so it"
+            echo -e "              fails silently. Check that .context/working/ is writable."
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${CYAN}SKIP${NC}  Continuous-run loop never recorded (no ledger at .context/working/continuous-run.jsonl)"
+            echo -e "         No claude-fw wrapper is running for this project either, so this is"
+            echo -e "         expected. Launch with: claude-fw"
+        fi
     fi
 
     # Check: on-PATH claude-fw drift (T-2501) — does the wrapper the operator

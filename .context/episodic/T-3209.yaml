@@ -1,0 +1,106 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3209: doctor blames the operator when the loop ledger is missing but claude-fw is running
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-28T15:49:12Z
+# ============================================================================
+
+task_id: T-3209
+task_name: "doctor blames the operator when the loop ledger is missing but claude-fw is running"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-28T15:39:18Z
+completed: 2026-08-28T15:48:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-28T17:48:42+02:00
+last_commit: 2026-08-28T17:48:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor must not infer a CAUSE from the absence of a file
+
+# Key outcomes
+outcomes:
+  - '`fw doctor`''s missing-ledger branch discriminates on whether a `claude-fw` wrapper for THIS project is actually running, instead of asserting a cause from the absence of a file alone'
+  - 'When a wrapper IS running with no ledger, the output is a WARN naming the pid and BOTH causes (armed before the start event shipped; recorder could not write), and does not tell the operator to launch what is already running'
+  - 'When no wrapper is running, the existing SKIP guidance is preserved and now states that absence explicitly rather than leaving it inferred'
+  - 'The pid match is scoped to `$PROJECT_ROOT` — a `claude-fw` supervising a different project on the same host does not satisfy the check'
+  - 'Tests cover all three states, and each test is mutation-tested: a specific mutation is named per test and is recorded as having reddened it'
+  - 'A CONTROL test proves the suite can fail — it is not green because it asserts nothing'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.context/audits/2026-08-28.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-3208.yaml'
+  - '.context/handovers/S-2026-0828-1506.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0828-1534.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0828-1649.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0828-1702.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3209-doctor-blames-the-operator-when-the-loop.md'
+  - 'tests/unit/t3209_loop_ledger_cause_attribution.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-28T17:48:42'
+    action: 'T-3209: doctor must not infer a CAUSE from the absence of a file'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 28
+  lines_added: 3753
+  lines_removed: 183
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3209-doctor-blames-the-operator-when-the-loop.md
+generated_by: context-agent-hybrid

@@ -5,13 +5,13 @@ name: "doctor blames the operator when the loop ledger is missing but claude-fw 
 description: >
   doctor blames the operator when the loop ledger is missing but claude-fw is running
 
-status: started-work
+status: work-completed
 workflow_type: build
 arc_id: continuous-run
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-28T15:39:18Z
-last_update: '2026-08-28T15:45:18Z'
-date_finished:
+last_update: 2026-08-28T15:48:53Z
+date_finished: 2026-08-28T15:48:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -353,3 +353,15 @@ plus an explicit failure grep) is now how both suites are reported here.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3209-doctor-blames-the-operator-when-the-loop.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3119e787
+- **Timestamp:** 2026-08-28T15:48:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-28T15:48:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
