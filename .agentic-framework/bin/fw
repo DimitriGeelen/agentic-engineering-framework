@@ -2377,6 +2377,91 @@ else:
         echo -e "  ${CYAN}SKIP${NC}  Session supervision (not inside a Claude Code session)"
     fi
 
+    # Check: continuous-run loop ledger (T-3206, arc-012) — what did the LOOP
+    # itself last record? Deferred out of T-3182 because bin/fw was held
+    # uncommitted by T-3127; that block cleared, so it lands here.
+    #
+    # Distinct from the supervision check above, which reads an env var and can
+    # only answer "is THIS session supervised". That says nothing about a loop
+    # that ended, and nothing at all when run outside a session. This reads the
+    # loop's own append-only ledger, so it answers "did it stop, and why" from
+    # evidence that outlives the processes.
+    #
+    # THREE outcomes, deliberately — armed / stopped-with-reason / never-recorded.
+    # Collapsing the third into silence is the exact false green T-3182 was filed
+    # against: an absent log and a healthy loop must not look alike.
+    local _crl="$PROJECT_ROOT/.context/working/continuous-run.jsonl"
+    if [ -f "$_crl" ]; then
+        local _crl_out
+        _crl_out=$(python3 - "$_crl" <<'PY' 2>/dev/null || true
+import json, sys
+last = None
+try:
+    with open(sys.argv[1], encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                last = json.loads(line)
+            except Exception:
+                continue
+except Exception:
+    pass
+if not last:
+    print("EMPTY\t\t")
+else:
+    ev = str(last.get("event", "?"))
+    reason = str(last.get("reason", "?"))
+    ts = str(last.get("ts", "?"))
+    pid = last.get("wrapper_pid", 0)
+    count = last.get("restart_count", 0)
+    detail = str(last.get("detail", ""))
+    print(f"{ev}\t{reason}\t{ts}\t{pid}\t{count}\t{detail}")
+PY
+        )
+        local _crl_ev _crl_reason _crl_ts _crl_pid _crl_count _crl_detail
+        _crl_ev=$(printf '%s' "$_crl_out" | cut -f1)
+        _crl_reason=$(printf '%s' "$_crl_out" | cut -f2)
+        _crl_ts=$(printf '%s' "$_crl_out" | cut -f3)
+        _crl_pid=$(printf '%s' "$_crl_out" | cut -f4)
+        _crl_count=$(printf '%s' "$_crl_out" | cut -f5)
+        _crl_detail=$(printf '%s' "$_crl_out" | cut -f6)
+        case "$_crl_ev" in
+            start|iterate)
+                # Armed as far as the ledger knows. A wrapper killed outright
+                # (SIGKILL, host reboot) cannot write its own exit, so this is
+                # "last seen armed", not "provably alive" — say so rather than
+                # overclaim, and name the pid so it can be checked.
+                echo -e "  ${GREEN}OK${NC}  Continuous-run loop last recorded ARMED (${_crl_ev}, restarts=${_crl_count:-0}, ${_crl_ts})"
+                if [ -n "${_crl_pid:-}" ] && [ "${_crl_pid}" != "0" ]; then
+                    if kill -0 "$_crl_pid" 2>/dev/null; then
+                        echo -e "         wrapper pid ${_crl_pid} is alive"
+                    else
+                        echo -e "  ${YELLOW}WARN${NC}  wrapper pid ${_crl_pid} is GONE with no exit record — killed, not stopped"
+                        echo -e "         Nothing recorded why. Check: tail -3 $_crl"
+                        warnings=$((warnings + 1))
+                    fi
+                fi
+                ;;
+            exit)
+                echo -e "  ${YELLOW}WARN${NC}  Continuous-run loop STOPPED: ${_crl_reason} (${_crl_ts})"
+                [ -n "${_crl_detail:-}" ] && echo -e "         ${_crl_detail}"
+                echo -e "         Relaunch with: claude-fw"
+                warnings=$((warnings + 1))
+                ;;
+            EMPTY|"")
+                echo -e "  ${CYAN}SKIP${NC}  Continuous-run ledger present but empty — loop has never recorded an event"
+                ;;
+            *)
+                echo -e "  ${CYAN}SKIP${NC}  Continuous-run loop: unrecognised ledger event '${_crl_ev}'"
+                ;;
+        esac
+    else
+        echo -e "  ${CYAN}SKIP${NC}  Continuous-run loop never recorded (no ledger at .context/working/continuous-run.jsonl)"
+        echo -e "         Expected when the session was not launched via claude-fw. Launch with: claude-fw"
+    fi
+
     # Check: on-PATH claude-fw drift (T-2501) — does the wrapper the operator
     # actually runs match repo source? The supervision check above tells you THIS
     # session is unsupervised; this tells you WHY — the installed claude-fw can be

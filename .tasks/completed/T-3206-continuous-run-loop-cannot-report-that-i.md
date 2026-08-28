@@ -193,7 +193,18 @@ grep -q 'GONE with no exit record' bin/fw
   restating guard the rule warns about — it would have kept passing through
   every one of M3-M6.
 
-### 2026-08-28 — vendored copies deliberately NOT synced
+### 2026-08-28 — vendored copies deliberately NOT synced — ***RETRACTED, see T-3207***
+
+> **This decision was wrong, and wrong on a false measurement.** It is left
+> standing rather than deleted so the record shows what was decided and why.
+> There was **no** pre-existing vendor drift: `bin/fw` and `bin/claude-fw` were
+> byte-identical to their `.agentic-framework/` copies at `b4304ab0a`, the commit
+> before this one. The difference I measured was my own edit, because the
+> `/tmp/*.bak` "baselines" were taken *after* the edit rather than before. The
+> only drift was the one this task introduced, so syncing was never absorbing
+> anyone else's work — it was finishing this change. The self-vendor push gate
+> (T-2240) refused the push and was correct to. Corrected in T-3207.
+
 
 - **Chose:** leave `.agentic-framework/bin/fw` and `.agentic-framework/bin/claude-fw`
   untouched.
