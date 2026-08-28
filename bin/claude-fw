@@ -259,6 +259,20 @@ termlink_start
 # T-2411: one-shot startup overview (before main loop — not re-emitted on restart).
 _print_startup_banner
 
+# T-3206 (arc-012): record that the loop is ARMED, before it can possibly end.
+#
+# T-3182 added six exit reasons and one iterate, which answers "why did it stop?"
+# but leaves "is it running?" exactly where it was: with no start event, the log
+# cannot come into existence until the loop is already over, so a live supervisor
+# and an absent one both present as no file. Measured on a running wrapper — the
+# defect T-3182 was filed to kill, surviving inside its own fix.
+#
+# Recorded here rather than inside the loop: this fires once per wrapper, so the
+# log distinguishes "armed once, went round 3 times" from "armed 3 times", which
+# an in-loop start event would flatten. Non-fatal like every other call site.
+_record_loop_event start armed \
+    "restart=$([ "$AUTO_RESTART" = false ] && echo disabled || echo enabled) max_restarts=${MAX_RESTARTS} termlink=${TERMLINK_ENABLED:-0}"
+
 while true; do
     # T-2373: record when this run started so the terminator only acts on a
     # signal written DURING the run (edge case a — not a leftover/stale signal).
