@@ -71,10 +71,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 3
-  commits: 1
-  files_changed: 5
-  lines_added: 328
-  lines_removed: 2
+  commits: 2
+  files_changed: 9
+  lines_added: 437
+  lines_removed: 14
+  footprint_refreshed_at: '2026-08-28T14:21:14Z'
+  footprint_refreshed_by_commit: 8e59c7040
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3207-vendored-bin-copies-are-85-lines-behind-.md

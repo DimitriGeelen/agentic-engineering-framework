@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3203: P-011 suppresses errexit so a chained verification line is judged only on its last command, while the template tells authors to rehearse under set -eo pipefail
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-28T14:44:06Z
+# ============================================================================
+
+task_id: T-3203
+task_name: "P-011 suppresses errexit so a chained verification line is judged only on its last command, while the template tells authors to rehearse under set -eo pipefail"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-27T21:53:09Z
+completed: 2026-08-28T14:43:51Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-08-28T16:43:40+02:00
+last_commit: 2026-08-28T16:43:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  P-011 judges a ;-sequence only on its last command — fix the docs, pin the gate
+
+# Key outcomes
+outcomes:
+  - 'REPRODUCE FIRST. A probe demonstrates the divergence before anything is'
+  - 'The task template''s L-387 hint no longer claims P-011 runs commands under'
+  - 'The template tells authors the safe shape for a multi-command line: one'
+  - 'Decide and record in `## Decisions` whether the gate should be changed to'
+  - 'Blast radius measured and stated with the query that produced it, so the'
+  - 'CONTROL LEG: a line that SHOULD fail under the corrected guidance is shown'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'P-011 judges a ;-sequence only on its last command — fix the docs, pin the gate'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-28 — change the DOCS, not the gate'
+    chose: 'correct the template and pin the gate''s real semantics. The gate''s execution shape is unchanged.'
+    rationale: 'changing the gate to run each line under errexit would re-judge **2,644** of 10,997 existing verification lines (query in `docs/reports/T-3203-p011-gate-semantics.md`, re-derivable). Those lines were authored against the gate''s actual behaviour, and most are correct — they put the assertion last. A gate change would redden an unknown fraction of them at once, on tasks already closed, with no author present to fix them. That is a mass re-judgement of settled work to satisfy a doc comment.'
+    alternatives_rejected: ['changing the gate to match the docs. The docs were the thing that was wrong; the gate has behaved consistently, and only a `;`-sequence with a trailing assertion is at risk — which is also the shape the corrected template now steers authors away from. - **Residual, stated rather than hidden:** a line whose setup fails silently still passes. It is now documented, pinned and steered against at author time, but not prevented. Preventing it means either the gate change rejected above or a lint over `;`-lines; that is a separate decision with its own blast radius, and it is the operator''s to take, not mine.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3203-p011-gate-semantics.md'
+  - '.tasks/active/T-3203-p-011-suppresses-errexit-so-a-chained-ve.md'
+  - '.tasks/templates/default.md'
+  - 'tests/unit/t3203_p011_gate_semantics.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-28T16:43:40'
+    action: 'T-3203: P-011 judges a ;-sequence only on its last command — fix the docs, pin the gate'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1010 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1010
+  commits: 1
+  files_changed: 4
+  lines_added: 312
+  lines_removed: 174
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3203-p-011-suppresses-errexit-so-a-chained-ve.md
+generated_by: context-agent-hybrid
