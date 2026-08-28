@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3207: vendored bin copies are 85 lines behind the same commit that wrote them
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-28T14:21:06Z
+# ============================================================================
+
+task_id: T-3207
+task_name: "vendored bin copies are 85 lines behind the same commit that wrote them"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-28T14:16:59Z
+completed: 2026-08-28T14:20:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-28T16:20:39+02:00
+last_commit: 2026-08-28T16:20:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  retract a false 'pre-existing vendor drift' finding; sync the copies
+
+# Key outcomes
+outcomes:
+  - 'Retraction recorded: the "85 lines behind the same commit" premise is FALSE, disproven against git rather than against a local backup'
+  - '`.agentic-framework/bin/fw` and `.agentic-framework/bin/claude-fw` are byte-identical to their repo sources'
+  - 'The self-vendor push gate (T-2240) passes without a bypass'
+  - 'T-3206''s `## Decisions` entry "vendored copies deliberately NOT synced" is corrected in the completed record, since it was decided on the same bad measurement'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - '.tasks/active/T-3207-vendored-bin-copies-are-85-lines-behind-.md'
+  - '.tasks/completed/T-3206-continuous-run-loop-cannot-report-that-i.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-28T16:20:39'
+    action: 'T-3207: retract a false ''pre-existing vendor drift'' finding; sync the copies'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 5
+  lines_added: 328
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3207-vendored-bin-copies-are-85-lines-behind-.md
+generated_by: context-agent-hybrid
