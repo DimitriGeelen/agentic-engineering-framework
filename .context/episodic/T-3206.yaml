@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3206: continuous-run loop cannot report that it is armed - start event plus fw doctor surface
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-28T14:15:28Z
+# ============================================================================
+
+task_id: T-3206
+task_name: "continuous-run loop cannot report that it is armed - start event plus fw doctor surface"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-28T13:57:13Z
+completed: 2026-08-28T14:15:10Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-28T16:14:24+02:00
+last_commit: 2026-08-28T16:14:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the continuous-run loop can now say it is armed, not only why it stopped
+
+# Key outcomes
+outcomes:
+  - '`bin/claude-fw` records a `start` event at arm time, before the first `command claude`, so an armed loop is distinguishable from an absent one **without** waiting for it to end'
+  - 'The `start` record carries enough to identify the run: wrapper pid, restart-mode (`--no-restart` vs armed), and `MAX_RESTARTS`'
+  - '`fw doctor` reads `.context/working/continuous-run.jsonl` and reports the loop''s last known state — armed / stopped-with-reason / never-recorded — as three distinguishable outputs, not two'
+  - '`fw doctor` degrades to an explicit "never recorded" line when the log is absent, rather than staying silent (silence is the failure mode being fixed)'
+  - 'The recorder stays non-fatal: a broken/unwritable log never changes the wrapper''s exit code and never blocks a restart'
+  - 'Every new test is mutation-tested; the report names which mutation reddened which test, and any mutation that reddened nothing is investigated rather than waved through'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-28 — tests execute the shipped source instead of describing it'
+    chose: 'each test slices the real block out of `bin/fw` / `bin/claude-fw` with `sed` and executes those literal lines, guarded by `assert_extracted`.'
+    rationale: '832 sent the rule at arc offset 689 — *a guard that reimplements the code it guards cannot detect that code being fixed; the tell is a check whose assertion would still hold if the source file were deleted.* 577 sharpened it at 690: *prefer a guard that INVOKES its subject over one that RESTATES it.* Mutation M7 deletes the entire doctor block and reddens 8 tests, so the design demonstrably detects its own subject vanishing.'
+    alternatives_rejected: ['a hand-written mock of the ledger parser. That is precisely the restating guard the rule warns about — it would have kept passing through every one of M3-M6.']
+  - decision: '2026-08-28 — vendored copies deliberately NOT synced'
+    chose: 'leave `.agentic-framework/bin/fw` and `.agentic-framework/bin/claude-fw` untouched.'
+    rationale: 'both were **already** drifted from repo source before this task made any edit (verified by diffing the pre-edit backups). Syncing them here would carry unrelated, unfinished work into this commit under this task''s ID — the same reasoning T-3182 used when it deferred the `fw doctor` surface rather than editing a `bin/fw` that T-3127 was holding.'
+    alternatives_rejected: ['running `fw vendor self` as a tidy-up. Pre-existing drift is a separate finding, surfaced to the operator rather than absorbed silently.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/claude-fw'
+  - 'bin/fw'
+  - '.tasks/active/T-3206-continuous-run-loop-cannot-report-that-i.md'
+  - 'tests/unit/t3206_continuous_run_ledger.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-28T16:14:24'
+    action: 'T-3206: the continuous-run loop can now say it is armed, not only why it stopped'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 17
+  commits: 1
+  files_changed: 4
+  lines_added: 584
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3206-continuous-run-loop-cannot-report-that-i.md
+generated_by: context-agent-hybrid

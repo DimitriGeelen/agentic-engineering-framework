@@ -6,12 +6,12 @@ description: >
   continuous-run loop cannot report that it is armed - start event plus fw doctor
   surface
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/claude-fw, bin/fw]
 related_tasks: []
 arc_id: continuous-run
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -25,8 +25,8 @@ arc_id: continuous-run
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-28T13:57:13Z
-last_update: '2026-08-28T14:00:22Z'
-date_finished:
+last_update: 2026-08-28T14:15:10Z
+date_finished: 2026-08-28T14:15:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -207,27 +207,47 @@ grep -q 'GONE with no exit record' bin/fw
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-08-28 — the task doubled in scope, and that was the right call
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** filed as "add a start event". While measuring the defect I
+  found T-3182 had *also* deferred the `fw doctor` surface, and had named its
+  reason: `bin/fw` was held uncommitted by T-3127. That block had since cleared.
+  So the second half was not new scope, it was scope already decided and merely
+  parked — and the two halves answer one question, not two.
+- **Plan impact:** a start event alone would have written a ledger nothing reads.
+  Landing the recorder without the reader would have reproduced T-3182's own
+  shape one level out: a mechanism that exists and a question still unanswered.
+- **Triggered:** nothing filed. The one thing that could have been — pre-existing
+  drift between `bin/{fw,claude-fw}` and their `.agentic-framework/` copies — is
+  surfaced to the operator instead, because it predates this task and syncing it
+  here would carry unrelated unfinished work under this commit.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+### 2026-08-28 — a mutation that reddened nothing, and why it was not the test's fault
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** M2 (move the start call inside the loop) reddened nothing. The
+  standing rule says that is itself a finding with two possible causes, needing
+  different remedies. Diagnosis: `while true; do` occurs three times in
+  `bin/claude-fw`, and `str.replace(..., 1)` hit the indented one inside
+  `_terminator_watch` at line 136 — still *above* the main loop at 276. The call
+  never moved into the loop, so the ordering assertion correctly still held.
+- **Plan impact:** the mutation was re-run anchored to the top-level `\nwhile
+  true; do\n` (M2b) and reddened test 1. Had M2 been recorded as "test is inert"
+  the ordering guard would have been rewritten to chase a defect it did not have.
+- **Triggered:** nothing. This is the second session running in which "the mutation
+  was not a mutation" was the answer rather than an inert test — T-3204's M3 was
+  the same shape. Worth watching as a pattern, not yet worth a rail.
+
+### 2026-08-28 — 267 seconds forced the test design
+
+- **What changed:** the honest test is to invoke `fw doctor` per ledger state.
+  Measured: 267s per run, so four states cost ~18 minutes.
+- **Plan impact:** rejected end-to-end invocation on cost and switched to slicing
+  the shipped block out of `bin/fw` and executing those literal lines — which
+  keeps 577's invoke-don't-restate property at ~2s. `assert_extracted` makes the
+  design's own failure mode explicit, and M7 proves it (deleting the block reddens
+  8 tests).
+- **Triggered:** nothing filed. `fw doctor` taking 267s is a real observation about
+  the arc's feedback loop and is reported to the operator rather than absorbed.
 
 ## Recommendation
 
@@ -274,3 +294,20 @@ grep -q 'GONE with no exit record' bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3206-continuous-run-loop-cannot-report-that-i.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6bcbecdf
+- **Timestamp:** 2026-08-28T14:15:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `fw doctor` reads `.context/working/continuous-run.jsonl` and reports the loop's last known state — armed / stopped-with-reason / never-recorded — as three distinguishable outputs, not two
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/continuous-run.jsonl in: `fw doctor` reads `.context/working/continuous-run.jsonl` and reports the loop's last known state — armed / stopped-with-reason / never-recorded — as `
+
+### 2026-08-28T14:15:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
