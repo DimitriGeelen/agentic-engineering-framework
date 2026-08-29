@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3210: handover Suggested First Action picks by lexicographic task ID, ignoring the session focus
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-29T10:02:29Z
+# ============================================================================
+
+task_id: T-3210
+task_name: "handover Suggested First Action picks by lexicographic task ID, ignoring the session focus"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-29T09:55:55Z
+completed: 2026-08-29T10:02:12Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  handover Suggested First Action picks by lexicographic task ID, ignoring the session focus
+
+# Key outcomes
+outcomes:
+  - 'AC1 — REPRODUCED before any edit. The shipped selector block, sed-extracted from'
+  - 'AC2 — The session''s own focus wins. When `focus.yaml`''s `current_task` is itself a'
+  - 'AC3 — When focus names nothing usable, the tiebreak is RECENCY (`last_update`'
+  - 'AC4 — Never blank, never a traceback. With no focus file, no candidates, or an'
+  - 'AC5 — Mutation-tested, per defect: restoring the lexicographic sort key reddens a'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3210-handover-suggested-first-action-picks-by.md
+generated_by: context-agent-hybrid

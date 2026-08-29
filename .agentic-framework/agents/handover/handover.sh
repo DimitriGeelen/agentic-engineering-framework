@@ -1341,10 +1341,36 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
     owner = re.search(r'^owner:\s*(.+)', content, re.M)
     is_human = owner and owner.group(1).strip() == 'human'
     hval = 0 if h.group(1).strip() == 'now' else 1
-    candidates.append((is_human, hval, tid.group(1).strip() if tid else '', tname.group(1).strip() if tname else ''))
-candidates.sort()
-if candidates:
-    _, _, tid, tname = candidates[0]
+    lu = re.search(r'^last_update:\s*(.+)', content, re.M)
+    lu = lu.group(1).strip() if lu else ''
+    candidates.append((is_human, hval, lu, tid.group(1).strip() if tid else '', tname.group(1).strip() if tname else ''))
+# T-3210: the session's OWN focus outranks every heuristic below. The handover
+# already prints '## Current Focus:' a few sections up; a suggestion that names a
+# different task contradicts it in the same document, and the reader has no way to
+# tell which one is authoritative. Measured: focus said T-3181, this line said
+# T-1719 — a task in no other section except a bare id in tasks_active.
+focus_id = ''
+try:
+    with open(os.path.join('$CONTEXT_DIR', 'working', 'focus.yaml')) as fh:
+        m = re.search(r'^current_task:\s*(\S+)', fh.read(), re.M)
+        if m:
+            focus_id = m.group(1).strip().strip(chr(39) + chr(34))
+except OSError:
+    focus_id = ''
+# T-3210: recency, not string order. The old key was the task id AS A STRING, so a
+# 296-candidate pool resolved on lexicographic accident ('T-1062' < 'T-1719' <
+# 'T-332') and reliably surfaced the oldest-numbered started-work task rather than
+# anything this session touched. ISO-8601 sorts chronologically as text, and
+# Python's sort is stable, so the two passes below compose: recency first, then the
+# owner/horizon primary keys survive it.
+candidates.sort(key=lambda c: c[2], reverse=True)
+candidates.sort(key=lambda c: (c[0], c[1]))
+focused = [c for c in candidates if c[3] == focus_id] if focus_id else []
+if focused:
+    _, _, _, tid, tname = focused[0]
+    print(f'Continue {tid}: {tname}')
+elif candidates:
+    _, _, _, tid, tname = candidates[0]
     print(f'Continue {tid}: {tname}')
 else:
     print('See active tasks')
