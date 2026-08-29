@@ -1282,11 +1282,22 @@ run_verification_commands() {
         echo -e "  remaining lines. Redirect it — e.g. 'somecmd < /dev/null' — or remove it." >&2
         echo -e "  --skip-verification does NOT bypass this: it accepts failures, and an" >&2
         echo -e "  unreconciled count is not a failure, it is an unknown." >&2
-        # `exit`, not `return`: the caller (do_update) invokes this function
-        # BARE, with no `if`/`||`, so a non-zero return is discarded and the
-        # close proceeds. The sibling failure path below exits for the same
-        # reason. A guard that returns here would be a no-op — the exact shape
-        # this task exists to remove.
+        # `exit`, not `return` — and NOT because a return would be discarded.
+        # Measured (T-3220): a `return 1` here blocks exactly as hard today.
+        # The call site is a bare statement and `set -euo pipefail` is live at
+        # line 14, so errexit aborts the script on a non-zero return.
+        #
+        # `exit` is chosen because that teeth-giving `set -e` is 1700 lines away
+        # and invisible from here. Wrap the call in `if`/`||`/`&&`, or drop the
+        # `-e`, and every `return`-based guard in this function silently becomes
+        # a no-op with no diff to any guard. `exit` survives all of that. The two
+        # sibling failure paths (the malformed-block guard above, the
+        # "N verifications failed" path below) both `exit 1` — this matches them.
+        #
+        # An earlier revision of this comment claimed the caller discarded a
+        # non-zero return. It did not, and the caller it named did not exist.
+        # `tests/unit/t3220_verification_gate_exits.bats` pins the choice so the
+        # reason cannot drift from the mechanism again.
         exit 1
     fi
 

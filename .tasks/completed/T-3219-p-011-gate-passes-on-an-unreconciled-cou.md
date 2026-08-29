@@ -194,9 +194,27 @@ timeout 300 bats tests/unit/t3212_human_gate_stop.bats > /tmp/.t3212r.out 2>&1 &
 
 ### 2026-08-29 — `exit 1`, not `return 1` (a defect in the fix itself)
 
+> **CORRECTED 2026-08-29 by T-3220 — the decision stands, its stated reason does
+> not.** The original text is kept below the line rather than rewritten, because
+> the way this entry was wrong is the more useful record. Summary of the
+> correction: `return 1` blocks here too, measured. The caller is bare, but
+> `set -euo pipefail` at line 14 means a bare call to a function returning
+> non-zero aborts the script — the opposite of what the entry claims. Both cells
+> print the refusal and exit 1, one byte apart, on the real script. `exit 1` is
+> still right, for the reason recorded in T-3220: it does not depend on an
+> option set 1700 lines away, which a `return` silently does. The entry also
+> named a caller function, `do_update`, that does not exist in the file. Caught
+> by peer 832-Workflow-designer, who ran the shape in their own tree and
+> reported the mismatch instead of assuming ours transferred.
+>
+> Pinned by `tests/unit/t3220_verification_gate_exits.bats` — including the
+> control leg asserting that `return` blocks WITH errexit, so the false claim
+> cannot be re-derived from a passing suite.
+
 - **Chose:** `exit 1` in the reconciliation refusal.
-- **Why:** the caller invokes `run_verification_commands` BARE — no `if`, no `||` —
-  so a non-zero return is discarded and the close proceeds. The first draft used
+- **Why (AS WRITTEN, AND WRONG — see the correction above):** the caller invokes
+  `run_verification_commands` BARE — no `if`, no `||` — so a non-zero return is
+  discarded and the close proceeds. The first draft used
   `return 1`, which would have printed a refusal and then completed the task anyway.
   **A guard that returns to a caller who does not check is a print statement.** Caught
   only by asking why the sibling failure path three lines below uses `exit`.
