@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3220: T-3219 comment states a false reason for exit 1 — measured, return 1 blocks too
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-29T22:49:36Z
+# ============================================================================
+
+task_id: T-3220
+task_name: "T-3219 comment states a false reason for exit 1 — measured, return 1 blocks too"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-29T22:41:43Z
+completed: 2026-08-29T22:49:02Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-30T00:48:49+02:00
+last_commit: 2026-08-30T00:48:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the exit-1 comment gave a false reason — measured, return blocks too
+
+# Key outcomes
+outcomes:
+  - 'The false comment at `update-task.sh:~1285` is replaced with the measured reason: `exit 1` for consistency with the two sibling failure paths in the same function, and for independence from the errexit dependency 1700 lines away — NOT because a bare return would be discarded.'
+  - 'The corrected comment names the real dependency (`set -euo pipefail`, line 14) and states that `return 1` would also block today, so a future reader does not conclude the sibling guards are inert.'
+  - '`grep -c do_update agents/task-create/update-task.sh` returns 0 — the fabricated caller name is gone.'
+  - 'A test leg pins that every failure path in `run_verification_commands` exits rather than returns, so a future edit to `return` cannot silently re-create the errexit dependency.'
+  - 'That leg is proven to bite: it fails against a mutant with one `exit 1` weakened to `return 1`, and passes against the shipped file. Measured: mutant → 1 offending `return` line, 2 `exit 1` sites; shipped → 0 returns, 3 `exit 1` sites. The behavioural counterpart is test 8, which is the only one of four cells where the script runs past the guard.'
+  - 'The T-3219 Decisions entry that records the same false reasoning is corrected in `.tasks/completed/`, with the correction marked as such rather than silently rewritten.'
+  - '`bin/fw vendor self --check` is clean and the new suite is registered in the fabric.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-29 — keep the wrong reasoning visible instead of rewriting it'
+    chose: 'annotate the T-3219 Decisions entry with a CORRECTED block and keep the original text below it, labelled "AS WRITTEN, AND WRONG".'
+    rationale: 'the decision was right and the argument was wrong, which is the interesting case. A silent rewrite would leave a record in which the reasoning always matched the mechanism — and the whole point is that it did not, for hours, in a task specifically about false greens. The failure mode is the artefact.'
+    alternatives_rejected: ['editing the entry in place (destroys the evidence); leaving it and only correcting the source comment (the task file is what the episodic and the next reader see first).']
+  - decision: '2026-08-29 — four cells, not one assertion'
+    chose: 'test `exit`/`return` against errexit present/absent — four runs — and assert on whether the script continues past the guard.'
+    rationale: 'the naive test ("the guard blocks") passes in three of the four cells and would have passed against the false comment too. Only the fourth cell distinguishes the idioms, and it needs the other three to prove it is measuring the dependency rather than a broken mutant. The `return`-with-errexit cell is the specific control that would go red if the original claim were true.'
+    alternatives_rejected: ['asserting the task reaches `completed/`. In a synthetic root the close is blocked downstream regardless — measured: in the one disarmed cell the task still ends in `active/`, caught by an unrelated render-surface gate. That accident is exactly why completion is not the observable.']
+  - decision: '2026-08-29 — do not generalise to "verify all comments"'
+    chose: 'scope the prevention to this one claim, and say so in the RCA.'
+    rationale: 'the tempting lesson is "comments are unverified, add a linter". There is no tractable check for prose truth, and asserting one would be the same overreach in a new place. The defensible narrower claim: a comment explaining WHY a mechanism is needed states a testable proposition, and one control leg is cheap.'
+    alternatives_rejected: ['filing a framework-wide comment-verification gap. It would be a register entry nobody can close.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.fabric/components/tests-unit-t3220_verification_gate_exits.yaml'
+  - '.tasks/active/T-3220-t-3219-comment-states-a-false-reason-for.md'
+  - '.tasks/completed/T-3219-p-011-gate-passes-on-an-unreconciled-cou.md'
+  - 'tests/unit/t3220_verification_gate_exits.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-30T00:48:49'
+    action: 'T-3220: the exit-1 comment gave a false reason — measured, return blocks too'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [correction, verification-gate, false-comment]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 6
+  lines_added: 594
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3220-t-3219-comment-states-a-false-reason-for.md
+generated_by: context-agent-hybrid

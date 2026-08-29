@@ -14,10 +14,10 @@ description: >
   legitimate optional-dependency skips (termlink absent, etc) are not the target and
   must not be flagged.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 arc_id: continuous-run
 components: []
@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-29T15:12:34Z
-last_update: 2026-08-29T15:15:09Z
+last_update: 2026-08-29T22:34:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -339,3 +339,7 @@ from the record-field direction (their G-069). The invariant across all of them:
 ### 2026-08-29T15:15:09Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-08-29T22:34:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

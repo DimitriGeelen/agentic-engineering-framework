@@ -3607,3 +3607,24 @@ decisions:
     date: 2026-08-29
     task: T-3219
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-518
+    decision: "annotate the T-3219 Decisions entry with a CORRECTED block and keep"
+    scope: project
+    date: 2026-08-29
+    task: T-3220
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-519
+    decision: "test `exit`/`return` against errexit present/absent — four runs — and"
+    scope: project
+    date: 2026-08-29
+    task: T-3220
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-520
+    decision: "scope the prevention to this one claim, and say so in the RCA."
+    scope: project
+    date: 2026-08-29
+    task: T-3220
+    rationale: "Auto-captured from task file on completion"
