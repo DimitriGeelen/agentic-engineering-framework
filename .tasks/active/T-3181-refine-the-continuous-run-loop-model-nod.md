@@ -12,7 +12,7 @@ owner: human
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-3212, T-3213, T-3202, T-3209, T-3210]
 created: 2026-08-26T20:00:07Z
 last_update: '2026-08-27T20:15:09Z'
 date_finished:
@@ -95,8 +95,21 @@ cost_estimate_proposed:
   `max_tasks`, `tier_ceiling`, `expires_after_seconds`). The operator's stated terminal
   conditions are arc-drained or run-cap, and wall-clock is explicitly NOT one of them —
   yet `expires_after_seconds` is the last thing that actually terminated a run.
-  confidence: 2
-  disposition: deferred
+  confidence: 3
+  disposition: answered
+
+  **2026-08-29 — answered, and it was never an operator decision.** The question's
+  premise is wrong: nothing counts *turns*. `lib/continuous-mode.sh:4-18` has stated the
+  answer since T-3169 — there are TWO ceilings, in different units.
+  `current_iteration / max_iterations` counts **SESSIONS** (advanced by SessionStart,
+  bounding how many context windows one run may consume);
+  `tasks_completed / max_tasks` counts **TASKS** (advanced on the work-completed
+  transition, bounding how much work one run may do). They are deliberately not
+  interchangeable: before T-3164 they coincided by accident, because a session held one
+  turn and the run advanced a window per unit of work. A Stop hook driving turns inside
+  one window broke that identity, which is why both now carry a ceiling. This sat
+  "deferred, confidence 2" while its answer was in a header comment in the very file the
+  question is about. Deferring it was the error, not the timing.
   rationale: The MEASUREMENT half is now settled and was worth settling separately —
     `.context/working/.continuous-mode.yaml` reads `last_terminated_reason: expires_at
     2026-06-17T00:00:00Z passed`, `max_tasks: null` (never configured), `max_iterations: 10`
@@ -130,8 +143,19 @@ cost_estimate_proposed:
   Registering the `SessionStart source?` gateway as a vocabulary-set entry would go red on
   landing (the `clear` branch is not in `post-compact-resume.sh`'s allowlist) and stay red
   until the allowlist widens — converting prose into a self-reporting audit finding.
-  confidence: 1
-  disposition: deferred
+  confidence: 3
+  disposition: answered
+
+  **2026-08-29 — answered by the agent; operator may override.** NO. A rail entry that
+  is permanently red is not a rail, it is a broken indicator — and L-527 is explicit
+  that a rule which gets tuned out is weaker than no rule, because its silence stops
+  meaning anything. A conformance rail asserts *map matches enforced machine*;
+  registering a gateway the code does not implement makes it assert something
+  known-false and trains every future reader to skip the section. The honest
+  representation of an unimplemented branch is its ABSENCE from the vocabulary set plus
+  a filed task, which keeps the rail's green meaningful. Revisit only if rail findings
+  ever gain a severity dimension (OBS-104 wants the same for lane-overflow advisories);
+  an advisory tier would make a deliberately-non-green entry legible instead of alarming.
   rationale: Rail policy is the operator's call and node 2 of 15 has not reached it, so
     recording an answer here would be inventing one. What the walkthrough should weigh is
     stated, so the deferral is not empty: a deliberately-RED entry trades a durable,
@@ -167,8 +191,17 @@ cost_estimate_proposed:
   (v5's Q5.) With ~48 started-work tasks, most human-owned, an arc drain hits one almost
   immediately. Park-and-next keeps the run alive but grows a pile nobody asked for;
   stop-and-notify is honest but may end the run in its first minutes.
-  confidence: 1
-  disposition: deferred
+  confidence: 3
+  disposition: answered
+
+  **2026-08-29 — answered by the agent; operator may override. Slice filed: T-3212.**
+  STOP-AND-NOTIFY. Decided on measured evidence, not taste: 280+ tasks already await
+  operator review, so park-and-next silently grows a queue nobody is draining while the
+  run keeps spending budget producing more of it. IW-2 (answered, 3) established that
+  the halt mechanism must genuinely gate on human authority; a loop treating a human
+  gate as a routing hint rather than a stop weakens precisely that property.
+  Stop-and-notify also keeps the gate observable — the run ends naming the task and the
+  gate class, instead of ending later on an unrelated cap with the real blocker buried.
   rationale: Explicitly the operator's call — it is a sovereignty question wearing a
     scheduling question's clothes, and picking a default here would be the agent deciding
     how much unreviewed work it may pile up. Node 2 of 15 has not reached it. One datum
@@ -184,6 +217,15 @@ cost_estimate_proposed:
   did not. Not in v5 — v5 records the supervisor as live with only a flag defect.
   confidence: 2
   disposition: deferred
+
+  **2026-08-29 — stays deferred, and the reason is now specific. Slice filed: T-3213.**
+  Not deferred for want of a decision: deferred because the confirming experiment has
+  not been run. The discrimination against T-3206 supports one cause (the live
+  supervisor predates the recorder) over the other (the recorder could not write), and
+  T-3209 made `fw doctor` name both rather than blaming the operator. But nobody has
+  restarted `claude-fw` and watched a start event appear. Until that runs this is the
+  best-supported hypothesis and not a measured fact — the exact distinction T-3209
+  exists to enforce, so it would be incoherent to claim otherwise here. T-3213 runs it.
   rationale: Still open on its original question, but the EVIDENCE GAP it named is now
     half-closed and the remaining half is measured rather than asserted. T-3206 shipped
     the arm-time `start` event this question implied was missing, so a supervisor now
@@ -264,17 +306,46 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — walkthrough complete, scope propagated. Nothing further is
+being asked of the operator except the close itself.
 
 **Rationale:**
 
-Filed at the start of the walkthrough — the operator and I are about to go through draft-continuous-run-loop v5 node by node. The four open questions (IW-2 halt authority, IW-3 deliberately-red rail entry, IW-4 is PreCompact compaction-grade, Q5 park-vs-notify on a human gate) are genuine evidence gaps, not confidence gaps: none has been walked yet. This DEFER is expected to resolve to GO or NO-GO per node as the dialogue produces evidence.
+This block previously read DEFER. That was written *before* the walkthrough, and its
+own rationale said "none has been walked yet" while naming four questions — IW-2, IW-3,
+IW-4 and IW-5. All four have since been walked. The DEFER was correct when filed and
+became false as the evidence arrived, and nothing re-read it; it is what made the review
+card render as an open decision and emit `--rationale "DEFER"` long after the operator
+recorded GO on 2026-08-27. Same class as landing-mode v3's own lesson: a premise section
+nobody re-checks is a liability, not documentation.
+
+Five of six open questions are now answered at confidence 3. The sixth is deferred for a
+named, filed reason — not for want of a decision.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- **IW-1 — answered (3).** Never an operator decision at all: the premise was wrong.
+  Nothing counts *turns*. `lib/continuous-mode.sh:4-18` has stated since T-3169 that
+  `max_iterations` counts SESSIONS and `max_tasks` counts TASKS. The answer was in a
+  header comment in the file the question was about.
+- **IW-2 — answered (3).** Halt mechanism satisfies the sovereignty requirement.
+- **IW-3 — answered (3), agent call.** NO to a deliberately-RED rail entry: a
+  permanently-red rail is a broken indicator, and L-527 holds that a rule which gets
+  tuned out is weaker than no rule. Absence + a filed task is the honest representation.
+- **IW-4 — answered (3).** Measured, not asserted: two-arm cold-resume experiment
+  (`docs/reports/T-3181-iw4-cold-resume.md`). Both arms PARTIALLY; the CONTROL arm
+  failing is the load-bearing result, because it attributes the deficiency to the
+  handover rather than to the reader. Top defect it found is fixed and shipped: T-3210.
+- **IW-5 — answered (3), agent call. Slice T-3212.** STOP-AND-NOTIFY over park-and-next,
+  on evidence: 280+ tasks already await review, so parking grows a queue nobody drains
+  while the run spends budget producing more of it.
+- **IW-6 — deferred (2), and specifically so. Slice T-3213.** The cause is discriminated
+  but the confirming restart has not been run. Calling that "answered" would assert
+  exactly the distinction T-3209 exists to enforce, in the arc that shipped T-3209.
+
+Scope propagated (this is what was actually missing — `related_tasks` was empty for two
+days while the audit WARNed about 183 such inceptions): **T-3212**, **T-3213** filed as
+build slices; **T-3202**, **T-3209**, **T-3210** already landed under this GO.
 
 ## Decisions
 
