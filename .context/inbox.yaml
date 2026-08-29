@@ -4131,3 +4131,10 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-354
+  text: "FILING A TASK IS INDISTINGUISHABLE FROM STARTING IT. Committing a newly-filed task requires transitioning it through started-work: the write-pattern gate blocks git add/commit on a captured task's own file ('Task T-3217 has status captured (work not started)'). Filing-for-later is not working-on, but the only route is work-on -> commit -> 'task update --horizon next' to auto-demote back to captured (T-1068). Three transitions to record one filing, and it transiently inflates the started-work count that the same command warns about (47 concurrent). DEMONSTRATION, not argument: the fw note command registering THIS observation was itself blocked by the same gate, because focus was still on the just-demoted T-3217. Sibling of OBS-353 - a gate whose model assumes the only reason to touch a task file is to work the task. NOT a bypass request: the path exists and is sanctioned. Contrast worth keeping in the framework's favour: the T-2987/L-547 bootstrap-exemption block message anticipated my exact mistake (bootstrap chained with a redirect), named it, and said 'this is a message, not a permission'. That is what OBS-353's message should look like. Origin: T-3213/T-3217 landing run, 2026-08-29."
+  captured: 2026-08-29T15:15:53Z
+  context_task: T-3181
+  tags: [governance]
+  status: pending
+  promoted_to: null
