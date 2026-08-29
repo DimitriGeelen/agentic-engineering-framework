@@ -1224,9 +1224,23 @@ run_verification_commands() {
         # T-1493: close inherited keylock FDs in the subshell so daemons
         # spawned by the verification command (.NET VBCSCompiler, gradle,
         # etc.) cannot inherit the lock FD and block future fw task ops.
+        # T-3219: `< /dev/null` is load-bearing, not tidiness. This loop is fed
+        # by `done <<< "$verify_cmds"`, so the command list IS the loop's stdin.
+        # Without this redirect a verification command that reads stdin — `cat`,
+        # `read`, an interactive tool, a `while read` — consumes the REMAINING
+        # verification lines, which then never run. The gate counted them before
+        # the loop, so it reports e.g. "2/4 passed" and, because nothing failed,
+        # calls it green. Measured on the real gate before the fix:
+        #     Running 4 verification command(s)...
+        #       PASS: echo one
+        #       PASS: cat > /dev/null
+        #     Verification: 2/4 passed ✓        <- exit 0, task completed
+        # A false green in the gate whose whole purpose is preventing false
+        # greens. Reported independently by 832-Workflow-designer and confirmed
+        # in a vendored copy by 577-CashWeb-integration (their G-072).
         local _close_locks_cmd
         _close_locks_cmd=$(type keylock_subshell_close_cmd >/dev/null 2>&1 && keylock_subshell_close_cmd || true)
-        if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; eval "$_close_locks_cmd"; cd "$PROJECT_ROOT" && eval "$cmd") > /tmp/verify-$$.out 2>&1; then
+        if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; eval "$_close_locks_cmd"; cd "$PROJECT_ROOT" && eval "$cmd") > /tmp/verify-$$.out 2>&1 < /dev/null; then
             echo -e "  ${GREEN}PASS${NC}: $display_cmd"
             verify_pass=$((verify_pass + 1))
         else
@@ -1240,6 +1254,42 @@ run_verification_commands() {
     done <<< "$verify_cmds"
 
     echo ""
+
+    # T-3219: RECONCILE THE COUNT BEFORE JUDGING IT.
+    #
+    # The verdict below asks only "did anything fail?". That is green whenever
+    # verify_fail is 0 — including when the loop never reached most of the
+    # block. The fraction was already printed on the success line, and nothing
+    # compared its two halves: a denominator is evidence only if something
+    # compares it to the numerator.
+    #
+    # DELIBERATELY NOT BYPASSABLE BY --skip-verification. That flag means "I
+    # have seen these failures and I accept them". An unreconciled count is not
+    # a failure anyone can accept — it is the runner reporting that it does not
+    # know what it ran. Those are different speech acts and one flag must not
+    # cover both. If this fires, the block did not execute as written and the
+    # right response is to fix the block, not to wave it through.
+    #
+    # Cannot false-positive on blank or comment lines: extract_verification_block
+    # already strips `^\s*$`, `^\s*#` and fences, so every counted line is a
+    # command the loop is expected to run.
+    if [ "$((verify_pass + verify_fail))" -ne "$verify_total" ]; then
+        echo -e "${RED}ERROR: Cannot complete — verification count does not reconcile.${NC}" >&2
+        echo -e "  ran $((verify_pass + verify_fail)) of $verify_total command(s): ${verify_pass} passed, ${verify_fail} failed." >&2
+        echo -e "  $(( verify_total - verify_pass - verify_fail )) command(s) never ran, so this block was NOT verified." >&2
+        echo -e "" >&2
+        echo -e "  Most likely cause: a command in the block reads stdin and consumed the" >&2
+        echo -e "  remaining lines. Redirect it — e.g. 'somecmd < /dev/null' — or remove it." >&2
+        echo -e "  --skip-verification does NOT bypass this: it accepts failures, and an" >&2
+        echo -e "  unreconciled count is not a failure, it is an unknown." >&2
+        # `exit`, not `return`: the caller (do_update) invokes this function
+        # BARE, with no `if`/`||`, so a non-zero return is discarded and the
+        # close proceeds. The sibling failure path below exits for the same
+        # reason. A guard that returns here would be a no-op — the exact shape
+        # this task exists to remove.
+        exit 1
+    fi
+
     if [ "$verify_fail" -gt 0 ]; then
         if [ "$SKIP_VERIFICATION" = true ]; then
             echo -e "${YELLOW}WARNING: $verify_fail/$verify_total verification(s) failed (--skip-verification bypass)${NC}"
