@@ -7153,8 +7153,13 @@ print('0')
                 --help|-h|help)
                     echo -e "${BOLD}fw review-queue${NC} — list tasks awaiting human review (T-1536)"
                     echo ""
-                    echo "Shows two sections matching Watchtower /approvals:"
+                    echo "Shows sections matching Watchtower /approvals:"
                     echo "  DECISIONS — pending inception GO/NO-GO/DEFER decisions (T-1571)"
+                    echo "  DECIDED   — inceptions already decided, awaiting operator"
+                    echo "              closure. The sovereignty gate refuses agent"
+                    echo "              closure on owner: human, so one action remains"
+                    echo "              and it is yours (T-3178)"
+                    echo "  PAUSED    — dispatched workers awaiting an answer (T-1808)"
                     echo "  VERDICT   — active tasks with unchecked Human ACs"
                     echo ""
                     echo "Each row is prefixed by the agent's recommendation verdict (GO/DEFER/"
@@ -7199,7 +7204,7 @@ print('0')
             esac
             shift
         done
-        PROJECT_ROOT="$PROJECT_ROOT" FW_REVQ_ARC="$rq_arc_filter" FW_REVQ_IDS="$rq_ids_only" python3 - <<'PYREVQ'
+        PROJECT_ROOT="$PROJECT_ROOT" FW_REVQ_ARC="$rq_arc_filter" FW_REVQ_IDS="$rq_ids_only" FW_LIB_DIR="$FW_LIB_DIR" python3 - <<'PYREVQ'
 import os, re, sys, time
 from pathlib import Path
 from datetime import datetime
@@ -7245,6 +7250,27 @@ ACTIVE = ROOT / ".tasks" / "active"
 if not ACTIVE.is_dir():
     print("No .tasks/active directory.", file=sys.stderr)
     sys.exit(0)
+
+# T-3178: the DECIDED section's predicate is IMPORTED, never reimplemented here.
+# /approvals runs the same module (approvals.py:_load_decided_unclosed), and this
+# command is documented as its terminal mirror — so a fourth inline copy of the
+# decision regex is precisely how the two surfaces come to disagree about what is
+# outstanding (L-638, L-298, L-315, and the reason lib/decided_unclosed.py exists
+# at all rather than living inside the blueprint).
+# Degrades to absent-section, never to a crash: a review queue that dies on a
+# missing helper hides the three sections that DO work, which is worse than the
+# gap it was added to close (same reasoning as the blueprint's except-return-[]).
+# FW_LIB_DIR, not PROJECT_ROOT/lib. The predicate ships with the FRAMEWORK; a
+# consumer project has no lib/ of its own, so resolving it against the project
+# would leave this section permanently and silently absent everywhere except a
+# checkout where the two paths happen to coincide — which is the one place it
+# gets tested by hand. T-1633's class, and the bats suite caught it here.
+_lib_dir = os.environ.get("FW_LIB_DIR") or str(ROOT / "lib")
+try:
+    sys.path.insert(0, _lib_dir)
+    import decided_unclosed as _du
+except Exception:
+    _du = None
 
 # T-2405: --arc <id> filter. Resolve user input to canonical (arc-NNN, slug)
 # pair by reading .context/arcs/*.yaml. Accepts either form.
@@ -7299,6 +7325,7 @@ def _task_matches_arc(fm_text, body_text, canonical):
 now = time.time()
 rows = []
 decision_rows = []
+decided_rows = []  # T-3178: decided but still open — one operator action left
 # T-1571 / F5: precompute pending-inception scan once, reuse below for both passes
 # Pattern matches the canonical block emitted by lib/inception.sh do_inception_decide.
 DECISION_RE = re.compile(r"^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b", re.M)
@@ -7342,6 +7369,36 @@ for f in sorted(ACTIVE.glob("*.md")):
                         pass
             d_verdict = extract_recommendation_state(text)
             decision_rows.append((d_verdict, d_age_days, tid_v, name))
+
+    # T-3178: DECIDED pass — the exact complement of the DECISIONS pass above.
+    # That one keeps inceptions with NO recorded decision; this one keeps those
+    # whose decision CONCLUDES them (GO/NO-GO — DEFER is a park with its own
+    # revisit machinery, see the module docstring). Recording a decision used to
+    # drop a task out of DECISIONS and into nothing: it is not partial-complete,
+    # so VERDICT misses it too, and the sovereignty gate correctly refuses agent
+    # closure. Result was a queue that looked complete rather than wrong.
+    # Origin: T-3181, GO'd 2026-08-27, asked about by the operator on 2026-08-29.
+    if _du is not None and workflow_type == "inception":
+        if _du.is_decided_unclosed(
+            {"workflow_type": workflow_type, "status": status,
+             "_location": "active", "id": tid_v, "name": name},
+            text,
+        ):
+            owner_m = re.search(r"^owner:\s*(\S+)", fm_text, re.MULTILINE)
+            dc_owner = owner_m.group(1).strip() if owner_m else ""
+            dc_age_days = 0
+            for field in ("last_update", "created"):
+                m = re.search(rf"^{field}:\s*(\S+)", fm_text, re.MULTILINE)
+                if m:
+                    try:
+                        dt = datetime.fromisoformat(m.group(1).replace("Z", "+00:00"))
+                        dc_age_days = int((now - dt.timestamp()) / 86400)
+                        break
+                    except (ValueError, OSError):
+                        pass
+            decided_rows.append(
+                (_du.extract_decision(text), dc_age_days, tid_v, name, dc_owner)
+            )
 
     # VERDICT pass — find ### Human section with unchecked ACs.
     # T-2075 (T-2064 GO): predicate now shared with /approvals via web.shared.
@@ -7395,7 +7452,11 @@ if os.environ.get("FW_REVQ_IDS") == "1":
         print(_r[2])
     sys.exit(0)
 
-if not rows and not decision_rows and not paused_rows:
+# T-3178: decided_rows joins the emptiness test. Omitting it would print "No
+# tasks awaiting human review." over a corpus whose ONLY outstanding item is an
+# inception awaiting closure — a confident false negative, which is the exact
+# failure this section was added to end rather than relocate.
+if not rows and not decision_rows and not paused_rows and not decided_rows:
     print("No tasks awaiting human review.")
     sys.exit(0)
 
@@ -7404,6 +7465,9 @@ if not rows and not decision_rows and not paused_rows:
 order = {"GO": 0, "DEFER": 1, "NO-GO": 2, "?": 3, "NO-REC": 4}
 rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
 decision_rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
+# T-3178: no verdict axis here — the decision IS the verdict, and both values are
+# equally closable. Oldest first, so the one that has been waiting longest leads.
+decided_rows.sort(key=lambda r: -r[1])
 
 NAME_W = 60
 
@@ -7422,6 +7486,18 @@ if decision_rows:
         truncated = (name[:NAME_W] + "...") if len(name) > NAME_W else name
         col = _verdict_color(verdict)
         print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
+    print()
+
+# T-3178: DECIDED — inceptions the operator concluded that are still open.
+# Placed immediately after DECISIONS because it is that section's complement and
+# reads as its second half: "undecided" then "decided, still yours to close".
+if decided_rows:
+    print(f"\033[1mDECIDED — inceptions awaiting operator closure ({len(decided_rows)})\033[0m")
+    print(f"\033[1m{'DECISION':<8}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
+    for dc_decision, dc_age, dc_tid, dc_name, dc_owner in decided_rows:
+        truncated = (dc_name[:NAME_W] + "...") if len(dc_name) > NAME_W else dc_name
+        col = {"GO": "\033[32m", "NO-GO": "\033[31m"}.get(dc_decision, "\033[90m")
+        print(f"{col}{dc_decision:<8}\033[0m  {str(dc_age)+'d':>4}  {dc_tid:<8}  {truncated}")
     print()
 
 # T-1808: PAUSED dispatches — Workers exited with pause_requested, awaiting answer.
@@ -7457,11 +7533,14 @@ if defer: parts.append(f"\033[33m{defer} DEFER\033[0m")
 if nogo: parts.append(f"\033[31m{nogo} NO-GO\033[0m")
 if unk: parts.append(f"\033[90m{unk} ?\033[0m")
 if no_rec: parts.append(f"\033[36m{no_rec} NO-REC\033[0m")
-total = len(rows) + len(decision_rows) + len(paused_rows)
+total = len(rows) + len(decision_rows) + len(paused_rows) + len(decided_rows)
 verif_only = f"{len(rows)} task(s) awaiting human review" if rows else ""
 dec_only = f"{len(decision_rows)} pending decision(s)" if decision_rows else ""
 paused_only = f"{len(paused_rows)} paused dispatch(es)" if paused_rows else ""
-summary = " · ".join(s for s in (dec_only, paused_only, verif_only) if s)
+# T-3178: counted in the summary too — a section the operator can see but the
+# tally omits is a quieter version of the same omission.
+decided_only = f"{len(decided_rows)} awaiting closure" if decided_rows else ""
+summary = " · ".join(s for s in (dec_only, decided_only, paused_only, verif_only) if s)
 if parts:
     print(f"\n\033[2m{summary}\033[0m  ({' / '.join(parts)})")
 elif summary:

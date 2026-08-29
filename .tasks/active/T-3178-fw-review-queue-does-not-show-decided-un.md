@@ -7,7 +7,7 @@ description: >
   unwired because fw review-queue is an inline python heredoc inside bin/fw, which
   T-3127 holds uncommitted.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T17:01:54Z
-last_update: '2026-08-26T17:15:14Z'
+last_update: 2026-08-29T10:40:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -71,14 +71,80 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Split from T-3175, which closed the `/approvals` half of the same gap and left
+this half named rather than silently dropped. T-3175's fourth Agent AC reads:
+
+> `fw review-queue` renders the section too — **SPLIT to T-3178**, blocked: the
+> command is an inline python heredoc inside `bin/fw`, which T-3127 holds
+> uncommitted.
+
+**That blocker is gone.** T-3127 landed on 2026-08-29 (`f0fec8e43`, `1da495d4b`);
+`git status --short bin/fw` is now empty. Editing the heredoc no longer sweeps
+another task's uncommitted work — which was the T-3165 defect the split existed
+to avoid, not a property of the work itself.
+
+**The gap.** A decided-but-unclosed inception is one where the operator recorded
+GO or NO-GO, the task stayed in `active/` because `update-task.sh:87` (Human
+Sovereignty Gate, R-033) refuses agent closure on `owner: human`, and exactly one
+action remains: the operator closing it. `fw review-queue` has three sections and
+the task falls through all of them:
+
+| section | predicate | why a decided inception misses it |
+|---|---|---|
+| DECISIONS | `workflow_type == inception AND NOT DECISION_RE.search(text)` | it *has* a decision — recording one drops it out |
+| PAUSED | `list_paused_dispatches()` | unrelated |
+| VERDICT | `count_unchecked_human_acs(text) > 0` | an inception whose Human ACs are ticked has none |
+
+`/approvals` had the identical shape and T-3175 fixed it there. Leaving the CLI
+unfixed is worse than never having fixed either: the two surfaces are documented
+as mirrors of one another (`bin/fw:7146`, "terminal mirror of Watchtower
+/approvals"), so an operator who checks the terminal now gets a *confidently*
+empty answer that the web page would contradict.
+
+**This is not hypothetical, and the operator hit it.** T-3181 was GO'd on
+2026-08-27 and asked about on 2026-08-29 — *"why is it back in the list again and
+we are not acting on it?"*. It is in this exact set.
+
+**Why it must import rather than reimplement.** Peer 010-termlink's finding on the
+chat arc, generalised: *a guard that reimplements the code it guards cannot detect
+that code being fixed.* Locally the same class is L-638 / L-298 / L-315 —
+cross-surface count divergence from each surface owning a copy of the predicate.
+`lib/decided_unclosed.py` exists precisely so this file imports it; a fourth
+inline regex in `bin/fw` would rebuild the divergence T-3175 removed.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw review-queue` renders a DECIDED section listing decided-unclosed
+      inceptions, distinct from DECISIONS (undecided) and VERDICT (unchecked
+      Human ACs), and T-3181 appears in it on the live corpus
+      — measured: `DECIDED — inceptions awaiting operator closure (2)`, listing
+      T-2876 (20d) and T-3181 (2d)
+- [x] The section is populated by importing `lib/decided_unclosed.py` — no second
+      copy of the predicate inside `bin/fw`. Verified by grepping `bin/fw` for a
+      `\*\*Decision\*\*` regex outside the pre-existing `DECISION_RE` line
+      — measured: `grep -c '(GO|NO-GO|DEFER)' bin/fw` = **1**, and
+      `import decided_unclosed as _du` present at `bin/fw:7265`
+- [x] `fw review-queue` and `/approvals` report the SAME decided-unclosed count.
+      A mirror that disagrees with what it mirrors is the defect, not the fix
+      — measured: page renders `2 inceptions — decision recorded` and `2 to close`;
+      CLI renders `(2)`; both name T-2876 and T-3181
+- [x] `--arc <id>` filters the DECIDED section as it already filters the other
+      two, and `--arc continuous-run` is measured (not assumed) to narrow it
+      — measured: unfiltered 2 → `--arc continuous-run` 1 (T-3181 only).
+      **Control arm:** `--arc arc-006` returns T-3181 absent, which is what
+      separates "the filter works" from "the filter is inert"
+- [x] `fw review-queue --ids` output is BYTE-IDENTICAL before and after. It feeds
+      `fw verify-queue`'s population (T-2765, L-539); widening it here would
+      silently change which tasks another rail runs over
+      — measured against `git show HEAD:bin/fw`: 1964B / 281 lines both sides,
+      `cmp -s` clean
+- [x] A bats test pins the section, and is mutation-tested: breaking the predicate
+      import must redden it. A test that stays green when the feature is removed
+      is the empty-queue false-green this whole task is about (same control leg as
+      T-3175 and T-3099)
+      — `tests/unit/t3178_review_queue_decided.bats`, 14/14. Mutations below.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -110,6 +176,74 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+## RCA
+
+**Symptom.** T-3181 was GO'd on 2026-08-27 and the operator asked on 2026-08-29
+why it was "back in the list again". It had never been on a list. Both terminal
+surfaces reported nothing outstanding for it.
+
+**Why (5-whys).**
+1. *Why was T-3181 invisible?* `fw review-queue` has three sections and it matched
+   none of them.
+2. *Why none?* DECISIONS excludes anything with a recorded decision; VERDICT
+   requires unchecked Human ACs, and T-3181 has zero; PAUSED is unrelated.
+3. *Why does no section cover "decided, still open"?* Because that state is
+   created by a gate the queue's author did not model: `update-task.sh:87` refuses
+   agent closure on `owner: human`. The state exists only because sovereignty is
+   enforced, so it is invisible to anyone reasoning about the task lifecycle
+   without that gate in mind.
+4. *Why did the `/approvals` fix (T-3175) not cover it?* It did — for the web
+   surface. The CLI half was correctly identified and correctly split to this
+   task, blocked on `bin/fw` being held uncommitted by T-3127.
+5. *Why did the split then sit?* Nothing watches for a split-out AC whose blocker
+   has cleared. T-3127 landed and T-3178 stayed `captured`; the unblocking event
+   produced no signal. **This is the residual and it is not fixed here.**
+
+**Why the framework was blind (G-019).** The section's absence and its emptiness
+are the same output. A queue that omits a category renders identically to a queue
+whose category is empty, so the failure cannot be seen from the surface it
+affects — the operator's only evidence was remembering a task the tool had
+forgotten. Same false-green family as the rest of arc-012, and the reason this
+task's tests seed the negative case explicitly rather than asserting exit 0.
+
+**A defect found while fixing it.** The first implementation resolved the
+predicate against `PROJECT_ROOT/lib`. In this repo `PROJECT_ROOT ==
+FRAMEWORK_ROOT`, so it worked live and passed every by-hand check — and would
+have been permanently, silently absent in every consumer, where `lib/` belongs to
+the framework and not the project. T-1633's class: path knowledge implicitly
+hard-coded to the framework developer's layout. Caught only because the bats
+suite runs against a synthetic PROJECT_ROOT rather than the repo it lives in.
+
+**Mutation record.** Two applied to the shipped code, each reverted:
+- **M1** — neuter the `decided_rows.append` call. Reddened 1, 2, 3, 8, 10, 12, 14.
+- **M2** — revert *only* the emptiness guard to its pre-T-3178 form
+  (`not rows and not decision_rows and not paused_rows`). Reddened 1, 2, 3, 8, 10,
+  12 — and left 14 green, correctly, because that test seeds a second task so the
+  early exit never fires. M2 discriminating from M1 is what shows the guard is
+  load-bearing on its own and not incidentally covered by the render assertions.
+- **M0** (unplanned, the useful one) — the `PROJECT_ROOT/lib` path bug above.
+  Reddened the same six on first run. It is recorded as a mutation because that is
+  what it functionally was: the suite met a broken implementation and reddened.
+
+## Decisions
+
+### 2026-08-29 — no dedup between DECIDED and VERDICT
+- **Chose:** let a task appear in both sections if it somehow qualifies for both.
+- **Why:** `/approvals` does not dedup either — it sums the section counts — and
+  this command is documented as its terminal mirror. Parity with the surface being
+  mirrored beats a local improvement that would make the two disagree.
+- **Rejected:** suppressing VERDICT entries that appear in DECIDED. It would change
+  `--ids`, which is `fw verify-queue`'s population (L-539), to fix a case that does
+  not occur: measured 0 overlap across the live corpus (both decided inceptions
+  have zero unchecked Human ACs).
+
+### 2026-08-29 — DEFER stays out
+- **Chose:** GO and NO-GO only.
+- **Why:** inherited from `lib/decided_unclosed.py` rather than re-decided. A DEFER
+  is awaiting a *date* (`revisit_at`, T-1451, G-053 daily scan), not an action;
+  listing it as "awaiting closure" would misdescribe it. Re-deciding it here would
+  be the second copy of a judgement, which is the thing this task exists to avoid.
 
 ## Verification
 
@@ -171,6 +305,23 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# The outer shell parses. Necessary, not sufficient — it says nothing about the
+# embedded python, which is where every edit in this task landed (T-3210, L-408).
+bash -n bin/fw
+# The suite, with the guard the exit code no longer supplies. Test 14 is the
+# mutation control; naming it explicitly means a future edit that deletes the
+# control cannot leave this line still passing.
+timeout 300 bats tests/unit/t3178_review_queue_decided.bats > /tmp/.t3178-bats.out 2>&1 && grep -q '^ok 14 ' /tmp/.t3178-bats.out && ! grep -q '^not ok' /tmp/.t3178-bats.out
+# The section renders on the live corpus.
+bin/fw review-queue > /tmp/.t3178-rq.out 2>&1 && grep -q 'DECIDED — inceptions awaiting operator closure' /tmp/.t3178-rq.out
+# ONE predicate. If this becomes 2, someone has reimplemented the decision regex
+# inside bin/fw and the two surfaces have started to drift (L-638, L-298, L-315).
+test "$(grep -c '(GO|NO-GO|DEFER)' bin/fw)" = "1"
+# The import is what makes the section shared rather than parallel.
+grep -q 'import decided_unclosed as _du' bin/fw
+# --ids must not widen: it is fw verify-queue's population (T-2765, L-539).
+bin/fw review-queue --ids > /tmp/.t3178-ids.out 2>&1 && ! grep -q 'DECIDED' /tmp/.t3178-ids.out
 
 ## RCA
 
@@ -268,3 +419,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3178-fw-review-queue-does-not-show-decided-un.md
 - **Context:** Initial task creation
+
+### 2026-08-29T10:40:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
