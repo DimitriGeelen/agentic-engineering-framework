@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3218: landing-mode v4: a 200 is not evidence the page was read
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-29T15:23:39Z
+# ============================================================================
+
+task_id: T-3218
+task_name: "landing-mode v4: a 200 is not evidence the page was read"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-29T15:21:02Z
+completed: 2026-08-29T15:23:25Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  The landing-mode prompt says 'curl every URL for a 200 before printing it'. Followed literally that is insufficient and produced a false green this run: curl -o FILE reports the transfer's HTTP status via -w %{http_code} even when it cannot write the body. Measured: /tmp/.pg was a foreign file (owner dimitri-mint-dev, Aug 27, left by project 1023-portable-encrypted-chromium-vault); curl printed http=200 with its own exit code 23 (write error); the stale foreign page stayed on disk; five approval links verified 'OK' against another project's inception page, and the 404 control also 'passed' at 87500B identical. Reproduced deterministically. The framework's documented idiom is NOT affected because it chains on curl's exit (curl -sf ... -o f && grep -q PAT f short-circuits on rc 23) - the defect is in the prompt's wording, which names the status code rather than the exit code.
+
+# Key outcomes
+outcomes:
+  - '`policy/prompts/landing-mode.md` is v4: the revision table gains a row naming what this run measured, consistent with the file''s own rule that each version records a measurement rather than an opinion.'
+  - '§The Prompt''s operator-actions rule names the FETCHER''S EXIT CODE rather than the status code, gives the working shape, and requires a deliberately-bad control that must fail.'
+  - 'A `## What v4 changes` section records the measurement verbatim — the commands, curl''s rc 23, the foreign file''s owner and date — so the claim is checkable rather than asserted.'
+  - 'The section states explicitly that the framework''s documented `curl -sf … && grep` idiom was NOT affected, so the fix is not mistaken for a repo-wide defect.'
+  - 'The v3 prompt text is superseded in place, not appended to — a prompt carrying both the old and new rule would leave the wrong one quotable.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3218-landing-mode-v4-a-200-is-not-evidence-th.md
+generated_by: context-agent-hybrid

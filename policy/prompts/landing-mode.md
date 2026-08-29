@@ -1,4 +1,4 @@
-# Landing Mode — the "stop finding, start landing" prompt (v3)
+# Landing Mode — the "stop finding, start landing" prompt (v4)
 
 **Status:** operator-issued directive, codified T-3201, revised T-3205.
 v1 lived only in chat and had to be reconstructed from scratch when the operator
@@ -18,6 +18,7 @@ thought would be better:
 | v1 | first run | landed 3, **filed 6** — the directive was violated by the agent's own filing rate |
 | v2 | T-3201 | added the filing budget, the mutation rule, the flag-exists rule, the bypass rule |
 | v3 | T-3205 | one of v2's two stated premises was **false and costly**; added the premise-collapse rule |
+| v4 | T-3218 | the **verification rule itself produced a false green** — "curl for a 200" names the wrong number |
 
 ---
 
@@ -114,12 +115,55 @@ Check these yourself at the start of a run. Do not inherit them.
 > beyond the task, ship the part that is yours and surface the rest as a Human AC.
 >
 > **Operator actions:** surface them to `/approvals` and print the link to the
-> *specific* approval. Generate links with `fw task review-batch`, never by hand,
-> and **curl every URL for a 200 before printing it**.
+> *specific* approval. Generate links with `fw task review-batch`, never by hand.
+> **Verify every URL on the FETCHER'S EXIT CODE, not on the status code** — and
+> check the page actually contains its own task id, with a deliberately-bad id as
+> a control that must fail. `curl -sf "$URL" -o "$f" && grep -q "$id" "$f"` is the
+> shape; a bare `%{http_code}` is not, because a 200 is compatible with having
+> read nothing.
 >
 > **Check in after every commit.** Do not chain landings silently.
 >
 > **Stop at 85% context** and hand over. Do not start a task you cannot finish.
+
+---
+
+## What v4 changes
+
+**v3's own verification rule produced a false green, on the run that wrote v4.**
+That is the strongest possible reason to change it: the rule was followed exactly
+and still passed five links to another project's page.
+
+Measured 2026-08-29, reproduced deterministically:
+
+    curl -s -o /tmp/.pg -w '%{http_code}' "$W/review/T-100201"  -> prints 200
+    echo $?                                                     -> 23  (CURLE_WRITE_ERROR)
+    ls -la /tmp/.pg  ->  dimitri-mint-dev  87500B  Aug 27   (project 1023's page)
+
+`/tmp/.pg` was a foreign file this process could not overwrite. curl reported the
+**transfer's** status — which really was 200 — while writing nothing, so the byte
+count, the title and the grep all came from a stale page belonging to a different
+project. Five approval links "verified", and the 404 control "verified" too, at
+byte-identical size. The tell was that *everything* was identical, including the
+control; had the foreign file happened to be a plausible page, nothing would have
+looked wrong at all.
+
+**The framework's documented idiom was never affected** and does not need changing:
+`curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out`
+chains on curl's exit status, so rc 23 short-circuits the `&&` and the line fails.
+The defect was in this prompt's *wording*, which named the status code instead of
+the exit code, and in an ad-hoc loop written to satisfy it literally.
+
+Generalised, and it is the same family as everything else this prompt has
+accumulated: **a 200 is a claim about the transfer, not about the artefact.** The
+green did not depend on the subject. Sibling instances — `! cmd` inert in non-final
+bats position (L-628), errexit suppressed in the P-011 gate (T-3203), a `skip` that
+reports `ok` (T-3217), a record field correct exactly when redundant (peer 577's
+G-069).
+
+The lasting rule is not "use -sf". It is: **when you verify something, know which
+number you are reading, and include a control that must fail.** The control is what
+caught this — not because it failed, but because it *passed*.
 
 ---
 
