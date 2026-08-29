@@ -61,6 +61,20 @@ _t2864_reconcile_index() {
     return 0
 }
 
+# T-1032: after `git mv active/ → completed/` runs, the old active/ path no
+# longer exists in the working tree. Agents that reason from a pre-move git
+# status snapshot construct `git add <old-active-path>` and hit `fatal:
+# pathspec did not match any files`. Emit an explicit next-step hint naming
+# the invariant (rename staged in index; episodic added separately below and
+# untracked). Opt out with FW_QUIET_NEXT_HINT=1 for scripted callers that
+# parse stdout.
+_print_move_next_hint() {
+    [ "${FW_QUIET_NEXT_HINT:-0}" = "1" ] && return 0
+    local tid="${1:-$TASK_ID}"
+    printf '  \xe2\x86\xb3 rename staged in index; episodic added below (untracked)\n'
+    printf "  \xe2\x86\xb3 next: git add .context/episodic/%s.yaml && git commit -m '%s: close ...' && git push\n" "$tid" "$tid"
+}
+
 # Gate bypass audit log (T-1142)
 log_gate_bypass() {
     local flag="$1" caller="${2:-manual}"
@@ -1527,6 +1541,7 @@ if [ -n "$NEW_STATUS" ]; then
                     exit 1
                 fi
                 echo -e "${GREEN}Moved to completed/${NC}"
+                _print_move_next_hint "$TASK_ID"
 
                 # T-2345: clean orphan review marker — marker exists to unblock
                 # fw inception decide (T-973), moot once task is in completed/.
@@ -2080,6 +2095,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 exit 1
             fi
             echo -e "${GREEN}Moved to completed/${NC}"
+            _print_move_next_hint "$TASK_ID"
             # T-2345: clean orphan review marker — marker exists to unblock
             # fw inception decide (T-973), moot once task is in completed/.
             # Idempotent; sibling cleanup at lib/inception.sh:731.
