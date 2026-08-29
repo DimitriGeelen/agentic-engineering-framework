@@ -16,12 +16,12 @@ description: >
   naming the task and the gate class, disarm, and notify. Do NOT auto-advance to the
   next task.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/stop-driver.sh, agents/task-create/update-task.sh]
 related_tasks: []
 arc_id: continuous-run
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -35,8 +35,8 @@ arc_id: continuous-run
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-29T10:18:45Z
-last_update: 2026-08-29T14:10:49Z
-date_finished:
+last_update: 2026-08-29T14:18:10Z
+date_finished: 2026-08-29T14:18:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -304,14 +304,33 @@ out=$(bats tests/unit/t3212_human_gate_stop.bats 2>&1); echo "$out" | grep -q '^
   setting shall be ignored ... for any command preceded by `!`"), so under bats
   a negated assertion that does not hold returns 1 and the test passes anyway.
   Measured in isolation: `@test { ! true; }` → ok; `@test { false; }` → not ok.
-  Four assertions in this suite were decoration; replaced with an `assert_no`
-  helper (`run` + `[ "$status" -ne 0 ]`) that actually reddens.
+  Replaced with an `assert_no` helper (`run` + `[ "$status" -ne 0 ]`) that
+  actually reddens.
 - **Plan impact:** None to the slice's scope. It changes what "the suite is
   green" was worth before the fix — which is the point of mutation-testing
   before calling a test evidence.
-- **Triggered:** Corpus measurement — **66 such lines across 50 of 696 bats
-  files**. Filed separately rather than swept here (one bug, one task); the
-  sweep needs a per-file judgement about whether each negation is load-bearing.
+
+> **Correction, same day (T-3216).** Two claims written above at close time were
+> wrong and are corrected here rather than edited away:
+>
+> 1. *"Four assertions in this suite were decoration"* — it was **two**. The
+>    other two sat in FINAL position, where bats takes the body's return value,
+>    so they were checked and working. Position decides whether the identical
+>    line is an assertion or decoration.
+> 2. *"66 such lines across 50 of 696 bats files"* — that count did not apply
+>    the final/non-final distinction and is retracted. Applying it: **18, in 7
+>    files, all of them deliberate fixtures inside
+>    `tests/lint/bats-dead-negation.bats`.**
+>
+> The class was also not new. L-628 (T-3090, 2026-08-19) already stated it with
+> the correct qualifier, `tools/bats-dead-negation-lint.py` (T-3138) already
+> detects it, that lint already swept 106 occurrences across 66 files to zero,
+> and it runs under `fw test` (`bin/fw:9341`). Verified it catches this exact
+> shape: re-introducing the original line reported
+> `t3212_human_gate_stop.bats:183: dead negation (not last statement)`.
+>
+> The fix to this suite stands. The follow-up filed off the back of it (T-3216)
+> was retracted rather than built.
 
 ## Recommendation
 
@@ -372,3 +391,15 @@ out=$(bats tests/unit/t3212_human_gate_stop.bats 2>&1); echo "$out" | grep -q '^
 
 ### 2026-08-29T14:10:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9c985c77
+- **Timestamp:** 2026-08-29T14:18:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-29T14:18:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

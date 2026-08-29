@@ -1,16 +1,13 @@
 ---
-id: T-3214
-name: "68 Verification lines pipe curl into grep — safe or latent is decided by match
-  position, not by inspection"
+id: T-3216
+name: "66 bats negative assertions are inert — '! cmd' is exempt from errexit"
 description: >
-  Peer 832 measured that curl|grep -q false-reds need BOTH a large capture AND an
-  early match. 68 task files here use the construct; one was confirmed broken (T-3175,
-  exit 23). Green proves nothing about safety.
+  66 bats negative assertions are inert — '! cmd' is exempt from errexit
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -24,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-29T11:04:15Z
-last_update: '2026-08-29T11:15:09Z'
-date_finished:
+created: 2026-08-29T14:18:54Z
+last_update: 2026-08-29T14:18:54Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -37,151 +34,45 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-08-29T11:05:56Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-08-29T11:15:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=346,acs=7)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3214: 68 Verification lines pipe curl into grep — safe or latent is decided by match position, not by inspection
+# T-3216: 66 bats negative assertions are inert — '! cmd' is exempt from errexit
 
 ## Context
-
-**Filed 2026-08-29 while landing T-3175, whose own Verification line was one of
-these and was returning a false red.**
-
-```
-curl -sf "$(bin/fw watchtower url)/approvals" | grep -q 'section-decided-unclosed'
-  -> exit 23   (curl "failed writing body" — its SIGPIPE)
-```
-
-The anchor *was* in the page. The page is ~1.6MB, the anchor sits near the top,
-`grep -q` matched and closed stdin while curl was still writing. Under P-011's
-`set -eo pipefail` that is a failed line. Replaced with the `-o file` form the
-task template already documents as the default.
-
-**The sharpened condition, from peer 832-Workflow-designer on the chat arc
-(offset 755, same morning) — a correction to their own earlier post.** They
-measured against a 720,019-byte fixture, varying only the pattern's position:
-
-| pattern position | exit |
-|---|---|
-| matches EARLY (first line) | **141 — false red** |
-| matches LATE (last line) | 0 |
-| absent | 1 — correct red |
-
-So the fault needs **both** a large capture **and** an early match. Their two
-consequences, which is why this is worth a task rather than a one-line fix:
-
-1. **The leg fails precisely when its evidence arrives soonest.** The earlier and
-   more prominently the asserted thing appears, the more certainly the check
-   reports failure. An assertion whose reliability is inversely proportional to
-   the quality of its evidence.
-2. **A green run proves nothing about safety.** Whether a leg is sound depends
-   only on where the match lands in the byte stream — not on the leg, the
-   pattern, or the payload size, all of which are readable. *"Two legs written
-   identically, one safe and one latent, are indistinguishable by inspection, and
-   the latent one flips the day the payload grows a header or the token moves up."*
-
-**Our population, measured 2026-08-29:**
-
-- **68** task files under `.tasks/{active,completed}/` contain a Verification line
-  matching `^curl [^|]*\| *grep`.
-- 11 of those are in `active/` — i.e. still gating a close that has not happened.
-- Targets include `/approvals`, `/orchestrator`, `/escalation-drift`,
-  `/review/<id>`, `/inception/<id>` and `/api/version` — rendered routes, which
-  CLAUDE.md already notes run 50-200KB and up (this one is 1.6MB).
-
-**Why the existing guidance did not prevent it.** The task template's Verification
-comment block is already correct and already recommends the `-o file` form first.
-It bounds the exception at "while `$out` fits the 65536-byte pipe buffer", which
-is conservative and therefore safe. The gap is not the advice — it is that 68
-lines predate it or ignored it, and **nothing scans for them**, because each one
-that currently passes is indistinguishable from one that is correct.
-
-**Explicitly NOT swept in T-3175.** Rewriting 68 lines across mostly-completed
-tasks is a different piece of work from the one that found them, and completed
-task files are historical records. Scope needs deciding before editing, which is
-what this task is for.
-
-## Candidates, and the call
-
-1. **Reviewer detector** — a `static_scan.py` pattern flagging `curl … | grep` in
-   `## Verification`. Cheap, advisory, catches new ones at author time. Does not
-   touch the 68.
-2. **P-011 gate refusal** — refuse the construct at close, as the port-3000 gate
-   (T-2732) refuses hard-coded ports. Strongest, but blocks closes on historical
-   tasks and needs a bypass env per T-1890 parity.
-3. **Active-only sweep** — fix the 11 in `active/`, leave `completed/` as the
-   record. Smallest useful action; leaves the class alive for new authors.
-4. **1 + 3.**
-
-**Chosen: 4.** Not deferred to the operator — picking between a static-scan
-detector and a close gate is an engineering call with no policy value, no
-authority change, and no blast radius past this repo. (The habit of routing that
-class upward is the T-3181/T-2143 failure; it is not repeated here.)
-
-**Why not 2.** The port-3000 gate earned its refusal with 371 violations across
-277 tasks *after* the rule was documented — a measured record of advice failing.
-There is no such record here: the template's advice is correct, recent, and has
-not yet been given a chance to fail. Shipping a blocking gate first would refuse
-closes on historical tasks to prevent a recurrence rate nobody has measured. If
-the detector fires repeatedly on *new* tasks, that is the evidence that promotes
-this to a gate — and that promotion is a separate task with data behind it.
-
-The discriminating question 832 landed on, which the detector must encode:
-**does the pattern occur near the START of the capture?** "Does this leg pass?"
-and "is the payload big?" both miss it. The detector cannot know match position
-statically, so it flags the *construct* over a URL-fetching command and says why
-— an honest over-approximation, not a claim about any specific line.
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
+**This task's premise collapsed under checking. It is retracted, not built.**
+The original framing is left legible below rather than tidied away; the ACs are
+what the retraction actually required.
+
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A `static_scan.py` detector flags a `## Verification` line that pipes a
-      URL-fetching command (`curl`/`wget`) directly into `grep`, emits CONCERN not
-      FAIL, and its message names the *position* condition — that a green run does
-      not establish safety — rather than only "use a file"
-- [ ] The detector is mutation-tested: a task fixture carrying the construct must
-      go from flagged to unflagged when the line is rewritten to the `-o file`
-      form, AND a control fixture with no such line must stay unflagged. Without
-      the second leg an always-firing detector passes the first
-- [ ] The 11 `active/` occurrences are rewritten to the `-o file` form, and each
-      rewritten line is rehearsed under `bash -c 'set -eo pipefail; <line>'` —
-      recording the exit code before and after, since the point is that some of
-      them are currently passing by luck and will keep passing either way
-- [ ] `completed/` is left untouched, and that is stated in the commit rather than
-      left as an absence a later reader must infer
-- [ ] Re-measure the population after the sweep and record the number. If it is
-      not 68 minus the 11 rewritten, the original grep was measuring the wrong set
-      and the discrepancy is the finding
+- [x] The filing-time figure — "66 inert assertions across 50 of 696 bats files"
+      — is **retracted**. It did not apply the L-628 qualifier: `! cmd` in FINAL
+      position within a `@test` body IS checked (bats takes the body's return
+      value there) and is not a defect. Re-measured with the qualifier: **18
+      non-final, in 7 files** — and all 18 are deliberate fixtures inside
+      `tests/lint/bats-dead-negation.bats` itself
+- [x] Checked whether the class already has a detector before proposing one.
+      **It does:** `tools/bats-dead-negation-lint.py` (T-3138) already swept 106
+      occurrences across 66 files to zero, and `tests/lint/bats-dead-negation.bats`
+      test 12 pins "the live tests/ tree has no dead negations"
+- [x] Confirmed the existing lint is not merely present but *runs*: `tests/lint/`
+      is wired into `fw test` at `bin/fw:9341` and `bin/fw:9457` (T-2697)
+- [x] Confirmed the existing lint catches the exact shape this task was filed
+      about, rather than assuming it: re-introducing the original
+      `! diff -q "$LIB" "$MUT"` into `tests/unit/t3212_human_gate_stop.bats`
+      produced `:183: dead negation (not last statement)`; live tree otherwise
+      reports `dead 0 in 0 file(s) | live 159`
+- [x] The duplicate `tools/measure_inert_negations.py` written while measuring is
+      **deleted** — leaving a second, weaker implementation of a lint that already
+      exists is how the next reader ends up trusting the wrong one
+- [x] `tests/unit/t3212_human_gate_stop.bats` keeps the `assert_no` fix from this
+      run — that defect was real, it was 2 assertions (not 4: the other two were
+      in final position and worked), and it is now correct
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -308,6 +199,11 @@ statically, so it flags the *construct* over a URL-fetching command and says why
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 tools/bats-dead-negation-lint.py tests/ > /tmp/.t3216-lint.out 2>&1 && grep -q 'dead 0 in 0 file' /tmp/.t3216-lint.out
+test ! -f tools/measure_inert_negations.py
+grep -q 'assert_no()' tests/unit/t3212_human_gate_stop.bats
+out=$(bats tests/lint/bats-dead-negation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -388,6 +284,33 @@ statically, so it flags the *construct* over a URL-fetching command and says why
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-08-29 — retract rather than build
+
+- **Chose:** Close as a retraction. No detector is built, no sweep is run, and
+  the measurement script written while investigating is deleted.
+- **Why:** Every load-bearing claim in the filing failed on checking. The class
+  was already captured (L-628, 2026-08-19), already detected
+  (`tools/bats-dead-negation-lint.py`, T-3138), already swept (106 across 66
+  files → 0), and the detector already runs (`tests/lint/` is wired into
+  `fw test`, T-2697). The count that justified filing — 66 across 50 files —
+  was wrong because it did not distinguish final from non-final position; the
+  real figure is 18, all of them fixtures belonging to the lint that catches
+  the shape. There is nothing left to build.
+- **Rejected — "file it anyway, a second opinion is cheap":** it is not. A task
+  asserting an already-solved problem competes for attention with the 280+ real
+  items in the review queue, and its stated numbers would have been read as
+  measurements by whoever picked it up.
+- **Rejected — "keep `tools/measure_inert_negations.py` as a sibling check":**
+  it is a weaker reimplementation of `bats-dead-negation-lint.py`, and the peer
+  finding on the chat arc is explicit that a guard which reimplements the code
+  it guards cannot detect that code being fixed. Two counters that can disagree
+  is worse than one that is authoritative.
+- **What survives:** the fix to `tests/unit/t3212_human_gate_stop.bats` is real
+  and stays. Two of its negative assertions were genuinely inert. That defect
+  was found by mutation-testing, not by the lint — because the lint runs under
+  `fw test`, which I had not run yet at that point. The lint would have caught
+  it. That is a sequencing observation about how I worked, not a framework gap.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -400,15 +323,7 @@ statically, so it flags the *construct* over a URL-fetching command and says why
 
 ## Updates
 
-### 2026-08-29T11:04:15Z — task-created [task-create-agent]
+### 2026-08-29T14:18:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3214-68-verification-lines-pipe-curl-into-gre.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3216-66-bats-negative-assertions-are-inert---.md
 - **Context:** Initial task creation
-
-### 2026-08-29T11:05:56Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
-
-### 2026-08-29T11:07:15Z — status-update [task-update-agent]
-- **Change:** horizon: now → next
-- **Change:** status: started-work → captured (auto-sync)
