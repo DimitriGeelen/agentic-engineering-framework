@@ -1,0 +1,21 @@
+id: tests/lint/bats-silent-skip.bats
+name: bats-silent-skip
+type: script
+subsystem: tests
+location: tests/lint/bats-silent-skip.bats
+tags: [tests, bats, lint, T-3217]
+
+purpose: "Tests the silent-skip lint. Half the legs are false-positive controls: a detector that reddens legitimate optional-dependency skips gets suppressed wholesale, so the legs asserting it stays quiet are the ones that decide whether it survives. Includes the mutation control and the two heredoc-blindness regressions found by reconciling the census against a naive grep."
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  - target: tools/bats-silent-skip-lint.py
+    type: tests
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-08-29
+created_by: T-3217

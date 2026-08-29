@@ -128,6 +128,29 @@ date_finished: null
 #     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
 #
+# ── A SKIPPED BATS TEST REPORTS `ok` (T-3217) ─────────────────────────────────
+#
+# `! grep -q "^not ok"` does NOT mean the suite ran. Bats emits a skip as
+#     ok 6 <name> # skip <reason>
+# which is not a `not ok`, so the gate passes and the report says ok while the
+# thing the test covers was measured NOWHERE. Origin: T-3213 guarded a test with
+# `[ "$(id -u)" -eq 0 ] && skip` — the suite runs as root here and in CI, so it
+# skipped on every run that mattered, for as long as it existed.
+#
+# Add a skip clause to any bats verification line. `# skip` is the marker bats
+# writes; counting it is the whole check:
+#     timeout 300 bats <file> > /tmp/.out 2>&1 && ! grep -q "^not ok" /tmp/.out
+#     test "$(grep -c '# skip' /tmp/.out)" -eq 0
+# Two lines, because they answer different questions — "did anything fail" and
+# "did everything run". If some skips are legitimate on your host (an optional
+# dependency is genuinely absent), assert the COUNT you expect rather than zero,
+# and say in the task why that number is right.
+#
+# Corpus-wide, the same check runs from `bin/fw test lint`
+# (tools/bats-silent-skip-lint.py): static mode flags guards that are fixed for
+# a deployment rather than probing an optional dependency, and `--tap FILE`
+# reports the skips a real run actually fired.
+#
 # REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
 # shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
 # the same directory, the same second. To rehearse for real:

@@ -70,20 +70,21 @@ teardown() {
     [[ "$output" == *"OK"* ]]
 }
 
-@test "preflight: check_write_perms fails for non-writable directory" {
-    # Root can write to any directory, so skip this test when running as root
-    if [ "$(id -u)" -eq 0 ]; then
-        skip "running as root — write perms always pass"
-    fi
-    local readonly_dir="$TEST_TEMP_DIR/readonly"
-    mkdir -p "$readonly_dir"
-    chmod 444 "$readonly_dir"
-    export PROJECT_ROOT="$readonly_dir"
+@test "preflight: check_write_perms fails for an unwritable target" {
+    # T-3217: this used to deny with `chmod 444` and then skip when running as
+    # root — and the suite runs as root here and in CI, so the FAIL branch was
+    # measured nowhere while the test reported ok. Same shape as T-3213's
+    # `chmod 500` skip.
+    #
+    # `[ -w ]` is false for root on a path that does not exist, so a missing
+    # directory denies every uid. It is a different denial from a permission
+    # bit — stated rather than glossed — but it is the branch that matters:
+    # check_write_perms takes it, sets REQUIRED_MISSING, and returns 1.
+    export PROJECT_ROOT="$TEST_TEMP_DIR/does-not-exist"
+    [ ! -e "$PROJECT_ROOT" ]
     run check_write_perms
     [ "$status" -eq 1 ]
     [[ "$output" == *"FAIL"* ]]
-    # Restore permissions for cleanup
-    chmod 755 "$readonly_dir"
 }
 
 @test "preflight: check_shellcheck returns 0 or 1" {

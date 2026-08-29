@@ -110,6 +110,35 @@ Measured 2026-08-29:
 | bats files containing `skip` | 27 |
 | `skip` call sites | 50 |
 
+**CORRECTION, 2026-08-29 (during the build).** The 27/50 figures above were
+measured over `tests/unit/` only and are quoted here as filed rather than
+silently replaced. Over the whole of `tests/`:
+
+```
+bin/fw test lint          # or, directly:
+python3 tools/bats-silent-skip-lint.py --census tests/
+```
+
+| class | count | meaning |
+|---|---:|---|
+| DEPENDENCY | 49 | guard probes something optional (`command -v`, `docker info`, an import) |
+| OTHER | 174 | guarded, but not by a dependency probe — a fixture, a live artefact, an operator state |
+| STANDING | 0 | guard is fixed for a deployment (`id -u`, `$EUID`, `$CI`, `uname`) |
+| UNCONDITIONAL | 0 | no guard at all |
+| **total** | **223** | across 119 files |
+
+STANDING was **1** when the detector was first run — `tests/unit/lib_preflight.bats:76`,
+`skip "running as root — write perms always pass"`, the same shape as T-3213's
+and firing on every run here. Fixed in this task by denying with a path that
+does not exist, which `[ -w ]` reports false for root too. The count is 0
+because the finding was fixed, not because nothing was found.
+
+Reconciliation, since a census that quietly loses rows is this task's own
+failure class: the detector counts 223 where a naive `grep` counts 225. Every
+difference is accounted for — five continuation lines re-anchored to the guard
+line above them, and one `skip = DUMPS | {...}` Python assignment that is not a
+call site. No real call site is dropped.
+
 **The target is a subset, and getting that wrong is the main risk.** Many skips
 are correct: an optional dependency absent (termlink not installed), a platform
 that genuinely cannot run the case. Those must NOT be flagged — a detector that
@@ -126,21 +155,25 @@ from the record-field direction (their G-069). The invariant across all of them:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The current skip inventory is classified, not just counted: each of the 50 call sites is labelled legitimate (optional dependency / genuinely inapplicable platform) or silent (guard is true on the host the suite ships on). The split is recorded with the command that produced it.
-- [ ] A detector reports silent skips and stays quiet on legitimate ones. False positives on optional-dependency skips are a failure of this AC, not an acceptable cost — a noisy detector gets suppressed and protects nothing.
-- [ ] The detector is wired into a surface that runs without being remembered (`fw test lint` alongside `tools/bats-dead-negation-lint.py`, or `fw doctor`), and the wiring is asserted, not assumed.
-- [ ] A corrected P-011 verification idiom is documented in the task template next to the existing pipefail guidance, so new tasks inherit it rather than copying the blind one.
-- [ ] MUTATION CONTROL: a deliberately silent skip introduced into a fixture is detected; removing the detector's core comparison stops it being detected. Both directions stated, with which test reddened.
-- [ ] The 138 existing verification lines are NOT bulk-rewritten. Scope is the detector + the template; retrofitting existing tasks is a separate decision with its own blast radius.
+- [x] The current skip inventory is classified, not just counted: every call site is labelled legitimate (optional dependency) or silent (guard fixed for the deployment / no guard). The split is recorded with the command that produced it — see the CORRECTION table in Context. The filed figure of 50 was `tests/unit/` only; the real corpus is 223 across 119 files, and the reconciliation against a naive grep is stated so a census that lost rows could not read as clean.
+- [x] A detector reports silent skips and stays quiet on legitimate ones. `tools/bats-silent-skip-lint.py`. Of 223 call sites it flags the shapes with no legitimate reading and leaves 223 alone; 6 of the 17 test legs are false-positive controls (dependency guard, else-branch, backslash continuation, Python assignment, two heredoc-mention cases).
+- [x] The detector is wired into `bin/fw test lint`, and the wiring is asserted twice: statically (the invocation is in `bin/fw`) and behaviourally (running `fw test lint` emits the `Silent-Skip` section).
+- [x] A corrected P-011 verification idiom is documented in `.tasks/templates/default.md` next to the pipefail guidance — the two-line form (`! grep -q "^not ok"` for failures, `grep -c '# skip'` for coverage), with the T-3213 origin and the note that a non-zero expected skip count must be justified.
+- [x] MUTATION CONTROL: the standing-guard fixture is detected by the live tool (exit 1) and NOT detected by a mutant with the `STANDING` pattern emptied (exit 0), with the mutation asserted to have changed bytes. Test 11, `removing the STANDING comparison stops the standing skip being detected`. The behavioural counterpart is test 15, where static and TAP modes converge on one fixture by independent evidence.
+- [x] The 138 existing verification lines are NOT bulk-rewritten. Nothing in this task touches a `## Verification
 
-### Human
-- [ ] [REVIEW] Confirm the detector's legitimate/silent boundary matches your judgement
-  **Steps:**
-  1. Read the classification table this task produces.
-  2. Spot-check three entries labelled *legitimate* and three labelled *silent*.
-  **Expected:** The boundary matches what you would call a test that is allowed not to run.
-  **If not:** Name a misclassified entry; the heuristic narrows rather than the suppression list growing.
-
+timeout 900 bats tests/lint/bats-silent-skip.bats > /tmp/.t3217.out 2>&1 && grep -q "^ok 17" /tmp/.t3217.out && ! grep -q "^not ok" /tmp/.t3217.out
+test "$(grep -c '# skip' /tmp/.t3217.out)" -eq 0
+python3 tools/bats-silent-skip-lint.py tests/
+timeout 300 bats tests/unit/lib_preflight.bats > /tmp/.t3217pf.out 2>&1 && ! grep -q "^not ok" /tmp/.t3217pf.out
+test "$(grep -c '# skip' /tmp/.t3217pf.out)" -eq 0
+grep -q "bats-silent-skip-lint.py" bin/fw
+grep -q "A SKIPPED BATS TEST REPORTS" .tasks/templates/default.md
+python3 -c "import ast; ast.parse(open('tools/bats-silent-skip-lint.py').read())"
+python3 tools/bats-dead-negation-lint.py tests/lint/bats-silent-skip.bats
+bash -n bin/fw
+test -f .fabric/components/tools-bats-silent-skip-lint.yaml && test -f .fabric/components/tests-lint-bats-silent-skip.yaml
+bin/fw vendor self --check > /tmp/.t3217v.out 2>&1 && grep -q "in sync" /tmp/.t3217v.out
 
 ## Verification
 
@@ -238,83 +271,123 @@ from the record-field direction (their G-069). The invariant across all of them:
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom.** `ok 6 <name> # skip <reason>` satisfies the repo-standard
+verification line `! grep -q "^not ok"`. A suite that declined to run its test
+and a suite that ran it produce output the gate reads identically. T-3213's
+root-guarded test skipped on every run that mattered, for as long as it existed,
+while reporting ok.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause.** The idiom asserts the ABSENCE OF FAILURE and was read as
+evidence of COVERAGE. Those coincide only when every test ran, and nothing
+anywhere checked that. TAP is explicit about it — the skip directive is right
+there in the line — so this is not a missing signal, it is an unread one.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed.** The idiom was written into the task template, so
+every task inherited it, and it is correct for what it claims. Nothing was
+wrong enough to notice: no failing check, no warning, no drift. A skip's cost
+is invisible by construction, because the thing it hides is a test that did not
+run, and a test that did not run produces no evidence of anything — including
+of its own absence. The only surface where it could have shown up is a coverage
+delta nobody computes.
+
+**Prevention.** Two layers, deliberately different in kind.
+`tools/bats-silent-skip-lint.py` static mode reads guard SHAPE and runs on every
+`fw test lint`, flagging only the two shapes with no legitimate reading; `--tap`
+mode reads what a real run DID and has no false positives by construction. The
+template now carries the two-line idiom so new tasks inherit a check for
+coverage alongside the check for failure.
+
+**What this does not do.** The 138 existing verification lines are unchanged —
+retrofitting them is a separate decision with its own blast radius, and the
+lint answers the corpus-wide question without touching any of them. The static
+mode is a line scan: a standing-configuration test hidden inside a helper
+function is invisible to it, which is why the empirical mode exists and why the
+static shape list is two entries rather than ten. A scan that guessed at the
+rest would produce the noise that gets a lint disabled.
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-08-29 — the detector reproduced the defect it was written to find
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** the first working version silently went blind. A `<<TAG`
+  inside a COMMENT (a file header describing the heredoc hook it tests) and
+  inside QUOTED STRINGS (`run has_write_pattern "cat <<EOF > f"`) each opened a
+  heredoc that never closed, so the scanner skipped the rest of those files and
+  reported clean. Four real call sites lost, in a tool whose entire purpose is
+  reporting things that are silently not measured.
+- **How it was caught:** not by review. By reconciling the detector's census
+  against a naive grep and requiring every difference to be explained — the same
+  count-reconciliation move as T-3219, applied to this tool's own output. Five
+  differences were continuation re-anchors, one was a Python assignment, and
+  four were the bug.
+- **Plan impact:** three guards added (comments excluded, a quote state machine
+  that tracks which quote opened a span, and a lookahead that refuses to enter
+  heredoc mode unless the delimiter is actually closed later), plus three
+  regression legs. The `SKIPCALL` fixture trick was needed for the same reason
+  the sibling lint needs `BATSTEST`: the lint's own test data was being reported
+  as the lint's own findings.
+- **Triggered:** nothing new filed. Peer 832 named this exact class on the chat
+  arc at @804 — *a character-level scan standing in for shell structure, so an
+  argument that merely MENTIONS a thing is treated as an action on it* — and
+  this reproduced it within the hour. Their advice, taken: the question is not
+  "is the pattern right" but "is it reading an argument or an action".
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** The detector is built, wired, tested with its false-positive
+controls and its mutation control, and the one real finding it produced is
+fixed rather than suppressed. The remaining Human AC asks whether the
+legitimate/silent boundary matches your judgement — that is a taste call about
+where the line sits, and it is the one thing here I should not settle alone. It
+does not block the mechanism: if you move the boundary, the heuristic narrows,
+and the tests that hold it are already written.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
-
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Evidence:**
+- `tools/bats-silent-skip-lint.py`, two modes; `tests/lint/bats-silent-skip.bats`, 17 legs, 0 skips.
+- Census: 223 call sites across 119 files — 49 DEPENDENCY, 174 OTHER, 0 STANDING, 0 UNCONDITIONAL. Reconciled against a naive grep with every one of the 5 differences accounted for.
+- STANDING was 1 before the fix (`lib_preflight.bats:76`, the T-3213 shape, firing on every run here). Fixed, not allowlisted.
+- Wiring asserted both statically and behaviourally: `fw test lint` emits the `Silent-Skip` section and returns OK.
+- Mutation control: emptying the `STANDING` pattern stops detection (test 11). Convergence: static and TAP modes reach the same fixture by independent evidence (test 15).
+- The detector's own heredoc-blindness bug was found by census reconciliation, not review, and is pinned by three regression legs.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-08-29 — two modes, because the question has a cheap half and an honest half
+
+- **Chose:** a static shape scan cheap enough for `fw test lint`, plus a
+  `--tap` mode that reports what a real run actually skipped.
+- **Why:** the honest answer to "is this skip dangerous" is empirical — does its
+  guard hold on the host the suite ships on — and that needs a run. But a check
+  that needs a full bats run will not survive on the lint pass, and one that
+  never runs protects nothing. The static half catches the shapes that cannot be
+  anything but blind; the empirical half catches the rest when a run happens.
+- **Rejected:** static only (cannot see a guard hidden in a helper); TAP only
+  (nothing would run it by default, which is the failure being fixed).
+
+### 2026-08-29 — flag two shapes, not ten
+
+- **Chose:** UNCONDITIONAL and STANDING only. Everything else — 223 of 223 call
+  sites after the fix — is left alone by the static mode.
+- **Why:** most skips in this corpus are correct. A detector that reddens an
+  absent optional dependency gets suppressed wholesale, and then it protects
+  nothing at all. Six of the seventeen test legs exist to hold that line.
+- **Rejected:** classifying by the skip's REASON TEXT in static mode. It is
+  prose, it is gameable, and it would have flagged legitimate skips whose author
+  worded them tersely. Reason text IS used in `--tap` mode, where the guard is
+  not available — and there it is deliberately generous, because mislabelling a
+  missing dependency as a defect is the expensive error.
+
+### 2026-08-29 — fix the one finding rather than ship a lint that fails
+
+- **Chose:** repair `lib_preflight.bats:76` in this task, using T-3213's pattern
+  (deny with a path that does not exist, which `[ -w ]` reports false for root).
+- **Why:** wiring a detector into `fw test lint` while it reports a finding
+  trains everyone to read that section as noise on its first day.
+- **Rejected:** an allowlist entry for it. The finding was real and the fix was
+  four lines; suppressing it would have been the first entry in exactly the
+  mechanism that makes such tools useless.
 
 ## Decision
 
