@@ -224,7 +224,19 @@ rq() {
     done
     [ ! -e "$FAKE/lib/decided_unclosed.py" ]
 
-    PROJECT_ROOT="$TMPROOT" run "$FAKE/bin/fw" review-queue
+    # FRAMEWORK_ROOT and FW_LIB_DIR must be UNSET, not merely overridden.
+    # resolve_framework() deliberately honours an INHERITED FRAMEWORK_ROOT over
+    # the one it would derive from FW_BIN_DIR (bin/fw:254, worktree/replica
+    # handling). So any caller that already exports it — `fw task update`'s P-011
+    # gate does — makes this fake tree silently ignored, the real predicate stays
+    # importable, and the mutation quietly stops mutating.
+    #
+    # That is how this test was first written, and it is worth keeping the reason
+    # visible: the suite was green by hand and RED under the close gate, which is
+    # the inverse of the usual direction. A control leg that only controls in a
+    # bare shell is not a control leg.
+    PROJECT_ROOT="$TMPROOT" run env -u FRAMEWORK_ROOT -u FW_LIB_DIR -u AGENTS_DIR \
+        PROJECT_ROOT="$TMPROOT" "$FAKE/bin/fw" review-queue
     [ "$status" -eq 0 ]
     [[ "$output" != *"awaiting operator closure"* ]]
     # ...and the other sections survived, proving this is a scoped degradation
