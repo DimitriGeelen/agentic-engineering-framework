@@ -134,6 +134,14 @@ if not state:
 
 # Disarmed is the default in every ambiguous case: only a literal true arms it.
 if state.get("enabled") is not True:
+    # T-3212 (arc-012 IW-5): report WHAT DISARMED IT, not merely that it is
+    # disarmed. `enabled: false` names the flag; it cannot distinguish "the
+    # operator never armed this run" from "the loop stopped itself on a human
+    # gate", and those mean opposite things to whoever reads the log. The
+    # recorded reason is written by fw_continuous_note_human_gate at the gate.
+    reason = state.get("last_terminated_reason")
+    if isinstance(reason, str) and reason.strip():
+        out("stop", f"terminated({reason.strip()})")
     out("stop", f"continuous-mode-disabled(enabled={state.get('enabled')!r})")
 
 directive = load(directive_path)

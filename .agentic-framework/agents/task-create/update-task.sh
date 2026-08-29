@@ -2042,6 +2042,15 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         echo -e "${YELLOW}Task stays in active/ — owner set to human${NC}"
         echo "Human review required — see Watchtower link below."
 
+        # T-3212 (arc-012 IW-5): a human gate STOPS the continuous run — it does
+        # not park this task and take the next one. Silent no-op when the loop is
+        # disarmed, which is every ordinary session.
+        if [ -f "$FRAMEWORK_ROOT/lib/continuous-mode.sh" ]; then
+            # shellcheck source=/dev/null
+            . "$FRAMEWORK_ROOT/lib/continuous-mode.sh"
+            fw_continuous_note_human_gate "$TASK_ID" "human-ac" "$PROJECT_ROOT" || true
+        fi
+
         # T-634: Auto-emit review (URL + QR + artifacts) on partial-complete
         if [ -f "$FRAMEWORK_ROOT/lib/review.sh" ]; then
             source "$FRAMEWORK_ROOT/lib/review.sh"
