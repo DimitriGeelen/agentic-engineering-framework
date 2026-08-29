@@ -15,13 +15,14 @@ description: >
   not diagnosed. Found while measuring T-3127 AC1 (that run completed cleanly at 1895s/3000s,
   timed_out: false).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-3127, T-3070]
+arc_id: continuous-run
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -33,8 +34,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T20:13:21Z
-last_update: 2026-08-27T20:21:10Z
-date_finished:
+last_update: 2026-08-29T09:49:30Z
+date_finished: 2026-08-29T09:49:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -79,32 +80,53 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`_audit_write_timing_yaml` wrote `ceiling_seconds: $AUDIT_TIMEOUT` — the *configured*
+ceiling — on every timeout kill, and the TERM trap that calls it fires on ANY SIGTERM,
+not just the one its own watchdog sends. So a run killed from outside serialised as a
+run that exhausted its own budget, and `fw doctor` sent the reader to raise a limit
+that was never the binding constraint.
+
+Reproduced before any fix, both arms, real `audit.sh` and real SIGTERM (AC1):
+
+| arm | total_seconds | ceiling_seconds | timed_out | exit |
+|-----|---------------|-----------------|-----------|------|
+| external `timeout 45`, ceiling 3000 | 45 | 3000 | true | 124 |
+| internal watchdog, ceiling 45 | 50 | 45 | true | 124 |
+
+Arm 1 is the originating record's shape (900/3000/true). Arm 2 is the control, and it
+supplies the discriminator: the watchdog sleeps `AUDIT_TIMEOUT` before sending TERM and
+the trap runs only after the in-flight command returns, so an internal kill records
+`total >= ceiling` **always** — it overshot to 50 here. `total < ceiling` therefore
+*proves* an external killer. That is a proof, not the "materially below" threshold AC2
+anticipated, and it means the obvious `total == ceiling` test would have been wrong.
+
+Both arms also exited **124**, so the exit code cannot separate them either — `timeout`
+returns 124 on kill and the internal trap explicitly `exit 124`s.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] AC1 — REPRODUCE FIRST. The cause below is inferred, not diagnosed: the originating
+- [x] AC1 — REPRODUCE FIRST. The cause below is inferred, not diagnosed: the originating
       command was never captured. Run a full audit under an external `timeout N` where
       N < the configured ceiling, and confirm the record lands as
       `total_seconds: ~N / ceiling_seconds: 3000 / timed_out: true`. If it does not
       reproduce, this task is wrong and closes as such — do not proceed to AC2 on the
       strength of the inference.
-- [ ] AC2 — The record distinguishes the two kills. An externally-killed run and a run
+- [x] AC2 — The record distinguishes the two kills. An externally-killed run and a run
       that genuinely exhausted `AUDIT_TIMEOUT` must not serialise identically. Whatever
       the field is called, `total_seconds` materially below `ceiling_seconds` while
       `timed_out: true` must be self-evidently an external kill in the file itself.
-- [ ] AC3 — The FAIL message stops misdirecting. `bin/fw` currently renders
+- [x] AC3 — The FAIL message stops misdirecting. `bin/fw` currently renders
       "TIMED OUT mid-section '<s>' at <total>s / <ceiling>s ceiling" and tells the reader
       to raise `FW_AUDIT_FULL_TIMEOUT`. For an external kill that advice is wrong — the
       configured ceiling was never the binding constraint. The message must name the
       constraint that actually fired.
-- [ ] AC4 — Regression fixture, not the live file (L-599): synthetic records for
+- [x] AC4 — Regression fixture, not the live file (L-599): synthetic records for
       (a) internal timeout, (b) external kill, (c) clean completion, each classified
       distinctly by `lib/audit_timing.py`. The external-kill case is the one that
       currently has no test.
-- [ ] AC5 — Mutation-tested: collapsing the external-kill branch back into the internal
+- [x] AC5 — Mutation-tested: collapsing the external-kill branch back into the internal
       one reddens a named test. Without that, AC2 and AC4 could both ship inert.
 
 ### Human
@@ -199,6 +221,18 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/audit/audit.sh
+bash -n bin/fw
+python3 -c "import ast; ast.parse(open('lib/audit_timing.py').read())"
+bats tests/unit/t3202_audit_kill_source.bats > /tmp/.t3202v.out 2>&1 && [ "$(grep -c '^ok ' /tmp/.t3202v.out)" -eq 18 ] && ! grep -q '^not ok' /tmp/.t3202v.out
+bats tests/unit/t3127_audit_timing_headroom.bats > /tmp/.t3127v.out 2>&1 && [ "$(grep -c '^ok ' /tmp/.t3127v.out)" -eq 12 ] && ! grep -q '^not ok' /tmp/.t3127v.out
+# The two kills must not classify identically — the whole point of the task.
+printf 'last_run:\n  total_seconds: 900\n  ceiling_seconds: 3000\n  timed_out: true\n  killed_in_section: "x"\n' > /tmp/.t3202ext.yaml && python3 lib/audit_timing.py /tmp/.t3202ext.yaml 0.70 > /tmp/.t3202ext.out && grep -q '^KILLED_EXTERNAL|900|3000|x|derived$' /tmp/.t3202ext.out
+printf 'last_run:\n  total_seconds: 3000\n  ceiling_seconds: 3000\n  timed_out: true\n  killed_in_section: "x"\n' > /tmp/.t3202int.yaml && python3 lib/audit_timing.py /tmp/.t3202int.yaml 0.70 > /tmp/.t3202int.out && grep -q '^TIMED_OUT|3000|3000|x$' /tmp/.t3202int.out
+# The misdirecting advice must be gone from the external arm and kept on the internal one.
+grep -q 'will NOT help' bin/fw
+grep -q 'kill_source: external' agents/audit/audit.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -214,6 +248,39 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `.context/audits/full-audit-timing.yaml` read `total_seconds: 900 /
+ceiling_seconds: 3000 / timed_out: true`, and `fw doctor` rendered it as
+"Last full audit TIMED OUT mid-section 'X' at 900s / 3000s ceiling" with the advice
+"Raise FW_AUDIT_FULL_TIMEOUT". A 900s run cannot exhaust a 3000s ceiling, and raising
+that ceiling could not have changed the outcome.
+
+**Root cause:** the TERM trap is signal-source-blind. It fires on ANY SIGTERM — its own
+watchdog, an external `timeout N`, a supervisor, an operator interrupt — and calls
+`_audit_write_timing_yaml`, which wrote `ceiling_seconds: $AUDIT_TIMEOUT` unconditionally.
+That field named the *configured* ceiling rather than the constraint that actually fired,
+so two structurally different events serialised to one identical record. The exit code
+did not help either: `timeout` returns 124 on kill and the trap explicitly `exit 124`s.
+
+**Why structurally allowed:** T-3127 AC4 asked that a killed section be *unambiguous in
+the record*, and it was satisfied — literally and narrowly. `killed_in_section` answers
+**where** the run died; nobody asked **which ceiling** killed it. The regression test
+written for that AC used `total_seconds: 600 / ceiling_seconds: 600` — the internal case
+only. With just one of the two cases represented in any fixture, no test could reveal
+that the two were indistinguishable: the missing case was not failing, it was absent.
+Same family as T-3209 (a diagnostic that stated a cause it had not established) — a check
+that answers the question *next to* the one the reader is asking, and reads as if it
+answered theirs.
+
+**Prevention:** the writer now records `kill_source: internal|external` at the point the
+fact is known, so no reader has to re-derive it. `lib/audit_timing.py` emits
+`killed_external` as its own status and flags `derived` when it had to infer the value
+for a pre-T-3202 record. `fw doctor` gives different advice per arm and explicitly says
+raising the timeout will not help on an external kill. 18 tests pin it, including a real
+externally-killed `audit.sh` run and a CONTROL asserting the internal arm still *does*
+recommend raising the ceiling — that control is what separates "the new arm fires" from
+"the advice was deleted everywhere". Five mutations each redden a named set (M1→8,16;
+M2→1,5,6; M3→5,6; M4→12,14; M5→5,6).
 
 ## Evolution
 
@@ -238,6 +305,23 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-08-29 — the discriminator is a proof, not a threshold
+
+- **What changed:** AC2 was written expecting a judgement call — "`total_seconds`
+  materially below `ceiling_seconds`". The control arm removed the vagueness. The
+  watchdog sleeps `AUDIT_TIMEOUT` before sending TERM and the trap runs only after the
+  in-flight command returns, so an internal kill records `total >= ceiling` **always**.
+  Measured: ceiling 45 produced total **50**, a 5s overshoot. So `total < ceiling`
+  *proves* an external killer, and the intuitive `total == ceiling` test would have been
+  wrong on the real data.
+- **Plan impact:** no threshold, no warn-fraction, no "materially" anywhere. The writer
+  states the fact outright; inference exists only as a fallback for legacy records and is
+  labelled `derived` so a reader can tell a stated fact from a reconstructed one.
+- **Also learned:** both kills exit **124**, so the exit code is not available as a
+  discriminator and nobody should later reach for it. Recorded here because it is the
+  obvious next idea and it does not work.
+- **Triggered:** nothing filed. The defect was small enough to fix in this task.
 
 ## Recommendation
 
@@ -299,3 +383,15 @@ bvp_scores_proposed:
 ### 2026-08-27T20:21:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-24a94620
+- **Timestamp:** 2026-08-29T09:50:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-29T09:49:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

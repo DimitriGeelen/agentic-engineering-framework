@@ -3766,8 +3766,23 @@ except Exception as e:
     case "$_at_out" in
         TIMED_OUT\|*)
             IFS='|' read -r _ _at_total _at_ceiling _at_section <<< "$_at_out"
-            echo -e "  ${RED}FAIL${NC}  Last full audit TIMED OUT mid-section '$_at_section' at ${_at_total}s / ${_at_ceiling}s ceiling"
+            echo -e "  ${RED}FAIL${NC}  Last full audit EXHAUSTED ITS OWN CEILING mid-section '$_at_section' at ${_at_total}s / ${_at_ceiling}s"
             echo -e "         Raise FW_AUDIT_FULL_TIMEOUT, or investigate why '$_at_section' grew: .context/audits/full-audit-timing.yaml"
+            issues=$((issues + 1))
+            ;;
+        KILLED_EXTERNAL\|*)
+            # T-3202: total < ceiling with timed_out set cannot be our own watchdog
+            # (it fires AT the ceiling), so the ceiling was never the binding
+            # constraint and raising it changes nothing. The old message said
+            # "TIMED OUT ... / 3000s ceiling" here and sent the reader to
+            # FW_AUDIT_FULL_TIMEOUT — advice that could not have worked.
+            IFS='|' read -r _ _at_total _at_ceiling _at_section _at_prov <<< "$_at_out"
+            echo -e "  ${RED}FAIL${NC}  Last full audit was KILLED FROM OUTSIDE mid-section '$_at_section' after ${_at_total}s"
+            echo -e "         Its own ${_at_ceiling}s ceiling was never reached, so raising FW_AUDIT_FULL_TIMEOUT will NOT help."
+            echo -e "         Find the caller that killed it: an external 'timeout N' wrapper, a supervisor, or an interrupt."
+            if [ "$_at_prov" = "derived" ]; then
+                echo -e "         (kill source inferred from total < ceiling — the record predates T-3202 and does not state it.)"
+            fi
             issues=$((issues + 1))
             ;;
         WARN\|*)

@@ -417,6 +417,20 @@ _audit_write_timing_yaml() {
         echo "  ceiling_seconds: $AUDIT_TIMEOUT"
         if [ "$timed_out" = 1 ]; then
             echo "  timed_out: true"
+            # T-3202: WHICH ceiling killed the run. The internal watchdog sleeps
+            # AUDIT_TIMEOUT and only then sends TERM, and this trap runs after the
+            # in-flight command returns — so an internal kill records total >=
+            # ceiling, always (measured: ceiling 45 -> total 50). total < ceiling
+            # therefore PROVES a killer that is not our watchdog: an external
+            # `timeout N` wrapper, a supervisor, an operator interrupt. Recorded
+            # rather than left to be re-derived, because the previous record
+            # (900s against a 3000s ceiling) read as an exhausted ceiling to every
+            # reader and sent them to raise a limit that never bound anything.
+            if [ "$total" -lt "$AUDIT_TIMEOUT" ]; then
+                echo "  kill_source: external"
+            else
+                echo "  kill_source: internal"
+            fi
             echo "  killed_in_section: \"$killed_section\""
         else
             echo "  timed_out: false"

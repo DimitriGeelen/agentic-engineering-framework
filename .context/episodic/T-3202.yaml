@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3202: full-audit timing record cannot distinguish an external kill from exhausting its own ceiling
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-29T09:50:13Z
+# ============================================================================
+
+task_id: T-3202
+task_name: "full-audit timing record cannot distinguish an external kill from exhausting its own ceiling"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-27T20:13:21Z
+completed: 2026-08-29T09:49:30Z
+duration_days: 2
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  The prior record in .context/audits/full-audit-timing.yaml read total_seconds: 900, ceiling_seconds: 3000, timed_out: true. Those three cannot all describe one internal timeout — a 900s run does not exhaust a 3000s ceiling. Likely an external 'timeout 900' wrapper killing the run while _audit_write_timing_yaml recorded the CONFIGURED AUDIT_TIMEOUT. Consequence: T-3127 AC4 claims a timed-out section is unambiguous in the record, but the record is ambiguous about WHICH ceiling killed it, and the FAIL message it drives ('TIMED OUT mid-section X at 900s / 3000s ceiling') sends a reader to raise a limit that was never the binding constraint. First step is to REPRODUCE — the originating command was not captured, so the cause above is inferred, not diagnosed. Found while measuring T-3127 AC1 (that run completed cleanly at 1895s/3000s, timed_out: false).
+
+# Key outcomes
+outcomes:
+  - 'AC1 — REPRODUCE FIRST. The cause below is inferred, not diagnosed: the originating'
+  - 'AC2 — The record distinguishes the two kills. An externally-killed run and a run'
+  - 'AC3 — The FAIL message stops misdirecting. `bin/fw` currently renders'
+  - 'AC4 — Regression fixture, not the live file (L-599): synthetic records for'
+  - 'AC5 — Mutation-tested: collapsing the external-kill branch back into the internal'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2256 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2256
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3202-full-audit-timing-record-cannot-distingu.md
+generated_by: context-agent-hybrid

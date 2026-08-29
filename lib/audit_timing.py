@@ -19,10 +19,21 @@ def evaluate(path, warn_fraction=0.70):
     """Classify the timing record at `path` against `warn_fraction`.
 
     Returns a dict with at least a "status" key, one of:
-      "unmeasured" — file missing, unparseable, or missing required fields
-      "timed_out"  — the recorded run was killed mid-section (AC4)
-      "warn"       — total_seconds / ceiling_seconds >= warn_fraction
-      "ok"         — below the warn fraction
+      "unmeasured"      — file missing, unparseable, or missing required fields
+      "timed_out"       — the run exhausted its OWN ceiling (AUDIT_TIMEOUT)
+      "killed_external" — the run was killed by something else, before its
+                          ceiling was reached (T-3202)
+      "warn"            — total_seconds / ceiling_seconds >= warn_fraction
+      "ok"              — below the warn fraction
+
+    T-3202: "timed_out" used to cover both kills, which made them serialise
+    identically and pointed every reader at FW_AUDIT_FULL_TIMEOUT — a limit that
+    an externally-killed run never reached. The two are separable with certainty,
+    not by a threshold: the internal watchdog sleeps AUDIT_TIMEOUT before sending
+    TERM and the trap runs after the in-flight command returns, so an internal
+    kill can only record total >= ceiling. total < ceiling proves an external
+    killer. Records written since T-3202 state it outright in `kill_source`;
+    older ones are classified by that inference and flagged `kill_source_derived`.
     """
     try:
         with open(path) as f:
@@ -50,8 +61,19 @@ def evaluate(path, warn_fraction=0.70):
         "warn_fraction": warn_fraction,
     }
     if run.get("timed_out"):
-        result["status"] = "timed_out"
         result["killed_in_section"] = run.get("killed_in_section", "")
+        source = run.get("kill_source")
+        if source in ("internal", "external"):
+            result["kill_source_derived"] = False
+        else:
+            # Legacy record (pre-T-3202) carries no kill_source. Derive it — see
+            # the module docstring for why total < ceiling is a proof and not a
+            # heuristic. Flagged so a reader can tell a stated fact from an
+            # inferred one.
+            source = "external" if total < ceiling else "internal"
+            result["kill_source_derived"] = True
+        result["kill_source"] = source
+        result["status"] = "killed_external" if source == "external" else "timed_out"
     elif fraction >= warn_fraction:
         result["status"] = "warn"
     else:
@@ -75,6 +97,12 @@ def main(argv):
         print(f"UNMEASURED|{result.get('reason', '')}")
     elif status == "timed_out":
         print(f"TIMED_OUT|{result['total_seconds']}|{result['ceiling_seconds']}|{result['killed_in_section']}")
+    elif status == "killed_external":
+        provenance = "derived" if result.get("kill_source_derived") else "recorded"
+        print(
+            f"KILLED_EXTERNAL|{result['total_seconds']}|{result['ceiling_seconds']}"
+            f"|{result['killed_in_section']}|{provenance}"
+        )
     elif status == "warn":
         print(f"WARN|{result['total_seconds']}|{result['ceiling_seconds']}|{result['fraction']:.4f}")
     else:
