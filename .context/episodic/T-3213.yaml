@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3213: arc-012 IW-6 slice: confirm by restart that the continuous-run ledger is empty only because the live supervisor predates T-3206
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-29T15:07:03Z
+# ============================================================================
+
+task_id: T-3213
+task_name: "arc-012 IW-6 slice: confirm by restart that the continuous-run ledger is empty only because the live supervisor predates T-3206"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-29T10:18:58Z
+completed: 2026-08-29T15:06:34Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Build slice propagating T-3181's GO (2026-08-27). IW-6 was narrowed but never confirmed: the discrimination against T-3206 showed the ledger has no start event because the running claude-fw supervisor (pid 1851680) was launched before the recorder existed, and T-3209 made fw doctor say so instead of blaming the operator. What was NOT done is the confirming experiment - restart claude-fw and verify a start event actually appears. Until that runs, the explanation is the best-supported hypothesis and not a measured fact, which is the exact distinction T-3209 exists to enforce. AC shape: restart the wrapper, assert the ledger gains a start event, and assert fw doctor flips from the SKIP branch to a recorded state. If it does NOT appear, the second cause named in T-3209 (recorder could not write) is live and this becomes a real bug.
+
+# Key outcomes
+outcomes:
+  - 'A real `bin/claude-fw` run in a scratch git repo writes a `start` event with `reason=armed` to that repo''s `.context/working/continuous-run.jsonl` — the confirming experiment T-3206 shipped without.'
+  - 'The same run also writes a terminal `exit` event, so "armed then exited" is distinguishable on disk from "never armed".'
+  - 'The start event carries the wrapper pid and restart configuration, so a future absent-ledger claim can be checked against a live process rather than re-argued.'
+  - '`fw doctor` reports the ARMED branch against a ledger holding that start event, and the never-recorded branch against an absent one — the flip the hypothesis predicts.'
+  - 'MUTATION CONTROL: with the `_record_loop_event start` call site removed from a copy of the shipped wrapper, the ledger gains no start event and doctor falls back to the never-recorded branch. Proves the assertions above track that call site.'
+  - 'T-3209''s second cause is discriminated, not assumed absent: a run whose ledger directory cannot be written produces no ledger AND leaves the wrapper''s exit code unchanged.'
+  - 'The task record states plainly whether the predates-the-recorder explanation is now a measured fact or still a hypothesis.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-29 — the confirming experiment does not restart the live supervisor'
+    chose: 'run the shipped `bin/claude-fw` in a scratch git repo with a stubbed `claude` on PATH. `_record_loop_event` resolves its log through `git rev-parse --show-toplevel`, so the scratch repo gets its own ledger.'
+    rationale: 'the wrapper named in the hypothesis (pid 1851680) supervises the session doing the work. Restarting it ends the observer, and the operator''s session with it. The scratch run exercises the identical code path — line 273 fires once, before the loop, so nothing about the real session is needed to reach it.'
+    alternatives_rejected: ['asserting against a hand-written ledger fixture. That proves doctor parses what the TEST believes the wrapper emits. Test 9 sources its fixture from an actual wrapper run instead, because the producer/consumer join is where this class of defect lives (L-399).']
+  - decision: '2026-08-29 — `chmod 500` was replaced because it SKIPPED rather than failed'
+    chose: 'make the ledger PATH a directory, so `open(..., "a")` raises `IsADirectoryError`.'
+    rationale: 'the first version denied writes with `chmod 500` and guarded it with `skip` when running as root. This suite runs as root on the origin host, so that test asserted nothing on every run that mattered — a skipped test and an inert one are the same thing from the report''s point of view. A directory at the path denies root and non-root alike.'
+    alternatives_rejected: ['dropping the AC. T-3209 names two causes for an absent ledger and this is the second; leaving it unmeasured would repeat the shape this task exists to close.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 287 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 287
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3213-arc-012-iw-6-slice-confirm-by-restart-th.md
+generated_by: context-agent-hybrid
