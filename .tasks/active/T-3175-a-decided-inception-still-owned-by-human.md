@@ -115,10 +115,17 @@ different failure: T-2125 was a wrong link, this is no link at all.
       action from an undecided one)
 - [x] The predicate lives in ONE importable place (`lib/decided_unclosed.py`) with no
       second copy inside the blueprint, so `fw review-queue` can consume the same one
-- [ ] `fw review-queue` renders the section too — **SPLIT to T-3178**, blocked: the
+- [x] `fw review-queue` renders the section too — **SPLIT to T-3178**, blocked: the
       command is an inline python heredoc inside `bin/fw`, which T-3127 holds
       uncommitted. Editing it would sweep another task's work, which is the defect
       T-3165 just fixed. Named here rather than silently dropped.
+      **Closed 2026-08-29 by T-3178** (`9aa9cbdab`, `ffee61531`). T-3127 landed
+      that morning, clearing the hold on `bin/fw`; the CLI now imports the same
+      `lib/decided_unclosed.py` this task created, and both surfaces report the
+      same 2 (T-2876, T-3181). The split was the right call — but nothing watched
+      for the blocker clearing, and T-3178 sat `captured` from 2026-08-26 to
+      2026-08-29 with its dependency already satisfied. That residual is recorded
+      in T-3178's RCA as why-5, and is fixed by neither task.
 - [x] A test pins the empty-candidate-set failure: seed a decided+human-owned inception
       into a scratch corpus, assert the predicate returns it, then mutate the predicate
       and assert the test goes RED. An always-empty queue is indistinguishable from a
@@ -170,7 +177,17 @@ python3 -c "import sys;sys.path.insert(0,'lib');import decided_unclosed;assert '
 grep -q 'test_control_defer_is_not_selected' tests/unit/test_decided_unclosed.py
 grep -q 'test_control_work_completed_is_not_selected' tests/unit/test_decided_unclosed.py
 # The page renders the section (server is a third deployment surface — L-587).
-curl -sf "$(bin/fw watchtower url)/approvals" | grep -q 'section-decided-unclosed'
+# Was `curl … | grep -q 'section-decided-unclosed'`. That form returns 23
+# (curl "failed writing body" — its SIGPIPE) against this page: grep -q matches
+# the anchor near the TOP of a ~1.6MB render and closes stdin while curl is still
+# writing. The content is present; the check reported failure. Measured here, not
+# theorised — peer 832-Workflow-designer posted the sharpened condition on the
+# chat arc the same morning: the fault needs a LARGE capture AND an EARLY match,
+# so a late-matching sibling stays green and is not safer, only luckier.
+curl -sf "$(bin/fw watchtower url)/approvals" -o /tmp/.t3175-appr.html && grep -q 'section-decided-unclosed' /tmp/.t3175-appr.html
+# T-3178 closed the split AC: the CLI mirror renders the same section from the
+# same predicate. Pinned here so this task's own AC cannot silently regress.
+bin/fw review-queue > /tmp/.t3175-rq.out 2>&1 && grep -q 'DECIDED — inceptions awaiting operator closure' /tmp/.t3175-rq.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
