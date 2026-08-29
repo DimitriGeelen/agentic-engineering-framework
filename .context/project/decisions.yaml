@@ -3544,3 +3544,17 @@ decisions:
     date: 2026-08-28
     task: T-3203
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-509
+    decision: "let a task appear in both sections if it somehow qualifies for both."
+    scope: project
+    date: 2026-08-29
+    task: T-3178
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-510
+    decision: "GO and NO-GO only."
+    scope: project
+    date: 2026-08-29
+    task: T-3178
+    rationale: "Auto-captured from task file on completion"

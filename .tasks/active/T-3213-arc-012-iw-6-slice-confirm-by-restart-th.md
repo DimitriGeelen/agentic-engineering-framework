@@ -1,8 +1,19 @@
 ---
 id: T-3213
-name: "arc-012 IW-6 slice: confirm by restart that the continuous-run ledger is empty only because the live supervisor predates T-3206"
+name: "arc-012 IW-6 slice: confirm by restart that the continuous-run ledger is empty
+  only because the live supervisor predates T-3206"
 description: >
-  Build slice propagating T-3181's GO (2026-08-27). IW-6 was narrowed but never confirmed: the discrimination against T-3206 showed the ledger has no start event because the running claude-fw supervisor (pid 1851680) was launched before the recorder existed, and T-3209 made fw doctor say so instead of blaming the operator. What was NOT done is the confirming experiment - restart claude-fw and verify a start event actually appears. Until that runs, the explanation is the best-supported hypothesis and not a measured fact, which is the exact distinction T-3209 exists to enforce. AC shape: restart the wrapper, assert the ledger gains a start event, and assert fw doctor flips from the SKIP branch to a recorded state. If it does NOT appear, the second cause named in T-3209 (recorder could not write) is live and this becomes a real bug.
+  Build slice propagating T-3181's GO (2026-08-27). IW-6 was narrowed but never confirmed:
+  the discrimination against T-3206 showed the ledger has no start event because the
+  running claude-fw supervisor (pid 1851680) was launched before the recorder existed,
+  and T-3209 made fw doctor say so instead of blaming the operator. What was NOT done
+  is the confirming experiment - restart claude-fw and verify a start event actually
+  appears. Until that runs, the explanation is the best-supported hypothesis and not
+  a measured fact, which is the exact distinction T-3209 exists to enforce. AC shape:
+  restart the wrapper, assert the ledger gains a start event, and assert fw doctor
+  flips from the SKIP branch to a recorded state. If it does NOT appear, the second
+  cause named in T-3209 (recorder could not write) is live and this becomes a real
+  bug.
 
 status: captured
 workflow_type: build
@@ -22,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-29T10:18:58Z
-last_update: 2026-08-29T10:18:58Z
-date_finished: null
+last_update: '2026-08-29T10:30:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +45,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-29T10:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=235,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-29T10:30:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3213: arc-012 IW-6 slice: confirm by restart that the continuous-run ledger is empty only because the live supervisor predates T-3206

@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3178: fw review-queue does not show decided-unclosed inceptions — wire it to lib/decided_unclosed (T-3175 split)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-29T11:00:14Z
+# ============================================================================
+
+task_id: T-3178
+task_name: "fw review-queue does not show decided-unclosed inceptions — wire it to lib/decided_unclosed (T-3175 split)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-26T17:01:54Z
+completed: 2026-08-29T10:59:50Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-08-29T12:57:48+02:00
+last_commit: 2026-08-29T12:59:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the terminal queue stops agreeing that nothing is outstanding. the mutation control only controlled in a bare shell
+
+# Key outcomes
+outcomes:
+  - '`fw review-queue` renders a DECIDED section listing decided-unclosed'
+  - 'The section is populated by importing `lib/decided_unclosed.py` — no second'
+  - '`fw review-queue` and `/approvals` report the SAME decided-unclosed count.'
+  - '`--arc <id>` filters the DECIDED section as it already filters the other'
+  - '`fw review-queue --ids` output is BYTE-IDENTICAL before and after. It feeds'
+  - 'A bats test pins the section, and is mutation-tested: breaking the predicate'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-29 — no dedup between DECIDED and VERDICT'
+    chose: 'let a task appear in both sections if it somehow qualifies for both.'
+    rationale: '`/approvals` does not dedup either — it sums the section counts — and this command is documented as its terminal mirror. Parity with the surface being mirrored beats a local improvement that would make the two disagree.'
+    alternatives_rejected: ['suppressing VERDICT entries that appear in DECIDED. It would change `--ids`, which is `fw verify-queue`''s population (L-539), to fix a case that does not occur: measured 0 overlap across the live corpus (both decided inceptions have zero unchecked Human ACs).']
+  - decision: '2026-08-29 — DEFER stays out'
+    chose: 'GO and NO-GO only.'
+    rationale: 'inherited from `lib/decided_unclosed.py` rather than re-decided. A DEFER is awaiting a *date* (`revisit_at`, T-1451, G-053 daily scan), not an action; listing it as "awaiting closure" would misdescribe it. Re-deciding it here would be the second copy of a judgement, which is the thing this task exists to avoid.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.tasks/active/T-3178-fw-review-queue-does-not-show-decided-un.md'
+  - 'tests/unit/t3178_review_queue_decided.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-29T12:57:48'
+    action: 'T-3178: the terminal queue stops agreeing that nothing is outstanding'
+  - time: '2026-08-29T12:59:43'
+    action: 'T-3178: the mutation control only controlled in a bare shell'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3957 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3957
+  commits: 2
+  files_changed: 5
+  lines_added: 575
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3178-fw-review-queue-does-not-show-decided-un.md
+generated_by: context-agent-hybrid

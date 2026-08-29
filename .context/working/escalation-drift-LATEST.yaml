@@ -1,7 +1,7 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-28T03:23:02.820604+00:00
-corpus_total: 2774
+generated: 2026-08-29T03:23:02.892720+00:00
+corpus_total: 2780
 bug_class_total: 499
 bug_class_pct: 17
 h1_flagged: 362
@@ -9,19 +9,13 @@ h1_pct_of_bug_class: 72
 h2_repeat_patterns: 160
 h3_flagged: 265
 h3_pct_of_bug_class: 53
-recent_30d_flagged: 16
+recent_30d_flagged: 13
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
     name: "Fix critical hook PROJECT_ROOT bug for external projects"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
-  - tid: "T-2676-fix-harvestsh-indent-assumption-greps-de"
-    name: "fix harvest.sh indent-assumption greps (dead learnings/patterns sub-stages)"
-  - tid: "T-2677-fix-dead-audit-graduation-counter-learni"
-    name: "fix dead audit graduation counter (learnings >=20 branch never fires)"
-  - tid: "T-2685-fix-corpus-explain-rail-arity-drift-sile"
-    name: "fix corpus explain rail arity drift silently downgrading authority stage (OBS-10"
   - tid: "T-2724-fw-init-reports-19-broken-hooks-on-a-cor"
     name: "fw init reports 19 broken hooks on a correct install — validator never expands"
   - tid: "T-2733-t-1550-rca-gate-invalidated-pre-existing"
@@ -32,17 +26,23 @@ recent_sample:
     name: "Fresh-install onboarding path broken: make the new-project prompt work end"
   - tid: "T-2830-work-on-switch-focus-fails-silently"
     name: "fw work-on --switch-focus fails silently (RC=1, zero output)"
+  - tid: "T-2886-vendor-sync--push-t-2885-budget-gauge-fi"
+    name: "vendor sync + push T-2885 budget gauge fix"
+  - tid: "T-2951-832-rail-round-573574--report-t-2921-ext"
+    name: "832 rail round 573/574 — report T-2921 extractor fix, carry their T-456 composit"
+  - tid: "T-2971-rail-611--exclusion-vs-hole-applied-to-s"
+    name: "rail 611 — exclusion-vs-hole applied to stale-arc membership; three broken"
 h2_top:
   - learning: "P-011"
-    task_count: 2319
+    task_count: 2329
   - learning: "L-387"
-    task_count: 2082
+    task_count: 2089
   - learning: "L-291"
-    task_count: 1079
+    task_count: 1081
   - learning: "L-398"
-    task_count: 827
+    task_count: 829
   - learning: "P-010"
-    task_count: 459
+    task_count: 460
   - learning: "L-399"
     task_count: 91
   - learning: "L-006"

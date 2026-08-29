@@ -1,5 +1,5 @@
-# Audit Results - 2026-08-28-1754
-timestamp: 2026-08-28T15:54:48Z
+# Audit Results - 2026-08-29-1225
+timestamp: 2026-08-29T10:25:04Z
 sections: "structure"
 summary:
   pass: 30
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3196 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3200 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 30 project YAML file(s)"
   - level: PASS
@@ -80,4 +80,4 @@ findings:
   - level: PASS
     check: "Map conformance: aef-tier0-escalation matches its enforced machine"
   - level: INFO
-    check: "Stale draft(s), 30d+ untouched: draft-exception-handling draft-t2584-scratch draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"
+    check: "Stale draft(s), 30d+ untouched: draft-exception-handling draft-knowledge-leveling draft-t2584-scratch draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"

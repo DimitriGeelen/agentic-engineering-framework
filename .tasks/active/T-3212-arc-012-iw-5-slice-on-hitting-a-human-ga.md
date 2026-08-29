@@ -1,8 +1,20 @@
 ---
 id: T-3212
-name: "arc-012 IW-5 slice: on hitting a human gate mid-run, the loop stops and notifies rather than parking and taking the next task"
+name: "arc-012 IW-5 slice: on hitting a human gate mid-run, the loop stops and notifies
+  rather than parking and taking the next task"
 description: >
-  Build slice propagating T-3181's GO (2026-08-27). DECISION MADE BY AGENT, operator may override: STOP-AND-NOTIFY, not park-and-next. Evidence: 280+ tasks already sit awaiting operator review, so park-and-next silently grows a queue nobody is draining and the run keeps consuming budget producing more of it. IW-2 (answered, confidence 3) established that the halt mechanism must actually gate on human authority; a loop that treats a human gate as a routing hint rather than a stop weakens exactly that property. Stop-and-notify also makes the gate observable: the run ends with a named reason the operator can see, instead of ending later for an unrelated cap with the real blocker buried. Scope: when a task in the run hits a human gate (partial-complete with unticked Human ACs, Tier-0 approval, inception decide), write last_terminated_reason naming the task and the gate class, disarm, and notify. Do NOT auto-advance to the next task.
+  Build slice propagating T-3181's GO (2026-08-27). DECISION MADE BY AGENT, operator
+  may override: STOP-AND-NOTIFY, not park-and-next. Evidence: 280+ tasks already sit
+  awaiting operator review, so park-and-next silently grows a queue nobody is draining
+  and the run keeps consuming budget producing more of it. IW-2 (answered, confidence
+  3) established that the halt mechanism must actually gate on human authority; a
+  loop that treats a human gate as a routing hint rather than a stop weakens exactly
+  that property. Stop-and-notify also makes the gate observable: the run ends with
+  a named reason the operator can see, instead of ending later for an unrelated cap
+  with the real blocker buried. Scope: when a task in the run hits a human gate (partial-complete
+  with unticked Human ACs, Tier-0 approval, inception decide), write last_terminated_reason
+  naming the task and the gate class, disarm, and notify. Do NOT auto-advance to the
+  next task.
 
 status: captured
 workflow_type: build
@@ -22,8 +34,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-29T10:18:45Z
-last_update: 2026-08-29T10:18:45Z
-date_finished: null
+last_update: '2026-08-29T10:30:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +46,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-29T10:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=235,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-29T10:30:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3212: arc-012 IW-5 slice: on hitting a human gate mid-run, the loop stops and notifies rather than parking and taking the next task

@@ -38089,3 +38089,75 @@ scan_id: R-3119e787
 task_id: T-3209
 payload:
   task_file: .tasks/active/T-3209-doctor-blames-the-operator-when-the-loop.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T09:50:00Z'
+scan_id: R-24a94620
+task_id: T-3202
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T09:50:00Z'
+scan_id: R-24a94620
+task_id: T-3202
+payload:
+  task_file: .tasks/active/T-3202-full-audit-timing-record-cannot-distingu.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T10:02:17Z'
+scan_id: R-7161f97f
+task_id: T-3210
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T10:02:17Z'
+scan_id: R-7161f97f
+task_id: T-3210
+payload:
+  task_file: .tasks/active/T-3210-handover-suggested-first-action-picks-by.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T11:00:00Z'
+scan_id: R-fb429ce5
+task_id: T-3178
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T11:00:00Z'
+scan_id: R-fb429ce5
+task_id: T-3178
+payload:
+  task_file: .tasks/active/T-3178-fw-review-queue-does-not-show-decided-un.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T11:03:43Z'
+scan_id: R-0a6935c0
+task_id: T-3175
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T11:03:43Z'
+scan_id: R-0a6935c0
+task_id: T-3175
+payload:
+  task_file: .tasks/active/T-3175-a-decided-inception-still-owned-by-human.md

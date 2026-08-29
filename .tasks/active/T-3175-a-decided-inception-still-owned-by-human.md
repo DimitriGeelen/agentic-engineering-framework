@@ -6,12 +6,12 @@ description: >
   A decided inception still owned by human appears on no review queue — /approvals
   and fw review-queue both drop it
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, tests/unit/test_inception_close_card.py, web/blueprints/approvals.py, web/blueprints/inception.py, web/templates/_approvals_content.html, web/templates/inception_detail.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T15:40:57Z
-last_update: '2026-08-26T15:45:14Z'
-date_finished:
+last_update: 2026-08-29T11:03:39Z
+date_finished: 2026-08-29T11:03:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -161,6 +161,38 @@ different failure: T-2125 was a wrong link, this is no link at all.
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+- [ ] [REVIEW] The "Decided — awaiting closure" section reads as a *different*
+      action from the "Decisions" section directly above it, and its two entries
+      are recognisably yours to close.
+
+      This is genuinely yours and not a `[REVIEWER]` in disguise: the question is
+      whether an operator scanning /approvals can tell "decide this" from "close
+      this" at a glance. That is layout and wording judgement about your own
+      reading experience (T-2143 audience test — the answer is for you, not for
+      an agent), and no grep settles it. The mechanical facts are already pinned
+      in `## Verification`.
+
+      **Steps:**
+      1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`
+      2. Open `<that url>/approvals` — direct link, verified 200 this session:
+         http://192.168.10.107:3000/approvals
+      3. Look at the top stat card: it should read `… · 2 to close`.
+      4. Scroll to **Decided — awaiting closure**. Two rows: **T-2876** and
+         **T-3181**, each with a recorded GO.
+      5. Compare it against the **Decisions** group above it, which holds the
+         six inceptions that are still undecided.
+      6. Optional cross-check in the terminal — the same two, from the same
+         predicate: `cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue`
+
+      **Expected:** the two groups read as two different asks. "Decisions" asks
+      you to *judge*; "Decided — awaiting closure" asks you to *close something
+      already judged*. Neither reads as a duplicate or a leftover of the other.
+
+      **If not:** say which of the two you'd have skipped past and why — wording,
+      ordering, or visual weight. That is a rendering fix on
+      `web/templates/_approvals_content.html`, not a predicate change; the set
+      itself is pinned by tests and is not in question.
 
 ## Verification
 
@@ -356,6 +388,39 @@ bin/fw review-queue > /tmp/.t3175-rq.out 2>&1 && grep -q 'DECIDED — inceptions
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Both halves of the gap are now closed and agree with each other.
+The web section shipped with this task; the CLI mirror shipped with T-3178 today,
+importing the same `lib/decided_unclosed.py` rather than restating it. The single
+open item is a `[REVIEW]` Human AC asking whether the two `/approvals` groups read
+as two different asks — a layout-and-wording judgement about your reading
+experience, which is the one thing here no test can answer.
+
+The set itself is not in question: it is pinned by unit tests with control legs on
+both sides (DEFER excluded, work-completed excluded), by 14 bats tests with a
+mutation control, and by both surfaces independently reporting the same two tasks.
+If the Human AC comes back "reads wrong", the fix is in
+`web/templates/_approvals_content.html` and does not touch the predicate.
+
+**Evidence:**
+- `/approvals` renders `Decided — awaiting closure` with 2 entries; stat card reads
+  `2 to close`. `fw review-queue` renders `DECIDED — inceptions awaiting operator
+  closure (2)`. Same two ids both sides: **T-2876** (20d), **T-3181** (2d).
+- One predicate, verified structurally: `grep -c '(GO|NO-GO|DEFER)' bin/fw` = 1,
+  `import decided_unclosed` present in both `bin/fw` and
+  `web/blueprints/approvals.py`, `CONCLUDING` absent from the blueprint.
+- `tests/unit/test_decided_unclosed.py` (this task) and
+  `tests/unit/t3178_review_queue_decided.bats` 14/14 (T-3178). Mutations M1 and M2
+  each reddened 6 of the 14; M2 leaving the control green is what shows the
+  emptiness guard is load-bearing on its own.
+- 10/10 `## Verification` commands pass, including one repaired this session: the
+  `curl … | grep -q` line returned **23** (curl SIGPIPE on a ~1.6MB page with an
+  early match) — a false red on content that was present. Replaced with the `-o
+  file` form. 68 task files corpus-wide carry that construct; filed, not swept.
+- Origin closed: T-3181 was GO'd 2026-08-27, invisible to both surfaces, and you
+  asked about it on 2026-08-29. It now appears on both.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -383,3 +448,20 @@ bin/fw review-queue > /tmp/.t3175-rq.out 2>&1 && grep -q 'DECIDED — inceptions
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3175-a-decided-inception-still-owned-by-human.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0a6935c0
+- **Timestamp:** 2026-08-29T11:03:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Human)** — [REVIEW] The "Decided — awaiting closure" section reads as a *different*
+  - **audience-mismatch** (partial, heuristic) — `agent-subject='for\n      an agent' in: the two groups read as two different asks. "Decisions" asks       you to *judge*; "Decided — awaiting closure" asks you to *close something `
+
+### 2026-08-29T11:03:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

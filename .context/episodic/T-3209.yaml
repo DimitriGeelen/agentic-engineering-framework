@@ -96,10 +96,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 9
-  commits: 1
-  files_changed: 28
-  lines_added: 3753
-  lines_removed: 183
+  commits: 3
+  files_changed: 41
+  lines_added: 4529
+  lines_removed: 231
+  footprint_refreshed_at: '2026-08-29T09:51:31Z'
+  footprint_refreshed_by_commit: a4fc04c3c
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3209-doctor-blames-the-operator-when-the-loop.md
