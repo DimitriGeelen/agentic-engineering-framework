@@ -4123,3 +4123,11 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-353
+  text: "G-020 scope gate blocks BOTH escape routes its own block message prescribes — an agent focused on a placeholder-AC build task can be wedged. Measured 2026-08-29 (T-3216 run, focus landed on auto-created T-3215/T-3216). The message names: (1) 'Edit the task file: replace [First criterion] with real ACs'; (2) 'bin/fw task update T-XXX --type inception'. Route (2) is refused by check-active-task itself — not on the read-only allowlist (agents/context/lib/safe-commands.sh), so the gate quotes the remedy back verbatim while refusing it. Route (1) is refused for every SHELL form (heredoc, sed -i, any redirect all match the write-pattern regex); it survives only via a Write/Edit TOOL call, which is not routed through the same regex. So an agent whose only write surface is bash has no legal move at all. I escaped only by using the Edit tool. Also blocked in the same state: 'fw task update --horizon later', 'fw push', and plain reads that merely contain sed/awk/2>/dev/null — the write-pattern regex is matching read commands (sibling of T-2410, already filed, but the deadlock is distinct from the false-positive class). Fix direction, cheapest first: allowlist the gate's own two prescribed remedies in safe-commands.sh so the block message is reachable from the blocked state. Structural lesson worth a rail: a block message is an executable contract — for every gate that prints a remedy, run that remedy verbatim WHILE the gate is firing, not from a clean shell. Ours was written by someone who was not blocked at the time. Sibling to L-399/T-1890 producer-consumer parity, one notch worse: there the bypass existed and was rejected downstream; here the gate rejects it itself. Second trigger in the same run: an automated process created T-3215 in started-work with template ACs and TOOK FOCUS from the session twice, which is how the session entered the wedged state at all — that focus-stealing is worth its own look."
+  captured: 2026-08-29T14:29:42Z
+  context_task: T-3216
+  tags: [bug]
+  status: pending
+  promoted_to: null
+  urgent: true

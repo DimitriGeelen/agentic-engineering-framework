@@ -77,10 +77,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 5
-  commits: 1
-  files_changed: 7
-  lines_added: 420
-  lines_removed: 18
+  commits: 2
+  files_changed: 9
+  lines_added: 523
+  lines_removed: 22
+  footprint_refreshed_at: '2026-08-29T14:24:26Z'
+  footprint_refreshed_by_commit: e9b765cca
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3216-66-bats-negative-assertions-are-inert---.md

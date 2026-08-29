@@ -7667,3 +7667,12 @@ git diff --cached --quiet || FW_SWITCH_FOCUS=1 git commit -q -m "T-3201: close (
   caller: 'check-active-task focus-drift'
   target: 'T-3197'
   command: 'cd /opt/999-Agentic-Engineering-Framework; FW_SWITCH_FOCUS=1 git checkout HEAD -- VERSION && echo "VERSION restored: $(cat VERSION)"; FW_SWITCH_FOCUS=1 git add .agentic-framework/lib/worktree.sh && FW'
+- timestamp: '2026-08-29T14:25:56Z'
+  task: 'T-3181'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3212'
+  command: 'git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -q -m "T-3212: sync vendored copies after the human-gate stop change
+
+fw vendor self, required by the pre-push gate: continuous-mode.sh,
+sto'

@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3212: arc-012 IW-5 slice: on hitting a human gate mid-run, the loop stops and notifies rather than parking and taking the next task
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-29T14:18:28Z
+# ============================================================================
+
+task_id: T-3212
+task_name: "arc-012 IW-5 slice: on hitting a human gate mid-run, the loop stops and notifies rather than parking and taking the next task"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-29T10:18:45Z
+completed: 2026-08-29T14:18:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-29T16:17:56+02:00
+last_commit: 2026-08-29T16:17:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a human gate stops the continuous run, and the log says which one
+
+# Key outcomes
+outcomes:
+  - '`fw_continuous_note_human_gate <task_id> <gate_class> [root]` exists in `lib/continuous-mode.sh` and, when the loop is ARMED, sets `enabled: false`, writes `last_terminated_reason: "human-gate:<gate_class>:<task_id>"` and an ISO-8601 `terminated_at`, via the same atomic `os.replace` write the sibling helper uses'
+  - 'Fail-safe posture matches `fw_continuous_note_task_completed` exactly: silent `return 0` when the state file is absent, unreadable, malformed, when `enabled` is not literally `true`, or when python3/pyyaml are unavailable — it runs on every task close and must never fail one'
+  - 'The partial-complete branch of `agents/task-create/update-task.sh` (the `PARTIAL_COMPLETE=true` arm at ~line 2022) calls the helper with gate class `human-ac`, and the existing full-completion call to `fw_continuous_note_task_completed` is left untouched'
+  - '`agents/context/stop-driver.sh` reports the recorded cause: when the state carries `last_terminated_reason`, the stop log line names it instead of `continuous-mode-disabled(enabled=False)`'
+  - '`tests/unit/t3212_human_gate_stop.bats` is green and covers armed→disarm+record, disarmed→no-op, absent-state→no-op, and stop-driver reason surfacing'
+  - 'That suite carries a **mutation control**: removing the disarm reddens it, and the run states which mutation reddened which test — a mutation that reddens nothing is itself a finding'
+  - '`bash -n` passes on both changed shell files'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/stop-driver.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/continuous-mode.sh'
+  - '.tasks/active/T-3212-arc-012-iw-5-slice-on-hitting-a-human-ga.md'
+  - 'tests/unit/t3212_human_gate_stop.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-29T16:17:56'
+    action: 'T-3212: a human gate stops the continuous run, and the log says which one'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 239 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 239
+  commits: 3
+  files_changed: 10
+  lines_added: 451
+  lines_removed: 6
+  footprint_refreshed_at: '2026-08-29T14:26:10Z'
+  footprint_refreshed_by_commit: 1b9a67b63
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3212-arc-012-iw-5-slice-on-hitting-a-human-ga.md
+generated_by: context-agent-hybrid

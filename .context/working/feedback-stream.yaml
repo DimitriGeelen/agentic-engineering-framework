@@ -38161,3 +38161,39 @@ scan_id: R-0a6935c0
 task_id: T-3175
 payload:
   task_file: .tasks/active/T-3175-a-decided-inception-still-owned-by-human.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T14:18:15Z'
+scan_id: R-9c985c77
+task_id: T-3212
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T14:18:15Z'
+scan_id: R-9c985c77
+task_id: T-3212
+payload:
+  task_file: .tasks/active/T-3212-arc-012-iw-5-slice-on-hitting-a-human-ga.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T14:24:03Z'
+scan_id: R-a45afb5d
+task_id: T-3216
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T14:24:03Z'
+scan_id: R-a45afb5d
+task_id: T-3216
+payload:
+  task_file: .tasks/active/T-3216-66-bats-negative-assertions-are-inert---.md
