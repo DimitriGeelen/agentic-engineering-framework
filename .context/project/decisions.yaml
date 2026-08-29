@@ -3558,3 +3558,52 @@ decisions:
     date: 2026-08-29
     task: T-3178
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-511
+    decision: "Close as a retraction. No detector is built, no sweep is run, and"
+    scope: project
+    date: 2026-08-29
+    task: T-3216
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-512
+    decision: "run the shipped `bin/claude-fw` in a scratch git repo with a stubbed"
+    scope: project
+    date: 2026-08-29
+    task: T-3213
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-513
+    decision: "make the ledger PATH a directory, so `open(..., \"a\")` raises"
+    scope: project
+    date: 2026-08-29
+    task: T-3213
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-514
+    decision: "ship both the stdin redirect (prevents the swallow) and the count"
+    scope: project
+    date: 2026-08-29
+    task: T-3219
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-515
+    decision: "`--skip-verification` bypasses failures; it does NOT bypass an"
+    scope: project
+    date: 2026-08-29
+    task: T-3219
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-516
+    decision: "`exit 1` in the reconciliation refusal."
+    scope: project
+    date: 2026-08-29
+    task: T-3219
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-517
+    decision: "build a fake framework root out of symlinks and put mutated copies there."
+    scope: project
+    date: 2026-08-29
+    task: T-3219
+    rationale: "Auto-captured from task file on completion"

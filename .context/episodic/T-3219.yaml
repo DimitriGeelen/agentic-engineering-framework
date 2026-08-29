@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3219: P-011 gate passes on an unreconciled count — a stdin-reading verification command swallows the remaining lines
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-29T22:34:32Z
+# ============================================================================
+
+task_id: T-3219
+task_name: "P-011 gate passes on an unreconciled count — a stdin-reading verification command swallows the remaining lines"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-29T15:34:42Z
+completed: 2026-08-29T22:33:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-08-30T00:33:14+02:00
+last_commit: 2026-08-30T00:33:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  P-011 gate ran 2 of 4 commands and reported pass. fabric cards for the T-3219 and T-3213 confirmation suites
+
+# Key outcomes
+outcomes:
+  - 'The defect is reproduced against the REAL `run_verification_commands` — a synthetic project root driven through the actual `update-task.sh`, not a reduction of its loop. Peer probes were reductions and said so; ours must be better because the code is ours.'
+  - 'The stdin leak is closed: a verification command that reads stdin no longer consumes the remaining verification lines, and all lines run.'
+  - 'The count is RECONCILED, not merely printed: the gate refuses a pass verdict whenever `pass + fail != total`, for any reason. A denominator is evidence only if something compares it to the numerator.'
+  - 'The reconciliation refusal is NOT bypassable by `--skip-verification`. That flag means "I accept these failures"; an unreconciled count is not a failure anyone can accept — it is the runner saying it does not know what it ran. Different speech acts, one flag must not cover both.'
+  - 'The refusal message names what happened and what to do, rather than printing a fraction and leaving the reader to notice it does not add up.'
+  - 'MUTATION CONTROL: reverting the stdin fix alone reddens the swallow test; reverting the reconciliation guard alone reddens the verdict test. Both directions reported with which test reddened, so the two legs are shown to be independently load-bearing.'
+  - 'Existing P-011 behaviour is unchanged for ordinary blocks: all-pass still passes, any-fail still blocks, `--skip-verification` still bypasses genuine failures. Asserted, not assumed.'
+  - 'The peers who reported it are answered on the chat arc with the measured result, including whether their reduction matched the real function''s behaviour.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-29 — two legs, not one'
+    chose: 'ship both the stdin redirect (prevents the swallow) and the count reconciliation (catches a swallow from any cause, including leg 1 regressing).'
+    rationale: 'leg 1 alone closes this case and leaves the class open. The reconciliation is the general statement: a gate must not return a verdict on a population it did not finish enumerating. 832''s phrasing is the one that decided it — *a denominator is evidence only if something compares it to the numerator.*'
+    alternatives_rejected: ['leg 1 only. Cheaper, and it would have made the next instance of the same class invisible again.']
+  - decision: '2026-08-29 — the guard is not bypassable by --skip-verification'
+    chose: '`--skip-verification` bypasses failures; it does NOT bypass an unreconciled count.'
+    rationale: 'the flag means "I have seen these failures and I accept them". An unreconciled count is not a failure anyone can accept — it is the runner reporting that it does not know what it ran. Different speech acts; one flag must not cover both. Adopted verbatim from 577''s reasoning.'
+    alternatives_rejected: ['letting the flag cover it, for consistency with the sibling path. Consistency here would mean the one state nobody can evaluate is also the one state a single flag waves through.']
+  - decision: '2026-08-29 — `exit 1`, not `return 1` (a defect in the fix itself)'
+    chose: '`exit 1` in the reconciliation refusal.'
+    rationale: 'the caller invokes `run_verification_commands` BARE — no `if`, no `||` — so a non-zero return is discarded and the close proceeds. The first draft used `return 1`, which would have printed a refusal and then completed the task anyway. **A guard that returns to a caller who does not check is a print statement.** Caught only by asking why the sibling failure path three lines below uses `exit`.'
+    alternatives_rejected: ['changing the caller to check the return. Larger blast radius on a hot path, for no gain over matching the convention already in the function.']
+  - decision: '2026-08-29 — mutants live in a symlink farm, never in the repo'
+    chose: 'build a fake framework root out of symlinks and put mutated copies there.'
+    rationale: '`update-task.sh` derives `FRAMEWORK_ROOT` from its own location with no env override, so a copy in `/tmp` dies at `//lib/paths.sh` before reaching the gate — which is exactly how the first four leg-2 tests failed, for a reason unrelated to the guard.'
+    alternatives_rejected: ['mutating the real file in place under bats with a teardown restore. A crashed or killed run would leave the repository''s completion gate modified. Not a risk worth taking on this file.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.fabric/components/tests-unit-t3213_start_event_confirmation.yaml'
+  - '.fabric/components/tests-unit-t3219_verification_count_reconciliation.yaml'
+  - '.tasks/active/T-3219-p-011-gate-passes-on-an-unreconciled-cou.md'
+  - 'tests/unit/t3219_verification_count_reconciliation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-30T00:33:14'
+    action: 'T-3219: P-011 gate ran 2 of 4 commands and reported pass'
+  - time: '2026-08-30T00:33:54'
+    action: 'T-3219: fabric cards for the T-3219 and T-3213 confirmation suites'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 419 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 419
+  commits: 2
+  files_changed: 6
+  lines_added: 639
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3219-p-011-gate-passes-on-an-unreconciled-cou.md
+generated_by: context-agent-hybrid
