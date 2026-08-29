@@ -16,13 +16,14 @@ description: >
   naming the task and the gate class, disarm, and notify. Do NOT auto-advance to the
   next task.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
+arc_id: continuous-run
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -34,7 +35,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-29T10:18:45Z
-last_update: '2026-08-29T10:30:20Z'
+last_update: 2026-08-29T14:10:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,14 +81,47 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The stop-driver already tells the agent, in prose, to "Stop and surface to the
+operator if you reach a Tier-0 action, a human-owned decision, or an unchecked
+[REVIEW] acceptance criterion" (`agents/context/stop-driver.sh`, `next_reason`).
+Nothing enforces it. That is precisely the defect the same file's own header
+attributes to T-2404 — *a repair that presumes the very turn it is trying to
+cause* — reproduced one layer up: the loop asks itself to stop and then keeps
+driving turns if it doesn't.
+
+Two observable consequences, both on the record:
+
+1. **Park-and-next grows a queue nobody drains.** 280+ tasks already sit awaiting
+   operator review. A loop that treats a human gate as a routing hint keeps
+   spending budget manufacturing more of them.
+2. **The real stop reason is buried.** When the run does end, it ends on an
+   unrelated cap (`max_iterations`, `expired-at`) and the log says so. The human
+   gate that actually blocked progress is nowhere in the record. `.stop-driver.log`
+   today is 25 consecutive `continuous-mode-disabled(enabled=False)` lines — a
+   reason that names the *flag* rather than *what set it*, and therefore cannot
+   distinguish "operator never armed it" from "the loop disarmed itself on a gate".
+
+This slice makes the stop structural and the reason legible: on the
+partial-complete transition the loop disarms itself, records which task and which
+gate class stopped it, and the stop-driver reports that recorded reason instead of
+the opaque flag state.
+
+Scope fence: the partial-complete (unticked Human AC) gate class only. Tier-0
+approval and `fw inception decide` are the same shape and route through the same
+helper, but wiring their call sites is out of scope here — the helper takes a
+gate-class argument so they slot in without redesign.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw_continuous_note_human_gate <task_id> <gate_class> [root]` exists in `lib/continuous-mode.sh` and, when the loop is ARMED, sets `enabled: false`, writes `last_terminated_reason: "human-gate:<gate_class>:<task_id>"` and an ISO-8601 `terminated_at`, via the same atomic `os.replace` write the sibling helper uses
+- [x] Fail-safe posture matches `fw_continuous_note_task_completed` exactly: silent `return 0` when the state file is absent, unreadable, malformed, when `enabled` is not literally `true`, or when python3/pyyaml are unavailable — it runs on every task close and must never fail one
+- [x] The partial-complete branch of `agents/task-create/update-task.sh` (the `PARTIAL_COMPLETE=true` arm at ~line 2022) calls the helper with gate class `human-ac`, and the existing full-completion call to `fw_continuous_note_task_completed` is left untouched
+- [x] `agents/context/stop-driver.sh` reports the recorded cause: when the state carries `last_terminated_reason`, the stop log line names it instead of `continuous-mode-disabled(enabled=False)`
+- [x] `tests/unit/t3212_human_gate_stop.bats` is green and covers armed→disarm+record, disarmed→no-op, absent-state→no-op, and stop-driver reason surfacing
+- [x] That suite carries a **mutation control**: removing the disarm reddens it, and the run states which mutation reddened which test — a mutation that reddens nothing is itself a finding
+- [x] `bash -n` passes on both changed shell files
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -214,6 +248,14 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n lib/continuous-mode.sh
+bash -n agents/context/stop-driver.sh
+bash -n agents/task-create/update-task.sh
+grep -q 'fw_continuous_note_human_gate()' lib/continuous-mode.sh
+grep -q 'fw_continuous_note_human_gate "$TASK_ID" "human-ac"' agents/task-create/update-task.sh
+grep -q 'last_terminated_reason' agents/context/stop-driver.sh
+out=$(bats tests/unit/t3212_human_gate_stop.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -253,6 +295,23 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-08-29 — the suite's own negative assertions were inert
+
+- **What changed:** Mutating the shipped helper reddened tests 1, 10 and 12 —
+  but left test 13, the mutation control, green, when its `! diff -q` guard
+  should have bitten. `! cmd` is exempt from errexit under POSIX ("the -e
+  setting shall be ignored ... for any command preceded by `!`"), so under bats
+  a negated assertion that does not hold returns 1 and the test passes anyway.
+  Measured in isolation: `@test { ! true; }` → ok; `@test { false; }` → not ok.
+  Four assertions in this suite were decoration; replaced with an `assert_no`
+  helper (`run` + `[ "$status" -ne 0 ]`) that actually reddens.
+- **Plan impact:** None to the slice's scope. It changes what "the suite is
+  green" was worth before the fix — which is the point of mutation-testing
+  before calling a test evidence.
+- **Triggered:** Corpus measurement — **66 such lines across 50 of 696 bats
+  files**. Filed separately rather than swept here (one bug, one task); the
+  sweep needs a per-file judgement about whether each negation is load-bearing.
 
 ## Recommendation
 
@@ -310,3 +369,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3212-arc-012-iw-5-slice-on-hitting-a-human-ga.md
 - **Context:** Initial task creation
+
+### 2026-08-29T14:10:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
