@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3216: 66 bats negative assertions are inert — '! cmd' is exempt from errexit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-29T14:24:14Z
+# ============================================================================
+
+task_id: T-3216
+task_name: "66 bats negative assertions are inert — '! cmd' is exempt from errexit"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-29T14:18:54Z
+completed: 2026-08-29T14:23:59Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-29T16:23:54+02:00
+last_commit: 2026-08-29T16:23:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  retract — the class was already known, detected, swept and wired
+
+# Key outcomes
+outcomes:
+  - 'The filing-time figure — "66 inert assertions across 50 of 696 bats files"'
+  - 'Checked whether the class already has a detector before proposing one.'
+  - 'Confirmed the existing lint is not merely present but *runs*: `tests/lint/`'
+  - 'Confirmed the existing lint catches the exact shape this task was filed'
+  - 'The duplicate `tools/measure_inert_negations.py` written while measuring is'
+  - '`tests/unit/t3212_human_gate_stop.bats` keeps the `assert_no` fix from this'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-29 — retract rather than build'
+    chose: 'Close as a retraction. No detector is built, no sweep is run, and the measurement script written while investigating is deleted.'
+    rationale: 'Every load-bearing claim in the filing failed on checking. The class was already captured (L-628, 2026-08-19), already detected (`tools/bats-dead-negation-lint.py`, T-3138), already swept (106 across 66 files → 0), and the detector already runs (`tests/lint/` is wired into `fw test`, T-2697). The count that justified filing — 66 across 50 files — was wrong because it did not distinguish final from non-final position; the real figure is 18, all of them fixtures belonging to the lint that catches the shape. There is nothing left to build. - **Rejected — "file it anyway, a second opinion is cheap":** it is not. A task asserting an already-solved problem competes for attention with the 280+ real items in the review queue, and its stated numbers would have been read as measurements by whoever picked it up. - **Rejected — "keep `tools/measure_inert_negations.py` as a sibling check":** it is a weaker reimplementation of `bats-dead-negation-lint.py`, and the peer finding on the chat arc is explicit that a guard which reimplements the code it guards cannot detect that code being fixed. Two counters that can disagree is worse than one that is authoritative. - **What survives:** the fix to `tests/unit/t3212_human_gate_stop.bats` is real and stays. Two of its negative assertions were genuinely inert. That defect was found by mutation-testing, not by the lint — because the lint runs under `fw test`, which I had not run yet at that point. The lint would have caught it. That is a sequencing observation about how I worked, not a framework gap.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3175-a-decided-inception-still-owned-by-human.md'
+  - '.tasks/active/T-3211-handover-suggested-first-action-truncate.md'
+  - '.tasks/active/T-3214-68-verification-lines-pipe-curl-into-gre.md'
+  - '.tasks/active/T-3215-port-t-1032-next-hint-from-consumer-002-.md'
+  - '.tasks/active/T-3216-66-bats-negative-assertions-are-inert---.md'
+  - '.tasks/completed/T-3212-arc-012-iw-5-slice-on-hitting-a-human-ga.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-29T16:23:54'
+    action: 'T-3216: retract — the class was already known, detected, swept and wired'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 7
+  lines_added: 420
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3216-66-bats-negative-assertions-are-inert---.md
+generated_by: context-agent-hybrid
