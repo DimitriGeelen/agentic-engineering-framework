@@ -1,20 +1,21 @@
 id: tests/unit/t3213_start_event_confirmation.bats
 name: t3213_start_event_confirmation
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3213_start_event_confirmation.bats
-tags: []
+tags: [tests, bats, claude-fw, continuous-run, T-3213]
 
-purpose: "TODO: describe what this component does"
+purpose: "End-to-end confirmation suite for the claude-fw start-event ledger: runs the real bin/claude-fw in a scratch git repo with a stubbed claude binary and asserts the start event is written, is idempotent, and degrades correctly when the ledger path is unwritable."
 
 depends_on:
   # Format: - target: <relative-path>
   #          type: calls|reads|writes|triggers|renders
-  []
+  - target: bin/claude-fw
+    type: tests
 
 depended_by:
   # Same format as depends_on — filled by enrich.py or manually
   []
 
 last_verified: 2026-08-29
-created_by: unknown
+created_by: T-3213
