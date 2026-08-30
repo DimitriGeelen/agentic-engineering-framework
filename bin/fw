@@ -2226,17 +2226,24 @@ else:
         fi
     fi
 
-    # Check: designer pin CURRENCY — is a newer release available upstream? (T-3119)
-    # Sibling of, but distinct from, the pin<->vendored drift check above. That one
-    # measures EXPOSURE (does what we run match what we pinned); this one measures
-    # CURRENCY (is what we pinned still the newest thing the origin publishes).
-    # Only both-green means "consistent AND up to date" — designer-v0.9.0 through
-    # v0.11.0 sat unconsumed for three releases with every instrument reporting OK,
-    # because nothing on either side ever looked at the origin's tag list.
+    # Check: designer pin CURRENCY — is a newer release available upstream? (T-3119,
+    # T-3158 extraction). Sibling of, but distinct from, the pin<->vendored drift check
+    # above. That one measures EXPOSURE (does what we run match what we pinned); this
+    # one measures CURRENCY (is what we pinned still the newest thing the origin
+    # publishes). Only both-green means "consistent AND up to date" — designer-v0.9.0
+    # through v0.11.0 sat unconsumed for three releases with every instrument reporting
+    # OK, because nothing on either side ever looked at the origin's tag list.
     #
-    # Resolves the newest `designer-v*` tag at the pin's own `source_origin:` via
-    # `git ls-remote --tags` and compares SEMANTICALLY (sort -V). A lexical compare
-    # ranks 0.8.0 above 0.10.0 and inverts the entire check.
+    # The probe itself (resolve the newest `designer-v*` tag at `source_origin:` by
+    # INTEGER-TUPLE version compare — never lexical, T-3158 AC-1/AC-4 — WARN when
+    # behind, OK when current, SKIP with its own distinct line when the origin cannot
+    # be read) lives in ONE place: `agents/designer/designer.sh do_check_currency`,
+    # also reachable standalone as `fw designer check-currency`. Doctor shells out to it
+    # rather than duplicating the comparison, so there is exactly one implementation to
+    # keep correct. See that function's header for the full advisory-only rationale
+    # (001-CashWeb's `scripts/check-designer-currency.py` — no such file was ever
+    # received on this rail, so this is an independent implementation of the same
+    # contract, not a port).
     #
     # An unreachable origin gets its OWN state and never reads as "current"
     # (L-575 / T-2916: a guard that cannot read its input must not report the same
@@ -2248,7 +2255,8 @@ else:
     # probes; FW_SKIP_DESIGNER_CURRENCY=1 skips it in full mode (offline / CI runs).
     # Both skips print a line — never silence, which would read as "current".
     # FW_DESIGNER_PIN_FILE points the check at a temp pin copy for tests (T-2547),
-    # exactly as the drift check above does.
+    # exactly as the drift check above does — forwarded to the delegate verb so both
+    # sides of a hermetic test read the same pin.
     local _dc_pin="${FW_DESIGNER_PIN_FILE:-$PROJECT_ROOT/policy/designer-pin.yaml}"
     if [ -f "$_dc_pin" ]; then
         if [ "${FW_SKIP_DESIGNER_CURRENCY:-0}" = "1" ]; then
@@ -2256,31 +2264,13 @@ else:
         elif _doctor_quick_skip "designer pin currency (origin ls-remote)"; then
             :
         else
-            local _dc_ver _dc_origin _dc_ls _dc_latest _dc_newest
-            _dc_ver=$(python3 -c "import yaml;d=yaml.safe_load(open('$_dc_pin'));print(d.get('version','') or '')" 2>/dev/null)
-            _dc_origin=$(python3 -c "import yaml;d=yaml.safe_load(open('$_dc_pin'));print(d.get('source_origin','') or '')" 2>/dev/null)
-            if [ -z "$_dc_ver" ] || [ -z "$_dc_origin" ]; then
-                echo -e "  ${CYAN}SKIP${NC}  designer pin currency not checkable (pin has no version/source_origin)"
-            elif _dc_ls=$(GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5" timeout 10 git ls-remote --tags "$_dc_origin" 'designer-v*' 2>/dev/null); then
-                _dc_latest=$(printf '%s\n' "$_dc_ls" | sed -e 's|.*refs/tags/||' -e 's|\^{}$||' | grep '^designer-v' | sed -e 's|^designer-v||' | sort -V | tail -1 || true)
-                if [ -z "$_dc_latest" ]; then
-                    echo -e "  ${CYAN}SKIP${NC}  designer pin currency unknown — origin publishes no designer-v* tags"
-                    echo -e "         origin: $_dc_origin"
-                else
-                    _dc_newest=$(printf '%s\n%s\n' "$_dc_ver" "$_dc_latest" | sort -V | tail -1)
-                    if [ "$_dc_latest" != "$_dc_ver" ] && [ "$_dc_newest" = "$_dc_latest" ]; then
-                        echo -e "  ${YELLOW}WARN${NC}  designer pin is behind its origin — pinned $_dc_ver, newest released $_dc_latest"
-                        echo -e "         tag designer-v$_dc_latest at $_dc_origin"
-                        echo -e "         Run: fw designer sync --from-tag   (re-pin + sha256-verify at the tag)"
-                        warnings=$((warnings + 1))
-                    else
-                        echo -e "  ${GREEN}OK${NC}  designer pin current with origin (newest released $_dc_latest)"
-                    fi
-                fi
-            else
-                echo -e "  ${CYAN}SKIP${NC}  designer pin currency UNKNOWN — could not reach origin $_dc_origin"
-                echo -e "         This is not 'current': the origin's newest release was never read."
-                echo -e "         Set FW_SKIP_DESIGNER_CURRENCY=1 to skip this probe on offline runs."
+            local _dc_out _dc_line
+            _dc_out=$(FW_DESIGNER_PIN_FILE="$_dc_pin" PROJECT_ROOT="$PROJECT_ROOT" "$AGENTS_DIR/designer/designer.sh" check-currency 2>&1) || true
+            while IFS= read -r _dc_line; do
+                echo -e "  $_dc_line"
+            done <<< "$_dc_out"
+            if printf '%s\n' "$_dc_out" | sed 's/\x1b\[[0-9;]*m//g' | grep -q '^WARN'; then
+                warnings=$((warnings + 1))
             fi
         fi
     fi
@@ -2433,7 +2423,33 @@ PY
                 # (SIGKILL, host reboot) cannot write its own exit, so this is
                 # "last seen armed", not "provably alive" — say so rather than
                 # overclaim, and name the pid so it can be checked.
-                echo -e "  ${GREEN}OK${NC}  Continuous-run loop last recorded ARMED (${_crl_ev}, restarts=${_crl_count:-0}, ${_crl_ts})"
+                echo -e "  ${GREEN}OK${NC}  Continuous-run wrapper last recorded ARMED (${_crl_ev}, restarts=${_crl_count:-0}, ${_crl_ts})"
+                # T-3225: the line above reads continuous-run.jsonl, which is
+                # written by bin/claude-fw and knows ONLY about the budget
+                # auto-restart wrapper. Whether the TURN DRIVER is armed lives
+                # in .continuous-mode.yaml + .next-directive.yaml and is a
+                # different question with a different answer.
+                #
+                # For 74 days those answers disagreed and only the reassuring
+                # one was surfaced: the wrapper restarted three times (real
+                # events, real token counts) while stop-driver.sh returned {} on
+                # every single turn because the directive's expires_at had
+                # lapsed on 2026-06-17. Doctor printed OK ... ARMED throughout.
+                # The stop reasons went to .stop-driver.log, which no instrument
+                # reads. A green line that answers the adjacent question is
+                # worse than no line, because it stops anyone looking further.
+                if [ -f "$FRAMEWORK_ROOT/lib/continuous-mode.sh" ]; then
+                    # shellcheck source=/dev/null
+                    . "$FRAMEWORK_ROOT/lib/continuous-mode.sh"
+                    if _crl_live=$(fw_continuous_cli status 2>/dev/null); then
+                        echo -e "         turn driver: ARMED ($(printf '%s' "$_crl_live" | sed -n 's/^  Reason (live): //p'))"
+                    else
+                        echo -e "  ${YELLOW}WARN${NC}  ...but the TURN DRIVER is not armed — the loop takes no turns"
+                        printf '%s\n' "$_crl_live" | sed -n 's/^  Reason (live): /         reason: /p'
+                        echo -e "         Arm it:  bin/fw continuous arm --hours N --iterations N"
+                        echo -e "         Detail:  bin/fw continuous status"
+                    fi
+                fi
                 if [ -n "${_crl_pid:-}" ] && [ "${_crl_pid}" != "0" ]; then
                     if kill -0 "$_crl_pid" 2>/dev/null; then
                         echo -e "         wrapper pid ${_crl_pid} is alive"
@@ -5362,6 +5378,22 @@ EOF
                 ;;
         esac
         ;;
+    continuous)
+        # T-3225: arm/disarm/status for the continuous-run loop. The loop shipped
+        # disarmed (T-3164) and arming it meant hand-editing five fields across
+        # .continuous-mode.yaml AND .next-directive.yaml — the second of which
+        # holds the expires_at the stop driver actually reads. No verb existed,
+        # so the loop sat terminated for 74 days while every surfaced instrument
+        # reported a healthy-looking silence.
+        if [ ! -f "$FRAMEWORK_ROOT/lib/continuous-mode.sh" ]; then
+            echo "ERROR: lib/continuous-mode.sh not found" >&2
+            exit 1
+        fi
+        . "$FRAMEWORK_ROOT/lib/continuous-mode.sh"
+        fw_continuous_cli "$@"
+        exit $?
+        ;;
+
     cron)
         # T-448: Cron registry management
         cron_subcmd="${1:-}"
