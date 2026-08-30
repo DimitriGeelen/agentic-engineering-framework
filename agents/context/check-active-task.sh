@@ -516,9 +516,18 @@ fi
 # git commit must still reach the focus-drift gate (T-1730) — a context-free
 # allowlist entry would short-circuit that. `git add` (task-agnostic, no drift)
 # stays in is_bash_safe_command.
+#
+# T-3221: the test is `is_commit_checkpoint_command`, NOT a substring match for
+# the words. The predecessor asked whether the command CONTAINED "git commit"
+# and so admitted `git commit -m "…" ; rm -rf …`, `… | tee f`, and even
+# `somebinary --flag "please git commit this"` — an unknown binary let through
+# because a quoted argument said the words. See safe-commands.sh for the
+# measured matrix. The `--no-verify` exclusion and the write-pattern refusal now
+# live inside that predicate, so this branch and the T-3179 one below cannot
+# drift apart on either.
 if [ -z "$CURRENT_TASK" ] && [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ]; then
-    if [[ "$BASH_CMD" =~ (^|[[:space:]])git[[:space:]]+commit($|[[:space:]]) ]] && \
-       ! [[ "$BASH_CMD" =~ (^|[[:space:]])(--no-verify|-n)([[:space:]]|$) ]]; then
+    if type is_commit_checkpoint_command &>/dev/null && \
+       is_commit_checkpoint_command "$BASH_CMD"; then
         echo "NOTE: no active task — allowing 'git commit' to checkpoint completed work (T-2054). commit-msg hook still enforces T-XXX." >&2
         exit 0
     fi
@@ -775,9 +784,12 @@ case "$TASK_STATUS" in
         # blocked upstream. `--no-verify`/`-n` is excluded — it would skip the
         # commit-msg hook that makes this allowance sound, so it falls through to
         # the block below as a Tier-2 action needing explicit authorisation.
+        # T-3221: same predicate as the T-2054 branch above — one definition, so
+        # the two exemptions cannot drift. It is what makes the block message
+        # below ("write patterns void the allowance") true rather than aspirational.
         if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && \
-           [[ "$BASH_CMD" =~ (^|[[:space:]])git[[:space:]]+commit($|[[:space:]]) ]] && \
-           ! [[ "$BASH_CMD" =~ (^|[[:space:]])(--no-verify|-n)([[:space:]]|$) ]]; then
+           type is_commit_checkpoint_command &>/dev/null && \
+           is_commit_checkpoint_command "$BASH_CMD"; then
             echo "NOTE: $CURRENT_TASK is work-completed (partial-complete) — allowing 'git commit' to checkpoint its own verified work (T-3179). commit-msg hook still enforces T-XXX; drift gate already passed." >&2
             exit 0
         fi

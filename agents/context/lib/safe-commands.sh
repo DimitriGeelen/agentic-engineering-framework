@@ -760,3 +760,112 @@ has_bash_write_pattern() {
 
     return 1
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-3221: is this command a COMMIT CHECKPOINT, as opposed to a command that
+# merely mentions one?
+#
+# Two branches in check-active-task.sh admit a Bash command on the strength of
+# it being a `git commit` — the T-2054 null-focus branch (a completed task must
+# still be able to commit its own file-move) and the T-3179 partial-complete
+# branch. Both rationales are correct: a commit persists work already produced
+# under the Write/Edit gate, so it is not new work.
+#
+# Both tested whether the command CONTAINED the words, against the raw
+# unstripped string, unanchored to any clause:
+#
+#     [[ "$BASH_CMD" =~ (^|[[:space:]])git[[:space:]]+commit($|[[:space:]]) ]]
+#
+# Measured against the live hook with focus null, that admitted (T-3221):
+#
+#     git commit -m "…" ; rm -rf /tmp/x          every clause, past every gate
+#     git commit -m "…" | tee f                  a write the gate had FLAGGED
+#     somebinary --flag "please git commit this" an unknown binary, admitted
+#                                                because a quoted ARGUMENT said so
+#     git commit -m "$(cat /etc/hostname)"       arbitrary substitution
+#
+# The accident that makes this hard to see: `echo "git commit" > f` was blocked,
+# because a quote character sits immediately before `git` and the regex wants a
+# space there. Whether the hole opened depended on whether a space happened to
+# precede the word inside the quotes. Correctness was punctuation luck.
+#
+# Reported by peer 832-Workflow-designer (their T-638) and confirmed in-tree
+# here before acting. This is L-547 (T-2834) once more — a fast-path exemption
+# classifying part of a command instead of the whole of it — keyed on the quoted
+# payload rather than the first word.
+#
+# COMPOSITION, not a hand-rolled list. Requiring every clause to be
+# independently admissible via _fw_single_command_is_safe, OR to be the commit
+# itself, is what keeps `git add -A && git commit -m "…"` working: that is the
+# documented post-completion form, and `git add`'s admissibility lives in the
+# shared allowlist. A hand-written "cd or git commit" pair would have broken it,
+# and would drift from the allowlist the moment either changed.
+#
+# Every failure direction is toward BLOCKING: an unrecognised clause, an
+# unbalanced quote, a substitution, or no commit clause at all all return 1,
+# which sends the command to the task gate rather than past it.
+_fw_is_git_commit_clause() {
+    local seg
+    seg="$(_fw_strip_quoted "$1")" || return 1
+    seg="${seg#"${seg%%[![:space:]]*}"}"
+    [[ "$seg" =~ ^git[[:space:]]+commit([[:space:]]|$) ]]
+}
+
+# Remove quoted spans, tracking WHICH quote opened each one. A regex that
+# strips `'[^']*'` and `"[^"]*"` independently pairs an apostrophe inside a
+# double-quoted string with the next unrelated quote and desyncs everything
+# after it — the same defect T-3217's linter had, and the reason that one is a
+# state machine too. An unterminated quote returns non-zero, so the caller
+# blocks rather than guessing.
+_fw_strip_quoted() {
+    local s="$1" out="" q="" ch i n=${#1}
+    for (( i=0; i<n; i++ )); do
+        ch="${s:i:1}"
+        if [ -n "$q" ]; then
+            [ "$ch" = "$q" ] && q=""
+            continue
+        fi
+        case "$ch" in
+            "'"|'"') q="$ch" ;;
+            '\')     i=$((i+1)) ;;
+            *)       out+="$ch" ;;
+        esac
+    done
+    [ -n "$q" ] && return 1
+    printf '%s' "$out"
+}
+
+# TRUE only for a command that IS a commit checkpoint: at least one clause is a
+# real `git commit`, and every other clause is independently admissible.
+is_commit_checkpoint_command() {
+    local cmd="$1" seg found=0
+    local -a segs=()
+
+    # Command substitution can carry anything and is judged by nothing here.
+    case "$cmd" in *'$('*|*'`'*) return 1 ;; esac
+
+    # `--no-verify`/`-n` skips the commit-msg hook that enforces P-002, which is
+    # the thing that makes this whole allowance sound. Pre-existing rule at both
+    # call sites, kept here so the two branches cannot drift apart on it.
+    [[ "$cmd" =~ (^|[[:space:]])(--no-verify|-n)([[:space:]]|$) ]] && return 1
+
+    # Defect 2 (T-3221): the has_bash_write_pattern check in check-active-task.sh
+    # falls through with `:` rather than exiting, so a command already correctly
+    # identified as a WRITE reached these branches and was handed exit 0 — the
+    # gate saw the write and admitted it anyway. Re-asserted here rather than
+    # patched at that one call site, so the guarantee travels with the predicate
+    # to every caller. This is also what makes the T-3179 block message's claim
+    # that "write patterns void the allowance" true; it was not before.
+    has_bash_write_pattern "$cmd" && return 1
+
+    mapfile -t segs < <(_fw_chain_split "$cmd")
+    for seg in "${segs[@]}"; do
+        [[ "$seg" =~ ^[[:space:]]*$ ]] && continue
+        if _fw_is_git_commit_clause "$seg"; then
+            found=1
+            continue
+        fi
+        _fw_single_command_is_safe "$seg" || return 1
+    done
+    [ "$found" -eq 1 ]
+}
