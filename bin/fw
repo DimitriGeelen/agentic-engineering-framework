@@ -2641,12 +2641,50 @@ for event_type, hook_list in hooks.items():
                 if basename in expected:
                     found.add(basename)
                 continue
-            if not os.path.exists(script_path):
+            # T-3226: expand the placeholder for DIRECT-SCRIPT hooks too. The
+            # expansion above (T-2709) lives inside the 'fw hook' branch, so a
+            # hook that names its script directly — CLAUDE_PROJECT_DIR followed
+            # by /agents/context/stop-driver.sh — reached os.path.exists() with
+            # the placeholder still literal and was always reported missing.
+            # Measured: exists(raw)=False, exists(expanded)=True.
+            #
+            # NOTE FOR EDITORS: this block lives inside a python3 -c shell
+            # string that is DOUBLE-QUOTED. Three characters are unsafe here,
+            # even inside a comment, and the first draft of this comment hit two
+            # of them:
+            #   backtick  -- command-substituted by the shell before python sees
+            #                it. A backticked path in a comment is EXECUTED; ours
+            #                made doctor run 'fw hook' and log a hook crash.
+            #   double quote -- terminates the enclosing string. Python then gets
+            #                mangled source and raises, and because this block is
+            #                invoked with 2>/dev/null the exception is DISCARDED:
+            #                hook_result comes back empty, no case arm matches,
+            #                and the whole hook check silently prints nothing.
+            #                That is what makes it dangerous -- bash -n still
+            #                passes, doctor still exits, and the check is simply
+            #                absent rather than red.
+            #   dollar    -- expanded unless escaped, as on the line below.
+            # Use single quotes in comments here, as the surrounding lines do.
+            #
+            # It was 1 of 29 hook commands, and it was the Stop hook — the turn
+            # driver for the entire continuous-run loop. So doctor printed a red
+            # FAIL naming the one hook a reader would most want to trust, while
+            # that hook was running correctly after every turn. A false FAIL is
+            # not a harmless overcount: it teaches the reader to skim this
+            # section, which is where a REAL hook breakage would appear.
+            #
+            # The executable and Cellar checks below were also unreachable for
+            # these hooks, since the existence test short-circuits first — a
+            # genuinely non-executable hook would have been reported as missing.
+            resolved_path = script_path.replace('\${CLAUDE_PROJECT_DIR}', os.environ.get('PROJECT_ROOT', ''))
+            if not os.path.isabs(resolved_path):
+                resolved_path = os.path.join(os.environ.get('PROJECT_ROOT', ''), resolved_path)
+            if not os.path.exists(resolved_path):
                 if '/Cellar/' in script_path:
                     issues.append(f'{event_type}: stale Homebrew Cellar path (run fw init --provider claude --force to fix): {os.path.basename(script_path)}')
                 else:
                     issues.append(f'{event_type}: script not found: {os.path.basename(script_path)}')
-            elif not os.access(script_path, os.X_OK):
+            elif not os.access(resolved_path, os.X_OK):
                 warnings.append(f'{event_type}: script not executable: {os.path.basename(script_path)}')
             elif '/Cellar/' in script_path:
                 warnings.append(f'Hook uses Cellar path (will break on brew upgrade). Run: fw init --provider claude --force')
