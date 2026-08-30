@@ -1,19 +1,10 @@
 ---
-id: T-3222
-name: "safe-list admits curl -o and wget -O, which write a file with no redirect"
+id: T-3223
+name: "T-3221 predicate refuses a real multi-line commit message"
 description: >
-  The Bash safe-list admits curl and wget unconditionally, violating the admission
-  rule it states for itself: only verbs that cannot write a file WITHOUT a shell redirect.
-  That is the basis on which it excludes awk and uniq. curl -o FILE and wget -O FILE
-  both write with no redirect and are not flagged by has_bash_write_pattern, so both
-  are ADMITTED with no active task. Measured against the live hook under T-3221: curl
-  -o /tmp/zz http://x/ returns exit 0 with focus null. Reported as a side finding
-  by peer 832-Workflow-designer (their T-638); confirmed in-tree. Separate from T-3221
-  per one-bug-one-task: T-3221 fixed the git-commit exemption predicate and correctly
-  defers clause admissibility to this shared allowlist, so this hole surfaces through
-  it rather than being caused by it.
+  T-3221 predicate refuses a real multi-line commit message
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-30T10:06:38Z
-last_update: '2026-08-30T10:15:18Z'
-date_finished:
+created: 2026-08-30T10:18:41Z
+last_update: 2026-08-30T10:18:41Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -43,48 +34,79 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-30T10:15:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=258,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-30T10:15:18Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3222: safe-list admits curl -o and wget -O, which write a file with no redirect
+# T-3223: T-3221 predicate refuses a real multi-line commit message
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Found by the fix in T-3221 refusing the very first commit made after it — the
+close of T-3221 itself. That command was `git add -A .tasks/ .context/ .fabric/
+&& git commit -q -m "<multi-line message>"`, the framework's own documented
+post-completion form, and it was ADMITTED before T-3221 and refused after. A
+regression on a legitimate workflow, filed separately because T-3221 was already
+closed and its own gate refused to reopen it — the escape the block message
+names is a new task, so a new task was taken.
+
+**Measured cause**, not inferred. `_fw_chain_split` was already quote-aware and
+correctly kept the message's newlines INSIDE the commit segment. It then printed
+each segment with `printf '%s\n'`, and all three callers read that stream with
+`mapfile -t` / `read -r` — line-delimited. One segment containing newlines came
+back as six, five of them prose from the message body, every one read as an
+unsafe command:
+
+```
+safe     git add -A .tasks/ .context/ .fabric/
+UNSAFE    git commit -q -m "T-3221: close as partial-complete — 12/
+UNSAFE   Gate ran all 12 verification commands (14/14 in the new suit
+UNSAFE   147 ok across ten adjacent gate suites, corpus silent-skip l
+UNSAFE   self-vendor in sync). Lands partial-complete: the one Human
+UNSAFE   blast-radius call, since every consumer vendors this hook."
+```
+
+The structure was right; the **channel** threw it away. Same class as the bug
+T-3221 fixed, and as everything else in this cluster (L-547, OBS-355), one layer
+down — a delimiter scan standing in for structure, so an argument that CONTAINS
+a delimiter is treated as a boundary.
+
+Fixed at the contract, not at the caller that noticed: `_fw_chain_split` now
+emits NUL-terminated segments and all three readers use `read -d ''`. NUL is the
+only delimiter that cannot appear in a bash command string. This also repairs
+`is_bash_safe_command`, which had the same latent defect for any multi-line
+quoted argument since T-2834.
+
+**Ninth instance of the class, observed while writing this file.** The
+focus-drift gate blocked the command that was going to write this very RCA,
+because the heredoc *mentioned* the predecessor task ID. My focus was correct
+and the target file was this task's own. The remedy was the Edit tool rather
+than the `FW_SWITCH_FOCUS=1` bypass the block message offers, because logging a
+Tier-2 drift bypass for a command that never drifted would put a false entry in
+the audit trail. Filed as evidence, not fixed here.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The refusal is REPRODUCED and its cause MEASURED — clause split, quote
+      strip return code, write-pattern verdict, per-clause verdict — not
+      inferred from reading the predicate
+- [x] `git add -A <paths> && git commit -q -m "<multi-line message>"` is
+      ADMITTED again at both exemption branches
+- [x] The four shapes T-3221 closed stay blocked — this must not be fixed by
+      loosening back toward the substring match
+- [x] T-3221's suite gains a leg using a REALISTIC commit message (multi-line,
+      punctuation, parentheses, an apostrophe) — the short `-m "TT-9: x"`
+      fixture is what let this through
+- [x] The no-widening sweep still passes with the corrected predicate
+- [x] `bin/fw vendor self --check` reports in sync
+- [x] A newline-separated command OUTSIDE quotes is still blocked — the fix must
+      not be mistaken for "stop splitting on newlines", which would widen
+- [x] A mutation control reverts the splitter to newline output and asserts the
+      multi-line refusal comes back, so the two legs above pass BECAUSE of the
+      NUL delimiter and not incidentally
+- [x] The two tests that call `_fw_chain_split` directly are updated to the new
+      contract rather than left to pass vacuously (both counted segments as
+      lines, which would report 1 for every input)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -118,6 +140,18 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t3221_commit_exemption_clause.bats > /tmp/.t3223a.out 2>&1 && grep -q "^ok 17" /tmp/.t3223a.out && ! grep -q "^not ok" /tmp/.t3223a.out
+test "$(grep -c '# skip' /tmp/.t3223a.out)" -eq 0
+timeout 1200 bats tests/unit/fd_dup_not_chain_split.bats tests/unit/safe_commands_chain.bats tests/unit/check_active_task_cwd_resolution.bats tests/unit/check_active_task_fp_fix.bats tests/unit/check_active_task_memory_exempt.bats tests/unit/check_active_task_switch_focus.bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/t3179_partial_complete_commit.bats tests/unit/test_check_active_task_bootstrap.bats tests/unit/test_safe_commands_git_commit.bats > /tmp/.t3223b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3223b.out
+test "$(grep -c '# skip' /tmp/.t3223b.out)" -eq 0
+bash -n agents/context/check-active-task.sh
+bash -n agents/context/lib/safe-commands.sh
+test "$(grep -c 'printf .%s.0. "\$seg"' agents/context/lib/safe-commands.sh)" -eq 3
+test "$(grep -c "read -r -d ''" agents/context/lib/safe-commands.sh)" -eq 2
+grep -q "read -r -d ''" agents/context/check-active-task.sh
+python3 tools/bats-silent-skip-lint.py tests/
+bin/fw vendor self --check > /tmp/.t3223v.out 2>&1 && grep -q "in sync" /tmp/.t3223v.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -236,6 +270,48 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom.** The first real commit made after the predecessor fix landed was
+refused by that fix. The command was the documented post-completion form and had
+been admitted by the pre-fix code.
+
+**Root cause.** `_fw_chain_split` used newline as its output delimiter while
+being quote-aware about newlines in its input. Those two facts are jointly
+impossible: if a segment may contain a newline, a newline cannot separate
+segments. Three callers read the stream as lines and all three inherited it.
+
+**Why the framework allowed it.** Two reasons, and the second is the one worth
+keeping.
+
+1. Every fixture in the predecessor's suite used `-m "TT-9: x"` — no newline, no
+   apostrophe, no parentheses. The suite exercised the predicate thoroughly
+   against inputs that could not reach the defect. That is why the new leg's
+   fixture is deliberately ugly: newlines, an apostrophe, parentheses, a colon,
+   an em dash and a `#`.
+
+2. **The defect predates the predecessor by a year and generated no evidence.**
+   `is_bash_safe_command` has used this splitter since T-2834 with the same
+   blindness for any multi-line quoted argument. Nobody hit it because the
+   failure direction is toward BLOCKING — a mis-split command reads unsafe and
+   goes to the task gate, which admits it whenever a task is active. It surfaced
+   only when a *second* consumer used the splitter in a context where blocking
+   was itself the wrong answer. A latent fault that always fails safe produces
+   no signal until something changes what "safe" means. That is the general
+   lesson: erring toward blocking is the right default and it also hides the
+   bug, so a fail-safe direction is not a reason to skip the test.
+
+**Prevention.** The delimiter is NUL, which cannot collide with content, and the
+contract is stated at the function with the reader idiom every caller must use.
+Two mutation controls give it teeth: one reverts the library to newline output
+and asserts the multi-line refusal returns; the other asserts a newline-separated
+command OUTSIDE quotes is still blocked — so the fix cannot be mistaken for
+"stop splitting on newlines", which would have been a genuine widening. The two
+tests that call the splitter directly were updated to the new contract rather
+than left counting NUL output as lines, which would have reported one segment
+for every input and passed forever.
+
+**Escalation level.** C (tooling). The fix is in the shared predicate, not in
+the caller that noticed, so every present and future consumer inherits it.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -326,7 +402,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-30T10:06:38Z — task-created [task-create-agent]
+### 2026-08-30T10:18:41Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3222-safe-list-admits-curl--o-and-wget--o-whi.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3223-t-3221-predicate-refuses-a-real-multi-li.md
 - **Context:** Initial task creation

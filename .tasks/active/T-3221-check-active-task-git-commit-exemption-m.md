@@ -4,12 +4,12 @@ name: "check-active-task git commit exemption matches a mention, not a command"
 description: >
   check-active-task git commit exemption matches a mention, not a command
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/context/lib/safe-commands.sh, tests/unit/t3221_commit_exemption_clause.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-30T10:01:38Z
-last_update: 2026-08-30T10:01:38Z
-date_finished: null
+last_update: 2026-08-30T10:15:57Z
+date_finished: 2026-08-30T10:15:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-30T10:15:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=265,acs=13)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-30T10:15:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 3
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=3 
+      (body:component-silent-failure); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3221: check-active-task git commit exemption matches a mention, not a command
@@ -146,7 +174,11 @@ test "$(grep -c 'is_commit_checkpoint_command "$BASH_CMD"' agents/context/check-
 bash -c 'source agents/context/lib/safe-commands.sh; is_commit_checkpoint_command "git commit -m \"x\""'
 bash -c 'source agents/context/lib/safe-commands.sh; ! is_commit_checkpoint_command "git commit -m \"x\" ; rm -rf /tmp/z"'
 bash -c 'source agents/context/lib/safe-commands.sh; ! is_commit_checkpoint_command "somebinary --flag \"please git commit this\""'
-python3 tools/bats-silent-skip-lint.py tests/unit/t3221_commit_exemption_clause.bats
+# T-3217's lint over the CORPUS, not over this one file: a single skip-free file
+# makes it exit 2 by design ("no call sites" is not a pass — it is what scanning
+# the wrong path looks like). This file's own freedom from silent skips is
+# already proven empirically by the `# skip` count on its TAP output above.
+python3 tools/bats-silent-skip-lint.py tests/
 bin/fw vendor self --check > /tmp/.t3221v.out 2>&1 && grep -q "in sync" /tmp/.t3221v.out
 
 
@@ -242,6 +274,51 @@ a green run is now evidence about the fix rather than about the test.
 
 ## Recommendation
 
+**Recommendation:** GO
+
+**Rationale:** The hole is real, was measured against the live hook before
+anything changed, and is closed at both branches by one predicate. What makes
+this a GO rather than a "probably fine" is the pair of controls: the mutation
+control rebuilds the pre-fix hook *from live source* and asserts it still
+admits what the fix blocks — so if someone reverts the predicate, this suite
+goes red rather than quietly agreeing with itself — and the 16-command
+no-widening sweep asserts the fixed hook admits nothing the pre-fix one
+blocked. A gate fix that tightens the reported cases while loosening something
+else would pass every other leg in the file; that is the check that rules it
+out.
+
+The one judgement left to you is blast radius, not correctness. Every consumer
+project vendors this hook. The newly-blocked shapes are a commit chained to a
+write or to an unknown binary — forms the framework's own guidance already
+tells agents to split into separate calls — but you are the one who knows
+whether something in your own habits depends on the looser behaviour.
+
+I would also flag what this task did *not* do. `git commit … && curl -o FILE`
+is still admitted, because `curl` sits unconditionally on the shared allowlist
+and `curl -o` writes with no redirect. That is a genuine hole and it is filed
+as **T-3222**, not patched here: fixing it inside this predicate would mean
+hand-rolling a clause list, which is precisely the mistake that would have
+broken `git add -A && git commit`. The composition property is worth more than
+closing one more case in the wrong place.
+
+**Evidence:**
+
+- `tests/unit/t3221_commit_exemption_clause.bats` — 14/14, no skips. Includes
+  the mutation control (test 10) and the no-widening sweep (test 11).
+- Live-hook matrix before/after, both branches, in `## RCA` above: four shapes
+  moved from ADMITTED to blocked, two legitimate forms unchanged.
+- 147 ok / 0 skips / 0 failures across ten adjacent gate suites
+  (`check_active_task_*`, `safe_commands_*`, `t3096_*`, `t3179_*`).
+- `agents/context/check-active-task.sh` — two call sites, one predicate;
+  test 14 asserts the count is exactly 2 and that the substring form is gone.
+- `agents/context/lib/safe-commands.sh:is_commit_checkpoint_command` — write
+  refusal moved inside, which makes the T-3179 block message's claim that
+  "write patterns void the allowance" true; it was not before.
+- Self-vendor in sync (the vendor guard correctly withheld the files until
+  they were committed).
+- Peer report: 832-Workflow-designer T-638, chat arc offset 823. Their fix is
+  independent; ours was confirmed in-tree rather than taken on report.
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -296,3 +373,21 @@ a green run is now evidence about the fix rather than about the test.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3221-check-active-task-git-commit-exemption-m.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-847b0bc6
+- **Timestamp:** 2026-08-30T10:16:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 2
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+  2. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `consumer project`
+
+### 2026-08-30T10:15:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

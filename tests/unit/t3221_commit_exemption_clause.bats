@@ -151,6 +151,36 @@ PY
     [ "$(_verdict "$(_mkroot partial)" "$HOOK" "$c")" = ADMITTED ]
 }
 
+@test "a REALISTIC multi-line commit message is still admitted (T-3223)" {
+    # T-3221 shipped with only `-m "TT-9: x"` fixtures, and the very first real
+    # commit after it was refused. _fw_chain_split was quote-aware, so it kept
+    # the newline inside the message's segment — and then printed segments
+    # newline-delimited, so the caller read one segment back as six, five of
+    # them prose. Fixed by making the splitter emit NUL and every reader use
+    # `read -d ''`.
+    #
+    # Everything a real message carries is here on purpose: newlines, an
+    # apostrophe, parentheses, a colon, a slash, an em dash, and a `#`. A short
+    # fixture is what let the defect through, so the fixture is no longer short.
+    local msg='T-3223: the splitter'"'"'s channel threw away its own structure
+
+A quoted argument may contain a newline (measured: 6 clauses, 5 of them
+prose). Delimiter/boundary confusion — see the RCA. Refs #1, 190 ok.'
+    local c="git add -A .tasks/ .context/ && git commit -q -m \"$msg\""
+    [ "$(_verdict "$(_mkroot null)" "$HOOK" "$c")" = ADMITTED ]
+    [ "$(_verdict "$(_mkroot partial)" "$HOOK" "$c")" = ADMITTED ]
+}
+
+@test "a multi-line message does not smuggle a second command past the gate (T-3223)" {
+    # The counterpart to the leg above: admitting newlines inside quotes must
+    # not admit a newline-separated command OUTSIDE them. If the fix had been
+    # "stop splitting on newlines" rather than "stop using newline as the
+    # output delimiter", this would be ADMITTED.
+    local c='git commit -m "TT-9: x"
+rm -rf /tmp/zzz'
+    [ "$(_verdict "$(_mkroot null)" "$HOOK" "$c")" = blocked ]
+}
+
 @test "--no-verify still voids the allowance" {
     [ "$(_verdict "$(_mkroot null)" "$HOOK" 'git commit --no-verify -m "TT-9: x"')" = blocked ]
 }
@@ -169,6 +199,31 @@ PY
     local m; m="$(_mkmutant)"
     [ "$(_verdict "$m" "$m/agents/context/check-active-task.sh" 'git commit -m "TT-9: x" ; rm -rf /tmp/zzz')" = ADMITTED ]
     [ "$(_verdict "$m" "$m/agents/context/check-active-task.sh" 'somebinary --flag "please git commit this"')" = ADMITTED ]
+}
+
+@test "reverting the splitter to newline output re-opens the multi-line refusal (T-3223)" {
+    # Teeth for the T-3223 fix specifically. The two legs above pass with the
+    # NUL delimiter in place; this asserts they pass BECAUSE of it. Mutate the
+    # live library back to newline-delimited output and the realistic message
+    # must be refused again.
+    local m="$BATS_TEST_TMPDIR/root-nlmutant"
+    cp -r "$(_mkroot null)" "$m"
+    local lib="$m/agents/context/lib/safe-commands.sh"
+    local n
+    n="$(grep -c "printf '%s\\\\0' \"\$seg\"" "$lib")"
+    [ "$n" -eq 3 ]
+    sed -i "s|printf '%s\\\\0' \"\$seg\"|printf '%s\\\\n' \"\$seg\"|g" "$lib"
+    bash -n "$lib"
+
+    local msg='T-3223: multi-line
+
+second line'
+    [ "$(_verdict "$m" "$m/agents/context/check-active-task.sh" \
+         "git add -A && git commit -q -m \"$msg\"")" = blocked ]
+    # and the single-line form still works in the mutant, so the leg above is
+    # measuring the newline specifically and not a broken mutant
+    [ "$(_verdict "$m" "$m/agents/context/check-active-task.sh" \
+         'git add -A && git commit -m "TT-9: x"')" = ADMITTED ]
 }
 
 # ── NO WIDENING ──────────────────────────────────────────────────────────────

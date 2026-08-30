@@ -22,7 +22,12 @@ load ../test_helper
 LIB="$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"
 
 _allowed() { bash -c "source '$LIB'; is_bash_safe_command \"\$1\"" _ "$1"; }
-_segs()    { bash -c "source '$LIB'; _fw_chain_split \"\$1\"" _ "$1"; }
+# T-3223: the splitter emits NUL-TERMINATED segments (a quoted argument may
+# legitimately contain a newline, so a newline delimiter cannot mark a
+# boundary). Translate to newlines HERE so the line-counting assertions below
+# still measure segments. Without this they count 1 for every input — which
+# looks like a passing test right up until it is the only thing you have.
+_segs()    { bash -c "source '$LIB'; _fw_chain_split \"\$1\" | tr '\\0' '\\n'" _ "$1"; }
 
 @test "T-2879: SMOKE — a bare safe command is allowed and a write is not" {
     # If these two disagree, every leg below is measuring a broken harness.

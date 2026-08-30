@@ -18,10 +18,35 @@
 
 # --- T-2834: chain-aware entry point -------------------------------------
 #
-# _fw_chain_split emits one segment per line, splitting on chain operators that
-# are NOT inside quotes: `&&`, `||`, `&`, `|`, `;`, and newline. Quote tracking
+# _fw_chain_split emits one NUL-TERMINATED segment per chain operator that is
+# NOT inside quotes: `&&`, `||`, `&`, `|`, `;`, and newline. Quote tracking
 # matters — without it `grep -q "a && b"` splits into two bogus segments and a
 # read-only command starts blocking.
+#
+# T-3223: the delimiter is NUL, not newline, and that is the whole point.
+#
+# This function was already quote-aware, so a newline inside a quoted argument
+# was correctly kept INSIDE its segment. Then the segment was printed with
+# `printf '%s\n'` and read back by `mapfile -t` / `read -r` — line-delimited.
+# A segment that legitimately contained a newline arrived at the caller as
+# several segments, each a fragment of a quoted string, none of them a command.
+#
+# Measured: a real multi-line commit message split into six clauses, five of
+# which were prose from the message body, all read as unsafe. So `git add -A
+# … && git commit -q -m "<multi-line message>"` — the framework's own
+# documented post-completion form, in the shape agents actually type it —
+# was refused. The short single-line fixtures in the test suite never met it.
+#
+# The structure was right and the CHANNEL threw it away, which is the same
+# class this whole cluster keeps hitting (L-547, OBS-355) one layer down: a
+# delimiter-scan standing in for structure, so an argument that CONTAINS a
+# delimiter is treated as a boundary. NUL cannot appear in a bash command
+# string, so it is the only delimiter that cannot collide with content.
+#
+# Callers MUST read with `-d ''`:
+#     while IFS= read -r -d '' seg; do … done < <(_fw_chain_split "$cmd")
+# `read -d ''` is bash 4.0+; `mapfile -d` would need 4.4, so the loop form is
+# used at every call site for portability (D4).
 #
 # Deliberately NOT handled: command substitution. `echo $(git commit -m 'T-X: y')`
 # still reads as safe. Extracting `$(...)` as a segment would also catch the
@@ -62,12 +87,12 @@ _fw_chain_split() {
                     continue
                 fi
                 [ "$nxt" = "$ch" ] && i=$((i+1))
-                printf '%s\n' "$seg"; seg="" ;;
-            ';'|$'\n') printf '%s\n' "$seg"; seg="" ;;
+                printf '%s\0' "$seg"; seg="" ;;
+            ';'|$'\n') printf '%s\0' "$seg"; seg="" ;;
             *)       seg+="$ch" ;;
         esac
     done
-    printf '%s\n' "$seg"
+    printf '%s\0' "$seg"
 }
 
 # A compound command is safe only if EVERY segment is safe.
@@ -85,7 +110,11 @@ _fw_chain_split() {
 is_bash_safe_command() {
     local _cmd="$1" _seg _n=0
     local -a _segs=() _kept=()
-    mapfile -t _segs < <(_fw_chain_split "$_cmd")
+    # T-3223: `-d ''`. mapfile -t here read the splitter's NUL stream as lines,
+    # so a segment containing a newline arrived as several bogus segments.
+    while IFS= read -r -d '' _seg; do
+        _segs+=("$_seg")
+    done < <(_fw_chain_split "$_cmd")
     for _seg in "${_segs[@]}"; do
         [[ "$_seg" =~ ^[[:space:]]*$ ]] && continue
         _kept+=("$_seg"); _n=$((_n+1))
@@ -858,7 +887,10 @@ is_commit_checkpoint_command() {
     # that "write patterns void the allowance" true; it was not before.
     has_bash_write_pattern "$cmd" && return 1
 
-    mapfile -t segs < <(_fw_chain_split "$cmd")
+    # T-3223: `-d ''` — see the splitter's contract note.
+    while IFS= read -r -d '' seg; do
+        segs+=("$seg")
+    done < <(_fw_chain_split "$cmd")
     for seg in "${segs[@]}"; do
         [[ "$seg" =~ ^[[:space:]]*$ ]] && continue
         if _fw_is_git_commit_clause "$seg"; then

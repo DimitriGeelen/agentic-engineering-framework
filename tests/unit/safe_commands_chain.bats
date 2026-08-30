@@ -129,21 +129,26 @@ setup() {
 }
 
 # --- splitter unit checks ---
+#
+# T-3223: _fw_chain_split emits NUL-TERMINATED segments, so these translate to
+# newlines before counting. A quoted argument may contain a newline; a newline
+# delimiter therefore cannot mark a segment boundary, and the readers all use
+# `read -d ''`.
 
 @test "splitter: counts segments of a simple chain" {
-    run _fw_chain_split "ls && git status"
+    run bash -c 'source "$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"; _fw_chain_split "$1" | tr "\0" "\n"' _ "ls && git status"
     [ "$status" -eq 0 ]
     [ "$(echo "$output" | grep -c .)" -eq 2 ]
 }
 
 @test "splitter: does not split on a quoted operator" {
-    run _fw_chain_split "grep -q 'a && b' f"
+    run bash -c 'source "$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"; _fw_chain_split "$1" | tr "\0" "\n"' _ "grep -q 'a && b' f"
     [ "$status" -eq 0 ]
     [ "$(echo "$output" | grep -c .)" -eq 1 ]
 }
 
 @test "splitter: a single command yields exactly one segment" {
-    run _fw_chain_split "git status"
+    run bash -c 'source "$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"; _fw_chain_split "$1" | tr "\0" "\n"' _ "git status"
     [ "$status" -eq 0 ]
     [ "$(echo "$output" | grep -c .)" -eq 1 ]
 }

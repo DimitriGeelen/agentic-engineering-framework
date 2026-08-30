@@ -351,7 +351,11 @@ _bash_gate_reason() {
     # that turns "why is my read blocked?" into a one-second answer.
     local _seg _bad=""
     if type _fw_chain_split &>/dev/null && type _fw_single_command_is_safe &>/dev/null; then
-        while IFS= read -r _seg; do
+        # T-3223: `-d ''` — _fw_chain_split emits NUL-terminated segments, so a
+        # quoted argument containing a newline stays one segment. Reading this
+        # as lines is what made a multi-line commit message report five prose
+        # fragments as "not on the read-only allowlist".
+        while IFS= read -r -d '' _seg; do
             [[ "$_seg" =~ ^[[:space:]]*$ ]] && continue
             if ! _fw_single_command_is_safe "$_seg"; then
                 _bad=$(printf '%s' "$_seg" | sed 's/^[[:space:]]*//' | head -c 60)
