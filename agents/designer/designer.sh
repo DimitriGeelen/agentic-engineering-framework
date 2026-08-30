@@ -22,6 +22,13 @@
 #                                      Purely local: no network, same sha256-vs-pin verification
 #                                      and same reject-on-mismatch as `sync --from`.
 #   fw designer url                    Print the served Watchtower URL for the designer
+#   fw designer check-currency         Standalone CURRENCY probe (T-3158): is a newer
+#                                      `designer-v*` tag published at the pin's own
+#                                      `source_origin` than `version:`? Advisory only —
+#                                      always exits 0; prints a WARN/OK/SKIP line. This
+#                                      is the same check `fw doctor` runs inline; reach
+#                                      for this verb to run it in isolation (CI, cron,
+#                                      manual probe) without a full doctor pass.
 #
 # Boundary (T-559): both intake paths handle only frozen published bytes. --from takes a
 # DELIVERED artifact (file_send fallback); --from-tag fetches a frozen annotated tag from
@@ -32,9 +39,11 @@ set -euo pipefail
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 # T-2649 (OBS-097): pin is FRAMEWORK-owned (vendored for consumers) —
 # FRAMEWORK_ROOT-first, PROJECT_ROOT fallback for direct invocation.
-PIN_FILE="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/policy/designer-pin.yaml"
+# FW_DESIGNER_PIN_FILE (T-2547 hermetic-test hook, T-3119/T-3158): points every verb in
+# this script at a temp pin copy so bats never mutates the live tracked pin file.
+PIN_FILE="${FW_DESIGNER_PIN_FILE:-${FRAMEWORK_ROOT:-$PROJECT_ROOT}/policy/designer-pin.yaml}"
 
-_c_red=$'\033[0;31m'; _c_grn=$'\033[0;32m'; _c_yel=$'\033[0;33m'; _c_bold=$'\033[1m'; _c_off=$'\033[0m'
+_c_red=$'\033[0;31m'; _c_grn=$'\033[0;32m'; _c_yel=$'\033[0;33m'; _c_cyn=$'\033[0;36m'; _c_bold=$'\033[1m'; _c_off=$'\033[0m'
 
 # Read a top-level scalar from a flat YAML file without a yq dependency.
 # Capture-then-strip (L-387: never `grep | ...` under pipefail on a live producer).
@@ -285,6 +294,78 @@ do_url() {
     printf '%s/designer\n' "$base"
 }
 
+# Compare two dotted version strings as INTEGER TUPLES — never as strings (T-3158
+# AC-1/AC-4, PL-021: lexical sort ranks "0.9.0" above "0.10.0"/"0.11.0", which is
+# exactly backwards). Returns 0 (true) if $1 > $2, 1 otherwise (including equal).
+# Missing trailing components pad as 0 ("1.2" vs "1.2.0" compares equal).
+_version_gt() {
+    local -a a b
+    IFS='.' read -r -a a <<< "$1"
+    IFS='.' read -r -a b <<< "$2"
+    local n=${#a[@]} i ai bi
+    [ ${#b[@]} -gt "$n" ] && n=${#b[@]}
+    for ((i = 0; i < n; i++)); do
+        ai="${a[i]:-0}"; ai="${ai//[^0-9]/}"; ai="${ai:-0}"
+        bi="${b[i]:-0}"; bi="${bi//[^0-9]/}"; bi="${bi:-0}"
+        if ((10#$ai > 10#$bi)); then return 0; fi
+        if ((10#$ai < 10#$bi)); then return 1; fi
+    done
+    return 1
+}
+
+# fw designer check-currency (T-3158) — standalone CURRENCY probe.
+#
+# Sibling of, but distinct from, `do_status`'s EXPOSURE check (does the vendored
+# build's sha256 match the pin). This asks CURRENCY: is `version:` still the newest
+# `designer-v*` tag the pin's own `source_origin:` publishes? Both green is required —
+# designer-v0.9.0 through v0.11.0 sat unconsumed for three releases with EXPOSURE
+# green throughout, because nothing asked this question (T-3119 origin).
+#
+# Advisory only: ALWAYS exits 0, regardless of WARN/OK/SKIP. An advisory that can
+# fail a caller's gate gets disabled the first time it is inconvenient, and then it
+# protects nothing (001-CashWeb's rationale for their `scripts/check-designer-
+# currency.py`, adopted verbatim here — no such file was found on this rail at
+# authoring time, so this is an independent implementation of the same contract,
+# not a port; attribution stays owed if 001-CashWeb's file is ever handed over).
+#
+# `fw doctor` calls this verb (rather than duplicating the probe inline) so there is
+# exactly one implementation; this verb is also directly reachable for CI/cron/manual
+# use without a full doctor pass. Network call is bounded (`timeout 10`) and refuses
+# to prompt for credentials, so an unreachable/slow origin cannot hang the caller.
+do_check_currency() {
+    local ver origin ls latest="" newest v line
+    ver="$(_pin_get version)" || ver=""
+    origin="$(_pin_get source_origin)" || origin=""
+    if [ -z "$ver" ] || [ -z "$origin" ]; then
+        echo -e "${_c_cyn}SKIP${_c_off}  designer pin currency not checkable (pin has no version/source_origin)"
+        return 0
+    fi
+    if ls=$(GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5" timeout 10 git ls-remote --tags "$origin" 'designer-v*' 2>/dev/null); then
+        while IFS= read -r line; do
+            [ -n "$line" ] || continue
+            v="${line#designer-v}"
+            if [ -z "$latest" ] || _version_gt "$v" "$latest"; then
+                latest="$v"
+            fi
+        done <<< "$(printf '%s\n' "$ls" | sed -e 's|.*refs/tags/||' -e 's|\^{}$||' | grep '^designer-v' || true)"
+        if [ -z "$latest" ]; then
+            echo -e "${_c_cyn}SKIP${_c_off}  designer pin currency unknown — origin publishes no designer-v* tags"
+            echo -e "         origin: $origin"
+        elif [ "$latest" != "$ver" ] && _version_gt "$latest" "$ver"; then
+            echo -e "${_c_yel}WARN${_c_off}  designer pin is behind its origin — pinned $ver, newest released $latest"
+            echo -e "         tag designer-v$latest at $origin"
+            echo -e "         Run: fw designer sync --from-tag   (re-pin + sha256-verify at the tag)"
+        else
+            echo -e "${_c_grn}OK${_c_off}  designer pin current with origin (newest released $latest)"
+        fi
+    else
+        echo -e "${_c_cyn}SKIP${_c_off}  designer pin currency UNKNOWN — could not reach origin $origin"
+        echo -e "         This is not 'current': the origin's newest release was never read."
+        echo -e "         Set FW_SKIP_DESIGNER_CURRENCY=1 to skip this probe on offline runs."
+    fi
+    return 0
+}
+
 # T-2623: draft mode — cheap iteration tier. Convention: map id prefix `draft-`
 # marks a draft (excluded from lint baseline + fw search retrieval; DRAFT badge
 # in the gallery; never authority). `fw designer draft new <name>` seeds a
@@ -397,8 +478,9 @@ case "$cmd" in
     install) do_install "$@" ;;
     url)     do_url "$@" ;;
     draft)   do_draft "$@" ;;
+    check-currency) do_check_currency "$@" ;;
     -h|--help|help)
-        sed -n '2,29p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+        sed -n '2,36p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
         ;;
     *) echo "unknown verb: $cmd (try: status|path|sync|install|url|draft)" >&2; exit 2 ;;
 esac

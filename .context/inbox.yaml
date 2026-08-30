@@ -4146,3 +4146,11 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-356
+  text: "has_bash_write_pattern treats a MENTION as a write: a commit whose MESSAGE contains 'rm -rf' is classified WRITE and refused by the T-3221 commit-checkpoint predicate. Measured: is_commit_checkpoint_command 'git commit -m \"note: we no longer rm -rf the output dir\"' returns REFUSE. Same class as L-547/OBS-355 and the T-3223 splitter-channel defect — a whole-string character scan standing in for shell structure. Pre-existing, predates T-3221. Found while deciding where T-3222's curl -o check belongs; the decision to place that check clause-scoped rather than in has_bash_write_pattern was made BECAUSE of this. Fix shape: scan the quote-stripped, clause-split command as is_commit_checkpoint_command already does, rather than the raw string. Not folded into T-3222 per one-bug-one-task."
+  captured: 2026-08-30T10:58:19Z
+  context_task: T-3222
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true

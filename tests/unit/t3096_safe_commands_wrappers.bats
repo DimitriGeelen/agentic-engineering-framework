@@ -241,7 +241,33 @@ _load_msg_fns() {
     # CLAUDE.md §Watchtower Port. This gating is why the rule was hard to follow.
     run is_bash_safe_command "bin/fw watchtower url"
     [ "$status" -eq 0 ]
+    # The idiom CLAUDE.md actually prescribes, verbatim: no -o.
+    run is_bash_safe_command "curl -sf \"\$(bin/fw watchtower url)/page\""
+    [ "$status" -eq 0 ]
+}
+
+@test "fw: the port-resolution idiom with -o FILE is GATED (T-3222)" {
+    # This leg previously asserted the OPPOSITE, as part of the test above:
+    #
+    #     is_bash_safe_command "curl -sf \"\$(bin/fw watchtower url)/config\" -o /tmp/x"
+    #     [ "$status" -eq 0 ]
+    #
+    # The `-o /tmp/x` was an embellishment — CLAUDE.md's prescribed idiom has no
+    # `-o` — and it encoded the T-3222 admission hole as a guarantee: curl and
+    # wget sat unconditionally on the safe-list, so a curl WRITING A FILE was
+    # admitted with no active task. A test asserting a bug is worse than no
+    # test, because the next person to touch the area reads it as a decision.
+    #
+    # Corrected rather than deleted, and inverted rather than quietly dropped:
+    # the assertion now pins the fixed behaviour, and the old text is above so
+    # the change is legible to anyone who remembers the original.
+    #
+    # This does not make the idiom unusable — the safe-list only decides what
+    # runs with NO ACTIVE TASK. Under a task, a curl that writes a temp file is
+    # ordinary work and passes the gate normally.
     run is_bash_safe_command "curl -sf \"\$(bin/fw watchtower url)/config\" -o /tmp/x"
+    [ "$status" -ne 0 ]
+    run is_bash_safe_command "curl -sf \"\$(bin/fw watchtower url)/config\" -o -"
     [ "$status" -eq 0 ]
 }
 

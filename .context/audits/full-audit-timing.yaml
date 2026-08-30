@@ -1,17 +1,25 @@
 # Full-audit run timing - written by agents/audit/audit.sh (T-3127)
 last_run:
-  timestamp: "2026-08-29T13:10:46+02:00"
-  total_seconds: 431
+  timestamp: "2026-08-30T12:37:24+02:00"
+  total_seconds: 900
   ceiling_seconds: 3000
   timed_out: true
   kill_source: external
-  killed_in_section: "traceability"
+  killed_in_section: "episodic"
   sections:
     - name: "structure"
-      seconds: 99
+      seconds: 262
     - name: "tree"
-      seconds: 254
+      seconds: 310
     - name: "compliance"
       seconds: 0
     - name: "quality"
       seconds: 0
+    - name: "traceability"
+      seconds: 161
+    - name: "corpus-health"
+      seconds: 5
+    - name: "enforcement"
+      seconds: 94
+    - name: "learning"
+      seconds: 27

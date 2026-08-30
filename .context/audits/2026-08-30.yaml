@@ -1,10 +1,10 @@
-# Audit Results - 2026-08-30-1153
-timestamp: 2026-08-30T09:53:34Z
+# Audit Results - 2026-08-30-1252
+timestamp: 2026-08-30T10:52:41Z
 sections: "structure"
 summary:
-  pass: 30
+  pass: 29
   warn: 5
-  fail: 0
+  fail: 1
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3207 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3210 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 30 project YAML file(s)"
   - level: PASS
@@ -46,15 +46,15 @@ findings:
     check: "Found 183 GO-scope-not-propagated inception(s) of 355 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
     mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
   - level: PASS
-    check: "Fabric: 1139 registered card(s)"
+    check: "Fabric: 1140 registered card(s)"
   - level: WARN
-    check: "Fabric: 52/1052 cards have no edges"
+    check: "Fabric: 52/1053 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
     check: "Fabric drift: 13 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 753 card(s) point at files no watch pattern covers"
+    check: "Fabric: 754 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
@@ -63,8 +63,9 @@ findings:
     mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run bleeding-edge (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/bleeding-edge INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"
-  - level: PASS
-    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
+  - level: FAIL
+    check: "Self-vendor drift: libs class — 2 file(s) out of sync (T-2244)"
+    mitigation: "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
   - level: PASS
     check: "Invariant suite green — examined 104 structural invariant(s) (tests/lint/)"
   - level: PASS

@@ -77,68 +77,98 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Side finding in peer 832-Workflow-designer's report of the sibling defect this
+repo closed as T-3221 (their T-638, chat arc @823). Filed separately at the
+time, per one-bug-one-task, and confirmed in-tree against the live hook rather
+than taken on report:
+
+```
+ADMITTED  curl -o /tmp/zz https://e/          # focus null, no active task
+ADMITTED  wget -O /tmp/zz https://e/
+```
+
+Full RCA below. Three things about it are worth stating up front, because they
+are the parts a reader would otherwise have to reconstruct:
+
+1. **The safe-list already had the right rule and two members violating it.**
+   The rule is stated in the file — *only verbs that cannot write a file
+   WITHOUT a shell redirect* — and it is why `awk` and `uniq` are excluded.
+   `curl` and `wget` were filed under "system utilities", a category name that
+   invites the wrong reading.
+
+2. **A test asserted the bug.** `t3096_safe_commands_wrappers.bats` pinned
+   `curl -sf "$(bin/fw watchtower url)/config" -o /tmp/x` as SAFE, inside a leg
+   titled *"the prescribed port-resolution idiom is safe"*. The `-o /tmp/x` was
+   not part of the prescribed idiom. Inverted, with the original text quoted in
+   place rather than deleted.
+
+3. **The fix is deliberately NOT in `has_bash_write_pattern`**, which is where
+   the AC's own stated preference pointed. That function scans the whole raw
+   command string and already treats a commit message mentioning `rm -rf` as a
+   write (OBS-356). Putting `curl` there would have blocked any commit whose
+   message discussed `curl -o` — another instance of the class this cluster
+   exists to remove. Measured before deciding.
+
+**Incident during this task, recorded rather than repaired quietly.** A
+section-editing script I used to fill this file matched the string
+`## Verification` where it appears inside the Human AC template's own prose,
+and mangled the heading. That is OBS-355 for the third time, mine both times
+before. The repair anchors on exact line content and asserts the real heading
+follows. A task about a scanner mistaking a mention for an instance, filled by
+a script making the same mistake, is worth leaving on the record.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The admission is reproduced against the LIVE hook with focus null:
+- [x] The admission is reproduced against the LIVE hook with focus null:
       `curl -o /tmp/x https://…` and `wget -O /tmp/x https://…` currently
       return exit 0 with no active task
-- [ ] The rule the safe-list states for itself is quoted in the fix's comment —
+- [x] The rule the safe-list states for itself is quoted in the fix's comment —
       *"only verbs that cannot write a file WITHOUT a shell redirect"*, the
       basis on which it already excludes `awk` and `uniq`
-- [ ] `curl -o FILE` / `curl --output FILE` / `wget -O FILE` /
+- [x] `curl -o FILE` / `curl --output FILE` / `wget -O FILE` /
       `wget --output-document FILE` are blocked with no active task
-- [ ] `curl -o -` and `wget -O -` (write to stdout, not a file) stay ADMITTED —
+- [x] `curl -o -` and `wget -O -` (write to stdout, not a file) stay ADMITTED —
       the flag is not the hazard, the destination is
-- [ ] Read-only forms stay ADMITTED: `curl -sf URL`, `curl -I URL`,
+- [x] Read-only forms stay ADMITTED: `curl -sf URL`, `curl -I URL`,
       `wget --spider URL`, and the framework's own documented verification idiom
       `curl -sf "$(bin/fw watchtower url)/page"`
-- [ ] Decide and record WHERE the fix lives — extending `has_bash_write_pattern`
+- [x] Decide and record WHERE the fix lives — extending `has_bash_write_pattern`
       (so the write is visible to every caller, including the T-3221 commit
       predicate) versus narrowing the allowlist entry. Prefer the former: a
       command that writes a file should read as a write everywhere, not merely
       fail one allowlist test
-- [ ] A mutation control derived from live source: reverting the fix re-admits
+- [x] A mutation control derived from live source: reverting the fix re-admits
       `curl -o FILE`, so a green suite is evidence about the fix
-- [ ] A no-widening leg — the fix admits nothing the pre-fix version blocked
-- [ ] Adjacent gate suites stay green (the 13 suites T-3223 swept: 190 ok,
+- [x] A no-widening leg — the fix admits nothing the pre-fix version blocked
+- [x] Adjacent gate suites stay green (the 13 suites T-3223 swept: 190 ok,
       0 skips) and `bin/fw vendor self --check` reports in sync
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+<!-- No Human AC. Every criterion is a deterministic probe of the shipped
+     allowlist, and the audience is the agent that trips the gate rather than
+     the operator (CLAUDE.md §AC Classification, T-2143 audience test). The
+     blast-radius judgement for this hook is already carried by T-3221's
+     [REVIEW] AC, which covers the same file and the same consumers; asking it
+     again here would put the same question in front of the operator twice. -->
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
+
+timeout 900 bats tests/unit/t3222_fetch_writes_file.bats > /tmp/.t3222a.out 2>&1 && grep -q "^ok 12" /tmp/.t3222a.out && ! grep -q "^not ok" /tmp/.t3222a.out
+test "$(grep -c '# skip' /tmp/.t3222a.out)" -eq 0
+timeout 1500 bats tests/unit/t3221_commit_exemption_clause.bats tests/unit/fd_dup_not_chain_split.bats tests/unit/safe_commands_chain.bats tests/unit/check_active_task_cwd_resolution.bats tests/unit/check_active_task_fp_fix.bats tests/unit/check_active_task_memory_exempt.bats tests/unit/check_active_task_switch_focus.bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/t3179_partial_complete_commit.bats tests/unit/test_check_active_task_bootstrap.bats tests/unit/test_safe_commands_git_commit.bats > /tmp/.t3222b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3222b.out
+test "$(grep -c '# skip' /tmp/.t3222b.out)" -eq 0
+bash -n agents/context/lib/safe-commands.sh
+bash -n agents/context/check-active-task.sh
+bash -c 'source agents/context/lib/safe-commands.sh; _fw_fetch_writes_file "curl -o /tmp/x https://e/"'
+bash -c 'source agents/context/lib/safe-commands.sh; _fw_fetch_writes_file "wget -O /tmp/x https://e/"'
+bash -c 'source agents/context/lib/safe-commands.sh; ! _fw_fetch_writes_file "curl -sf https://e/"'
+bash -c 'source agents/context/lib/safe-commands.sh; ! _fw_fetch_writes_file "curl -o - https://e/"'
+grep -q 'cannot write a file WITHOUT a shell redirect' agents/context/lib/safe-commands.sh
+python3 tools/bats-silent-skip-lint.py tests/
+bin/fw vendor self --check > /tmp/.t3222v.out 2>&1 && grep -q "in sync" /tmp/.t3222v.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -256,6 +286,63 @@ bvp_scores_proposed:
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 ## RCA
+
+**Symptom.** `curl -o FILE` and `wget -O FILE` were admitted by the Bash task
+gate with no active task. Measured against the live hook with focus null before
+any change; both returned exit 0.
+
+**Root cause.** `curl` and `wget` sat in Category 5 of the safe-list as
+unconditionally safe. The list states its own admission rule — *"only verbs that
+cannot write a file WITHOUT a shell redirect"* — and enforces it elsewhere, which
+is why `awk` and `uniq` are excluded. Both of these write a file with no
+redirect, so `has_bash_write_pattern` (which looks for redirect syntax) never saw
+them, and the allowlist waved them through. The rule was right; two entries
+violated it.
+
+**Why the framework allowed it.** The safe-list is organised by *verb category*
+("system utilities") rather than by the property it actually cares about
+(can this write without a redirect). `curl` reads like a fetch tool, and the
+category name invites that reading. Nothing re-checked the members against the
+stated rule after they were added — the rule lived in a comment, and comments do
+not run.
+
+Worse: **a test asserted the bug.** `tests/unit/t3096_safe_commands_wrappers.bats`
+contained
+
+```
+run is_bash_safe_command "curl -sf \"$(bin/fw watchtower url)/config\" -o /tmp/x"
+[ "$status" -eq 0 ]
+```
+
+as part of a leg titled *"the prescribed port-resolution idiom is safe"*. The
+`-o /tmp/x` was an embellishment — CLAUDE.md's prescribed idiom is
+`curl -sf "$(bin/fw watchtower url)/page"` with no `-o` — but once written it
+encoded the hole as a guarantee. That is worse than an untested area, because
+the next person to look reads it as a decision someone made on purpose. The leg
+has been inverted, with the original text quoted in place so the change is
+legible rather than silent.
+
+**Where the fix lives, and why not where it "should".** The obvious home is
+`has_bash_write_pattern`, so a fetch-write reads as a write to every caller.
+It is deliberately NOT there. That function scans the whole raw command string
+and already classifies `git commit -m "we no longer rm -rf the output dir"` as a
+write — a mention in a commit message treated as an action (measured;
+registered as OBS-356; predates this task). Adding `curl` there would have added
+another instance of the exact class T-3221 and T-3223 exist to remove, and would
+have blocked any commit whose message discussed `curl -o`. The check is
+clause-scoped instead, operating on quote-stripped text with the base command
+already extracted, so only a real invocation matches. A dedicated test leg pins
+that the mention stays admitted.
+
+**The join with T-3221.** T-3221 measured `git commit … && curl -o FILE` as still
+admitted and left it open on purpose, because its predicate defers clause
+admissibility to this shared allowlist. Closing the hole here closed it there
+too, with **no change to the commit predicate** — the composition property that
+task was built for, now demonstrated rather than argued.
+
+**Escalation level.** C (tooling), with a D-flavoured note: the category-based
+organisation of the safe-list is what let a member drift from the stated rule.
+Filed as an observation rather than restructured here — one bug, one task.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
