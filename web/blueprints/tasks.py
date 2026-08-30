@@ -396,6 +396,15 @@ def _render_md_block(text):
     return _auto_link_files(html)
 
 
+# T-3224: an AC field heading is `**<marker><suffix>:**`, where the optional
+# suffix carries a parenthetical or qualifier (`**Steps (Route A — manual):**`,
+# `**If not visible:**`). The suffix excludes `*` and `:` so inline bold later on
+# the same line can never be mistaken for the closing `:**`. Group 3 is whatever
+# follows the heading ON THE SAME LINE — dropping it was the Class-2 loss.
+_AC_FIELD_MARKER_RE = re_mod.compile(r'^\*\*(Steps|Expected|If not)([^*:]*?)\s*:\*\*\s*(.*)$')
+_AC_FIELD_BY_MARKER = {'Steps': 'steps', 'Expected': 'expected', 'If not': 'if_not'}
+
+
 def _parse_ac_body(body):
     """Parse Steps/Expected/If-not from AC body text.
 
@@ -403,6 +412,14 @@ def _parse_ac_body(body):
     so `[label](url)`, inline `code`, and `**emphasis**` work in the
     /review/T-XXX surface (the original T-1548 friction). Templates must
     use `| safe` on these values.
+
+    T-3224: all three markers tolerate a heading suffix and keep same-line
+    content. Previously only Expected/If-not kept the rest of the line, and all
+    three required a byte-exact heading — so `**Steps:** 1. do it` rendered no
+    Steps at all, and `**Steps (Route A):**` was swallowed into the field above.
+    A suffix is kept as a bold label (it is what tells two `Steps` blocks apart),
+    and re-opening a field appends rather than replaces, so an AC offering two
+    routes renders both instead of only the last.
     """
     steps = []
     expected = ''
@@ -411,40 +428,34 @@ def _parse_ac_body(body):
         return steps, expected, if_not
 
     lines = body.split('\n')
+    collected = {'steps': [], 'expected': [], 'if_not': []}
     current_field = None
     current_content = []
 
     for line in lines:
         stripped = line.strip()
-        if stripped.startswith('**Steps:**'):
-            current_field = 'steps'
+        marker = _AC_FIELD_MARKER_RE.match(stripped)
+        if marker:
+            if current_field:
+                collected[current_field].extend(current_content)
+            current_field = _AC_FIELD_BY_MARKER[marker.group(1)]
             current_content = []
-            continue
-        elif stripped.startswith('**Expected:**'):
-            if current_field == 'steps':
-                steps = [s for s in current_content if s.strip()]
-            current_field = 'expected'
-            rest = stripped[len('**Expected:**'):].strip()
-            current_content = [rest] if rest else []
-            continue
-        elif stripped.startswith('**If not:**'):
-            if current_field == 'steps':
-                steps = [s for s in current_content if s.strip()]
-            elif current_field == 'expected':
-                expected = '\n'.join(current_content).strip()
-            current_field = 'if_not'
-            rest = stripped[len('**If not:**'):].strip()
-            current_content = [rest] if rest else []
+            suffix = marker.group(2).strip()
+            if suffix:
+                current_content.append(f'**{suffix}**')
+            rest = marker.group(3).strip()
+            if rest:
+                current_content.append(rest)
             continue
         if current_field:
             current_content.append(stripped)
 
-    if current_field == 'steps':
-        steps = [s for s in current_content if s.strip()]
-    elif current_field == 'expected':
-        expected = '\n'.join(current_content).strip()
-    elif current_field == 'if_not':
-        if_not = '\n'.join(current_content).strip()
+    if current_field:
+        collected[current_field].extend(current_content)
+
+    steps = [s for s in collected['steps'] if s.strip()]
+    expected = '\n'.join(collected['expected']).strip()
+    if_not = '\n'.join(collected['if_not']).strip()
 
     # Strip numbered prefixes from steps (e.g., "1. Do thing" → "Do thing")
     steps = [re_mod.sub(r'^\d+\.\s*', '', s) for s in steps]

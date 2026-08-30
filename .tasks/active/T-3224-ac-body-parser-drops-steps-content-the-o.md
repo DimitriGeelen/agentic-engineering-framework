@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-30T17:51:15Z
-last_update: '2026-08-30T17:55:46Z'
+last_update: '2026-08-30T18:00:12Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -54,6 +54,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-08-30T18:00:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=317,acs=9)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3224: AC body parser drops Steps content the operator needs — approval pages render a decision with no command
@@ -76,12 +86,37 @@ had steps:
   recognised as a field start and the whole block is swallowed into whatever
   field preceded it (or dropped outright when it is first).
 
-Measured in-tree: 15 of 844 `**Steps` headings across `.tasks/active/` are
-affected. Verified at the CONSUMER, not the source (PL-366): `/review/T-1624`
-(Class 1) renders 0 occurrences of "Route A"; `/review/T-2335` (Class 2) renders
-0 "Steps" labels; the control `/review/T-100131` (canonical heading, unticked
-Human AC) renders the label correctly. The control is load-bearing — it
-separates "the defect fires" from "this page never renders Steps at all".
+Measured in-tree. **The first count filed here was 15 and was wrong** — it
+counted heading SHAPE, and shape is not loss. `_review_acs.html:61` gates the
+whole Steps/Expected/If-not block on `{% if not ac.checked %}`, so a heading on
+a TICKED AC renders nothing either way and cannot be losing anything. Filtering
+on unticked:
+
+| | by shape | actually losing content |
+|---|---:|---:|
+| CLASS 1 (non-canonical heading) | 3 | **1** |
+| CLASS 2 (canonical + same-line text) | 12 | **12** |
+| total | 15 | **13** |
+
+The composition is the opposite of what the first filing implied: Class 2 is 12
+of the 13, and Class 1 is a single case (T-1062).
+
+That error was made HERE, not inherited: T-1624 was picked as the Class-1
+exemplar and its `**Steps (Route A — manual, simplest):**` renders 0 "Route A"
+both before and after the fix — because its Human AC is `- [x]`. It was never a
+witness. This is the same confound the task's own first AC exists to catch, and
+it was walked into on the very next step. Recorded rather than quietly amended:
+the failure mode is that a ticked AC and a dropped block are the same
+observation, and knowing that is not the same as remembering it under momentum.
+
+Verified at the CONSUMER, not the source (PL-366), with a genuine witness and a
+mutation control (fix stashed, Watchtower restarted, re-rendered):
+
+| page | pre-fix | post-fix |
+|---|---|---|
+| `/review/T-1062` (Class 1, unticked) | 0 "Steps" | 1 "Steps" + suffix retained |
+| `/review/T-2335` (Class 2, unticked) | 0 "Steps" | 1 "Steps", "bvp driver" 1→2 |
+| `/review/T-100131` (CONTROL, canonical) | 1 "Steps:" | 1 "Steps:" — unchanged |
 
 Reported fleet-wide by peer 010-termlink at agent-chat-arc @830 (their T-2859),
 who measured 8 of 129 headings on their own tree; their worst case was a human
@@ -94,26 +129,29 @@ lives, so the fix belongs at the source and normalisation is not needed here.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Both classes are reproduced at the CONSUMER before any fix, with a CONTROL
+- [x] Both classes are reproduced at the CONSUMER before any fix, with a CONTROL
       that separates "the defect fires" from "this page never renders Steps":
       `/review/T-1624` (Class 1) and `/review/T-2335` (Class 2) render no Steps,
       `/review/T-100131` (canonical heading) does.
-- [ ] CLASS 2 fixed: a canonical `**Steps:**` whose step text is on the same line
+- [x] CLASS 2 fixed: a canonical `**Steps:**` whose step text is on the same line
       keeps that text, symmetric with how `**Expected:**` and `**If not:**`
       already seed `current_content` with `rest`.
-- [ ] CLASS 1 fixed: a marker carrying a parenthetical/suffix before the closing
+- [x] CLASS 1 fixed: a marker carrying a parenthetical/suffix before the closing
       `:**` (e.g. `**Steps (Route A):**`) is recognised as a field start. Applied
       to all three markers, not only Steps — the asymmetry that made it visible
       on Steps is shared by the siblings.
-- [ ] MUTATION CONTROL derived from live source: reverting the fix re-drops the
+- [x] MUTATION CONTROL derived from live source: reverting the fix re-drops the
       content and turns the new test RED. A test that cannot fail is not a test.
-- [ ] NO-WIDENING leg: every AC body that parsed correctly before parses
+- [x] NO-WIDENING leg: every AC body that parsed correctly before parses
       identically after. Asserted over the full active corpus by diffing parser
       output pre-fix vs post-fix, not by spot-check.
-- [ ] Guard test pins BOTH classes plus the no-widening case, and lives under
+- [x] Guard test pins BOTH classes plus the no-widening case, and lives under
       `tests/` so it survives re-vendor.
-- [ ] Corpus sweep: all 15 affected active tasks render their Steps content at
-      the consumer after the fix.
+- [x] Corpus sweep: the **13 affected headings across 10 active tasks** that
+      were actually losing content (unticked AC + affected shape — see the
+      Context table; the original "15" counted shape, not loss, and a task can
+      carry more than one heading) all render their Steps at the consumer after
+      the fix. Measured 10/10, zero still missing.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -268,29 +306,56 @@ lives, so the fix belongs at the source and normalisation is not needed here.
 # silently stops collecting cannot pass as green (T-3217).
 python3 -m pytest tests/unit/test_ac_body_parser_steps.py -q > /tmp/.t3224-pt 2>&1 && grep -qE "[0-9]+ passed" /tmp/.t3224-pt && ! grep -qE "error|failed" /tmp/.t3224-pt
 # CLASS 1 at the consumer: T-1624's parenthetical heading now renders its routes.
-curl -sf "$(bin/fw watchtower url)/review/T-1624" -o /tmp/.t3224-c1 && grep -q "Route A" /tmp/.t3224-c1
+# Target is /tasks/T-1624, not /review/T-1624: that AC is ticked ("- [x] [RUBBER-STAMP]")
+# and _review_acs.html:61 gates AC detail on `not ac.checked`, so /review renders no
+# Steps for it whatever the parser does. /tasks/<id> renders detail for every AC and
+# uses the same _parse_ac_body — it is the consumer that can see this class. See Updates.
+curl -sf "$(bin/fw watchtower url)/tasks/T-1624" -o /tmp/.t3224-c1 && grep -q "Route A" /tmp/.t3224-c1
+# CLASS 1, second consumer: an UNTICKED suffixed-heading AC on the /review surface.
+curl -sf "$(bin/fw watchtower url)/review/T-1062" -o /tmp/.t3224-c1b && grep -q "copy-pasteable from project root" /tmp/.t3224-c1b
 # CLASS 2 at the consumer: T-2335's same-line step text now renders.
 curl -sf "$(bin/fw watchtower url)/review/T-2335" -o /tmp/.t3224-c2 && grep -q "bvp driver" /tmp/.t3224-c2
 # CONTROL (no-widening): a canonical heading still renders exactly as before.
 curl -sf "$(bin/fw watchtower url)/review/T-100131" -o /tmp/.t3224-ctl && grep -q "Steps:" /tmp/.t3224-ctl
-# Web suite stays green — the parser is shared with /tasks/<id>, not just /review.
-bin/fw test web > /tmp/.t3224-web 2>&1 && ! grep -qiE "^(FAILED|ERROR)" /tmp/.t3224-web
+# Web suite: the parser is shared with /tasks/<id>, not just /review. This tree
+# carries 9 PRE-EXISTING failures unrelated to T-3224 (session cockpit git info,
+# approvals blocked-arcs/cache, inception verdict render ×5, project-root discovery)
+# — identical failure set with and without this fix, measured by stashing
+# web/blueprints/tasks.py and re-running. Asserting 0 here would be a line that can
+# only ever be red, so the count is pinned (a 10th failure turns it red) AND no
+# failure may land in the parser's own surface.
+bin/fw test web > /tmp/.t3224-web 2>&1; test "$(grep -c '^FAILED' /tmp/.t3224-web)" -eq 9 && ! grep -qE '^FAILED (web/blueprints|tests/web/test_(tasks|review|ac_))' /tmp/.t3224-web
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** AC bodies lost their Steps content on every rendered surface. Two
+shapes: a canonical `**Steps:**` with the step text on the same line rendered no
+Steps at all (Class 2), and a heading carrying a qualifier —
+`**Steps (Route A — manual, simplest):**` — was never recognised as a field start,
+so its block was swallowed into the field above or dropped outright (Class 1).
+Measured: 14 AC bodies across 11 active tasks, out of 2,446 AC bodies.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `_parse_ac_body` matched its three field headings with
+`stripped.startswith('**Steps:**')` — a byte-exact literal that admits no suffix —
+and the Steps branch alone did `current_content = []`, discarding the remainder of
+the heading line that the Expected and If-not branches both kept as `rest`. Two
+independent gaps in one function: no suffix tolerance (all three markers), and an
+asymmetric same-line handling (Steps only).
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the failure renders as a *shorter page*, not an error.
+The route still returned 200, Expected and If-not still rendered, so a dropped Steps
+block was indistinguishable from an AC that legitimately had none — the same
+false-green shape as the port-3000 verification class. Nothing on the write side
+constrains the heading text either: `## Verification` and the AC template are free
+prose, so authors reasonably wrote `**Steps (Route A):**` and got a 200 back.
+
+**Prevention:** `tests/unit/test_ac_body_parser_steps.py` pins both classes *and*
+carries a frozen copy of the pre-fix parser, so the no-widening leg is asserted over
+the live `.tasks/active` corpus rather than spot-checked — a future edit that
+re-narrows the marker match, or that widens it onto bodies which parse fine today,
+turns the suite red. `test_defect_class_bodies_exist_and_all_changed` additionally
+fails if the corpus stops exercising either class, so the guard cannot decay into a
+test that passes because it measures nothing.
 
 ## Evolution
 
@@ -372,3 +437,54 @@ bin/fw test web > /tmp/.t3224-web 2>&1 && ! grep -qiE "^(FAILED|ERROR)" /tmp/.t3
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3224-ac-body-parser-drops-steps-content-the-o.md
 - **Context:** Initial task creation
+
+### 2026-08-30 — fix, mutation control, consumer verification [agent]
+- **Changed:** `web/blueprints/tasks.py` — `_AC_FIELD_MARKER_RE` replaces three
+  `startswith` literals: `^\*\*(Steps|Expected|If not)([^*:]*?)\s*:\*\*\s*(.*)$`.
+  Suffix tolerance and same-line `rest` capture now apply to ALL THREE markers.
+  A non-empty suffix is kept as a bold label (it is what tells `Route A` from
+  `Route B`), and re-opening a field appends instead of replacing, so an AC
+  offering two routes renders both rather than only the last.
+- **Corpus measurement (pre-fix vs post-fix, frozen corpus of 421 active task
+  files, 2,446 AC bodies):** 14 AC bodies changed, 14 defect-class bodies
+  identified, `changed_but_not_defect_class: []`, `defect_class_unchanged: []`.
+  Exact match in both directions — no widening, nothing missed.
+- **Mutation control (derived from live source, not memory):** `git stash push --
+  web/blueprints/tasks.py` → `python3 -m pytest tests/unit/test_ac_body_parser_steps.py -q`
+  → **10 failed, 3 passed**, with cause-naming messages ("same-line Steps text was
+  dropped — CLASS 2 regression", "suffixed Steps heading not recognised — CLASS 1",
+  "'Route A' lost — the second block overwrote the first", "defect-class bodies
+  still parse as pre-fix: [14 files]"). `git stash pop` → **13 passed**. The
+  reverted tree reproduced the pre-fix corpus baseline byte-for-byte
+  (md5 `a960c3fff37d0f33e00f4ac18fe6343a`, identical to the capture taken before
+  any edit), and the frozen `_prefix_parse_ac_body` copy inside the test matched
+  the live reverted parser on all 2,446 bodies with 0 mismatches — so the test's
+  baseline is the real pre-fix behaviour, not a paraphrase of it.
+- **Consumer verification** (Watchtower restarted; URL from `bin/fw watchtower url`):
+  `/review/T-2335` "bvp driver" 1 → 2, "Review-Test" 0 → 1, "Steps:" 0 → 1 (Class 2);
+  `/tasks/T-1624` renders both Route A and Route B step lists (Class 1);
+  `/review/T-1062` renders the `(one-line, copy-pasteable from project root)` label
+  (Class 1 on the /review surface, unticked AC); CONTROL `/review/T-100131`
+  byte-identical at 23,081 bytes before and after.
+- **Corpus sweep:** 14/14 affected AC bodies across 11 tasks render every recovered
+  step item at the consumer, 0 failures (T-1062, T-1624, T-1989 ×2, T-2008 ×2,
+  T-2009, T-2335, T-2403, T-2428, T-2430 ×2, T-2479, T-2589). The Context's "15"
+  counts heading *lines*; T-1624 carries two of them inside one AC body.
+- **Verification line corrected (surfaced, not silently changed):** the filed line
+  `curl /review/T-1624 | grep -q "Route A"` cannot pass under any parser change.
+  That AC is ticked (`- [x] [RUBBER-STAMP]`) and `web/templates/_review_acs.html:61`
+  gates AC detail on `not ac.checked`, so /review renders no Steps for it regardless.
+  Retargeted to `/tasks/T-1624` (same `_parse_ac_body`, renders detail for every AC)
+  and a second Class-1 line added on `/review/T-1062`, which has an unticked
+  suffixed-heading AC and therefore exercises the /review surface honestly.
+- **Adjacent defect NOT fixed here (out of scope):** `web/templates/task_detail.html`
+  renders steps as `{{ step }}` without `| safe`, so rendered step HTML appears
+  escaped on `/tasks/<id>` (`&lt;code&gt;…`). Pre-existing, unrelated to this parser,
+  visible on any step containing inline code — worth its own task.
+- **Web suite (`bin/fw test web`): 9 failed, 290 passed, 3 skipped — all 9
+  pre-existing.** Proven by stashing `web/blueprints/tasks.py` and re-running the
+  9 failing node ids: identical FAILED set with and without the fix (7 reproduce in
+  isolation, 2 are order-dependent). None touches the parser. The filed line asserted
+  zero failures, which this tree cannot satisfy for reasons T-3224 did not create, so
+  it is pinned at the measured 9 plus a clause refusing any failure in the parser's
+  own surface — per CLAUDE.md, assert the count you expect and say why it is right.
