@@ -684,7 +684,23 @@ _fw_single_command_is_safe() {
             ;;
 
         # Category 5: System utilities
-        curl|wget|date|uname|ps|ss|id|whoami|hostname|env|printenv|df|du|free|uptime|lsb_release|nproc)
+        #
+        # T-3222: curl and wget are NOT unconditionally safe, and their presence
+        # here contradicted the admission rule this list states for itself —
+        # "only verbs that cannot write a file WITHOUT a shell redirect", which
+        # is the basis on which it excludes awk and uniq. `curl -o FILE` and
+        # `wget -O FILE` write a file with no redirect, so has_bash_write_pattern
+        # (which looks for redirects) never sees them, and both were admitted
+        # with NO ACTIVE TASK. Reported by peer 832-Workflow-designer as a side
+        # finding on their T-638; confirmed here against the live hook.
+        #
+        # The destination is the hazard, not the flag: `curl -o -` and
+        # `wget -O -` write to stdout and stay safe.
+        curl|wget)
+            _fw_fetch_writes_file "$cmd" && return 1
+            return 0
+            ;;
+        date|uname|ps|ss|id|whoami|hostname|env|printenv|df|du|free|uptime|lsb_release|nproc)
             return 0
             ;;
 
@@ -833,6 +849,89 @@ has_bash_write_pattern() {
 # Every failure direction is toward BLOCKING: an unrecognised clause, an
 # unbalanced quote, a substitution, or no commit clause at all all return 1,
 # which sends the command to the task gate rather than past it.
+# T-3222: does this SINGLE clause make curl/wget write a file?
+#
+# WHY THIS IS CLAUSE-SCOPED and not an extra pattern in has_bash_write_pattern,
+# which is where the admission rule would otherwise suggest it belongs:
+# has_bash_write_pattern scans the whole raw command string, so it already
+# classifies `git commit -m "we no longer rm -rf the output dir"` as a WRITE —
+# a MENTION in a commit message, treated as an action. Measured, and registered
+# as OBS-356; it predates all of this. Adding curl to that scanner would have
+# added another instance of the exact class this cluster of tasks exists to
+# remove. Here the input is one clause, quote-stripped, with its base already
+# extracted — so only a real invocation can match.
+#
+# The DESTINATION is the hazard, not the flag. `curl -o -` and `wget -O -`
+# write to stdout and are safe; `wget -o LOG` writes a log file and is not.
+#
+# Failure direction is toward TREATING IT AS A WRITE, which blocks: an
+# unparseable clause (unbalanced quote) returns 0 here, and an unrecognised
+# spelling of an output flag falls into the catch-all cluster tests rather than
+# out of them. Blocking sends the command to the task gate, which admits it
+# whenever a task is active; admitting it skips every gate there is.
+_fw_fetch_writes_file() {
+    local cmd="$1" stripped base tok rest
+    stripped="$(_fw_strip_quoted "$cmd")" || return 0
+
+    # shellcheck disable=SC2086  # deliberate word-splitting: tokenising argv
+    set -- $stripped
+    [ $# -eq 0 ] && return 1
+    base="${1##*/}"
+    shift
+
+    while [ $# -gt 0 ]; do
+        tok="$1"; shift
+        case "$tok" in
+            # Long forms, both spellings, for both tools.
+            --output=-|--output-document=-)   continue ;;
+            --output=*|--output-document=*)   return 0 ;;
+            --output|--output-document|--output-file)
+                [ "${1:-}" = "-" ] || return 0
+                continue ;;
+            --remote-name|--remote-header-name|--output-dir|--create-dirs)
+                return 0 ;;
+            --*) continue ;;
+            -) continue ;;
+            -*)
+                # Short-flag cluster. curl allows bundling (`-sO`, `-so FILE`),
+                # so test the letters rather than the whole token.
+                rest="${tok#-}"
+                # curl -O / wget -O: writes to a file with no separate argument
+                # for curl (remote name) and with one for wget.
+                case "$rest" in
+                    *O*)
+                        if [ "$base" = wget ]; then
+                            # wget -O takes a value: attached (`-O-`, `-Ofile`)
+                            # or the next token.
+                            case "$rest" in
+                                *O)   [ "${1:-}" = "-" ] || return 0 ;;
+                                *O-)  ;;
+                                *)    return 0 ;;
+                            esac
+                        else
+                            return 0   # curl -O always names a local file
+                        fi
+                        continue ;;
+                esac
+                case "$rest" in
+                    *o*)
+                        # wget -o is the LOG file (always a write). curl -o is
+                        # the output file (stdout when the target is `-`).
+                        if [ "$base" = wget ]; then return 0; fi
+                        case "$rest" in
+                            *o)   [ "${1:-}" = "-" ] || return 0 ;;
+                            *o-)  ;;
+                            *)    return 0 ;;   # attached value, e.g. -ofile
+                        esac
+                        continue ;;
+                esac
+                continue ;;
+            *) continue ;;
+        esac
+    done
+    return 1
+}
+
 _fw_is_git_commit_clause() {
     local seg
     seg="$(_fw_strip_quoted "$1")" || return 1
