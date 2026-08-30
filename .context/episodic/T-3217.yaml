@@ -92,12 +92,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 485
-  commits: 3
+  commits: 4
   files_changed: 86
-  lines_added: 15924
-  lines_removed: 6471
-  footprint_refreshed_at: '2026-08-30T09:50:19Z'
-  footprint_refreshed_by_commit: d52161786
+  lines_added: 15994
+  lines_removed: 6497
+  footprint_refreshed_at: '2026-08-30T09:53:25Z'
+  footprint_refreshed_by_commit: aca0e6d30
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3217-bats-skips-are-invisible-to-the-p-011-ve.md

@@ -38305,3 +38305,39 @@ scan_id: R-17fdf99c
 task_id: T-3217
 payload:
   task_file: .tasks/active/T-3217-bats-skips-are-invisible-to-the-p-011-ve.md
+---
+kind: scan_emitted
+timestamp: '2026-08-30T10:16:49Z'
+scan_id: R-847b0bc6
+task_id: T-3221
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-30T10:16:49Z'
+scan_id: R-847b0bc6
+task_id: T-3221
+payload:
+  task_file: .tasks/active/T-3221-check-active-task-git-commit-exemption-m.md
+---
+kind: scan_emitted
+timestamp: '2026-08-30T10:30:57Z'
+scan_id: R-c21cb68e
+task_id: T-3223
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-30T10:30:57Z'
+scan_id: R-c21cb68e
+task_id: T-3223
+payload:
+  task_file: .tasks/active/T-3223-t-3221-predicate-refuses-a-real-multi-li.md

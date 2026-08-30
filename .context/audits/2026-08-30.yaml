@@ -1,9 +1,9 @@
-# Audit Results - 2026-08-30-1030
-timestamp: 2026-08-30T08:30:45Z
+# Audit Results - 2026-08-30-1153
+timestamp: 2026-08-30T09:53:34Z
 sections: "structure"
 summary:
   pass: 30
-  warn: 6
+  warn: 5
   fail: 0
 findings:
   - level: PASS
@@ -45,9 +45,6 @@ findings:
   - level: WARN
     check: "Found 183 GO-scope-not-propagated inception(s) of 355 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
     mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
-  - level: WARN
-    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
-    mitigation: "Run: fw fabric drift"
   - level: PASS
     check: "Fabric: 1139 registered card(s)"
   - level: WARN
@@ -57,7 +54,7 @@ findings:
     check: "Fabric drift: 13 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 752 card(s) point at files no watch pattern covers"
+    check: "Fabric: 753 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"

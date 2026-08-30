@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3223: T-3221 predicate refuses a real multi-line commit message
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-30T10:31:12Z
+# ============================================================================
+
+task_id: T-3223
+task_name: "T-3221 predicate refuses a real multi-line commit message"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-30T10:18:41Z
+completed: 2026-08-30T10:29:29Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-30T12:27:11+02:00
+last_commit: 2026-08-30T12:27:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the splitter's channel threw away its own structure. sync vendored copy with the NUL-delimited splitter contract
+
+# Key outcomes
+outcomes:
+  - 'The refusal is REPRODUCED and its cause MEASURED — clause split, quote'
+  - '`git add -A <paths> && git commit -q -m "<multi-line message>"` is'
+  - 'The four shapes T-3221 closed stay blocked — this must not be fixed by'
+  - 'T-3221''s suite gains a leg using a REALISTIC commit message (multi-line,'
+  - 'The no-widening sweep still passes with the corrected predicate'
+  - '`bin/fw vendor self --check` reports in sync'
+  - 'A newline-separated command OUTSIDE quotes is still blocked — the fix must'
+  - 'A mutation control reverts the splitter to newline output and asserts the'
+  - 'The two tests that call `_fw_chain_split` directly are updated to the new'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-3221-check-active-task-git-commit-exemption-m.md'
+  - '.tasks/active/T-3222-safe-list-admits-curl--o-and-wget--o-whi.md'
+  - '.tasks/active/T-3223-t-3221-predicate-refuses-a-real-multi-li.md'
+  - 'tests/unit/fd_dup_not_chain_split.bats'
+  - 'tests/unit/safe_commands_chain.bats'
+  - 'tests/unit/t3221_commit_exemption_clause.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-30T12:27:11'
+    action: 'T-3223: the splitter''s channel threw away its own structure'
+  - time: '2026-08-30T12:27:35'
+    action: 'T-3223: sync vendored copy with the NUL-delimited splitter contract'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 2
+  files_changed: 10
+  lines_added: 830
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3223-t-3221-predicate-refuses-a-real-multi-li.md
+generated_by: context-agent-hybrid
