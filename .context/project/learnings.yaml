@@ -4846,3 +4846,9 @@ X'` returning empty group."
   task: T-3191
   date: 2026-08-27
   context: Added via context agent
+- id: L-652
+  learning: "arc-012's headline mechanic has two mechanisms that look like one in the ledger. bin/claude-fw's budget auto-restart is gated on the wrapper's AUTO_RESTART flag, NOT on continuous-mode enabled — so it fires, writes an 'iterate' event to continuous-run.jsonl, and restarts the session even while .continuous-mode.yaml says enabled:false. The iteration counter advances only via inject-next-directive.py on SessionStart, which IS gated on enabled. Consequence: three iterate events with real budget-critical token counts (286826/287677/289422 on 2026-08-29/30) prove legs 1-3 of the mechanic — budget crossing, self-trigger, unattended resume — while leg 4 (armed loop: directive injected, counter advancing, tier-ceiling bounding) is not demonstrated at all. Reading the ledger alone would license closing the arc on evidence that measures the pre-arc T-179 substrate rather than the arc's own deliverable. Check enabled: before reading iterate events as continuous-mode evidence."
+  source: P-011
+  task: T-3224
+  date: 2026-08-30
+  context: Added via context agent
