@@ -38287,3 +38287,21 @@ scan_id: R-55d8305b
 task_id: T-3217
 payload:
   task_file: .tasks/active/T-3217-bats-skips-are-invisible-to-the-p-011-ve.md
+---
+kind: scan_emitted
+timestamp: '2026-08-30T09:52:44Z'
+scan_id: R-17fdf99c
+task_id: T-3217
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-30T09:52:44Z'
+scan_id: R-17fdf99c
+task_id: T-3217
+payload:
+  task_file: .tasks/active/T-3217-bats-skips-are-invisible-to-the-p-011-ve.md
