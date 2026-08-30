@@ -13,7 +13,7 @@ description: >
   defers clause admissibility to this shared allowlist, so this hole surfaces through
   it rather than being caused by it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -31,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-30T10:06:38Z
-last_update: '2026-08-30T10:15:18Z'
+last_update: 2026-08-30T10:36:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,8 +83,29 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The admission is reproduced against the LIVE hook with focus null:
+      `curl -o /tmp/x https://…` and `wget -O /tmp/x https://…` currently
+      return exit 0 with no active task
+- [ ] The rule the safe-list states for itself is quoted in the fix's comment —
+      *"only verbs that cannot write a file WITHOUT a shell redirect"*, the
+      basis on which it already excludes `awk` and `uniq`
+- [ ] `curl -o FILE` / `curl --output FILE` / `wget -O FILE` /
+      `wget --output-document FILE` are blocked with no active task
+- [ ] `curl -o -` and `wget -O -` (write to stdout, not a file) stay ADMITTED —
+      the flag is not the hazard, the destination is
+- [ ] Read-only forms stay ADMITTED: `curl -sf URL`, `curl -I URL`,
+      `wget --spider URL`, and the framework's own documented verification idiom
+      `curl -sf "$(bin/fw watchtower url)/page"`
+- [ ] Decide and record WHERE the fix lives — extending `has_bash_write_pattern`
+      (so the write is visible to every caller, including the T-3221 commit
+      predicate) versus narrowing the allowlist entry. Prefer the former: a
+      command that writes a file should read as a write everywhere, not merely
+      fail one allowlist test
+- [ ] A mutation control derived from live source: reverting the fix re-admits
+      `curl -o FILE`, so a green suite is evidence about the fix
+- [ ] A no-widening leg — the fix admits nothing the pre-fix version blocked
+- [ ] Adjacent gate suites stay green (the 13 suites T-3223 swept: 190 ok,
+      0 skips) and `bin/fw vendor self --check` reports in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -330,3 +351,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3222-safe-list-admits-curl--o-and-wget--o-whi.md
 - **Context:** Initial task creation
+
+### 2026-08-30T10:36:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
