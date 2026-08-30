@@ -4154,3 +4154,10 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-357
+  text: "T-3225 commit ba4de211a also contains T-3158's designer check-currency extraction in bin/fw. That work was uncommitted in the working tree at session start (visible in the /resume snapshot as 'M bin/fw') and was swept in by 'git add bin/fw'. Nothing is lost and the code is correct, but the attribution is wrong: anyone bisecting T-3158 or reading T-3225's diff will find the other task's change. Not rewritten because the session was at 96% budget when found and history rewrite under budget pressure is how work actually gets lost. Lesson: git add <path> on a file that was already dirty at session start commits someone else's work under your task id — check git status --short for pre-existing modifications to a file before staging it by path."
+  captured: 2026-08-30T19:11:14Z
+  context_task: T-3226
+  tags: []
+  status: pending
+  promoted_to: null
