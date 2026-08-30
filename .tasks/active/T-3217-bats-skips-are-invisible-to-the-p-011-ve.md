@@ -20,7 +20,7 @@ owner: agent
 horizon: now
 tags: []
 arc_id: continuous-run
-components: []
+components: [bin/fw, tests/lint/bats-silent-skip.bats, tests/unit/lib_preflight.bats, tools/bats-silent-skip-lint.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-29T15:12:34Z
-last_update: 2026-08-29T22:34:58Z
+last_update: 2026-08-30T09:49:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -160,7 +160,18 @@ from the record-field direction (their G-069). The invariant across all of them:
 - [x] The detector is wired into `bin/fw test lint`, and the wiring is asserted twice: statically (the invocation is in `bin/fw`) and behaviourally (running `fw test lint` emits the `Silent-Skip` section).
 - [x] A corrected P-011 verification idiom is documented in `.tasks/templates/default.md` next to the pipefail guidance — the two-line form (`! grep -q "^not ok"` for failures, `grep -c '# skip'` for coverage), with the T-3213 origin and the note that a non-zero expected skip count must be justified.
 - [x] MUTATION CONTROL: the standing-guard fixture is detected by the live tool (exit 1) and NOT detected by a mutant with the `STANDING` pattern emptied (exit 0), with the mutation asserted to have changed bytes. Test 11, `removing the STANDING comparison stops the standing skip being detected`. The behavioural counterpart is test 15, where static and TAP modes converge on one fixture by independent evidence.
-- [x] The 138 existing verification lines are NOT bulk-rewritten. Nothing in this task touches a `## Verification
+- [x] The 138 existing verification lines are NOT bulk-rewritten. Nothing in this task touches any other task's verification block. The corpus-wide question is answered by the lint, which needs no per-task edit.
+
+### Human
+- [ ] [REVIEW] Confirm the detector's legitimate/silent boundary matches your judgement
+  **Steps:**
+  1. Read the classification table in this task's Context (223 call sites: 49 DEPENDENCY, 174 OTHER, 0 STANDING, 0 UNCONDITIONAL).
+  2. See the full labelled list: `cd /opt/999-Agentic-Engineering-Framework && python3 tools/bats-silent-skip-lint.py --census tests/`
+  3. Spot-check three entries labelled `DEPENDENCY` and three labelled `OTHER`.
+  **Expected:** the boundary matches what you would call a test that is allowed not to run. `DEPENDENCY` should be things absent from a machine (docker, ollama, rsync); `OTHER` should be guarded-but-not-by-a-dependency, which the static mode deliberately does not flag.
+  **If not:** name a misclassified entry. The heuristic narrows — the suppression list does not grow. `tests/lint/bats-silent-skip.bats` already holds the boundary, so a change there reddens a leg rather than passing silently.
+
+## Verification
 
 timeout 900 bats tests/lint/bats-silent-skip.bats > /tmp/.t3217.out 2>&1 && grep -q "^ok 17" /tmp/.t3217.out && ! grep -q "^not ok" /tmp/.t3217.out
 test "$(grep -c '# skip' /tmp/.t3217.out)" -eq 0
@@ -175,8 +186,8 @@ bash -n bin/fw
 test -f .fabric/components/tools-bats-silent-skip-lint.yaml && test -f .fabric/components/tests-lint-bats-silent-skip.yaml
 bin/fw vendor self --check > /tmp/.t3217v.out 2>&1 && grep -q "in sync" /tmp/.t3217v.out
 
-## Verification
-
+# ── template guidance below this line (comments; the gate skips them) ────────
+#
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -332,6 +343,31 @@ rest would produce the noise that gets a lint disabled.
   this reproduced it within the hour. Their advice, taken: the question is not
   "is the pattern right" but "is it reading an argument or an action".
 
+### 2026-08-29 — the same class again, this time in the tooling that edited this file
+
+- **What changed:** the first close of this task was WRONG and had to be undone.
+  A section-replacing helper I used to fill this file matched the string
+  `## Verification` where it appeared **inside AC6's own prose** rather than at
+  the heading, and replaced everything from there to the real heading — deleting
+  the `### Human` section. The task then closed as fully complete instead of
+  partial-complete, because the gate correctly found zero unticked Human ACs:
+  there were none left to find.
+- **How it was caught:** by checking the post-close state instead of reading the
+  "Update Complete" line as the answer. `owner: agent`, `date_finished` set, and
+  a Human-AC count of 0 on a task filed with one.
+- **Plan impact:** none to the deliverable; the task was reopened by hand (the
+  path `fw work-on` names for a premature close), the AC restored, and the close
+  re-run. Recorded rather than quietly repaired, because a task about invisible
+  skips that quietly lost its own human review would be the joke version of
+  itself.
+- **Triggered:** OBS registered for the class. This is the THIRD instance in one
+  session of the same shape — a character-level scan standing in for structure,
+  so a MENTION is treated as the thing mentioned: `<<TAG` in a comment blinding
+  the detector (above), `## Verification` in prose eating a heading (here), and
+  the framework's own gate reading `sed -n` in a read-only command as a write.
+  Peer 832 named it at chat-arc @804. Naming a class does not immunise you
+  against it; it only shortens the time to recognition.
+
 ## Recommendation
 
 **Recommendation:** GO
@@ -416,3 +452,23 @@ and the tests that hold it are already written.
 ### 2026-08-29T22:34:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-55d8305b
+- **Timestamp:** 2026-08-29T23:18:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — A detector reports silent skips and stays quiet on legitimate ones. `tools/bats-silent-skip-lint.py`. Of 223 call sites it flags the shapes with no legitimate reading and leaves 223 alone; 6 of the 17
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/bats-silent-skip-lint.py in: A detector reports silent skips and stays quiet on legitimate ones. `tools/bats-silent-skip-lint.py`. Of 223 call sites it flags the shapes with no le`
+
+### 2026-08-29T23:18:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+### 2026-08-30T09:49:50Z — status-update [task-update-agent]
+- **Change:** horizon: null → now

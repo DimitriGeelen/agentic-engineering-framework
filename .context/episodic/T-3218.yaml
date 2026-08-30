@@ -65,10 +65,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 1
+  files_changed: 3
+  lines_added: 290
+  lines_removed: 3
+  footprint_refreshed_at: '2026-08-29T15:23:56Z'
+  footprint_refreshed_by_commit: 44df5062b
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3218-landing-mode-v4-a-200-is-not-evidence-th.md

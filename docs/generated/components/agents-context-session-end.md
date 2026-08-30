@@ -8,16 +8,16 @@
 
 ## What It Does
 
-REFERENCE ONLY — not registered in .claude/settings.json (see T-1459)
+REFERENCE ONLY — deliberately NOT registered in .claude/settings.json.
+T-1459 reached GO on Option D (reference-only) and set a precondition for ever
+re-enabling this: read the G-016 RCA first. G-016 was a handover COMMIT STORM, and
+the last action taken on this script cluster was defensive capping (2199ccba), not
+decommissioning. Registering this hook without working through that RCA re-opens
+the hazard the decision parked. `tests/unit/hook_enable_events.bats` asserts the
+absence, so reversing the decision fails loudly rather than quietly.
 SessionEnd hook — S1 reason logger + S2 handover trigger (T-1212)
 Fires on session termination. Always exits 0.
 S1: appends {ts, session_id, reason} JSON line to
-.context/working/.session-end-log for reason-field telemetry.
-S2: if no handover exists for the current session_id
-(`.context/handovers/LATEST.md` frontmatter session_id mismatch), runs
-`fw handover` in the background. Background so the hook returns fast
-(<2s) regardless of handover duration — some session-end reasons
-(e.g. API 500 kill) give us very little grace period.
 
 ## Dependencies (3)
 

@@ -3628,3 +3628,24 @@ decisions:
     date: 2026-08-29
     task: T-3220
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-521
+    decision: "a static shape scan cheap enough for `fw test lint`, plus a"
+    scope: project
+    date: 2026-08-29
+    task: T-3217
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-522
+    decision: "UNCONDITIONAL and STANDING only. Everything else — 223 of 223 call"
+    scope: project
+    date: 2026-08-29
+    task: T-3217
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-523
+    decision: "repair `lib_preflight.bats:76` in this task, using T-3213's pattern"
+    scope: project
+    date: 2026-08-29
+    task: T-3217
+    rationale: "Auto-captured from task file on completion"

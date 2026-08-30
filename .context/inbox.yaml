@@ -4138,3 +4138,11 @@ observations:
   tags: [governance]
   status: pending
   promoted_to: null
+- id: OBS-355
+  text: "Third instance in one session of: a character-level scan standing in for structure, so a MENTION of a thing is treated as the thing. (1) tools/bats-silent-skip-lint.py went silently blind when '<<TAG' appeared in a comment or a quoted string — heredoc opened, never closed, rest of file unscanned, reported clean. (2) A section-replacing edit matched '## Verification' inside an AC's prose instead of the heading and deleted the '### Human' section, so T-3217 closed fully complete when it owed a human review. (3) The framework's own check-active-task gate refuses a read-only 'awk/sed -n' inspection because the raw command string mentions a write verb. Peer 832-Workflow-designer named the class at chat-arc @804 and shipped a quote-stripping fix on their side; we reproduced it twice within the hour of reading it. The generalisable ask: for any scan over command or document text, the question is not 'is the pattern right' but 'is it reading an argument or an action'."
+  captured: 2026-08-29T23:21:20Z
+  context_task: T-3215
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true

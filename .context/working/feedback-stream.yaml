@@ -38197,3 +38197,93 @@ scan_id: R-a45afb5d
 task_id: T-3216
 payload:
   task_file: .tasks/active/T-3216-66-bats-negative-assertions-are-inert---.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T15:06:51Z'
+scan_id: R-401d332e
+task_id: T-3213
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T15:06:51Z'
+scan_id: R-401d332e
+task_id: T-3213
+payload:
+  task_file: .tasks/active/T-3213-arc-012-iw-6-slice-confirm-by-restart-th.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T15:23:28Z'
+scan_id: R-2832d204
+task_id: T-3218
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T15:23:28Z'
+scan_id: R-2832d204
+task_id: T-3218
+payload:
+  task_file: .tasks/active/T-3218-landing-mode-v4-a-200-is-not-evidence-th.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T22:34:19Z'
+scan_id: R-d8d02dcb
+task_id: T-3219
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T22:34:19Z'
+scan_id: R-d8d02dcb
+task_id: T-3219
+payload:
+  task_file: .tasks/active/T-3219-p-011-gate-passes-on-an-unreconciled-cou.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T22:49:23Z'
+scan_id: R-843264f2
+task_id: T-3220
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T22:49:23Z'
+scan_id: R-843264f2
+task_id: T-3220
+payload:
+  task_file: .tasks/active/T-3220-t-3219-comment-states-a-false-reason-for.md
+---
+kind: scan_emitted
+timestamp: '2026-08-29T23:18:23Z'
+scan_id: R-55d8305b
+task_id: T-3217
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-29T23:18:23Z'
+scan_id: R-55d8305b
+task_id: T-3217
+payload:
+  task_file: .tasks/active/T-3217-bats-skips-are-invisible-to-the-p-011-ve.md

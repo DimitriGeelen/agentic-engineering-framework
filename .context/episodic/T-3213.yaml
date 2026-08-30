@@ -74,10 +74,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 287
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 2
+  files_changed: 5
+  lines_added: 604
+  lines_removed: 311
+  footprint_refreshed_at: '2026-08-29T15:07:38Z'
+  footprint_refreshed_by_commit: c9700bf8a
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3213-arc-012-iw-6-slice-confirm-by-restart-th.md

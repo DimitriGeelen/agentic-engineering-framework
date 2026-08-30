@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3217: bats skips are invisible to the P-011 verification idiom — a skipped test reports ok
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-29T23:18:36Z
+# ============================================================================
+
+task_id: T-3217
+task_name: "bats skips are invisible to the P-011 verification idiom — a skipped test reports ok"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-29T15:12:34Z
+completed: 2026-08-29T23:18:20Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-08-29T17:15:03+02:00
+last_commit: 2026-08-30T01:17:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the skip-blindness class found while landing T-3213. a skipped bats test reports ok, and the P-011 idiom cannot see it
+
+# Key outcomes
+outcomes:
+  - 'The current skip inventory is classified, not just counted: every call site is labelled legitimate (optional dependency) or silent (guard fixed for the deployment / no guard). The split is recorded with the command that produced it — see the CORRECTION table in Context. The filed figure of 50 was `tests/unit/` only; the real corpus is 223 across 119 files, and the reconciliation against a naive grep is stated so a census that lost rows could not read as clean.'
+  - 'A detector reports silent skips and stays quiet on legitimate ones. `tools/bats-silent-skip-lint.py`. Of 223 call sites it flags the shapes with no legitimate reading and leaves 223 alone; 6 of the 17 test legs are false-positive controls (dependency guard, else-branch, backslash continuation, Python assignment, two heredoc-mention cases).'
+  - 'The detector is wired into `bin/fw test lint`, and the wiring is asserted twice: statically (the invocation is in `bin/fw`) and behaviourally (running `fw test lint` emits the `Silent-Skip` section).'
+  - 'A corrected P-011 verification idiom is documented in `.tasks/templates/default.md` next to the pipefail guidance — the two-line form (`! grep -q "^not ok"` for failures, `grep -c ''# skip''` for coverage), with the T-3213 origin and the note that a non-zero expected skip count must be justified.'
+  - 'MUTATION CONTROL: the standing-guard fixture is detected by the live tool (exit 1) and NOT detected by a mutant with the `STANDING` pattern emptied (exit 0), with the mutation asserted to have changed bytes. Test 11, `removing the STANDING comparison stops the standing skip being detected`. The behavioural counterpart is test 15, where static and TAP modes converge on one fixture by independent evidence.'
+  - 'The 138 existing verification lines are NOT bulk-rewritten. Nothing in this task touches a `## Verification'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-08-29 — two modes, because the question has a cheap half and an honest half'
+    chose: 'a static shape scan cheap enough for `fw test lint`, plus a `--tap` mode that reports what a real run actually skipped.'
+    rationale: 'the honest answer to "is this skip dangerous" is empirical — does its guard hold on the host the suite ships on — and that needs a run. But a check that needs a full bats run will not survive on the lint pass, and one that never runs protects nothing. The static half catches the shapes that cannot be anything but blind; the empirical half catches the rest when a run happens.'
+    alternatives_rejected: ['static only (cannot see a guard hidden in a helper); TAP only (nothing would run it by default, which is the failure being fixed).']
+  - decision: '2026-08-29 — flag two shapes, not ten'
+    chose: 'UNCONDITIONAL and STANDING only. Everything else — 223 of 223 call sites after the fix — is left alone by the static mode.'
+    rationale: 'most skips in this corpus are correct. A detector that reddens an absent optional dependency gets suppressed wholesale, and then it protects nothing at all. Six of the seventeen test legs exist to hold that line.'
+    alternatives_rejected: ['classifying by the skip''s REASON TEXT in static mode. It is prose, it is gameable, and it would have flagged legitimate skips whose author worded them tersely. Reason text IS used in `--tap` mode, where the guard is not available — and there it is deliberately generous, because mislabelling a missing dependency as a defect is the expensive error.']
+  - decision: '2026-08-29 — fix the one finding rather than ship a lint that fails'
+    chose: 'repair `lib_preflight.bats:76` in this task, using T-3213''s pattern (deny with a path that does not exist, which `[ -w ]` reports false for root).'
+    rationale: 'wiring a detector into `fw test lint` while it reports a finding trains everyone to read that section as noise on its first day.'
+    alternatives_rejected: ['an allowlist entry for it. The finding was real and the fix was four lines; suppressing it would have been the first entry in exactly the mechanism that makes such tools useless.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/.tasks/templates/default.md'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.fabric/components/tests-lint-bats-silent-skip.yaml'
+  - '.fabric/components/tools-bats-silent-skip-lint.yaml'
+  - '.tasks/active/T-3217-bats-skips-are-invisible-to-the-p-011-ve.md'
+  - '.tasks/templates/default.md'
+  - 'tests/lint/bats-silent-skip.bats'
+  - 'tests/unit/lib_preflight.bats'
+  - 'tools/bats-silent-skip-lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-29T17:15:03'
+    action: 'T-3217: file the skip-blindness class found while landing T-3213'
+  - time: '2026-08-30T01:17:58'
+    action: 'T-3217: a skipped bats test reports ok, and the P-011 idiom cannot see it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 485 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 485
+  commits: 2
+  files_changed: 11
+  lines_added: 1232
+  lines_removed: 94
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3217-bats-skips-are-invisible-to-the-p-011-ve.md
+generated_by: context-agent-hybrid

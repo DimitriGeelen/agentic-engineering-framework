@@ -9,7 +9,6 @@
 ── Un-partitionable file taxonomy (T-2397 §3.2) ────────────────────────────
 Each class maps to a join strategy that is NOT `git merge`. Order matters:
 the first matching rule wins, so put specific paths before broad ones.
-A rule is (predicate, class, strategy, needs_human). `needs_human` is the
 
 ## Dependencies (1)
 

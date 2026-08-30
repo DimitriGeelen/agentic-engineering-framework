@@ -15,6 +15,20 @@ is available. Idempotent: exits cleanly when there are no commits since the
 latest tag.
 Designed to be run from cron on a weekly schedule and manually via `fw release`.
 
+### Framework Reference
+
+**Development runs on `bleeding-edge`. `master` is the release train: it receives
+fast-forward landings at RELEASE only, and authors nothing.**
+
+Two branches, two jobs:
+
+| Branch | Role | Who writes it |
+|---|---|---|
+| `bleeding-edge` | The sanctioned development branch. The persistent session runs here; handovers, task files, `.context/` memory and landed code all commit here. | The session, plus worktrees landing back (§Worktree Policy). |
+| `master` | The **consumer install surface**. `lib/consumer-recover.sh:19` calls the GitHub remote the *canonical public mirror*, and that is what consu
+
+*(truncated — see CLAUDE.md for full section)*
+
 ## Dependencies (3)
 
 | Component | Relationship | Description |

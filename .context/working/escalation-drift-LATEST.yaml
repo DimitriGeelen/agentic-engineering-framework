@@ -1,12 +1,12 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-29T03:23:02.892720+00:00
-corpus_total: 2780
+generated: 2026-08-30T03:23:03.339118+00:00
+corpus_total: 2789
 bug_class_total: 499
 bug_class_pct: 17
 h1_flagged: 362
 h1_pct_of_bug_class: 72
-h2_repeat_patterns: 160
+h2_repeat_patterns: 161
 h3_flagged: 265
 h3_pct_of_bug_class: 53
 recent_30d_flagged: 13
@@ -34,17 +34,17 @@ recent_sample:
     name: "rail 611 — exclusion-vs-hole applied to stale-arc membership; three broken"
 h2_top:
   - learning: "P-011"
-    task_count: 2329
+    task_count: 2348
   - learning: "L-387"
-    task_count: 2089
+    task_count: 2104
   - learning: "L-291"
-    task_count: 1081
+    task_count: 1086
   - learning: "L-398"
-    task_count: 829
+    task_count: 834
   - learning: "P-010"
-    task_count: 460
+    task_count: 467
   - learning: "L-399"
-    task_count: 91
+    task_count: 92
   - learning: "L-006"
     task_count: 56
   - learning: "L-001"
@@ -52,4 +52,4 @@ h2_top:
   - learning: "L-364"
     task_count: 45
   - learning: "L-408"
-    task_count: 41
+    task_count: 43

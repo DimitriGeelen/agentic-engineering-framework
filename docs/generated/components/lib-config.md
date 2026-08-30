@@ -21,9 +21,9 @@ Origin: T-817 inception (traceAI pattern adoption), T-819 build
 Agent-relevant settings:
 - `FW_CONTEXT_WINDOW` (300000) — budget enforcement ceiling
 - `FW_PORT` (3000) — Watchtower listen port (also resolved via triple-file; see Watchtower Port section)
-- `FW_SAFE_MODE` (0) — bypass task gate (escape hatch)
-- `FW_DISPATCH_LIMIT` (2) — Agent tool cap before TermLink gate
-- `FW_NTFY_URL` / config `NTFY_URL` (empty) — T-2439: ntfy server base URL for push notifications. Empty = le
+- `FW_SAFE_MODE` (0) — bypass task gate (escape hatch). **Must be set on the Claude
+  process itself, not as a command prefix (T-3179).** `check-active-task.sh` reads the
+  hook process's environment, never the command string, s
 
 *(truncated — see CLAUDE.md for full section)*
 

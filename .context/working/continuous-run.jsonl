@@ -1,0 +1,6 @@
+{"ts": "2026-08-29T15:43:41Z", "event": "iterate", "reason": "restart", "restart_count": 1, "wrapper_pid": 1851680, "detail": "session=S-2026-0813-2305 tokens=286826"}
+{"ts": "2026-08-29T22:27:05Z", "event": "exit", "reason": "no-signal", "restart_count": 1, "wrapper_pid": 1851680, "detail": "claude exited without a restart signal", "exit_code": 0}
+{"ts": "2026-08-29T22:27:10Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 4125875, "detail": "restart=enabled max_restarts=5 termlink=0"}
+{"ts": "2026-08-29T23:21:53Z", "event": "iterate", "reason": "restart", "restart_count": 1, "wrapper_pid": 4125875, "detail": "session=S-2026-0813-2305 tokens=287677"}
+{"ts": "2026-08-30T08:22:49Z", "event": "exit", "reason": "no-signal", "restart_count": 1, "wrapper_pid": 4125875, "detail": "claude exited without a restart signal", "exit_code": 0}
+{"ts": "2026-08-30T08:22:51Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 982028, "detail": "restart=enabled max_restarts=5 termlink=0"}
