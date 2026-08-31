@@ -76,10 +76,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 17
-  commits: 1
-  files_changed: 6
-  lines_added: 552
-  lines_removed: 34
+  commits: 2
+  files_changed: 21
+  lines_added: 863
+  lines_removed: 98
+  footprint_refreshed_at: '2026-08-31T16:00:03Z'
+  footprint_refreshed_by_commit: da619108e
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3233-fw-continuous-arm-reports-a-bounded-run-.md

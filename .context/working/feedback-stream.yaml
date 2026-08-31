@@ -38547,3 +38547,21 @@ scan_id: R-2770c006
 task_id: T-3233
 payload:
   task_file: .tasks/active/T-3233-fw-continuous-arm-reports-a-bounded-run-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T18:34:09Z'
+scan_id: R-e64ccc61
+task_id: T-3222
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T18:34:09Z'
+scan_id: R-e64ccc61
+task_id: T-3222
+payload:
+  task_file: .tasks/active/T-3222-safe-list-admits-curl--o-and-wget--o-whi.md

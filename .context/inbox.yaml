@@ -4161,3 +4161,11 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-358
+  text: "A full 'fw init' ran with cwd=/tmp on this host at 2026-08-31T13:04:49Z, creating /tmp/.framework.yaml, /tmp/.tasks (6 seed tasks), /tmp/.context, /tmp/.agentic-framework (VERSION 1.6.354 — not this repo's 1.6.138) and /tmp/.claude/settings.json with hooks pointing at /tmp/.agentic-framework/bin/fw. A 'git init' by user dimitri-mint-dev followed at 15:05 (/tmp/.git, zero commits). BLAST RADIUS, measured: lib/paths.sh:fw_reanchor_from_cwd walks up for .framework.yaml/.tasks and stops before '/', so until today /tmp was correctly 'outside any project'. It no longer is — every BATS_TEST_TMPDIR under /tmp now re-anchors to /tmp, and the check-active-task hook reads /tmp/.context/working/focus.yaml (null) instead of the intended root. This turned tests/unit/check_active_task_cwd_resolution.bats:118 'T-2463: cwd outside any project' RED, which blocked an unrelated task close (T-3222) at the P-011 gate. The test is not wrong — it detected a real environment change — but its premise ('/tmp is not a project') is host-state-dependent and unasserted, so the failure reads as a code regression. Note / itself also carries /.framework.yaml (Aug 26) and /.tasks (Jun 27); those are invisible only because the walk stops before '/'."
+  captured: 2026-08-31T18:31:49Z
+  context_task: T-3222
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true

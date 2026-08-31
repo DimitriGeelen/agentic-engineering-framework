@@ -1,0 +1,113 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3222: safe-list admits curl -o and wget -O, which write a file with no redirect
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-31T18:34:23Z
+# ============================================================================
+
+task_id: T-3222
+task_name: "safe-list admits curl -o and wget -O, which write a file with no redirect"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-30T10:06:38Z
+completed: 2026-08-31T18:32:22Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-08-30T12:48:00+02:00
+last_commit: 2026-08-30T13:06:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs for the curl -o / wget -O admission hole. curl and wget were on the safe list unconditionally. vendor sync and fabric card for the fetch-write suite
+
+# Key outcomes
+outcomes:
+  - 'The admission is reproduced against the LIVE hook with focus null:'
+  - 'The rule the safe-list states for itself is quoted in the fix''s comment —'
+  - '`curl -o FILE` / `curl --output FILE` / `wget -O FILE` /'
+  - '`curl -o -` and `wget -O -` (write to stdout, not a file) stay ADMITTED —'
+  - 'Read-only forms stay ADMITTED: `curl -sf URL`, `curl -I URL`,'
+  - 'Decide and record WHERE the fix lives — extending `has_bash_write_pattern`'
+  - 'A mutation control derived from live source: reverting the fix re-admits'
+  - 'A no-widening leg — the fix admits nothing the pre-fix version blocked'
+  - 'Adjacent gate suites stay green (the 13 suites T-3223 swept: 190 ok,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/agents/designer/designer.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'agents/designer/designer.sh'
+  - '.context/audits/2026-08-30.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/full-audit-timing.yaml'
+  - '.context/episodic/T-3223.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/watchtower.log'
+  - '.fabric/components/tests-unit-t3222_fetch_writes_file.yaml'
+  - '.tasks/active/T-3222-safe-list-admits-curl--o-and-wget--o-whi.md'
+  - 'tests/unit/t3096_safe_commands_wrappers.bats'
+  - 'tests/unit/t3222_fetch_writes_file.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-30T12:48:00'
+    action: 'T-3222: real ACs for the curl -o / wget -O admission hole'
+  - time: '2026-08-30T13:06:10'
+    action: 'T-3222: curl and wget were on the safe list unconditionally'
+  - time: '2026-08-30T13:06:41'
+    action: 'T-3222: vendor sync and fabric card for the fetch-write suite'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1945 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1945
+  commits: 3
+  files_changed: 28
+  lines_added: 1034
+  lines_removed: 187
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3222-safe-list-admits-curl--o-and-wget--o-whi.md
+generated_by: context-agent-hybrid
