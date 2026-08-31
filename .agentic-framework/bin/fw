@@ -1184,6 +1184,14 @@ show_help() {
     # CLAUDE.md instructs agents to resolve the port with exactly this command. The
     # verb the port rule depends on was undiscoverable from `fw help`.
     echo -e "  ${GREEN}watchtower${NC} <cmd>      Watchtower control (port, url, status, start, stop, restart)"
+    # T-3228 (landing T-3225): `continuous` shipped as a router command with no
+    # help entry — the same omission T-2808 records directly above, in the same
+    # release. The arc-012 loop ships DISARMED by design (T-3164), so this verb
+    # is the only sanctioned way to arm it; undiscoverable from `fw help`, the
+    # loop reads as broken rather than off. Caught by the help-router-parity
+    # invariant, which blocked a push — the rail works, it just had nothing
+    # upstream of it at authoring time.
+    echo -e "  ${GREEN}continuous${NC} <cmd>      Continuous-run loop control (arm, disarm, status)"
     echo -e "  ${GREEN}upstream${NC} <cmd>        Report issues to framework upstream (report, config, status)"
     echo -e "  ${GREEN}deploy${NC} <cmd>          Ring20 deployment (scaffold, status, routes, ports)"
     echo -e "  ${GREEN}ask${NC} <query>           Query project knowledge (RAG search)"
