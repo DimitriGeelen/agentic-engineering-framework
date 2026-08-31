@@ -118,7 +118,13 @@ print(json.dumps(payload))
 @test "T-2463: cwd outside any project → no re-anchor, uses PROJECT_ROOT" {
     set_focus_in "$MAINFIX" T-6001
     create_task_in "$MAINFIX" T-6001
-    # /tmp itself has no .framework.yaml/.tasks above it within the walk → no override
+    # PREMISE: /tmp has no .framework.yaml/.tasks above it within the walk → no
+    # override. That premise is HOST STATE, not something this file controls, and
+    # it has been false on this host before: an `fw init` ran with cwd=/tmp on
+    # 2026-08-31, /tmp became a project, and this leg went red reading exactly
+    # like a code regression (OBS-358, T-3234). If it is red, run
+    # tests/lint/no-project-markers-above-bats-tmpdir.bats first — that guard
+    # names the offending directory and says whether the host or the code moved.
     run_hook 'true && echo work' "/tmp"
     [ "$status" -eq 0 ]
 }

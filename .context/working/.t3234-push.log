@@ -1,0 +1,122 @@
+VERSION stamped: 1.6.139
+
+=== Pre-Push Audit Check ===
+
+=== AUDIT REPORT ===
+Timestamp: 2026-08-31T20:46:32+02:00
+Project: /opt/999-Agentic-Engineering-Framework
+Sections: structure
+
+=== STRUCTURE CHECKS ===
+[PASS] Tasks directory exists
+[PASS] Tasks/active directory exists
+[PASS] Tasks/completed directory exists
+[PASS] Tasks/templates directory exists
+[PASS] Task template exists
+[PASS] No duplicate task IDs — examined 3221 task file(s) across 1 corpus view(s)
+[PASS] All project YAML files parse correctly — examined 30 project YAML file(s)
+[PASS] All arc anchor_task references resolve to existing tasks — examined 18 arc anchor_task reference(s)
+[PASS] All onboarding-seed corpus references resolve to existing maps — examined 12 onboarding-seed corpus reference(s)
+[PASS] Corpus maps lint clean — examined 8 corpus map(s)
+[PASS] All assessed arcs had task commits within 30 days — examined 15 in-progress arc(s) with constituents
+[INFO] free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F3: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F1: retire_when text present, no recognition heuristic — manual review
+[INFO] free driver F2: retire_when text present, no recognition heuristic — manual review
+[PASS] No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 406 source file(s) under lib/ web/ agents/ bin/ tools/
+[PASS] No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 139 Python file(s) under web/ + lib/
+[PASS] No stale-slice-references (L-417) — examined 271 file(s) under web/templates web/blueprints lib
+[WARN] Found 183 GO-scope-not-propagated inception(s) of 356 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision
+       Evidence: T-100200, T-3184, T-3114, T-3108, T-3100 (+178 more)
+       Mitigation: Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)
+[PASS] Fabric: 1144 registered card(s)
+[WARN] Fabric: 55/1057 cards have no edges
+       Evidence: Graph coverage below target
+       Mitigation: Run: fw fabric enrich
+[WARN] Fabric drift: 13 source file(s) have no fabric card
+       Evidence: 13 unregistered files matching watch-patterns.yaml
+       Mitigation: Run: fw fabric scan
+[WARN] Fabric: 758 card(s) point at files no watch pattern covers
+       Evidence: The registry already treats these as components; drift checks cannot see them, so coverage is measured over a subset
+       Mitigation: Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components
+[PASS] Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework
+[WARN] Branch hygiene: 22 finding(s) — stale branches, worktrees or remote refs
+       Evidence: behind-threshold audit-remediation-t2416 behind=2520 days=66 (threshold 50)
+         merged-undeleted land-t100200-go
+         behind-threshold learning/precompact-cleanup behind=7936 days=181 (threshold 50)
+         merged-undeleted t100196-vendor-fix
+         merged-undeleted t100199-close
+         behind-threshold t2353-audit-emit-tasks behind=2520 days=64 (threshold 50)
+         merged-undeleted t2416-fw-safe-mode-hook-timing
+         diverged-fork t2417-fw-sessions ahead=58 behind=2487 days=60 (threshold 50)
+         merged-undeleted t2510-audit-remediation
+         behind-threshold t2511-warn-remediation behind=2191 days=55 (threshold 50)
+         remote-unlanded origin/audit-remediation-t2416 ahead=1
+         remote-contained origin/t100196-vendor-fix
+         … 10 more (shown lines are one-per-class, not the worst)
+       Mitigation: Cleanup: git branch -d <name> (merged); fw integrate run bleeding-edge (overdue merge-back). Full list: bash -c 'source "/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh"; fw_branch_hygiene "/opt/999-Agentic-Engineering-Framework"' — FORK present: reconcile while small (merge origin/bleeding-edge INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork.
+[PASS] Hook threshold: no hooks failing over threshold
+[PASS] Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)
+[FAIL] Invariant suite: 1 of 108 structural invariant(s) RED (T-2837)
+       Evidence: every collectable test file under tests/ is tracked by git;
+       Mitigation: Run: fw test invariants
+       Scope: worktree (all 1 RED test(s) are about state not committed to HEAD) — not present in any committed ref
+[PASS] Designer ghost registry: ghost↔task joins clean
+[PASS] Map conformance: aef-task-lifecycle matches its enforced machine
+[PASS] Map conformance: aef-inception-flow matches its enforced machine
+[PASS] Map conformance: aef-dispatch-loop matches its enforced machine
+[PASS] Map conformance: aef-audit-cron matches its enforced machine
+[PASS] Map conformance: aef-tier0-escalation matches its enforced machine
+[INFO] Stale draft(s), 30d+ untouched: draft-exception-handling draft-knowledge-leveling draft-t2584-scratch draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)
+
+=== SUMMARY ===
+Pass: 29
+Warn: 5
+Fail: 1
+
+=== PRIORITY ACTIONS ===
+     1	Cleanup: git branch -d <name> (merged); fw integrate run bleeding-edge (overdue merge-back). Full list: bash -c 'source "/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh"; fw_branch_hygiene "/opt/999-Agentic-Engineering-Framework"' — FORK present: reconcile while small (merge origin/bleeding-edge INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork.
+     2	Run: fw fabric enrich
+     3	Run: fw fabric scan
+     4	Run: fw test invariants
+     5	Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)
+
+=== TREND ANALYSIS ===
+Repeated issues detected in last 14 days (candidates for practice):
+  -      5 Fabric drift: 13 source file(s) have no fabric card (5 times)
+  -      5 Branch hygiene: 22 finding(s) — stale branches, worktrees or remote refs (5 times)
+  -      4 Found 183 GO-scope-not-propagated inception(s) of 355 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision (4 times)
+  -      4 Fabric drift: 10 source file(s) have no fabric card (4 times)
+  -      3 Found 181 GO-scope-not-propagated inception(s) of 350 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision (3 times)
+  -      3 Fabric drift: 9 source file(s) have no fabric card (3 times)
+
+Consider creating a practice to address these recurring issues.
+Run: fw context add-learning "description" --task T-XXX
+
+Audit history: 14 audit(s) in last 14 days + today
+
+Audit saved to: /opt/999-Agentic-Engineering-Framework/.context/audits/2026-08-31.yaml
+
+AUDIT-SCOPE: fails=1 ref=0 worktree=1
+AUDIT-SCOPE-WORKTREE: Invariant suite: 1 of 108 structural invariant(s) RED (T-2837)
+=== END AUDIT ===
+
+WARNING: Audit FAILED, but every failure is in the WORKING TREE (T-3126)
+
+  Worktree-scoped failure(s):
+    - Invariant suite: 1 of 108 structural invariant(s) RED (T-2837)
+
+  These findings are in the WORKING TREE: uncommitted edits, untracked
+  files, or host state such as /etc/cron.d.
+  They are NOT in the ref being pushed — a clean checkout of that commit
+  does not contain them.
+  They are therefore NOT BLOCKING THIS PUSH.
+
+  They are still real. Fix them before COMMITTING the edits that caused
+  them — or, if they are a concurrent session's, leave them to that
+  session. Details: the [FAIL] blocks above, each with a 'Scope:' line.
+
+remote: error: cannot lock ref 'refs/heads/bleeding-edge': is at a4552bb17a0c520f5e551def93d53d30a587cb6d but expected 910830aac7605d33f5a75b0cfe7715b0cb3eaf7d        
+To https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework.git
+ ! [remote rejected]     bleeding-edge -> bleeding-edge (failed to update ref)
+error: failed to push some refs to 'https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework.git'

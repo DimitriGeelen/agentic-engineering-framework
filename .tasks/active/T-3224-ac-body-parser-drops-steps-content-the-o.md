@@ -341,7 +341,7 @@ curl -sf "$(bin/fw watchtower url)/review/T-100131" -o /tmp/.t3224-ctl && grep -
 # web/blueprints/tasks.py and re-running. Asserting 0 here would be a line that can
 # only ever be red, so the count is pinned (a 10th failure turns it red) AND no
 # failure may land in the parser's own surface.
-bin/fw test web > /tmp/.t3224-web 2>&1; test "$(grep -c '^FAILED' /tmp/.t3224-web)" -eq 9 && ! grep -qE '^FAILED (web/blueprints|tests/web/test_(tasks|review|ac_))' /tmp/.t3224-web
+bin/fw test web > /tmp/.t3224-web 2>&1; n=$(grep -c '^FAILED' /tmp/.t3224-web); { [ "$n" -eq 8 ] || [ "$n" -eq 9 ]; } && ! grep -qE '^FAILED (web/blueprints|tests/web/test_(tasks|review|ac_))' /tmp/.t3224-web
 
 ## RCA
 
@@ -505,3 +505,23 @@ test that passes because it measures nothing.
   zero failures, which this tree cannot satisfy for reasons T-3224 did not create, so
   it is pinned at the measured 9 plus a clause refusing any failure in the parser's
   own surface — per CLAUDE.md, assert the count you expect and say why it is right.
+
+### 2026-08-31 — close-out re-verification, `-eq 9` widened to `[8,9]` [agent]
+- **Re-ran the full Verification block at close-out.** Guard test (13 passed),
+  all four consumer curl checks (`/tasks/T-1624`, `/review/T-1062`,
+  `/review/T-2335`, `/review/T-100131`), and `bin/fw test web` all executed
+  against the live tree.
+- **The pinned `-eq 9` line went RED: measured 8, not 9.** `grep '^FAILED'`
+  diff against the committed baseline showed the exact set minus
+  `tests/web/test_project_root_discovery.py` — the specific case the prior
+  Updates entry already named as one of the "2 order-dependent" failures.
+  Confirmed by running that file alone: 4 passed, 0 failed — it only fails as
+  part of the full-suite run, depending on execution order, and does not
+  touch `web/blueprints/tasks.py` or the parser's own test surface.
+- **Widened the line from an exact `-eq 9` to `[ "$n" -eq 8 ] || [ "$n" -eq 9
+  ]`** rather than re-pin a single value that this run already falsified —
+  an exact count across a suite with a known order-dependent member is not a
+  stable invariant. The clause that actually protects this task's scope (no
+  failure in `web/blueprints` or `tests/web/test_(tasks|review|ac_)`) is
+  unchanged and still asserted. Re-ran after the edit: `n=8`, clause passes,
+  verdict PASS.

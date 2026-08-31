@@ -103,10 +103,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 1945
-  commits: 3
-  files_changed: 28
-  lines_added: 1034
-  lines_removed: 187
+  commits: 4
+  files_changed: 42
+  lines_added: 2294
+  lines_removed: 441
+  footprint_refreshed_at: '2026-08-31T18:34:59Z'
+  footprint_refreshed_by_commit: a4552bb17
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3222-safe-list-admits-curl--o-and-wget--o-whi.md

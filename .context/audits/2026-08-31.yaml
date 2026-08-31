@@ -1,10 +1,10 @@
-# Audit Results - 2026-08-31-1929
-timestamp: 2026-08-31T17:29:41Z
+# Audit Results - 2026-08-31-2046
+timestamp: 2026-08-31T18:46:32Z
 sections: "structure"
 summary:
-  pass: 30
-  warn: 6
-  fail: 0
+  pass: 29
+  warn: 5
+  fail: 1
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3220 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3221 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 30 project YAML file(s)"
   - level: PASS
@@ -45,9 +45,6 @@ findings:
   - level: WARN
     check: "Found 183 GO-scope-not-propagated inception(s) of 356 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
     mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
-  - level: WARN
-    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
-    mitigation: "Run: fw fabric drift"
   - level: PASS
     check: "Fabric: 1144 registered card(s)"
   - level: WARN
@@ -57,7 +54,7 @@ findings:
     check: "Fabric drift: 13 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
-    check: "Fabric: 757 card(s) point at files no watch pattern covers"
+    check: "Fabric: 758 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
@@ -68,8 +65,9 @@ findings:
     check: "Hook threshold: no hooks failing over threshold"
   - level: PASS
     check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
-  - level: PASS
-    check: "Invariant suite green — examined 104 structural invariant(s) (tests/lint/)"
+  - level: FAIL
+    check: "Invariant suite: 1 of 108 structural invariant(s) RED (T-2837)"
+    mitigation: "Run: fw test invariants"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS
