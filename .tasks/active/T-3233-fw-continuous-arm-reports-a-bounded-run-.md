@@ -1,14 +1,16 @@
 ---
 id: T-3233
-name: "fw continuous arm reports a bounded run it does not bound — ceiling, iteration count, task cap and atomicity"
+name: "fw continuous arm reports a bounded run it does not bound — ceiling, iteration
+  count, task cap and atomicity"
 description: >
-  fw continuous arm reports a bounded run it does not bound — ceiling, iteration count, task cap and atomicity
+  fw continuous arm reports a bounded run it does not bound — ceiling, iteration count,
+  task cap and atomicity
 
 status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc:continuous-run]
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-31T15:40:23Z
-last_update: 2026-08-31T15:40:23Z
-date_finished: null
+last_update: 2026-08-31T15:57:01Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,40 +36,86 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-08-31T15:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=280,acs=10)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-08-31T15:45:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3233: fw continuous arm reports a bounded run it does not bound — ceiling, iteration count, task cap and atomicity
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+arc-012 review findings **W1-F2, W1-F3, W1-F4 and W1-F8 / W5-F4** — four defects
+in one verb, landed as one piece of work because fixing any single leg leaves the
+same false green with a smaller surface (`SYNTHESIS.md` §What a maintainer should
+do first).
+
+`fw continuous arm` is the operator's control over an unattended run. It printed a
+confident summary of a run it had not bounded:
+
+| what it printed | what actually happened |
+|---|---|
+| `Ceiling: tier 5` | the enforcer used `1` — it resolves directive-first, arm wrote state-only |
+| `Ceiling: tier -` | read as "no ceiling"; the effective value was `1`, the strictest |
+| `Bound: 3 iteration(s)` | `current_iteration` cannot tick under Stop-hook driving |
+| (no mention of `max_tasks`) | a stale `max_tasks: 2` from a prior run still halted the run |
+| — | arming with no directive text made the injector a permanent no-op |
+
+Measured on the pre-fix code, both directions of the ceiling defect are reachable:
+a directive carrying `1` silently **tightens** `--tier-ceiling 5`, and one carrying
+`6` silently **widens** `--tier-ceiling 1`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `--tier-ceiling N` writes the ceiling to **both** `.continuous-mode.yaml` and
+- [x] `--tier-ceiling N` writes the ceiling to **both** `.continuous-mode.yaml` and
       `.next-directive.yaml`; when the flag is absent, a stale `tier_ceiling` in the
       directive is removed, so a prior run's value cannot silently override this arm
-- [ ] The ceiling `arm` and `status` **print** is resolved through the same
+- [x] The ceiling `arm` and `status` **print** is resolved through the same
       directive-first chain the enforcer uses (`inject-next-directive.py:261`), and when
       nothing is set anywhere both print the effective default (`1`) rather than `-` —
       today they show "no ceiling" and the operator gets the strictest one
-- [ ] `arm` gains `--max-tasks N`, written to both files; when the flag is absent a
+- [x] `arm` gains `--max-tasks N`, written to both files; when the flag is absent a
       stale `max_tasks` is cleared from both, so a run cannot end on a ceiling that
       appears in neither the arm output nor `status`
-- [ ] `completed_task_ids` is cleared in the same write that zeroes `tasks_completed`,
+- [x] `completed_task_ids` is cleared in the same write that zeroes `tasks_completed`,
       so the two cannot diverge across an arm boundary
-- [ ] `arm` refuses when the resulting `.next-directive.yaml` would carry no non-empty
+- [x] `arm` refuses when the resulting `.next-directive.yaml` would carry no non-empty
       `directive:` string — the injector returns before `write_state()` without one, so
       the arm would be a permanent no-op — and the refusal names how to satisfy it
-- [ ] The two-file write is ordered **directive first, state last**, so the only
+- [x] The two-file write is ordered **directive first, state last**, so the only
       reachable intermediate state is "not yet armed, fresh expiry"; the ordering
       rationale is inline so a later tidy-up cannot re-sort it back
-- [ ] `arm` output names which bound actually binds a **Stop-hook-driven** run
+- [x] `arm` output names which bound actually binds a **Stop-hook-driven** run
       (expiry and `max_tasks`) instead of leading with the session counter, which only
       advances across SessionStart
-- [ ] A bats suite drives the real verb and asserts **printed == enforced** by reading
+- [x] A bats suite drives the real verb and asserts **printed == enforced** by reading
       the enforcer's own resolution rather than either side alone, with control legs and
       zero skips; mutation matrix recorded in the RCA
 
@@ -103,6 +151,19 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 600 bats tests/unit/t3233_arm_bounds.bats > /tmp/.t3233a.out 2>&1 && ! grep -q "^not ok" /tmp/.t3233a.out
+test "$(grep -c '# skip' /tmp/.t3233a.out)" -eq 0
+timeout 900 bats tests/unit/t3225_continuous_arm.bats > /tmp/.t3233b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3233b.out
+test "$(grep -c '# skip' /tmp/.t3233b.out)" -eq 0
+timeout 900 bats tests/unit/t3212_human_gate_stop.bats > /tmp/.t3233c.out 2>&1 && ! grep -q "^not ok" /tmp/.t3233c.out
+test "$(grep -c '# skip' /tmp/.t3233c.out)" -eq 0
+timeout 900 bats tests/unit/continuous_task_counter.bats > /tmp/.t3233d.out 2>&1 && ! grep -q "^not ok" /tmp/.t3233d.out
+timeout 900 bats tests/unit/stop_driver.bats > /tmp/.t3233e.out 2>&1 && ! grep -q "^not ok" /tmp/.t3233e.out
+timeout 600 python3 -m pytest tests/unit/test_inject_next_directive.py -q > /tmp/.t3233f.out 2>&1 && grep -q "passed" /tmp/.t3233f.out
+bash -n lib/continuous-mode.sh
+grep -q 'CEILING_DEFAULT' lib/continuous-mode.sh
+grep -q 'max-tasks' lib/continuous-mode.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -221,6 +282,68 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** `fw continuous arm` reported bounds it did not enforce — a tier
+ceiling the enforcer ignored, a session count that cannot advance in the mode the
+loop actually runs in, a task cap it never set and never cleared, and an arm that
+could be a permanent no-op.
+
+**Root cause:** four independent misses sharing one shape — *a value written to
+one place and read from another, with no surface comparing them.*
+`inject-next-directive.py:261` resolves `tier_ceiling` **directive-first**; `arm`
+wrote it to state only and printed straight from state. `max_tasks` was never
+written or cleared by `arm` at all, so a prior run's value outranked the current
+one. `completed_task_ids` was left populated while `tasks_completed` was zeroed.
+The two `save()` calls ran in the order that makes the reachable intermediate
+state the harmful one.
+
+**Why structurally allowed:** `verdict()` implements directive-first precedence
+**correctly** for `max_iterations`, `max_tasks` and `expires_at` — three lines
+above the one field that does not. The discipline looked uniformly applied, and
+the file header even names this precedence trap explicitly, for expiry. The
+existing suite (`t3225_continuous_arm.bats`) asserted each side alone: `arm`
+printed `Ceiling: tier 5` *truthfully*, because that is what it wrote to state.
+Both numbers were individually correct about their own file. **Only the comparison
+was the defect, and nothing compared them.** Same family as C1/C2/C3 of the same
+review — an instrument reporting on a cached copy of its subject.
+
+**Prevention:** the printed value is now produced by `effective_ceiling()`, which
+resolves through the same chain the enforcer uses, so printed and enforced cannot
+drift without both moving. `tests/unit/t3233_arm_bounds.bats` asserts
+**printed == enforced** by invoking the real `inject-next-directive.py` and
+reading the ceiling it states in its own emitted block — not by re-typing its
+precedence rules, which would be a guard reimplementing the code it guards
+(G-072). Write order is pinned on mtime, which is observable as root; a
+permissions-based fixture would have proved nothing here (the W4-F2 lesson).
+
+**Mutation matrix.** Each leg reverted independently; restore byte-identical
+after every run:
+
+| # | mutation | reddened |
+|---|---|---|
+| M1 | ceiling no longer written to the directive file | 2 |
+| M2 | resolver reverted to state-only | 1 |
+| M3 | stale `max_tasks` no longer cleared | 1 |
+| M4 | `completed_task_ids` no longer cleared | 1 |
+| M5 | no-directive refusal removed | 1 |
+| M6 | write order swapped back to state-first | 1 |
+
+**M2 reddened ZERO on the first matrix run**, and that was a finding about the
+suite rather than a clean result. Once `arm` writes the ceiling to both files,
+state-first and directive-first agree on everything `arm` can produce — so the
+resolver's precedence was untested by construction. The gap is real and reachable:
+anything other than `arm` can write the directive, which is F2's second direction
+(a directive carrying `6` widening an arm of `1`). Added *"status resolves
+DIRECTIVE-first when the two files disagree"*, planted directly because `arm` is
+now correctly incapable of producing that state. M2 then reddened exactly it.
+
+**A pre-existing red was found and fixed en route.**
+`t3212_human_gate_stop.bats:149` asserted `reason=terminated(…)`, the format
+T-3228 replaced with `terminated[stored@<when>](…)` when it fixed review C1. The
+assertion had been red since that landed. Verified pre-existing by re-running it
+against the stashed pre-T-3233 library. The replacement pins the reason text *and*
+the stored-labelling, so it is stricter than what it replaces, and it was
+mutation-checked: stripping the label from `stop-driver.sh` reddens it.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -236,6 +359,47 @@ date_finished: null
 -->
 
 ## Evolution
+
+### 2026-08-31 — refusing the no-op arm broke four existing tests, and that was the point
+
+- **What changed:** W1-F3 suggested `arm` should "refuse (or loudly warn)" when the
+  resulting directive would carry no text. Refusing broke 4 of 10 tests in
+  `t3225_continuous_arm.bats` — and they are precisely the tests the finding names
+  as green *because* the counter they assert on is inert. They armed into a no-op
+  and asserted the driver's verdict, which is reachable without a directive.
+- **Plan impact:** none to the design. It confirmed the refusal is the right
+  strength rather than a warning: a warning would have left those four tests
+  passing over the same no-op.
+- **Triggered:** updated the four bare-sandbox arms to pass `--directive`. The one
+  test that legitimately arms without the flag (`arm clears a stale directive
+  expiry`) has `directive: stale` in its fixture and correctly still passes —
+  which is itself the control proving the refusal is conditional, not blanket.
+
+### 2026-08-31 — the mutation that reddened nothing was the useful one
+
+- **What changed:** M2 (resolver reverted to state-only) reddened zero tests. Not
+  because the fix was unnecessary — because after the fix `arm` writes the ceiling
+  to both files, so the two precedence orders agree on everything `arm` produces.
+  The suite could not distinguish them by construction.
+- **Plan impact:** the suite needed a case `arm` cannot generate. Planting a
+  disagreeing state/directive pair directly and driving `status` covers F2's
+  second direction (a directive silently widening an arm), which the original
+  finding named and my first suite missed.
+- **Triggered:** nothing filed; the test is in the suite and M2 now reddens it.
+
+### 2026-08-31 — a red test from my own previous landing, found by the regression sweep
+
+- **What changed:** `t3212_human_gate_stop.bats` was red before this task started.
+  T-3228 changed the driver's stored-reason format when it fixed review C1 and did
+  not update this sibling assertion; its own verification never ran t3212.
+- **Plan impact:** none, but it is the clearest instance yet of the arc's own
+  subject — a fix that shipped green while leaving an instrument broken, and the
+  only reason it surfaced is that this task ran the neighbouring suites rather
+  than only its own.
+- **Triggered:** fixed in place with a stricter assertion (pins the reason text
+  *and* the new stored-labelling), mutation-checked. Not filed separately: it is a
+  one-line correction to incomplete work from a task I landed, and recording it
+  here keeps the causality visible.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -315,3 +479,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3233-fw-continuous-arm-reports-a-bounded-run-.md
 - **Context:** Initial task creation
+
+### 2026-08-31T15:57:01Z — status-update [task-update-agent]
+- **Change:** tags: +arc:continuous-run

@@ -43,7 +43,7 @@ driver_verdict() {
 }
 
 @test "arm reports ARMED and exits 0" {
-    run env PROJECT_ROOT="$SB" "$FW" continuous arm --hours 2 --iterations 3
+    run env PROJECT_ROOT="$SB" "$FW" continuous arm --hours 2 --iterations 3 --directive "t3225 fixture"
     [ "$status" -eq 0 ]
     [[ "$output" == *"ARMED"* ]]
 }
@@ -54,14 +54,14 @@ driver_verdict() {
     run driver_verdict
     [ "$output" = "{}" ]
 
-    env PROJECT_ROOT="$SB" "$FW" continuous arm --hours 2 --iterations 3 >/dev/null
+    env PROJECT_ROOT="$SB" "$FW" continuous arm --hours 2 --iterations 3 --directive "t3225 fixture" >/dev/null
     run driver_verdict
     [[ "$output" == *'"decision": "block"'* ]]
     [[ "$output" == *"iteration-1"* ]]
 }
 
 @test "disarm returns the driver to {} and records the reason" {
-    env PROJECT_ROOT="$SB" "$FW" continuous arm --hours 2 --iterations 3 >/dev/null
+    env PROJECT_ROOT="$SB" "$FW" continuous arm --hours 2 --iterations 3 --directive "t3225 fixture" >/dev/null
     run driver_verdict
     [[ "$output" == *'"decision": "block"'* ]]
 
@@ -74,7 +74,7 @@ driver_verdict() {
 }
 
 @test "halt file outranks an armed loop, and arm refuses under it (exit 3)" {
-    env PROJECT_ROOT="$SB" "$FW" continuous arm --hours 2 --iterations 3 >/dev/null
+    env PROJECT_ROOT="$SB" "$FW" continuous arm --hours 2 --iterations 3 --directive "t3225 fixture" >/dev/null
     touch "$SB/.context/working/.continuous-halt"
 
     run driver_verdict

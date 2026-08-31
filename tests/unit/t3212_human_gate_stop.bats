@@ -146,7 +146,16 @@ note_gate() {
     armed_state
     note_gate "T-9010" "human-ac"
     CLAUDE_PROJECT_DIR="$TMP" bash -c "printf '{}' | bash '$DRIVER'" >/dev/null
-    grep -q 'reason=terminated(human-gate:human-ac:T-9010)' "$LOG"
+    # T-3233: updated for the T-3228 format change. The driver now labels a
+    # replayed reason `terminated[stored@<when>](…)` instead of `terminated(…)`,
+    # because the old form recited a frozen clock inside a freshly-timestamped
+    # line (review C1). This assertion was left behind by that fix and had been
+    # RED ever since — verified pre-existing here, not caused by T-3233.
+    #
+    # The pattern deliberately still pins the reason text AND now also pins the
+    # stored-labelling, so it is stricter than what it replaces rather than merely
+    # looser. The stamp itself is wildcarded: it is a timestamp, not the subject.
+    grep -qE 'reason=terminated\[stored@[^]]*\]\(human-gate:human-ac:T-9010\)' "$LOG"
 }
 
 @test "T-3212: CONTROL — with no reason recorded it still says disarmed" {

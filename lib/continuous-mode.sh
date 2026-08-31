@@ -191,13 +191,14 @@ fw_continuous_cli() {
     local state="$wdir/.continuous-mode.yaml"
     local directive="$wdir/.next-directive.yaml"
     local halt="${FW_CONTINUOUS_HALT:-$wdir/.continuous-halt}"
-    local hours="" iters="" ceiling="" reason="" text=""
+    local hours="" iters="" ceiling="" reason="" text="" maxtasks=""
 
     while [ $# -gt 0 ]; do
         case "$1" in
             --hours) hours="$2"; shift 2 ;;
             --iterations) iters="$2"; shift 2 ;;
             --tier-ceiling) ceiling="$2"; shift 2 ;;
+            --max-tasks) maxtasks="$2"; shift 2 ;;
             --reason) reason="$2"; shift 2 ;;
             --directive) text="$2"; shift 2 ;;
             *) echo "fw continuous: unknown option '$1'" >&2; return 2 ;;
@@ -206,7 +207,7 @@ fw_continuous_cli() {
 
     case "$action" in
         arm|disarm|status) ;;
-        *) echo "usage: fw continuous <arm|disarm|status> [--hours N] [--iterations N] [--tier-ceiling N] [--directive TEXT] [--reason TEXT]" >&2; return 2 ;;
+        *) echo "usage: fw continuous <arm|disarm|status> [--hours N] [--iterations N] [--tier-ceiling N] [--max-tasks N] [--directive TEXT] [--reason TEXT]" >&2; return 2 ;;
     esac
 
     if [ "$action" = "arm" ] && [ -f "$halt" ]; then
@@ -219,6 +220,7 @@ fw_continuous_cli() {
     FW_CM_ACTION="$action" FW_CM_STATE="$state" FW_CM_DIRECTIVE="$directive" \
     FW_CM_HALT="$halt" FW_CM_HOURS="$hours" FW_CM_ITERS="$iters" \
     FW_CM_CEILING="$ceiling" FW_CM_REASON="$reason" FW_CM_TEXT="$text" \
+    FW_CM_MAXTASKS="$maxtasks" \
     python3 - <<'PYCM'
 import os, sys, datetime, tempfile
 try:
@@ -289,6 +291,36 @@ def verdict(state, directive):
         return "STOPPED", f".next-directive.yaml: expires_at {exp.strftime(Z)} lapsed {age}d ago"
     return "ARMED", f"would continue as iteration-{cur + 1}" + (f", expires {exp.strftime(Z)}" if exp else "")
 
+# T-3233 (arc-012 review W1-F2). The enforcer resolves the ceiling DIRECTIVE-FIRST
+# at inject-next-directive.py:261 —
+#     directive_data.get("tier_ceiling", new_state.get("tier_ceiling"))
+# — where new_state starts as CONFIG_DEFAULTS, whose tier_ceiling is 1. `arm` and
+# `status` used to print state.get("tier_ceiling", "-") instead, so three numbers
+# could disagree with nothing anywhere showing it: the one the operator sets, the
+# one the CLI confirms, and the one that actually binds.
+#
+# Two reachable directions, both measured on this repo:
+#   - a directive carrying tier_ceiling: 1 silently TIGHTENS `--tier-ceiling 5`,
+#     freezing the loop on the first task with blast-radius 2;
+#   - a directive carrying 6 silently WIDENS `--tier-ceiling 1`.
+# And with nothing set anywhere, the old code printed "-" — read as "no ceiling" —
+# while the enforced value was 1, the strictest possible.
+#
+# This helper exists so the printed number is produced by the same chain that
+# enforces it. It is deliberately NOT a re-typed copy of the enforcer's fallback
+# order: keep the two in step, and if the enforcer's precedence ever changes, this
+# is the one place to follow it.
+CEILING_DEFAULT = 1  # inject-next-directive.py CONFIG_DEFAULTS["tier_ceiling"]
+
+def effective_ceiling(st, dr):
+    v = dr.get("tier_ceiling", st.get("tier_ceiling", CEILING_DEFAULT))
+    n = as_int(v, None)
+    return CEILING_DEFAULT if n is None else n
+
+def effective_max_tasks(st, dr):
+    """Same directive-first shape. Returns None when genuinely unset."""
+    return as_int(dr.get("max_tasks", st.get("max_tasks")), None)
+
 state, directive = load(sp), load(dp)
 
 if act == "status":
@@ -306,7 +338,9 @@ if act == "status":
         for b in blockers:
             print(f"    - {b}")
     print(f"  Iteration: {as_int(state.get('current_iteration'), 0)} / {as_int(directive.get('max_iterations'), as_int(state.get('max_iterations'), '-'))}")
-    print(f"  Tier ceiling: {state.get('tier_ceiling', '-')}")
+    print(f"  Tier ceiling: {effective_ceiling(state, directive)}")
+    _mt = effective_max_tasks(state, directive)
+    print(f"  Max tasks: {_mt if _mt is not None else '-'} (completed {as_int(state.get('tasks_completed'), 0)})")
     stored = state.get("last_terminated_reason")
     if isinstance(stored, str) and stored.strip():
         print(f"  (stored last_terminated_reason, NOT re-evaluated: {stored.strip()})")
@@ -330,30 +364,113 @@ if hours > 24:
     print("  An unbounded arm is refused, not defaulted.", file=sys.stderr)
     sys.exit(2)
 
+ceiling = as_int(os.environ.get("FW_CM_CEILING") or "", None)
+max_tasks = as_int(os.environ.get("FW_CM_MAXTASKS") or "", None)
+if os.environ.get("FW_CM_MAXTASKS") and (max_tasks is None or max_tasks <= 0):
+    print("REFUSED: --max-tasks must be a positive integer", file=sys.stderr)
+    sys.exit(2)
+
+# T-3233 (W1-F3). The injector is a NO-OP without a directive string:
+# inject-next-directive.py:232-234 returns (state, "") when `directive` is not a
+# non-empty str, and main() returns before write_state(). So arming a project
+# whose .next-directive.yaml has no `directive:` key produces a run that restarts
+# without advancing and without marching orders — while `arm` prints a confident
+# "Bound: N iteration(s)". Refuse rather than arm into that, in the same spirit as
+# the --hours ceiling above: an arm that cannot take effect is refused, not
+# defaulted.
+_existing = directive.get("directive")
+_existing = _existing.strip() if isinstance(_existing, str) else ""
+_new_text = (os.environ.get("FW_CM_TEXT") or "").strip()
+if not (_new_text or _existing):
+    print("REFUSED: this arm would carry no directive text.", file=sys.stderr)
+    print("  inject-next-directive.py returns before write_state() when the", file=sys.stderr)
+    print("  directive is empty, so the loop would restart without advancing", file=sys.stderr)
+    print("  the iteration counter and without receiving marching orders.", file=sys.stderr)
+    print("", file=sys.stderr)
+    print("  Give it one:  fw continuous arm --hours N --iterations N \\", file=sys.stderr)
+    print("                  --directive \"what the next session should do\"", file=sys.stderr)
+    sys.exit(2)
+
 exp = now + datetime.timedelta(hours=hours)
+
+# ── ORDER IS LOAD-BEARING: directive first, state last (T-3233, W1-F8/W5-F4) ──
+#
+# save() is atomic per file (mkstemp + os.replace), which reads as transactional
+# across the pair. It is not. If the process dies between the two writes — SIGINT,
+# ENOSPC on the second mkstemp, EROFS, OOM — one file is committed and the other
+# is not, and the ORDER decides which half-state is reachable.
+#
+#   state first (the old order):  enabled: true  +  the PREVIOUS expires_at.
+#       That is the armed-but-instantly-expired state this file's own header
+#       promises cannot happen. The loop stops dead on the next turn citing an
+#       expiry from months ago, and no output is printed because both confirmation
+#       prints come after both saves — the operator sees a killed command, an
+#       armed flag, and no reason to suspect the directive.
+#
+#   directive first (this order): fresh expiry  +  still disarmed.
+#       Harmless. Nothing reads the expiry while disarmed; the operator re-runs.
+#
+# Do not re-sort these two saves to group them with their neighbours.
+directive["filed_at"] = now.strftime(Z)
+directive["expires_at"] = exp.strftime(Z)
+directive["max_iterations"] = iters
+if _new_text:
+    directive["directive"] = _new_text
+directive["filed_by"] = "fw-continuous-arm"
+
+# T-3233 (W1-F2/W1-F4): write the caps to BOTH files, and CLEAR them when the flag
+# is absent. The enforcer reads the directive first, so a value left behind by a
+# previous run outranks this arm — which is how a run ends on `max_tasks-reached`
+# for a ceiling the operator never set and that appears in no output anywhere.
+if ceiling is not None:
+    directive["tier_ceiling"] = ceiling
+else:
+    directive.pop("tier_ceiling", None)
+if max_tasks is not None:
+    directive["max_tasks"] = max_tasks
+else:
+    directive.pop("max_tasks", None)
+save(dp, directive)
+
 state["enabled"] = True
 state["current_iteration"] = 0
 state["max_iterations"] = iters
 state["last_terminated_reason"] = None
 state["last_resumed_at"] = now.strftime(Z)
 state["tasks_completed"] = 0
-ceiling = as_int(os.environ.get("FW_CM_CEILING") or "", None)
+# T-3233 (W1-F4): clear the id list in the SAME write that zeroes the counter.
+# fw_continuous_note_task_completed short-circuits on `task_id in seen`, so a
+# surviving list makes a re-completed task uncountable — len(completed_task_ids)
+# and tasks_completed then diverge permanently after the first re-arm, and the id
+# list reads as this run's audit trail while containing prior runs' ids.
+state["completed_task_ids"] = []
 if ceiling is not None:
     state["tier_ceiling"] = ceiling
+else:
+    state.pop("tier_ceiling", None)
+if max_tasks is not None:
+    state["max_tasks"] = max_tasks
+else:
+    state.pop("max_tasks", None)
 save(sp, state)
 
-directive["filed_at"] = now.strftime(Z)
-directive["expires_at"] = exp.strftime(Z)
-directive["max_iterations"] = iters
-if os.environ.get("FW_CM_TEXT"):
-    directive["directive"] = os.environ["FW_CM_TEXT"]
-directive["filed_by"] = "fw-continuous-arm"
-save(dp, directive)
-
-st, why = verdict(load(sp), load(dp))
+_st2, _dr2 = load(sp), load(dp)
+st, why = verdict(_st2, _dr2)
+_eff_ceiling = effective_ceiling(_st2, _dr2)
+_eff_max_tasks = effective_max_tasks(_st2, _dr2)
 print(f"Continuous mode: {st}")
-print(f"  Bound:   {iters} iteration(s), expires {exp.strftime(Z)} ({hours}h)")
-print(f"  Ceiling: tier {state.get('tier_ceiling', '-')}")
+print(f"  Expires: {exp.strftime(Z)} ({hours}h)")
+print(f"  Max tasks: {_eff_max_tasks if _eff_max_tasks is not None else 'unset'}")
+print(f"  Ceiling: tier {_eff_ceiling}")
+print(f"  Sessions: {iters} (advances only across SessionStart)")
+# T-3233 (W1-F3): current_iteration has exactly one writer — inject-next-directive
+# .py, reached only from post-compact-resume.sh, wired only to SessionStart. The
+# Stop hook drives turns INSIDE one session, where no SessionStart fires, so the
+# session counter is frozen for the whole run and max_iterations never binds.
+# Leading with it read as the operative bound; it is not, so it is listed last and
+# labelled, and the two bounds that DO bind a Stop-hook-driven run are named here.
+print("  Binding a Stop-hook-driven run: expiry and max tasks (the session")
+print("  count advances only when a new session starts).")
 print(f"  Check:   {why}")
 print(f"  Halt at any time:  touch {halt}")
 sys.exit(0 if st == "ARMED" else 1)
