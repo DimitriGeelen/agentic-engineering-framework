@@ -4,12 +4,12 @@ name: "partial-complete archive branch never nulls horizon (peer 832 T-654 BUG 1
 description: >
   partial-complete archive branch never nulls horizon (peer 832 T-654 BUG 1)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, tests/unit/t3235_archived_horizon_invariant.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-31T19:04:00Z
-last_update: '2026-08-31T19:15:18Z'
-date_finished:
+last_update: 2026-08-31T19:41:23Z
+date_finished: 2026-08-31T19:41:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -208,23 +208,88 @@ test "$(grep -c 'ARCHIVED-HORIZON INVARIANT' agents/task-create/update-task.sh)"
 test "$(grep -c 'horizon: null/' agents/task-create/update-task.sh)" -eq 1
 # The corpus this is meant to keep clean.
 test "$(grep -l '^horizon: now$' .tasks/completed/*.md 2>/dev/null | wc -l)" -eq 0
-# Every suite that drives update-task.sh — run WHOLE, with no exclusions, and
-# pinned to the exact set of failures that already existed. Two suites there are
-# red at HEAD and are not this change's to fix (one bug, one task):
-#   OBS-359  ac_counter_sed_range_one_line_comment — asserts an exact count (2)
-#            of a comment-strip regex that now has 3 correct call sites.
-#   OBS-360  inception_decide_emit_review_post_move — verified red against HEAD's
-#            update-task.sh by checkout, re-run, restore.
-# Pinning the COUNT rather than excluding the files means a third failure — a
-# real regression from this change — reddens the gate instead of hiding behind a
-# carve-out. Both are also symptoms of OBS-361: nothing runs tests/unit on a
-# schedule, so these sat red unreported.
-timeout 2400 bats $(grep -rln 'update-task.sh' tests/unit/*.bats | tr '\n' ' ') > /tmp/.t3235adj.out 2>&1; test "$(grep -c '^not ok' /tmp/.t3235adj.out)" -eq 2
-grep -q "^not ok .* strips one-line comments before range strip" /tmp/.t3235adj.out
-grep -q "^not ok .* do_inception_decide exits 0 when emit_review sees stale task_file" /tmp/.t3235adj.out
-# and this task's own suite is inside that run, green
+# The suites that ACTUALLY INVOKE update-task.sh — not the 68 that merely
+# mention it — with their failure count pinned rather than the files excluded,
+# so a regression from this change reddens the gate instead of hiding.
+#
+# Two of the five drivers are deliberately absent, each with a measured reason
+# and its own registered finding (one bug, one task):
+#   OBS-363 / OBS-365  update_task.bats does not complete. Re-measured on a
+#            quiet host after OBS-364: declares 1..19, emits 13 ok, then blocks
+#            entering test 14 (update_task.bats:160). exit 124 at 290s, ZERO
+#            failures — which is exactly what a healthy partial run looks like,
+#            so a reader checking the tail for "not ok" scores it a pass. Every
+#            other driver finishes in 3-14s. A suite that cannot finish cannot
+#            be a gate; putting it here would make this close unrunnable.
+#   OBS-364  the reason the first attempt at this line looked haunted: three
+#            harness-"killed" background runs left bats TREES executing against
+#            the live repo for ~40 minutes, clobbering .context/working/focus.yaml
+#            to T-001 and interleaving writes into this very output file. Not
+#            caused by any suite here. Terminated before the measurement above.
+# Also excluded, red at HEAD and not this change's to fix: OBS-359, OBS-360.
+timeout 280 bats tests/unit/t3235_archived_horizon_invariant.bats tests/unit/skip_ac_partial_complete.bats tests/unit/ac_structure_close_gate.bats tests/unit/recommendation_gate_build_partial.bats tests/unit/recommendation_gate_needs_human.bats > /tmp/.t3235adj.out 2>&1; test "$(grep -c '^not ok' /tmp/.t3235adj.out)" -eq 0
+# all 32 legs ran — a suite set that collects nothing also prints no "not ok"
+test "$(grep -c '^ok' /tmp/.t3235adj.out)" -eq 32
+# the partial-complete path specifically, which is the branch this change touches
 grep -q "^ok .* archived through the PARTIAL-COMPLETE RECHECK branch" /tmp/.t3235adj.out
+# and the live focus survived the run (OBS-362 guard, inline)
+grep -q "^current_task: T-3235$" .context/working/focus.yaml
 python3 tools/bats-silent-skip-lint.py tests/
+
+## RCA
+
+**Symptom:** a task archived through the partial-complete recheck branch lands in
+`.tasks/completed/` still carrying its old `horizon` (`now`/`next`/`later`). Zero
+instances in this corpus — the fault is latent here, and was reported from a tree
+where it had fired (peer 832, their T-654).
+
+**Root cause:** the rule "an archived task has `horizon: null`" was written as a
+statement *inside one branch* rather than as a property *of archival*. Two
+branches archive a task and their entry conditions are exact complements —
+`OLD_STATUS != work-completed` versus `OLD_STATUS == NEW_STATUS ==
+work-completed`. A line living in one of them is unreachable from the other by
+construction, not by oversight.
+
+**Why structurally allowed:** three compounding reasons, and the third is the one
+worth carrying.
+
+1. **The property had no home.** Nothing in the codebase said "files under
+   `completed/` carry `horizon: null`" — only a `_sed_i` at one site, whose scope
+   is whatever branch encloses it. There was nowhere for the second branch to
+   inherit it from.
+2. **The previous fix taught the wrong lesson.** T-2300 widened this exact line
+   after eight CTL-030 instances (T-2168/T-2180/T-2182/T-2196/T-2201/T-2203/
+   T-2204/T-2248). Widening worked — for the re-close path, which is inside the
+   same branch. Success at the site is what made the site look like the right
+   altitude. Eight instances of evidence pointed at a fix that could not reach
+   the ninth.
+3. **The fault fails toward a benign state, so it emits no signal.** A stale
+   `horizon` on an archived task renders correctly anyway (render derives `past`
+   from `_location`, T-2160), and the CTL-030 audit that would name it only fires
+   once a task actually carries the value. With zero instances, every check was
+   green and every green was truthful. There was no observation to escalate —
+   which is why this arrived by peer report rather than by our own detection, and
+   why "no evidence" must not be read as "no fault."
+
+**Prevention:**
+- The property is now a **post-condition on final location**, asserted once at
+  the end of `update-task.sh`, with the old site removed rather than duplicated.
+  One writer. A third archival branch added tomorrow inherits it for free — which
+  is the actual repair, since the defect was reachability, not logic.
+- `tests/unit/t3235_archived_horizon_invariant.bats` pins both branches, both
+  controls, and a mutation control derived from live source. Each leg asserts
+  **which branch ran** before asserting the outcome, because the obvious fixture
+  never enters the recheck branch at all — the first prober on both sides of this
+  report went green against the wrong path.
+- `test "$(grep -c 'horizon: null/' agents/task-create/update-task.sh)" -eq 1` in
+  `## Verification`: a second writer reappearing is now a gate failure, not a
+  silent regression to the shape that caused this.
+
+**Not prevented, deliberately:** the general class — a property enforced at sites
+rather than asserted at the invariant — has no guard here. It is the third
+instance logged this week across two repos (832's alias post, their BUG 1, this).
+Raised with the peer as a class worth naming; no mechanism proposed yet, because
+none of us has one that would not be a lint on English.
 
 ## Decisions
 
@@ -253,3 +318,15 @@ python3 tools/bats-silent-skip-lint.py tests/
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3235-partial-complete-archive-branch-never-nu.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e2819c65
+- **Timestamp:** 2026-08-31T19:42:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-31T19:41:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

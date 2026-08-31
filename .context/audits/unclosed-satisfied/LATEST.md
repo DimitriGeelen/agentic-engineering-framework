@@ -42,9 +42,9 @@ nothing mechanical would gate their close.
 | T-2876 | started-work | inception | Interpreter-mediated writes bypass the Bash task gat... | 3 | **no** |
 | T-2969 | started-work | build | draft arc with all constituents complete is reported... | 5 | yes |
 | T-3215 | started-work | build | Port T-1032 next-hint from consumer 002 — post-move ... | 5 | yes |
-| T-3224 | started-work | build | AC body parser drops Steps content the operator need... | 7 | yes |
 | T-3225 | started-work | build | fw continuous arm/disarm/status — the loop shipped d... | 9 | yes |
 | T-3227 | started-work | test | arc-012 continuous-run: multi-agent code review of t... | 7 | yes |
+| T-3235 | started-work | build | partial-complete archive branch never nulls horizon ... | 10 | yes |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |

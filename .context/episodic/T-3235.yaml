@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3235: partial-complete archive branch never nulls horizon (peer 832 T-654 BUG 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-31T19:42:28Z
+# ============================================================================
+
+task_id: T-3235
+task_name: "partial-complete archive branch never nulls horizon (peer 832 T-654 BUG 1)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-31T19:04:00Z
+completed: 2026-08-31T19:41:23Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-31T21:18:56+02:00
+last_commit: 2026-08-31T21:18:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the archived-horizon rule becomes a post-condition, not a second copy at the second site
+
+# Key outcomes
+outcomes:
+  - 'The property is asserted ONCE, as a post-condition on where `TASK_FILE`'
+  - 'A task archived through the **partial-complete recheck** branch'
+  - 'The test asserts WHICH branch archived the file, not only that the file'
+  - 'Control: the ordinary `started-work → work-completed` path still nulls the'
+  - 'Control: a partial-complete run that LEAVES the file in `active/` still does'
+  - 'Mutation control derived from live source: removing the post-condition'
+  - '`fw task archive-eligible` is covered, because it re-invokes'
+  - 'Corpus check stays clean: no file in `.tasks/completed/` carries'
+  - 'The suites that drive `update-task.sh` are run WHOLE — no file excluded —'
+  - 'Those two pre-existing reds are registered, not absorbed: OBS-359 (an'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/task-create/update-task.sh'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/watchtower.log'
+  - '.fabric/components/tests-lint-no-project-markers-above-bats-tmpdir.yaml'
+  - '.fabric/components/tests-unit-t3235_archived_horizon_invariant.yaml'
+  - '.tasks/active/T-3224-ac-body-parser-drops-steps-content-the-o.md'
+  - '.tasks/active/T-3226-fw-doctor-reports-a-spurious-fail-on-any.md'
+  - '.tasks/active/T-3235-partial-complete-archive-branch-never-nu.md'
+  - 'tests/unit/t3235_archived_horizon_invariant.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-31T21:18:56'
+    action: 'T-3235: the archived-horizon rule becomes a post-condition, not a second copy at the second site'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 37
+  commits: 1
+  files_changed: 20
+  lines_added: 923
+  lines_removed: 84
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3235-partial-complete-archive-branch-never-nu.md
+generated_by: context-agent-hybrid

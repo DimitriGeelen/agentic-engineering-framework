@@ -38583,3 +38583,21 @@ scan_id: R-3153ce66
 task_id: T-3234
 payload:
   task_file: .tasks/active/T-3234-cwd-resolution-test-premise-is-unasserte.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T19:42:16Z'
+scan_id: R-e2819c65
+task_id: T-3235
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T19:42:16Z'
+scan_id: R-e2819c65
+task_id: T-3235
+payload:
+  task_file: .tasks/active/T-3235-partial-complete-archive-branch-never-nu.md

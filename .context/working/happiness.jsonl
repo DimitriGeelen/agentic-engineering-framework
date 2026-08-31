@@ -94,3 +94,8 @@
 {"source": "agent", "task_id": "T-1719", "ts": "2026-08-22T15:35:16.498707Z", "value": 1}
 {"source": "agent", "task_id": "T-1719", "ts": "2026-08-22T15:35:16.796046Z", "value": 5}
 {"source": "agent", "task_id": "T-1719", "ts": "2026-08-22T15:35:17.198025Z", "value": 2}
+{"reason": "bats probe", "source": "agent", "task_id": "T-1719", "ts": "2026-08-31T19:30:34.858459Z", "value": 3}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-31T19:30:35.868016Z", "value": -2}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-31T19:30:36.463175Z", "value": 1}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-31T19:30:36.884781Z", "value": 5}
+{"source": "agent", "task_id": "T-1719", "ts": "2026-08-31T19:30:37.352504Z", "value": 2}

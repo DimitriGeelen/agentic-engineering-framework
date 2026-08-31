@@ -4193,3 +4193,35 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-362
+  text: "A bats suite under tests/unit clobbered the LIVE session focus. Measured 2026-08-31 while landing T-3235: .context/working/focus.yaml was rewritten to 'current_task: T-001' with 'Session: unknown' — the shape of a fixture/onboarding seed, not of any real task in this repo — immediately after running the suites that invoke agents/task-create/update-task.sh (candidates in that run: update_task, skip_ac_partial_complete, ac_structure_close_gate, recommendation_gate_needs_human, recommendation_gate_build_partial, check_active_task_switch_focus, t3235_archived_horizon_invariant). The next command was refused by the T-560 stale-focus gate naming T-001, which is how it surfaced at all. Restored with fw work-on T-3235. This is the L-256 / L-645 class made concrete: a suite that drives real framework scripts must have PROJECT_ROOT and CONTEXT_DIR both redirected into its fixture, and it is the CONTEXT_DIR half that leaks — update-task.sh and friends resolve CONTEXT_DIR independently of PROJECT_ROOT in at least some paths. Blast radius is worse than one clobbered file: a suite that can write the live focus can also write the live .tasks/, and the session has no way to tell a fixture write from its own. Needs bisecting to the specific suite, then a guard (assert focus.yaml's mtime/content is unchanged across a suite run) rather than a per-suite fix."
+  captured: 2026-08-31T19:25:02Z
+  context_task: T-3235
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-363
+  text: "tests/unit/update_task.bats does not complete: 12 'ok' lines then still running at 280s, exit 124 under timeout, measured twice. Every other suite that drives update-task.sh finishes in 3-14s (skip_ac_partial_complete 3s/4, ac_structure_close_gate 13s/4, recommendation_gate_build_partial 12s/10, recommendation_gate_needs_human 14s/8). A suite that cannot finish inside any usable window is a guard that does not run — same family as OBS-361 and T-2697, and it is the LARGEST suite covering the task-update path, so the gap is where coverage matters most. It is also the prime suspect for OBS-362 (live focus.yaml clobbered to T-001/'Session: unknown' during a run of this set). Needs: find where it blocks (likely a real subprocess waiting on something, not slowness), and check whether it redirects CONTEXT_DIR as well as PROJECT_ROOT."
+  captured: 2026-08-31T19:31:08Z
+  context_task: T-3235
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-364
+  text: "CORRECTION to OBS-362 and OBS-363 — root cause found, and it is neither suite. The harness reported three background commands as 'killed', but the kill did not reach their children: bats process TREES kept running against the LIVE repo for ~40 minutes afterwards (PIDs 3155301/3155304/3155345/3155346 for a 68-suite tests/unit run, 3483957+ for a tests/lint run), still appending to /tmp/.t3235adj.out and still executing update_task.bats. That orphan is what rewrote .context/working/focus.yaml to 'current_task: T-001' — twice, including once immediately after I had restored it, which is why it looked like the suite I had just run. It also explains the phantom measurement: a file I created with 32 tests read back at 75 lines containing 'ok 379', because two writers were interleaving into it, and grep -c returned nothing because the file was being rewritten under the read. OBS-363's 'update_task.bats does not complete at 280s' is now suspect for the same reason — the timing was taken while an orphan was running the same suite concurrently against the same live tree; re-measure on a quiet host before treating it as a property of the suite. Terminated with pkill -TERM -f bats-core; 0 remain. THE CLASS: a background test run that outlives its supervisor is indistinguishable, from inside the session, from the session's own state changes — the agent attributes the damage to whatever it did most recently. Two guards worth having: assert no bats process is already running before starting one, and check for orphaned bats trees the way fw termlink cleanup checks for orphaned dispatches (T-577, exact same shape: the supervisor deregisters, the process does not die)."
+  captured: 2026-08-31T19:33:38Z
+  context_task: T-3235
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-365
+  text: "OBS-363 RE-MEASURED on a quiet host (all orphaned bats trees terminated first, per OBS-364), so the doubt OBS-364 raised is resolved: the claim holds and is a property of the suite, not of the concurrent orphan. tests/unit/update_task.bats declares 19 tests (1..19), emits 13 ok, then blocks — exit 124 at 290s, ZERO failures. It hangs entering test 14, 'T-1589: started-work + shipping evidence preserved on horizon later' (tests/unit/update_task.bats:160), immediately after test 13 passes. Note the shape: 13 ok and no 'not ok' is what a HEALTHY partial run looks like, so anything that reads the tail for failures rather than for completion (1..19 vs 19 results) scores this as a pass. Six tests, a third of the suite, have never run — including whatever follows the hang. That is the T-2697 family again: the guard reports success by not running."
+  captured: 2026-08-31T19:39:46Z
+  context_task: T-3235
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
