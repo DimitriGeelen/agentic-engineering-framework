@@ -38529,3 +38529,21 @@ scan_id: R-0f3d1a8c
 task_id: T-3232
 payload:
   task_file: .tasks/active/T-3232-p-011-gate-reads-extractor-failure-as-no.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T15:58:45Z'
+scan_id: R-2770c006
+task_id: T-3233
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T15:58:45Z'
+scan_id: R-2770c006
+task_id: T-3233
+payload:
+  task_file: .tasks/active/T-3233-fw-continuous-arm-reports-a-bounded-run-.md
