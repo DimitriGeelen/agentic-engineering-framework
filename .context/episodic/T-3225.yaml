@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3225: fw continuous arm/disarm/status — the loop shipped disarmed with no way to arm it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-31T19:50:14Z
+# ============================================================================
+
+task_id: T-3225
+task_name: "fw continuous arm/disarm/status — the loop shipped disarmed with no way to arm it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-30T18:35:31Z
+completed: 2026-08-31T19:49:55Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-08-30T20:47:53+02:00
+last_commit: 2026-08-30T20:47:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  build the switch — fw continuous arm/disarm/status
+
+# Key outcomes
+outcomes:
+  - '`fw continuous status` evaluates the SAME predicate chain as'
+  - '`fw continuous status` names BOTH files and BOTH blockers separately:'
+  - '`fw continuous arm` writes both files in one action: `enabled: true`,'
+  - '`arm` REQUIRES an explicit bound: `--hours N` (default 4, max 24) and'
+  - '`arm` refuses when a `.continuous-halt` file is present, and says so —'
+  - '`fw continuous disarm --reason TEXT` sets `enabled: false` AND records the'
+  - 'MUTATION CONTROL: with the loop armed, `stop-driver.sh` fed a probe stdin'
+  - '`fw doctor` surfaces the armed/expired state, so a lapsed loop is visible'
+  - 'Bats suite pins arm → status → disarm → status round-trip, including that'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - 'lib/continuous-mode.sh'
+  - '.tasks/active/T-3225-fw-continuous-armdisarmstatus--the-loop-.md'
+  - 'tests/unit/t3225_continuous_arm.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-30T20:47:53'
+    action: 'T-3225: build the switch — fw continuous arm/disarm/status'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1514 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1514
+  commits: 1
+  files_changed: 4
+  lines_added: 816
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3225-fw-continuous-armdisarmstatus--the-loop-.md
+generated_by: context-agent-hybrid
