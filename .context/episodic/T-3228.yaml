@@ -66,10 +66,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 4
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 2
+  files_changed: 10
+  lines_added: 1148
+  lines_removed: 67
+  footprint_refreshed_at: '2026-08-31T12:03:57Z'
+  footprint_refreshed_by_commit: fd474acc4
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3228-arc-012-landing-stop-driver-replays-a-fr.md

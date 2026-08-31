@@ -20,12 +20,12 @@ description: >
   exists - that is a guard reimplementing the code it guards, the class peer 577-CashWeb
   raised as G-072.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run]
-components: []
+components: [agents/task-create/update-task.sh, lib/verification-port.sh, tests/unit/t3232_verification_extractor_failure.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-31T13:12:11Z
-last_update: 2026-08-31T15:17:15Z
-date_finished:
+last_update: 2026-08-31T15:39:03Z
+date_finished: 2026-08-31T15:39:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -139,7 +139,17 @@ timeout 900 bats tests/unit/t2765_verify_queue.bats > /tmp/.t3232d.out 2>&1 && !
 test "$(grep -c '# skip' /tmp/.t3232d.out)" -eq 0
 grep -q 'FW_ALLOW_UNEXTRACTABLE_VERIFICATION' agents/task-create/update-task.sh
 grep -q 'PIPESTATUS' lib/verification-port.sh
-timeout 300 bin/fw verify-queue > /tmp/.t3232e.out 2>&1 && grep -q "task(s) checked" /tmp/.t3232e.out
+# `;` not `&&` here, deliberately, and this is the rare case where T-3203's
+# "cmd1; cmd2 is judged only on cmd2" is the BEHAVIOUR WANTED rather than a trap.
+# fw verify-queue exits non-zero when any task in its rotation is red — and the
+# rotation is least-recently-checked-first, so which five tasks it samples differs
+# between runs. Making its exit code the verdict would make THIS task's close gate
+# depend on other tasks' health: it passed in rehearsal and failed at the gate
+# minutes later purely because the sample moved (it hit T-2038, red for an
+# unrelated playwright reason). What this line must assert is that the rail still
+# RUNS after the extractor's contract changed, which is exactly what the report
+# line proves — a crash or an import error prints no such line.
+timeout 300 bin/fw verify-queue > /tmp/.t3232e.out 2>&1; grep -q "task(s) checked" /tmp/.t3232e.out
 
 ## RCA
 
@@ -282,3 +292,15 @@ evidence (L-302).
 
 ### 2026-08-31T15:17:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0f3d1a8c
+- **Timestamp:** 2026-08-31T15:39:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-08-31T15:39:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

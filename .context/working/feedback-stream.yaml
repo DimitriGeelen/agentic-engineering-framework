@@ -38341,3 +38341,191 @@ scan_id: R-c21cb68e
 task_id: T-3223
 payload:
   task_file: .tasks/active/T-3223-t-3221-predicate-refuses-a-real-multi-li.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T11:45:24Z'
+scan_id: R-2d1c5376
+task_id: T-3228
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T11:45:24Z'
+scan_id: R-2d1c5376
+task_id: T-3228
+payload:
+  task_file: .tasks/active/T-3228-arc-012-landing-stop-driver-replays-a-fr.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T12:47:37Z'
+scan_id: R-1adb55c0
+task_id: T-3229
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T12:47:37Z'
+scan_id: R-1adb55c0
+task_id: T-3229
+payload:
+  task_file: .tasks/active/T-3229-landing-mode-v5-the-hvhc-premise-inverte.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T13:06:11Z'
+scan_id: R-6ed90243
+task_id: T-3231
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T13:06:11Z'
+scan_id: R-6ed90243
+task_id: T-3231
+payload:
+  task_file: .tasks/active/T-3231-the---help-exemption-skips-every-gate--n.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T15:03:05Z'
+scan_id: R-c610ed64
+task_id: T-3181
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T15:03:05Z'
+scan_id: R-c610ed64
+task_id: T-3181
+payload:
+  task_file: .tasks/active/T-3181-refine-the-continuous-run-loop-model-nod.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-08-31T15:03:05Z'
+scan_id: RC-4366b231
+task_id: T-3181
+payload:
+  overall: CONTRADICTED
+  claim_count: 8
+---
+kind: scan_emitted
+timestamp: '2026-08-31T15:31:12Z'
+scan_id: R-e63f0afb
+task_id: T-2019
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T15:31:12Z'
+scan_id: R-e63f0afb
+task_id: T-2019
+payload:
+  task_file: .tasks/active/T-2019-arc-007-s4d--drag-to-reorder-kanban-cros.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T15:31:37Z'
+scan_id: R-db5c0374
+task_id: T-2020
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T15:31:37Z'
+scan_id: R-db5c0374
+task_id: T-2020
+payload:
+  task_file: .tasks/active/T-2020-arc-007-s6d--cockpit-live-activity-feed-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T15:32:02Z'
+scan_id: R-e5aad522
+task_id: T-2021
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T15:32:02Z'
+scan_id: R-e5aad522
+task_id: T-2021
+payload:
+  task_file: .tasks/active/T-2021-cockpit-system-health-renders-traceabili.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T15:32:23Z'
+scan_id: R-a51a9055
+task_id: T-2022
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T15:32:23Z'
+scan_id: R-a51a9055
+task_id: T-2022
+payload:
+  task_file: .tasks/active/T-2022-cockpit-system-health-knowledge-counts-a.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T15:32:26Z'
+scan_id: R-de2e002a
+task_id: T-2023
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T15:32:26Z'
+scan_id: R-de2e002a
+task_id: T-2023
+payload:
+  task_file: .tasks/active/T-2023-arc-007-s3a--cockpit-theme-respecting-st.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T15:39:43Z'
+scan_id: R-0f3d1a8c
+task_id: T-3232
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T15:39:43Z'
+scan_id: R-0f3d1a8c
+task_id: T-3232
+payload:
+  task_file: .tasks/active/T-3232-p-011-gate-reads-extractor-failure-as-no.md

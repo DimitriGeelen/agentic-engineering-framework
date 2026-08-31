@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3232: P-011 gate reads extractor failure as no-Verification-section and passes 0 of N
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-31T15:39:55Z
+# ============================================================================
+
+task_id: T-3232
+task_name: "P-011 gate reads extractor failure as no-Verification-section and passes 0 of N"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-31T13:12:11Z
+completed: 2026-08-31T15:39:03Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-08-31T15:13:17+02:00
+last_commit: 2026-08-31T17:37:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file C3 — the P-011 gate reads extractor failure as no-Verification-section. extraction failure no longer reads as no-Verification-section. vendor sync + SYNTHESIS correction — C3 is a silent skip, not a printed pass
+
+# Key outcomes
+outcomes:
+  - '`extract_verification_block` returns **2** when a pipeline stage fails, and its'
+  - 'It still returns **0** for a genuinely absent Verification section, and **0**'
+  - 'The `grep -vE` stage exiting 1 on "block present but every line is a comment"'
+  - '`update-task.sh` refuses `--status work-completed` on rc=2 with a message naming'
+  - 'The refusal is bypassable via `FW_ALLOW_UNEXTRACTABLE_VERIFICATION=1`, logged'
+  - 'The caller does **not** independently re-detect whether a Verification'
+  - 'A bats suite drives the **real** function and the **real** close gate (not a'
+  - 'Mutation testing: reverting each leg of the fix independently reddens at least'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/verification-port.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/task-create/update-task.sh'
+  - '.context/episodic/T-3181.yaml'
+  - 'docs/reports/arc-012-review/SYNTHESIS.md'
+  - '.fabric/components/tests-unit-t3232_verification_extractor_failure.yaml'
+  - 'lib/verification-port.sh'
+  - '.tasks/active/T-3232-p-011-gate-reads-extractor-failure-as-no.md'
+  - '.tasks/completed/T-3181-refine-the-continuous-run-loop-model-nod.md'
+  - 'tests/unit/t3232_verification_extractor_failure.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-31T15:13:17'
+    action: 'T-3232: file C3 — the P-011 gate reads extractor failure as no-Verification-section'
+  - time: '2026-08-31T17:36:28'
+    action: 'T-3232: extraction failure no longer reads as no-Verification-section'
+  - time: '2026-08-31T17:37:03'
+    action: 'T-3232: vendor sync + SYNTHESIS correction — C3 is a silent skip, not a printed pass'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 146 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 146
+  commits: 3
+  files_changed: 12
+  lines_added: 868
+  lines_removed: 376
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3232-p-011-gate-reads-extractor-failure-as-no.md
+generated_by: context-agent-hybrid

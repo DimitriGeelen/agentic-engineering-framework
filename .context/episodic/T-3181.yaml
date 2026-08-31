@@ -1,0 +1,118 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3181: Refine the continuous-run loop model node by node into a buildable spec (arc-012)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-31T15:03:19Z
+# ============================================================================
+
+task_id: T-3181
+task_name: "Refine the continuous-run loop model node by node into a buildable spec (arc-012)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T20:00:07Z
+completed: 2026-08-31T15:03:02Z
+duration_days: 5
+updates_count: 3
+first_commit: 2026-08-26T22:03:42+02:00
+last_commit: 2026-08-29T17:15:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  open the model-refinement walkthrough with a verified status refresh. assign to arc-012 continuous-run. node 1 decided — arming sets mode+target, urgent is the action threshold. dispose all six open questions; file T-3200 (halt has no Watchtower control). IW-4 answered by two-arm cold-resume measurement; IW-6 narrowed against T-3206. propagate the GO into slices; answer the questions that were never the operator's. register OBS-353 (G-020 blocks both its own prescribed escapes). register OBS-354 (filing a task is indistinguishable from starting it)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-3184.yaml'
+  - '.context/episodic/T-3212.yaml'
+  - '.context/episodic/T-3216.yaml'
+  - '.context/inbox.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/watchtower.log'
+  - 'docs/reports/T-3181-cold-resume-armB.md'
+  - 'docs/reports/T-3181-continuous-run-model-refinement.md'
+  - 'docs/reports/T-3181-iw4-cold-resume.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3181-refine-the-continuous-run-loop-model-nod.md'
+  - '.tasks/active/T-3200-the-continuous-run-halt-has-no-watchtowe.md'
+  - '.tasks/active/T-3211-handover-suggested-first-action-truncate.md'
+  - '.tasks/active/T-3212-arc-012-iw-5-slice-on-hitting-a-human-ga.md'
+  - '.tasks/active/T-3213-arc-012-iw-6-slice-confirm-by-restart-th.md'
+  - '.tasks/active/T-3217-bats-skips-are-invisible-to-the-p-011-ve.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T22:03:42'
+    action: 'T-3181: open the model-refinement walkthrough with a verified status refresh'
+  - time: '2026-08-26T22:03:52'
+    action: 'T-3181: assign to arc-012 continuous-run'
+  - time: '2026-08-26T22:10:18'
+    action: 'T-3181: node 1 decided — arming sets mode+target, urgent is the action threshold'
+  - time: '2026-08-27T13:17:43'
+    action: 'T-3181: dispose all six open questions; file T-3200 (halt has no Watchtower control)'
+  - time: '2026-08-28T17:39:12'
+    action: 'T-3181: IW-4 answered by two-arm cold-resume measurement; IW-6 narrowed against T-3206'
+  - time: '2026-08-29T12:22:16'
+    action: 'T-3181: propagate the GO into slices; answer the questions that were never the operator''s'
+  - time: '2026-08-29T16:30:00'
+    action: 'T-3181: register OBS-353 (G-020 blocks both its own prescribed escapes)'
+  - time: '2026-08-29T17:15:58'
+    action: 'T-3181: register OBS-354 (filing a task is indistinguishable from starting it)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 6902 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6902
+  commits: 9
+  files_changed: 28
+  lines_added: 2649
+  lines_removed: 130
+  footprint_refreshed_at: '2026-08-31T15:03:29Z'
+  footprint_refreshed_by_commit: d02469470
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3181-refine-the-continuous-run-loop-model-nod.md
+generated_by: context-agent-hybrid
