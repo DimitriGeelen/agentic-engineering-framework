@@ -100,6 +100,22 @@ on `UnicodeDecodeError`; stderr is swallowed by `2>/dev/null`, the exit status b
 This is the T-3219 bug one level up. T-3219 fixed *the gate running 2 of 4
 commands*; this is the gate running 0 of 4 and reporting the same pass.
 
+> **Correction, added on landing (T-3232, 2026-08-31).** "Reporting the same
+> pass" is **not what happens**, and the real behaviour is worse. `[ -z
+> "$verify_cmds" ] && return 0` fires *before* the gate prints its header, so the
+> gate emits **nothing at all** — no `=== Verification Gate (P-011) ===`, no
+> `0/0 passed`, no line of any kind. Measured on the real close gate: the output
+> for a task whose block cannot be decoded is **byte-identical** to the output for
+> a task with no block at all.
+>
+> A printed `0/0 passed` would at least have left something in the log for a
+> reader to notice. A silent skip leaves the two states literally
+> indistinguishable, which is why the fix's load-bearing test compares the gate's
+> whole output on both inputs rather than looking for a marker in one of them.
+>
+> The finding's *consequence* — completion allowed over zero commands — is exactly
+> right. Only the mechanism was mis-stated.
+
 ---
 
 ## High (20) — grouped by the question they answer

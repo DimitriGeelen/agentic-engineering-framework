@@ -1177,7 +1177,43 @@ run_verification_commands() {
     if ! declare -F extract_verification_block >/dev/null 2>&1; then
         source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}/lib/verification-port.sh"
     fi
-    verify_cmds=$(extract_verification_block "$TASK_FILE")
+    # T-3232 (arc-012 review C3): capture the extractor's STATUS, not just its
+    # output. `|| extract_rc=$?` rather than a bare assignment because this file
+    # runs `set -euo pipefail` — an unguarded rc=2 would abort the script here
+    # with no message, which is a different silent failure, not a fix.
+    local extract_rc=0
+    verify_cmds=$(extract_verification_block "$TASK_FILE") || extract_rc=$?
+
+    # rc=2 means the extractor could not READ the block. That is NOT the same as
+    # the task not having one, and until T-3232 both produced empty output and
+    # exit 0 — so the gate below returned green having run nothing. Refuse.
+    #
+    # This deliberately does NOT re-check whether the file contains a
+    # `## Verification` heading. A guard that reimplements the code it guards
+    # cannot detect that code being fixed or re-broken (the G-072 class peer
+    # 577-CashWeb raised). The exit code is the entire contract.
+    if [ "$extract_rc" -eq 2 ]; then
+        if [ "${FW_ALLOW_UNEXTRACTABLE_VERIFICATION:-0}" = "1" ]; then
+            log_gate_bypass "FW_ALLOW_UNEXTRACTABLE_VERIFICATION" \
+                "verification block could not be extracted from $TASK_FILE" 2>/dev/null || true
+        else
+            echo "" >&2
+            echo -e "${RED}BLOCKED: the ## Verification block could not be extracted.${NC}" >&2
+            echo "" >&2
+            echo "  File: $TASK_FILE" >&2
+            echo "" >&2
+            echo "  The extractor failed — it did not report an ABSENT section, it reported" >&2
+            echo "  that it could not read the section that is there. Completing now would" >&2
+            echo "  run zero verification commands and print a pass (T-3232, arc-012 C3)." >&2
+            echo "" >&2
+            echo "  Most likely cause: a byte in the block is not valid UTF-8, so" >&2
+            echo "  lib/comment_strip.py cannot decode it. Find it with:" >&2
+            echo "    python3 -c \"import sys;d=open('$TASK_FILE','rb').read();d.decode('utf-8')\"" >&2
+            echo "" >&2
+            echo "  Bypass: FW_ALLOW_UNEXTRACTABLE_VERIFICATION=1 (logged Tier-2)" >&2
+            exit 1
+        fi
+    fi
 
     [ -z "$verify_cmds" ] && return 0
 
