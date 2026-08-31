@@ -4169,3 +4169,27 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-359
+  text: "tests/unit/ac_counter_sed_range_one_line_comment.bats:34 asserts an EXACT count — grep -c of the '>'-tolerant comment-strip regex in agents/task-create/update-task.sh must equal 2. There are now 3 (lines 138, 163, 1590), all correct uses of the tolerant form, so the suite is RED for adding a third correct site. Measured identical (3) at HEAD and in the working tree, so it predates T-3235's edit. The assertion is testing the wrong property: what T-2554 cares about is that NO occurrence uses the broken '<!--[^>]*-->' form and that the tolerant form is present — a floor, not an equality. An exact count turns every legitimate new call site into a false red, and a false red in a suite the daily audit does not run (audit covers tests/lint only, not tests/unit) is a red nobody sees. Fix shape: replace -eq 2 with -ge 2 and keep the existing zero-occurrences-of-the-broken-form assertion as the real invariant."
+  captured: 2026-08-31T19:15:00Z
+  context_task: T-3235
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-360
+  text: "tests/unit/inception_decide_emit_review_post_move.bats:107 'post-move: do_inception_decide exits 0 when emit_review sees stale task_file' is RED, and was already red at HEAD — verified by checking out HEAD's agents/task-create/update-task.sh, re-running the suite (still 1 of 3 red), and restoring. Found while running the update-task.sh-driving suites for T-3235; unrelated to that change. Needs its own diagnosis: either do_inception_decide stopped exiting 0 on the stale-task_file path, or the fixture drifted."
+  captured: 2026-08-31T19:16:51Z
+  context_task: T-3235
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-361
+  text: "STRUCTURAL: nothing runs tests/unit on a schedule, so reds there are invisible until someone happens to run an adjacent suite. Measured today while landing T-3235: TWO independent pre-existing failures surfaced by accident — ac_counter_sed_range_one_line_comment (OBS-359, brittle exact-count assertion) and inception_decide_emit_review_post_move (separate note). Both predate today's edits; neither was reported by anything. The daily audit's 'Invariant suite green' line covers tests/lint ONLY (104 invariants, agents/audit + bin/fw glob tests/lint/*.bats), and its green reads to an agent like the test corpus is green. Same family as T-2697 (tests/lint itself was globbed by no runner for months while 'fw test lint' ran shellcheck and reassured) and as peer 832's T-654 BUG 2 (a detector with no delivery) and their OBS-333 (a 13-minute bridge suite nothing schedules). The failure mode is not 'tests fail' — it is 'a green line that answers a narrower question than the one the reader is asking'. Candidate fix: a scheduled tests/unit run whose result is surfaced the way the invariant suite is, plus an audit line that states WHICH corpus it examined rather than the bare word 'suite'."
+  captured: 2026-08-31T19:16:51Z
+  context_task: T-3235
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true

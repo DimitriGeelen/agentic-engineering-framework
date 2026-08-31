@@ -2,6 +2,7 @@ id: tests/lint/no-project-markers-above-bats-tmpdir.bats
 name: no-project-markers-above-bats-tmpdir
 type: script
 subsystem: testing
+location: tests/lint/no-project-markers-above-bats-tmpdir.bats
 tags: [invariant, lint, test-isolation, host-state, false-green, T-3234, OBS-358]
 
 purpose: >

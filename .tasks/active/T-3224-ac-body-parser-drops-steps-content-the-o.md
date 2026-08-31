@@ -201,6 +201,24 @@ lives, so the fix belongs at the source and normalisation is not needed here.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+- [ ] [REVIEW] Recovered Steps content renders as a clean list, not garbled text
+  **Steps:**
+  1. Open `http://<watchtower-host>/review/T-2335` (Class 2: same-line canonical
+     `**Steps:**` text) and `http://<watchtower-host>/tasks/T-1624` (Class 1:
+     suffixed `**Steps (Route A):**` / `**Steps (Route B):**` headings).
+  2. Compare the rendered Steps block on each page against the raw AC body in
+     the task's Markdown source (`.tasks/active/T-2335*.md`, `.tasks/completed
+     /T-1624*.md` or `.tasks/active/` if not yet closed).
+  3. On T-1624 specifically, check that Route A and Route B each render as
+     their own distinct step list rather than one merged into the other.
+  **Expected:** Step text reads as a normal numbered/bulleted list matching the
+  source content, with each `Steps (Route …)` block kept separate and its
+  parenthetical label visible; no run-together text, no missing lines, no
+  bold-marker leakage (`**Steps:**` itself should not appear inside the
+  rendered list).
+  **If not:** Note which page and which line looks wrong, and paste the
+  raw vs rendered text into a follow-up task.
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -426,6 +444,26 @@ test that passes because it measures nothing.
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** All 7 Agent ACs are ticked and all 6 Verification lines pass
+against the live consumer (guard test, both defect classes, the no-widening
+control, and the web suite with the render-touching P-013 clause satisfied).
+The fix is small, symmetric, and mutation-controlled — reverting it turns the
+guard test red and re-drops the exact content the ACs describe. The only
+open item is the visual [REVIEW] AC this P-013 gate requires for any task
+touching `web/blueprints/tasks.py`; nothing in the evidence gathered suggests
+a rendering problem, this is a first human look at output that curl/grep
+cannot judge (garbled text, route merging).
+**Evidence:**
+- `python3 -m pytest tests/unit/test_ac_body_parser_steps.py -q` → 13 passed
+- `/tasks/T-1624`, `/review/T-1062`, `/review/T-2335`, `/review/T-100131` all
+  render the expected recovered/control content (see Updates for byte-level
+  detail and mutation-control results)
+- `bin/fw test web` → 8 failed / 291 passed / 3 skipped, 0 of the 8 failures
+  touch `web/blueprints` or the parser's own test surface; the 1-failure
+  delta from the previously-measured 9 is confirmed order-dependent
+  (`tests/web/test_project_root_discovery.py` passes standalone)
 
 ## Decisions
 

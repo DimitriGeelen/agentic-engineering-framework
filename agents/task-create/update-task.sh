@@ -2208,17 +2208,13 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             rm -f "$PROJECT_ROOT/.context/working/.reviewed-$TASK_ID" 2>/dev/null || true
         fi
 
-        # T-2163 (arc-009 horizon-axis-hardening, Slice 4): null the stored
-        # horizon now that the file is in .tasks/completed/. Render derives
-        # `past` from _location (T-2160 Q1=(b)) so the stored value is
-        # behaviorally irrelevant — but a non-null value here is a YAML lie
-        # that CTL-030 (T-2162) would catch. Plug the source: write `null`.
-        # T-2300 (leg-gap): runs OUTSIDE the move-conditional so the re-close
-        # path (file already in completed/, status flip only) also nulls the
-        # horizon — was 8-instance CTL-030 class (T-2168/T-2180/T-2182/T-2196/
-        # T-2201/T-2203/T-2204/T-2248). Partial-complete branch does NOT touch
-        # this — that file stays in active/ and renders via the stored horizon.
-        _sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"
+        # T-3235: the horizon null-ing that used to live here is now a
+        # post-condition at the end of this script (search: ARCHIVED-HORIZON
+        # INVARIANT). It was moved, not deleted. T-2163 introduced it and
+        # T-2300 widened it once after eight CTL-030 instances — but widening
+        # a site can never reach a branch whose entry condition is that site's
+        # exact complement, which is why the partial-complete recheck branch
+        # archived files with the horizon untouched for as long as it existed.
 
         # T-709: Push notification — task completed
         # T-2300: lifted out of move-conditional so re-close fires once too.
@@ -2499,6 +2495,34 @@ with open(path, 'w') as f:
             echo -e "${YELLOW}────────────────────────────────────────────${NC}"
         fi
     fi
+fi
+
+# === ARCHIVED-HORIZON INVARIANT (T-3235, peer 832 T-654 BUG 1) ===
+#
+# A task file that lives in .tasks/completed/ carries `horizon: null`. Asserted
+# here, once, on where TASK_FILE actually ENDED UP — not at the sites that move
+# it. Two branches archive a task, and their entry conditions are exact
+# complements (`OLD_STATUS != work-completed` for an ordinary completion vs
+# `OLD_STATUS == NEW_STATUS == work-completed` for the partial-complete
+# recheck), so no widening of one could ever reach the other. T-2163 wrote the
+# rule at the first site and T-2300 widened it there after eight CTL-030
+# instances; the second site was still archiving with the horizon untouched.
+#
+# The sharp end was `fw task archive-eligible`, which re-invokes
+# `--status work-completed` on tasks already at work-completed in active/ and
+# therefore drives EXCLUSIVELY through the unfixed branch — the sweep `fw audit`
+# recommends for stuck partial-completes would manufacture the CTL-030 failures
+# the same audit then reports.
+#
+# Keyed on LOCATION, never on status: a partial-complete that stays in active/
+# must KEEP its stored horizon (it still renders from it while the human owns
+# it), and that is the case a status-keyed check would break. Reported upstream
+# by peer 832-Workflow-designer (their T-654); confirmed in-tree against this
+# script before anything was changed. Zero instances here at the time of the
+# fix — a latent fault with no evidence yet, which is the cheapest moment.
+if [ -n "${TASK_FILE:-}" ] && [ -f "$TASK_FILE" ] \
+   && [ "$(dirname "$TASK_FILE")" = "$TASKS_DIR/completed" ]; then
+    _sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"
 fi
 
 echo ""
