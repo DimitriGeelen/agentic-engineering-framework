@@ -68,9 +68,21 @@ hook_allows() {
     hook_allows 'cd /tmp && fw upstream --help'
 }
 
-@test "--version gets the same narrowing as --help" {
-    ! hook_allows 'rm -rf /important/data --version'
-    hook_allows 'fw upstream --version'
+# Split into two tests, and NOT written as `! hook_allows …` followed by another
+# statement. A `!` in non-final position asserts nothing — it never trips errexit,
+# so the test passes whatever the command returns (L-628). The first draft of this
+# file had exactly that shape here, and the T-3138/AC3 invariant caught it at the
+# pre-push audit: 1 dead negation across 706 scanned files, in the suite written to
+# prove assertions are not inert. Use `run` + an explicit status check whenever the
+# negation is not the last statement.
+@test "--version: appended to a destructive command no longer exempts" {
+    run hook_allows 'rm -rf /important/data --version'
+    [ "$status" -ne 0 ]
+}
+
+@test "--version: a genuine help invocation is still allowed" {
+    run hook_allows 'fw upstream --version'
+    [ "$status" -eq 0 ]
 }
 
 @test "the exemption fails CLOSED when the write predicate is unavailable" {

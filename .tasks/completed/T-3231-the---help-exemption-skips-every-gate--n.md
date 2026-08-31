@@ -333,6 +333,21 @@ when `has_bash_write_pattern` is unavailable, which is the way a naive rewrite
    focus-drift case above — which turned out to be the more serious instance of the
    defect, and would not have been found by any amount of re-reading the diff.
 
+3. *The suite shipped with a dead negation, and the pre-push audit caught it.* The
+   `--version` test was written as `! hook_allows '…'` followed by a second
+   statement. A `!` in non-final position never trips errexit, so it asserts
+   nothing (L-628) — in the suite written to prove assertions are not inert. The
+   T-3138/AC3 invariant flagged it at the push gate: 1 dead negation across 706
+   scanned files. Split into two tests with `run` + explicit status checks.
+
+   **The mutation delta is the proof it was inert, not merely suspect:** M2 went
+   from 2 reddened tests to 3, and M4 from 4 to 5, and the newly-reddening test in
+   both is the `--version` destructive case. Before the split, that test passed
+   under mutations that broke exactly what it claimed to cover. Worth stating
+   plainly — the audit said "dead negation", which is a claim about *shape*; the
+   mutation count is the claim about *behaviour*, and only the second one settles
+   it.
+
 ## Evolution
 
 ### 2026-08-31 — leg independence is not a property you can assert
