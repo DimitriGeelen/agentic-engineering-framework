@@ -96,11 +96,10 @@ would most want to trust, while that hook ran correctly after every turn.
 Before: 2 failures. After: 1 — the real one (audit killed at 900s) still fires,
 so the fix does not silence breakage.
 
-## STATUS — NOT COMPLETE
+## STATUS — COMPLETE
 
-Five of six Agent ACs are met and verified. **The unit-test AC is not done**
-(budget gate at 96%). The fix is committed and doctor-verified, but it is
-pinned by nothing, so it can regress silently. That test is the remaining work.
+All six Agent ACs are met and verified, including the unit test
+(`tests/unit/t3226_doctor_direct_script_claude_project_dir.bats`, 3/3 passing).
 
 ## Two self-inflicted bugs while fixing this, both worth keeping
 
@@ -151,7 +150,7 @@ checking whether it does, in the follow-up that writes the unit test.
       hook-existence check that cannot fail is worse than the false positive
       it replaced.
 - [x] NO-WIDENING: the other 28 hook commands report exactly as before.
-- [ ] Unit test pins expansion, the still-missing case, and the non-executable
+- [x] Unit test pins expansion, the still-missing case, and the non-executable
       case, and lives under `tests/` so it survives re-vendor.
 
 ### Human
@@ -186,6 +185,8 @@ checking whether it does, in the follow-up that writes the unit test.
 -->
 
 ## Verification
+
+out=$(bats tests/unit/t3226_doctor_direct_script_claude_project_dir.bats 2>&1); echo "$out" | grep -qE "^1\.\.3$" && ! echo "$out" | grep -q "^not ok"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -317,6 +318,32 @@ checking whether it does, in the follow-up that writes the unit test.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw doctor`'s hook-config check reported `Stop: script not found:
+stop-driver.sh`, even though the Stop hook ran correctly after every turn.
+
+**Root cause:** the hook-config Python block in `bin/fw` expanded
+`${CLAUDE_PROJECT_DIR}` only inside the `fw hook ...` branch (T-2709). The
+direct-script fall-through branch — reached by any hook that names its script
+directly instead of going through `fw hook <name>` — called
+`os.path.exists()` on the literal, unexpanded placeholder string, which never
+resolves to a real path. `exists(raw)=False`, `exists(expanded)=True`. The
+executable-bit and Cellar-path checks below the existence test were also
+unreachable for these hooks, since the existence test short-circuited first.
+
+**Why structurally allowed:** T-2709 fixed the expansion parity gap for one
+of the two branches (`fw hook ...`) and closed the task, but the check's two
+branches are structurally parallel — the fix landed on only one side without
+a test asserting the other. No test exercised a direct-script hook using the
+placeholder, so the gap shipped silently and produced a false FAIL on the one
+hook (Stop) that drives the continuous-run loop.
+
+**Prevention:** `bin/fw` now hoists the `${CLAUDE_PROJECT_DIR}` expansion so
+both branches resolve against the same `resolved_path` before the existence,
+executable-bit, and Cellar-path checks run. `tests/unit/t3226_doctor_direct_script_claude_project_dir.bats`
+pins three cases: a resolving direct-script hook (no false FAIL), a still-missing
+resolved path (mutation control — FAIL preserved), and a non-executable
+resolved path (WARN, not misreported as missing).
 
 ## Evolution
 
