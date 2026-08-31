@@ -207,5 +207,33 @@ extract_verification_block() {
         inblk { print }
     ' "$file" 2>/dev/null \
         | python3 "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/comment_strip.py" 2>/dev/null \
-        | grep -vE '^\s*$|^\s*#|^\s*```' || true
+        | grep -vE '^\s*$|^\s*#|^\s*```'
+
+    # T-3232 (arc-012 review C3). The `|| true` that used to close this pipeline
+    # collapsed EVERY failure of EVERY stage into the exact value this function
+    # returns for a task that simply has no `## Verification` section: empty
+    # stdout, exit 0. The close gate reads that as "nothing to verify" and allows
+    # completion with zero commands run and no output printed.
+    #
+    # The defect was never that extraction can fail — it is that failure was
+    # INDISTINGUISHABLE from success-with-nothing-to-do. Measured before the fix:
+    # a clean block yields 12 bytes rc=0; the same block with one 0xff byte in it
+    # yields 0 bytes rc=0, because comment_strip.py dies on UnicodeDecodeError,
+    # `2>/dev/null` eats the traceback and `|| true` ate the status.
+    #
+    # PIPESTATUS rather than pipefail, because the two stages disagree on what 1
+    # MEANS. pipefail cannot tell python-exploded (1) from grep-filtered-
+    # everything-out (1), and the second is a normal outcome — a block whose lines
+    # are all comments is legitimately empty. Per-stage status is the only way to
+    # classify them differently, which is the whole point of the fix.
+    #
+    # stdout is deliberately unchanged, so consumers that read only stdout are
+    # unaffected: lib/verify_queue.py:89 shells out and uses `r.stdout` alone.
+    local st=("${PIPESTATUS[@]}")
+    if [ "${st[0]}" -ne 0 ] \
+       || [ "${st[1]}" -ne 0 ] \
+       || [ "${st[2]}" -gt 1 ]; then
+        return 2
+    fi
+    return 0
 }

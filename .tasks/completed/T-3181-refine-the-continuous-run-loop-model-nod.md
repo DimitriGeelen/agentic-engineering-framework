@@ -5,17 +5,17 @@ description: >
   Inception: Refine the continuous-run loop model node by node into a buildable spec
   (arc-012)
 
-status: work-completed
+status: started-work
 arc_id: continuous-run
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
-components: [agents/handover/handover.sh, bin/fw]
+components: []
 related_tasks: [T-3212, T-3213, T-3202, T-3209, T-3210]
 created: 2026-08-26T20:00:07Z
-last_update: 2026-08-31T15:03:02Z
-date_finished: 2026-08-31T15:03:02Z
+last_update: '2026-08-27T20:15:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -362,18 +362,23 @@ build slices; **T-3202**, **T-3209**, **T-3210** already landed under this GO.
 
 **Decision**: GO
 
-**Rationale**: This block previously read DEFER. That was written *before* the walkthrough, and its
-own rationale said "none has been walked yet" while naming four questions — IW-2, IW-3,
-IW-4 and IW-5. All four have since been walked. The DEFER was correct when filed and
-became false as the evidence arrived, and nothing re-read it; it is what made the review
-card render as an open decision and emit `--rationale "DEFER"` long after the operator
-recorded GO on 2026-08-27. Same class as landing-mode v3's own lesson: a premise section
-nobody re-checks is a liability, not documentation.
+**Rationale**: Operator recorded GO on 2026-08-27 — the walkthrough of
+draft-continuous-run-loop v5 proceeds node by node.
 
-Five of six open questions are now answered at confidence 3. The sixth is deferred for a
-named, filed reason — not for want of a decision.
+Note on the record: the verdict flipped DEFER → GO but this rationale text was
+carried over verbatim from the DEFER filing, so it read as a deferral under a GO
+heading. Rewritten here rather than left standing, because the stale wording said
+the opposite of the decision it was filed under.
 
-**Date**: 2026-08-31T15:03:02Z
+The GO authorises the walkthrough; it does not retroactively answer the open
+questions. Their dispositions are recorded per-question in §Open Questions: one
+answered on verified evidence (IW-2), five deferred with the specific evidence
+each still needs. The original rationale's own claim — that these are genuine
+evidence gaps, not confidence gaps, and that none had been walked — remains true
+of the five, and is the reason they were not upgraded to "answered" on the
+strength of the GO alone.
+
+**Date**: 2026-08-27T11:12:10Z (verdict), disposition pass 2026-08-27
 
 ## Updates
 
@@ -387,53 +392,3 @@ named, filed reason — not for want of a decision.
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Filed at the start of the walkthrough — the operator and I are about to go through draft-continuous-run-loop v5 node by node. The four open questions (IW-2 halt authority, IW-3 deliberately-red rail entry, IW-4 is PreCompact compaction-grade, Q5 park-vs-notify on a human gate) are genuine evidence gaps, not confidence gaps: none has been walked yet. This DEFER is expected to resolve to GO or NO-GO per node as the dialogue produces evidence.
-
-### 2026-08-31T15:03:02Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** This block previously read DEFER. That was written *before* the walkthrough, and its
-own rationale said "none has been walked yet" while naming four questions — IW-2, IW-3,
-IW-4 and IW-5. All four have since been walked. The DEFER was correct when filed and
-became false as the evidence arrived, and nothing re-read it; it is what made the review
-card render as an open decision and emit `--rationale "DEFER"` long after the operator
-recorded GO on 2026-08-27. Same class as landing-mode v3's own lesson: a premise section
-nobody re-checks is a liability, not documentation.
-
-Five of six open questions are now answered at confidence 3. The sixth is deferred for a
-named, filed reason — not for want of a decision.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-c610ed64
-- **Timestamp:** 2026-08-31T15:03:05Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 1
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
-     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-4366b231
-- **Timestamp:** 2026-08-31T15:03:05Z
-- **Overall:** CONTRADICTED
-- **Claims:** 8
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `lib/continuous-mode.sh:4-18` | file | ✗ fail — file not found at PROJECT_ROOT |
-| `docs/reports/T-3181-iw4-cold-resume.md` | file | ✓ pass |
-| `T-3169` | task | ✓ pass |
-| `T-3210` | task | ✓ pass |
-| `T-3212` | task | ✓ pass |
-| `T-3213` | task | ✓ pass |
-| `T-3209` | task | ✓ pass |
-| `T-3202` | task | ✓ pass |
-
-### 2026-08-31T15:03:02Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO
