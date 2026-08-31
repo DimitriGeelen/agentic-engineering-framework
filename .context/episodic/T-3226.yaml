@@ -1,0 +1,112 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3226: fw doctor reports a spurious FAIL on any direct-script hook using CLAUDE_PROJECT_DIR
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-31T20:34:15Z
+# ============================================================================
+
+task_id: T-3226
+task_name: "fw doctor reports a spurious FAIL on any direct-script hook using CLAUDE_PROJECT_DIR"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-30T18:52:13Z
+completed: 2026-08-31T20:33:53Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-08-30T21:10:07+02:00
+last_commit: 2026-08-31T22:33:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor's hook check reported the Stop hook missing while it was running. session state — arc-012 diagnosis, OBS-357 misattribution note. pin the direct-script CLAUDE_PROJECT_DIR expansion fix with a unit test
+
+# Key outcomes
+outcomes:
+  - 'The `${CLAUDE_PROJECT_DIR}` expansion is hoisted so it applies to EVERY'
+  - '`fw doctor` no longer reports `Stop: script not found: stop-driver.sh`.'
+  - 'The executable-bit and Cellar-path checks below the existence test run'
+  - 'MUTATION CONTROL: point a hook at a genuinely missing script and confirm'
+  - 'NO-WIDENING: the other 28 hook commands report exactly as before.'
+  - 'Unit test pins expansion, the still-missing case, and the non-executable'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'pin the direct-script CLAUDE_PROJECT_DIR expansion fix with a unit test'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/handovers/S-2026-0830-2110.discard-manifest.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.approval-notified'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.hook-crashes.log'
+  - '.context/working/.hook-failure-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3214-68-verification-lines-pipe-curl-into-gre.md'
+  - '.tasks/active/T-3226-fw-doctor-reports-a-spurious-fail-on-any.md'
+  - 'tests/unit/t3226_doctor_direct_script_claude_project_dir.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-30T21:10:07'
+    action: 'T-3226: doctor''s hook check reported the Stop hook missing while it was running'
+  - time: '2026-08-30T21:11:35'
+    action: 'T-3226: session state — arc-012 diagnosis, OBS-357 misattribution note'
+  - time: '2026-08-31T22:33:04'
+    action: 'T-3226: pin the direct-script CLAUDE_PROJECT_DIR expansion fix with a unit test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1541 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1541
+  commits: 3
+  files_changed: 29
+  lines_added: 2456
+  lines_removed: 7715
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3226-fw-doctor-reports-a-spurious-fail-on-any.md
+generated_by: context-agent-hybrid
