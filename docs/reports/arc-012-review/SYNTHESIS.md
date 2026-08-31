@@ -66,6 +66,24 @@ on a regex that matches at any position — including inside a quoted argument.
 The intent (let an agent read `fw upstream --help` without tripping focus-drift)
 is reasonable. The implementation exempts the command instead of the *lookup*.
 
+> **Correction, added on landing (T-3231, 2026-08-31).** The `git commit` row above
+> is **overstated**. That command does take the exemption, but the task gate does
+> not block it either way — for Bash the gate only blocks detected *writes*, and
+> `git commit -m "…"` is neither a write pattern nor safe-listed. Measured
+> before/after: ALLOW → ALLOW. It demonstrates the regex flaw without being a
+> governance loss, and citing it as one inflated the finding.
+>
+> Two rows that **do** flip, and were used instead:
+>
+> | command | before | after |
+> |---|---|---|
+> | `echo "the --help flag" > /etc/passwd` | ALLOW | GATED |
+> | `bin/fw task update T-3229 --add-tag "see --help first"` (focus elsewhere) | ALLOW | GATED |
+>
+> The second is the sharper instance and was not in the original finding: no write
+> pattern is involved at all, so the gate being skipped is **focus-drift** — the
+> most-bypassed gate in the log. C2's severity holds; this row is where it lives.
+
 ### C3. The P-011 verification gate skips itself, silently, when its extractor fails
 `agents/task-create/update-task.sh:1180-1182` · W3-F1
 

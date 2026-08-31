@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3231: the --help exemption skips every gate — narrow it to real help invocations
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-31T13:06:26Z
+# ============================================================================
+
+task_id: T-3231
+task_name: "the --help exemption skips every gate — narrow it to real help invocations"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-31T12:57:28Z
+completed: 2026-08-31T13:06:01Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the --help exemption skips every gate — narrow it to real help invocations
+
+# Key outcomes
+outcomes:
+  - 'The exemption is decided on a quote-stripped view, so `--help` inside a quoted argument no longer exempts'
+  - 'The exemption is refused when the quote-stripped command carries a write pattern, so `rm -rf … --help` no longer exempts'
+  - '`fw upstream --help` is still exempt (T-2410''s origin case does not regress)'
+  - '`cd /tmp && fw upstream --help` is still exempt (T-2410''s chained case does not regress)'
+  - '`rm -rf /important/data` remains gated — the control that proves the suite is not vacuously passing'
+  - 'A bats suite drives the REAL hook (not a reimplementation of its predicate) across both fixtures, with controls proving the harness can both gate and allow'
+  - 'The suite is mutation-tested: each of the two legs, the fail-closed ordering, and a full revert to the original C2 code each redden a named test'
+  - '`bash -n agents/context/check-active-task.sh` parses, and the vendored mirror copy is in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3231-the---help-exemption-skips-every-gate--n.md
+generated_by: context-agent-hybrid

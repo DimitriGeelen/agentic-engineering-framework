@@ -169,19 +169,51 @@ except:
             ;;
     esac
 
-    # T-2410 case 2: universal --help / --version exemption.
-    # Any command with --help or --version is read-only by convention (the flag
-    # short-circuits all real work in every fw subcommand and 99% of other
-    # tools). Without this, `fw upstream --help` blocked at the work-completed
-    # focus gate purely because `upstream` is not in the safe-list — but the
-    # user just wanted to read help. Matches at any position so `cd … && fw
-    # upstream --help` is also exempt.
-    if [[ "$BASH_CMD" =~ (^|[[:space:]])(--help|--version)([[:space:]]|$) ]]; then
-        exit 0
-    fi
-
-    # Source safe-command allowlist
+    # Source safe-command allowlist.
+    # T-3231 moved this ABOVE the --help exemption, which now consults
+    # has_bash_write_pattern. Sourcing only defines functions, so the move is
+    # semantically inert for every branch below.
     source "$SCRIPT_DIR/lib/safe-commands.sh" 2>/dev/null || true
+
+    # T-2410 case 2: --help / --version exemption. NARROWED by T-3231.
+    #
+    # The intent is still T-2410's and still correct: `fw upstream --help` was
+    # blocked at the work-completed focus gate purely because `upstream` is not
+    # safe-listed, when the user only wanted to read help. Position-independent
+    # matching is deliberate so `cd … && fw upstream --help` is exempt too.
+    #
+    # WHAT WAS WRONG (arc-012 review C2 / W2-F1). This was an unconditional
+    # `exit 0` ahead of EVERY gate — the first real one is ~40 lines below — on a
+    # regex that matches at any position, including inside a quoted argument. So
+    # `rm -rf /important/data --help` was exempt, and so was
+    # `git commit -m "document the --help flag"`. Any command could opt out of
+    # governance by appending seven characters. Reproduced with a control leg:
+    # bare `rm -rf /important/data` gated, the same command plus `--help` exempt.
+    #
+    # THE FIX IS TWO INDEPENDENT LEGS, because there are two distinct escapes:
+    #   1. Decide on a QUOTE-STRIPPED view — kills the flag hiding in a quoted
+    #      payload (`git commit -m "… --help …"`). This is exactly what the
+    #      T-2936 bootstrap branch ~40 lines below already does, and for the same
+    #      reason; it was simply never applied here.
+    #   2. Refuse the exemption when the stripped command carries a WRITE
+    #      PATTERN — kills `rm -rf … --help`. A real help invocation does not
+    #      write, so this costs the legitimate case nothing.
+    # Neither leg subsumes the other: leg 1 alone still exempts `rm -rf … --help`,
+    # leg 2 alone still exempts the quoted-payload commit.
+    #
+    # FAILS CLOSED. If safe-commands.sh did not source, `has_bash_write_pattern`
+    # is undefined, the `type` test is false, and the whole condition is false —
+    # so the command falls through to the gates rather than being exempted. Do
+    # not rewrite this as `! { type … && has_bash_write_pattern …; }`, which
+    # inverts to TRUE when the function is missing and silently reopens C2.
+    if [[ "$BASH_CMD" =~ (^|[[:space:]])(--help|--version)([[:space:]]|$) ]]; then
+        _help_unquoted=$(printf '%s' "$BASH_CMD" | sed "s/'[^']*'//g; s/\"[^\"]*\"//g")
+        if [[ "$_help_unquoted" =~ (^|[[:space:]])(--help|--version)([[:space:]]|$) ]] \
+           && type has_bash_write_pattern &>/dev/null \
+           && ! has_bash_write_pattern "$_help_unquoted"; then
+            exit 0
+        fi
+    fi
 
     # T-2880: ask the attribution question BEFORE honouring the safety answer.
     # Purely syntactic, no focus read — see _fw_extract_drift_target above.
