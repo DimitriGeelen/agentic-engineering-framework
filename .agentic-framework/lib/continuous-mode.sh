@@ -161,3 +161,201 @@ import os
 os.replace(tmp, state_path)
 PY
 }
+
+# ---------------------------------------------------------------------------
+# fw_continuous_cli <arm|disarm|status> [opts]   — T-3225
+#
+# The loop shipped disarmed (T-3164, for cause: the flag used to claim armed
+# while structurally terminated) and no verb was ever built to arm it again.
+# Arming meant hand-editing five fields across TWO files, and the second file
+# is the one nobody remembered:
+#
+#   .continuous-mode.yaml   enabled, current_iteration, last_terminated_reason
+#   .next-directive.yaml    filed_at, expires_at   <-- the expiry the driver READS
+#
+# stop-driver.sh takes expires_at from the DIRECTIVE first (stop-driver.sh:188),
+# falling back to state.expires_after_seconds + directive.filed_at. So a run can
+# be `enabled: true` and still stop dead on a directive expiry from months ago.
+# Both legs are set together here, or not at all.
+#
+# `status` re-evaluates the predicate chain LIVE. It prints
+# last_terminated_reason only as an explicitly-labelled stored string, because
+# that is what the driver replays: for 74 days the log read "expires_at
+# 2026-06-17 passed (now 2026-08-26)" — a frozen `now`, recited rather than
+# computed, which reads as current and is not.
+# ---------------------------------------------------------------------------
+fw_continuous_cli() {
+    local action="${1:-status}"; shift || true
+    local root="${PROJECT_ROOT:-$(pwd)}"
+    local wdir="$root/.context/working"
+    local state="$wdir/.continuous-mode.yaml"
+    local directive="$wdir/.next-directive.yaml"
+    local halt="${FW_CONTINUOUS_HALT:-$wdir/.continuous-halt}"
+    local hours="" iters="" ceiling="" reason="" text=""
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --hours) hours="$2"; shift 2 ;;
+            --iterations) iters="$2"; shift 2 ;;
+            --tier-ceiling) ceiling="$2"; shift 2 ;;
+            --reason) reason="$2"; shift 2 ;;
+            --directive) text="$2"; shift 2 ;;
+            *) echo "fw continuous: unknown option '$1'" >&2; return 2 ;;
+        esac
+    done
+
+    case "$action" in
+        arm|disarm|status) ;;
+        *) echo "usage: fw continuous <arm|disarm|status> [--hours N] [--iterations N] [--tier-ceiling N] [--directive TEXT] [--reason TEXT]" >&2; return 2 ;;
+    esac
+
+    if [ "$action" = "arm" ] && [ -f "$halt" ]; then
+        echo "REFUSED: halt file present at $halt" >&2
+        echo "  The halt file is Brake 1 and outranks every other vote (stop-driver.sh:81)." >&2
+        echo "  Remove it deliberately before arming:  rm $halt" >&2
+        return 3
+    fi
+
+    FW_CM_ACTION="$action" FW_CM_STATE="$state" FW_CM_DIRECTIVE="$directive" \
+    FW_CM_HALT="$halt" FW_CM_HOURS="$hours" FW_CM_ITERS="$iters" \
+    FW_CM_CEILING="$ceiling" FW_CM_REASON="$reason" FW_CM_TEXT="$text" \
+    python3 - <<'PYCM'
+import os, sys, datetime, tempfile
+try:
+    import yaml
+except ImportError:
+    print("fw continuous: pyyaml unavailable", file=sys.stderr); sys.exit(4)
+
+act = os.environ["FW_CM_ACTION"]
+sp, dp, halt = os.environ["FW_CM_STATE"], os.environ["FW_CM_DIRECTIVE"], os.environ["FW_CM_HALT"]
+now = datetime.datetime.now(datetime.timezone.utc)
+Z = "%Y-%m-%dT%H:%M:%SZ"
+
+def load(p):
+    try:
+        with open(p) as f:
+            d = yaml.safe_load(f)
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+def save(p, d):
+    os.makedirs(os.path.dirname(p) or ".", exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(p) or ".")
+    with os.fdopen(fd, "w") as f:
+        yaml.safe_dump(d, f, default_flow_style=False, sort_keys=False)
+    os.replace(tmp, p)
+
+def parse_ts(v):
+    if v is None: return None
+    if isinstance(v, datetime.datetime):
+        return v if v.tzinfo else v.replace(tzinfo=datetime.timezone.utc)
+    s = str(v).strip()
+    if not s: return None
+    if s.endswith("Z"): s = s[:-1] + "+00:00"
+    try:
+        dt = datetime.datetime.fromisoformat(s)
+        return dt if dt.tzinfo else dt.replace(tzinfo=datetime.timezone.utc)
+    except Exception:
+        return None
+
+def as_int(v, fb=None):
+    try: return int(v)
+    except (TypeError, ValueError): return fb
+
+def verdict(state, directive):
+    """Re-run stop-driver.sh's chain, in its real order, against the clock now."""
+    if os.path.exists(halt):
+        return "STOPPED", f"halt-file present at {halt}"
+    if not state:
+        return "STOPPED", "state-unreadable-or-empty"
+    if state.get("enabled") is not True:
+        return "STOPPED", f".continuous-mode.yaml: enabled={state.get('enabled')!r} (not armed)"
+    cur = as_int(state.get("current_iteration"), 0) or 0
+    mi = as_int(directive.get("max_iterations"), as_int(state.get("max_iterations")))
+    if mi is not None and cur + 1 > mi:
+        return "STOPPED", f"max_iterations reached ({cur + 1} > {mi})"
+    dn = as_int(state.get("tasks_completed"), 0) or 0
+    mt = as_int(directive.get("max_tasks"), as_int(state.get("max_tasks")))
+    if mt is not None and dn >= mt:
+        return "STOPPED", f"max_tasks reached ({dn} >= {mt})"
+    exp = parse_ts(directive.get("expires_at"))
+    if exp is None:
+        secs, filed = as_int(state.get("expires_after_seconds")), parse_ts(directive.get("filed_at"))
+        if secs is not None and filed is not None:
+            exp = filed + datetime.timedelta(seconds=secs)
+    if exp is not None and now > exp:
+        age = int((now - exp).total_seconds() // 86400)
+        return "STOPPED", f".next-directive.yaml: expires_at {exp.strftime(Z)} lapsed {age}d ago"
+    return "ARMED", f"would continue as iteration-{cur + 1}" + (f", expires {exp.strftime(Z)}" if exp else "")
+
+state, directive = load(sp), load(dp)
+
+if act == "status":
+    st, why = verdict(state, directive)
+    print(f"Continuous mode: {st}")
+    print(f"  Reason (live): {why}")
+    blockers = []
+    if state.get("enabled") is not True:
+        blockers.append(".continuous-mode.yaml: enabled is not true")
+    e = parse_ts(directive.get("expires_at"))
+    if e is not None and now > e:
+        blockers.append(f".next-directive.yaml: expires_at {e.strftime(Z)} lapsed")
+    if len(blockers) > 1:
+        print("  ALSO blocking (each would stop the loop on its own):")
+        for b in blockers:
+            print(f"    - {b}")
+    print(f"  Iteration: {as_int(state.get('current_iteration'), 0)} / {as_int(directive.get('max_iterations'), as_int(state.get('max_iterations'), '-'))}")
+    print(f"  Tier ceiling: {state.get('tier_ceiling', '-')}")
+    stored = state.get("last_terminated_reason")
+    if isinstance(stored, str) and stored.strip():
+        print(f"  (stored last_terminated_reason, NOT re-evaluated: {stored.strip()})")
+    sys.exit(0 if st == "ARMED" else 1)
+
+if act == "disarm":
+    state["enabled"] = False
+    state["last_terminated_reason"] = os.environ.get("FW_CM_REASON") or f"disarmed by operator at {now.strftime(Z)}"
+    save(sp, state)
+    print("Continuous mode: DISARMED")
+    print(f"  Reason: {state['last_terminated_reason']}")
+    sys.exit(0)
+
+hours = as_int(os.environ.get("FW_CM_HOURS") or "", 4)
+iters = as_int(os.environ.get("FW_CM_ITERS") or "", 3)
+if hours is None or iters is None or hours <= 0 or iters <= 0:
+    print("REFUSED: --hours and --iterations must be positive integers", file=sys.stderr)
+    sys.exit(2)
+if hours > 24:
+    print(f"REFUSED: --hours {hours} exceeds the 24h ceiling.", file=sys.stderr)
+    print("  An unbounded arm is refused, not defaulted.", file=sys.stderr)
+    sys.exit(2)
+
+exp = now + datetime.timedelta(hours=hours)
+state["enabled"] = True
+state["current_iteration"] = 0
+state["max_iterations"] = iters
+state["last_terminated_reason"] = None
+state["last_resumed_at"] = now.strftime(Z)
+state["tasks_completed"] = 0
+ceiling = as_int(os.environ.get("FW_CM_CEILING") or "", None)
+if ceiling is not None:
+    state["tier_ceiling"] = ceiling
+save(sp, state)
+
+directive["filed_at"] = now.strftime(Z)
+directive["expires_at"] = exp.strftime(Z)
+directive["max_iterations"] = iters
+if os.environ.get("FW_CM_TEXT"):
+    directive["directive"] = os.environ["FW_CM_TEXT"]
+directive["filed_by"] = "fw-continuous-arm"
+save(dp, directive)
+
+st, why = verdict(load(sp), load(dp))
+print(f"Continuous mode: {st}")
+print(f"  Bound:   {iters} iteration(s), expires {exp.strftime(Z)} ({hours}h)")
+print(f"  Ceiling: tier {state.get('tier_ceiling', '-')}")
+print(f"  Check:   {why}")
+print(f"  Halt at any time:  touch {halt}")
+sys.exit(0 if st == "ARMED" else 1)
+PYCM
+}

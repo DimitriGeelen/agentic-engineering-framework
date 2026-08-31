@@ -107,7 +107,7 @@ command -v python3 >/dev/null 2>&1 || { log stop "python3 unavailable"; yield; }
 # --- Brake 2: enabled flag + caps, evaluated together ----------------------
 # Returns "continue <reason>" or "stop <reason>". Anything else is treated as stop.
 verdict=$(python3 - "$STATE_FILE" "$DIRECTIVE_FILE" <<'PY' 2>/dev/null || true
-import sys, datetime
+import sys, datetime, re
 
 def out(decision, reason):
     print(f"{decision} {reason}")
@@ -139,9 +139,34 @@ if state.get("enabled") is not True:
     # operator never armed this run" from "the loop stopped itself on a human
     # gate", and those mean opposite things to whoever reads the log. The
     # recorded reason is written by fw_continuous_note_human_gate at the gate.
+    # T-3228 (review C1): the stored reason is a REPLAY, and until now it was
+    # recited under a fresh timestamp. `inject-next-directive.py` composes it as
+    # a sentence carrying ITS OWN `now` — "expires_at 2026-06-17 passed (now
+    # 2026-08-26T12:50:35Z)" — freezes that into the state file, and never
+    # rewrites it while the loop stays disarmed (evaluate() returns early on
+    # `not enabled`). log() then stamps the line with today. The result was 18
+    # consecutive lines each carrying two clocks five days apart, the stale one
+    # reading as current to anyone diagnosing "why won't the loop run".
+    #
+    # That is the T-3202 class ("the record cannot say which ceiling killed it")
+    # occurring INSIDE the T-3212 fix for it. The correct discipline already
+    # existed one function away: `fw continuous status` labels this same string
+    # "(stored last_terminated_reason, NOT re-evaluated: …)" and
+    # t3225_continuous_arm.bats:138 pins it. It was simply never applied to the
+    # second consumer.
+    #
+    # So: strip the embedded clock (there must be exactly one clock per line,
+    # and it must be log()'s), and name the real one from `terminated_at` —
+    # which fw_continuous_note_human_gate writes (lib/continuous-mode.sh:152)
+    # and which the driver previously read nowhere. When it is absent, SAY so
+    # rather than omitting the marker: an unmarked line is indistinguishable
+    # from a live evaluation, which is the whole defect.
     reason = state.get("last_terminated_reason")
     if isinstance(reason, str) and reason.strip():
-        out("stop", f"terminated({reason.strip()})")
+        text = re.sub(r"\s*\(now [^)]*\)", "", reason.strip())
+        at = state.get("terminated_at")
+        stamp = str(at).strip() if at else "unknown"
+        out("stop", f"terminated[stored@{stamp}]({text})")
     out("stop", f"continuous-mode-disabled(enabled={state.get('enabled')!r})")
 
 directive = load(directive_path)

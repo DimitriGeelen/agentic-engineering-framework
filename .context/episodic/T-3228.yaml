@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3228: arc-012 landing: stop-driver replays a frozen now under a fresh timestamp (review C1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-31T11:45:37Z
+# ============================================================================
+
+task_id: T-3228
+task_name: "arc-012 landing: stop-driver replays a frozen now under a fresh timestamp (review C1)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-31T11:40:34Z
+completed: 2026-08-31T11:45:20Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-012 landing: stop-driver replays a frozen now under a fresh timestamp (review C1)
+
+# Key outcomes
+outcomes:
+  - 'The stop-driver''s replayed `last_terminated_reason` is emitted with an explicit stored-marker, so a reader can tell a recited value from a live evaluation'
+  - 'Any `(now …)` clock embedded in the stored reason is stripped before it is logged — the line carries exactly one clock, `log()`''s own'
+  - '`terminated_at` is surfaced in the marker when the state file has it, and a distinct `unknown` marker is used when it does not (absence is stated, not inferred)'
+  - 'Regression test `tests/unit/t3228_stored_reason_labelling.bats` covers all three above, plus a control leg asserting the driver still emits the reason at all'
+  - 'The test is MUTATION-TESTED: reverting the labelling reddens it, and the specific mutation and the test it reddened are recorded in this task'
+  - 'The test suite runs with zero skips (`grep -c ''# skip''` is 0), so a green result means it ran'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3228-arc-012-landing-stop-driver-replays-a-fr.md
+generated_by: context-agent-hybrid
