@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3229: landing-mode v5: the hv/hc premise inverted, and the quadrant cost axis is a 0.1 delta
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-08-31T12:47:50Z
+# ============================================================================
+
+task_id: T-3229
+task_name: "landing-mode v5: the hv/hc premise inverted, and the quadrant cost axis is a 0.1 delta"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-31T12:37:34Z
+completed: 2026-08-31T12:46:33Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  landing-mode v5: the hv/hc premise inverted, and the quadrant cost axis is a 0.1 delta
+
+# Key outcomes
+outcomes:
+  - 'Premise 1 no longer asserts "STILL DEAD" and records the 2026-08-31 measurement with the exact command used'
+  - 'Premise 1 carries the measured value/cost/quadrant distribution over the 27 costed tasks'
+  - 'Premise 1 states the hc/lc boundary is a 0.1 cost delta and gives the pool-not-queue rule'
+  - 'Premise 1 records the tool''s own 84%-no-cost caveat, tying it to T-3068 / L-624'
+  - '§The Prompt selection paragraph names `--include-proposed` and the pool-not-queue rule'
+  - 'Title reads v5, revision-history table has a v5 row, Status line names T-3229'
+  - 'A "What v5 changes" section names the mechanism (the refusal named its own escape on line 3) and generalises it'
+  - 'The bare `--quadrant hv-hc` form still refuses — v3''s verbatim quote reproduces, so the correction is additive, not a contradiction'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3229-landing-mode-v5-the-hvhc-premise-inverte.md
+generated_by: context-agent-hybrid
