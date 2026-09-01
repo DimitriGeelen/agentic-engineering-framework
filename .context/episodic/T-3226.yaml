@@ -102,10 +102,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 1541
-  commits: 3
-  files_changed: 29
-  lines_added: 2456
-  lines_removed: 7715
+  commits: 4
+  files_changed: 31
+  lines_added: 2585
+  lines_removed: 7720
+  footprint_refreshed_at: '2026-08-31T20:34:54Z'
+  footprint_refreshed_by_commit: 583d2362f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3226-fw-doctor-reports-a-spurious-fail-on-any.md
