@@ -4,12 +4,12 @@ name: "arc-012 continuous-run: multi-agent code review of the review slice via T
 description: >
   arc-012 continuous-run: multi-agent code review of the review slice via TermLink
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run, review]
-components: []
+components: [agents/context/stop-driver.sh]
 related_tasks: []
 arc_id: continuous-run
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,8 +23,8 @@ arc_id: continuous-run
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-31T11:10:36Z
-last_update: 2026-08-31T13:12:53Z
-date_finished:
+last_update: 2026-09-01T05:24:10Z
+date_finished: 2026-09-01T05:24:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -418,3 +418,20 @@ grep -q '^## ' docs/reports/arc-012-review/SYNTHESIS.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3227-arc-012-continuous-run-multi-agent-code-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3645a3bd
+- **Timestamp:** 2026-09-01T05:24:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 117
+     - evidence: `git rev-parse --verify arc012-ultrareview >/dev/null 2>&1`
+
+### 2026-09-01T05:24:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

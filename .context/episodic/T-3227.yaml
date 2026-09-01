@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3227: arc-012 continuous-run: multi-agent code review of the review slice via TermLink
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-01T05:24:24Z
+# ============================================================================
+
+task_id: T-3227
+task_name: "arc-012 continuous-run: multi-agent code review of the review slice via TermLink"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-31T11:10:36Z
+completed: 2026-09-01T05:24:10Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-08-31T13:32:47+02:00
+last_commit: 2026-09-01T07:24:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-012 review slice + 5-worker TermLink review — 3 criticals reproduced. Evolution captured, and the two reproduced safe-list highs get tasks
+
+# Key outcomes
+outcomes:
+  - 'Review slice branch `arc012-ultrareview` exists, is built from `master`, and its diff is inside the ultrareview gate limits (< 500 files, < 8000 lines)'
+  - 'The rebuild one-liner in `docs/reports/arc-012-ultrareview-prompt.md` reproduces the slice tree byte-identically when run verbatim'
+  - 'Five TermLink workers dispatched, each with a disjoint file assignment covering all 43 slice files with no file assigned twice and none unassigned'
+  - 'Every dispatched worker produced a report under `docs/reports/arc-012-review/` containing a `## Verdict` section'
+  - 'Each worker posted its result to `fw bus` under T-3227 (`fw bus manifest T-3227` lists one envelope per worker)'
+  - 'Findings synthesised into `docs/reports/arc-012-review/SYNTHESIS.md`, deduplicated across workers, ordered by severity, each with a concrete failure scenario'
+  - 'Every `critical` or `high` finding is either reproduced by the orchestrator against the real file, or explicitly downgraded to `plausible` with the reason it could not be confirmed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/arc-012-review/SYNTHESIS.md'
+  - 'docs/reports/arc-012-review/W1-loop-core.md'
+  - 'docs/reports/arc-012-review/W2-gates-safety.md'
+  - 'docs/reports/arc-012-review/W3-close-audit.md'
+  - 'docs/reports/arc-012-review/W4-test-quality.md'
+  - 'docs/reports/arc-012-review/W5-cli-surface.md'
+  - 'docs/reports/arc-012-ultrareview-prompt.md'
+  - '.tasks/active/T-3227-arc-012-continuous-run-multi-agent-code-.md'
+  - '.tasks/active/T-3237-bare-wget-url-is-safe-listed--wget-write.md'
+  - '.tasks/active/T-3238-find-is-unconditionally-safe-listed-so--.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-31T13:32:47'
+    action: 'T-3227: arc-012 review slice + 5-worker TermLink review — 3 criticals reproduced'
+  - time: '2026-09-01T07:24:04'
+    action: 'T-3227: Evolution captured, and the two reproduced safe-list highs get tasks'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1093 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run, review]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1093
+  commits: 2
+  files_changed: 10
+  lines_added: 3996
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3227-arc-012-continuous-run-multi-agent-code-.md
+generated_by: context-agent-hybrid
