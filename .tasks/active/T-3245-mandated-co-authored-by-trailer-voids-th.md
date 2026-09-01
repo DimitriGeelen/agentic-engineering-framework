@@ -120,6 +120,47 @@ same matcher being too *strict* on a string that is not a shell operator at all 
 sits inside a quoted argument. The common root is that the matcher scans the raw command
 text without regard for quoting.
 
+### Second occurrence, different configuration (S-2026-0901, T-3246 close)
+
+Hit again ~2h later, and the variant matters: T-3243's reproduction was a
+**partial-complete** task (work-completed, still in `active/`, awaiting a Human
+AC). This one was a **fully closed** task — `fw task update T-3246 --status
+work-completed` archived it to `completed/` and, in the same operation, printed
+`Focus cleared (task completed)`.
+
+So the block message differed. Not the partial-complete note quoted above, but:
+
+```
+BLOCKED: No active task. Framework rule: nothing gets done without a task.
+...
+Why: it matches a file-write pattern (a redirect, rm, tee, sed -i, or a heredoc).
+```
+
+Isolation, three commands, same staged tree:
+
+| # | command | result |
+|---|---|---|
+| 1 | `git commit -F -` with heredoc **and** trailer | BLOCKED |
+| 2 | `git commit -m ... -m "Co-Authored-By: ... <noreply@anthropic.com>"` — **no heredoc** | BLOCKED |
+| 3 | identical to 2, **trailer removed** | **committed, rc=0** |
+
+Command 2 is the one that isolates it: no heredoc, no redirect, no `tee`, no
+`sed -i` — the only write-pattern character in the entire line is the `<` of
+`<noreply@anthropic.com>`. Removing it is the whole difference between blocked
+and committed.
+
+**Why this configuration is worse than the filed one.** In the partial-complete
+case the task is still focused, so the agent can drop the trailer and proceed
+under its own ID. Here focus has *just been cleared by the successful close*, so
+the very next commit — the one carrying the episodic file and the `active/` →
+`completed/` rename that the close itself produced — has no task to run under.
+The close generates artefacts it then forbids you to commit. Sibling to T-3236's
+"vendor sync after close is unreachable", same root: **the moment after a
+successful close is an unfocused state that the gates treat as unauthorised.**
+
+Note the trailer is not optional garnish — it is mandated by the harness
+instructions on every commit, so the default-correct commit is the blocked one.
+
 ## Acceptance Criteria
 
 ### Agent

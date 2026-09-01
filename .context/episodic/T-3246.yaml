@@ -141,10 +141,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 62
-  commits: 7
-  files_changed: 58
-  lines_added: 9092
-  lines_removed: 7120
+  commits: 8
+  files_changed: 60
+  lines_added: 9287
+  lines_removed: 7134
+  footprint_refreshed_at: '2026-09-01T20:54:42Z'
+  footprint_refreshed_by_commit: ffc224b75
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3246-arc-012-e9--the-loop-does-work-close-a-t.md
