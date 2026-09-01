@@ -13,19 +13,30 @@
 #
 #     does the loop CLOSE A TASK, TRIP, RESTART, and CLOSE ANOTHER?
 #
-# The sandbox therefore carries a real backlog — three real tasks created through
+# The sandbox therefore carries a real backlog — five real tasks created through
 # the real verb, each with a tickable AC and a verification line the close gate
 # actually runs — and the directive tells the loop to work them. Assertion 3 is
 # the deliverable: a task whose date_finished lands AFTER the restart event,
 # joined mechanically from task frontmatter and the loop ledger. That is work
 # surviving the context boundary, which is the whole arc.
 #
-# WHY THE WINDOW IS ~58000 AND NOT 4000. E8 used 4000 so any turn tripped it
-# instantly. Here an instant trip is useless — the first session must get far
-# enough to close something before it dies. A sandbox session baselines near 52.6k
-# tokens (measured in E8), so 58000 puts critical at 55100: a few turns of real
-# task work above the floor. The trip then lands mid-backlog, which is where a
-# real one would land.
+# WHY THE WINDOW IS 72000 AND NOT 4000, AND NOT 58000 EITHER. E8 used 4000 so any
+# turn tripped it instantly. An instant trip is useless here — the first session
+# must get far enough to close something before it dies. But the first E9 run
+# showed 58000 was the opposite error, and the arithmetic is the finding:
+#
+#     useful work per iteration = WINDOW - BASELINE,  not WINDOW
+#
+# A sandbox session baselines near 52.6k tokens before doing anything (CLAUDE.md,
+# hooks, handover), and every restart re-pays that baseline in full — a fresh
+# session drops the context it could not afford AND the orientation it had already
+# bought. At WINDOW=58000 (critical 55100) that left ~2.5k of headroom, about 4%,
+# so the loop cycled correctly and progressed barely: 3 restarts, 1 task closed.
+#
+# 72000 puts critical at 68400 and headroom at ~15.8k — roughly 6x the first run's
+# and the same order as production (300k window, ~50k baseline, ~4.7x headroom).
+# The trip still lands mid-backlog, which is where a real one would land, but the
+# session now has room to finish a task on either side of it.
 #
 # Usage: bash docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh
 set -uo pipefail
@@ -36,10 +47,10 @@ OUT="${EVID}/E9-loop-does-work.txt"
 mkdir -p "$EVID"
 
 SANDBOX="$(mktemp -d)/proj"
-WINDOW=58000
+WINDOW=72000
 CACHE_AGE=1
 RECHECK=1
-MAXR=3
+MAXR=4
 cleanup() { [ "${KEEP_SANDBOX:-0}" = "1" ] && { echo "KEPT: $SANDBOX"; return 0; }; rm -rf "$(dirname "$SANDBOX")"; }
 trap cleanup EXIT
 
@@ -53,8 +64,8 @@ echo "initialising a REAL framework project (fw init) ..."
 
 FW="./.agentic-framework/bin/fw"
 
-echo "creating a real backlog (3 tasks, real verb) ..."
-for n in 1 2 3; do
+echo "creating a real backlog (5 tasks, real verb) ..."
+for n in 1 2 3 4 5; do
     ( cd "$SANDBOX" && timeout 120 $FW task create \
         --name "E9 backlog item ${n} - record the item number in a file" \
         --type test ) >/dev/null 2>&1
@@ -75,7 +86,7 @@ for i, path in enumerate(sorted(glob.glob(os.path.join(sandbox, ".tasks/active/T
 PY
 
 git -C "$SANDBOX" add -A >/dev/null 2>&1
-git -C "$SANDBOX" commit -qm "baseline: 3-task backlog" >/dev/null 2>&1
+git -C "$SANDBOX" commit -qm "baseline: 5-task backlog" >/dev/null 2>&1
 
 HOOKS=$(python3 -c "
 import json;d=json.load(open('${SANDBOX}/.claude/settings.json'));h=d.get('hooks',{})
@@ -84,7 +95,7 @@ print(' '.join('%s=%d'%(k,len(v)) for k,v in sorted(h.items())))" 2>/dev/null)
 DIRECTIVE="Work the backlog in .tasks/active/ one task at a time. For each task: run './.agentic-framework/bin/fw work-on <ID>', create the file its acceptance criterion names with exactly the content it specifies, tick that AC from '- [ ]' to '- [x]' in the task file, then close it with './.agentic-framework/bin/fw task update <ID> --status work-completed'. Then move to the next task. Do not stop until every task is closed."
 
 ( cd "$SANDBOX" && timeout 60 $FW continuous arm \
-    --hours 24 --iterations 6 --tier-ceiling 1 \
+    --hours 24 --iterations 8 --tier-ceiling 1 \
     --directive "$DIRECTIVE" ) >/dev/null 2>&1
 
 ARMED=$(grep -c '^enabled: true' "${SANDBOX}/.context/working/.continuous-mode.yaml" 2>/dev/null || echo 0)
@@ -99,7 +110,7 @@ BACKLOG=$(ls "${SANDBOX}/.tasks/active/"T-*.md 2>/dev/null | wc -l)
   echo "hooks:      ${HOOKS}"
   echo "backlog:    ${BACKLOG} real tasks in .tasks/active/"
   echo "dials:      FW_CONTEXT_WINDOW=${WINDOW} (critical $((WINDOW*95/100))), CACHE_AGE=${CACHE_AGE}, RECHECK=${RECHECK}"
-  echo "policy:     MAX_RESTARTS=${MAXR}, max_iterations=6, tier_ceiling=1"
+  echo "policy:     MAX_RESTARTS=${MAXR}, max_iterations=8, tier_ceiling=1"
   echo "armed:      ${ARMED}"
   echo
   echo "directive:  ${DIRECTIVE}"
@@ -111,7 +122,7 @@ cd "$SANDBOX"
 FW_CONTEXT_WINDOW="$WINDOW" FW_BUDGET_STATUS_MAX_AGE="$CACHE_AGE" \
 FW_BUDGET_RECHECK_INTERVAL="$RECHECK" FW_MAX_RESTARTS="$MAXR" \
 FW_RESTART_WINDOW=3600 FW_NO_STARTUP_BANNER=1 \
-timeout 900 bash "${REPO}/bin/claude-fw" -p "$DIRECTIVE" \
+timeout 1800 bash "${REPO}/bin/claude-fw" -p "$DIRECTIVE" \
     > "${SANDBOX}/pty.log" 2>&1
 WRC=$?
 
@@ -183,6 +194,13 @@ chk() { if [ "$2" = 0 ]; then echo "  PASS  $1  $3"; pass=$((pass+1)); else echo
   chk "the closes were real work, not bookkeeping" \
       "$([ "${n_art:-0}" -ge 2 ] && echo 0 || echo 1)" "artefact files created = ${n_art}"
   echo
+  if [ "${WRC}" = "124" ]; then
+    echo "  NOTE  wrapper hit the 1800s wall clock (exit 124) - the run was TRUNCATED,"
+    echo "        not concluded. Any FAIL above is unattributable: the harness stopped"
+    echo "        watching before the loop was finished. Re-run with a longer timeout"
+    echo "        before reading a negative result as evidence about the loop."
+    echo
+  fi
   echo "PASS: ${pass}  FAIL: ${fail}"
 } | tee -a "$OUT"
 
