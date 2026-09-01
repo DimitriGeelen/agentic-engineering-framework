@@ -5462,6 +5462,38 @@ registry_file = '$_cron_registry'
 data = yaml.safe_load(open(registry_file))
 jobs = data.get('jobs', [])
 
+# T-3171: refuse to generate (and therefore install) a registry containing
+# any job with a missing/empty/non-string id, or two jobs sharing an id.
+# fw cron list/run and Watchtower pause/resume all require job['id'] hard
+# (KeyError / 404 otherwise) — checked here, before any file is written, so
+# a bad registry can never reach the crontab source or the installed target.
+seen_ids = {}
+id_errors = []
+for job in jobs:
+    jid = job.get('id')
+    jname = job.get('name', '<unnamed>')
+    jschedule = job.get('schedule', '<no schedule>')
+    if not isinstance(jid, str) or not jid.strip():
+        id_errors.append(f'  missing/empty id: name={jname!r} schedule={jschedule!r}')
+    elif jid in seen_ids:
+        prev_name, prev_schedule = seen_ids[jid]
+        id_errors.append(
+            f'  duplicate id {jid!r}: name={jname!r} schedule={jschedule!r} '
+            f'(already used by name={prev_name!r} schedule={prev_schedule!r})'
+        )
+    else:
+        seen_ids[jid] = (jname, jschedule)
+
+if id_errors:
+    print('ERROR: cron registry has jobs with missing, empty, duplicate, or', file=sys.stderr)
+    print('non-string id: — refusing to generate (nothing written).', file=sys.stderr)
+    for e in id_errors:
+        print(e, file=sys.stderr)
+    print('', file=sys.stderr)
+    print('fw cron list/run and Watchtower pause/resume all require a unique', file=sys.stderr)
+    print('string id: per job. Add one to each offending job and re-run.', file=sys.stderr)
+    sys.exit(1)
+
 slug = os.path.basename(project_root).lower()
 slug = re.sub(r'[^a-z0-9_-]', '-', slug)
 cron_source = os.path.join(project_root, '.context', 'cron', 'agentic-audit.crontab')

@@ -1,8 +1,19 @@
 ---
 id: T-3242
-name: "VERSION file is non-monotonic and disagrees with release tags — 'which version am I on' has two answers"
+name: "VERSION file is non-monotonic and disagrees with release tags — 'which version
+  am I on' has two answers"
 description: >
-  MEASURED 2026-09-01. The VERSION file at the last five release tags reads 1.6.121, 1.6.499, 1.6.430, 1.6.176, 1.6.72 while the tags climb v1.6.764..v1.6.768 monotonically. So VERSION DECREASED across consecutive releases (176 -> 72 between v1.6.767 and v1.6.768). lib/version.sh does a plain semver patch increment, which is monotonic on a linear branch, so the divergence means tagged commits carried VERSION counters from different lines of history. Consequence: a consumer reading VERSION concludes it downgraded, and comparing a stable VERSION against a bleeding-edge VERSION (1.6.72 vs 1.6.149) reads as a 77-version gap when the real relationship is 152 commits on one branch. The operator hit exactly this misreading. Either VERSION or the tag must be the single source of truth, and fw doctor should FAIL when they disagree on the same commit.
+  MEASURED 2026-09-01. The VERSION file at the last five release tags reads 1.6.121,
+  1.6.499, 1.6.430, 1.6.176, 1.6.72 while the tags climb v1.6.764..v1.6.768 monotonically.
+  So VERSION DECREASED across consecutive releases (176 -> 72 between v1.6.767 and
+  v1.6.768). lib/version.sh does a plain semver patch increment, which is monotonic
+  on a linear branch, so the divergence means tagged commits carried VERSION counters
+  from different lines of history. Consequence: a consumer reading VERSION concludes
+  it downgraded, and comparing a stable VERSION against a bleeding-edge VERSION (1.6.72
+  vs 1.6.149) reads as a 77-version gap when the real relationship is 152 commits
+  on one branch. The operator hit exactly this misreading. Either VERSION or the tag
+  must be the single source of truth, and fw doctor should FAIL when they disagree
+  on the same commit.
 
 status: captured
 workflow_type: build
@@ -22,8 +33,8 @@ related_tasks: [T-3185, T-3190]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T07:34:38Z
-last_update: 2026-09-01T07:34:38Z
-date_finished: null
+last_update: '2026-09-01T07:45:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +45,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-01T07:45:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=258,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-01T07:45:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3242: VERSION file is non-monotonic and disagrees with release tags — 'which version am I on' has two answers

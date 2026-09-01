@@ -292,6 +292,18 @@ do_init() {
 # Cron Registry — Structured source of truth for scheduled jobs (T-448)
 # Read by web/blueprints/cron.py and fw cron generate.
 # Editable by humans, controllable via Watchtower web UI.
+#
+# Every job REQUIRES a unique, non-empty string `id:` (T-3171). `fw cron
+# generate` refuses to write a crontab if any job is missing one or if two
+# jobs share one — `fw cron list`, `fw cron run <id>`, and Watchtower
+# pause/resume all key off `id:` directly and error/404 without it. If you
+# are building this file from an existing crontab (no ids in `crontab -l`),
+# invent a short kebab-case id per job before generating.
+#
+# Reserved ids — web/blueprints/cron.py special-cases these to infer
+# "last run" from filesystem artifacts instead of cron audit output. Naming
+# an unrelated job with one of these ids silently hijacks that display
+# logic: docs-daily, retention-daily, pickup-process, liveness-1m.
 jobs: []
 CRONREGEOF
     fi

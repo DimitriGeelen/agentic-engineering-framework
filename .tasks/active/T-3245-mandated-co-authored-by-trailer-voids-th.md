@@ -19,7 +19,7 @@ tags: [bug, gate, false-positive]
 components: [agents/context/lib/safe-commands.sh]
 related_tasks: [T-3179, T-3236, T-3174, T-3243, T-3237, T-3238]
 created: 2026-09-01T10:40:00Z
-last_update: 2026-09-01T10:40:18Z
+last_update: '2026-09-01T10:45:10Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-09-01T10:40:18Z'
@@ -39,6 +39,16 @@ bvp_scores_proposed:
       (no-signal); F3=1 (body/components:prompt-incidental); F1=1 
       (body/components:context-fabric-incidental); F2=1 
       (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-01T10:45:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 7
+    rationale: blast_radius=1 (single-component); tier=2 (workflow:build); 
+      effort=7 (lines=116,acs=5)
     rubric_sha: e4a00f38e801
 ---
 

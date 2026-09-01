@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-08-31T03:23:02.455889+00:00
-corpus_total: 2790
-bug_class_total: 499
+generated: 2026-09-01T03:23:03.125618+00:00
+corpus_total: 2801
+bug_class_total: 502
 bug_class_pct: 17
-h1_flagged: 362
+h1_flagged: 363
 h1_pct_of_bug_class: 72
 h2_repeat_patterns: 161
 h3_flagged: 265
-h3_pct_of_bug_class: 53
-recent_30d_flagged: 13
+h3_pct_of_bug_class: 52
+recent_30d_flagged: 14
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
@@ -34,17 +34,17 @@ recent_sample:
     name: "rail 611 — exclusion-vs-hole applied to stale-arc membership; three broken"
 h2_top:
   - learning: "P-011"
-    task_count: 2351
+    task_count: 2375
   - learning: "L-387"
-    task_count: 2107
+    task_count: 2128
   - learning: "L-291"
-    task_count: 1087
+    task_count: 1095
   - learning: "L-398"
-    task_count: 835
+    task_count: 842
   - learning: "P-010"
-    task_count: 468
+    task_count: 477
   - learning: "L-399"
-    task_count: 92
+    task_count: 93
   - learning: "L-006"
     task_count: 56
   - learning: "L-001"

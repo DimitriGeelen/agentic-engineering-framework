@@ -1,8 +1,22 @@
 ---
 id: T-3241
-name: "budget gauge encodes 'could not measure' as level=ok, silently disarming the restart loop"
+name: "budget gauge encodes 'could not measure' as level=ok, silently disarming the
+  restart loop"
 description: >
-  REPRODUCED (T-3239 E3, docs/reports/T-3239-continuous-loop-demo/evidence/E3-budget-selftrigger.txt). Two transcripts carrying an IDENTICAL 400000-token volume against a 100000-token window: the scopeable one reports level=critical, exits 2 and writes .restart-requested; the one context_tokens.py cannot scope reports {"level":"ok","tokens":0}, exits 0, and writes no signal. lib/context_tokens.py returns 0 by design below two in-scope entries ('return 0 rather than guess'), budget-gate maps 0 to ok, and nothing anywhere emits 'I could not measure'. A third path exits 0 even earlier when no transcript is found at all. Link 1 of arc-012's headline mechanic therefore fails OPEN, and its failure is byte-identical to a healthy fresh session — the L-555 class inside the arc built to remove it. This confirms and upgrades review finding W1-F5 (previously downgraded to plausible), and locates it one level deeper than the review did: the scoping rule, not budget-gate's regex fallback. Fix needs a third state (unknown) distinct from 0, surfaced at every gauge that consumes it; blast radius is why this is its own task rather than an inline change.
+  REPRODUCED (T-3239 E3, docs/reports/T-3239-continuous-loop-demo/evidence/E3-budget-selftrigger.txt).
+  Two transcripts carrying an IDENTICAL 400000-token volume against a 100000-token
+  window: the scopeable one reports level=critical, exits 2 and writes .restart-requested;
+  the one context_tokens.py cannot scope reports {"level":"ok","tokens":0}, exits
+  0, and writes no signal. lib/context_tokens.py returns 0 by design below two in-scope
+  entries ('return 0 rather than guess'), budget-gate maps 0 to ok, and nothing anywhere
+  emits 'I could not measure'. A third path exits 0 even earlier when no transcript
+  is found at all. Link 1 of arc-012's headline mechanic therefore fails OPEN, and
+  its failure is byte-identical to a healthy fresh session — the L-555 class inside
+  the arc built to remove it. This confirms and upgrades review finding W1-F5 (previously
+  downgraded to plausible), and locates it one level deeper than the review did: the
+  scoping rule, not budget-gate's regex fallback. Fix needs a third state (unknown)
+  distinct from 0, surfaced at every gauge that consumes it; blast radius is why this
+  is its own task rather than an inline change.
 
 status: captured
 workflow_type: build
@@ -22,8 +36,8 @@ related_tasks: [T-3239, T-2885, T-2403]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T07:31:04Z
-last_update: 2026-09-01T07:31:04Z
-date_finished: null
+last_update: '2026-09-01T07:45:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +48,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-01T07:45:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=258,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-01T07:45:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3241: budget gauge encodes 'could not measure' as level=ok, silently disarming the restart loop

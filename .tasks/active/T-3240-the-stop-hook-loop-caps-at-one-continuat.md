@@ -1,8 +1,20 @@
 ---
 id: T-3240
-name: "the Stop-hook loop caps at ONE continuation — stop_hook_active is checked before our own caps"
+name: "the Stop-hook loop caps at ONE continuation — stop_hook_active is checked before
+  our own caps"
 description: >
-  MEASURED (T-3239 E2, live claude -p against the real driver): an armed run produces exactly one 'decision=continue reason=iteration-1' and then 'decision=stop reason=stop_hook_active=true (platform runaway guard)'. Brake 3a (stop-driver.sh:87-101) is checked ahead of every one of our own caps, and Claude Code sets stop_hook_active on any stop following a hook-driven continuation, so the second stop of any run always yields there. Consequence: expiry, max_tasks and the tier ceiling are never consulted inside a session, and the arc's 'multi-cycle continuous session' is two turns. The driver's own header states the opposite intent — 'our counter is meant to stop the loop first, leaving the vendor's cap as the backstop we did not write'. This is a SOVEREIGNTY decision, not a bug to quietly fix: honouring stop_hook_active is what keeps a bug in our counter from becoming an unbounded loop, and widening it needs an operator call plus a real in-session turn counter to bound it. Evidence: docs/reports/T-3239-continuous-loop-demo/evidence/E2-armed-*.
+  MEASURED (T-3239 E2, live claude -p against the real driver): an armed run produces
+  exactly one 'decision=continue reason=iteration-1' and then 'decision=stop reason=stop_hook_active=true
+  (platform runaway guard)'. Brake 3a (stop-driver.sh:87-101) is checked ahead of
+  every one of our own caps, and Claude Code sets stop_hook_active on any stop following
+  a hook-driven continuation, so the second stop of any run always yields there. Consequence:
+  expiry, max_tasks and the tier ceiling are never consulted inside a session, and
+  the arc's 'multi-cycle continuous session' is two turns. The driver's own header
+  states the opposite intent — 'our counter is meant to stop the loop first, leaving
+  the vendor's cap as the backstop we did not write'. This is a SOVEREIGNTY decision,
+  not a bug to quietly fix: honouring stop_hook_active is what keeps a bug in our
+  counter from becoming an unbounded loop, and widening it needs an operator call
+  plus a real in-session turn counter to bound it. Evidence: docs/reports/T-3239-continuous-loop-demo/evidence/E2-armed-*.
 
 status: captured
 workflow_type: inception
@@ -12,8 +24,8 @@ tags: [arc:continuous-run, loop, sovereignty]
 components: []
 related_tasks: [T-3239, T-3233, T-3163]
 created: 2026-09-01T07:30:33Z
-last_update: 2026-09-01T07:30:33Z
-date_finished: null
+last_update: '2026-09-01T07:45:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +34,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-09-01T07:45:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-01T07:45:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3240: the Stop-hook loop caps at ONE continuation — stop_hook_active is checked before our own caps

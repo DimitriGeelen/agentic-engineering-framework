@@ -1,6 +1,7 @@
 ---
 id: T-3244
-name: "fw config get does not fall back to the registry default, contradicting documented 4-tier resolution"
+name: "fw config get does not fall back to the registry default, contradicting documented
+  4-tier resolution"
 description: >
   `fw config get KEY` returns empty and rc=1 for any key not explicitly written into
   .framework.yaml — including long-standing registered keys like PORT and CONTEXT_WINDOW.
@@ -15,8 +16,36 @@ tags: [bug, config]
 components: [lib/config.sh]
 related_tasks: [T-3243, T-2842]
 created: 2026-09-01T10:22:51Z
-last_update: 2026-09-01T10:22:51Z
-date_finished: null
+last_update: '2026-09-01T10:30:20Z'
+date_finished:
+cost_estimate_proposed:
+  - ts: '2026-09-01T10:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 6
+    rationale: blast_radius=1 (single-component); tier=2 (workflow:build); 
+      effort=6 (lines=79,acs=5)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-01T10:30:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 2
+      D3: 0
+      D4: 3
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=3 
+      (body:portability-abstraction); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3244: `fw config get` does not implement tier-4 registry fallback

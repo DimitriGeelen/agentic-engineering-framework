@@ -124,12 +124,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 304
-  commits: 13
-  files_changed: 36
-  lines_added: 3452
-  lines_removed: 65
-  footprint_refreshed_at: '2026-09-01T12:23:43Z'
-  footprint_refreshed_by_commit: ab4fce541
+  commits: 14
+  files_changed: 37
+  lines_added: 3464
+  lines_removed: 71
+  footprint_refreshed_at: '2026-09-01T19:27:29Z'
+  footprint_refreshed_by_commit: d9169d13b
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3239-arc-012-headline-mechanic-demo--wire-lev.md

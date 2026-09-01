@@ -11,3 +11,6 @@
 {"ts": "2026-08-31T16:04:35Z", "event": "exit", "reason": "max-restarts", "restart_count": 5, "wrapper_pid": 982028, "detail": "restart_count reached MAX_RESTARTS=5", "exit_code": 0}
 {"ts": "2026-08-31T17:28:13Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 1358421, "detail": "restart=enabled max_restarts=5 termlink=0"}
 {"ts": "2026-08-31T19:45:15Z", "event": "iterate", "reason": "restart", "restart_count": 1, "wrapper_pid": 1358421, "detail": "session=S-2026-0813-2305 tokens=286125"}
+{"ts": "2026-09-01T11:16:17Z", "event": "iterate", "reason": "restart", "restart_count": 2, "wrapper_pid": 1358421, "detail": "session=S-2026-0813-2305 tokens=285677"}
+{"ts": "2026-09-01T20:08:00Z", "event": "iterate", "reason": "restart", "restart_count": 3, "wrapper_pid": 1358421, "detail": "session=S-2026-0813-2305 tokens=285377"}
+{"ts": "2026-09-01T20:10:14Z", "event": "iterate", "reason": "restart", "restart_count": 4, "wrapper_pid": 1358421, "detail": "session=S-2026-0813-2305 tokens=297644"}

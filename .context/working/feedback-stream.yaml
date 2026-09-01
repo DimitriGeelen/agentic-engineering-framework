@@ -38619,3 +38619,75 @@ scan_id: R-fbd76c36
 task_id: T-3225
 payload:
   task_file: .tasks/active/T-3225-fw-continuous-armdisarmstatus--the-loop-.md
+---
+kind: scan_emitted
+timestamp: '2026-08-31T20:34:02Z'
+scan_id: R-130e8140
+task_id: T-3226
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-08-31T20:34:02Z'
+scan_id: R-130e8140
+task_id: T-3226
+payload:
+  task_file: .tasks/active/T-3226-fw-doctor-reports-a-spurious-fail-on-any.md
+---
+kind: scan_emitted
+timestamp: '2026-09-01T05:24:12Z'
+scan_id: R-3645a3bd
+task_id: T-3227
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-01T05:24:12Z'
+scan_id: R-3645a3bd
+task_id: T-3227
+payload:
+  task_file: .tasks/active/T-3227-arc-012-continuous-run-multi-agent-code-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-01T10:36:53Z'
+scan_id: R-149245bd
+task_id: T-3243
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-01T10:36:53Z'
+scan_id: R-149245bd
+task_id: T-3243
+payload:
+  task_file: .tasks/active/T-3243-claude-fw-supervisor-dies-on-healthy-run.md
+---
+kind: scan_emitted
+timestamp: '2026-09-01T12:21:52Z'
+scan_id: R-24ec7eef
+task_id: T-3239
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-01T12:21:52Z'
+scan_id: R-24ec7eef
+task_id: T-3239
+payload:
+  task_file: .tasks/active/T-3239-arc-012-headline-mechanic-demo--wire-lev.md

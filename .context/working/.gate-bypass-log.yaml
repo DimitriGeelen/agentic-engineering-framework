@@ -7751,3 +7751,35 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-3232: file C3 — the P-011 gate reads ext
   caller: 'check-active-task focus-drift'
   target: 'T-3232'
   command: 'cd /opt/999-Agentic-Engineering-Framework; git add -A .tasks/ .context/ docs/generated/ 2>/dev/null; FW_SWITCH_FOCUS=1 git commit -q -m "T-3232: close — C3 landed, all three arc-012 criticals now sh'
+- timestamp: '2026-09-01T05:25:39Z'
+  task: 'T-3236'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3227'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "T-3227: close — arc-012 multi-agent review, 70 findings, 3 criticals all landed
+
+5 TermLink workers over the 43-file slice, disjoint assignments, all exit 0.
+7/7 '
+- timestamp: '2026-09-01T05:26:53Z'
+  task: 'T-3236'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3227'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .context/episodic/T-3226.yaml .context/episodic/T-3227.yaml && FW_SWITCH_FOCUS=1 git commit -q -m "T-3227: episodic footprint refresh from the close c'
+- timestamp: '2026-09-01T10:24:19Z'
+  task: 'T-3244'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3243'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 bin/fw context focus T-3243 2>&1 | tail -2
+git add .tasks/active/T-3244-*.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-3243: file T-3244 — '
+- timestamp: '2026-09-01T12:23:40Z'
+  task: 'T-3236'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3239'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .tasks/completed/T-3239-arc-012-headline-mechanic-demo--wire-lev.md .context/episodic/T-3239.yaml
+FW_SWITCH_FOCUS=1 git commit -q -m'
