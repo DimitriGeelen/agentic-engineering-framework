@@ -2,7 +2,8 @@
 
 **Task:** T-3239 · **Arc:** continuous-run (arc-012) · **Date:** 2026-09-01
 **Artefacts:** `evidence/` (raw logs and transcripts, re-readable without re-running)
-**Harnesses:** `brake-truth-table.sh`, `live-fire-m1.sh`, `budget-selftrigger.sh`, `resume-injection.sh`
+**Harnesses:** `brake-truth-table.sh`, `live-fire-m1.sh`, `budget-selftrigger.sh`, `resume-injection.sh`,
+`livefire-m2-termlink.sh`, `arc-focus-crossing.sh`, `livefire-budget-trip.sh`, `livefire-budget-restart.sh`
 
 The arc's `headline_mechanic` reads:
 
@@ -45,9 +46,14 @@ L-652 already warned these "look like one in the ledger". Every claim below name
 | exit → wrapper relaunches a REAL claude | M2 | **PROVEN — live fire** | E5 |
 | arc focus survives a restart | M2 | **PROVEN** (4/4) | E6 |
 | iteration + tier ceiling survive a restart | M2 | **PROVEN** (4/4) | E6 |
-| budget threshold → restart, on a real session | M2 | **NOT PROVEN** | — |
+| budget threshold → restart, on a real session | M2 | **PROVEN** (6/6, 3/3 runs) | E8 |
+| …on a session shorter than the gauge's own dials | M2 | **DISPROVEN** | E7, E8 |
 
-Two links remain unproven, and they are named as such rather than assumed from the links either side of them. That is the whole discipline this arc exists to enforce.
+Every link is now measured. The last one to fall was the headline mechanic itself
+(E8); the row beneath it is the honest qualifier — the trip fires, but only on a
+session long enough for the gauge's own dials to let it look. Nothing here is
+assumed from the links either side of it, which is the whole discipline this arc
+exists to enforce.
 
 ---
 
@@ -200,16 +206,126 @@ finding was filed. That is now twice in this report (E4's expiry counter, this) 
 both times, because manufacturing defects out of a demo's own assumptions is the failure
 mode a demo is most prone to.
 
+## E7 — the same trip on a real session: NOT fired (the honest negative)
+
+E7 is E8's control, and it failed. Dial `FW_CONTEXT_WINDOW` to 4000, run a real
+session that certainly burns more than 3800 tokens, and the gauge still reads
+`{"level":"ok","tokens":0}`. No signal, no restart.
+
+It is kept, unedited, because the reason it failed is the finding. A reader who
+saw only E8 would conclude the budget trip fires on real sessions. It fires on
+real sessions **that run long enough for the gauge to look at them**, and E7 is
+what that distinction looks like from the outside: indistinguishable from a
+healthy session, which is the same false-green family as E3-B.
+
+Harness: `livefire-budget-trip.sh` · evidence: `evidence/E7-livefire-budget-trip.txt`
+
+## E8 — the headline mechanic, live and positive (6/6, three consecutive runs)
+
+The link every earlier section named as unproven. Real `claude` 2.1.245 under real
+`bin/claude-fw`, real `fw init` sandbox, real hooks. The wrapper's own stdout:
+
+```
+claude-fw: budget-critical signal detected — ending claude to trigger auto-restart.
+
+claude-fw: Auto-restart #1 (session: S-2026-0901-1202, tokens: 52655)
+  Directive: Continue the demo arc. Reply with exactly: BEACON-E8
+  Restart mode: fresh (new session, seeded from the handover)
+  Handover committed. Continuing in 3 seconds...
+```
+
+and the ledger entry that survives the restart:
+
+```
+{"event": "iterate", "reason": "restart", "restart_count": 1,
+ "detail": "session=S-2026-0901-1202 tokens=52655"}
+```
+
+Threshold crossed → signal written by `budget-gate` → handover generated **and
+committed** → session restarted → directive re-injected → counter advanced. That
+is M2 end to end, on the wire. Reproduced 3/3 at 52805 / 52805 / 52804 tokens, so
+it is a property of the loop and not a lucky run.
+
+### Four blockers stand between a short session and the gauge
+
+None of them is a defect. Each is legitimate production tuning, and the
+*composition* is the finding — with any one left at its default, a short session
+cannot trip the gauge at all.
+
+| # | blocker | why it exists | how E8 clears it |
+|---|---|---|---|
+| 1 | `FW_CONTEXT_WINDOW` 300000 | the budget cap is a policy dial | 4000 → critical at 3800 |
+| 2 | `FW_BUDGET_STATUS_MAX_AGE` 90 | `post-compact-resume.sh:82-90` seeds `ok/0` at SessionStart (T-1087) so the slow path cannot misread a resumed JSONL's pre-compact tail; `budget-gate.sh:247` serves that seed for 90s **without opening the transcript** | 1 |
+| 3 | `FW_BUDGET_RECHECK_INTERVAL` 5 | the transcript read costs ~30ms, so the gate measures only on calls 1, 6, 11… | 1 |
+| 4 | the Tier-1 task gate | a fresh `fw init` sandbox has `current_task: null`, so `check-active-task.sh` refuses the very Bash calls whose tokens the measurement needs | `fw work-on`, **not** `FW_SAFE_MODE` |
+
+Blocker 2 is why E7 failed, and it is worth stating plainly: **E7's session was
+blind by construction for its entire ~32-second life.** No amount of token volume
+could have tripped it. The FAIL was a property of the harness, not of the loop.
+
+Blocker 4 was fixed by giving the sandbox a real task rather than by disabling the
+gate. A sandbox that needs the framework's own governance switched off to reach
+the gauge is no longer measuring the framework.
+
+### Three harness defects, recorded rather than quietly fixed
+
+Every one of these looked exactly like the mechanism failing. This is now the
+fifth and sixth and seventh time this report has had to separate "the thing is
+broken" from "my instrument is broken", after E4's expiry expectation, E5's
+host-wide `pgrep`, and E6's cold-start assumption.
+
+1. **Post-run state used to prove an intra-run event.** The assertions read
+   `.budget-status` and `.budget-gate-counter` *after* the run. Both describe the
+   session that came back: the resumed session re-measures the gauge, and the
+   counter is cleared as a volatile file at SessionStart. So the run that proved
+   the mechanism reported `level=ok` and `invocations=1` and scored itself 2/6.
+   Now read from the loop ledger and the wrapper's stdout, which survive a restart.
+2. **`grep -c … || echo 0`.** `grep -c` prints `0` *and* exits 1 on no-match, so
+   the fallback appended a second `0` and the assertion compared `"0\n0"` as an
+   integer. Counted with `awk` instead.
+3. **Forcing tool USE is not forcing tool TURNS.** v1 of the prompt ended "reply
+   with exactly BEACON-E8", which the model satisfied on some runs with zero Bash
+   calls. v2 used four unguessable nonces; the model ran all four (4/4 echoed
+   back) but **batched them into one assistant turn** — and one turn is one usage
+   entry, below the two `lib/context_tokens.py:97` requires before it will trust a
+   count. v3 chains the files so each names the next, which cannot be batched or
+   guessed, so every link is its own turn, its own usage entry, its own gate call.
+
+Harness: `livefire-budget-restart.sh` · evidence: `evidence/E8-livefire-budget-restart.txt`
+
 ## What is NOT proven, stated plainly
 
-1. **The handover → `claude -c` restart leg (M2 links 2-3).** `.restart-requested` is written; that a supervised wrapper then consumes it and restarts was not exercised end to end.
-2. **Arc focus across a restart.** Not measured. Note that closing a task *clears* focus (T-3236), so a loop that closes a task mid-run enters the next iteration with no focus and the task gate refuses its first write.
-3. **`stop_hook_active` on a longer chain.** Only two stops were observed. Claude Code's own 8-consecutive-block cap was never reached because our guard fires first.
+1. **The budget trip on a session left at stock dials.** E8 moved three of them.
+   The mechanism is proven; the *default configuration's* ability to catch a real
+   overrun before the session ends is not, and blocker 2 makes the first 90
+   seconds of every session structurally unmeasurable.
+2. **`stop_hook_active` on a longer chain.** Only two stops were observed. Claude
+   Code's own 8-consecutive-block cap was never reached because our guard fires
+   first (E2).
+3. **A multi-turn M1 loop.** Not unproven — **disproven**. E2 measured exactly one
+   continuation. See T-3240.
 
-A relevant environmental fact: **this session has `FW_CLAUDE_FW_SUPERVISED` unset.** Per `budget-gate.sh:85-97`, the restart loop only fires under `claude-fw`. So on this host, right now, even a correctly-written signal goes nowhere.
+A relevant environmental fact, unchanged: **this session has
+`FW_CLAUDE_FW_SUPERVISED` unset.** Per `budget-gate.sh:85-97`, the restart loop
+only fires under `claude-fw`. E8's sandbox ran *under* the wrapper, which is why
+it fired there; on this host, right now, a correctly-written signal still goes
+nowhere.
 
 ## Bottom line
 
-The **substrate is sound**: eleven brakes fire correctly, the resume end advances and re-injects, the trigger fires when it can measure. The **headline mechanic is not demonstrated**: "multi-cycle continuous session" is two turns via M1, and M2's trigger is silently disabled whenever its gauge cannot scope the transcript.
+The **substrate is sound**: eleven brakes fire correctly, the resume end advances
+and re-injects, the arc and tier ceiling cross the restart boundary, and — E8 —
+the budget trip drives a real handover-and-restart on a real session, reproducibly.
 
-Per §ACD, substrate is not the deliverable. **arc-012 should stay OPEN.** The two decisions it now waits on are T-3240 (should a session drive more than one turn, and bounded by what) and T-3241 (make "unmeasurable" distinguishable from "fine").
+The **headline mechanic is now demonstrated for M2** and remains **not
+demonstrated for M1**: "multi-cycle continuous session" is one continuation per
+session, because `stop_hook_active` is checked ahead of every cap we own (E2).
+The arc's sentence bundles the two, so it is half-shipped, and the half that
+ships does so only when the gauge's dials let it look (E7).
+
+Per §ACD, substrate is not the deliverable — but M2's deliverable is now on the
+wire, in `evidence/E8-livefire-budget-restart.txt`, which is what `fw arc close`
+gates on. **arc-012 should stay OPEN**, on M1 rather than on M2. The two decisions
+it waits on are unchanged: T-3240 (should a session drive more than one turn, and
+bounded by what) and T-3241 (make "unmeasurable" distinguishable from "fine") —
+and E7 is now a second, live reproduction of exactly the T-3241 class.

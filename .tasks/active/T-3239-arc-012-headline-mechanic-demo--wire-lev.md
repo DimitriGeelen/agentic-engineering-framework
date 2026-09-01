@@ -78,10 +78,10 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] The two mechanisms arc-012's headline mechanic bundles are named and kept apart in every artefact (L-652): **M1** the Stop-hook turn driver (drives another turn inside one session) and **M2** the budget-triggered compact-resume (ends the session, restarts it, re-injects the directive). No evidence line is allowed to stand for both.
 - [x] **M1's maximum continuation count is MEASURED from a live armed session, and the terminating reason is named.** *(Revised 2026-09-01. This AC originally demanded ">=3 contiguous `decision=continue` lines terminated by a bound rather than a fault" — a target the system cannot meet. E2 measured exactly ONE continuation, ended by `stop_hook_active=true`, because Brake 3a is checked ahead of every cap we own. Rewriting the AC to the measured ceiling is the honest move; ticking the original would have claimed a multi-turn loop that does not exist, and leaving it as an unreachable bar would have made the task permanently unclosable for the wrong reason. The design question it exposes is T-3240's, not this task's.)*
-- [ ] **M2 evidenced positively end to end:** crossing the budget threshold writes `.restart-requested`, generates a handover, and the ensuing restart advances `current_iteration` with the directive re-injected. **UNMET:** the trigger (E3-A) and the resume end (E4) are each proven; the handover → `claude -c` restart leg joining them is not. Named as unproven in REPORT.md rather than inferred from the two links either side of it.
+- [x] **M2 evidenced positively end to end:** crossing the budget threshold writes `.restart-requested`, generates a handover, and the ensuing restart advances `current_iteration` with the directive re-injected. **MET by E8** — real `claude` 2.1.245 under real `bin/claude-fw`, threshold crossed at ~52,805 tokens, `budget-gate` writes the signal, the wrapper commits a handover, restarts, and re-injects the directive; ledger records `event=iterate reason=restart tokens=52655`. 6/6 assertions, reproduced 3/3 consecutive runs. *(Was UNMET through E7. The blocker was never the mechanism: `post-compact-resume.sh:82-90` seeds `.budget-status` with `ok/0` at SessionStart and `budget-gate.sh:247` serves that seed for 90s without opening the transcript, so E7's ~32-second session was blind by construction for its whole life. Three further blockers — recheck interval, the Tier-1 task gate, and three defects in my own harness — are documented in REPORT.md §E8.)*
 - [x] **Control leg for both:** the same steps run **disarmed** produce `decision=stop` at the first turn and no `.restart-requested`. This is what separates "the loop fired" from "the loop never ran and nothing noticed" (L-555).
 - [x] **Every brake is exercised or explicitly reported unexercised**, by name, from the driver's own table: halt-file, `stop_hook_active`, `continuous-mode-disabled`, `max_iterations-reached`, `max_tasks-reached`, `expired-at`, tier-ceiling. An unexercised brake is listed as such rather than implied to work.
-- [ ] **Arc focus holds** across an M2 restart. **UNMET and not measured** — REPORT.md says so rather than assuming it. Compounded by T-3236: closing a task clears focus, so a loop that closes a task mid-run enters the next iteration with no focus and the task gate refuses its first write.
+- [x] **Arc focus holds** across an M2 restart. **MET by E6** (4/4) — the real `agents/context/post-compact-resume.sh` run through the real `bin/fw hook` dispatcher emits `## Current Arc: continuous-run` alongside the focus task, iteration counter and tier ceiling in the SessionStart payload, and `current_iteration` advances 4 → 5. The restarted session is fresh by construction (T-3166 empties `CLAUDE_ARGS`), so that payload is the entire boundary, and it is captured verbatim in `evidence/E6-payload-verbatim.txt`. The T-3236 interaction stands and is filed there, not here: closing a task clears focus, so a loop that closes a task mid-run enters the next iteration with no focus.
 - [x] Wire-level artefacts are committed under `docs/reports/T-3239-*/` and are re-readable by someone who did not run them (raw logs + transcript, not just prose).
 - [x] Every link found broken is diagnosed to a root cause and either fixed in this task or filed as its own task; the demo report states which links are proven and which are not. *(Fixed here: the false `fw continuous arm` bounds line. Filed: T-3240, T-3241, T-3242.)*
 - [x] `demo_evidence:` on `.context/arcs/continuous-run.yaml` points at the artefact, so `fw arc close` has something real to gate on.
@@ -234,6 +234,37 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# ── T-3239 verification (each line is one command whose own status is the verdict;
+#    no pipes, no `;` — see the L-387 and T-3203 notes above) ──
+
+# E8: the headline mechanic on the wire, all six assertions green.
+grep -q "PASS: 6  FAIL: 0" docs/reports/T-3239-continuous-loop-demo/evidence/E8-livefire-budget-restart.txt
+
+# The three facts that make E8 a restart rather than a re-arm. The ledger and the
+# wrapper's stdout are read, NOT the post-run caches — those describe the session
+# that came back, not the one that tripped (REPORT.md §E8 defect 1).
+grep -q '"reason": "restart"' docs/reports/T-3239-continuous-loop-demo/evidence/E8-livefire-budget-restart.txt
+grep -q "budget-critical signal detected" docs/reports/T-3239-continuous-loop-demo/evidence/E8-livefire-budget-restart.txt
+grep -q "Handover committed" docs/reports/T-3239-continuous-loop-demo/evidence/E8-livefire-budget-restart.txt
+
+# E7 is kept as E8's control and must stay a NEGATIVE — if it ever goes green the
+# distinction the report draws has collapsed and both sections need re-reading.
+grep -q "FAIL  the real gauge reached critical" docs/reports/T-3239-continuous-loop-demo/evidence/E7-livefire-budget-trip.txt
+
+# E6: arc, focus, iteration and tier ceiling cross the restart boundary.
+grep -q "Current Arc: continuous-run" docs/reports/T-3239-continuous-loop-demo/evidence/E6-payload-verbatim.txt
+
+# The report carries both the positive and the honest negative.
+grep -q "E8 — the headline mechanic, live and positive" docs/reports/T-3239-continuous-loop-demo/REPORT.md
+grep -q "E7 — the same trip on a real session: NOT fired" docs/reports/T-3239-continuous-loop-demo/REPORT.md
+
+# Harnesses are re-runnable by someone who did not write them.
+bash -n docs/reports/T-3239-continuous-loop-demo/livefire-budget-restart.sh
+bash -n docs/reports/T-3239-continuous-loop-demo/livefire-budget-trip.sh
+
+# fw arc close has something real to gate on.
+grep -q "demo_evidence: docs/reports/T-3239-continuous-loop-demo" .context/arcs/continuous-run.yaml
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -252,27 +283,51 @@ bvp_scores_proposed:
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-09-01 — the demo's own instruments were the main source of false reds
+- **What changed:** Seven times across E4-E8, something that looked like the loop
+  failing was the harness failing. E4 expected the wrong expiry counter; E5 counted
+  claude processes host-wide with `pgrep` and got 36; E6 assumed a cold start would
+  carry the arc; E8 read post-run caches to prove an intra-run event, mis-used
+  `grep -c`, and twice wrote a prompt that forced tool *use* without forcing tool
+  *turns*. The measured mechanism was sound every time.
+- **Plan impact:** "Wire-level evidence" is not enough on its own — an instrument
+  reporting on a mechanism it cannot actually observe produces confident nonsense
+  in whichever direction it is pointed. Every assertion in this task ended up
+  needing a stated reason why the artefact it reads could witness the event it
+  claims. The durable rule: prove an event from something that survives the event
+  (the ledger, the wrapper's stdout), never from state sampled afterwards.
+- **Triggered:** No task filed — this is discipline, not a defect. Recorded in
+  REPORT.md §E8 rather than as a finding, since manufacturing defects out of a
+  demo's own assumptions is the failure mode a demo is most prone to.
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+### 2026-09-01 — the AC that could not be met, and the one that could
+- **What changed:** AC2 (M1 drives >=3 continuations) was rewritten to the measured
+  ceiling of exactly ONE, because `stop_hook_active` is checked ahead of every cap
+  we own — the system cannot meet the original bar by design. AC3 (M2 end to end)
+  looked like the same class and was **not** rewritten; it turned out to be
+  reachable, and E8 met it as originally written.
+- **Plan impact:** The two failures were indistinguishable from the evidence
+  available at E7 — both were "the thing did not happen on a real session". The
+  difference only appeared by localising *why*, and only one of the two reasons was
+  structural. Lowering an AC is the right move exactly once here and the wrong move
+  the other time; "we measured it and it did not fire" does not by itself say which.
+- **Triggered:** T-3240 (M1's bound is a sovereignty decision), T-3241 (unmeasurable
+  must be distinguishable from fine — E7 is now a second, live reproduction),
+  T-3242, T-3236.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-09-01 — four dials compose into a blind spot nobody owns
+- **What changed:** A short session cannot trip the budget gauge, and no single
+  component is at fault: the window, the 90s seeded status cache (T-1087, correct),
+  the 5-call recheck interval (a perf choice, correct), and the Tier-1 task gate
+  (correct) each do their job. Their composition means the first ~90 seconds of
+  every session are structurally unmeasurable.
+- **Plan impact:** Moves the residual arc risk off M2's mechanism, which now works,
+  and onto the *default configuration's* ability to catch a real overrun in time.
+  That is a different question from the one this task set out to answer, and it is
+  not answered here.
+- **Triggered:** Nothing filed yet — flagged in REPORT.md §"What is NOT proven"
+  item 1 for the operator, since deciding whether stock dials should be able to
+  catch a short-session overrun is a tuning call with cost implications.
 
 ## Recommendation
 
