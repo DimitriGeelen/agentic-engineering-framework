@@ -1,10 +1,10 @@
 T-3246 / arc-012 E9 - does the loop DO WORK across a restart?
-generated:  2026-09-01T20:37:00Z
-repo sha:   8454a4600
+generated:  2026-09-01T20:43:11Z
+repo sha:   b662ddcdd
 claude:     2.1.245 (Claude Code)
-sandbox:    /tmp/tmp.lt966NuqnV/proj   (real fw init)
+sandbox:    /tmp/tmp.1zIiSjvvzC/proj   (real fw init)
 hooks:      PostToolUse=7 PreCompact=1 PreToolUse=9 SessionStart=3
-backlog:    5 E9 tasks in .tasks/active/ (matched by name, not counted)
+backlog:    12 E9 tasks in .tasks/active/ (matched by name, not counted)
 dials:      FW_CONTEXT_WINDOW=72000 (critical 68400), CACHE_AGE=1, RECHECK=1
 policy:     MAX_RESTARTS=4, max_iterations=8, tier_ceiling=1
 armed:      1
@@ -12,44 +12,44 @@ armed:      1
 directive:  Work the backlog in .tasks/active/ one task at a time. For each task: run './.agentic-framework/bin/fw work-on <ID>', create the file its acceptance criterion names with exactly the content it specifies, tick that AC from '- [ ]' to '- [x]' in the task file, then close it with './.agentic-framework/bin/fw task update <ID> --status work-completed'. Then move to the next task. Do not stop until every task is closed.
 
 ----- wrapper transcript (tail) -----
-|------|--------------|---------|-----|--------|
-| T-006 | `item1.txt` | `done1` | ticked | work-completed |
-| T-007 | `item2.txt` | `done2` | ticked | work-completed |
-| T-008 | `item3.txt` | `done3` | ticked | work-completed |
-| T-009 | `item4.txt` | `done4` | ticked | work-completed |
-| T-010 | `item5.txt` | `done5` | ticked | work-completed |
 
-Each task's `## Verification` section contained `grep -qx 'doneN' itemN.txt`, and the P-011 completion gate ran and passed those commands during each `work-completed` transition — so the content is confirmed by the framework's own gate, not just by my write. Each file is written with a trailing newline (a single `doneN` line), which is what `grep -qx` matches.
+  Headless restart: directive passed as the prompt.
 
-The work is uncommitted — the files, the modified task files, and the auto-generated episodic YAMLs in `.context/episodic/` are all sitting in the working tree. Your instructions didn't mention committing, so I stopped short of that. Say the word if you want it committed.
+claude-fw: budget-critical signal detected — ending claude to trigger auto-restart.
 
-claude-fw: Re-arm #1 — claude exited (code 0) with no restart signal,
+claude-fw: Auto-restart #2 (session: S-2026-0901-2041, tokens: 70134)
+  Directive: Work the backlog in .tasks/active/ one task at a time. For each task: run './.agentic-framework/bin/fw work-on <ID>', create the file its acceptance criterion names with exactly the content it specifies, tick that AC from '- [ ]' to '- [x]' in the task file, then close it with './.agentic-framework/bin/fw task update <ID> --status work-completed'. Then move to the next task. Do not stop until every task is closed.
+  Restart mode: fresh (new session, seeded from the handover)
+  Handover committed. Continuing in 3 seconds...
+  Press Ctrl+C to cancel.
+
+  Headless restart: directive passed as the prompt.
+
+claude-fw: budget-critical signal detected — ending claude to trigger auto-restart.
+
+claude-fw: Auto-restart #3 (session: S-2026-0901-2041, tokens: 74354)
+  Directive: Work the backlog in .tasks/active/ one task at a time. For each task: run './.agentic-framework/bin/fw work-on <ID>', create the file its acceptance criterion names with exactly the content it specifies, tick that AC from '- [ ]' to '- [x]' in the task file, then close it with './.agentic-framework/bin/fw task update <ID> --status work-completed'. Then move to the next task. Do not stop until every task is closed.
+  Restart mode: fresh (new session, seeded from the handover)
+  Handover committed. Continuing in 3 seconds...
+  Press Ctrl+C to cancel.
+
+  Headless restart: directive passed as the prompt.
+The backlog is already empty — there is nothing left to work.
+
+**State verified:**
+
+- `.tasks/active/` contains **zero** task files; `fw task list` reports "No active tasks", 13 completed.
+- All 12 E9 backlog tasks (T-006 … T-017) are in `.tasks/completed/`, plus T-018 (session handover maintenance), which was moved to completed in the uncommitted working tree.
+- Each task's deliverable exists at the project root with exactly the specified content: `item1.txt`…`item12.txt` containing `done1`…`done12` respectively (verified by reading all 12 files).
+- The acceptance criteria are ticked — spot-checked the first and last: T-006 `- [x] item1.txt exists at the project root containing exactly done1`, T-017 `- [x] item12.txt exists at the project root containing exactly done12`.
+
+So the loop you described has already run to completion in prior sessions. I did not run `fw work-on` or `fw task update` on anything, since re-opening closed tasks to re-close them would be churn, not work.
+
+One thing worth flagging: there are uncommitted changes in the tree, including the T-018 rename into `completed/` and two untracked handover discard manifests. That's session bookkeeping rather than backlog work, but it means the completed state of T-018 isn't yet in a commit. Want me to commit it, or leave it for the handover flow to pick up?
+
+claude-fw: Re-arm #4 — claude exited (code 0) with no restart signal,
   and a continuous run is armed. Relaunching in 5 seconds.
-  To stop the run:   touch /tmp/tmp.lt966NuqnV/proj/.context/working/.continuous-halt
-  Or disarm it:      fw continuous disarm
-  Or just press Ctrl+C.
-
-Error: Input must be provided either through stdin or as a prompt argument when using --print
-
-claude-fw: Re-arm #2 — claude exited (code 1) with no restart signal,
-  and a continuous run is armed. Relaunching in 5 seconds.
-  To stop the run:   touch /tmp/tmp.lt966NuqnV/proj/.context/working/.continuous-halt
-  Or disarm it:      fw continuous disarm
-  Or just press Ctrl+C.
-
-Error: Input must be provided either through stdin or as a prompt argument when using --print
-
-claude-fw: Re-arm #3 — claude exited (code 1) with no restart signal,
-  and a continuous run is armed. Relaunching in 5 seconds.
-  To stop the run:   touch /tmp/tmp.lt966NuqnV/proj/.context/working/.continuous-halt
-  Or disarm it:      fw continuous disarm
-  Or just press Ctrl+C.
-
-Error: Input must be provided either through stdin or as a prompt argument when using --print
-
-claude-fw: Re-arm #4 — claude exited (code 1) with no restart signal,
-  and a continuous run is armed. Relaunching in 5 seconds.
-  To stop the run:   touch /tmp/tmp.lt966NuqnV/proj/.context/working/.continuous-halt
+  To stop the run:   touch /tmp/tmp.1zIiSjvvzC/proj/.context/working/.continuous-halt
   Or disarm it:      fw continuous disarm
   Or just press Ctrl+C.
 
@@ -59,47 +59,99 @@ claude-fw: Continuous run is armed, but the restart budget is exhausted
   (4/4 within the last 3600s). Stopping.
 
 ----- loop event ledger -----
-{"ts": "2026-09-01T20:37:00Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 1007840, "detail": "restart=enabled max_restarts=4 window=3600s armed=yes termlink=0"}
-{"ts": "2026-09-01T20:39:19Z", "event": "iterate", "reason": "rearm", "restart_count": 1, "wrapper_pid": 1007840, "detail": "clean exit (code=0) with no signal; continuous run armed; budget 1/4 in 3600s"}
-{"ts": "2026-09-01T20:39:30Z", "event": "iterate", "reason": "rearm", "restart_count": 2, "wrapper_pid": 1007840, "detail": "clean exit (code=1) with no signal; continuous run armed; budget 2/4 in 3600s"}
-{"ts": "2026-09-01T20:39:42Z", "event": "iterate", "reason": "rearm", "restart_count": 3, "wrapper_pid": 1007840, "detail": "clean exit (code=1) with no signal; continuous run armed; budget 3/4 in 3600s"}
-{"ts": "2026-09-01T20:39:53Z", "event": "iterate", "reason": "rearm", "restart_count": 4, "wrapper_pid": 1007840, "detail": "clean exit (code=1) with no signal; continuous run armed; budget 4/4 in 3600s"}
-{"ts": "2026-09-01T20:40:05Z", "event": "exit", "reason": "max-restarts", "restart_count": 4, "wrapper_pid": 1007840, "detail": "re-arm refused: 4 restarts within 3600s window >= MAX_RESTARTS=4", "exit_code": 1}
+{"ts": "2026-09-01T20:43:11Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 1276033, "detail": "restart=enabled max_restarts=4 window=3600s armed=yes termlink=0"}
+{"ts": "2026-09-01T20:44:57Z", "event": "iterate", "reason": "restart", "restart_count": 1, "wrapper_pid": 1276033, "detail": "session=S-2026-0901-2041 tokens=69246"}
+{"ts": "2026-09-01T20:46:51Z", "event": "iterate", "reason": "restart", "restart_count": 2, "wrapper_pid": 1276033, "detail": "session=S-2026-0901-2041 tokens=70134"}
+{"ts": "2026-09-01T20:49:20Z", "event": "iterate", "reason": "restart", "restart_count": 3, "wrapper_pid": 1276033, "detail": "session=S-2026-0901-2041 tokens=74354"}
+{"ts": "2026-09-01T20:50:11Z", "event": "iterate", "reason": "rearm", "restart_count": 4, "wrapper_pid": 1276033, "detail": "clean exit (code=0) with no signal; continuous run armed; budget 4/4 in 3600s"}
+{"ts": "2026-09-01T20:50:23Z", "event": "exit", "reason": "max-restarts", "restart_count": 4, "wrapper_pid": 1276033, "detail": "re-arm refused: 4 restarts within 3600s window >= MAX_RESTARTS=4", "exit_code": 1}
 
 ----- backlog outcome (the join that matters) -----
 {
-  "restarts": [],
+  "restarts": [
+    "2026-09-01T20:44:57Z",
+    "2026-09-01T20:46:51Z",
+    "2026-09-01T20:49:20Z"
+  ],
   "closed": [
     [
       "T-006",
-      "2026-09-01T20:37:42Z"
+      "2026-09-01T20:43:48Z"
     ],
     [
       "T-007",
-      "2026-09-01T20:38:03Z"
+      "2026-09-01T20:44:03Z"
     ],
     [
       "T-008",
-      "2026-09-01T20:38:23Z"
+      "2026-09-01T20:44:16Z"
     ],
     [
       "T-009",
-      "2026-09-01T20:38:43Z"
+      "2026-09-01T20:44:30Z"
     ],
     [
       "T-010",
-      "2026-09-01T20:39:03Z"
+      "2026-09-01T20:44:43Z"
+    ],
+    [
+      "T-011",
+      "2026-09-01T20:45:26Z"
+    ],
+    [
+      "T-012",
+      "2026-09-01T20:45:42Z"
+    ],
+    [
+      "T-013",
+      "2026-09-01T20:46:01Z"
+    ],
+    [
+      "T-014",
+      "2026-09-01T20:46:15Z"
+    ],
+    [
+      "T-015",
+      "2026-09-01T20:46:30Z"
+    ],
+    [
+      "T-016",
+      "2026-09-01T20:46:44Z"
+    ],
+    [
+      "T-017",
+      "2026-09-01T20:47:31Z"
     ]
   ],
-  "closed_ignored_non_e9": [],
-  "closed_after_first_restart": [],
+  "closed_ignored_non_e9": [
+    [
+      "T-018",
+      "2026-09-01T20:49:18Z"
+    ]
+  ],
+  "closed_after_first_restart": [
+    "T-011",
+    "T-012",
+    "T-013",
+    "T-014",
+    "T-015",
+    "T-016",
+    "T-017"
+  ],
   "still_active": 0,
   "artefacts": [
     "item1.txt",
+    "item10.txt",
+    "item11.txt",
+    "item12.txt",
     "item2.txt",
     "item3.txt",
     "item4.txt",
-    "item5.txt"
+    "item5.txt",
+    "item6.txt",
+    "item7.txt",
+    "item8.txt",
+    "item9.txt"
   ],
   "artefacts_wrong_content": []
 }
@@ -110,16 +162,23 @@ max_iterations: 8
 tier_ceiling: 1
 expires_after_seconds: 86400
 current_iteration: 4
-tasks_completed: 5
+tasks_completed: 12
 max_tasks: null
 last_terminated_reason: ''
-last_resumed_at: '2026-09-01T20:40:04Z'
+last_resumed_at: '2026-09-01T20:50:22Z'
 completed_task_ids:
 - T-006
 - T-007
 - T-008
 - T-009
 - T-010
+- T-011
+- T-012
+- T-013
+- T-014
+- T-015
+- T-016
+- T-017
 last_directive_seen: 'Work the backlog in .tasks/active/ one task at a time. For each
   task: run ''./.agentic-framework/bin/fw work-on <ID>'', create the file its acceptance
   criterion names with exactly the content it specifi'
@@ -128,9 +187,9 @@ last_source: startup
 wrapper exit code: 1
 
 ----- assertions -----
-  FAIL  the budget trip produced a real restart  iterate/restart events = 0
-  PASS  the loop closed at least two real tasks  E9 tasks in completed/ = 5
-  FAIL  WORK CONTINUED ACROSS THE RESTART (the deliverable)  tasks closed after first restart = 0
-  PASS  the closes were real work, not bookkeeping  artefacts with CORRECT content = 5 (wrong = 0)
+  PASS  the budget trip produced a real restart  iterate/restart events = 3
+  PASS  the loop closed at least two real tasks  E9 tasks in completed/ = 12
+  PASS  WORK CONTINUED ACROSS THE RESTART (the deliverable)  tasks closed after first restart = 7
+  PASS  the closes were real work, not bookkeeping  artefacts with CORRECT content = 12 (wrong = 0)
 
-PASS: 2  FAIL: 2
+PASS: 4  FAIL: 0

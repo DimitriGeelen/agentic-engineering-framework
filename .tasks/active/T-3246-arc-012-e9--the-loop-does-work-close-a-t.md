@@ -175,16 +175,71 @@ live run — `KEEP_SANDBOX=1` accumulates sandboxes under `/tmp/tmp.*/proj` and 
 `head -1` glob returns the **oldest**. Caught from the ledger timestamps; the
 harness header now warns about it.
 
+### Run 4 (2026-09-01 20:41-20:49) — 4/4. The loop closes a task, trips, restarts, closes another.
+
+`evidence/E9-loop-does-work.txt`. Dials `FW_CONTEXT_WINDOW=72000` (critical
+68400), `N_BACKLOG=12`, `MAX_RESTARTS=4`. Backlog asserted by name at setup:
+*"backlog OK: 12 E9 tasks, each with a tickable AC and a verification line"*.
+
+| assertion | result | figure |
+|---|---|---|
+| the budget trip produced a real restart | **PASS** | 3 `iterate/restart` events |
+| the loop closed at least two real tasks | **PASS** | 12 E9 tasks in `completed/` |
+| **WORK CONTINUED ACROSS THE RESTART** | **PASS** | **7 tasks closed after the first restart** |
+| the closes were real work, not bookkeeping | **PASS** | 12 artefacts with correct content, 0 wrong |
+
+**The join, mechanically.** Restarts fired at `20:44:57`, `20:46:51`, `20:49:20`,
+each carrying a token count above the 68400 critical (`tokens=69246`, `70134`,
+`74354`). Task `date_finished` values:
+
+- **before** the first restart: T-006 `20:43:48` … T-010 `20:44:43` — five tasks
+- **after** it: T-011 `20:45:26` … T-016 `20:46:44`, then T-017 `20:47:31` — **seven**
+
+Nothing here is read off a transcript or asserted from narrative: the restart
+timestamps come from `continuous-run.jsonl` and the close times from task
+frontmatter, joined by the verdict script. T-018 (a task the loop created for
+itself) was correctly excluded as non-E9.
+
+**The prediction held.** The trip landed after task 5 of 12 — exactly where the
+run-3 measurement (~2926 tokens/task against 15559 of headroom → 5.3 tasks per
+window) said it would. Sizing the backlog from a measured per-task cost, rather
+than nudging a dial, is what turned 2/4 into 4/4.
+
+### What this settles, and what it does not
+
+**Settles (E9's question):** the wrapper-level loop does real, gated work across
+a context boundary. Not the engine turning over — the car moving. Every one of
+the 12 closes passed the P-011 verification gate, and the positive control shows
+a tick alone is refused, so "closed" here means the work was done.
+
+**Does not settle (the arc):** three things stand between this and arc closure,
+and none of them are affected by this result.
+
+1. **It took three non-default dials.** `FW_CONTEXT_WINDOW`, `FW_BUDGET_STATUS_MAX_AGE`
+   and `FW_BUDGET_RECHECK_INTERVAL` were all overridden. On stock settings the
+   trip does not fire on a session this short — that is **T-3241**'s territory,
+   and E7 remains the live negative.
+2. **M1 still caps at one continuation** (**T-3240**): the Stop-hook loop yields
+   to `stop_hook_active` before any of our own caps. The arc's headline sentence
+   bundles M1 and M2; only M2 ships. The arc YAML already records this.
+3. **The headroom ratio is unmeasured** (**T-3248**). This run needed two attempts
+   precisely because nothing reports `WINDOW - BASELINE`. A green result obtained
+   by hand-tuning a ratio the framework cannot see is not a green result the
+   operator can rely on.
+
+Per §Arc Completion Discipline the arc stays **OPEN**, and the demo artefact
+below is offered as evidence for M2 only.
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A live-fire harness drives a real `claude` under real `bin/claude-fw` against a sandbox holding a **real backlog** (tasks created through `fw task create`, each with a tickable AC and a verification line the close gate actually runs) — not a session that merely reads files and exits, which is what every prior arc-012 evidence leg did.
-- [ ] **The budget trip fires mid-backlog and the wrapper restarts** — at least one `event=iterate reason=restart` in `continuous-run.jsonl`, carrying a real token count above the configured critical threshold.
-- [ ] **Work continues across the restart — the deliverable.** At least one task's `date_finished` is later than the first restart event's timestamp, joined mechanically from the task frontmatter and the loop ledger rather than asserted from the transcript. This is the claim the arc's headline mechanic actually makes and the one nothing has yet tested.
-- [ ] **The closes are real work, not bookkeeping** — each closed task's named artefact file exists with the exact required content, so a task cannot be counted as closed by moving a file alone.
-- [ ] The result is reported honestly whichever way it lands, with any blocker localised to a named file and line and either fixed here or filed as its own task. A negative result names the positive control that would have fired (L-653), so "the loop did not work" is never confused with "the harness could not have seen it work".
-- [ ] Evidence committed under `docs/reports/T-3239-continuous-loop-demo/` (raw ledger, task-close join, wrapper transcript) and re-readable by someone who did not run it.
+- [x] A live-fire harness drives a real `claude` under real `bin/claude-fw` against a sandbox holding a **real backlog** (tasks created through `fw task create`, each with a tickable AC and a verification line the close gate actually runs) — not a session that merely reads files and exits, which is what every prior arc-012 evidence leg did.
+- [x] **The budget trip fires mid-backlog and the wrapper restarts** — at least one `event=iterate reason=restart` in `continuous-run.jsonl`, carrying a real token count above the configured critical threshold.
+- [x] **Work continues across the restart — the deliverable.** At least one task's `date_finished` is later than the first restart event's timestamp, joined mechanically from the task frontmatter and the loop ledger rather than asserted from the transcript. This is the claim the arc's headline mechanic actually makes and the one nothing has yet tested.
+- [x] **The closes are real work, not bookkeeping** — each closed task's named artefact file exists with the exact required content, so a task cannot be counted as closed by moving a file alone.
+- [x] The result is reported honestly whichever way it lands, with any blocker localised to a named file and line and either fixed here or filed as its own task. A negative result names the positive control that would have fired (L-653), so "the loop did not work" is never confused with "the harness could not have seen it work".
+- [x] Evidence committed under `docs/reports/T-3239-continuous-loop-demo/` (raw ledger, task-close join, wrapper transcript) and re-readable by someone who did not run it.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -334,6 +389,21 @@ harness header now warns about it.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+
+# E9 landed 4/4 against a real backlog.
+grep -q "PASS: 4  FAIL: 0" docs/reports/T-3239-continuous-loop-demo/evidence/E9-loop-does-work.txt
+# The deliverable assertion specifically — work continued across the restart.
+grep -qE "PASS  WORK CONTINUED ACROSS THE RESTART .* = [1-9]" docs/reports/T-3239-continuous-loop-demo/evidence/E9-loop-does-work.txt
+# Real work, not bookkeeping: artefact content checked, none wrong.
+grep -q "artefacts with CORRECT content = 12 (wrong = 0)" docs/reports/T-3239-continuous-loop-demo/evidence/E9-loop-does-work.txt
+# The rig is only trustworthy because the positive control fires (L-653).
+test -f docs/reports/T-3239-continuous-loop-demo/evidence/E9-positive-control.txt
+grep -q "gate moves in all three directions" docs/reports/T-3239-continuous-loop-demo/evidence/E9-positive-control.txt
+# The calibration that sized the backlog is preserved, not just its conclusion.
+grep -q "MISSED THE TRIP BY" docs/reports/T-3239-continuous-loop-demo/evidence/E9-run3-calibration.txt
+# The harness still parses after the rewrite.
+bash -n docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -376,32 +446,45 @@ harness header now warns about it.
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO — E9 is answered. Do **not** close arc-012 on it.
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale.** The arc's headline mechanic promises the operator a multi-cycle
+continuous session, and the point of a cycle is the work in it. E9 asked the only
+question that tests that, and the answer is now demonstrated rather than asserted:
+the loop closed 12 real tasks through the real verification gate across 3 real
+budget trips, with **7 of them closed after the first restart**, joined
+mechanically from the loop ledger and task frontmatter. Every prior E9 leg
+measured the engine; this one measures the car moving.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+The result is trustworthy in a way the earlier ones were not, and that is the
+substance of this task rather than a footnote. The rig was found to be measuring
+`fw init`'s onboarding curriculum instead of a real backlog — four setup steps
+failing silently — which means the earlier "1 task closed" was an onboarding task
+and no run had ever carried a live verification line. That is fixed, and the fix
+is *proved* by a positive control driving the close gate in all three directions
+(tick-only → refused, wrong content → refused, correct content → closes). Without
+that control this 4/4 would be a number, not evidence.
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
+**Why NOT to close the arc on this.** Three things stand, none touched by this run:
 
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+1. It required three **non-default dials** (`FW_CONTEXT_WINDOW`,
+   `FW_BUDGET_STATUS_MAX_AGE`, `FW_BUDGET_RECHECK_INTERVAL`). On stock settings the
+   trip does not fire — T-3241, with E7 as the live negative.
+2. **M1 still caps at one continuation** (T-3240). The headline sentence bundles
+   M1 and M2; only M2 ships.
+3. The **headroom ratio is unmeasured** (T-3248). This run took two attempts
+   *because* nothing reports `WINDOW - BASELINE`. A green obtained by hand-tuning
+   a ratio the framework cannot see is not a green the operator can rely on.
+
+Per §Arc Completion Discipline, and given the arc's existing default-to-OPEN
+note, the demo artefact below is offered as evidence for **M2 only**.
+
+**Evidence.**
+- `docs/reports/T-3239-continuous-loop-demo/evidence/E9-loop-does-work.txt` — 4/4; ledger, join, wrapper transcript
+- `docs/reports/T-3239-continuous-loop-demo/evidence/E9-positive-control.txt` — the control that makes the above readable as evidence
+- `docs/reports/T-3239-continuous-loop-demo/evidence/E9-run3-calibration.txt` — the 2/4 run and the measurement (~2926 tok/task) that sized the fix
+- Restart events `20:44:57 / 20:46:51 / 20:49:20` at `tokens=69246 / 70134 / 74354`, all above the 68400 critical
+- Closes after the first restart: T-011 … T-017 (7)
 
 ## Decisions
 
