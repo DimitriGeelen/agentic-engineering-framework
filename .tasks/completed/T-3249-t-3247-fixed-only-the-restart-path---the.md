@@ -10,13 +10,13 @@ description: >
   and burns a restart from the budget without taking a turn. Measured 1:1 in arc-012
   E9: run 3 had 4 re-arms and 4 such errors, run 4 had 1 and 1.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 arc_id: continuous-run
-components: []
+components: [bin/claude-fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -29,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T21:08:15Z
-last_update: 2026-09-01T21:31:43Z
-date_finished:
+last_update: 2026-09-01T22:03:22Z
+date_finished: 2026-09-01T22:03:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -147,6 +147,37 @@ ship the contract everywhere the pattern appears, not only where it was hit.
 - [x] A negative control is included: with the fix reverted, the test fails. Without it the test cannot distinguish 'fixed' from 'never exercised' (L-653).
 - [x] Both paths are checked for any further duplicated relaunch sites, so this is closed as a class rather than a second instance.
 
+### Human
+<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
+     Remove this section if all criteria are agent-verifiable.
+     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+
+     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
+     If your Expected clause is grep-able / file-exists / structural (a deterministic
+     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
+     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
+     verification genuinely needs human taste (tone, feel, layout rhythm).
+     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+
+     [REVIEW] example (genuine human judgment):
+       - [ ] [REVIEW] Dashboard renders correctly
+         **Steps:**
+         1. Open https://example.com/dashboard in browser
+         2. Verify all panels load within 2 seconds
+         3. Check browser console for errors
+         **Expected:** All panels visible, no console errors
+         **If not:** Screenshot the broken panel and note the console error
+
+     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
+       - [ ] [REVIEWER] Block message names both bypass mechanisms
+         **Steps:**
+         1. Run `bin/fw reviewer T-XXX`
+         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
+         **If not:** Inspect hook block-message string and add missing mechanism
+       Conversion: this AC should be moved to ### Agent and
+       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
+-->
+
 ## Implementation
 
 `bin/claude-fw`:
@@ -189,44 +220,17 @@ reconstructed wrapper did not parse (asserted, so it went red rather than
 silently proving nothing), then the excision check counted the helper *name*
 instead of the *call*. Both are the same failure the control exists to prevent.
 
-### Not done in this session
+### Deferred at the budget gate, then done
 
-The broader `claude-fw` suites (`t3243_supervisor_restart_policy`,
+The previous session ran out of budget before re-running the broader `claude-fw`
+suites and said so rather than closing on the one suite it had. Those suites have
+now been run: **44/44 green, zero failures** across all six
+(`t3249_rearm_headless_prompt`, `t3243_supervisor_restart_policy`,
 `claude_fw_restart_mode`, `restart_sentinel_ttl`, `claude_fw_router`,
-`claude_fw_copy_not_symlink`) were **not** re-run — the budget gate reached
-critical first. D5 covers the interactive path this change could plausibly
-disturb, but that is reasoning, not a green suite. Run them before closing.
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+`claude_fw_copy_not_symlink`) — run twice, second run captured. D5's reasoning
+about the interactive path is now backed by a green suite rather than standing
+alone, and the cluster is pinned in `## Verification` so the next change to
+either relaunch site has to keep all six honest.
 
 ## Verification
 
@@ -345,45 +349,100 @@ disturb, but that is reasoning, not a green suite. Run them before closing.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# --- T-3249 gate (the whole claude-fw relaunch cluster, not just this task's suite) ---
+# Scoped to the six suites that touch the relaunch decision. Written as a full-cluster
+# run because the defect class is "one relaunch site fixed, its sibling left behind" —
+# a per-file green would reproduce exactly the blindness this task exists to close.
+bats tests/unit/t3249_rearm_headless_prompt.bats tests/unit/t3243_supervisor_restart_policy.bats tests/unit/claude_fw_restart_mode.bats tests/unit/restart_sentinel_ttl.bats tests/unit/claude_fw_router.bats tests/unit/claude_fw_copy_not_symlink.bats > /tmp/.t3249gate.out 2>&1 && grep -q '^1\.\.44$' /tmp/.t3249gate.out && ! grep -q '^not ok' /tmp/.t3249gate.out
+# The 1..44 clause is deliberate: it pins the COUNT, so a suite silently ceasing to
+# run (renamed, skipped, emptied) reddens the gate instead of passing on 0 failures.
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom.** Under headless (`-p`/`--print`), every clean-exit re-arm relaunched
+`claude` with an empty argv. The relaunched process printed *"Input must be provided
+either through stdin or as a prompt argument when using --print"* and exited 1
+immediately — spending one unit of the restart budget without taking a turn. Measured
+1:1 in arc-012 E9: run 3 had 4 re-arms and 4 such errors, run 4 had 1 and 1.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause.** `bin/claude-fw` has two relaunch sites — the budget-critical restart
+(~577) and the clean-exit re-arm (~659) — and each constructs `CLAUDE_ARGS` for
+itself. T-3247 added the `HEADLESS` branch to the first and left the second exactly
+as it was. Nothing shared between them, so nothing carried the fix across.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why the framework allowed it.** Three reasons, and the third is why it survived
+four experiments:
+
+1. **The relaunch decision is enforced at each site rather than asserted as an
+   invariant.** Same class as T-3235 and peer 832's G-008: when the behaviour lives
+   at N sites, a fix at one of them is structurally incapable of reaching the others.
+2. **T-3247's suite tested the path it fixed.** It went fully green with the sibling
+   broken, because a per-path test cannot see a per-class defect. The green was real;
+   it just did not depend on the thing that was wrong.
+3. **The failure direction is benign-looking.** A relaunch that dies in under a second
+   still appends a restart event, so the loop ledger reads *"the loop ran, it restarted
+   4 times"* — which is what E5, E7, E8 and E9 all reported. Nothing anywhere reads
+   *"and took zero turns"*. A false green of the recurring family: the signal that
+   was emitted was not the signal that mattered.
+
+**Prevention.** The regression suite asserts over **every** relaunch site, not the one
+under test: D1 requires each headless relaunch to carry `-p` plus the armed directive,
+and D2 asserts the promptless argv signature appears at **no** relaunch. C1 reconstructs
+the pre-fix wrapper and requires D1 to go red there, so the suite is falsifiable rather
+than tautological. AC 5 audited all eight `CLAUDE_ARGS=` sites to close this as a class
+and confirmed there is no third relaunch point. `## Verification` pins the whole
+six-suite cluster with a `1..44` count clause, so a suite that silently stops running
+reddens the gate instead of passing on zero failures.
+
+**Not prevented, deliberately.** The duplication itself still stands — two sites still
+build argv independently, and the invariant is asserted by tests rather than by
+construction. A *third* relaunch site added later is caught only if it produces the
+argv shape D2 scans for. Factoring both sites into one `_relaunch()` would remove the
+class outright; that is a refactor with its own blast radius on the wrapper every
+session starts through, and it is not being smuggled into a bug fix. Named here so the
+next reader knows the guard is a net, not a wall.
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-09-01 — the AC asked for the symptom; the symptom is unassertable
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** AC 3 was written as "no `Input must be provided` in the
+  transcript". Building the harness showed that string can never appear: the test
+  stub *is* the `claude` under test and it never emits it, so the grep would have
+  passed on a fully broken wrapper. The evidence had to move from the symptom to
+  the mechanism — D2 asserts the promptless argv signature appears at no relaunch
+  site, which is the thing that *causes* the message.
+- **Plan impact:** the "assert the error text is absent" shape is unusable wherever
+  the failing component is stubbed out. Nothing else in the plan changed.
+- **Triggered:** no new task. Recorded because the shape recurs: an absence-assertion
+  over output the harness cannot produce is a vacuous green, and it reads identical
+  to a real one.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+### 2026-09-01 — the negative control needed its own control
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** C1 reconstructs the pre-fix wrapper and requires D1 to go red
+  against it. It passed twice while proving nothing — first because the reconstructed
+  wrapper did not parse at all (so D1 "failed" for the wrong reason), then because the
+  excision check counted the helper's *name* rather than its *call*. Both were caught
+  only because C1 asserts that its own reconstruction is well-formed before asserting
+  the red.
+- **Plan impact:** a negative control is not automatically trustworthy for being
+  negative — "the test failed" and "the test failed for the reason claimed" are
+  different propositions, and only the second is evidence.
+- **Triggered:** no new task; folded into the suite as an explicit parse assertion
+  inside C1.
+
+### 2026-09-02 — filed as a missed site, closed as a class
+
+- **What changed:** at filing this read as "T-3247 fixed one of two places". The
+  audit of all eight `CLAUDE_ARGS=` sites (AC 5) reframed it: the relaunch decision
+  is *constructed per-site*, so a per-site fix is structurally incapable of reaching
+  its siblings. Same shape as T-3235 / peer 832's G-008.
+- **Plan impact:** the tests changed target — from "the re-arm path is fixed" to
+  "no relaunch site anywhere is promptless". D2 is that assertion.
+- **Triggered:** no new task. The residual — two sites still build argv independently
+  — is named in `## RCA` under "Not prevented, deliberately" rather than silently
+  left as done.
 
 ## Recommendation
 
@@ -444,3 +503,20 @@ disturb, but that is reasoning, not a green suite. Run them before closing.
 
 ### 2026-09-01T21:31:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c2595cd7
+- **Timestamp:** 2026-09-01T22:05:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/t3249_rearm_headless_prompt.bats tests/unit/t3243_supervisor_restart_policy.bats tests/unit/claude_fw_restart_mode.bats tests/unit/restart_sentinel_ttl.bats tests/unit/claude_fw_router`
+
+### 2026-09-01T22:03:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

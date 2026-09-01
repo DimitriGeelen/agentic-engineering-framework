@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3249: T-3247 fixed only the restart path - the re-arm relaunch is still promptless under headless
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-01T22:05:47Z
+# ============================================================================
+
+task_id: T-3249
+task_name: "T-3247 fixed only the restart path - the re-arm relaunch is still promptless under headless"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T21:08:15Z
+completed: 2026-09-01T22:03:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-01T23:09:06+02:00
+last_commit: 2026-09-01T23:38:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-3247 fixed one of two relaunch paths - re-arm is still promptless. fix the re-arm relaunch - headless now carries the armed directive
+
+# Key outcomes
+outcomes:
+  - 'The re-arm path honours `HEADLESS` exactly as the restart path does — relaunching with the armed directive as the prompt rather than no prompt.'
+  - 'When headless and there is no directive to run, re-arm **refuses** rather than relaunching, and records its own distinct loop-event reason — matching the restart path''s `no-directive-headless` treatment instead of silently burning the budget.'
+  - 'A regression test drives a headless re-arm end to end and asserts the relaunched session receives a prompt: no `Input must be provided` in the transcript, and the re-arm count matches the count of sessions that actually took a turn.'
+  - 'A negative control is included: with the fix reverted, the test fails. Without it the test cannot distinguish ''fixed'' from ''never exercised'' (L-653).'
+  - 'Both paths are checked for any further duplicated relaunch sites, so this is closed as a class rather than a second instance.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix the re-arm relaunch - headless now carries the armed directive'
+    source: git-mined
+  - description: 'T-3247 fixed one of two relaunch paths - re-arm is still promptless'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/claude-fw'
+  - '.context/audits/2026-09-01.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-3246.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.tasks/active/T-3249-t-3247-fixed-only-the-restart-path---the.md'
+  - '.tasks/active/T-3250-arc-012-e10---press-the-brake-prove-the-.md'
+  - 'tests/unit/t3249_rearm_headless_prompt.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-01T23:09:06'
+    action: 'T-3249: T-3247 fixed one of two relaunch paths - re-arm is still promptless'
+  - time: '2026-09-01T23:38:44'
+    action: 'T-3249: fix the re-arm relaunch - headless now carries the armed directive'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 55 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 55
+  commits: 2
+  files_changed: 19
+  lines_added: 1218
+  lines_removed: 122
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3249-t-3247-fixed-only-the-restart-path---the.md
+generated_by: context-agent-hybrid

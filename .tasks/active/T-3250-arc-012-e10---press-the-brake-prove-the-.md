@@ -2,7 +2,15 @@
 id: T-3250
 name: "arc-012 E10 - press the brake: prove the tier ceiling actually stops the loop"
 description: >
-  E9 proved the loop runs; it never tested the bound. The ceiling is wired and reached (inject-next-directive.py runs via SessionStart, current_iteration advanced 1-to-4) but was never triggered - E9's backlog tasks had components: [] so no blast-radius was resolvable and no breach was reachable. last_terminated_reason stayed empty. Of the three bounds on autonomy (restart budget, max_iterations, tier_ceiling) only the restart budget was exercised. E10 puts a task with blast-radius above the ceiling into the backlog and proves the loop freezes the iteration counter and terminates with 'tier ceiling exceeded', with a negative control showing it proceeds when under the ceiling.
+  E9 proved the loop runs; it never tested the bound. The ceiling is wired and reached
+  (inject-next-directive.py runs via SessionStart, current_iteration advanced 1-to-4)
+  but was never triggered - E9's backlog tasks had components: [] so no blast-radius
+  was resolvable and no breach was reachable. last_terminated_reason stayed empty.
+  Of the three bounds on autonomy (restart budget, max_iterations, tier_ceiling) only
+  the restart budget was exercised. E10 puts a task with blast-radius above the ceiling
+  into the backlog and proves the loop freezes the iteration counter and terminates
+  with 'tier ceiling exceeded', with a negative control showing it proceeds when under
+  the ceiling.
 
 status: captured
 workflow_type: test
@@ -23,8 +31,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T21:30:42Z
-last_update: 2026-09-01T21:30:42Z
-date_finished: null
+last_update: '2026-09-01T21:45:22Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +43,38 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-01T21:45:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=326,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-01T21:45:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      Discard fidelity: 0
+      Loop closure (conditional): 0
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: Discard fidelity=0 (no-signal); Loop closure (conditional)=0 
+      (no-signal); D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3250: arc-012 E10 - press the brake: prove the tier ceiling actually stops the loop
