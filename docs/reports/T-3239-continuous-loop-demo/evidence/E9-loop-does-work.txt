@@ -1,0 +1,105 @@
+T-3246 / arc-012 E9 - does the loop DO WORK across a restart?
+generated:  2026-09-01T20:01:45Z
+repo sha:   3da9c6aad
+claude:     2.1.245 (Claude Code)
+sandbox:    /tmp/tmp.g2QxZqrUe3/proj   (real fw init)
+hooks:      PostToolUse=7 PreCompact=1 PreToolUse=9 SessionStart=3
+backlog:    5 real tasks in .tasks/active/
+dials:      FW_CONTEXT_WINDOW=58000 (critical 55100), CACHE_AGE=1, RECHECK=1
+policy:     MAX_RESTARTS=3, max_iterations=6, tier_ceiling=1
+armed:      1
+
+directive:  Work the backlog in .tasks/active/ one task at a time. For each task: run './.agentic-framework/bin/fw work-on <ID>', create the file its acceptance criterion names with exactly the content it specifies, tick that AC from '- [ ]' to '- [x]' in the task file, then close it with './.agentic-framework/bin/fw task update <ID> --status work-completed'. Then move to the next task. Do not stop until every task is closed.
+
+----- wrapper transcript (tail) -----
+
+claude-fw: budget-critical signal detected — ending claude to trigger auto-restart.
+
+claude-fw: Auto-restart #1 (session: S-2026-0901-2000, tokens: 58284)
+  Directive: Work the backlog in .tasks/active/ one task at a time. For each task: run './.agentic-framework/bin/fw work-on <ID>', create the file its acceptance criterion names with exactly the content it specifies, tick that AC from '- [ ]' to '- [x]' in the task file, then close it with './.agentic-framework/bin/fw task update <ID> --status work-completed'. Then move to the next task. Do not stop until every task is closed.
+  Restart mode: fresh (new session, seeded from the handover)
+  Handover committed. Continuing in 3 seconds...
+  Press Ctrl+C to cancel.
+
+  Headless restart: directive passed as the prompt.
+
+claude-fw: budget-critical signal detected — ending claude to trigger auto-restart.
+
+claude-fw: Auto-restart #2 (session: S-2026-0901-2000, tokens: 61980)
+  Directive: Work the backlog in .tasks/active/ one task at a time. For each task: run './.agentic-framework/bin/fw work-on <ID>', create the file its acceptance criterion names with exactly the content it specifies, tick that AC from '- [ ]' to '- [x]' in the task file, then close it with './.agentic-framework/bin/fw task update <ID> --status work-completed'. Then move to the next task. Do not stop until every task is closed.
+  Restart mode: fresh (new session, seeded from the handover)
+  Handover committed. Continuing in 3 seconds...
+  Press Ctrl+C to cancel.
+
+  Headless restart: directive passed as the prompt.
+
+claude-fw: budget-critical signal detected — ending claude to trigger auto-restart.
+
+claude-fw: Auto-restart #3 (session: S-2026-0901-2000, tokens: 62299)
+  Directive: Work the backlog in .tasks/active/ one task at a time. For each task: run './.agentic-framework/bin/fw work-on <ID>', create the file its acceptance criterion names with exactly the content it specifies, tick that AC from '- [ ]' to '- [x]' in the task file, then close it with './.agentic-framework/bin/fw task update <ID> --status work-completed'. Then move to the next task. Do not stop until every task is closed.
+  Restart mode: fresh (new session, seeded from the handover)
+  Handover committed. Continuing in 3 seconds...
+  Press Ctrl+C to cancel.
+
+  Headless restart: directive passed as the prompt.
+
+claude-fw: budget-critical signal detected — ending claude to trigger auto-restart.
+
+claude-fw: Restart budget exhausted — 3/3 restarts within the last 3600s.
+  This is a RATE limit: it means the loop is spinning, not that it ran too long.
+  Raise it with:  fw config set MAX_RESTARTS <n>   (or FW_RESTART_WINDOW=<seconds>)
+  Remove /tmp/tmp.g2QxZqrUe3/proj/.context/working/.restart-requested to reset, then run 'claude -c' manually.
+
+----- loop event ledger -----
+{"ts": "2026-09-01T20:01:45Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 188245, "detail": "restart=enabled max_restarts=3 window=3600s armed=yes termlink=0"}
+{"ts": "2026-09-01T20:04:16Z", "event": "iterate", "reason": "restart", "restart_count": 1, "wrapper_pid": 188245, "detail": "session=S-2026-0901-2000 tokens=58284"}
+{"ts": "2026-09-01T20:05:05Z", "event": "iterate", "reason": "restart", "restart_count": 2, "wrapper_pid": 188245, "detail": "session=S-2026-0901-2000 tokens=61980"}
+{"ts": "2026-09-01T20:05:59Z", "event": "iterate", "reason": "restart", "restart_count": 3, "wrapper_pid": 188245, "detail": "session=S-2026-0901-2000 tokens=62299"}
+{"ts": "2026-09-01T20:06:52Z", "event": "exit", "reason": "max-restarts", "restart_count": 3, "wrapper_pid": 188245, "detail": "3 restarts within 3600s window >= MAX_RESTARTS=3", "exit_code": 0}
+
+----- backlog outcome (the join that matters) -----
+{
+  "restarts": [
+    "2026-09-01T20:04:16Z",
+    "2026-09-01T20:05:05Z",
+    "2026-09-01T20:05:59Z"
+  ],
+  "closed": [
+    [
+      "T-001",
+      "2026-09-01T20:03:19Z"
+    ]
+  ],
+  "closed_after_first_restart": [],
+  "still_active": 4,
+  "artefacts": [
+    "item1.txt"
+  ]
+}
+
+----- continuous-mode state after the run -----
+enabled: true
+max_iterations: 6
+tier_ceiling: 1
+expires_after_seconds: 86400
+current_iteration: 3
+tasks_completed: 1
+max_tasks: null
+last_terminated_reason: ''
+last_resumed_at: '2026-09-01T20:06:08Z'
+completed_task_ids:
+- T-001
+last_directive_seen: 'Work the backlog in .tasks/active/ one task at a time. For each
+  task: run ''./.agentic-framework/bin/fw work-on <ID>'', create the file its acceptance
+  criterion names with exactly the content it specifi'
+last_source: startup
+
+wrapper exit code: 0
+
+----- assertions -----
+  PASS  the budget trip produced a real restart  iterate/restart events = 3
+  FAIL  the loop closed at least two real tasks  tasks in completed/ = 1
+  FAIL  WORK CONTINUED ACROSS THE RESTART (the deliverable)  tasks closed after first restart = 0
+  FAIL  the closes were real work, not bookkeeping  artefact files created = 1
+
+PASS: 1  FAIL: 3
