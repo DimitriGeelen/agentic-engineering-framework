@@ -42,7 +42,8 @@ L-652 already warned these "look like one in the ledger". Every claim below name
 | …and when not measurable | M2 | **FAILS OPEN, silently** | E3-B/C |
 | resume advances the counter | M2 | **PROVEN** | E4 |
 | directive re-injected with ceiling | M2 | **PROVEN** | E4 |
-| handover → `claude -c` restart | M2 | **NOT PROVEN** | — |
+| exit → wrapper relaunches a REAL claude | M2 | **PROVEN — live fire** | E5 |
+| budget threshold → restart, on a real session | M2 | **NOT PROVEN** | — |
 | arc focus survives a restart | M2 | **NOT PROVEN** | — |
 
 Two links remain unproven, and they are named as such rather than assumed from the links either side of them. That is the whole discipline this arc exists to enforce.
@@ -107,6 +108,51 @@ This **confirms review finding W1-F5**, which the T-3227 synthesis had downgrade
 **One correction, made by measuring.** The expiry row was authored expecting **3**, reasoning that a terminated run performed no iteration — and the ceiling-breach path one line away *does* freeze the counter (`old_iter if ceiling_breach else new_iter`), so the asymmetry looked like a defect. Resuming an expired directive five times running gives `iter=4` and `reason=expires_at` every time: it advances once, on the resume that *discovers* the termination, then converges. Not a runaway. The harness expectation was corrected; no finding was filed. Recording this because the alternative — filing it — is how a review manufactures defects out of its own assumptions.
 
 ---
+
+## E5 — live fire: the real binary, the real wrapper, watched through TermLink (6/6)
+
+E1-E4 measure mechanism ends. `tests/unit/t3243_supervisor_restart_policy.bats` measures
+the supervisor's branch arithmetic. **Both drive a stub.** A stub cannot answer whether a
+real session comes back, which is the only question the arc's headline mechanic actually
+asks. E5 runs `/root/.local/bin/claude` (2.1.245) under `bin/claude-fw`, inside a TermLink
+PTY the operator can attach to.
+
+The transcript, verbatim and unedited:
+
+```
+LIVEFIRE-OK
+
+claude-fw: Re-arm #1 — claude exited (code 0) with no restart signal,
+  and a continuous run is armed. Relaunching in 5 seconds.
+
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+
+claude-fw: Re-arm #2 — claude exited (code 1) with no restart signal,
+  and a continuous run is armed. Relaunching in 5 seconds.
+
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+
+claude-fw: Continuous run is armed, but the restart budget is exhausted
+  (2/2 within the last 3600s). Stopping.
+```
+
+Three real claude launches, two real re-arms, contained by the real rate limit — no
+keypress, no stub, no simulated exit. It terminates on its own because a non-tty `claude`
+with no arguments behaves as `--print`, finds no prompt, and exits 1; the re-arm path
+drops the user's args by design (T-3166: a restart must start *fresh*), so every relaunch
+is that form.
+
+**One assertion in this harness was thrown away for being green and meaningless.** The
+first version counted claude processes with a host-wide `pgrep` and reported 36 —
+every claude on the machine, including the session running the harness and four other
+projects'. It passed. It measured nothing. Replaced by two scoped, independent counts
+that must agree: processes whose PPID is *this* wrapper (5, since claude spawns helpers),
+and launches derived from what the binary printed (1 × `LIVEFIRE-OK` + 2 × `--print`
+error = 3 = `MAX_RESTARTS + 1`). Using a global population to prove a local event is the
+same false-green class as everything else in this report; it is recorded rather than
+quietly fixed because catching it in my own harness is the only reason to trust the rest.
+
+Harness: `livefire-m2-termlink.sh` · evidence: `evidence/E5-livefire-m2-termlink.txt`
 
 ## What is NOT proven, stated plainly
 

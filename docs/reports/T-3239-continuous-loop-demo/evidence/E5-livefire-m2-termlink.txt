@@ -1,0 +1,54 @@
+T-3239/T-3243 E5 — LIVE FIRE via TermLink
+generated: 2026-09-01T10:53:27Z
+repo sha:  add2ca169
+claude:    /root/.local/bin/claude 2.1.245 (Claude Code)
+termlink:  termlink 0.11.1716
+wrapper:   /opt/999-Agentic-Engineering-Framework/bin/claude-fw
+sandbox:   /tmp/tmp.mCtNGBLpoP
+policy:    MAX_RESTARTS=2 RESTART_WINDOW=3600s
+
+───── PTY transcript (what the operator would see attached) ─────
+LIVEFIRE-OK
+
+claude-fw: Re-arm #1 — claude exited (code 0) with no restart signal,
+  and a continuous run is armed. Relaunching in 5 seconds.
+  To stop the run:   touch /tmp/tmp.mCtNGBLpoP/.context/working/.continuous-halt
+  Or disarm it:      fw continuous disarm
+  Or just press Ctrl+C.
+
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+
+claude-fw: Re-arm #2 — claude exited (code 1) with no restart signal,
+  and a continuous run is armed. Relaunching in 5 seconds.
+  To stop the run:   touch /tmp/tmp.mCtNGBLpoP/.context/working/.continuous-halt
+  Or disarm it:      fw continuous disarm
+  Or just press Ctrl+C.
+
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+
+claude-fw: Continuous run is armed, but the restart budget is exhausted
+  (2/2 within the last 3600s). Stopping.
+
+───── loop event ledger (.context/working/continuous-run.jsonl) ─────
+{"ts": "2026-09-01T10:53:28Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 2002137, "detail": "restart=enabled max_restarts=2 window=3600s armed=yes termlink=0"}
+{"ts": "2026-09-01T10:53:33Z", "event": "iterate", "reason": "rearm", "restart_count": 1, "wrapper_pid": 2002137, "detail": "clean exit (code=0) with no signal; continuous run armed; budget 1/2 in 3600s"}
+{"ts": "2026-09-01T10:53:41Z", "event": "iterate", "reason": "rearm", "restart_count": 2, "wrapper_pid": 2002137, "detail": "clean exit (code=1) with no signal; continuous run armed; budget 2/2 in 3600s"}
+{"ts": "2026-09-01T10:53:48Z", "event": "exit", "reason": "max-restarts", "restart_count": 2, "wrapper_pid": 2002137, "detail": "re-arm refused: 2 restarts within 3600s window >= MAX_RESTARTS=2", "exit_code": 1}
+
+───── real claude PIDs spawned BY THIS WRAPPER ─────
+wrapper_pid=2002137
+children: 2002155 2003795 2004944 2005478 2005836 
+
+───── independent launch count, straight off the transcript ─────
+  LIVEFIRE-OK lines (run 1, the -p invocation) : 1
+  --print error lines (runs 2..n, no-arg form) : 2
+
+───── assertions ─────
+  PASS  real claude ran under the wrapper   LIVEFIRE-OK present in PTY transcript
+  PASS  wrapper RE-ARMED rather than tearing down (D3)   iterate/rearm events = 2 (want >=1)
+  PASS  the loop actually went round (>1 claude process under THIS wrapper)   claude PIDs with PPID=wrapper = 5 (want >=2)
+  PASS  transcript agrees: N real launches produced N real outputs   1 x LIVEFIRE-OK + 2 x --print error = 3 launches (want 3)
+  PASS  rate limit CONTAINED it at MAX_RESTARTS (D1/D2)   exit/max-restarts events = 1 (want >=1)
+  PASS  it stopped at exactly MAX_RESTARTS re-arms, not more   rearms=2 MAX_RESTARTS=2
+
+PASS: 6   FAIL: 0
