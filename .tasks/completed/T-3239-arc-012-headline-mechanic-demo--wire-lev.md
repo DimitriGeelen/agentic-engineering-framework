@@ -6,10 +6,10 @@ description: >
   arc-012 headline-mechanic demo — wire-level evidence the continuous loop continues,
   bounds, and stops
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run]
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T07:17:27Z
-last_update: 2026-09-01T07:31:18Z
-date_finished:
+last_update: 2026-09-01T12:21:51Z
+date_finished: 2026-09-01T12:21:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -388,3 +388,20 @@ grep -q "demo_evidence: docs/reports/T-3239-continuous-loop-demo" .context/arcs/
 
 ### 2026-09-01T07:31:18Z — status-update [task-update-agent]
 - **Change:** tags: +arc:continuous-run
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-24ec7eef
+- **Timestamp:** 2026-09-01T12:21:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — **Arc focus holds** across an M2 restart. **MET by E6** (4/4) — the real `agents/context/post-compact-resume.sh` run through the real `bin/fw hook` dispatcher emits `## Current Arc: continuous-run` al
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/context/post-compact-resume.sh in: **Arc focus holds** across an M2 restart. **MET by E6** (4/4) — the real `agents/context/post-compact-resume.sh` run through the real `bin/fw hook` di`
+
+### 2026-09-01T12:21:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

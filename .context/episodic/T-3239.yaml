@@ -1,0 +1,136 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3239: arc-012 headline-mechanic demo — wire-level evidence the continuous loop continues, bounds, and stops
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-01T12:22:04Z
+# ============================================================================
+
+task_id: T-3239
+task_name: "arc-012 headline-mechanic demo — wire-level evidence the continuous loop continues, bounds, and stops"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T07:17:27Z
+completed: 2026-09-01T12:21:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-01T09:24:35+02:00
+last_commit: 2026-09-01T14:21:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  E1 brake truth table (11/11) and E2 M1 live-fire — the Stop hook drives exactly one continuation. E3 confirms W1-F5 — the budget self-trigger reports ok when it cannot measure. E4 (4/4) + report; fw continuous arm stops naming bounds that cannot bind. arc demo_evidence recorded; T-3242 files the VERSION/tag divergence. refresh vendored copies after the continuous-mode.sh bounds correction. E5 live fire — real claude, real claude-fw, watched through TermLink (6/6). E6 — the arc focus, iteration and tier ceiling cross the restart boundary (4/4). E7 live budget trip — the trigger does NOT fire on a short real session. E8 — the budget trip drives a REAL restart, end to end (6/6, 3/3 runs). report and ACs catch up with E5-E8; 9/9 agent ACs, 12 verification lines. arc demo_evidence records M2 demonstrated, M1 still open
+
+# Key outcomes
+outcomes:
+  - 'The two mechanisms arc-012''s headline mechanic bundles are named and kept apart in every artefact (L-652): **M1** the Stop-hook turn driver (drives another turn inside one session) and **M2** the budget-triggered compact-resume (ends the session, restarts it, re-injects the directive). No evidence line is allowed to stand for both.'
+  - '**M1''s maximum continuation count is MEASURED from a live armed session, and the terminating reason is named.** *(Revised 2026-09-01. This AC originally demanded ">=3 contiguous `decision=continue` lines terminated by a bound rather than a fault" — a target the system cannot meet. E2 measured exactly ONE continuation, ended by `stop_hook_active=true`, because Brake 3a is checked ahead of every cap we own. Rewriting the AC to the measured ceiling is the honest move; ticking the original would have claimed a multi-turn loop that does not exist, and leaving it as an unreachable bar would have made the task permanently unclosable for the wrong reason. The design question it exposes is T-3240''s, not this task''s.)*'
+  - '**M2 evidenced positively end to end:** crossing the budget threshold writes `.restart-requested`, generates a handover, and the ensuing restart advances `current_iteration` with the directive re-injected. **MET by E8** — real `claude` 2.1.245 under real `bin/claude-fw`, threshold crossed at ~52,805 tokens, `budget-gate` writes the signal, the wrapper commits a handover, restarts, and re-injects the directive; ledger records `event=iterate reason=restart tokens=52655`. 6/6 assertions, reproduced 3/3 consecutive runs. *(Was UNMET through E7. The blocker was never the mechanism: `post-compact-resume.sh:82-90` seeds `.budget-status` with `ok/0` at SessionStart and `budget-gate.sh:247` serves that seed for 90s without opening the transcript, so E7''s ~32-second session was blind by construction for its whole life. Three further blockers — recheck interval, the Tier-1 task gate, and three defects in my own harness — are documented in REPORT.md §E8.)*'
+  - '**Control leg for both:** the same steps run **disarmed** produce `decision=stop` at the first turn and no `.restart-requested`. This is what separates "the loop fired" from "the loop never ran and nothing noticed" (L-555).'
+  - '**Every brake is exercised or explicitly reported unexercised**, by name, from the driver''s own table: halt-file, `stop_hook_active`, `continuous-mode-disabled`, `max_iterations-reached`, `max_tasks-reached`, `expired-at`, tier-ceiling. An unexercised brake is listed as such rather than implied to work.'
+  - '**Arc focus holds** across an M2 restart. **MET by E6** (4/4) — the real `agents/context/post-compact-resume.sh` run through the real `bin/fw hook` dispatcher emits `## Current Arc: continuous-run` alongside the focus task, iteration counter and tier ceiling in the SessionStart payload, and `current_iteration` advances 4 → 5. The restarted session is fresh by construction (T-3166 empties `CLAUDE_ARGS`), so that payload is the entire boundary, and it is captured verbatim in `evidence/E6-payload-verbatim.txt`. The T-3236 interaction stands and is filed there, not here: closing a task clears focus, so a loop that closes a task mid-run enters the next iteration with no focus.'
+  - 'Wire-level artefacts are committed under `docs/reports/T-3239-*/` and are re-readable by someone who did not run them (raw logs + transcript, not just prose).'
+  - 'Every link found broken is diagnosed to a root cause and either fixed in this task or filed as its own task; the demo report states which links are proven and which are not. *(Fixed here: the false `fw continuous arm` bounds line. Filed: T-3240, T-3241, T-3242.)*'
+  - '`demo_evidence:` on `.context/arcs/continuous-run.yaml` points at the artefact, so `fw arc close` has something real to gate on.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/continuous-mode.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/arcs/continuous-run.yaml'
+  - 'docs/reports/T-3239-continuous-loop-demo/arc-focus-crossing.sh'
+  - 'docs/reports/T-3239-continuous-loop-demo/brake-truth-table.sh'
+  - 'docs/reports/T-3239-continuous-loop-demo/budget-selftrigger.sh'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E1-brake-truth-table.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E2-armed-stderr.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E2-armed-stop-driver.log'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E2-armed-stream.jsonl'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E2-armed-summary.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E2-disarmed-stderr.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E2-disarmed-stop-driver.log'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E2-disarmed-stream.jsonl'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E2-disarmed-summary.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E3-budget-selftrigger.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E4-resume-injection.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E5-livefire-m2-termlink.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E6-arc-focus-crossing.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E6-payload-verbatim.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E7-livefire-budget-trip.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E8-livefire-budget-restart.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/livefire-budget-restart.sh'
+  - 'docs/reports/T-3239-continuous-loop-demo/livefire-budget-trip.sh'
+  - 'docs/reports/T-3239-continuous-loop-demo/live-fire-m1.sh'
+  - 'docs/reports/T-3239-continuous-loop-demo/livefire-m2-termlink.sh'
+  - 'docs/reports/T-3239-continuous-loop-demo/REPORT.md'
+  - 'docs/reports/T-3239-continuous-loop-demo/resume-injection.sh'
+  - 'lib/continuous-mode.sh'
+  - '.tasks/active/T-3239-arc-012-headline-mechanic-demo--wire-lev.md'
+  - '.tasks/active/T-3240-the-stop-hook-loop-caps-at-one-continuat.md'
+  - '.tasks/active/T-3241-budget-gauge-encodes-could-not-measure-a.md'
+  - '.tasks/active/T-3242-version-file-is-non-monotonic-and-disagr.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-01T09:24:35'
+    action: 'T-3239: E1 brake truth table (11/11) and E2 M1 live-fire — the Stop hook drives exactly one continuation'
+  - time: '2026-09-01T09:27:21'
+    action: 'T-3239: E3 confirms W1-F5 — the budget self-trigger reports ok when it cannot measure'
+  - time: '2026-09-01T09:32:29'
+    action: 'T-3239: E4 (4/4) + report; fw continuous arm stops naming bounds that cannot bind'
+  - time: '2026-09-01T09:35:46'
+    action: 'T-3239: arc demo_evidence recorded; T-3242 files the VERSION/tag divergence'
+  - time: '2026-09-01T09:36:23'
+    action: 'T-3239: refresh vendored copies after the continuous-mode.sh bounds correction'
+  - time: '2026-09-01T12:54:44'
+    action: 'T-3239: E5 live fire — real claude, real claude-fw, watched through TermLink (6/6)'
+  - time: '2026-09-01T13:08:19'
+    action: 'T-3239: E6 — the arc focus, iteration and tier ceiling cross the restart boundary (4/4)'
+  - time: '2026-09-01T13:16:37'
+    action: 'T-3239: E7 live budget trip — the trigger does NOT fire on a short real session'
+  - time: '2026-09-01T14:19:07'
+    action: 'T-3239: E8 — the budget trip drives a REAL restart, end to end (6/6, 3/3 runs)'
+  - time: '2026-09-01T14:21:30'
+    action: 'T-3239: report and ACs catch up with E5-E8; 9/9 agent ACs, 12 verification lines'
+  - time: '2026-09-01T14:21:50'
+    action: 'T-3239: arc demo_evidence records M2 demonstrated, M1 still open'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 304 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 304
+  commits: 12
+  files_changed: 34
+  lines_added: 3295
+  lines_removed: 61
+  footprint_refreshed_at: '2026-09-01T12:23:12Z'
+  footprint_refreshed_by_commit: ce910022e
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3239-arc-012-headline-mechanic-demo--wire-lev.md
+generated_by: context-agent-hybrid
