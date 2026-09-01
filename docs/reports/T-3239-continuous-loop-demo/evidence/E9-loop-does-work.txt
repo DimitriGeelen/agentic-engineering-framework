@@ -1,10 +1,10 @@
 T-3246 / arc-012 E9 - does the loop DO WORK across a restart?
-generated:  2026-09-01T20:25:47Z
-repo sha:   f9a0914d0
+generated:  2026-09-01T20:33:53Z
+repo sha:   09da31c39
 claude:     2.1.245 (Claude Code)
-sandbox:    /tmp/tmp.qTgWXdUhMt/proj   (real fw init)
+sandbox:    /tmp/tmp.7yZEKLtTFS/proj   (real fw init)
 hooks:      PostToolUse=7 PreCompact=1 PreToolUse=9 SessionStart=3
-backlog:    5 real tasks in .tasks/active/
+backlog:    5 E9 tasks in .tasks/active/ (matched by name, not counted)
 dials:      FW_CONTEXT_WINDOW=72000 (critical 68400), CACHE_AGE=1, RECHECK=1
 policy:     MAX_RESTARTS=4, max_iterations=8, tier_ceiling=1
 armed:      1

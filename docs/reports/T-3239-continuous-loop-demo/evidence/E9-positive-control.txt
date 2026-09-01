@@ -1,0 +1,69 @@
+T-3246 / arc-012 E9 — POSITIVE CONTROL for the harness rig
+generated:  2026-09-01T20:34:59Z
+repo sha:   09da31c39
+sandbox:    /tmp/tmp.7yZEKLtTFS/proj  (SETUP_ONLY=1 build)
+
+WHY THIS FILE EXISTS
+--------------------
+Four setup defects survived several full E9 runs undetected, because every step
+was suffixed `>/dev/null 2>&1` and the backlog counter counted whatever happened
+to be in .tasks/active/ — which, with `fw task create` silently failing, was fw
+init's onboarding curriculum. The runs measured the loop against the wrong five
+tasks and reported "backlog: 5 real tasks", which was true of the wrong five.
+
+So before spending another 30 minutes of wall clock on a live run, the rig itself
+is proved. The question is not "does the harness produce files" but "can a task
+be closed WITHOUT doing the work?" If it can, every assertion downstream is
+vacuous and a green result means nothing.
+
+L-653: a negative result is only evidence if the positive control fires. This is
+that control, run in all three directions.
+
+SETUP ASSERTIONS (SETUP_ONLY=1)
+-------------------------------
+  backlog OK: 5 E9 tasks, each with a tickable AC and a verification line
+    T-006-e9-backlog-item-1  AC=1  VERIFY=1
+    T-007-e9-backlog-item-2  AC=1  VERIFY=1
+    T-008-e9-backlog-item-3  AC=1  VERIFY=1
+    T-009-e9-backlog-item-4  AC=1  VERIFY=1
+    T-010-e9-backlog-item-5  AC=1  VERIFY=1
+  sandbox git log:
+    7bb49d7 T-3246: baseline - 5-task E9 backlog
+    2651915 T-000: fw init bootstrap commit
+  (fw init's T-001..T-005 removed — they are not our backlog, and T-005
+   "Generate first session handover" would exercise the machinery under test.)
+
+CONTROL 1 — AC ticked, artefact ABSENT.  Gate MUST refuse.
+----------------------------------------------------------
+  Acceptance criteria: 1/1 checked ✓
+  === Verification Gate (P-011) ===
+    FAIL: grep -qx 'done1' item1.txt (exit 2)
+      grep: item1.txt: No such file or directory
+  ERROR: Cannot complete — 1/1 verification(s) failed
+  exit 1                                              <-- REFUSED. Correct.
+
+  This is the one that matters: ticking the box is NOT sufficient. A task cannot
+  be counted as closed by bookkeeping alone.
+
+CONTROL 2 — artefact present, WRONG content ("done9" for item1).  MUST refuse.
+------------------------------------------------------------------------------
+    FAIL: grep -qx 'done1' item1.txt (exit 1)
+  ERROR: Cannot complete — 1/1 verification(s) failed
+  exit 1                                              <-- REFUSED. Correct.
+
+  File existence is not enough either — which is why the verdict script now
+  counts artefacts by CONTENT, not by glob.
+
+CONTROL 3 — artefact present, CORRECT content ("done1").  MUST close.
+---------------------------------------------------------------------
+    PASS: grep -qx 'done1' item1.txt
+  Verification: 1/1 passed ✓
+  Status:  started-work → work-completed
+  Moved to completed/
+  exit 0                                              <-- CLOSED. Correct.
+
+VERDICT
+-------
+The gate moves in all three directions. A close in the live run is therefore
+evidence that the loop did the work, not evidence that it edited a checkbox.
+The rig is fit to carry the arc's headline claim.
