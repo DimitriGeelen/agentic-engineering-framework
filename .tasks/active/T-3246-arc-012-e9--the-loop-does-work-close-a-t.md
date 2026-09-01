@@ -117,6 +117,64 @@ Then `bash docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh`.
 Assertion 3 (`tasks closed after first restart ≥ 1`) is the arc's headline claim;
 assertions 1 and 4 already pass.
 
+### Run 3 (2026-09-01 22:2x) — the rig was measuring the wrong five tasks
+
+Before the retune could be evaluated, the harness itself failed review. Four
+setup steps had been failing silently behind `>/dev/null 2>&1` in **every** E9
+run, this one included:
+
+| # | step | failure | consequence |
+|---|---|---|---|
+| 1 | `fw task create` | called with only `--name`/`--type`; non-interactively also requires `--description` and `--owner` | created **nothing** |
+| 2 | AC graft | globs `.tasks/active/T-*.md`; with no backlog that matched `fw init`'s T-001..T-005 | `item1..item5` grafted onto the **onboarding curriculum** |
+| 3 | verification graft | anchors on `## RCA`, absent from the onboarding template | **no task in any run ever carried a verification line** — the close gate had nothing to run |
+| 4 | baseline commit | `git commit -m "baseline: ..."` carries no `T-XXX` | rejected by `fw init`'s own commit-msg hook |
+
+None of it surfaced because `BACKLOG=$(ls .tasks/active/T-*.md | wc -l)` returned
+5 either way. The header line `backlog: 5 real tasks` was **true of the wrong
+five**. This is the same false-green shape the framework already documents for
+the port-3000 class: a check that answers the question *next to* the one it
+appears to answer, and so is never the thing that prompts anyone to look.
+
+**What this retracts.** Two claims in the Run-2 write-up above do not survive:
+
+- the "1 task closed" was an **onboarding task**, not a backlog item;
+- the retune's backlog widening 3 → 5 was a **no-op** — the population was the
+  same five onboarding tasks in both runs, because `for n in 1 2 3` never
+  produced anything either way.
+
+The Run-2 *headroom* finding is unaffected: the token/critical/headroom table was
+read from the ledger and the wrapper transcript, neither of which depends on
+which tasks were in the backlog. That finding stands and is filed as **T-3248**.
+
+**Fixed here**, in `docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh`:
+every setup step is fail-loud and aborts; the population is asserted **by name**,
+not by count; `fw init`'s onboarding tasks are removed (T-005 *"Generate first
+session handover"* would otherwise exercise the very restart machinery under
+test); the verdict counts only E9 tasks and only artefacts with **correct
+content**, not files that merely exist. `SETUP_ONLY=1` added so the rig can be
+checked in a minute rather than 30 — which is precisely why this hid for so long.
+
+**Positive control (L-653), before trusting any result** —
+`evidence/E9-positive-control.txt`. The close gate was driven in all three
+directions on a real sandbox task:
+
+| control | state | outcome |
+|---|---|---|
+| 1 | AC ticked `[x]`, artefact **absent** | `FAIL: grep -qx 'done1' item1.txt (exit 2)` → **refused** |
+| 2 | artefact present, **wrong** content (`done9`) | `FAIL ... (exit 1)` → **refused** |
+| 3 | artefact present, **correct** content (`done1`) | `PASS`, `started-work → work-completed`, moved to `completed/` |
+
+Control 1 is the one that matters: **ticking the box is not sufficient.** A close
+in the live run is therefore evidence that the loop did the work, not evidence
+that it edited a checkbox — which is what AC #4 asks for and what no prior E9 run
+could actually support.
+
+**Process note.** While inspecting, I read a *stale* sandbox as if it were the
+live run — `KEEP_SANDBOX=1` accumulates sandboxes under `/tmp/tmp.*/proj` and a
+`head -1` glob returns the **oldest**. Caught from the ledger timestamps; the
+harness header now warns about it.
+
 ## Acceptance Criteria
 
 ### Agent
