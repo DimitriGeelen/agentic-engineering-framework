@@ -80,9 +80,18 @@ document.querySelectorAll('.pending-resolve').forEach(function(btn) {
         btn.disabled = true;
         btn.textContent = 'Resolving...';
         try {
+            // The token has to travel with the request. csrf_protect (app.py) accepts
+            // either the X-CSRF-Token header or a _csrf_token form field, and this POST
+            // sends a JSON body — so there is no form field to carry it and the header
+            // is the only route. Before T-3251 this fetch sent Content-Type alone, so
+            // every click was rejected at the CSRF check before the handler was reached:
+            // even a nonexistent id returned 403 rather than 404.
+            var _csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            var _headers = {'Content-Type': 'application/json'};
+            if (_csrfMeta) { _headers['X-CSRF-Token'] = _csrfMeta.content; }
             var resp = await fetch('/api/v1/pending/' + encodeURIComponent(id) + '/resolve', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: _headers,
                 body: JSON.stringify({note: note || ''})
             });
             if (resp.ok) {
