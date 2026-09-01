@@ -7783,3 +7783,9 @@ git add .tasks/active/T-3244-*.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-3243:
   command: 'cd /opt/999-Agentic-Engineering-Framework
 FW_SWITCH_FOCUS=1 git add .tasks/completed/T-3239-arc-012-headline-mechanic-demo--wire-lev.md .context/episodic/T-3239.yaml
 FW_SWITCH_FOCUS=1 git commit -q -m'
+- timestamp: '2026-09-01T20:56:49Z'
+  task: 'T-3245'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3246'
+  command: 'FW_SWITCH_FOCUS=1 git add -A && FW_SWITCH_FOCUS=1 git commit -q -m "T-3246: refresh vendored copies after the E9 checkpoint" -m "The pre-push self-vendor guard (T-2240) caught .agentic-framework/ stan'

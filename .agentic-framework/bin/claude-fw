@@ -32,6 +32,17 @@ CLAUDE_ARGS=()
 # writing a .restart-requested signal nobody consumes (the 300K→350K overrun bug).
 export FW_CLAUDE_FW_SUPERVISED=1
 
+# T-3247: remember whether the ORIGINAL invocation was headless. A restart hands
+# the resumed session no prompt (CLAUDE_ARGS=() below, T-3166), which is right for
+# an interactive terminal — SessionStart seeds it and the operator's session takes
+# it from there. Headless is the opposite: `claude --print` with no prompt has no
+# turn to take, so it prints "Input must be provided either through stdin or as a
+# prompt argument when using --print" and exits 1 before any hook can matter. The
+# loop then re-arms into the same dead session until the restart budget is gone.
+# Observed in every live-fire leg (E5, E7, E8, E9) and read as expected T-3166
+# behaviour each time, because the wrapper's own banner said the restart worked.
+HEADLESS=0
+
 for arg in "$@"; do
     case "$arg" in
         --no-restart)
@@ -39,6 +50,10 @@ for arg in "$@"; do
             ;;
         --termlink)
             TERMLINK_ENABLED=1
+            ;;
+        -p|--print)
+            HEADLESS=1
+            CLAUDE_ARGS+=("$arg")
             ;;
         *)
             CLAUDE_ARGS+=("$arg")
@@ -545,8 +560,39 @@ while true; do
         #
         # FW_RESTART_MODE=continue restores the pre-T-3166 behaviour for anyone
         # who wants transcript continuity and accepts that the budget does not drop.
+        # T-3247: a fresh session needs an INSTRUCTION, not just context.
+        #
+        # T-3166's comment above says "nothing else has to change for the fresh
+        # session to know where it is". That is true for KNOWING — post-compact-resume
+        # injects handover, directive and counter — and false for DOING. A headless
+        # `claude --print` with no prompt has no turn to take: it exits 1 on "Input
+        # must be provided…" before the injected context can be acted on. So the
+        # loop restarted into a dead session and burned its whole restart budget
+        # doing it, while the banner above reported a successful auto-restart.
+        #
+        # Passing the directive as the prompt is NOT a return to `-c`: it carries an
+        # instruction, not a transcript, so the context the restart existed to free
+        # stays freed and T-3166's reason for refusing `-c` is untouched.
         if [ "${FW_RESTART_MODE:-fresh}" = "continue" ]; then
             CLAUDE_ARGS=("-c")
+        elif [ "$HEADLESS" = "1" ]; then
+            if [ -n "$local_directive" ]; then
+                CLAUDE_ARGS=("-p" "$local_directive")
+                echo "  Headless restart: directive passed as the prompt."
+            else
+                # Nothing to do and no way to be told: relaunching would spin a
+                # promptless session until the budget is exhausted, which is what
+                # E9 measured as "the loop ran". Refusing is the honest outcome and
+                # it is recorded as its own reason, distinct from max-restarts.
+                echo ""
+                echo "claude-fw: Headless restart requested with no directive to run."
+                echo "  A --print session with no prompt cannot take a turn, so relaunching"
+                echo "  would consume the restart budget without doing any work."
+                echo "  Arm a directive:  fw continuous arm --directive '<what to do next>'"
+                _record_loop_event exit no-directive-headless \
+                    "headless restart refused: no directive in signal or .next-directive.yaml" 1
+                exit 1
+            fi
         else
             CLAUDE_ARGS=()
         fi
