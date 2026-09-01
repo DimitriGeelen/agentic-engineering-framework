@@ -1,17 +1,11 @@
 ---
-id: T-3249
-name: "T-3247 fixed only the restart path - the re-arm relaunch is still promptless
-  under headless"
+id: T-3250
+name: "arc-012 E10 - press the brake: prove the tier ceiling actually stops the loop"
 description: >
-  bin/claude-fw:659-663 relaunches with CLAUDE_ARGS=() when a clean-exit re-arm fires,
-  with no HEADLESS branch. T-3247 added that branch to the budget-critical restart
-  path (line 577) and left its sibling untouched. Under headless every re-arm therefore
-  relaunches a --print session with no prompt, which dies on 'Input must be provided'
-  and burns a restart from the budget without taking a turn. Measured 1:1 in arc-012
-  E9: run 3 had 4 re-arms and 4 such errors, run 4 had 1 and 1.
+  E9 proved the loop runs; it never tested the bound. The ceiling is wired and reached (inject-next-directive.py runs via SessionStart, current_iteration advanced 1-to-4) but was never triggered - E9's backlog tasks had components: [] so no blast-radius was resolvable and no breach was reachable. last_terminated_reason stayed empty. Of the three bounds on autonomy (restart budget, max_iterations, tier_ceiling) only the restart budget was exercised. E10 puts a task with blast-radius above the ceiling into the backlog and proves the loop freezes the iteration counter and terminates with 'tier ceiling exceeded', with a negative control showing it proceeds when under the ceiling.
 
-status: started-work
-workflow_type: build
+status: captured
+workflow_type: test
 owner: agent
 horizon: now
 tags: []
@@ -28,9 +22,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-01T21:08:15Z
-last_update: 2026-09-01T21:31:43Z
-date_finished:
+created: 2026-09-01T21:30:42Z
+last_update: 2026-09-01T21:30:42Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -41,161 +35,88 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-01T21:15:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=318,acs=7)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-01T21:15:17Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      Discard fidelity: 0
-      Loop closure (conditional): 0
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: Discard fidelity=0 (no-signal); Loop closure (conditional)=0 
-      (no-signal); D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3249: T-3247 fixed only the restart path - the re-arm relaunch is still promptless under headless
+# T-3250: arc-012 E10 - press the brake: prove the tier ceiling actually stops the loop
 
 ## Context
 
-T-3247 diagnosed a real defect — a headless auto-restart relaunched `claude -p`
-with `CLAUDE_ARGS=()`, so the new session died on *"Input must be provided"*
-before doing anything — and fixed it. It fixed **one of the two places the same
-line appears.**
+E9 (T-3246) proved the loop **runs**: 12 tasks closed across 3 budget trips, 7 of
+them after the first restart. It did not test the loop's **brake**, and the arc
+is named *"continuous-run: agent-driven compact-resume loop **with bounded-autonomy
+ceiling**"*. Half the name is unevidenced.
 
-`bin/claude-fw` has two relaunch paths:
+### What E9 established about the ceiling — wired, reached, never triggered
 
-| path | trigger | line | headless branch? |
-|---|---|---|---|
-| **restart** | budget-critical signal | 577-597 | **yes** — `CLAUDE_ARGS=("-p" "$local_directive")`, plus an honest refusal when there is no directive |
-| **re-arm** | clean exit, no signal, run still armed | 659-663 | **no** — falls straight to `CLAUDE_ARGS=()` |
+Read from the run's own committed state (`evidence/E9-loop-does-work.txt`), not
+inferred:
 
-The re-arm branch is verbatim what T-3247 replaced:
-
-```sh
-if [ "${FW_RESTART_MODE:-fresh}" = "continue" ]; then
-    CLAUDE_ARGS=("-c")
-else
-    CLAUDE_ARGS=()
-fi
+```
+tier_ceiling: 1
+current_iteration: 4
+tasks_completed: 12
+last_terminated_reason: ''
 ```
 
-### Measured, 1:1, in both arc-012 E9 runs
+Three separate facts sit in there:
 
-Counted from the committed wrapper transcripts, not inferred:
+1. **The ceiling is on the working path.** An earlier reading of this nearly went
+   the other way: `bin/claude-fw` contains **zero** references to `tier_ceiling`
+   or `blast`, which looks like the wrapper loop being unbounded. It is not — the
+   enforcement lives in `agents/context/inject-next-directive.py:287-291`, reached
+   via the SessionStart hook → `agents/context/post-compact-resume.sh:308`. The
+   proof it actually ran is `current_iteration: 4`: that field has exactly one
+   writer (the injector, per T-3233 W1-F3), so a counter at 4 means the injector
+   executed on each restart.
+2. **It never fired.** `last_terminated_reason` is empty across all 12 closes.
+3. **It could not have fired.** The breach test is
+   `blast_radius is not None and blast_radius > tier_ceiling_int`, and every E9
+   backlog task carried `components: []`, so no blast-radius was resolvable. The
+   guard was structurally unreachable for that backlog.
 
-| run | `Re-arm #` lines | `Input must be provided` errors |
-|---|---:|---:|
-| run 3 (`E9-run3-calibration.txt`) | 4 | 4 |
-| run 4 (`E9-loop-does-work.txt`) | 1 | 1 |
+**Of the three bounds on autonomy, only one was exercised.** The run ended on
+`MAX_RESTARTS=4` (wrapper-level). `max_iterations: 8` was never binding —
+`current_iteration` reached 4. `tier_ceiling` was never binding either. A green
+E9 says nothing about any of that.
 
-Every re-arm under headless relaunches a promptless `--print` session, which
-cannot take a turn, dies immediately, and **still consumes one of `MAX_RESTARTS`**.
+### Why this is the leg worth doing next
 
-### Why this is not cosmetic
+An autonomous loop whose brake has never been pressed is exactly the thing an
+operator needs evidence for before leaving it unattended. Everything E9 proved is
+about the loop *going*; nothing is about it *stopping when it should*. Those are
+different mechanisms with different failure modes, and the second is the one with
+a consequence.
 
-A supervised continuous run ends each session one of two ways: it trips the
-budget, or it finishes its turn cleanly. The budget path works. **The clean-exit
-path is dead**, so half the loop's exit modes cannot continue the run. In E9 run 3
-that meant the loop spent its entire restart budget — four relaunches — without a
-single session capable of doing anything.
+The E9 harness is reusable — `docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh`
+already builds a real `fw init` sandbox, asserts its backlog by name, and is
+fail-loud after T-3246. E10 should extend it (or fork a sibling) rather than
+rebuild the rig.
 
-This also corrects the record in T-3246's run-3 write-up, which described those
-four events as *"the wrapper relaunching a session that had nothing left to do"*.
-That reading was charitable and mechanically wrong: the backlog did happen to be
-empty, but those sessions **could not have worked it even if it had not been** —
-they never received a prompt. The two states are indistinguishable from the
-outside, which is why it went unnoticed through the run and the write-up both.
+### Design note — the trap to avoid
 
-### Note on the general shape
+E9's own failure mode was a rig that appeared to test something it did not. The
+same trap is wide open here: a ceiling test that never resolves a blast-radius
+produces `last_terminated_reason: ''` and **looks exactly like a loop that
+correctly stayed under the ceiling**. So the negative control is not optional
+garnish — without it, "the brake held" and "the brake was never connected" are
+the same observation. Same L-653 discipline that made E9's result readable.
 
-T-3247's own commit message is *"headless restart passes the directive as the
-prompt — the loop can act again"*. The fix was correct and its reasoning (a
-directive carries an instruction, not a transcript, so the freed context stays
-freed) applies **identically** to re-arm. What was missing was the sweep: when a
-defect is a duplicated line, fixing the instance you reproduced leaves the
-instances you did not. Sibling in kind to L-399 (producer/consumer parity) —
-ship the contract everywhere the pattern appears, not only where it was hit.
+### Sequencing
+
+**T-3249 first.** The re-arm relaunch is promptless under headless, so a loop
+that stops on a ceiling breach and then re-arms would relaunch a dead session and
+muddy the evidence. Fix the path E10 has to traverse before measuring on it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The re-arm path honours `HEADLESS` exactly as the restart path does — relaunching with the armed directive as the prompt rather than no prompt.
-- [x] When headless and there is no directive to run, re-arm **refuses** rather than relaunching, and records its own distinct loop-event reason — matching the restart path's `no-directive-headless` treatment instead of silently burning the budget.
-- [x] A regression test drives a headless re-arm end to end and asserts the relaunched session receives a prompt: no `Input must be provided` in the transcript, and the re-arm count matches the count of sessions that actually took a turn.
-- [x] A negative control is included: with the fix reverted, the test fails. Without it the test cannot distinguish 'fixed' from 'never exercised' (L-653).
-- [x] Both paths are checked for any further duplicated relaunch sites, so this is closed as a class rather than a second instance.
-
-## Implementation
-
-`bin/claude-fw`:
-
-- **`_armed_directive()`** (new helper) reads `.context/working/.next-directive.yaml`
-  key `directive:` — the same file and key that `budget-gate.sh:64` and
-  `checkpoint.sh:190` fold into the restart signal (T-2363). The re-arm path has no
-  signal to read from, so it reads the source directly. Same precedence, different
-  delivery.
-- **the re-arm branch** now mirrors the restart branch: `continue` → `-c`;
-  headless with a directive → `-p "$directive"` plus `FW_NEXT_DIRECTIVE`; headless
-  with none → refuse, log `exit / no-directive-headless-rearm`, exit 1;
-  interactive → unchanged.
-
-**Class closure (AC 5).** All eight `CLAUDE_ARGS=` sites audited. Two are relaunch
-points (restart, re-arm) and both now carry a `HEADLESS` arm; two are the
-interactive `else` legs, correctly promptless; one is the initial declaration
-consumed by argument parsing; the rest are comments. No third relaunch site exists.
-
-## Verification results
-
-`tests/unit/t3249_rearm_headless_prompt.bats` — **6/6 pass**:
-
-| id | asserts |
-|---|---|
-| D1 | every headless relaunch carries `-p` **and** the armed directive |
-| D2 | no relaunch has the promptless argv signature |
-| D3 | headless re-arm with no directive exits 1 and does not relaunch |
-| D4 | the refusal logs `no-directive-headless-rearm`, distinct from `max-restarts` |
-| D5 | **scope control** — non-headless re-arm still relaunches with no prompt |
-| C1 | **negative control** — reconstructs the pre-fix wrapper and asserts D1's claim is false there |
-
-The stub `claude` records its own argv, because argv *is* the defect: what the
-wrapper passes on relaunch. AC 3's "no `Input must be provided`" is asserted at
-the mechanism rather than the symptom — the stub never emits that string, so
-grepping for it would pass vacuously; D2 asserts the argv shape that causes it.
-
-C1 twice refused to pass on a broken control before it was right: first the
-reconstructed wrapper did not parse (asserted, so it went red rather than
-silently proving nothing), then the excision check counted the helper *name*
-instead of the *call*. Both are the same failure the control exists to prevent.
-
-### Not done in this session
-
-The broader `claude-fw` suites (`t3243_supervisor_restart_policy`,
-`claude_fw_restart_mode`, `restart_sentinel_ttl`, `claude_fw_router`,
-`claude_fw_copy_not_symlink`) were **not** re-run — the budget gate reached
-critical first. D5 covers the interactive path this change could plausibly
-disturb, but that is reasoning, not a green suite. Run them before closing.
+- [ ] The sandbox backlog contains at least one task whose blast-radius is **resolvable and above** `tier_ceiling` — verified by asserting the resolver returns a number greater than the ceiling **before** the loop runs, so an unreachable guard cannot masquerade as a held brake.
+- [ ] **The brake fires.** `last_terminated_reason` matches `tier ceiling exceeded: <ref> blast-radius <N> > tier_ceiling <C>`, read from `.continuous-mode.yaml` after the run.
+- [ ] **The counter freezes rather than advances** on the breach — `current_iteration` is unchanged across the breaching transition, which is the documented behaviour (operator resumes the same iteration after sign-off) and distinguishes a brake from a crash.
+- [ ] **The over-ceiling task is NOT closed**, and no artefact of it exists — the loop stopped before doing the work, not after.
+- [ ] **Negative control:** an otherwise identical run whose tasks are all under the ceiling completes the backlog with `last_terminated_reason: ''` and an advancing counter. Without this leg the test cannot tell a held brake from a disconnected one (L-653).
+- [ ] Evidence committed under `docs/reports/T-3239-continuous-loop-demo/` — both legs, raw state files, and the pre-run blast-radius assertion — re-readable by someone who did not run it.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -437,10 +358,7 @@ disturb, but that is reasoning, not a green suite. Run them before closing.
 
 ## Updates
 
-### 2026-09-01T21:08:15Z — task-created [task-create-agent]
+### 2026-09-01T21:30:42Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3249-t-3247-fixed-only-the-restart-path---the.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3250-arc-012-e10---press-the-brake-prove-the-.md
 - **Context:** Initial task creation
-
-### 2026-09-01T21:31:43Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

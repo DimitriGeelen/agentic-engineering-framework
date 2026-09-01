@@ -376,6 +376,35 @@ _continuous_halted() {
     [ -f "$halt" ]
 }
 
+# _armed_directive — the directive a re-arm must relaunch with (T-3249).
+#
+# The restart path gets its directive folded into the signal file by
+# budget-gate.sh / checkpoint.sh (T-2363). A re-arm has NO signal — the session
+# exited cleanly — so it has to read the same source those two fold from:
+# .context/working/.next-directive.yaml, key `directive:`. Same file, same key,
+# same precedence; only the delivery differs.
+#
+# Echoes the directive on stdout, or nothing when there is none to run.
+_armed_directive() {
+    local root df
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
+    df="${root}/.context/working/.next-directive.yaml"
+    [ -f "$df" ] || return 1
+    python3 - "$df" <<'PY' 2>/dev/null
+import sys
+try:
+    import yaml
+    d = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+except Exception:
+    sys.exit(1)
+v = d.get("directive")
+if isinstance(v, str) and v.strip():
+    print(v.strip())
+    sys.exit(0)
+sys.exit(1)
+PY
+}
+
 # Start TermLink session if requested (before main loop)
 termlink_start
 
@@ -656,8 +685,43 @@ while true; do
             # re-arm must be indistinguishable on disk from one that never fired.
             : > "$restart_sentinel" 2>/dev/null || true
 
+            # T-3249: this branch used to be the two-way form below, which is
+            # verbatim what T-3247 replaced on the RESTART path — and it fails
+            # the same way. Under --print a promptless relaunch dies on "Input
+            # must be provided" without taking a turn, while still spending one
+            # of MAX_RESTARTS. Measured 1:1 in arc-012 E9: run 3 had 4 re-arms
+            # and 4 such errors, run 4 had 1 and 1.
+            #
+            # T-3247 fixed the instance it reproduced and left its sibling. A
+            # supervised run ends each session one of two ways — budget trip, or
+            # clean exit — so leaving this one meant HALF the loop's exit modes
+            # could not continue the run.
+            #
+            # The directive source differs from the restart path only in
+            # delivery: no signal exists here, so read .next-directive.yaml
+            # directly (see _armed_directive).
             if [ "${FW_RESTART_MODE:-fresh}" = "continue" ]; then
                 CLAUDE_ARGS=("-c")
+            elif [ "$HEADLESS" = "1" ]; then
+                rearm_directive=$(_armed_directive) || rearm_directive=""
+                if [ -n "$rearm_directive" ]; then
+                    CLAUDE_ARGS=("-p" "$rearm_directive")
+                    export FW_NEXT_DIRECTIVE="$rearm_directive"
+                    echo "  Headless re-arm: directive passed as the prompt."
+                else
+                    # Same refusal the restart path makes, for the same reason:
+                    # relaunching would burn the budget on sessions that cannot
+                    # take a turn. Distinct reason code so the ledger tells the
+                    # two paths apart.
+                    echo ""
+                    echo "claude-fw: Headless re-arm requested with no directive to run."
+                    echo "  A --print session with no prompt cannot take a turn, so relaunching"
+                    echo "  would consume the restart budget without doing any work."
+                    echo "  Arm a directive:  fw continuous arm --directive '<what to do next>'"
+                    _record_loop_event exit no-directive-headless-rearm \
+                        "headless re-arm refused: no directive in .next-directive.yaml" 1
+                    exit 1
+                fi
             else
                 CLAUDE_ARGS=()
             fi
