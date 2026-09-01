@@ -7811,3 +7811,11 @@ FW_SWITCH_FOCUS=1 git add -A && FW_SWITCH_FOCUS=1 git commit -q -m "T-3249: T-32
 
 The previous session stopped at the budget gate having run only
 t3249_rearm_hea'
+- timestamp: '2026-09-01T22:48:57Z'
+  task: 'T-3253'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3250'
+  command: 'git add -A && FW_SWITCH_FOCUS=1 git commit -q -m "T-3250: E10 breach leg - the brake fires, and the loop keeps going anyway
+
+Re-derived N_BACKLOG from this rigs own first run rather than E9s. These '
