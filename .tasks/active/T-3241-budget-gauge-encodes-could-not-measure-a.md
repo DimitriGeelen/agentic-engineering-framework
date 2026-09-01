@@ -84,6 +84,38 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+### The ambiguous encoding is not an edge case — it is the first reading of every session
+
+Observed live, S-2026-0901 (arc-012 E9 session), no instrumentation needed:
+
+| moment | `.context/working/.budget-status` |
+|---|---|
+| at `/resume`, tool-counter 1 | `{"level":"ok","tokens":0,"timestamp":1788293872}` |
+| ~6 min later, tool-counter 5 | `{"level":"ok","tokens":112183,"timestamp":1788294234}` |
+
+The first reading is the documented `return 0 rather than guess` path: at session
+start the transcript has fewer than two in-scope entries, `context_tokens.py`
+returns 0, and `budget-gate` maps 0 to `level=ok`. Nothing says "unmeasured".
+
+**Why that widens the gap as filed.** The original evidence (E3) framed this as a
+scoping failure on unusual transcripts. It is more ordinary than that: *every*
+session begins in the unmeasurable state, so the very first budget reading an
+agent takes is always the ambiguous one. And the `/resume` skill instructs the
+agent to treat this file as **canonical** and explicitly not to infer budget from
+anywhere else (T-2155 / T-2156) — so the one reading the protocol most trusts is
+the one that cannot distinguish "fresh" from "blind".
+
+Here it was harmless: the session genuinely was near zero, so the false green and
+the true green coincided. That coincidence is the hazard. A session resuming into
+a *loaded* context that the scoper cannot read gets the identical line and reports
+it, in prose, to the operator as a budget fact. I reported it as one in this
+session's resume summary before checking.
+
+The fix direction is unchanged and unaffected by this note: emit an explicit
+`level=unknown` (or a `measured: false` field) rather than encoding failure as the
+safe value. This observation only argues the blast radius is every session start,
+not a rare transcript shape.
+
 ## Acceptance Criteria
 
 ### Agent
