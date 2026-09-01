@@ -23,7 +23,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-31T19:43:44Z
-last_update: '2026-08-31T19:45:18Z'
+last_update: 2026-09-01T12:22:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,29 +85,43 @@ leaves a window with **no focusable task for the work still owed to the task tha
 just closed**, and the close itself hands the operator commands to run in exactly
 that window.
 
-**Second surface, reproduced live 2026-09-01 while closing the arc-012 review
-task.** Vendor sync is not the only thing stranded — so is the close's own
-commit. `update-task.sh` prints:
+**Second surface — CLAIM RETRACTED 2026-09-01, after probing the gate instead of
+generalising from one blocked command.** This section previously asserted that
+the close strands its own commit: that `update-task.sh` prints
+`git add … && git commit -m '…' && git push`, that `check-active-task` then
+refuses that very command, and therefore that "the framework instructs a command
+it structurally forbids."
+
+**That is false.** Probed directly against the hook with `current_task: null`:
 
 ```
-next: git add .context/episodic/<id>.yaml && git commit -m '<id>: close ...' && git push
+rc=0  ALLOWED  git add .context/episodic/T-NNNN.yaml && git commit -m '<id>: close' && git push
+rc=0  ALLOWED  bin/fw work-on <id>
+rc=0  ALLOWED  bin/fw task create --name x --type build
+rc=2  BLOCKED  bin/fw vendor self
+rc=2  BLOCKED  echo hello > f.txt
 ```
 
-and then `check-active-task` refuses that very command twice over: first
-`BLOCKED: No active task` (focus is now empty), and after focusing an unrelated
-active task, `FOCUS-DRIFT - Action targets a different task`. The framework
-instructs a command it structurally forbids.
+The prescribed next-step command passes. What was actually refused was the commit
+*I* happened to write, which used a heredoc (`git commit -F - <<'MSG'`) — and the
+block message said so in as many words: "it matches a file-write pattern (a
+redirect, rm, tee, sed -i, or a heredoc)". The trigger was the heredoc, not the
+close and not the null focus. The subsequent FOCUS-DRIFT appeared only because I
+had focused an unrelated active task in between.
 
-The focus-drift gate handles it well once reached — it detects that the closed id
-is not active, says so explicitly, and routes to `FW_SWITCH_FOCUS=1` (T-1890's env
-path, the one that survives `git`'s unknown-flag rejection). The commit landed
-that way, logged Tier-2. So the *escape* exists and is well-signposted; what does
-not exist is a path that does not require an escape at all for the framework's own
-prescribed next step.
+Recorded rather than quietly deleted, because it is the exact class this session
+had just finished writing down as L-653 (and L-555 before it): a negative result
+reported without first establishing that the probe matched the thing being
+claimed about. The probe ran a heredoc commit; the prescription contains no
+heredoc. One command's refusal became a structural contradiction, and it survived
+into a task body, a commit message and a report before anyone ran the prescribed
+form. The bypass mechanism is well-signposted and works — that part stands — but
+it was not needed for the reason given here.
 
-Worth deciding as one question rather than two: whether close should defer
-clearing focus until its own trailing work is done, or whether the prescribed
-next-step text should carry the bypass it is going to need.
+**What actually stands, unchanged from the original filing:** `fw vendor self` is
+refused with focus null, so vendor sync owed by a task that just closed has no
+focus to run under. Narrow and real — about the closed task's own trailing work,
+not about the loop's ability to continue to the next task.
 
 **Adjacent false positive, same session.** Writing this very section was blocked
 by focus-drift because the heredoc *content* mentioned the closed task id — the
