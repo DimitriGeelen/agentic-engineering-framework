@@ -249,9 +249,117 @@ _print_startup_banner() {
     echo ""
 }
 
+# ── Restart policy (T-3243) ─────────────────────────────────────────────────
+#
+# `MAX_RESTARTS` used to be a hardcoded lifetime count. It was the wrong shape in
+# three ways at once, all measured from this loop's own JSONL log:
+#
+#   1. LIFETIME, NOT RATE. Its stated purpose is "don't loop forever" — a claim
+#      about RATE — but it counted TOTAL restarts for the wrapper's life, never
+#      decaying. One wrapper performed 4 restarts across 28h52m (one per seven
+#      hours) and was killed as a runaway. The only pathological interval in the
+#      whole corpus is a 1m59s gap, and a lifetime counter is worst at catching
+#      exactly that, because a spin costs it the same one unit as a 20-hour wait.
+#
+#   2. OFF BY ONE. It incremented, then tested `-ge`, so `MAX_RESTARTS=5`
+#      permitted 4 — while the message and the log both reported 5. The number
+#      that happened was not the number the record stated.
+#
+#   3. NOT CONFIGURABLE. `MAX_RESTARTS` has been in FW_CONFIG_REGISTRY
+#      (lib/config.sh) the whole time. This script never read it, so
+#      `fw config set MAX_RESTARTS 20` wrote .framework.yaml and changed nothing.
+#
+# The replacement is a SLIDING WINDOW: at most MAX_RESTARTS restarts in any
+# RESTART_WINDOW seconds. Healthy hours-apart restarts never accumulate; a spin
+# trips it within the window. Both legs are pinned by
+# tests/unit/t3243_supervisor_restart_policy.bats — the cap firing on a spin is
+# tested alongside the cap NOT firing on a healthy run, because "no longer fires"
+# and "cannot fire" are the same observation without the control.
+
+# _fw_cfg KEY DEFAULT — 3-tier read: FW_<KEY> env, .framework.yaml, default.
+# Deliberately dependency-free: this script is vendored into consumer projects as
+# .agentic-framework/bin/claude-fw and must not need lib/config.sh on disk.
+_fw_cfg() {
+    local key="$1" default="$2" val="" root=""
+    eval "val=\"\${FW_${key}:-}\""
+    if [ -n "$val" ]; then printf '%s' "$val"; return 0; fi
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || root=""
+    if [ -n "$root" ] && [ -f "$root/.framework.yaml" ]; then
+        val=$(python3 - "$root/.framework.yaml" "$key" <<'PY' 2>/dev/null || true
+import sys
+try:
+    import yaml
+    d = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+except Exception:
+    sys.exit(0)
+cfg = d.get("config") if isinstance(d.get("config"), dict) else d
+v = cfg.get(sys.argv[2]) if isinstance(cfg, dict) else None
+if v is not None:
+    print(v)
+PY
+)
+    fi
+    [ -n "$val" ] || val="$default"
+    printf '%s' "$val"
+}
+
 # Main loop
-restart_count=0
-MAX_RESTARTS=5  # Safety valve — don't loop forever
+restart_count=0                              # cumulative, for the log only
+MAX_RESTARTS=$(_fw_cfg MAX_RESTARTS 5)       # per-window ceiling
+RESTART_WINDOW=$(_fw_cfg RESTART_WINDOW 3600)
+[[ "$MAX_RESTARTS"   =~ ^[0-9]+$ ]] || MAX_RESTARTS=5
+[[ "$RESTART_WINDOW" =~ ^[0-9]+$ ]] || RESTART_WINDOW=3600
+
+restart_times=()   # epoch seconds of restarts still inside the window
+
+# _restart_budget_prune — drop restarts older than the window, set RESTART_SPENT.
+#
+# Sets a global rather than echoing: `spent=$(_restart_budget_prune)` would run
+# the whole body in a command-substitution SUBSHELL, so the pruned array would be
+# discarded and restart_times would grow without bound for the wrapper's life.
+# The returned count would still be right — the prune is recomputed from scratch
+# on every call — which is precisely why the leak would never show up in a test.
+RESTART_SPENT=0
+_restart_budget_prune() {
+    local now kept=() t
+    now=$(date +%s)
+    for t in ${restart_times[@]+"${restart_times[@]}"}; do
+        if [ $(( now - t )) -lt "$RESTART_WINDOW" ]; then kept+=("$t"); fi
+    done
+    restart_times=(${kept[@]+"${kept[@]}"})
+    RESTART_SPENT="${#restart_times[@]}"
+}
+
+# _restart_budget_take — record a restart at now. Call only after a spend check.
+_restart_budget_take() { restart_times+=("$(date +%s)"); }
+
+# _continuous_armed — is a continuous run armed? Reads the same state file the
+# Stop driver and `fw continuous` do. Absent/unreadable/disarmed → 1 (not armed),
+# so this can only ever ADD a restart on an explicit opt-in, never on a default.
+_continuous_armed() {
+    local root state
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
+    state="${root}/.context/working/.continuous-mode.yaml"
+    [ -f "$state" ] || return 1
+    python3 - "$state" <<'PY' 2>/dev/null
+import sys
+try:
+    import yaml
+    d = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+except Exception:
+    sys.exit(1)
+sys.exit(0 if d.get("enabled") is True else 1)
+PY
+}
+
+# _continuous_halted — Brake 1, the halt file, same path stop-driver.sh:60 uses.
+# It outranks every other vote here exactly as it does there.
+_continuous_halted() {
+    local root halt
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
+    halt="${FW_CONTINUOUS_HALT:-${root}/.context/working/.continuous-halt}"
+    [ -f "$halt" ]
+}
 
 # Start TermLink session if requested (before main loop)
 termlink_start
@@ -271,7 +379,7 @@ _print_startup_banner
 # log distinguishes "armed once, went round 3 times" from "armed 3 times", which
 # an in-loop start event would flatten. Non-fatal like every other call site.
 _record_loop_event start armed \
-    "restart=$([ "$AUTO_RESTART" = false ] && echo disabled || echo enabled) max_restarts=${MAX_RESTARTS} termlink=${TERMLINK_ENABLED:-0}"
+    "restart=$([ "$AUTO_RESTART" = false ] && echo disabled || echo enabled) max_restarts=${MAX_RESTARTS} window=${RESTART_WINDOW}s armed=$(_continuous_armed && echo yes || echo no) termlink=${TERMLINK_ENABLED:-0}"
 
 while true; do
     # T-2373: record when this run started so the terminator only acts on a
@@ -352,16 +460,23 @@ while true; do
     }
 
     if [ -f "$signal_file" ] && is_signal_fresh "$signal_file"; then
-        restart_count=$((restart_count + 1))
-
-        if [ "$restart_count" -ge "$MAX_RESTARTS" ]; then
+        # T-3243: spend-check BEFORE taking the budget, so MAX_RESTARTS=N permits
+        # exactly N restarts in the window rather than N-1. The old code
+        # incremented first and tested `-ge`, which cost one restart silently.
+        _restart_budget_prune; spent="$RESTART_SPENT"
+        if [ "$spent" -ge "$MAX_RESTARTS" ]; then
             echo ""
-            echo "claude-fw: Max restarts ($MAX_RESTARTS) reached. Stopping."
+            echo "claude-fw: Restart budget exhausted — ${spent}/${MAX_RESTARTS} restarts within the last ${RESTART_WINDOW}s."
+            echo "  This is a RATE limit: it means the loop is spinning, not that it ran too long."
+            echo "  Raise it with:  fw config set MAX_RESTARTS <n>   (or FW_RESTART_WINDOW=<seconds>)"
             echo "  Remove $signal_file to reset, then run 'claude -c' manually."
             rm -f "$signal_file"
-            _record_loop_event exit max-restarts "restart_count reached MAX_RESTARTS=$MAX_RESTARTS" 0
+            _record_loop_event exit max-restarts \
+                "${spent} restarts within ${RESTART_WINDOW}s window >= MAX_RESTARTS=${MAX_RESTARTS}" 0
             exit 0
         fi
+        _restart_budget_take
+        restart_count=$((restart_count + 1))
 
         # Read signal metadata for display
         local_session=$(python3 -c "import json,sys; d=json.load(open('$signal_file')); print(d.get('session_id','?'))" 2>/dev/null) || local_session="?"
@@ -445,10 +560,65 @@ while true; do
         _record_loop_event exit stale-signal "signal ${local_age}s old, freshness window 300s" "$exit_code"
         exit "$exit_code"
     else
-        # No signal — normal exit. This is the ORDINARY end of a supervised
-        # session: claude exited and nothing asked for a restart. Recorded
-        # anyway, because "the operator quit" and "the loop broke" are the two
-        # readings of a stopped loop and only the record separates them.
+        # No signal. Two readings — "the operator quit" and "the loop broke" —
+        # and until T-3243 both produced the same BEHAVIOUR: teardown. The record
+        # separated them; nothing acted on the separation. Two of the three
+        # wrapper deaths in continuous-run.jsonl are this branch, at 6h43m and
+        # 9h01m after a healthy restart, both with exit_code=0.
+        #
+        # An ARMED continuous run is the operator having said, explicitly and in
+        # advance, that this loop should keep going. Honour it here — bounded by
+        # the same three brakes everything else in arc-012 answers to:
+        #   1. the halt file (Brake 1, outranks everything — stop-driver.sh:81)
+        #   2. the sliding restart budget (a claude that exits instantly cannot
+        #      spin: re-arms spend the same budget as budget restarts)
+        #   3. the operator's cancel window below
+        # Not armed → exits exactly as before. The default is unchanged.
+        if [ "$AUTO_RESTART" = true ] && _continuous_armed; then
+            if _continuous_halted; then
+                echo ""
+                echo "claude-fw: Continuous run is armed, but the halt file is present. Stopping."
+                _record_loop_event exit halted "halt file present; re-arm refused (Brake 1)" "$exit_code"
+                exit "$exit_code"
+            fi
+
+            _restart_budget_prune; spent="$RESTART_SPENT"
+            if [ "$spent" -ge "$MAX_RESTARTS" ]; then
+                echo ""
+                echo "claude-fw: Continuous run is armed, but the restart budget is exhausted"
+                echo "  (${spent}/${MAX_RESTARTS} within the last ${RESTART_WINDOW}s). Stopping."
+                _record_loop_event exit max-restarts \
+                    "re-arm refused: ${spent} restarts within ${RESTART_WINDOW}s window >= MAX_RESTARTS=${MAX_RESTARTS}" "$exit_code"
+                exit "$exit_code"
+            fi
+            _restart_budget_take
+            restart_count=$((restart_count + 1))
+
+            echo ""
+            _record_loop_event iterate rearm \
+                "clean exit (code=${exit_code}) with no signal; continuous run armed; budget $((spent + 1))/${MAX_RESTARTS} in ${RESTART_WINDOW}s"
+            echo "claude-fw: Re-arm #${restart_count} — claude exited (code ${exit_code}) with no restart signal,"
+            echo "  and a continuous run is armed. Relaunching in 5 seconds."
+            echo "  To stop the run:   touch ${FW_CONTINUOUS_HALT:-$(dirname "$signal_file")/.continuous-halt}"
+            echo "  Or disarm it:      fw continuous disarm"
+            echo "  Or just press Ctrl+C."
+            echo ""
+
+            restart_sentinel="$(dirname "$signal_file")/.auto-restart-pending"
+            sleep 5
+            # Sentinel written AFTER the cancel window, per T-3168: a cancelled
+            # re-arm must be indistinguishable on disk from one that never fired.
+            : > "$restart_sentinel" 2>/dev/null || true
+
+            if [ "${FW_RESTART_MODE:-fresh}" = "continue" ]; then
+                CLAUDE_ARGS=("-c")
+            else
+                CLAUDE_ARGS=()
+            fi
+            continue
+        fi
+
+        # Not armed — the ORDINARY end of a supervised session, unchanged.
         _record_loop_event exit no-signal "claude exited without a restart signal" "$exit_code"
         exit "$exit_code"
     fi
