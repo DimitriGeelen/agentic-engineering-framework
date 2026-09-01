@@ -91,10 +91,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 55
-  commits: 2
-  files_changed: 19
-  lines_added: 1218
-  lines_removed: 122
+  commits: 3
+  files_changed: 33
+  lines_added: 2618
+  lines_removed: 306
+  footprint_refreshed_at: '2026-09-01T22:07:05Z'
+  footprint_refreshed_by_commit: a06b084fd
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3249-t-3247-fixed-only-the-restart-path---the.md

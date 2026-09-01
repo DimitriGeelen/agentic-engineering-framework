@@ -7796,3 +7796,18 @@ FW_SWITCH_FOCUS=1 git commit -q -m'
   target: 'T-3249'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 FW_SWITCH_FOCUS=1 git add -A && FW_SWITCH_FOCUS=1 git commit -q -m "T-3249: T-3247 fixed one of two relaunch paths - re-arm is still promptless" -m "Found by '
+- timestamp: '2026-09-01T22:06:49Z'
+  task: 'T-3247'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3249'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw git commit -m "T-3249: close - the whole relaunch cluster is green, not just this tasks suite" -m "The previous session stopped at the budget gate having run only t3249_rearm'
+- timestamp: '2026-09-01T22:06:57Z'
+  task: 'T-3247'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3249'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw git commit -m "T-3249: close - the whole relaunch cluster is green, not just this tasks suite
+
+The previous session stopped at the budget gate having run only
+t3249_rearm_hea'

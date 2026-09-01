@@ -12,7 +12,7 @@ description: >
   with 'tier ceiling exceeded', with a negative control showing it proceeds when under
   the ceiling.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -31,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T21:30:42Z
-last_update: '2026-09-01T21:45:22Z'
+last_update: 2026-09-01T22:07:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -402,3 +402,6 @@ muddy the evidence. Fix the path E10 has to traverse before measuring on it.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3250-arc-012-e10---press-the-brake-prove-the-.md
 - **Context:** Initial task creation
+
+### 2026-09-01T22:07:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
