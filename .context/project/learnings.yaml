@@ -4852,3 +4852,9 @@ X'` returning empty group."
   task: T-3224
   date: 2026-08-30
   context: Added via context agent
+- id: L-653
+  learning: "Before lowering an acceptance criterion after a negative measurement, establish that the probe could have produced a positive — L-555 applied to your own goalposts rather than to a probe. T-3239 held both polarities side by side and they were INDISTINGUISHABLE at the moment of decision, both reading 'did not fire on a real session': AC2 (M1 drives >=3 continuations) was legitimately rewritten to the measured ceiling of exactly one, because stop_hook_active is checked ahead of every cap we own and the system cannot meet the original bar by design; AC3 (M2 budget-trip -> handover -> restart, end to end) read identically and was REACHABLE ALL ALONG, met as originally written once four blockers were cleared — a 90s seeded .budget-status cache that kept budget-gate from ever opening the transcript (post-compact-resume.sh:82-90 + budget-gate.sh:247, so a 32s session was blind for its entire life), a 5-call recheck interval, the Tier-1 task gate refusing the very Bash calls whose tokens the measurement needed, and three defects in the harness itself. AC2's precedent sat one paragraph above AC3 in the same file and nearly licensed the wrong rewrite. The incentive runs one way: P-010 blocks close on unticked ACs, so a stuck AC is friction and lowering it removes the friction, which is indistinguishable from progress. Test before rewriting an AC downward: name the positive control that WOULD have fired had the criterion been met. If you cannot name one, you are fitting the AC to a broken instrument, not to reality."
+  source: P-010
+  task: T-3239
+  date: 2026-09-01
+  context: Added via context agent
