@@ -1,7 +1,12 @@
-audit-task-tools=104
+audit-task-tools=120
 
-checkpoint=1
-check-tier0=2
-check-project-boundary=2
-budget-gate=2
-check-active-task=1
+checkpoint=18
+check-tier0=23
+check-project-boundary=24
+budget-gate=24
+check-active-task=18
+loop-detect=17
+error-watchdog=16
+check-arc-id=1
+check-human-ac-tick=1
+check-heredoc-cmd-sub=1

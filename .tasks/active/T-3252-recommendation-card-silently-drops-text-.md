@@ -1,23 +1,14 @@
 ---
-id: T-3250
-name: "arc-012 E10 - press the brake: prove the tier ceiling actually stops the loop"
+id: T-3252
+name: "Recommendation card silently drops text: any span the marker tokeniser classifies as other is discarded, and raw is never rendered"
 description: >
-  E9 proved the loop runs; it never tested the bound. The ceiling is wired and reached
-  (inject-next-directive.py runs via SessionStart, current_iteration advanced 1-to-4)
-  but was never triggered - E9's backlog tasks had components: [] so no blast-radius
-  was resolvable and no breach was reachable. last_terminated_reason stayed empty.
-  Of the three bounds on autonomy (restart budget, max_iterations, tier_ceiling) only
-  the restart budget was exercised. E10 puts a task with blast-radius above the ceiling
-  into the backlog and proves the loop freezes the iteration counter and terminates
-  with 'tier ceiling exceeded', with a negative control showing it proceeds when under
-  the ceiling.
+  Recommendation card silently drops text: any span the marker tokeniser classifies as other is discarded, and raw is never rendered
 
 status: started-work
-workflow_type: test
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
-arc_id: continuous-run
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -30,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-01T21:30:42Z
-last_update: 2026-09-01T22:36:30Z
-date_finished:
+created: 2026-09-01T22:38:02Z
+last_update: 2026-09-01T22:38:02Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -43,120 +34,74 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-01T21:45:12Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 1
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
-      (workflow:test); effort=8 (lines=326,acs=8)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-01T21:45:22Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      Discard fidelity: 0
-      Loop closure (conditional): 0
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 1
-    rationale: Discard fidelity=0 (no-signal); Loop closure (conditional)=0 
-      (no-signal); D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=1 
-      (body/components:component-fabric-incidental)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3250: arc-012 E10 - press the brake: prove the tier ceiling actually stops the loop
+# T-3252: Recommendation card silently drops text: any span the marker tokeniser classifies as other is discarded, and raw is never rendered
 
 ## Context
 
-E9 (T-3246) proved the loop **runs**: 12 tasks closed across 3 budget trips, 7 of
-them after the first restart. It did not test the loop's **brake**, and the arc
-is named *"continuous-run: agent-driven compact-resume loop **with bounded-autonomy
-ceiling**"*. Half the name is unevidenced.
+Reported by 001-CashWeb at chat-arc offset 956 (their G-081), alongside an unrelated
+`/pending` CSRF defect filed separately as T-3251. Their diagnosis was verified here by
+reading `web/shared.py:743 extract_recommendation` and then measured on this repo's own
+corpus.
 
-### What E9 established about the ceiling — wired, reached, never triggered
+**The mechanism.** The section is tokenised by `_REC_MARKER_RE` — any bold label at the
+start of a line, bullet prefix allowed since T-1580. Each span between markers is
+bucketed by `_classify_rec_marker`, which knows four labels; everything else becomes
+`other`. The loop then writes only `rationale` and `evidence` into the output, so an
+`other` span is dropped along with everything up to the next recognised marker. The card
+(`web/blueprints/review.py:176`) renders `rationale` and `evidence`; `raw` is never
+shown. No warning, no count, no gap on the page.
 
-Read from the run's own committed state (`evidence/E9-loop-does-work.txt`), not
-inferred:
+Three shapes, one cause:
 
-```
-tier_ceiling: 1
-current_iteration: 4
-tasks_completed: 12
-last_terminated_reason: ''
-```
+- **(a)** text before the first bold marker — never inside any span, so never bucketed;
+- **(b)** prose after the verdict token on the Recommendation line — only the
+  `GO|NO-GO|DEFER|...` match is kept and the rest of that span is discarded;
+- **(c)** a span under an author's own bold label — classified `other`, dropped, and it
+  takes the following bullets with it up to the next recognised marker. This is why it
+  is so often the *last* bullets that vanish: it reads like length truncation and is not.
 
-Three separate facts sit in there:
+**Measured here, before any change** (`extract_recommendation` over
+`.tasks/{active,completed}`, comparing the parsed `raw` line by line against
+`rationale + evidence + verdict`, with the leading bold marker stripped so labels that
+are dropped *by design* are not counted, and with whitespace, emphasis and link syntax
+flattened on both sides):
 
-1. **The ceiling is on the working path.** An earlier reading of this nearly went
-   the other way: `bin/claude-fw` contains **zero** references to `tier_ceiling`
-   or `blast`, which looks like the wrapper loop being unbounded. It is not — the
-   enforcement lives in `agents/context/inject-next-directive.py:287-291`, reached
-   via the SessionStart hook → `agents/context/post-compact-resume.sh:308`. The
-   proof it actually ran is `current_iteration: 4`: that field has exactly one
-   writer (the injector, per T-3233 W1-F3), so a counter at 4 means the injector
-   executed on each restart.
-2. **It never fired.** `last_terminated_reason` is empty across all 12 closes.
-3. **It could not have fired.** The breach test is
-   `blast_radius is not None and blast_radius > tier_ceiling_int`, and every E9
-   backlog task carried `components: []`, so no blast-radius was resolvable. The
-   guard was structurally unreachable for that backlog.
+| | |
+|---|---:|
+| task bodies with a `## Recommendation` section | **1057** |
+| cards that drop at least one line of ≥25 chars | **601** |
+| dropped fragments | **3399** |
 
-**Of the three bounds on autonomy, only one was exercised.** The run ended on
-`MAX_RESTARTS=4` (wrapper-level). `max_iterations: 8` was never binding —
-`current_iteration` reached 4. `tier_ceiling` was never binding either. A green
-E9 says nothing about any of that.
+The peer measured 26 of 46 on their corpus. 601 of 1057 here is the same class at scale.
+A first pass without the marker-stripping refinement reported 1001 lossy cards — over-counting
+by ~400, because a label consumed by the parser looks identical to one it lost. The
+refinement is part of the measurement, not a softening of it.
 
-### Why this is the leg worth doing next
+Worked examples from the corpus, first dropped fragment per card:
 
-An autonomous loop whose brake has never been pressed is exactly the thing an
-operator needs evidence for before leaving it unattended. Everything E9 proved is
-about the loop *going*; nothing is about it *stopping when it should*. Those are
-different mechanisms with different failure modes, and the second is the one with
-a consequence.
+- `T-100201` — *"CLOSE AS DISSOLVED. Do not adopt A, B, C or D."* (shape b: the operative
+  instruction, on the verdict line, after the token)
+- `T-1062` — *"This Recommendation rates code-and-AC completeness, not behavioral
+  verification or full Phase-1 scope coverage…"* (shape a/c: the scope caveat on the
+  advisory itself)
+- `T-1265`, `T-1309` — *"DEFER — demand has not materialised"*, *"DEFER — superseded by
+  T-1312"* (shape b: the entire reason for the deferral)
 
-The E9 harness is reusable — `docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh`
-already builds a real `fw init` sandbox, asserts its backlog by name, and is
-fail-loud after T-3246. E10 should extend it (or fork a sibling) rather than
-rebuild the rig.
-
-### Design note — the trap to avoid
-
-E9's own failure mode was a rig that appeared to test something it did not. The
-same trap is wide open here: a ceiling test that never resolves a blast-radius
-produces `last_terminated_reason: ''` and **looks exactly like a loop that
-correctly stayed under the ceiling**. So the negative control is not optional
-garnish — without it, "the brake held" and "the brake was never connected" are
-the same observation. Same L-653 discipline that made E9's result readable.
-
-### Sequencing
-
-**T-3249 first.** The re-arm relaunch is promptless under headless, so a loop
-that stops on a ceiling breach and then re-arms would relaunch a dead session and
-muddy the evidence. Fix the path E10 has to traverse before measuring on it.
+Every one of those is the sentence a decision-maker most needs. A caveat the operator
+never sees does not exist for that decision.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The sandbox backlog contains at least one task whose blast-radius is **resolvable and above** `tier_ceiling` — verified by asserting the resolver returns a number greater than the ceiling **before** the loop runs, so an unreachable guard cannot masquerade as a held brake.
-- [ ] **The brake fires.** `last_terminated_reason` matches `tier ceiling exceeded: <ref> blast-radius <N> > tier_ceiling <C>`, read from `.continuous-mode.yaml` after the run.
-- [ ] **The counter freezes rather than advances** on the breach — `current_iteration` is unchanged across the breaching transition, which is the documented behaviour (operator resumes the same iteration after sign-off) and distinguishes a brake from a crash.
-- [ ] **The over-ceiling task is NOT closed**, and no artefact of it exists — the loop stopped before doing the work, not after.
-- [ ] **Negative control:** an otherwise identical run whose tasks are all under the ceiling completes the backlog with `last_terminated_reason: ''` and an advancing counter. Without this leg the test cannot tell a held brake from a disconnected one (L-653).
-- [ ] Evidence committed under `docs/reports/T-3239-continuous-loop-demo/` — both legs, raw state files, and the pre-run blast-radius assertion — re-readable by someone who did not run it.
+- [x] The loss is measured on this repo's own corpus before anything is changed: how many task bodies carry a `## Recommendation` section, how many of those lose text through `extract_recommendation`, and how many fragments. A fix argued from the code alone cannot say whether it mattered here.
+- [ ] No text in a `## Recommendation` section is discarded. Every one of the three shapes survives: a span before the first bold marker, a span under a marker the classifier calls `other`, and prose following the verdict token on the Recommendation line itself.
+- [ ] `other` spans keep their label rather than being silently merged, so a reader of the card can tell an author's own heading from one the parser understands.
+- [ ] A regression test covers all three shapes with a negative control: against the pre-fix parser the test goes red. Without that, a test over already-parsing text proves the parser unchanged, not fixed.
+- [ ] The measurement from AC 1 is re-run after the fix and the dropped-fragment count is zero, reported as the same number so the before/after is one comparison rather than two claims.
+- [ ] The `/review/<id>` card renders the recovered text — a fix that only reaches the parser leaves the operator seeing exactly what they saw before.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -398,10 +343,7 @@ muddy the evidence. Fix the path E10 has to traverse before measuring on it.
 
 ## Updates
 
-### 2026-09-01T21:30:42Z — task-created [task-create-agent]
+### 2026-09-01T22:38:02Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3250-arc-012-e10---press-the-brake-prove-the-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3252-recommendation-card-silently-drops-text-.md
 - **Context:** Initial task creation
-
-### 2026-09-01T22:07:33Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

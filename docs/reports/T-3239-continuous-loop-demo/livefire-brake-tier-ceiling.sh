@@ -86,13 +86,30 @@ SANDBOX="$(mktemp -d)/proj"
 WINDOW=72000
 CACHE_AGE=1
 RECHECK=1
-MAXR=6
+MAXR=10
 CEILING=1
-# 8 backlog items + 1 escalation task. At ~5 tasks per window the trip lands around
-# item 5, which is comfortably before the escalation task at position 9. That gap is
-# the point: the brake must be reached with the over-ceiling work still undone.
-N_BACKLOG=8
-RUN_TIMEOUT=2400
+# Backlog size, RE-DERIVED from this rig's own first run rather than inherited from
+# E9's. E9 measured ~2926 tokens per task and sized 12 items to ~2.3 windows. These
+# tasks are cheaper - write one file, tick one AC, close - and the first breach run
+# measured it:
+#
+#     baseline ~52.6k -> trip at 69186   = ~16.6k for 9 tasks   (~1845/task)
+#     headroom  68400 - 52600            = ~15.8k
+#     tasks per window                   = 15800 / 1845  ~= 8.5
+#
+# At N_BACKLOG=8 the whole backlog INCLUDING the escalation task fitted in the first
+# window. The brake fired correctly on the restart that followed, but by then there was
+# no over-ceiling work left to stop, and AC4 failed for a reason that says nothing about
+# the ceiling. The attribution line in the verdict is what caught that; the assertion
+# alone reported it identically to a session ignoring the notice, which is the opposite
+# finding.
+#
+# 16 items puts the trip near item 9, leaving the escalation task at position 17
+# comfortably unworked when the ceiling is first evaluated. Do not nudge WINDOW without
+# re-deriving this number, and do not nudge this number without checking the control
+# leg still reaches the escalation task inside MAX_RESTARTS.
+N_BACKLOG=16
+RUN_TIMEOUT=3000
 
 cleanup() {
     [ -n "${TRACER_PID:-}" ] && kill "$TRACER_PID" 2>/dev/null

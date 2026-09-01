@@ -4225,3 +4225,11 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-366
+  text: "T-3179's partial-complete commit allowance does not recognise 'bin/fw git commit' - only bare 'git commit'. Measured on T-3251: with the task at work-completed and focus on it, 'bin/fw git commit -m ...' was blocked three times (multi-line message, single-line message, with and without an env prefix), each time with a block message whose own second line says: \"Note: 'git commit' IS allowed here (T-3179) - a partial-complete task may always checkpoint its own verified work under its own ID.\" Bare 'git commit -m ...' succeeded immediately with the same staged content. The allowance exists and works; it just does not cover the framework's own canonical commit verb, which CLAUDE.md's Quick Reference lists first ('fw git commit -m T-XXX: ...'). In this state the block message is actively misleading: it names the allowance, says to run the commit bare, and the agent re-runs the fw-prefixed form because that IS the bare form of the documented verb. Cost: three blocked attempts and a workaround that bypasses the fw wrapper's own pre-commit path. Fix shape: add the 'bin/fw git commit' / 'fw git commit' prefixes to the same allowance in agents/context/lib/safe-commands.sh (or wherever the T-3179 exemption matches), pinned by a test exercising BOTH spellings under a work-completed focus - the single-spelling test is what let this ship."
+  captured: 2026-09-01T22:37:33Z
+  context_task: T-3250
+  tags: []
+  status: pending
+  promoted_to: null
+  urgent: true
