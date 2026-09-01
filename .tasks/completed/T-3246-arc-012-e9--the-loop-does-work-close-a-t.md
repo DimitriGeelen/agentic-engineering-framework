@@ -4,12 +4,12 @@ name: "arc-012 E9 — the loop does WORK: close a task, trip, restart, close ano
 description: >
   arc-012 E9 — the loop does WORK: close a task, trip, restart, close another
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/init.sh, lib/upgrade.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T19:51:04Z
-last_update: '2026-09-01T20:00:24Z'
-date_finished:
+last_update: 2026-09-01T20:53:50Z
+date_finished: 2026-09-01T20:53:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -513,3 +513,15 @@ note, the demo artefact below is offered as evidence for **M2 only**.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3246-arc-012-e9--the-loop-does-work-close-a-t.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6469cc10
+- **Timestamp:** 2026-09-01T20:53:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-01T20:53:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

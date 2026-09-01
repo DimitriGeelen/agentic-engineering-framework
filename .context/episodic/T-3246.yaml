@@ -1,0 +1,151 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3246: arc-012 E9 — the loop does WORK: close a task, trip, restart, close another
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-01T20:54:05Z
+# ============================================================================
+
+task_id: T-3246
+task_name: "arc-012 E9 — the loop does WORK: close a task, trip, restart, close another"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T19:51:04Z
+completed: 2026-09-01T20:53:50Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-01T22:09:19+02:00
+last_commit: 2026-09-01T22:53:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record E9 state - the loop cycles, the dial starves it. checkpoint working tree before the E9 retune re-run. retune E9 - 72000 window, 5-task backlog, 4 restarts, truncation guard. the E9 rig was measuring the wrong five tasks - fix it and prove it. record the rig defect and the retraction in the task body. run 3 - first attributable E9 result, 2/4, and the number that sizes the fix. E9 lands 4/4 - the loop closes a task, trips, restarts, closes another
+
+# Key outcomes
+outcomes:
+  - 'A live-fire harness drives a real `claude` under real `bin/claude-fw` against a sandbox holding a **real backlog** (tasks created through `fw task create`, each with a tickable AC and a verification line the close gate actually runs) — not a session that merely reads files and exits, which is what every prior arc-012 evidence leg did.'
+  - '**The budget trip fires mid-backlog and the wrapper restarts** — at least one `event=iterate reason=restart` in `continuous-run.jsonl`, carrying a real token count above the configured critical threshold.'
+  - '**Work continues across the restart — the deliverable.** At least one task''s `date_finished` is later than the first restart event''s timestamp, joined mechanically from the task frontmatter and the loop ledger rather than asserted from the transcript. This is the claim the arc''s headline mechanic actually makes and the one nothing has yet tested.'
+  - '**The closes are real work, not bookkeeping** — each closed task''s named artefact file exists with the exact required content, so a task cannot be counted as closed by moving a file alone.'
+  - 'The result is reported honestly whichever way it lands, with any blocker localised to a named file and line and either fixed here or filed as its own task. A negative result names the positive control that would have fired (L-653), so "the loop did not work" is never confused with "the harness could not have seen it work".'
+  - 'Evidence committed under `docs/reports/T-3239-continuous-loop-demo/` (raw ledger, task-close join, wrapper transcript) and re-readable by someone who did not run it.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'run 3 - first attributable E9 result, 2/4, and the number that sizes the fix'
+    source: git-mined
+  - description: 'the E9 rig was measuring the wrong five tasks - fix it and prove it'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.context/audits/2026-09-01.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-09-01.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/episodic/T-3225.yaml'
+  - '.context/episodic/T-3227.yaml'
+  - '.context/episodic/T-3239.yaml'
+  - '.context/handovers/S-2026-0901-1116.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0901-1248.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0901-1321.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0901-2209.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/watchtower.log'
+  - 'docs/generated/components/tests-lint-no-project-markers-above-bats-tmpdir.md'
+  - 'docs/generated/components/tests-unit-t3231_help_exemption_scope.md'
+  - 'docs/generated/components/tests-unit-t3232_verification_extractor_failure.md'
+  - 'docs/generated/components/tests-unit-t3233_arm_bounds.md'
+  - 'docs/generated/components/tests-unit-t3235_archived_horizon_invariant.md'
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E9-loop-does-work.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E9-positive-control.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E9-run3-calibration.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh'
+  - 'lib/init.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3211-handover-suggested-first-action-truncate.md'
+  - '.tasks/active/T-3237-bare-wget-url-is-safe-listed--wget-write.md'
+  - '.tasks/active/T-3238-find-is-unconditionally-safe-listed-so--.md'
+  - '.tasks/active/T-3240-the-stop-hook-loop-caps-at-one-continuat.md'
+  - '.tasks/active/T-3241-budget-gauge-encodes-could-not-measure-a.md'
+  - '.tasks/active/T-3242-version-file-is-non-monotonic-and-disagr.md'
+  - '.tasks/active/T-3244-fw-config-get-does-not-fall-back-to-the-.md'
+  - '.tasks/active/T-3245-mandated-co-authored-by-trailer-voids-th.md'
+  - '.tasks/active/T-3246-arc-012-e9--the-loop-does-work-close-a-t.md'
+  - '.tasks/active/T-3248-nothing-measures-useful-headroom-window-.md'
+  - 'tests/unit/t3171_cron_generate_requires_id.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-01T22:09:19'
+    action: 'T-3246: record E9 state - the loop cycles, the dial starves it'
+  - time: '2026-09-01T22:22:55'
+    action: 'T-3246: checkpoint working tree before the E9 retune re-run'
+  - time: '2026-09-01T22:24:06'
+    action: 'T-3246: retune E9 - 72000 window, 5-task backlog, 4 restarts, truncation guard'
+  - time: '2026-09-01T22:35:16'
+    action: 'T-3246: the E9 rig was measuring the wrong five tasks - fix it and prove it'
+  - time: '2026-09-01T22:38:19'
+    action: 'T-3246: record the rig defect and the retraction in the task body'
+  - time: '2026-09-01T22:41:27'
+    action: 'T-3246: run 3 - first attributable E9 result, 2/4, and the number that sizes the fix'
+  - time: '2026-09-01T22:53:46'
+    action: 'T-3246: E9 lands 4/4 - the loop closes a task, trips, restarts, closes another'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 62 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 62
+  commits: 7
+  files_changed: 58
+  lines_added: 9092
+  lines_removed: 7120
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3246-arc-012-e9--the-loop-does-work-close-a-t.md
+generated_by: context-agent-hybrid

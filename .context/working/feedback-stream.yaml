@@ -38691,3 +38691,21 @@ scan_id: R-24ec7eef
 task_id: T-3239
 payload:
   task_file: .tasks/active/T-3239-arc-012-headline-mechanic-demo--wire-lev.md
+---
+kind: scan_emitted
+timestamp: '2026-09-01T20:53:52Z'
+scan_id: R-6469cc10
+task_id: T-3246
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-01T20:53:52Z'
+scan_id: R-6469cc10
+task_id: T-3246
+payload:
+  task_file: .tasks/active/T-3246-arc-012-e9--the-loop-does-work-close-a-t.md
