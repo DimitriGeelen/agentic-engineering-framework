@@ -74,6 +74,17 @@ is stop the loop.
    `enabled: false` suppresses re-arms and nothing else — which is exactly the two extra
    restarts above.
 
+**The same hole is not specific to the ceiling.** The control leg of the same
+experiment terminated on a different bound — `iteration 9 exceeds max_iterations 8`,
+recorded at 22:51:30 with `enabled -> false` — and the wrapper restarted again at
+22:53:08 regardless. So this is not "the tier ceiling is weak"; it is that **every
+termination the injector records disarms the loop and nothing else**, because the
+disarm is only read on the re-arm branch. The ceiling is simply the bound with the
+sharpest consequence.
+
+That widens AC 1: the restart branch must consult the disarm, not consult a
+ceiling-specific flag.
+
 **What the ceiling therefore is, today:** a bound on how the loop *ends*, not on what it
 *does*. It reliably prevents the loop from arming another cycle, and it reliably records
 why. It does not prevent the over-ceiling work from being done in the cycle already

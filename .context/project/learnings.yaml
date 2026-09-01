@@ -4858,3 +4858,9 @@ X'` returning empty group."
   task: T-3239
   date: 2026-09-01
   context: Added via context agent
+- id: L-654
+  learning: "A failing assertion that can fail for two OPPOSITE reasons is not evidence until the rig attributes it mechanically. arc-012 E10: 'the over-ceiling task was not closed' failed identically whether (a) the session received the ceiling notice and worked past it - a real bounded-autonomy hole - or (b) the backlog fitted inside one context window so the brake was reached with no over-ceiling work left, which says nothing about the ceiling at all. Both print the same FAIL line. The first run at N_BACKLOG=8 was (b) and would have been written up as (a); at N=16 it was genuinely (a). What separated them was recording each close's date_finished against the breach timestamp from a 1Hz state trace and printing the verdict as an ATTRIBUTION line beside the assertion. Generalisation: this is the negative-control problem (L-653) one level up. L-653 says a test that cannot fail proves nothing; this says a test that CAN fail may still prove nothing, because the failure is ambiguous between the finding and a rig artefact. Author-time trigger: when writing an assertion of the form 'X did not happen', ask what ELSE would make X not happen, and if the answer is 'the rig never gave X a chance', the rig owes an attribution line - not a comment, an emitted verdict."
+  source: P-001
+  task: T-3250
+  date: 2026-09-01
+  context: Added via context agent

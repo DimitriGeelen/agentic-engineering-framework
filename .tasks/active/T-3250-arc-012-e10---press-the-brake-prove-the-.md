@@ -31,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T21:30:42Z
-last_update: 2026-09-01T22:36:30Z
+last_update: 2026-09-01T22:53:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -305,6 +305,22 @@ muddy the evidence. Fix the path E10 has to traverse before measuring on it.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# --- T-3250 gate ---
+# The rig's own setup, asserted without paying for a 20-minute loop. SETUP_ONLY exercises
+# fw init, the backlog graft, the pre-run blast-radius assertion against the REAL resolver,
+# and the check that the filed directive resolves its planned-next-action to the escalation
+# task. Four setup defects once survived several full E9 runs precisely because verifying
+# them cost half an hour each time.
+SETUP_ONLY=1 LEG=breach bash docs/reports/T-3239-continuous-loop-demo/livefire-brake-tier-ceiling.sh > /tmp/.t3250b.out 2>&1 && grep -q 'has the expected sign for the breach leg' /tmp/.t3250b.out
+SETUP_ONLY=1 LEG=control bash docs/reports/T-3239-continuous-loop-demo/livefire-brake-tier-ceiling.sh > /tmp/.t3250c.out 2>&1 && grep -q 'has the expected sign for the control leg' /tmp/.t3250c.out
+# Both legs' evidence files exist and record the run they claim to.
+grep -q 'LEG=breach' docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach.txt
+grep -q 'LEG=control' docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-control.txt
+# The attribution line is present in the breach evidence. Its ABSENCE is the failure mode
+# this gate exists for: without it, AC4's verdict is ambiguous between the finding and a
+# rig artefact, and the two read identically (L-654).
+grep -q 'ATTRIBUTION' docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach.txt
 
 ## RCA
 
