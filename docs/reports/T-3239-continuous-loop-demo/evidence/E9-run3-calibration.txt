@@ -134,3 +134,53 @@ wrapper exit code: 1
   PASS  the closes were real work, not bookkeeping  artefacts with CORRECT content = 5 (wrong = 0)
 
 PASS: 2  FAIL: 2
+
+==================== CALIBRATION ANALYSIS (added post-run) ====================
+
+This run is the first E9 with a CORRECT rig (real backlog created by the real
+verb, onboarding tasks removed, verification lines live, positive control passed
+— see E9-positive-control.txt). Its 2/4 is therefore the first attributable
+E9 result. Both PASSes and both FAILs mean something.
+
+WHAT PASSED, AND IT IS NOT NOTHING
+  5 of 5 backlog tasks closed, every one through the P-011 verification gate, and
+  all 5 artefacts carried the exact required content (wrong = 0). The loop does
+  real, gated work. Prior runs could not support this claim: they closed fw
+  init's onboarding tasks, which carried no verification line at all.
+
+WHAT FAILED, AND WHY — measured from the sandbox transcript, not inferred
+  baseline (first turn)   52841
+  final (last turn)       67471
+  critical (0.95*72000)   68400
+  ---------------------------------------------
+  MISSED THE TRIP BY        929 tokens
+
+  5 tasks cost 14630 tokens        -> ~2926 per task
+  headroom 68400 - 52841 = 15559   -> 15559 / 2926 ~= 5.3 tasks per window
+
+  Five tasks is almost exactly ONE window's worth of work. The session spent 94%
+  of its headroom, finished the entire backlog, and exited cleanly 929 tokens
+  short of critical. No trip, so no restart, so nothing could close "after the
+  first restart". The ledger shows four iterate/rearm events (clean exit, no
+  signal) and zero iterate/restart — the wrapper relaunching a session that had
+  nothing left to do, four times, until MAX_RESTARTS.
+
+THE SHAPE OF THE MISTAKE
+  Run 2 starved the loop: too little headroom (~2.5k) for the work.
+  Run 3 starved the trip:  too little work (14.6k) for the headroom (15.6k).
+
+  Same error, opposite directions: sizing one of {window, backlog} without
+  reference to the other. Neither number is wrong on its own. What has to be true
+  is a RATIO — the backlog must outlast the window. That is not a harness detail;
+  it is the arc's entire premise, that work can exceed one context and survive
+  the boundary. A backlog that fits in one window cannot test it, however
+  correctly the loop behaves.
+
+  Note this failure was PREDICTED before the run ended, from the live gauge
+  reading 52711 against a 68400 critical with the backlog already half closed.
+  The prediction is what makes the result evidence rather than an accident.
+
+NEXT
+  N_BACKLOG 5 -> 12 (~2.3 windows at the measured cost), WINDOW unchanged at
+  72000. The trip should land near task 5-6, with real closes on both sides.
+  If WINDOW changes, N_BACKLOG must be re-derived from the per-task cost.

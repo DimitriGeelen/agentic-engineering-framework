@@ -13,7 +13,7 @@
 #
 #     does the loop CLOSE A TASK, TRIP, RESTART, and CLOSE ANOTHER?
 #
-# The sandbox therefore carries a real backlog — five real tasks created through
+# The sandbox therefore carries a real backlog — twelve real tasks created through
 # the real verb, each with a tickable AC and a verification line the close gate
 # actually runs — and the directive tells the loop to work them. Assertion 3 is
 # the deliverable: a task whose date_finished lands AFTER the restart event,
@@ -33,10 +33,29 @@
 # bought. At WINDOW=58000 (critical 55100) that left ~2.5k of headroom, about 4%,
 # so the loop cycled correctly and progressed barely: 3 restarts, 1 task closed.
 #
-# 72000 puts critical at 68400 and headroom at ~15.8k — roughly 6x the first run's
+# 72000 puts critical at 68400 and headroom at ~15.6k — roughly 6x the first run's
 # and the same order as production (300k window, ~50k baseline, ~4.7x headroom).
-# The trip still lands mid-backlog, which is where a real one would land, but the
-# session now has room to finish a task on either side of it.
+#
+# WHY TWELVE TASKS. The window alone does not decide whether the trip lands
+# mid-backlog; the BACKLOG COST does, and the third run measured it:
+#
+#     baseline 52841 -> final 67471   =  14630 tokens for 5 tasks  (~2926/task)
+#     headroom  68400 - 52841         =  15559 tokens
+#     tasks per window                =  15559 / 2926  ~= 5.3
+#
+# So five tasks is almost exactly ONE window's worth. That run consumed 94% of
+# the headroom, finished the whole backlog, and stopped 929 tokens short of
+# critical — it never tripped, and assertions 1 and 3 failed for the OPPOSITE
+# reason to run 2: too much headroom for the work, not too little.
+#
+# Both failures are the same mistake in different directions: sizing one of
+# {window, backlog} without reference to the other. What has to be true is a
+# RATIO — the backlog must outlast the window, which is the arc's whole premise
+# (work that does not fit in one context). 12 tasks is ~2.3 windows, so the trip
+# lands near task 5-6 with real closes on both sides.
+#
+# If you change WINDOW, re-derive N_BACKLOG from the per-task cost. Do not nudge
+# one and leave the other.
 #
 # Usage: bash docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh
 #        SETUP_ONLY=1 bash ...   build the sandbox, assert the rig, stop before the loop
@@ -59,6 +78,10 @@ WINDOW=72000
 CACHE_AGE=1
 RECHECK=1
 MAXR=4
+# Backlog size. See "WHY TWELVE TASKS" in the header — this is derived from a
+# measurement, not chosen. Keep it >= 2x the tasks-per-window figure so the trip
+# lands mid-backlog with real work on BOTH sides of it.
+N_BACKLOG=12
 cleanup() { [ "${KEEP_SANDBOX:-0}" = "1" ] && { echo "KEPT: $SANDBOX"; return 0; }; rm -rf "$(dirname "$SANDBOX")"; }
 trap cleanup EXIT
 
@@ -97,8 +120,8 @@ FW="./.agentic-framework/bin/fw"
 # So: no step here is allowed to fail quietly, and the population is asserted by
 # NAME, not by count.
 
-echo "creating a real backlog (5 tasks, real verb) ..."
-for n in 1 2 3 4 5; do
+echo "creating a real backlog (${N_BACKLOG} tasks, real verb) ..."
+for n in $(seq 1 "$N_BACKLOG"); do
     ( cd "$SANDBOX" && timeout 120 $FW task create \
         --name "E9 backlog item ${n} - record the item number in a file" \
         --description "Create item${n}.txt at the project root containing exactly done${n}." \
@@ -113,14 +136,15 @@ done
 # five items we created and the result is attributable.
 rm -f "${SANDBOX}/.tasks/active/"T-00[1-5]-*.md
 
-python3 - "$SANDBOX" <<'PY'
+python3 - "$SANDBOX" "$N_BACKLOG" <<'PY'
 import glob, os, re, sys
 sandbox = sys.argv[1]
+expected = int(sys.argv[2])
 paths = sorted(glob.glob(os.path.join(sandbox, ".tasks/active/T-*.md")))
 
-if len(paths) != 5:
-    sys.exit("FATAL: expected exactly 5 backlog tasks, found %d: %s"
-             % (len(paths), [os.path.basename(p) for p in paths]))
+if len(paths) != expected:
+    sys.exit("FATAL: expected exactly %d backlog tasks, found %d: %s"
+             % (expected, len(paths), [os.path.basename(p) for p in paths]))
 
 for i, path in enumerate(paths, start=1):
     s = open(path).read()
@@ -150,13 +174,13 @@ for i, path in enumerate(paths, start=1):
     assert f"item{i}.txt` exists" in check, path
     assert f"grep -qx 'done{i}' item{i}.txt" in check, path
 
-print("backlog OK: 5 E9 tasks, each with a tickable AC and a verification line")
+print("backlog OK: %d E9 tasks, each with a tickable AC and a verification line" % expected)
 PY
 [ $? -eq 0 ] || { echo "FATAL: backlog setup failed"; exit 3; }
 
 # The commit message needs a T-XXX or fw init's own commit-msg hook rejects it.
 git -C "$SANDBOX" add -A >/dev/null 2>&1
-git -C "$SANDBOX" commit -qm "T-3246: baseline - 5-task E9 backlog" >/dev/null 2>&1 \
+git -C "$SANDBOX" commit -qm "T-3246: baseline - ${N_BACKLOG}-task E9 backlog" >/dev/null 2>&1 \
   || { echo "FATAL: sandbox baseline commit rejected"; exit 3; }
 
 HOOKS=$(python3 -c "
