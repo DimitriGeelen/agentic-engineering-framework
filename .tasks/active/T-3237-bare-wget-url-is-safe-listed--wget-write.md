@@ -1,17 +1,16 @@
 ---
-id: T-3227
-name: "arc-012 continuous-run: multi-agent code review of the review slice via TermLink"
+id: T-3237
+name: "bare 'wget URL' is safe-listed — wget writes to cwd by default, no flag required"
 description: >
-  arc-012 continuous-run: multi-agent code review of the review slice via TermLink
+  T-3222 closed the explicit-destination forms (curl -o FILE, wget -O FILE) but left the bare form admitted. wget's DEFAULT behaviour with no flag at all is to write the remote filename into cwd, so 'wget https://host/payload.sh' passes is_bash_safe_command and skips the Bash task gate while creating a file. Reproduced live against agents/context/lib/safe-commands.sh: is_bash_safe_command 'wget https://x/y' -> SAFE, while 'wget -O out https://x/y' -> NOT-SAFE. Corroborated independently from both the code side (W2-F4) and the test side (W4-F3) in the T-3227 arc-012 review, which also found the certifying test never asks about the bare form. curl differs and is genuinely safe bare: without -o/-O it writes to stdout.
 
-status: started-work
-workflow_type: test
+status: captured
+workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:continuous-run, review]
+tags: [arc:continuous-run, bug, hook, safe-list]
 components: []
-related_tasks: []
-arc_id: continuous-run
+related_tasks: [T-3227, T-3222, T-2876]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -22,9 +21,9 @@ arc_id: continuous-run
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-31T11:10:36Z
-last_update: 2026-08-31T13:12:53Z
-date_finished:
+created: 2026-09-01T05:22:33Z
+last_update: 2026-09-01T05:22:33Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,66 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-31T11:15:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 1
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
-      (workflow:test); effort=8 (lines=292,acs=9)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-31T11:15:17Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      Discard fidelity: 0
-      Loop closure (conditional): 0
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: Discard fidelity=0 (no-signal); Loop closure (conditional)=0 
-      (no-signal); D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3227: arc-012 continuous-run: multi-agent code review of the review slice via TermLink
+# T-3237: bare 'wget URL' is safe-listed — wget writes to cwd by default, no flag required
 
 ## Context
 
-`/ultrareview` refuses arc-012 on `bleeding-edge`: the diff vs `master` is 314
-files / 69,006 lines against limits of 500 / 8,000. The overflow is machine churn
-riding the same branch (`.context/project/metrics-history.yaml` alone is 14,902
-lines), not the arc. The arc's actual code is 43 files / 5,648 lines, sliced onto
-branch `arc012-ultrareview`. Scoping doc and review prompt:
-`docs/reports/arc-012-ultrareview-prompt.md`.
-
-The cloud `/ultrareview` is operator-triggered and cannot be launched from a
-session, so this task runs the equivalent review on the framework's own substrate:
-five parallel TermLink `claude -p` workers, each auditing one part of the slice,
-writing to repo paths and posting to the bus (zero parent context cost).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Review slice branch `arc012-ultrareview` exists, is built from `master`, and its diff is inside the ultrareview gate limits (< 500 files, < 8000 lines)
-- [x] The rebuild one-liner in `docs/reports/arc-012-ultrareview-prompt.md` reproduces the slice tree byte-identically when run verbatim
-- [x] Five TermLink workers dispatched, each with a disjoint file assignment covering all 43 slice files with no file assigned twice and none unassigned
-- [x] Every dispatched worker produced a report under `docs/reports/arc-012-review/` containing a `## Verdict` section
-- [x] Each worker posted its result to `fw bus` under T-3227 (`fw bus manifest T-3227` lists one envelope per worker)
-- [x] Findings synthesised into `docs/reports/arc-012-review/SYNTHESIS.md`, deduplicated across workers, ordered by severity, each with a concrete failure scenario
-- [x] Every `critical` or `high` finding is either reproduced by the orchestrator against the real file, or explicitly downgraded to `plausible` with the reason it could not be confirmed
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -244,25 +197,6 @@ writing to repo paths and posting to the bus (zero parent context cost).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# AC1 — slice branch exists and is inside the ultrareview gate limits (500 files / 8000 lines)
-git rev-parse --verify arc012-ultrareview >/dev/null 2>&1
-git diff --shortstat master..arc012-ultrareview > /tmp/.t3227-slice 2>&1 && test "$(awk '{print $1}' /tmp/.t3227-slice)" -lt 500
-git diff --numstat master..arc012-ultrareview > /tmp/.t3227-num 2>&1 && test "$(awk '{s+=$1+$2} END {print s+0}' /tmp/.t3227-num)" -lt 8000
-
-# AC2 — the rebuild one-liner in the scoping doc is present and names the same exclusion set it was verified with
-grep -q 'grep -vE .\^\$|\^\\.context/|\^\\.tasks/|\^docs/|\^\\.agentic-framework/' docs/reports/arc-012-ultrareview-prompt.md
-
-# AC4 — every worker report exists and carries a Verdict section
-test "$(ls docs/reports/arc-012-review/W*.md 2>/dev/null | wc -l)" -eq 5
-test "$(grep -l '^## Verdict' docs/reports/arc-012-review/W*.md 2>/dev/null | wc -l)" -eq 5
-
-# AC5 — one bus envelope per worker under T-3227
-bin/fw bus manifest T-3227 > /tmp/.t3227-bus 2>&1 && test "$(grep -c 'R-' /tmp/.t3227-bus)" -ge 5
-
-# AC6 — synthesis exists and is non-trivial
-test -s docs/reports/arc-012-review/SYNTHESIS.md
-grep -q '^## ' docs/reports/arc-012-review/SYNTHESIS.md
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -302,65 +236,6 @@ grep -q '^## ' docs/reports/arc-012-review/SYNTHESIS.md
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-### 2026-08-31 — the yield came from the framing, not from the coverage
-
-- **What changed:** At filing this read as a coverage exercise — "the cloud
-  `/ultrareview` refuses the branch, so run the equivalent on our own substrate."
-  The slice-and-dispatch mechanics turned out to be the cheap part and worked
-  first try. What actually produced the yield was the *question*: every worker was
-  handed this arc's own seven already-fixed false greens (T-3219, T-3217, T-3218,
-  T-3209, T-3220, T-3202, T-3226) and asked to carry one question through the
-  code — *can this report success without having tested its subject?* 70 findings,
-  3 critical, 20 high, and the criticals were not new categories but new
-  **instances** of the arc's own bug class, several of them inside the fixes.
-- **Plan impact:** the transferable artefact is the prompt, not the pipeline.
-  `docs/reports/arc-012-ultrareview-prompt.md` is the thing worth reusing; the
-  five-worker fan-out is ordinary dispatch.
-- **Triggered:** C1 → T-3228, C2 → T-3231, C3 → T-3232, and the arm-verb cluster
-  (W1-F2/F3/F4 + W5-F4, filed as one piece of work rather than four) → T-3233.
-  All four closed.
-
-### 2026-08-31 — worker confidence is not evidence: 2 of 3 criticals had the mechanism wrong
-
-- **What changed:** not anticipated at filing that AC7's reproduction step would
-  **correct** findings rather than merely confirm them. C2's
-  `git commit -m "…--help"` row was overstated: the command does take the
-  exemption, but the task gate would not have blocked it either way
-  (ALLOW → ALLOW), so it demonstrates the regex flaw without being a governance
-  loss — the sharper instance is focus-drift on
-  `bin/fw task update T-3229 --add-tag "see --help first"` (ALLOW → GATED). C3's
-  stated mechanism — "reports the same pass" — was simply wrong, and the truth is
-  worse: the early return fires *before* the gate prints its header, so a task
-  whose block cannot be decoded produces output **byte-identical** to a task with
-  no Verification block at all. A printed `0/0 passed` would at least have left a
-  trace.
-- **Plan impact:** both corrections were written back into `SYNTHESIS.md` at
-  landing time rather than left buried in the closed follow-ups, because the
-  synthesis is what a future reader opens. AC7 was then read strictly in the other
-  direction too: 15 of the 20 highs are explicitly **downgraded to plausible**
-  rather than inheriting their author-worker's confidence marker. Declaring them
-  confirmed because a worker said so would have been this review's own failure
-  mode, one layer up.
-- **Triggered:** the correction blocks in SYNTHESIS.md §C2/§C3; and — at close —
-  T-3237 (bare `wget URL` still safe-listed) and T-3238 (`find` unconditionally
-  safe-listed, so `-delete` and `-exec` pass) for the two orchestrator-reproduced
-  highs that had no task of their own. Both re-probed live against
-  `agents/context/lib/safe-commands.sh` before filing, with a passing control leg.
-
-### 2026-08-31 — the overflow that blocked /ultrareview was itself branch-model evidence
-
-- **What changed:** the diff that tripped the gate (314 files / 69,006 lines
-  against limits of 500 / 8,000) was overwhelmingly machine churn riding
-  `bleeding-edge`, not the arc — `.context/project/metrics-history.yaml` alone is
-  14,902 lines. The arc's actual code is 43 files / 5,648 changed lines, which
-  clears the limits with room to spare.
-- **Plan impact:** the exclusion set in the rebuild one-liner (`.context/`,
-  `.tasks/`, `docs/`, `.agentic-framework/`) stopped being a workaround for this
-  task and became a reusable recipe for any future review of this repo.
-- **Triggered:** nothing filed — recorded here as the reason AC2 pins the
-  one-liner verbatim in the scoping doc rather than leaving it as session folklore.
-
 
 ## Recommendation
 
@@ -414,7 +289,7 @@ grep -q '^## ' docs/reports/arc-012-review/SYNTHESIS.md
 
 ## Updates
 
-### 2026-08-31T11:10:36Z — task-created [task-create-agent]
+### 2026-09-01T05:22:33Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3227-arc-012-continuous-run-multi-agent-code-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3237-bare-wget-url-is-safe-listed--wget-write.md
 - **Context:** Initial task creation
