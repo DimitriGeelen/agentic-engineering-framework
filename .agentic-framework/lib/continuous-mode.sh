@@ -467,10 +467,26 @@ print(f"  Sessions: {iters} (advances only across SessionStart)")
 # .py, reached only from post-compact-resume.sh, wired only to SessionStart. The
 # Stop hook drives turns INSIDE one session, where no SessionStart fires, so the
 # session counter is frozen for the whole run and max_iterations never binds.
-# Leading with it read as the operative bound; it is not, so it is listed last and
-# labelled, and the two bounds that DO bind a Stop-hook-driven run are named here.
-print("  Binding a Stop-hook-driven run: expiry and max tasks (the session")
-print("  count advances only when a new session starts).")
+# Leading with it read as the operative bound; it is not, so it is listed last.
+#
+# T-3239 CORRECTION, MEASURED. This line used to name "expiry and max tasks" as the
+# two bounds that DO bind a Stop-hook-driven run. Neither can. A live claude -p run
+# against the real driver (docs/reports/T-3239-continuous-loop-demo/evidence/
+# E2-armed-*) produced exactly ONE decision=continue and then:
+#
+#   decision=stop reason=stop_hook_active=true (platform runaway guard)
+#
+# Brake 3a is checked BEFORE the caps (stop-driver.sh:87-101), and Claude Code sets
+# stop_hook_active on every stop that follows a hook-driven continuation. So the
+# second stop of any run yields there, and expiry / max_tasks are never consulted.
+# The driver's own header says "our counter is meant to stop the loop first, leaving
+# the vendor's cap as the backstop we did not write" — that intent is not met, and
+# stating unreachable bounds as the operative ones is the false-green class this arc
+# exists to remove. Whether the cap SHOULD be one turn is a sovereignty decision for
+# the operator, not something to quietly widen here; T-3240 carries it.
+print("  Binding a Stop-hook-driven run: ONE continuation, then the platform's")
+print("  stop_hook_active guard (measured, T-3239). Expiry and max tasks are")
+print("  checked after it, so in practice they bound the SESSION count, not turns.")
 print(f"  Check:   {why}")
 print(f"  Halt at any time:  touch {halt}")
 sys.exit(0 if st == "ARMED" else 1)
