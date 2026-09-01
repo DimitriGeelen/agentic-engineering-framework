@@ -1,0 +1,39 @@
+T-3239 E3 — M2 link 1: does the budget self-trigger fire?
+generated: 2026-09-01T07:26:49Z
+repo sha:  74c8b1724
+window:    FW_CONTEXT_WINDOW=100000  (critical at 95% = 95000)
+each transcript entry carries 400000 tokens — 4x the whole window.
+
+  A-scopeable-critical
+      transcript entries : 3
+      context_tokens.py  : 400000     <- what the gauge believes
+      gate exit code     : 2 (want 2; 2 = blocked at critical)
+      .restart-requested : yes (want yes)
+      .budget-status     : {"level": "critical", "tokens": 400000, "timestamp": 1788247608, "source": "budget-gate"}
+      verdict            : PASS
+
+  B-unscopeable-1-entry
+      transcript entries : 1
+      context_tokens.py  : 0     <- what the gauge believes
+      gate exit code     : 0 (want 0; 2 = blocked at critical)
+      .restart-requested : no (want no)
+      .budget-status     : {"level": "ok", "tokens": 0, "timestamp": 1788247608, "source": "budget-gate"}
+      verdict            : PASS
+
+  C-no-transcript
+      transcript entries : 0  (no transcript at all)
+      context_tokens.py  : n/a     <- what the gauge believes
+      gate exit code     : 0 (want 0; 2 = blocked at critical)
+      .restart-requested : no (want no)
+      .budget-status     : (none)
+      verdict            : PASS
+
+
+----------------------------------------------------------------
+PASS: 3   FAIL: 0
+
+READING THIS: case A and case B carry the SAME token volume. A is
+blocked at critical and arms the restart; B reports level=ok, exits 0,
+and writes no restart signal — because the scan could not scope it and
+returns 0, which is the same value a genuinely fresh session produces.
+Nothing on B's output says 'I could not measure'.
