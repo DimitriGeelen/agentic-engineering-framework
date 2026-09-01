@@ -9,17 +9,17 @@ description: >
   a lifetime restart cap that kills healthy hours-apart runs, an off-by-one that makes
   MAX_RESTARTS=5 permit 4, and a clean claude exit that tears down the supervisor.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, arc-012, supervisor]
-components: [bin/claude-fw]
+components: [bin/claude-fw, lib/config.sh, web/blueprints/config.py]
 related_tasks: [T-3239, T-3240, T-3166, T-3182, T-3206]
 arc_id: continuous-run
 created: 2026-09-01T10:03:09Z
-last_update: '2026-09-01T10:15:17Z'
-date_finished:
+last_update: 2026-09-01T10:35:38Z
+date_finished: 2026-09-01T10:35:38Z
 cost_estimate_proposed:
   - ts: '2026-09-01T10:15:09Z'
     estimator: bvp-estimator-v1-heuristic
@@ -141,6 +141,30 @@ mechanism itself.
 - [x] **`bash -n bin/claude-fw` parses** and the config library still parses, so the
   launch path every consumer project depends on is not broken by this change.
 
+### Human
+
+- [ ] [REVIEW] The two new rows on Watchtower `/config` read cleanly and do not break the
+  table layout.
+
+  This is a genuine judgment call, not a rubber-stamp: I gave `MAX_RESTARTS` and
+  `RESTART_WINDOW` unusually long descriptions (both carry the T-3243 rationale, because a
+  bare "max auto-restarts" is what let the wrong shape survive). Long strings in that
+  column may wrap awkwardly or push the table wide. If they read badly, the right fix is
+  shorter descriptions here — not a wider table.
+
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` to get the URL
+  2. Open `<url>/config` in a browser
+  3. Find the `MAX_RESTARTS` and `RESTART_WINDOW` rows
+
+  **Expected:** Both rows render inside the table with the description wrapping within its
+  column. No horizontal page scroll, no text overflowing into a neighbouring column, and
+  `RESTART_WINDOW` visibly sits next to `MAX_RESTARTS` so the pair reads as related.
+
+  **If not:** Note which row breaks and how, and shorten the description string in BOTH
+  `lib/config.sh` and `web/blueprints/config.py` — the parity lint
+  (`tests/lint/config-registry-parity.bats`) requires the two to stay in step.
+
 ## Verification
 
 bash -n bin/claude-fw
@@ -245,7 +269,32 @@ one.
 
 ## Recommendation
 
-<!-- filled if this reaches partial-complete -->
+**Recommendation:** GO
+
+**Rationale:** All eleven Agent ACs are ticked and the six verification commands pass.
+The change is bounded — one wrapper script, one registry key, and the mirrored row in the
+Watchtower config page — and the only Human AC left is a look at how two table rows
+render, which cannot regress the loop itself. What earns GO rather than DEFER is that the
+suite was shown to bite: pointed at the pre-fix wrapper it goes red on 8 of 11 cases, and
+the 3 that stay green are exactly the control legs asserting behaviour that must NOT
+change. That is the difference between "the tests pass" and "the tests would have caught
+this".
+
+The honest limit on this GO: it fixes the supervisor, and the supervisor is not the whole
+loop. D3's re-arm only fires when a continuous run is armed, and this project is currently
+disarmed — so two of the three deaths on record are fixed *conditionally*, on an operator
+decision this task deliberately does not make for them. Arming is a sovereignty call.
+
+**Evidence:**
+- `tests/unit/t3243_supervisor_restart_policy.bats` — 11/11 green, 0 skips
+- Falsification: `FW_TEST_WRAPPER=<HEAD's claude-fw> bats …` → 8 of 11 red, 3 control legs
+  green (cases 6, 7, 11)
+- P-011 block: 6/6 pass, including `config-registry-parity.bats` 3/3 after the
+  `web/blueprints/config.py` mirror was added — the lint caught my own incomplete change
+- Wire evidence for the defects: `.context/working/continuous-run.jsonl`, 13 events,
+  2026-08-29 → 2026-08-31; 4 restarts across 28h52m terminated as a runaway
+- Vendored to `.agentic-framework/bin/claude-fw` (consumer sessions run that copy)
+- Commits `8c42fe698`, `02fad94d0`, pushed to `bleeding-edge`
 
 ## Decisions
 
@@ -254,3 +303,19 @@ one.
 ### 2026-09-01T10:03:09Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-149245bd
+- **Timestamp:** 2026-09-01T10:36:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `consumer project`
+
+### 2026-09-01T10:35:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
