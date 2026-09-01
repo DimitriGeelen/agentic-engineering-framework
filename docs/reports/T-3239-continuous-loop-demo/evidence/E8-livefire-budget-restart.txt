@@ -1,0 +1,86 @@
+T-3239 E8 — LIVE budget trip → REAL restart (the positive of E7)
+generated:  2026-09-01T12:18:13Z
+repo sha:   4e9adc69b
+claude:     2.1.245 (Claude Code)
+sandbox:    /tmp/tmp.y6sNSoRSFV/proj   (real fw init)
+hooks:      PostToolUse=7 PreCompact=1 PreToolUse=9 SessionStart=3
+dial 1:     FW_CONTEXT_WINDOW=4000  (critical at 95% = 3800)
+dial 2:     FW_BUDGET_STATUS_MAX_AGE=1  (E8 #1 — E7 ran blind behind the 90s seed)
+dial 3:     FW_BUDGET_RECHECK_INTERVAL=1  (E8 #2 — default 5 measures only calls 1,6,11…)
+policy:     MAX_RESTARTS=2
+armed:      1  (1 = fw continuous arm succeeded)
+focus:      T-006  (blocker 4 — Tier-1 task gate needs an active task)
+
+───── wrapper transcript ─────
+
+claude-fw: budget-critical signal detected — ending claude to trigger auto-restart.
+
+claude-fw: Auto-restart #1 (session: S-2026-0901-1216, tokens: 52804)
+  Directive: Continue the demo arc. Reply with exactly: BEACON-E8
+  Restart mode: fresh (new session, seeded from the handover)
+  Handover committed. Continuing in 3 seconds...
+  Press Ctrl+C to cancel.
+
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+
+claude-fw: Re-arm #2 — claude exited (code 1) with no restart signal,
+  and a continuous run is armed. Relaunching in 5 seconds.
+  To stop the run:   touch /tmp/tmp.y6sNSoRSFV/proj/.context/working/.continuous-halt
+  Or disarm it:      fw continuous disarm
+  Or just press Ctrl+C.
+
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+
+claude-fw: Continuous run is armed, but the restart budget is exhausted
+  (2/2 within the last 3600s). Stopping.
+
+───── did the session actually make tool calls? (flakiness telltale) ─────
+chain tokens echoed back by the model: 0/6  (0 = shortcut, no Bash ran)
+(each token requires its own sequential Bash turn — that is what generates the usage entries)
+
+───── budget-gate invocation count (blocker 4 telltale) ─────
+1
+
+───── active task the session ran under ─────
+current_task: T-006
+
+───── budget gauge as the framework recorded it ─────
+{"level": "ok", "tokens": 0, "timestamp": 1788265123, "source": "budget-gate"}
+───── restart signal (written by budget-gate, consumed by claude-fw) ─────
+(consumed by the wrapper, or never written — read the ledger below to tell which)
+
+───── loop event ledger ─────
+{"ts": "2026-09-01T12:18:13Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 8453, "detail": "restart=enabled max_restarts=2 window=3600s armed=yes termlink=0"}
+{"ts": "2026-09-01T12:18:24Z", "event": "iterate", "reason": "restart", "restart_count": 1, "wrapper_pid": 8453, "detail": "session=S-2026-0901-1216 tokens=52804"}
+{"ts": "2026-09-01T12:18:34Z", "event": "iterate", "reason": "rearm", "restart_count": 2, "wrapper_pid": 8453, "detail": "clean exit (code=1) with no signal; continuous run armed; budget 2/2 in 3600s"}
+{"ts": "2026-09-01T12:18:45Z", "event": "exit", "reason": "max-restarts", "restart_count": 2, "wrapper_pid": 8453, "detail": "re-arm refused: 2 restarts within 3600s window >= MAX_RESTARTS=2", "exit_code": 1}
+
+───── continuous-mode state after the run ─────
+enabled: true
+max_iterations: 5
+tier_ceiling: 1
+expires_after_seconds: 86400
+current_iteration: 2
+tasks_completed: 0
+max_tasks: null
+last_terminated_reason: ''
+last_resumed_at: '2026-09-01T12:18:45Z'
+completed_task_ids: []
+last_directive_seen: 'Continue the demo arc. Reply with exactly: BEACON-E8'
+last_source: startup
+
+wrapper exit code: 1
+
+───── assertions ─────
+  PASS  the sandbox is a real framework project  hooks: PostToolUse=7 PreCompact=1 PreToolUse=9 SessionStart=3
+  PASS  the real gauge reached critical on a real session  restart carried tokens=52804 (critical at 3800)
+  PASS  the budget trip produced a REAL restart  iterate/restart events = 1 (want >=1)
+  PASS  the wrapper committed a handover before restarting  'Handover committed' in wrapper stdout = 1
+  PASS  the directive was re-injected into the restarted session  'Directive:' lines = 1
+  PASS  the loop's iteration counter advanced  current_iteration = 2
+
+  note  post-run caches are NOT evidence of an intra-run event:
+        .budget-status  = ok (source budget-gate) — the RESTARTED session re-measured
+        .budget-gate-counter = 1 — cleared as a volatile file at each SessionStart
+
+PASS: 6  FAIL: 0
