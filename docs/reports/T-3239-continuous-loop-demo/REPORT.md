@@ -1,0 +1,123 @@
+# arc-012 headline mechanic — what is actually proven
+
+**Task:** T-3239 · **Arc:** continuous-run (arc-012) · **Date:** 2026-09-01
+**Artefacts:** `evidence/` (raw logs and transcripts, re-readable without re-running)
+**Harnesses:** `brake-truth-table.sh`, `live-fire-m1.sh`, `budget-selftrigger.sh`, `resume-injection.sh`
+
+The arc's `headline_mechanic` reads:
+
+> agent crosses the context-budget threshold without operator relay → checkpoint.sh
+> fires self-trigger → handover + resume via claude-fw → operator observes multi-cycle
+> continuous session whose iteration counter, directive, and bounded tier-ceiling are
+> visible in `fw resume status`
+
+`demo_evidence:` was empty, so `fw arc close` had nothing to gate on. This is that evidence.
+
+---
+
+## The distinction everything else depends on (L-652)
+
+The sentence above bundles **two different mechanisms**, and they fail independently:
+
+| | **M1 — Stop-hook turn driver** | **M2 — budget compact-resume** |
+|---|---|---|
+| what it does | drives another **turn** inside one session | ends the session, **restarts** it, re-injects the directive |
+| entry point | `Stop` hook → `agents/context/stop-driver.sh` | budget critical → `budget-gate.sh` → `.restart-requested` → `claude-fw` |
+| counter | none — advances nothing | `current_iteration`, advanced once per SessionStart |
+| bounded by | halt file, `stop_hook_active` | `max_iterations`, `max_tasks`, expiry, tier ceiling |
+
+L-652 already warned these "look like one in the ledger". Every claim below names which one it is about. **No line of evidence here is allowed to stand for both.**
+
+---
+
+## Verdict per link
+
+| link | mechanism | status | evidence |
+|---|---|---|---|
+| Stop hook fires and decides | M1 | **PROVEN** | E1, E2 |
+| every brake fires by name | M1 | **PROVEN** (11/11) | E1 |
+| loop drives another turn | M1 | **PROVEN — exactly one** | E2 |
+| loop drives *many* turns | M1 | **DISPROVEN** | E2 |
+| budget threshold self-triggers | M2 | **PROVEN when measurable** | E3-A |
+| …and when not measurable | M2 | **FAILS OPEN, silently** | E3-B/C |
+| resume advances the counter | M2 | **PROVEN** | E4 |
+| directive re-injected with ceiling | M2 | **PROVEN** | E4 |
+| handover → `claude -c` restart | M2 | **NOT PROVEN** | — |
+| arc focus survives a restart | M2 | **NOT PROVEN** | — |
+
+Two links remain unproven, and they are named as such rather than assumed from the links either side of them. That is the whole discipline this arc exists to enforce.
+
+---
+
+## E1 — every brake fires, by name (11/11)
+
+`brake-truth-table.sh` drives the real driver against a throwaway project root, one row per brake. It asserts the **stdout shape**, not the log line: T-3163 measured that `{"decision":"block"}` drives a turn while `{"ok": false}` is silently inert *and logs identically*. A harness checking only the log would certify a driver that drives nothing.
+
+All eleven rows matched: `halt-file`, `stop_hook_active`, `continuous-mode-disabled`, `terminated[stored@…]`, `max_tasks-reached(3>=3)`, `max_iterations-reached(11>10)`, `expired-at`, `no state file`, `state-unreadable-or-empty`, plus both continue paths.
+
+**No brake is reported as working on the strength of reading it.** T-3228's fix is visible here too: row 05 emits `terminated[stored@2026-08-26T12:50:35Z]` — one clock per line, the stored one labelled.
+
+## E2 — the loop drives exactly ONE continuation
+
+A real `claude -p` session, isolated sandbox, real driver. The live repo was never armed: arming it to test the loop would hand the operator's own session to the loop, which is what the driver's DISARMED-BY-DEFAULT posture exists to prevent.
+
+```
+control (disarmed): 1 assistant turn,  0 continue, 1 stop   continuous-mode-disabled
+armed:              5 assistant turns, 1 continue, 1 stop
+```
+
+The armed run's log, verbatim:
+
+```
+2026-09-01T07:23:27Z decision=continue reason=iteration-1
+2026-09-01T07:23:40Z decision=stop reason=stop_hook_active=true (platform runaway guard)
+```
+
+**Brake 3a is checked before every one of our own caps** (`stop-driver.sh:87-101`), and Claude Code sets `stop_hook_active` on any stop following a hook-driven continuation. So the second stop of *any* run yields there, always. Expiry, `max_tasks` and the tier ceiling are never reached inside a session.
+
+The driver's own header states the opposite intent — *"our counter is meant to stop the loop first, leaving the vendor's cap as the backstop we did not write"*. That intent is not met, and it cannot be met, because the counter it refers to (`current_iteration`) advances only at SessionStart, which by construction never fires inside a session.
+
+**This is not a bug to quietly fix.** Honouring `stop_hook_active` is precisely what stops a bug in our own counter from becoming an unbounded loop. Widening it is a sovereignty decision and needs a real in-session turn counter to bound it. Filed as **T-3240** (inception, owner human).
+
+**Fixed here:** `fw continuous arm` told the operator *"Binding a Stop-hook-driven run: expiry and max tasks"*. Measured, neither can bind. `lib/continuous-mode.sh` now states the measured truth — one continuation, then the platform guard.
+
+## E3 — the self-trigger fails open when it cannot measure
+
+Two transcripts, **identical 400,000-token volume**, 100,000-token window. They differ in exactly one property: whether `lib/context_tokens.py` can scope the transcript to a dominant model.
+
+| case | gauge reads | gate exit | `.restart-requested` | `.budget-status` |
+|---|---|---|---|---|
+| A scopeable | 400000 | **2 — blocked** | **yes** | `{"level":"critical","tokens":400000}` |
+| B 1 entry | **0** | 0 | **no** | `{"level":"ok","tokens":0}` |
+| C no transcript | n/a | 0 | no | *(file not written at all)* |
+
+`context_tokens.py` returns 0 by design below two in-scope entries — *"return 0 rather than guess"* — and `budget-gate.sh` maps 0 to `ok`. So **"I could not measure this session" and "this session is fresh" produce byte-identical output.** Nothing anywhere says the measurement failed.
+
+This **confirms review finding W1-F5**, which the T-3227 synthesis had downgraded to *plausible* for want of reproduction, and locates it one level deeper than the review did: the scoping rule, not `budget-gate`'s regex fallback. Filed as **T-3241** — the fix needs a third state (`unknown`) distinct from 0, surfaced at every consuming gauge, which is more blast radius than belongs in a demo task.
+
+## E4 — the resume end works (4/4)
+
+| case | `current_iteration` | outcome |
+|---|---|---|
+| armed, `--source resume` | 3 → **4** | directive re-injected, `## Next Directive (iteration 4/10, tier_ceiling 1)` |
+| armed, `--source compact` | 3 → **1** | operator `/compact` starts a fresh run |
+| disarmed | 3 → **3** | frozen — the control leg |
+| expired directive | 3 → **4** | `LOOP TERMINATED`, reason recorded |
+
+**One correction, made by measuring.** The expiry row was authored expecting **3**, reasoning that a terminated run performed no iteration — and the ceiling-breach path one line away *does* freeze the counter (`old_iter if ceiling_breach else new_iter`), so the asymmetry looked like a defect. Resuming an expired directive five times running gives `iter=4` and `reason=expires_at` every time: it advances once, on the resume that *discovers* the termination, then converges. Not a runaway. The harness expectation was corrected; no finding was filed. Recording this because the alternative — filing it — is how a review manufactures defects out of its own assumptions.
+
+---
+
+## What is NOT proven, stated plainly
+
+1. **The handover → `claude -c` restart leg (M2 links 2-3).** `.restart-requested` is written; that a supervised wrapper then consumes it and restarts was not exercised end to end.
+2. **Arc focus across a restart.** Not measured. Note that closing a task *clears* focus (T-3236), so a loop that closes a task mid-run enters the next iteration with no focus and the task gate refuses its first write.
+3. **`stop_hook_active` on a longer chain.** Only two stops were observed. Claude Code's own 8-consecutive-block cap was never reached because our guard fires first.
+
+A relevant environmental fact: **this session has `FW_CLAUDE_FW_SUPERVISED` unset.** Per `budget-gate.sh:85-97`, the restart loop only fires under `claude-fw`. So on this host, right now, even a correctly-written signal goes nowhere.
+
+## Bottom line
+
+The **substrate is sound**: eleven brakes fire correctly, the resume end advances and re-injects, the trigger fires when it can measure. The **headline mechanic is not demonstrated**: "multi-cycle continuous session" is two turns via M1, and M2's trigger is silently disabled whenever its gauge cannot scope the transcript.
+
+Per §ACD, substrate is not the deliverable. **arc-012 should stay OPEN.** The two decisions it now waits on are T-3240 (should a session drive more than one turn, and bounded by what) and T-3241 (make "unmeasurable" distinguishable from "fine").

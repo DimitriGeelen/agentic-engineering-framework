@@ -1,18 +1,16 @@
 ---
-id: T-3239
-name: "arc-012 headline-mechanic demo — wire-level evidence the continuous loop continues,
-  bounds, and stops"
+id: T-3241
+name: "budget gauge encodes 'could not measure' as level=ok, silently disarming the restart loop"
 description: >
-  arc-012 headline-mechanic demo — wire-level evidence the continuous loop continues,
-  bounds, and stops
+  REPRODUCED (T-3239 E3, docs/reports/T-3239-continuous-loop-demo/evidence/E3-budget-selftrigger.txt). Two transcripts carrying an IDENTICAL 400000-token volume against a 100000-token window: the scopeable one reports level=critical, exits 2 and writes .restart-requested; the one context_tokens.py cannot scope reports {"level":"ok","tokens":0}, exits 0, and writes no signal. lib/context_tokens.py returns 0 by design below two in-scope entries ('return 0 rather than guess'), budget-gate maps 0 to ok, and nothing anywhere emits 'I could not measure'. A third path exits 0 even earlier when no transcript is found at all. Link 1 of arc-012's headline mechanic therefore fails OPEN, and its failure is byte-identical to a healthy fresh session — the L-555 class inside the arc built to remove it. This confirms and upgrades review finding W1-F5 (previously downgraded to plausible), and locates it one level deeper than the review did: the scoping rule, not budget-gate's regex fallback. Fix needs a third state (unknown) distinct from 0, surfaced at every gauge that consumes it; blast radius is why this is its own task rather than an inline change.
 
-status: started-work
-workflow_type: test
+status: captured
+workflow_type: build
 owner: agent
 horizon: now
-tags: [arc:continuous-run]
+tags: [arc:continuous-run, bug, budget, false-green]
 components: []
-related_tasks: []
+related_tasks: [T-3239, T-2885, T-2403]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-01T07:17:27Z
-last_update: 2026-09-01T07:31:18Z
-date_finished:
+created: 2026-09-01T07:31:04Z
+last_update: 2026-09-01T07:31:04Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-01T07:30:11Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 1
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
-      (workflow:test); effort=8 (lines=265,acs=11)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-01T07:30:24Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3239: arc-012 headline-mechanic demo — wire-level evidence the continuous loop continues, bounds, and stops
+# T-3241: budget gauge encodes 'could not measure' as level=ok, silently disarming the restart loop
 
 ## Context
 
@@ -76,15 +46,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The two mechanisms arc-012's headline mechanic bundles are named and kept apart in every artefact (L-652): **M1** the Stop-hook turn driver (drives another turn inside one session) and **M2** the budget-triggered compact-resume (ends the session, restarts it, re-injects the directive). No evidence line is allowed to stand for both.
-- [ ] **M1 evidenced positively:** `.stop-driver.log` shows a contiguous run of >=3 `decision=continue reason=iteration-N` lines from one armed session with no operator turn between them, terminated by exactly one `decision=stop` whose reason is a **bound** (`max_iterations-reached` / `max_tasks-reached` / ceiling), never a **fault** (`no state file`, `pyyaml-unavailable`, `state-unreadable-or-empty`, `terminated[...]`, `expired-at`, `python3 unavailable`).
-- [ ] **M2 evidenced positively:** crossing the budget threshold writes `.restart-requested`, generates a handover, and the ensuing restart advances `current_iteration` in `.continuous-mode.yaml` with the directive re-injected — each step captured at wire level, not inferred from the next step's success.
-- [ ] **Control leg for both:** the same steps run **disarmed** produce `decision=stop` at the first turn and no `.restart-requested`. This is what separates "the loop fired" from "the loop never ran and nothing noticed" (L-555).
-- [ ] **Every brake is exercised or explicitly reported unexercised**, by name, from the driver's own table: halt-file, `stop_hook_active`, `continuous-mode-disabled`, `max_iterations-reached`, `max_tasks-reached`, `expired-at`, tier-ceiling. An unexercised brake is listed as such rather than implied to work.
-- [ ] **Arc focus holds:** `focus.yaml` names an `arc:continuous-run` task at every captured iteration boundary, and the demo states whether focus survives the M2 restart or is re-established by it.
-- [ ] Wire-level artefacts are committed under `docs/reports/T-3239-*/` and are re-readable by someone who did not run them (raw logs + transcript, not just prose).
-- [ ] Every link found broken is diagnosed to a root cause and either fixed in this task or filed as its own task; the demo report states which links are proven and which are not.
-- [ ] `demo_evidence:` on `.context/arcs/continuous-run.yaml` points at the artefact, so `fw arc close` has something real to gate on.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -326,10 +289,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-09-01T07:17:27Z — task-created [task-create-agent]
+### 2026-09-01T07:31:04Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3239-arc-012-headline-mechanic-demo--wire-lev.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3241-budget-gauge-encodes-could-not-measure-a.md
 - **Context:** Initial task creation
-
-### 2026-09-01T07:31:18Z — status-update [task-update-agent]
-- **Change:** tags: +arc:continuous-run

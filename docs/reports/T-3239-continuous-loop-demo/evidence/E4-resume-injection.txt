@@ -1,0 +1,31 @@
+T-3239 E4 — M2 links 4-5: resume advances the counter and re-injects
+generated: 2026-09-01T07:28:50Z
+repo sha:  642218603
+
+  1-resume-advances  (--source resume)
+      current_iteration  : 3 -> 4   (want 4)
+      terminated reason  : -
+      stdout (first 200) : ## Next Directive (iteration 4/10, tier_ceiling 1)  Continue the arc-012 run: take the next action toward the arc.  - Filed by: unknown at unknown - Expires at: 2026-09-02T07:28:49Z - Source: SessionS
+      verdict            : PASS
+
+  2-compact-resets  (--source compact)
+      current_iteration  : 3 -> 1   (want 1)
+      terminated reason  : -
+      stdout (first 200) : ## Next Directive (iteration 1/10, tier_ceiling 1)  Continue the arc-012 run: take the next action toward the arc.  - Filed by: unknown at unknown - Expires at: 2026-09-02T07:28:49Z - Source: SessionS
+      verdict            : PASS
+
+  3-disarmed-frozen  (--source resume)
+      current_iteration  : 3 -> 3   (want 3)
+      terminated reason  : -
+      stdout (first 200) : 
+      verdict            : PASS
+
+  4-expired-advances-once  (--source resume)
+      current_iteration  : 3 -> 4   (want 4)
+      terminated reason  : expires_at 2020-01-01T00:00:00Z passed (now 2026-09-01T07:28:50Z)
+      stdout (first 200) : ## Next Directive — LOOP TERMINATED (T-2364/T-2365)  The continuous-mode directive cap was reached: **expires_at 2020-01-01T00:00:00Z passed (now 2026-09-01T07:28:50Z)**.  - Iteration counter: 4 - M
+      verdict            : PASS
+
+
+----------------------------------------------------------------
+PASS: 4   FAIL: 0
