@@ -1,0 +1,15 @@
+T-3239 E2 — M1 live-fire, mode=disarmed
+started:  2026-09-01T07:23:09Z
+ended:    2026-09-01T07:23:15Z
+claude:   2.1.245 (Claude Code)
+repo sha: b134d083a
+exit rc:  0  (124 = timeout)
+
+assistant turns on the wire : 1
+decision=continue lines     : 0
+0
+decision=stop lines         : 1
+
+--- stop-driver.log (verbatim) ---
+2026-09-01T07:23:15Z decision=stop reason=continuous-mode-disabled(enabled=False)
+--- end ---

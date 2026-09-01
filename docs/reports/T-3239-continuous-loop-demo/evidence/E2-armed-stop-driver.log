@@ -1,0 +1,2 @@
+2026-09-01T07:23:27Z decision=continue reason=iteration-1
+2026-09-01T07:23:40Z decision=stop reason=stop_hook_active=true (platform runaway guard)

@@ -1,0 +1,15 @@
+T-3239 E2 — M1 live-fire, mode=armed
+started:  2026-09-01T07:23:22Z
+ended:    2026-09-01T07:23:40Z
+claude:   2.1.245 (Claude Code)
+repo sha: b134d083a
+exit rc:  0  (124 = timeout)
+
+assistant turns on the wire : 5
+decision=continue lines     : 1
+decision=stop lines         : 1
+
+--- stop-driver.log (verbatim) ---
+2026-09-01T07:23:27Z decision=continue reason=iteration-1
+2026-09-01T07:23:40Z decision=stop reason=stop_hook_active=true (platform runaway guard)
+--- end ---

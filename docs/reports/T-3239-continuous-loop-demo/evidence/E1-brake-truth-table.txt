@@ -1,0 +1,55 @@
+T-3239 E1 — stop-driver brake truth table
+generated: 2026-09-01T07:21:51Z
+driver:    agents/context/stop-driver.sh
+driver sha: b134d083a
+isolation: CLAUDE_PROJECT_DIR -> throwaway tmp tree (live state untouched)
+
+'drives' = the emitted JSON is {"decision":"block"}, the only shape
+measured (T-3163) to actually cause another turn. Anything else is inert.
+
+  01-armed-continues         | drives=yes (want yes) | PASS
+      stdout: {"decision": "block", "reason": "Continuous mode is armed (iteration-1). Continue the run: take the next action toward the current arc without waiting for opera
+      log:    decision=continue reason=iteration-1
+
+  02-stop_hook_active        | drives=no  (want no ) | PASS
+      stdout: {}
+      log:    decision=stop reason=stop_hook_active=true (platform runaway guard)
+
+  03-halt-file               | drives=no  (want no ) | PASS
+      stdout: {}
+      log:    decision=stop reason=halt-file present at /tmp/tmp.uQANH4hI9V/03-halt-file/.context/working/.continuous-halt
+
+  04-disabled                | drives=no  (want no ) | PASS
+      stdout: {}
+      log:    decision=stop reason=continuous-mode-disabled(enabled=False)
+
+  05-terminated-stored       | drives=no  (want no ) | PASS
+      stdout: {}
+      log:    decision=stop reason=terminated[stored@2026-08-26T12:50:35Z](expires_at 2026-06-17T00:00:00Z passed)
+
+  06-max_tasks-reached       | drives=no  (want no ) | PASS
+      stdout: {}
+      log:    decision=stop reason=max_tasks-reached(3>=3)
+
+  07-max_iterations          | drives=no  (want no ) | PASS
+      stdout: {}
+      log:    decision=stop reason=max_iterations-reached(11>10)
+
+  08-expired-directive       | drives=no  (want no ) | PASS
+      stdout: {}
+      log:    decision=stop reason=expired-at(2020-01-01T00:00:00Z)
+
+  09-no-state-file           | drives=no  (want no ) | PASS
+      stdout: {}
+      log:    decision=stop reason=no state file at /tmp/tmp.uQANH4hI9V/09-no-state-file/.context/working/.continuous-mode.yaml
+
+  10-malformed-state         | drives=no  (want no ) | PASS
+      stdout: {}
+      log:    decision=stop reason=state-unreadable-or-empty
+
+  11-empty-payload           | drives=yes (want yes) | PASS
+      stdout: {"decision": "block", "reason": "Continuous mode is armed (iteration-1). Continue the run: take the next action toward the current arc without waiting for opera
+      log:    decision=continue reason=iteration-1
+
+----------------------------------------------------------------
+PASS: 11   FAIL: 0
