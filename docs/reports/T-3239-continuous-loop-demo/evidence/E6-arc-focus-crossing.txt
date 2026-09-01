@@ -1,0 +1,48 @@
+T-3239 E6 — does the arc focus cross the restart boundary?
+generated: 2026-09-01T11:07:42Z
+repo sha:  347390144
+hook:      bin/fw hook post-compact-resume  (the real dispatcher)
+
+  1-armed-startup-restart   (source=startup enabled=true sentinel=yes)
+      arc 'continuous-run' in payload        : yes   (want yes)
+      directive beacon in payload    : yes   (want yes)
+      focus task T-3239 in payload  : yes
+      iteration wording in payload   : yes
+      current_iteration              : 4 -> 5
+      payload bytes                  : 1936
+      verdict                        : PASS
+
+  2-armed-resume   (source=resume enabled=true sentinel=yes)
+      arc 'continuous-run' in payload        : yes   (want yes)
+      directive beacon in payload    : yes   (want yes)
+      focus task T-3239 in payload  : yes
+      iteration wording in payload   : yes
+      current_iteration              : 4 -> 5
+      payload bytes                  : 1935
+      verdict                        : PASS
+
+  3-disarmed-control   (source=startup enabled=false sentinel=yes)
+      arc 'continuous-run' in payload        : yes   (want yes)
+      directive beacon in payload    : no   (want no)
+      focus task T-3239 in payload  : yes
+      iteration wording in payload   : no
+      current_iteration              : 4 -> 4
+      payload bytes                  : 1276
+      verdict                        : PASS
+
+  4-armed-no-sentinel   (source=startup enabled=true sentinel=no)
+      arc 'continuous-run' in payload        : no   (want no)
+      directive beacon in payload    : no   (want no)
+      focus task T-3239 in payload  : no
+      iteration wording in payload   : no
+      current_iteration              : 4 -> 4
+      payload bytes                  : 0
+      verdict                        : PASS
+
+
+----------------------------------------------------------------
+PASS: 4   FAIL: 0
+
+READING THIS: the restarted session is FRESH (T-3166 empties CLAUDE_ARGS),
+so it knows nothing it was not handed. This payload IS the boundary.
+Verbatim payload: evidence/E6-payload-verbatim.txt

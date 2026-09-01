@@ -43,8 +43,9 @@ L-652 already warned these "look like one in the ledger". Every claim below name
 | resume advances the counter | M2 | **PROVEN** | E4 |
 | directive re-injected with ceiling | M2 | **PROVEN** | E4 |
 | exit → wrapper relaunches a REAL claude | M2 | **PROVEN — live fire** | E5 |
+| arc focus survives a restart | M2 | **PROVEN** (4/4) | E6 |
+| iteration + tier ceiling survive a restart | M2 | **PROVEN** (4/4) | E6 |
 | budget threshold → restart, on a real session | M2 | **NOT PROVEN** | — |
-| arc focus survives a restart | M2 | **NOT PROVEN** | — |
 
 Two links remain unproven, and they are named as such rather than assumed from the links either side of them. That is the whole discipline this arc exists to enforce.
 
@@ -153,6 +154,51 @@ same false-green class as everything else in this report; it is recorded rather 
 quietly fixed because catching it in my own harness is the only reason to trust the rest.
 
 Harness: `livefire-m2-termlink.sh` · evidence: `evidence/E5-livefire-m2-termlink.txt`
+
+## E6 — the arc focus crosses the boundary (4/4)
+
+E4 proved the counter advances and the directive is re-emitted. Neither E4 nor E5 touched
+the **arc**. A loop that cycles forever while forgetting which arc it is working on is not
+the mechanism — it is a restart loop with amnesia, and from outside the two are identical.
+
+The restarted session is **fresh by construction** (T-3166 empties `CLAUDE_ARGS`, so it
+cannot inherit the context it restarted to escape). Everything the next iteration will
+ever know about the arc must therefore be inside the SessionStart payload. That payload is
+the entire boundary, and it is capturable. E6 runs the real
+`agents/context/post-compact-resume.sh` through the real `bin/fw hook` dispatcher.
+
+Verbatim, from `evidence/E6-payload-verbatim.txt`:
+
+```
+## Current Focus: T-3239
+
+## Current Arc: continuous-run
+
+## Next Directive (iteration 5/10, tier_ceiling 1)
+
+Continue arc continuous-run. Emit ARCBEACON-7731 once, then take the next action.
+```
+
+`current_iteration` moved **4 → 5** in the state file. Arc, focus task, iteration counter
+and tier ceiling all cross. This is the "iteration counter, directive, and bounded
+tier-ceiling are visible" clause of the headline mechanic, in the payload that carries it.
+
+| case | arc in payload | directive | counter | verdict |
+|---|---|---|---|---|
+| armed, `startup` + sentinel (a real restart) | yes | yes | 4 → **5** | the mechanism |
+| armed, `resume` | yes | yes | 4 → **5** | same via /compact path |
+| **disarmed** + sentinel | yes | **no** | 4 → 4 | control: recovery without a run |
+| armed, **no sentinel** (cold start) | **no** — 0 bytes | no | 4 → 4 | control: cold start untouched |
+
+**A second wrong assumption, caught by measuring.** Case 4 was authored expecting the arc
+to appear anyway, since it is ambient project state and case 3 emits it. Measured: the
+payload is **zero bytes**. `post-compact-resume.sh:48-57` exits early on `startup` without
+the sentinel — `exit 0  # cold start — preserve pre-T-2376 no-op`. Explicit, commented,
+and right: emitting the arc there would be the first half of hijacking a cold operator
+start with a stale run, which is the T-3168 failure. The expectation was corrected and no
+finding was filed. That is now twice in this report (E4's expiry counter, this) — recorded
+both times, because manufacturing defects out of a demo's own assumptions is the failure
+mode a demo is most prone to.
 
 ## What is NOT proven, stated plainly
 
