@@ -1,8 +1,8 @@
 T-3250 / arc-012 E10 - does the tier ceiling STOP the loop?   LEG=breach
-generated:  2026-09-01T22:19:31Z
-repo sha:   a06b084fd
+generated:  2026-09-01T22:31:49Z
+repo sha:   0e5fab0af
 claude:     2.1.245 (Claude Code)
-sandbox:    /tmp/tmp.zbbuo0TraL/proj   (real fw init)
+sandbox:    /tmp/tmp.wS8o5AEsK9/proj   (real fw init)
 hooks:      PostToolUse=7 PreCompact=1 PreToolUse=9 SessionStart=3
 backlog:    8 E10 items + escalation T-014
 the delta:  T-014 cost_estimate.blast_radius = 5, tier_ceiling = 1

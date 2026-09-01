@@ -1,23 +1,16 @@
 ---
-id: T-3250
-name: "arc-012 E10 - press the brake: prove the tier ceiling actually stops the loop"
+id: T-3251
+name: "pending Resolve button omits X-CSRF-Token so every click 403s before reaching
+  the handler"
 description: >
-  E9 proved the loop runs; it never tested the bound. The ceiling is wired and reached
-  (inject-next-directive.py runs via SessionStart, current_iteration advanced 1-to-4)
-  but was never triggered - E9's backlog tasks had components: [] so no blast-radius
-  was resolvable and no breach was reachable. last_terminated_reason stayed empty.
-  Of the three bounds on autonomy (restart budget, max_iterations, tier_ceiling) only
-  the restart budget was exercised. E10 puts a task with blast-radius above the ceiling
-  into the backlog and proves the loop freezes the iteration counter and terminates
-  with 'tier ceiling exceeded', with a negative control showing it proceeds when under
-  the ceiling.
+  pending Resolve button omits X-CSRF-Token so every click 403s before reaching the
+  handler
 
-status: started-work
-workflow_type: test
-owner: agent
+status: work-completed
+workflow_type: build
+owner: human
 horizon: now
 tags: []
-arc_id: continuous-run
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -30,9 +23,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-01T21:30:42Z
-last_update: 2026-09-01T22:21:41Z
-date_finished:
+created: 2026-09-01T22:27:25Z
+last_update: 2026-09-01T22:34:28Z
+date_finished: 2026-09-01T22:34:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -44,21 +37,19 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-01T21:45:12Z'
+  - ts: '2026-09-01T22:30:09Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
-      tier: 1
+      tier: 2
       effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
-      (workflow:test); effort=8 (lines=326,acs=8)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=260,acs=6)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-01T21:45:22Z'
+  - ts: '2026-09-01T22:30:19Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
-      Discard fidelity: 0
-      Loop closure (conditional): 0
       D1: 4
       D2: 0
       D3: 3
@@ -67,98 +58,66 @@ bvp_scores_proposed:
       F-AUTONOMY: 0
       F3: 0
       F1: 0
-      F2: 1
-    rationale: Discard fidelity=0 (no-signal); Loop closure (conditional)=0 
-      (no-signal); D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=1 
-      (body/components:component-fabric-incidental)
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3250: arc-012 E10 - press the brake: prove the tier ceiling actually stops the loop
+# T-3251: pending Resolve button omits X-CSRF-Token so every click 403s before reaching the handler
 
 ## Context
 
-E9 (T-3246) proved the loop **runs**: 12 tasks closed across 3 budget trips, 7 of
-them after the first restart. It did not test the loop's **brake**, and the arc
-is named *"continuous-run: agent-driven compact-resume loop **with bounded-autonomy
-ceiling**"*. Half the name is unevidenced.
+Reported by a peer project (001-CashWeb) running the same vendored Watchtower, at
+chat-arc offset 956, alongside a second unrelated defect in `extract_recommendation`
+(filed separately — one bug, one task). Their operator hit it directly: *"I tried it
+but could not resolve it."*
 
-### What E9 established about the ceiling — wired, reached, never triggered
+Confirmed here before any edit, in code and then live:
 
-Read from the run's own committed state (`evidence/E9-loop-does-work.txt`), not
-inferred:
+- `web/templates/pending.html` sent `{'Content-Type': 'application/json'}` and nothing
+  else. Its POST carries a JSON body, so there is no `_csrf_token` form field either —
+  the header was the only route available and it was not being used.
+- `web/app.py:csrf_protect` requires one of the two on every state-changing request.
+  The blanket `/api/*` exemption was removed by T-1343/G-048; this button did not
+  follow.
+- Live, against the running Watchtower:
+  `POST /api/v1/pending/U-999-does-not-exist/resolve` with no token returned **403**.
+  A nonexistent id returning 403 rather than 404 is the whole diagnosis in one line —
+  CSRF fires before the lookup, so no click ever reached the handler.
 
-```
-tier_ceiling: 1
-current_iteration: 4
-tasks_completed: 12
-last_terminated_reason: ''
-```
+**The peer's report was accurate and their scope was right.** A scan of every
+state-changing `fetch()` in `web/templates/` found six; the other five all pass
+`_csrf_token` in a `FormData` body and are fine. This is one site, not a class — the
+scan is recorded as a test so that stays true.
 
-Three separate facts sit in there:
-
-1. **The ceiling is on the working path.** An earlier reading of this nearly went
-   the other way: `bin/claude-fw` contains **zero** references to `tier_ceiling`
-   or `blast`, which looks like the wrapper loop being unbounded. It is not — the
-   enforcement lives in `agents/context/inject-next-directive.py:287-291`, reached
-   via the SessionStart hook → `agents/context/post-compact-resume.sh:308`. The
-   proof it actually ran is `current_iteration: 4`: that field has exactly one
-   writer (the injector, per T-3233 W1-F3), so a counter at 4 means the injector
-   executed on each restart.
-2. **It never fired.** `last_terminated_reason` is empty across all 12 closes.
-3. **It could not have fired.** The breach test is
-   `blast_radius is not None and blast_radius > tier_ceiling_int`, and every E9
-   backlog task carried `components: []`, so no blast-radius was resolvable. The
-   guard was structurally unreachable for that backlog.
-
-**Of the three bounds on autonomy, only one was exercised.** The run ended on
-`MAX_RESTARTS=4` (wrapper-level). `max_iterations: 8` was never binding —
-`current_iteration` reached 4. `tier_ceiling` was never binding either. A green
-E9 says nothing about any of that.
-
-### Why this is the leg worth doing next
-
-An autonomous loop whose brake has never been pressed is exactly the thing an
-operator needs evidence for before leaving it unattended. Everything E9 proved is
-about the loop *going*; nothing is about it *stopping when it should*. Those are
-different mechanisms with different failure modes, and the second is the one with
-a consequence.
-
-The E9 harness is reusable — `docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh`
-already builds a real `fw init` sandbox, asserts its backlog by name, and is
-fail-loud after T-3246. E10 should extend it (or fork a sibling) rather than
-rebuild the rig.
-
-### Design note — the trap to avoid
-
-E9's own failure mode was a rig that appeared to test something it did not. The
-same trap is wide open here: a ceiling test that never resolves a blast-radius
-produces `last_terminated_reason: ''` and **looks exactly like a loop that
-correctly stayed under the ceiling**. So the negative control is not optional
-garnish — without it, "the brake held" and "the brake was never connected" are
-the same observation. Same L-653 discipline that made E9's result readable.
-
-### Sequencing
-
-**T-3249 first.** The re-arm relaunch is promptless under headless, so a loop
-that stops on a ceiling breach and then re-arms would relaunch a dead session and
-muddy the evidence. Fix the path E10 has to traverse before measuring on it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The sandbox backlog contains at least one task whose blast-radius is **resolvable and above** `tier_ceiling` — verified by asserting the resolver returns a number greater than the ceiling **before** the loop runs, so an unreachable guard cannot masquerade as a held brake.
-- [ ] **The brake fires.** `last_terminated_reason` matches `tier ceiling exceeded: <ref> blast-radius <N> > tier_ceiling <C>`, read from `.continuous-mode.yaml` after the run.
-- [ ] **The counter freezes rather than advances** on the breach — `current_iteration` is unchanged across the breaching transition, which is the documented behaviour (operator resumes the same iteration after sign-off) and distinguishes a brake from a crash.
-- [ ] **The over-ceiling task is NOT closed**, and no artefact of it exists — the loop stopped before doing the work, not after.
-- [ ] **Negative control:** an otherwise identical run whose tasks are all under the ceiling completes the backlog with `last_terminated_reason: ''` and an advancing counter. Without this leg the test cannot tell a held brake from a disconnected one (L-653).
-- [ ] Evidence committed under `docs/reports/T-3239-continuous-loop-demo/` — both legs, raw state files, and the pre-run blast-radius assertion — re-readable by someone who did not run it.
+- [x] The `/pending` Resolve button sends a CSRF token on its POST, so the request reaches the handler instead of being rejected by `csrf_protect` before the lookup runs.
+- [x] A regression test drives the rendered `/pending` page and asserts the token travels with the request — not merely that the template mentions `csrf-token`, which was already true and is exactly why nothing caught this.
+- [x] The scan that found this is recorded: every state-changing `fetch()` in `web/templates/` either sends `X-CSRF-Token` or carries `_csrf_token` in a form body. Reported as a count, so a future template that omits both is a regression against a stated number rather than against nobody's memory.
+- [x] The live repro from the report inverts: `POST /api/v1/pending/<nonexistent>/resolve` with a valid token returns 404 (reached the handler and found nothing) rather than 403 (rejected before the lookup).
 
 ### Human
+
+- [ ] [REVIEW] The Resolve button on `/pending` actually resolves an entry in a browser.
+
+  **Steps:**
+  1. Open `http://192.168.10.107:3000/pending` (or run `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` for the current address).
+  2. Pick any entry in the Pending table and press **Resolve**.
+  3. Enter a note (or leave it blank) and confirm.
+
+  **Expected:** the page reloads and the entry moves out of Pending into the resolved list.
+
+  **If not:** open the browser console, press Resolve again, and note the status code on the `/api/v1/pending/.../resolve` request. A **403** means the token still is not travelling; a **404** means it is travelling and the id was not found. The working fallback remains `cd /opt/999-Agentic-Engineering-Framework && bin/fw pending resolve <id> --note "..."`.
+
+  **Why this one is human:** the four Agent ACs prove the token is present in the rendered page and that the server accepts it when sent. Neither can prove a real browser executes that JavaScript and the click completes — which is the only thing the reporting operator actually observed failing ("I tried it but could not resolve it").
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -306,21 +265,44 @@ muddy the evidence. Fix the path E10 has to traverse before measuring on it.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/web/test_pending_resolve_csrf.py -q > /tmp/.t3251gate.out 2>&1 && grep -q '4 passed' /tmp/.t3251gate.out
+# The '4 passed' clause pins the COUNT. A leg that stops running — renamed, skipped,
+# deleted — would otherwise leave the file green on the survivors, which is the same
+# shape as the defect being fixed: a check that passes for a reason unrelated to its
+# subject.
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom.** Every press of Resolve on `/pending` failed, for every operator, on every
+host running Watchtower. The button reported failure with a status code and nothing else.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause.** The fetch sent no CSRF token by either route `csrf_protect` accepts.
+The page has carried `<meta name="csrf-token">` since base.html gained it, so the token
+was available the whole time — it was simply never read or attached.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why it survived.** T-1343/G-048 removed a blanket `/api/*` CSRF exemption. That
+change made every state-changing `/api/*` caller responsible for sending a token, and
+the five callers using `FormData` already did. This one did not, and nothing joined the
+two facts: the page *has* a token, and the request *sends* one. Any check written
+against "does the page have a CSRF token" was green throughout — which is why the bug
+reached an operator in another project rather than a test here.
+
+That near-miss shape is worth naming, because this task's own regression test walked
+into it. The first version asserted `"X-CSRF-Token" in page`, and the negative control
+showed it still passed with the fix reverted: the *comment explaining the fix* contains
+the string. A check satisfied by prose about a mechanism instead of by the mechanism is
+the same defect at one remove. The assertions now strip JS comments before looking.
+
+**Prevention.** Four legs, and the first is a control: without a token the route must
+still 403 even for a nonexistent id, so the positive leg cannot pass on a route that
+lost its CSRF protection entirely. Leg 4 scans the whole template corpus and asserts a
+count, so a seventh state-changing fetch that omits both routes reddens against a
+stated number rather than against nobody's memory.
+
+**Not prevented.** Nothing asserts that a real browser executes the JavaScript and the
+click completes; that is the one thing the reporting operator actually observed, and it
+is the Human AC. A Playwright leg would close it but needs a seeded pending entry on a
+live server, which is a bigger rig than this fix warrants.
 
 ## Evolution
 
@@ -348,32 +330,29 @@ muddy the evidence. Fix the path E10 has to traverse before measuring on it.
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** The defect is confirmed, the fix is one line of JavaScript reading a
+token the page already carries, and the four Agent ACs are green with a negative
+control proving they can go red. The one thing left is the one thing no test here can
+do: press the button in a browser. That is why the Human AC exists and why this is GO
+rather than DEFER — there is no missing evidence, only a step that requires a person.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
-
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Evidence:**
+- Pre-fix, live: `POST /api/v1/pending/U-999-does-not-exist/resolve` with no token
+  returned **403**. A nonexistent id returning 403 rather than 404 proves CSRF fired
+  before the lookup, so no click ever reached the handler.
+- Post-fix, live, same request with the token: **404**. The header route works.
+- `tests/web/test_pending_resolve_csrf.py` — 4 passed. Negative control: with the
+  one-line fix reverted, 2 of the 4 go red (2 failed, 2 passed), so the suite can fail.
+- The first version of that suite passed with the fix reverted, because the comment
+  explaining the fix contained the string it was grepping for. The assertions now
+  strip JS comments. Recorded in `## RCA` rather than quietly corrected.
+- Corpus scan: 6 state-changing `fetch()` calls in `web/templates/`; the other 5 pass
+  `_csrf_token` in a `FormData` body. One site, not a class.
+- Credit: reported by 001-CashWeb at chat-arc offset 956, with an exact repro. Their
+  diagnosis was correct on every point and was verified here in code and live before
+  anything was edited.
 
 ## Decisions
 
@@ -398,10 +377,19 @@ muddy the evidence. Fix the path E10 has to traverse before measuring on it.
 
 ## Updates
 
-### 2026-09-01T21:30:42Z — task-created [task-create-agent]
+### 2026-09-01T22:27:25Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3250-arc-012-e10---press-the-brake-prove-the-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3251-pending-resolve-button-omits-x-csrf-toke.md
 - **Context:** Initial task creation
 
-### 2026-09-01T22:07:33Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0f9aaf9e
+- **Timestamp:** 2026-09-01T22:34:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-01T22:34:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

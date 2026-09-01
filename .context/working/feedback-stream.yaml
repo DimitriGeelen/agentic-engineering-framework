@@ -38727,3 +38727,21 @@ scan_id: R-c2595cd7
 task_id: T-3249
 payload:
   task_file: .tasks/active/T-3249-t-3247-fixed-only-the-restart-path---the.md
+---
+kind: scan_emitted
+timestamp: '2026-09-01T22:34:33Z'
+scan_id: R-0f9aaf9e
+task_id: T-3251
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-01T22:34:33Z'
+scan_id: R-0f9aaf9e
+task_id: T-3251
+payload:
+  task_file: .tasks/active/T-3251-pending-resolve-button-omits-x-csrf-toke.md
