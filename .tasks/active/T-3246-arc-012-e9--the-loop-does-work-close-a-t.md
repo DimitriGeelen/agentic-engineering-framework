@@ -69,7 +69,53 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Every prior arc-012 evidence leg measured the loop's **engine**. E8's restart fired
+on a session that read four files and exited — it closed no task and advanced no
+backlog. This asks the only question the arc's headline actually makes: does the
+loop **close a task, trip, restart, and close another**?
+
+### State at 2026-09-01 handover — two runs, one fix, one tuning gap
+
+**Run 1 (pre-fix): 1/4 PASS.** Restart fired; zero tasks closed. Cause localised to
+`bin/claude-fw:551` — `CLAUDE_ARGS=()` relaunched a headless `--print` session with
+no prompt, so it exited on "Input must be provided" before doing anything. Filed
+and fixed as **T-3247** (committed 7326394d5). This error was visible in E5, E7, E8
+and E9 and was read as expected T-3166 behaviour each time, because the wrapper's
+banner reports a successful auto-restart one line above it.
+
+**Run 2 (post-fix): 1/4 PASS, but the mechanism now works.** Restarts 1 → 3, each
+relaunching a live session that does real work. One task closed. The remaining
+failure is **the harness dial, not the loop**, and the number is the useful finding:
+
+| trip | tokens | critical | headroom |
+|---|---|---|---|
+| initial | 58284 | 55100 | — |
+| restart 1 | 61980 | 55100 | ~2.5k |
+| restart 2 | 62299 | 55100 | ~2.5k |
+
+A sandbox session baselines near **52.6k tokens** before doing anything (CLAUDE.md,
+hooks, handover). So:
+
+> **useful work per iteration = WINDOW − BASELINE, not WINDOW** — and every restart
+> re-pays the baseline in full. A fresh session is fresh in both directions: it
+> drops the context it could not afford *and* the orientation it had already bought.
+
+At a 58000 window that leaves ~4% to work in, so the loop cycles correctly and
+progresses barely. In production the same arithmetic is comfortable (300k window,
+~50k baseline, ~4.7× headroom) — but **nothing in the framework measures or reports
+this ratio**, and it is what decides whether an armed loop makes progress or merely
+spins. Worth its own task.
+
+### Next step (harness edit was blocked by this session hitting critical)
+
+Retune and re-run — the edit is prepared but unapplied:
+
+- `WINDOW=58000` → **72000** (critical 68400, ~15.8k headroom)
+- `MAXR=3` → **4**; backlog `for n in 1 2 3` → **1 2 3 4 5**; `--iterations 6` → **8**
+
+Then `bash docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh`.
+Assertion 3 (`tasks closed after first restart ≥ 1`) is the arc's headline claim;
+assertions 1 and 4 already pass.
 
 ## Acceptance Criteria
 
