@@ -77,6 +77,15 @@ esac
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 EVID="${REPO}/docs/reports/T-3239-continuous-loop-demo/evidence"
 OUT="${EVID}/E10-brake-${LEG}.txt"
+# SETUP_ONLY MUST NOT WRITE THE CANONICAL EVIDENCE PATH. The header block below opens
+# "$OUT" with `>` (truncate) and it does so BEFORE the SETUP_ONLY early-exit, so a rig
+# check silently destroys a completed run's evidence. T-3250's own ## Verification runs
+# SETUP_ONLY for both legs, which made the close gate eat the very files it then greps:
+# on 2026-09-01 the control leg's 262-line result was replaced by a 14-line header, and
+# the gate stayed green because `grep -q 'LEG=control'` matches the header the clobber
+# writes. Same false-green family as the one this whole script exists to rule out — an
+# assertion that reads identically for "the run happened" and "the rig was set up".
+[ "${SETUP_ONLY:-0}" = "1" ] && OUT="${TMPDIR:-/tmp}/E10-brake-${LEG}.setup-only.txt"
 mkdir -p "$EVID"
 
 SANDBOX="$(mktemp -d)/proj"

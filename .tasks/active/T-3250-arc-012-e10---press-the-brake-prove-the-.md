@@ -314,9 +314,17 @@ muddy the evidence. Fix the path E10 has to traverse before measuring on it.
 # them cost half an hour each time.
 SETUP_ONLY=1 LEG=breach bash docs/reports/T-3239-continuous-loop-demo/livefire-brake-tier-ceiling.sh > /tmp/.t3250b.out 2>&1 && grep -q 'has the expected sign for the breach leg' /tmp/.t3250b.out
 SETUP_ONLY=1 LEG=control bash docs/reports/T-3239-continuous-loop-demo/livefire-brake-tier-ceiling.sh > /tmp/.t3250c.out 2>&1 && grep -q 'has the expected sign for the control leg' /tmp/.t3250c.out
-# Both legs' evidence files exist and record the run they claim to.
-grep -q 'LEG=breach' docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach.txt
-grep -q 'LEG=control' docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-control.txt
+# Both legs' evidence files record a run that CONCLUDED, not a rig that was merely built.
+# The earlier form grepped 'LEG=breach' / 'LEG=control', which the SETUP_ONLY header alone
+# satisfies -- so a 14-line header-only file passed while carrying no result at all (and
+# the SETUP_ONLY lines above are what produced that file, by truncating the canonical
+# evidence path before their own early-exit). The assertions banner is written only on the
+# real-run path, so it separates "the run happened" from "the rig was set up and stopped".
+grep -q 'assertions (LEG=breach)' docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach.txt
+grep -q 'assertions (LEG=control)' docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-control.txt
+# ...and concluded rather than hit the wall clock: exit 124 writes the TRUNCATED note, and
+# a truncated run's FAILs are unattributable (the harness stopped watching mid-loop).
+! grep -q 'TRUNCATED, not concluded' docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-control.txt
 # The attribution line is present in the breach evidence. Its ABSENCE is the failure mode
 # this gate exists for: without it, AC4's verdict is ambiguous between the finding and a
 # rig artefact, and the two read identically (L-654).
