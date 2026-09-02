@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3171: fw cron generate/install accept an id-less job that fw cron list, fw cron run and Watchtower pause/resume all require
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-02T08:48:01Z
+# ============================================================================
+
+task_id: T-3171
+task_name: "fw cron generate/install accept an id-less job that fw cron list, fw cron run and Watchtower pause/resume all require"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T15:00:29Z
+completed: 2026-09-02T08:47:45Z
+duration_days: 7
+updates_count: 2
+first_commit: 2026-08-26T17:07:38+02:00
+last_commit: 2026-08-26T17:07:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register two inbound consumer defects and the class they share
+
+# Key outcomes
+outcomes:
+  - '`fw cron generate` refuses a registry containing any job with a missing, empty or'
+  - '`fw cron install` inherits the refusal (it calls generate), so an id-less job can'
+  - 'The refusal is checked BEFORE any file is written — a registry that fails the'
+  - 'Duplicate `id:` values across jobs are refused by the same check — two jobs sharing'
+  - '`fw cron list` and `fw cron run` are left requiring `id` (no `.get("id", ...)`'
+  - 'Reserved job ids that select special-cased behaviour in'
+  - 'A regression test pins the reproduction: a registry whose single job has no `id`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-3171-fw-cron-generateinstall-accept-an-id-les.md'
+  - '.tasks/active/T-3172-bpmn-compiler-rejects-the-frozen-standar.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T17:07:38'
+    action: 'T-3171: register two inbound consumer defects and the class they share'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9707 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9707
+  commits: 1
+  files_changed: 3
+  lines_added: 3180
+  lines_removed: 1880
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3171-fw-cron-generateinstall-accept-an-id-les.md
+generated_by: context-agent-hybrid

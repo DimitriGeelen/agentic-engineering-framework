@@ -13,10 +13,10 @@ description: >
   consumer built a candidate registry from a running crontab, which carries no job
   ids.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -31,8 +31,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T15:00:29Z
-last_update: '2026-08-27T15:15:16Z'
-date_finished:
+last_update: 2026-09-02T08:47:45Z
+date_finished: 2026-09-02T08:47:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -100,25 +100,25 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw cron generate` refuses a registry containing any job with a missing, empty or
+- [x] `fw cron generate` refuses a registry containing any job with a missing, empty or
       non-string `id:`, exits non-zero, and writes neither the crontab source nor the
       installed target — the refusal names the offending job by its `name:` and
       `schedule:` so the operator can find it without diffing the YAML by hand
-- [ ] `fw cron install` inherits the refusal (it calls generate), so an id-less job can
+- [x] `fw cron install` inherits the refusal (it calls generate), so an id-less job can
       never reach `/etc/cron.d/agentic-audit-<slug>`
-- [ ] The refusal is checked BEFORE any file is written — a registry that fails the
+- [x] The refusal is checked BEFORE any file is written — a registry that fails the
       check leaves a previously-valid crontab source byte-identical (no truncate-then-fail)
-- [ ] Duplicate `id:` values across jobs are refused by the same check — two jobs sharing
+- [x] Duplicate `id:` values across jobs are refused by the same check — two jobs sharing
       an id make `_find_job` and `fw cron run` address the wrong one, which is the same
       controllability defect as a missing id
-- [ ] `fw cron list` and `fw cron run` are left requiring `id` (no `.get("id", ...)`
+- [x] `fw cron list` and `fw cron run` are left requiring `id` (no `.get("id", ...)`
       softening) — the write-side refusal is the fix, and a read-side default would
       preserve an uncontrollable live schedule while hiding it
-- [ ] Reserved job ids that select special-cased behaviour in
+- [x] Reserved job ids that select special-cased behaviour in
       `web/blueprints/cron.py:_last_run` (`docs-daily` :221, `retention-daily` :241,
       `pickup-process` :228) are documented where a migrating operator meets them, not
       only in `docs/reports/T-1261-consumer-cron-seed.md`
-- [ ] A regression test pins the reproduction: a registry whose single job has no `id`
+- [x] A regression test pins the reproduction: a registry whose single job has no `id`
       makes `fw cron generate` exit non-zero, and (pre-fix) made `fw cron list` raise
       `KeyError: 'id'` after printing its job-count header
 
@@ -214,6 +214,8 @@ cost_estimate_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/t3171_cron_generate_requires_id.bats > /tmp/.t3171-out 2>&1 && grep -q "^ok 7" /tmp/.t3171-out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -229,6 +231,43 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** A registry built from `crontab -l` output (which carries no job
+`id:` field) generated and installed cleanly (`fw cron generate` / `fw cron
+install` both exit 0), but `fw cron list` printed its "Cron registry: N jobs"
+header and then raised `KeyError: 'id'` — a counter reporting a job it cannot
+process. `fw cron run <id>` and Watchtower pause/resume (`_find_job`,
+`web/blueprints/cron.py:356,374`) would 404/error on the same registry.
+
+**Root cause:** `fw cron generate` (`bin/fw`, prior to this fix) read every
+job field with `.get()`, including `id`, so it never validated the one field
+every other consumer (`fw cron list`, `fw cron run`, Watchtower `_find_job`)
+requires as a hard key. The write path (generate/install) and the read paths
+(list/run/pause/resume) had divergent contracts on the same schema — the
+write side was permissive, every read side was strict.
+
+**Why structurally allowed:** No schema validation existed between the
+registry YAML and its consumers; each cron subcommand independently assumed
+`id:` would be present rather than the schema being enforced once at the
+single write chokepoint (`generate`, which `install` also funnels through).
+Nothing exercised the "registry built from a live crontab" path in CI, so the
+gap was invisible until a consumer (001-CashWeb, G-054) hit it in the field.
+
+**Prevention:** `fw cron generate` now validates every job's `id:` (present,
+non-empty, string, unique across the registry) before writing anything —
+named after the offending job's `name:`/`schedule:` so the operator can find
+it without diffing YAML by hand. `fw cron install` inherits this for free
+since it shells out to `generate`. `fw cron list`/`fw cron run` deliberately
+keep their hard `id` requirement (no `.get()` softening) so a registry that
+somehow bypasses `generate` still fails loudly rather than silently
+degrading. Regression pinned in
+`tests/unit/t3171_cron_generate_requires_id.bats` (7 cases: missing id,
+empty-string id, duplicate id, no-truncate-on-refusal, install inherits
+refusal, exact 001-CashWeb reproduction, list still fails hard). The seed
+templates (`lib/init.sh`, `lib/upgrade.sh`) now document the `id:`
+requirement and the four reserved ids (`docs-daily`, `retention-daily`,
+`pickup-process`, `liveness-1m`) inline in the YAML comment header a
+migrating operator actually opens, not only in a docs report.
 
 ## Evolution
 
@@ -313,3 +352,15 @@ cost_estimate_proposed:
 
 ### 2026-08-26T15:02:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4d365554
+- **Timestamp:** 2026-09-02T08:47:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-02T08:47:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
