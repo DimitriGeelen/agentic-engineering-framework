@@ -529,6 +529,13 @@ final_reason=$(jq_ "['final_reason']")
 final_enabled=$(jq_ "['final_enabled']")
 
 pass=0; fail=0
+# The assertion block below MUST NOT be piped. `{ ... } | tee` runs the block in a
+# SUBSHELL, so every `fail=$((fail+1))` inside it is lost at the pipe and the parent's
+# `fail` stays 0 -- which made the final `exit $(( fail > 0 ? 1 : 0 ))` return 0 on
+# every run this script has ever done, including the breach leg's PASS: 5 FAIL: 2. Any
+# caller checking $? saw success on a failing run: the same false-green shape as the
+# other three defects, in the one place a machine reads instead of a human.
+ASSERT_TMP=$(mktemp)
 chk() { if [ "$2" = 0 ]; then echo "  PASS  $1  $3"; pass=$((pass+1)); else echo "  FAIL  $1  $3"; fail=$((fail+1)); fi; }
 {
   echo
@@ -592,7 +599,10 @@ chk() { if [ "$2" = 0 ]; then echo "  PASS  $1  $3"; pass=$((pass+1)); else echo
     echo
   fi
   echo "PASS: ${pass}  FAIL: ${fail}"
-} | tee -a "$OUT"
+} > "$ASSERT_TMP"
+cat "$ASSERT_TMP" >> "$OUT"
+cat "$ASSERT_TMP"
+rm -f "$ASSERT_TMP"
 
 echo; echo "evidence: $OUT"
 exit $(( fail > 0 ? 1 : 0 ))
