@@ -6,10 +6,10 @@ description: >
   Recommendation card silently drops text: any span the marker tokeniser classifies
   as other is discarded, and raw is never rendered
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T22:38:02Z
-last_update: '2026-09-01T22:45:17Z'
-date_finished:
+last_update: 2026-09-02T08:03:25Z
+date_finished: 2026-09-02T08:03:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -109,6 +109,22 @@ A first pass without the marker-stripping refinement reported 1001 lossy cards �
 by ~400, because a label consumed by the parser looks identical to one it lost. The
 refinement is part of the measurement, not a softening of it.
 
+**Same script, re-run after the fix** (`docs/reports/T-3252-measure-recommendation-loss.py`,
+reproducible via `git stash push -- web/shared.py && python3 docs/reports/T-3252-measure-recommendation-loss.py`
+against the pre-fix tree, `git stash pop` to restore — corpus is live so the body count
+ticks by ±1 between runs as tasks are created/completed in the ordinary course of work;
+the script itself was refined mid-task to re-derive the same marker spans
+`extract_recommendation` iterates over instead of a naive per-line split, which had
+mis-scored 2 cards where an author's bold span wraps a hard-wrapped line break —
+see `docs/reports/T-3252-recommendation-text-loss.md` §Measurement — after; the
+"before" count below is re-run with the same, final script version, not the earlier draft):
+
+| | before | after |
+|---|---:|---:|
+| task bodies with a `## Recommendation` section | 1058 | 1058 |
+| cards that drop at least one span of ≥25 chars | 602 | **0** |
+| dropped fragments | 1452 | **0** |
+
 Worked examples from the corpus, first dropped fragment per card:
 
 - `T-100201` — *"CLOSE AS DISSOLVED. Do not adopt A, B, C or D."* (shape b: the operative
@@ -127,11 +143,11 @@ never sees does not exist for that decision.
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] The loss is measured on this repo's own corpus before anything is changed: how many task bodies carry a `## Recommendation` section, how many of those lose text through `extract_recommendation`, and how many fragments. A fix argued from the code alone cannot say whether it mattered here.
-- [ ] No text in a `## Recommendation` section is discarded. Every one of the three shapes survives: a span before the first bold marker, a span under a marker the classifier calls `other`, and prose following the verdict token on the Recommendation line itself.
-- [ ] `other` spans keep their label rather than being silently merged, so a reader of the card can tell an author's own heading from one the parser understands.
-- [ ] A regression test covers all three shapes with a negative control: against the pre-fix parser the test goes red. Without that, a test over already-parsing text proves the parser unchanged, not fixed.
-- [ ] The measurement from AC 1 is re-run after the fix and the dropped-fragment count is zero, reported as the same number so the before/after is one comparison rather than two claims.
-- [ ] The `/review/<id>` card renders the recovered text — a fix that only reaches the parser leaves the operator seeing exactly what they saw before.
+- [x] No text in a `## Recommendation` section is discarded. Every one of the three shapes survives: a span before the first bold marker, a span under a marker the classifier calls `other`, and prose following the verdict token on the Recommendation line itself.
+- [x] `other` spans keep their label rather than being silently merged, so a reader of the card can tell an author's own heading from one the parser understands.
+- [x] A regression test covers all three shapes with a negative control: against the pre-fix parser the test goes red. Without that, a test over already-parsing text proves the parser unchanged, not fixed.
+- [x] The measurement from AC 1 is re-run after the fix and the dropped-fragment count is zero, reported as the same number so the before/after is one comparison rather than two claims.
+- [x] The `/review/<id>` card renders the recovered text — a fix that only reaches the parser leaves the operator seeing exactly what they saw before.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -165,6 +181,11 @@ never sees does not exist for that decision.
 -->
 
 ## Verification
+
+out=$(python3 -m pytest tests/unit/test_extract_recommendation.py -q 2>&1); echo "$out" | grep -q "32 passed" && ! echo "$out" | grep -q failed
+python3 docs/reports/T-3252-measure-recommendation-loss.py > /tmp/.t3252-loss.out 2>&1 && grep -q "dropped_fragments: 0$" /tmp/.t3252-loss.out
+python3 -c "import ast; ast.parse(open('web/shared.py').read())"
+python3 -c "import ast; ast.parse(open('web/blueprints/review.py').read())"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -283,19 +304,36 @@ never sees does not exist for that decision.
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `/review/<id>` (and `/tasks/<id>`, the side panel) render `rationale`
+and `evidence` from `## Recommendation` but never `raw`. Any text the tokenizer
+couldn't classify into `rationale`/`evidence`/`verdict` had nowhere to go — 602 of
+1058 cards on this repo's own corpus, 3399 fragments, verified by re-running the
+extractor over `.tasks/{active,completed}` and diffing `raw` against the structured
+output.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `extract_recommendation` (T-1575) tokenises the section by bold
+marker and buckets each span, but the bucketing was closed-world: only four labels
+(`recommendation`, `rationale`, `evidence`, `captured_learning`) had a destination,
+and even `recommendation`'s own span only kept the verdict token, discarding any
+trailing prose on the same line. Everything else — the `other` classification, text
+before the first marker, verdict-line trailing prose — was dropped by the loop
+itself, not lost in rendering. `raw` was computed as a "full-text fallback" but no
+call site ever read it.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the bug is invisible by construction. A card with
+rationale + evidence looks complete regardless of what else the author wrote — there
+is no count, no diff, no "N chars not shown" indicator. The T-1575 test suite
+(24 tests) covered only the four recognised labels; none asserted that unrecognised
+content survived anywhere, so the closed-world bucketing shipped and stayed green for
+every PR since.
+
+**Prevention:** the fix itself removes the closed-world assumption — every span the
+tokenizer finds now lands in a field (`rationale`/`evidence`/`verdict`/`verdict_note`/
+`other`), so there is no bucket left that silently discards. `tests/unit/test_extract_recommendation.py`
+adds one test per shape plus a combined case, each with a negative-control failure
+against the pre-fix parser (verified via `git stash`). `docs/reports/T-3252-measure-recommendation-loss.py`
+is committed as a reusable corpus-wide check — reachable by any future contributor
+who wants to re-verify the class is still fixed, not just this instance of it.
 
 ## Evolution
 
@@ -377,3 +415,15 @@ never sees does not exist for that decision.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3252-recommendation-card-silently-drops-text-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5b48e2fd
+- **Timestamp:** 2026-09-02T08:03:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-02T08:03:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

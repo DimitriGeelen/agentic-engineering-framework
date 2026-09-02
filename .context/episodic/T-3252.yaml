@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3252: Recommendation card silently drops text: any span the marker tokeniser classifies as other is discarded, and raw is never rendered
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-02T08:03:41Z
+# ============================================================================
+
+task_id: T-3252
+task_name: "Recommendation card silently drops text: any span the marker tokeniser classifies as other is discarded, and raw is never rendered"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T22:38:02Z
+completed: 2026-09-02T08:03:25Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-09-02T00:40:31+02:00
+last_commit: 2026-09-02T00:42:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  measure the Recommendation-card text loss on our own corpus before fixing it. sync the vendored copy after the T-3251 template fix
+
+# Key outcomes
+outcomes:
+  - 'The loss is measured on this repo''s own corpus before anything is changed: how many task bodies carry a `## Recommendation` section, how many of those lose text through `extract_recommendation`, and how many fragments. A fix argued from the code alone cannot say whether it mattered here.'
+  - 'No text in a `## Recommendation` section is discarded. Every one of the three shapes survives: a span before the first bold marker, a span under a marker the classifier calls `other`, and prose following the verdict token on the Recommendation line itself.'
+  - '`other` spans keep their label rather than being silently merged, so a reader of the card can tell an author''s own heading from one the parser understands.'
+  - 'A regression test covers all three shapes with a negative control: against the pre-fix parser the test goes red. Without that, a test over already-parsing text proves the parser unchanged, not fixed.'
+  - 'The measurement from AC 1 is re-run after the fix and the dropped-fragment count is zero, reported as the same number so the before/after is one comparison rather than two claims.'
+  - 'The `/review/<id>` card renders the recovered text — a fix that only reaches the parser leaves the operator seeing exactly what they saw before.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'sync the vendored copy after the T-3251 template fix'
+    source: git-mined
+  - description: 'measure the Recommendation-card text loss on our own corpus before fixing it'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/templates/pending.html'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.obs-highwater'
+  - '.context/working/session.yaml'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-control.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/livefire-brake-tier-ceiling.sh'
+  - '.tasks/active/T-3250-arc-012-e10---press-the-brake-prove-the-.md'
+  - '.tasks/active/T-3252-recommendation-card-silently-drops-text-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-02T00:40:31'
+    action: 'T-3252: measure the Recommendation-card text loss on our own corpus before fixing it'
+  - time: '2026-09-02T00:42:03'
+    action: 'T-3252: sync the vendored copy after the T-3251 template fix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 565 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 565
+  commits: 2
+  files_changed: 19
+  lines_added: 447
+  lines_removed: 244
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3252-recommendation-card-silently-drops-text-.md
+generated_by: context-agent-hybrid

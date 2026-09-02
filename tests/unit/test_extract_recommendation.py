@@ -367,6 +367,156 @@ def test_non_bullet_style_still_works():
     assert extract_recommendation(body)["verdict"] == "GO"
 
 
+# ============================================================
+# T-3252: no text in a `## Recommendation` section is discarded.
+# Three shapes, one cause (docs/reports/T-3252-recommendation-text-loss.md):
+#   (a) text before the first bold marker
+#   (b) prose after the verdict token on the Recommendation line itself
+#   (c) a span under a marker `_classify_rec_marker` calls `other`
+# Negative control: reverting web/shared.py to the pre-T-3252 extract_recommendation
+# (the version with `out = {"verdict": ..., "rationale": ..., "evidence": ..., "raw": ""}`
+# and no `other`/`verdict_note` keys) makes every test below fail — either with a
+# KeyError on `out["other"]` / `out["verdict_note"]`, or because the asserted text
+# is absent from `rationale`/`evidence`. Verified via `git stash` against the
+# pre-fix commit during authoring.
+# ============================================================
+
+
+def test_shape_a_preamble_before_first_marker_preserved():
+    """Text before the first bold marker was never inside any span, so the
+    original tokenizer never bucketed it — silently dropped."""
+    body = (
+        "## Recommendation\n\n"
+        "This section opens with a caveat the author wrote before any bold marker.\n\n"
+        "**Recommendation:** GO\n\n"
+        "**Rationale:** Ships as-is.\n\n"
+        "## Updates\n"
+    )
+    out = extract_recommendation(body)
+    assert out["verdict"] == "GO"
+    assert "caveat the author wrote before any bold marker" in out["other"]
+
+
+def test_shape_a_no_markers_at_all_preserved_in_other():
+    """A Recommendation section with zero bold markers previously vanished
+    entirely from every structured field except the unrendered `raw`."""
+    body = (
+        "## Recommendation\n\n"
+        "Free-form prose with no structured markers at all — an authoring mistake\n"
+        "or an informal note, either way real text a human should be able to read.\n\n"
+        "## Updates\n"
+    )
+    out = extract_recommendation(body)
+    assert out["verdict"] == "?"
+    assert "Free-form prose with no structured markers" in out["other"]
+
+
+def test_shape_b_verdict_trailing_prose_preserved():
+    """Prose after the verdict token on the Recommendation line itself
+    ('DEFER — demand has not materialised') was discarded outright; only the
+    verdict token was kept."""
+    body = (
+        "## Recommendation\n\n"
+        "**Recommendation:** DEFER — demand has not materialised.\n\n"
+        "## Updates\n"
+    )
+    out = extract_recommendation(body)
+    assert out["verdict"] == "DEFER"
+    assert "demand has not materialised" in out["verdict_note"]
+
+
+def test_shape_b_verdict_trailing_prose_bold_wrapped_token():
+    """T-3252 real-world variant: the verdict token itself is bold-wrapped
+    ('**GO** — promote…'), which the original verdict regex didn't match at
+    all — losing not just the trailing prose but the verdict itself."""
+    body = (
+        "## Recommendation\n\n"
+        "**Recommendation:** **GO** — promote T-1727 from captured to started-work.\n\n"
+        "## Updates\n"
+    )
+    out = extract_recommendation(body)
+    assert out["verdict"] == "GO"
+    assert "promote T-1727" in out["verdict_note"]
+
+
+def test_shape_c_other_labeled_span_preserved_with_label():
+    """A span under an author's own bold label (not one of the four recognised
+    markers) was classified `other` and dropped, taking the following bullets
+    with it up to the next recognised marker."""
+    body = (
+        "## Recommendation\n\n"
+        "**Recommendation:** GO\n\n"
+        "**Rationale:** Ships as-is.\n\n"
+        "**Implications:** This changes how downstream consumers read the field.\n\n"
+        "## Updates\n"
+    )
+    out = extract_recommendation(body)
+    assert out["verdict"] == "GO"
+    # Rationale must NOT absorb the other-labeled span (no re-introducing the
+    # T-1575 v1 leak class).
+    assert "Implications" not in out["rationale"]
+    assert "downstream consumers" not in out["rationale"]
+    # The label is preserved so a reader can tell it apart from a recognised marker.
+    assert "**Implications**" in out["other"]
+    assert "downstream consumers" in out["other"]
+
+
+def test_shape_c_recommendation_bucket_unrecognised_verdict_token_preserved():
+    """A Recommendation marker whose value isn't a recognised verdict token
+    (e.g. informal 'SHIP', 'DROP') previously vanished with no verdict set and
+    no trace anywhere but the unrendered raw."""
+    body = (
+        "## Recommendation\n\n"
+        "**Recommendation:** SHIP — ship as landed, no further gate needed.\n\n"
+        "## Updates\n"
+    )
+    out = extract_recommendation(body)
+    assert out["verdict"] == "?"  # unrecognised token — no verdict synonym invented
+    assert "SHIP" in out["other"]
+    assert "ship as landed" in out["other"]
+
+
+def test_verdict_note_leading_separator_stripped():
+    """The renderer supplies its own ' — ' separator before verdict_note; if the
+    author's own em-dash survives too, the card reads 'GO — — reason' (doubled)."""
+    body = (
+        "## Recommendation\n\n"
+        "**Recommendation:** **GO** — close as work-completed.\n\n"
+        "## Updates\n"
+    )
+    out = extract_recommendation(body)
+    assert out["verdict"] == "GO"
+    assert not out["verdict_note"].startswith("—")
+    assert not out["verdict_note"].startswith("-")
+    assert out["verdict_note"] == "close as work-completed."
+
+
+def test_all_three_shapes_together_nothing_dropped():
+    """Combined regression: all three shapes in one section, verified against
+    the full extracted output — every fragment must appear somewhere."""
+    body = (
+        "## Recommendation\n\n"
+        "Preamble caveat before any marker.\n\n"
+        "**Recommendation:** NO-GO — blocked on upstream dependency.\n\n"
+        "**Rationale:** Clear rationale text.\n\n"
+        "**Follow-on notes:** Not in this slice, tracked separately.\n\n"
+        "## Updates\n"
+    )
+    out = extract_recommendation(body)
+    assert out["verdict"] == "NO-GO"
+    assert "blocked on upstream dependency" in out["verdict_note"]
+    assert "Clear rationale text" in out["rationale"]
+    combined = out["rationale"] + out["evidence"] + out["other"] + out["verdict"] + out["verdict_note"]
+    for fragment in (
+        "Preamble caveat before any marker",
+        "blocked on upstream dependency",
+        "Clear rationale text",
+        "Follow-on notes",
+        "Not in this slice, tracked separately",
+    ):
+        assert fragment in combined, f"dropped: {fragment!r}"
+
+
 def test_bold_in_paragraph_not_matched_as_marker():
     """Bold text mid-paragraph (not on its own line, no bullet) shouldn't match
     as a marker — guards the line-start anchor we relaxed."""

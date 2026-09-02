@@ -38745,3 +38745,39 @@ scan_id: R-0f9aaf9e
 task_id: T-3251
 payload:
   task_file: .tasks/active/T-3251-pending-resolve-button-omits-x-csrf-toke.md
+---
+kind: scan_emitted
+timestamp: '2026-09-02T08:02:55Z'
+scan_id: R-5bdce2c2
+task_id: T-3252
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-02T08:02:55Z'
+scan_id: R-5bdce2c2
+task_id: T-3252
+payload:
+  task_file: .tasks/active/T-3252-recommendation-card-silently-drops-text-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-02T08:03:29Z'
+scan_id: R-5b48e2fd
+task_id: T-3252
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-02T08:03:29Z'
+scan_id: R-5b48e2fd
+task_id: T-3252
+payload:
+  task_file: .tasks/active/T-3252-recommendation-card-silently-drops-text-.md
