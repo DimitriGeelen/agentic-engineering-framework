@@ -11,12 +11,12 @@ description: >
   into a session that cannot take a turn, which is the mode the arc's 'without operator
   relay' promise is about. Observed in E5, E7, E8 and E9.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/claude-fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -29,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T19:58:10Z
-last_update: '2026-09-01T20:00:24Z'
-date_finished:
+last_update: 2026-09-02T08:29:27Z
+date_finished: 2026-09-02T08:29:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -81,12 +81,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `bin/claude-fw` records whether the ORIGINAL invocation was headless (`-p` / `--print`), since that is the mode in which a promptless relaunch cannot take a turn. Interactive behaviour is unchanged: `CLAUDE_ARGS=()` still means "fresh session, SessionStart seeds it", which is correct there and is T-3166's intent.
-- [ ] **A headless budget restart relaunches WITH the directive as its prompt**, so the resumed session has something to do rather than exiting on "Input must be provided either through stdin or as a prompt argument when using --print". Fresh context is preserved — this passes an instruction, not a transcript, so T-3166's reason for refusing `-c` is untouched.
-- [ ] **A headless restart with NO directive refuses to relaunch** and records `exit reason=no-directive-headless`, rather than spending the restart budget on sessions that cannot act. E9 burned 3/3 restarts that way and reported "the loop ran".
-- [ ] `FW_RESTART_MODE=continue` still yields `-c` — the existing escape hatch is not re-routed by any of the above.
-- [ ] A bats suite pins all four branches (headless+directive, headless+no-directive, interactive, continue-mode) and goes RED against the pre-fix `bin/claude-fw`, so the pin is falsifiable rather than tautological.
-- [ ] **E9 re-run is the acceptance evidence, not the unit test**: with the fix, the loop closes ≥2 real tasks and at least one `date_finished` lands after the first restart event. That is the arc's headline claim and no unit test can stand for it.
+- [x] `bin/claude-fw` records whether the ORIGINAL invocation was headless (`-p` / `--print`), since that is the mode in which a promptless relaunch cannot take a turn. Interactive behaviour is unchanged: `CLAUDE_ARGS=()` still means "fresh session, SessionStart seeds it", which is correct there and is T-3166's intent.
+- [x] **A headless budget restart relaunches WITH the directive as its prompt**, so the resumed session has something to do rather than exiting on "Input must be provided either through stdin or as a prompt argument when using --print". Fresh context is preserved — this passes an instruction, not a transcript, so T-3166's reason for refusing `-c` is untouched.
+- [x] **A headless restart with NO directive refuses to relaunch** and records `exit reason=no-directive-headless`, rather than spending the restart budget on sessions that cannot act. E9 burned 3/3 restarts that way and reported "the loop ran".
+- [x] `FW_RESTART_MODE=continue` still yields `-c` — the existing escape hatch is not re-routed by any of the above.
+- [x] A bats suite pins all four branches (headless+directive, headless+no-directive, interactive, continue-mode) and goes RED against the pre-fix `bin/claude-fw`, so the pin is falsifiable rather than tautological.
+- [x] **E9 re-run is the acceptance evidence, not the unit test**: with the fix, the loop closes ≥2 real tasks and at least one `date_finished` lands after the first restart event. That is the arc's headline claim and no unit test can stand for it.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -236,6 +236,10 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n bin/claude-fw
+out=$(bats tests/unit/t3247_restart_headless_prompt.bats 2>&1); echo "$out" | grep -q '^ok 7 C1' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3249_rearm_headless_prompt.bats tests/unit/t3243_supervisor_restart_policy.bats tests/unit/claude_fw_restart_mode.bats tests/unit/restart_sentinel_ttl.bats tests/unit/claude_fw_router.bats tests/unit/claude_fw_copy_not_symlink.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -332,3 +336,20 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3247-restart-relaunches-headless-claude-with-.md
 - **Context:** Initial task creation
+
+### 2026-09-02T — dispatch worker
+- **Action:** The wrapper fix (HEADLESS tracking + prompt-carrying restart, `-p "$local_directive"` / refusal on no directive) was already committed as `7326394d5` earlier in this task's own session. A sibling defect on the re-arm (clean-exit) path was found and fixed separately as T-3249 (completed). This dispatch closed the one remaining gap: AC #5's bats suite pinning the RESTART path's four branches did not exist yet — only the re-arm path had one (`t3249_rearm_headless_prompt.bats`).
+- **Output:** Added `tests/unit/t3247_restart_headless_prompt.bats` — 7 tests (D1/D2 the fix itself, D3/D4 the no-directive refusal, D5 the `FW_RESTART_MODE=continue` escape hatch, D6 the interactive scope-control, C1 a reconstructed pre-fix wrapper that proves the suite can go RED). All 7 pass against the live wrapper; C1 confirms the suite fails against the pre-fix reconstruction. Full related cluster (`t3247_restart_headless_prompt`, `t3249_rearm_headless_prompt`, `t3243_supervisor_restart_policy`, `claude_fw_restart_mode`, `restart_sentinel_ttl`, `claude_fw_router`, `claude_fw_copy_not_symlink`) — 51/51 pass.
+- **Context:** AC #6 (E9 re-run evidence) is already satisfied by the completed T-3246 (`## Recommendation`-worthy run 4: 7 tasks closed after the first restart, 12/12 closes verified by content not just checkbox). Ticked all 6 Agent ACs; added a `## Verification` block covering the new suite plus the existing cluster.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-99b82cfb
+- **Timestamp:** 2026-09-02T08:32:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-02T08:29:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

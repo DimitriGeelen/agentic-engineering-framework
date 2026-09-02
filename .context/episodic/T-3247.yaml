@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3247: restart relaunches headless claude with no prompt, so the loop resumes into a dead session
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-02T08:32:16Z
+# ============================================================================
+
+task_id: T-3247
+task_name: "restart relaunches headless claude with no prompt, so the loop resumes into a dead session"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T19:58:10Z
+completed: 2026-09-02T08:29:27Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-01T22:08:12+02:00
+last_commit: 2026-09-01T22:08:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  headless restart passes the directive as the prompt - the loop can act again
+
+# Key outcomes
+outcomes:
+  - '`bin/claude-fw` records whether the ORIGINAL invocation was headless (`-p` / `--print`), since that is the mode in which a promptless relaunch cannot take a turn. Interactive behaviour is unchanged: `CLAUDE_ARGS=()` still means "fresh session, SessionStart seeds it", which is correct there and is T-3166''s intent.'
+  - '**A headless budget restart relaunches WITH the directive as its prompt**, so the resumed session has something to do rather than exiting on "Input must be provided either through stdin or as a prompt argument when using --print". Fresh context is preserved — this passes an instruction, not a transcript, so T-3166''s reason for refusing `-c` is untouched.'
+  - '**A headless restart with NO directive refuses to relaunch** and records `exit reason=no-directive-headless`, rather than spending the restart budget on sessions that cannot act. E9 burned 3/3 restarts that way and reported "the loop ran".'
+  - '`FW_RESTART_MODE=continue` still yields `-c` — the existing escape hatch is not re-routed by any of the above.'
+  - 'A bats suite pins all four branches (headless+directive, headless+no-directive, interactive, continue-mode) and goes RED against the pre-fix `bin/claude-fw`, so the pin is falsifiable rather than tautological.'
+  - '**E9 re-run is the acceptance evidence, not the unit test**: with the fix, the loop closes ≥2 real tasks and at least one `date_finished` lands after the first restart event. That is the arc''s headline claim and no unit test can stand for it.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/claude-fw'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E9-loop-does-work.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/livefire-loop-does-work.sh'
+  - '.tasks/active/T-3246-arc-012-e9--the-loop-does-work-close-a-t.md'
+  - '.tasks/active/T-3247-restart-relaunches-headless-claude-with-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-01T22:08:12'
+    action: 'T-3247: headless restart passes the directive as the prompt - the loop can act again'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 751 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 751
+  commits: 1
+  files_changed: 5
+  lines_added: 1003
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3247-restart-relaunches-headless-claude-with-.md
+generated_by: context-agent-hybrid
