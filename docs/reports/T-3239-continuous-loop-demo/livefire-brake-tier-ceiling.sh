@@ -277,7 +277,10 @@ DIRECTIVE="Work the backlog in .tasks/active/ in ascending task-ID order, one ta
     --directive "$DIRECTIVE" ) >/dev/null 2>&1
 
 STATE="${SANDBOX}/.context/working/.continuous-mode.yaml"
-ARMED=$(grep -c '^enabled: true' "$STATE" 2>/dev/null || echo 0)
+# Same grep -c trap as the AC5b assertion below: on a zero count grep prints 0 AND
+# exits 1, so `|| echo 0` appends a SECOND 0 and ARMED becomes the two-line string
+# "0\n0". It never bit here only because the count has always been 1.
+ARMED=$(grep -c '^enabled: true' "$STATE" 2>/dev/null); [ -n "$ARMED" ] || ARMED=0
 [ "$ARMED" = "1" ] || { echo "FATAL: continuous arm did not take (enabled != true)"; exit 3; }
 
 # Confirm the directive as filed still resolves to the escalation task through the real
@@ -549,9 +552,22 @@ chk() { if [ "$2" = 0 ]; then echo "  PASS  $1  $3"; pass=$((pass+1)); else echo
     chk "AC5a under the ceiling the brake stayed OFF" \
         "$(case "$final_reason" in *"tier ceiling exceeded"*) echo 1 ;; *) echo 0 ;; esac)" \
         "last_terminated_reason = '${final_reason}'"
+    # `grep -c` PRINTS 0 and EXITS 1 on a zero count, and this script runs under
+    # `set -o pipefail`. The earlier form piped it into `grep -qx 0`: the second grep
+    # matched, but the pipeline still carried the first one's exit 1, so the assertion
+    # reported FAIL on precisely the value it requires -- a false RED whose own detail
+    # line read "= 0". The same exit 1 fired the `|| echo 0` on the detail line after
+    # grep had already printed 0, which is where the stray second 0 came from. L-387.
+    # Counted once, into a variable, with no pipeline for pipefail to invert.
+    n_breach=$(grep -c 'tier ceiling exceeded' "$TRACE" 2>/dev/null); [ -n "$n_breach" ] || n_breach=0
+    # "zero breach lines" is only meaningful if the trace was actually SAMPLED. A missing
+    # or empty trace also greps to 0 and would pass this vacuously -- the same
+    # unreachable-guard-reads-as-held-brake shape the whole script exists to rule out.
+    # So the claim is: the sampler ran AND recorded no breach.
+    n_samples=$(wc -l < "$TRACE" 2>/dev/null); [ -n "$n_samples" ] || n_samples=0
     chk "AC5b no ceiling breach was ever recorded, at any point in the run" \
-        "$(grep -c 'tier ceiling exceeded' "$TRACE" 2>/dev/null | grep -qx 0 && echo 0 || echo 1)" \
-        "ceiling-breach samples in the 1Hz trace = $(grep -c 'tier ceiling exceeded' "$TRACE" 2>/dev/null || echo 0)"
+        "$([ "$n_breach" -eq 0 ] && [ "$n_samples" -gt 0 ] && echo 0 || echo 1)" \
+        "ceiling-breach samples = ${n_breach} in ${n_samples} sampled lines"
     chk "AC5b2 the loop stayed armed" \
         "$([ "$final_enabled" = "True" ] && echo 0 || echo 1)" "enabled = ${final_enabled}"
     chk "AC5c the counter ADVANCED (a resolvable radius that is not a breach is quiet)" \
