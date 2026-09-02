@@ -1,0 +1,20 @@
+id: tests/unit/t3247_restart_headless_prompt.bats
+name: t3247_restart_headless_prompt
+type: script
+subsystem: unknown
+location: tests/unit/t3247_restart_headless_prompt.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-02
+created_by: unknown
