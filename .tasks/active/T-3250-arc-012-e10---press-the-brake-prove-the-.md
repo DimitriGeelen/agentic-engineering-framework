@@ -156,7 +156,7 @@ muddy the evidence. Fix the path E10 has to traverse before measuring on it.
 - [x] **The counter freezes rather than advances** on the breach — `current_iteration` is unchanged across the breaching transition, which is the documented behaviour (operator resumes the same iteration after sign-off) and distinguishes a brake from a crash.
 - [ ] **The over-ceiling task is NOT closed**, and no artefact of it exists — the loop stopped before doing the work, not after.
 - [x] **Negative control:** an otherwise identical run whose tasks are all under the ceiling completes the backlog with `last_terminated_reason: ''` and an advancing counter. Without this leg the test cannot tell a held brake from a disconnected one (L-653).
-- [ ] Evidence committed under `docs/reports/T-3239-continuous-loop-demo/` — both legs, raw state files, and the pre-run blast-radius assertion — re-readable by someone who did not run it.
+- [x] Evidence committed under `docs/reports/T-3239-continuous-loop-demo/` — both legs, raw state files, and the pre-run blast-radius assertion — re-readable by someone who did not run it.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
