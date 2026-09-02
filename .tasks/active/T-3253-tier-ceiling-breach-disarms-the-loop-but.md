@@ -1,8 +1,10 @@
 ---
 id: T-3253
-name: "tier-ceiling breach disarms the loop but neither stops the running session nor the budget-restart path, which never consults enabled"
+name: "tier-ceiling breach disarms the loop but neither stops the running session
+  nor the budget-restart path, which never consults enabled"
 description: >
-  tier-ceiling breach disarms the loop but neither stops the running session nor the budget-restart path, which never consults enabled
+  tier-ceiling breach disarms the loop but neither stops the running session nor the
+  budget-restart path, which never consults enabled
 
 status: started-work
 workflow_type: build
@@ -23,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T22:47:09Z
-last_update: 2026-09-01T22:47:09Z
-date_finished: null
+last_update: '2026-09-01T23:00:21Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +37,38 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-01T23:00:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=319,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-01T23:00:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      Discard fidelity: 0
+      Loop closure (conditional): 0
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: Discard fidelity=0 (no-signal); Loop closure (conditional)=0 
+      (no-signal); D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3253: tier-ceiling breach disarms the loop but neither stops the running session nor the budget-restart path, which never consults enabled

@@ -1,7 +1,7 @@
 # T-1549 — Layer B v0 Heuristic Scan Results
 
-**Run:** 2026-09-01T03:23:03.124669+00:00
-**Corpus:** 2801 completed tasks
+**Run:** 2026-09-02T03:23:02.916666+00:00
+**Corpus:** 2805 completed tasks
 **Bug-class identified:** 502 (17%)
 
 ## H1 — Bug-class tasks with no `## RCA` section
@@ -12,9 +12,6 @@
 
 - `T-101-fix-critical-hook-projectroot-bug-for-ex` — Fix critical hook PROJECT_ROOT bug for external projects
 - `T-2488-rca--fix-bare-dispatch-worker-hits-promp` — RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248
-- `T-2724-fw-init-reports-19-broken-hooks-on-a-cor` — fw init reports 19 broken hooks on a correct install — validator never expands
-- `T-2733-t-1550-rca-gate-invalidated-pre-existing` — T-1550 RCA gate invalidated pre-existing test fixtures, red since May
-- `T-2740-greenfield-seed-tasks-fail-fw-audit-on-a` — greenfield seed tasks fail fw audit on a freshly initialised project
 - `T-2792-fresh-install-onboarding-path-broken-mak` — Fresh-install onboarding path broken: make the new-project prompt work end
 - `T-2830-work-on-switch-focus-fails-silently` — fw work-on --switch-focus fails silently (RC=1, zero output)
 - `T-2886-vendor-sync--push-t-2885-budget-gauge-fi` — vendor sync + push T-2885 budget gauge fix
@@ -27,12 +24,12 @@
 
 ## H2 — Learning IDs referenced across ≥3 tasks within 30 days
 
-- `P-011` — referenced by 2375 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined- …
-- `L-387` — referenced by 2128 tasks: T-100142-c1-fw-integrate-run-deletes-landed-sourc, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind- …
-- `L-291` — referenced by 1095 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
-- `L-398` — referenced by 842 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
-- `P-010` — referenced by 477 tasks: T-100185-createtaskbats-inception-tests-fail-unde, T-100190-auditsh-metrics-history-writer-non-atomi, T-100191-sweep-atomic-write-pattern-for-all-conte, T-100196-safe-go-live-path-reconciling-fw-go-live, T-1101-inception-fw-inception-decide-silent---f …
-- `L-399` — referenced by 93 tasks: T-100202-task-id-allocator-inflation--split-view-, T-1895-template--claudemd-reviewer-example-for-, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1983-go-scope-traceability--inception-decisio …
+- `P-011` — referenced by 2388 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined- …
+- `L-387` — referenced by 2141 tasks: T-100142-c1-fw-integrate-run-deletes-landed-sourc, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind- …
+- `L-291` — referenced by 1099 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
+- `L-398` — referenced by 846 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
+- `P-010` — referenced by 481 tasks: T-100185-createtaskbats-inception-tests-fail-unde, T-100190-auditsh-metrics-history-writer-non-atomi, T-100191-sweep-atomic-write-pattern-for-all-conte, T-100196-safe-go-live-path-reconciling-fw-go-live, T-1101-inception-fw-inception-decide-silent---f …
+- `L-399` — referenced by 94 tasks: T-100202-task-id-allocator-inflation--split-view-, T-1895-template--claudemd-reviewer-example-for-, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1983-go-scope-traceability--inception-decisio …
 - `L-006` — referenced by 56 tasks: T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou …
 - `L-001` — referenced by 51 tasks: T-011-define-practice-graduation-criteria, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le …
 - `L-364` — referenced by 45 tasks: T-1720-reviewer-audit-cron-silent-failure-5-day, T-1720-reviewer-audit-cron-silent-failure-5-day, T-1766-render-surface-human-ac-gate--block-work, T-1766-render-surface-human-ac-gate--block-work, T-1767-fix-escalation-scan-v05-cron-deploy-gap- …
@@ -59,12 +56,12 @@ T-1548 (the inception that birthed this scan): bug_class=False has_rca=False lea
 
 | Metric | Value |
 |---|---|
-| Total completed tasks | 2801 |
+| Total completed tasks | 2805 |
 | Bug-class tasks | 502 (17%) |
 | H1 flagged | 363 |
-| H2 repeat-learning patterns | 161 |
+| H2 repeat-learning patterns | 162 |
 | H3 flagged (strongest signal) | 265 |
-| Last-30-days bug-class | 14 |
+| Last-30-days bug-class | 11 |
 
 ## Read-out — GO/NO-GO for Layer B v1 (cron + register + Watchtower)
 
