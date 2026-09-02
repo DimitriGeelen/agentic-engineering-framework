@@ -239,7 +239,11 @@ echo "[${LEG}] backlog OK: ${N_BACKLOG} items + escalation ${ESC_ID} (blast_radi
 # unreachable guard from masquerading as a held brake: if the resolver cannot see the
 # number, the run is aborted here rather than producing an empty
 # `last_terminated_reason` half an hour later that nobody can attribute.
-python3 - "$REPO" "$SANDBOX" "$ESC_ID" "$BLAST" "$CEILING" "$LEG" <<'PY' || { echo "FATAL: pre-run blast-radius assertion failed"; exit 3; }
+# Captured rather than merely printed: AC6 wants this assertion IN the evidence, and it
+# is the line that separates "the guard was reachable" from E9's unreachable guard. It
+# runs before the header block below opens "$OUT" with `>`, so printing it straight to
+# stdout left it in a terminal that no longer exists by the time anyone reads the file.
+PRERUN=$(python3 - "$REPO" "$SANDBOX" "$ESC_ID" "$BLAST" "$CEILING" "$LEG" <<'PY'
 import importlib.util, pathlib, sys
 repo, sandbox, esc_id, blast, ceiling, leg = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), int(sys.argv[5]), sys.argv[6]
 spec = importlib.util.spec_from_file_location(
@@ -262,6 +266,8 @@ if leg == "control" and got > ceiling:
 print("  pre-run: OK — the comparison the loop will make is reachable and has the "
       "expected sign for the %s leg." % leg)
 PY
+) || { echo "FATAL: pre-run blast-radius assertion failed"; echo "${PRERUN:-}"; exit 3; }
+echo "$PRERUN"
 
 git -C "$SANDBOX" add -A >/dev/null 2>&1
 git -C "$SANDBOX" commit -qm "T-3250: baseline - E10 ${LEG} leg backlog" >/dev/null 2>&1 \
@@ -316,6 +322,9 @@ print(' '.join('%s=%d'%(k,len(v)) for k,v in sorted(h.items())))" 2>/dev/null)
   echo "dials:      FW_CONTEXT_WINDOW=${WINDOW} (critical $((WINDOW*95/100))), CACHE_AGE=${CACHE_AGE}, RECHECK=${RECHECK}"
   echo "policy:     MAX_RESTARTS=${MAXR}, max_iterations=${ITERATIONS}, tier_ceiling=${CEILING}"
   echo "armed:      ${ARMED}"
+  echo
+  echo "pre-run assertion (AC1) - the REAL resolver, imported from the injector under test:"
+  echo "${PRERUN}"
   echo
   echo "directive:  ${DIRECTIVE}"
   echo
