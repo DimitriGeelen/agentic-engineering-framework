@@ -1,27 +1,21 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-01T03:23:03.125618+00:00
-corpus_total: 2801
+generated: 2026-09-02T03:23:02.917556+00:00
+corpus_total: 2805
 bug_class_total: 502
 bug_class_pct: 17
 h1_flagged: 363
 h1_pct_of_bug_class: 72
-h2_repeat_patterns: 161
+h2_repeat_patterns: 162
 h3_flagged: 265
 h3_pct_of_bug_class: 52
-recent_30d_flagged: 14
+recent_30d_flagged: 11
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
     name: "Fix critical hook PROJECT_ROOT bug for external projects"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
-  - tid: "T-2724-fw-init-reports-19-broken-hooks-on-a-cor"
-    name: "fw init reports 19 broken hooks on a correct install — validator never expands"
-  - tid: "T-2733-t-1550-rca-gate-invalidated-pre-existing"
-    name: "T-1550 RCA gate invalidated pre-existing test fixtures, red since May"
-  - tid: "T-2740-greenfield-seed-tasks-fail-fw-audit-on-a"
-    name: "greenfield seed tasks fail fw audit on a freshly initialised project"
   - tid: "T-2792-fresh-install-onboarding-path-broken-mak"
     name: "Fresh-install onboarding path broken: make the new-project prompt work end"
   - tid: "T-2830-work-on-switch-focus-fails-silently"
@@ -32,19 +26,25 @@ recent_sample:
     name: "832 rail round 573/574 — report T-2921 extractor fix, carry their T-456 composit"
   - tid: "T-2971-rail-611--exclusion-vs-hole-applied-to-s"
     name: "rail 611 — exclusion-vs-hole applied to stale-arc membership; three broken"
+  - tid: "T-3048-fw-test-unitall-runs-bats-on-testsunit-w"
+    name: "fw test unit/all runs bats on tests/unit with no directory guard — hard error"
+  - tid: "T-3138-106-bats-assertions-cannot-fail-bash-exe"
+    name: "106 bats assertions cannot fail: bash exempts !-inverted commands from errexit"
+  - tid: "T-3193-a-release-can-advance-master-and-then-fa"
+    name: "A release can advance master and then fail to publish its tag, and the GitHub"
 h2_top:
   - learning: "P-011"
-    task_count: 2375
+    task_count: 2388
   - learning: "L-387"
-    task_count: 2128
+    task_count: 2141
   - learning: "L-291"
-    task_count: 1095
+    task_count: 1099
   - learning: "L-398"
-    task_count: 842
+    task_count: 846
   - learning: "P-010"
-    task_count: 477
+    task_count: 481
   - learning: "L-399"
-    task_count: 93
+    task_count: 94
   - learning: "L-006"
     task_count: 56
   - learning: "L-001"

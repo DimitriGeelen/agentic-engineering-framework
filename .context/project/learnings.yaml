@@ -4864,3 +4864,21 @@ X'` returning empty group."
   task: T-3250
   date: 2026-09-01
   context: Added via context agent
+- id: L-655
+  learning: "A '{ ...; fail=$((fail+1)); } | tee' assertion block runs in a SUBSHELL, so counters never reach the parent and a closing 'exit $(( fail > 0 ? 1 : 0 ))' returns 0 on every run regardless of failures. Distinct from L-387 (pipefail/SIGPIPE): here the pipe silently discards STATE, not exit status. Detect by asserting the exit code against a known-failing input, not just by reading the printed verdict. Origin T-3250: a livefire harness reported PASS:5 FAIL:2 and exited 0, so any CI/P-011 caller gating on $? saw success."
+  source: P-011
+  task: T-3250
+  date: 2026-09-02
+  context: Added via context agent
+- id: L-656
+  learning: "Test-harness false-greens cluster: T-3250's E10 rig produced FOUR defects of one shape - an assertion that reads identically for 'the thing happened' and 'the thing was never measurable'. (1) close gate truncated the evidence it then grepped, staying green on a token its own clobber wrote; (2) 'grep -c | grep -qx 0' under pipefail returned FAIL for EVERY input, so the assertion had zero discriminating power; (3) the pre-run reachability assertion existed only on stdout, absent from committed evidence; (4) subshell counter loss made the exit code always 0. All four sat in the instrument built to rule out exactly that class for the subject under test. Lesson: when a test's whole purpose is distinguishing 'held' from 'never connected', apply that same discrimination test to each of its OWN assertions - feed each a known-failing input and confirm it goes red."
+  source: P-011
+  task: T-3250
+  date: 2026-09-02
+  context: Added via context agent
+- id: L-657
+  learning: "Editing a shell script in place while a background run is executing it corrupts that run: bash reads scripts incrementally by byte offset, so an in-place rewrite shifts everything after the insertion point and the running shell resumes mid-line. Kill and relaunch rather than trust the output. Run long jobs from a gitignored copy when the original may be edited mid-flight. Also: 'pkill -f <pattern>' matches the invoking shell's own command line when that line contains the pattern, killing your own session (exit 144). Origin T-3250."
+  source: P-009
+  task: T-3250
+  date: 2026-09-02
+  context: Added via context agent
