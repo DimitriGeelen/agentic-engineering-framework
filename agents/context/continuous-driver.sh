@@ -115,7 +115,21 @@ fi
 [ -n "$SESSION" ] && [ "$SESSION" != "null" ] || _bail "refused" \
     "no target session: set one with 'fw config set CONTINUOUS_SESSION <name>' or pass --session"
 
-timeout 20 termlink info "$SESSION" >/dev/null 2>&1 \
+# Registration is checked with `discover`, NOT `info`. `termlink info` takes no
+# positional target at all -- it reports hub/runtime status -- so `info "$SESSION"`
+# exits non-zero with "unexpected argument" for EVERY session, registered or not.
+# The driver would have refused every target it was ever pointed at, and the refusal
+# message would have said "not registered", which is a plausible-sounding lie.
+#
+# It survived review because the unit test stubbed `info` to exit 0: the stub was
+# written against the driver's assumption instead of against the tool, so the two
+# agreed with each other and neither agreed with termlink. Pinned now by a contract
+# test that runs against the real binary (t3254 B4).
+#
+# `--name` is a SUBSTRING match, so the exact name is re-asserted with grep -Fxq --
+# otherwise 't3254' would happily match 't3254-other-session'.
+timeout 20 termlink discover --name "$SESSION" --names --no-header 2>/dev/null \
+    | grep -Fxq "$SESSION" \
     || _bail "refused" "target session '${SESSION}' is not registered"
 
 # ---------------------------------------------------------------------------

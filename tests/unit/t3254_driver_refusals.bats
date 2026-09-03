@@ -216,25 +216,44 @@ assert d["ceiling_breached"] is None, d["ceiling_breached"]'
 # output does not — which is exactly what the driver samples for.
 _stub_termlink() {
     local mode="$1"
+    # Note the ESCAPING: this heredoc is unquoted so the test can interpolate $SB and
+    # $mode, which means every shell variable the STUB itself uses must be written
+    # \$-escaped. An unescaped $# here expands to the bats function's argument count
+    # at write time and the stub silently does the wrong thing — which is how the
+    # first version of this stub broke four tests at once.
     cat > "$SB/stub/termlink" <<STUB
 #!/usr/bin/env bash
 verb="\$1"; shift
 case "\$verb" in
-  info)     exit 0 ;;
-  pty)      sub="\$1"; shift
-            if [ "\$sub" = "output" ]; then
-                if [ "$mode" = busy ]; then
-                    n=\$(cat "$SB/tick" 2>/dev/null || echo 0); echo \$((n+1)) > "$SB/tick"
-                    echo "working... \$n"
-                else
-                    echo "idle prompt >"
-                fi
-                exit 0
-            fi
-            if [ "\$sub" = "inject" ]; then echo "\$*" >> "$SB/injected"; exit 0; fi
-            exit 0 ;;
-  inject)   echo "\$*" >> "$SB/injected"; exit 0 ;;
-  *)        exit 0 ;;
+  info)
+    # The real termlink info takes NO positional target. A stub more permissive than
+    # the tool is exactly how the info-based registration check passed review (B4).
+    if [ \$# -gt 0 ]; then echo "error: unexpected argument found" >&2; exit 2; fi
+    exit 0 ;;
+  discover)
+    # Mirrors: discover --name NAME --names --no-header  -> prints matching names.
+    want=""
+    while [ \$# -gt 0 ]; do
+        if [ "\$1" = "--name" ]; then want="\$2"; shift 2; else shift; fi
+    done
+    [ -n "\$want" ] && echo "\$want"
+    exit 0 ;;
+  pty)
+    sub="\$1"; shift
+    if [ "\$sub" = "output" ]; then
+        if [ "$mode" = busy ]; then
+            n=\$(cat "$SB/tick" 2>/dev/null || echo 0); echo \$((n+1)) > "$SB/tick"
+            echo "working... \$n"
+        else
+            echo "idle prompt >"
+        fi
+        exit 0
+    fi
+    if [ "\$sub" = "inject" ]; then echo "\$*" >> "$SB/injected"; exit 0; fi
+    exit 0 ;;
+  inject)
+    echo "\$*" >> "$SB/injected"; exit 0 ;;
+  *) exit 0 ;;
 esac
 STUB
     chmod +x "$SB/stub/termlink"
@@ -265,6 +284,38 @@ _run_driver() {
     printf 'enabled: false\ncurrent_iteration: 0\n' > "$STATE_F"
     run _run_driver
     [ ! -f "$SB/injected" ] || { echo "injected while disarmed"; return 1; }
+}
+
+# ── B4: the contract, against the REAL binary ────────────────────────────────
+# THIS IS THE TEST THAT WAS MISSING. Every other test in Part B runs against a stub,
+# and a stub encodes what the DRIVER believes about termlink, not what termlink does.
+# The two agreed with each other for a whole review cycle while neither agreed with
+# the tool: `termlink info "$SESSION"` was the registration check, and `info` takes
+# no positional target — it exits 2 with "unexpected argument" for every session,
+# registered or not. The driver would have refused every target it was pointed at,
+# saying "not registered", which is a plausible-sounding lie.
+#
+# So this one deliberately does NOT stub. It asserts the shape of the real CLI.
+#
+# It SKIPS when termlink is absent, and that skip is real signal, not noise: the
+# contract genuinely was not measured on that host. The task's verification line
+# asserts zero skips, which is correct here and across the fleet (termlink is
+# installed machine-wide by design — CLAUDE.md §TermLink Integration) and will go
+# red anywhere it is not, rather than reporting a green that measured nothing.
+@test "B4 the driver's termlink verbs match the real termlink CLI" {
+    command -v termlink >/dev/null 2>&1 || skip "termlink not installed on this host"
+
+    # The check the driver USES must accept a name filter.
+    run timeout 20 termlink discover --name no-such-session-xyz --names --no-header
+    [ "$status" -eq 0 ] || { echo "discover --name --names --no-header rejected: $output"; return 1; }
+
+    # The check the driver USED TO use must still be wrong, or this pin is stale
+    # and someone should decide deliberately which check is correct.
+    run timeout 20 termlink info no-such-session-xyz
+    [ "$status" -ne 0 ] || { echo "termlink info now accepts a positional target — re-evaluate the driver's check"; return 1; }
+
+    # And the driver must not have drifted back to it.
+    ! grep -qE 'termlink info "\$SESSION"' "$DRIVER"
 }
 
 # ═══ PART C — every decision is in the ledger ════════════════════════════════
