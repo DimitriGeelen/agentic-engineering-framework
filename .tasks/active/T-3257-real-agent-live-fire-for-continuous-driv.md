@@ -1,17 +1,14 @@
 ---
-id: T-3255
-name: "T-3254 follow-up: the driver cannot resolve a target session, and the live-fire
-  never used a real agent"
+id: T-3257
+name: "Real-agent live-fire for continuous-driver — blocked on G-097 upstream termlink fix"
 description: >
-  T-3254 follow-up: the driver cannot resolve a target session, and the live-fire
-  never used a real agent
+  T-3254's AC5 live-fire drove a shell script, not an agent -- it proved transport/bounds/ledger but assumed the one property that actually matters (an agent stopping early gets driven to completion). T-3255 built the real thing (tools/t3255-livefire-agent.sh, spawns a real claude session, one backlog item per turn) and it is CORRECT, but it cannot pass: termlink inject/pty-inject does not deliver keystrokes into a claude TUI session at all (G-097). This task resumes and completes that proof once G-097 is fixed upstream or a confirmed workaround exists. Do not attempt with a stub or a different transport substitution -- that would recreate the exact gap this task exists to close.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
-arc_id: continuous-run
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -24,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-03T13:08:23Z
-last_update: '2026-09-03T13:15:20Z'
-date_finished:
+created: 2026-09-03T14:18:37Z
+last_update: 2026-09-03T14:18:37Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -37,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-03T13:15:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=276,acs=8)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-03T13:15:20Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3255: T-3254 follow-up: the driver cannot resolve a target session, and the live-fire never used a real agent
+# T-3257: Real-agent live-fire for continuous-driver — blocked on G-097 upstream termlink fix
 
 ## Context
 
@@ -77,30 +46,19 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The driver resolves a target session with NO manual configuration when the
-      project has exactly one discoverable registered session — proven with
-      `CONTINUOUS_SESSION` unset, so the test cannot pass by way of the pin it is
-      meant to make unnecessary.
-- [x] Two or more candidate sessions produce a refusal that NAMES them, not a
-      guess. Injecting a continuation turn into the wrong agent is worse than not
-      injecting, so ambiguity must stop the driver rather than be resolved by
-      ordering.
-- [x] The zero-candidate refusal names the actual precondition — that the project
-      has no TermLink-registered session and the fix is to relaunch under
-      `claude-fw --termlink` — rather than the true-but-useless "no target
-      session". Asserted on the refusal text the ledger records.
-- [x] **Split out, not dropped.** Building the real-agent live-fire (harness in
-      `tools/t3255-livefire-agent.sh`, real `claude` session) found that
-      `termlink inject`/`pty inject` does not deliver keystrokes into a `claude`
-      TUI session at all — measured against the real target three ways, see
-      G-097. That is a transport defect outside this repo, not a gap in the
-      harness or the driver. The harness itself is written and correct; only
-      the upstream call it depends on is broken. Filed: G-097 (gap register),
-      T-3256 (TermLink product feedback, human-owned), T-3257 (resume this
-      proof once unblocked). Cron entry `continuous-driver-10m` paused as
-      direct mitigation regardless of arm state.
-- [x] The T-3254 suite still passes with zero skips, and the vendored copies are in
-      sync before close.
+- [ ] G-097 is closed or a workaround is confirmed measured (not assumed) before
+      this task starts real work — checked by the build-order gate in
+      `## Verification`.
+- [ ] `tools/t3255-livefire-agent.sh` runs against a real `claude` session and all
+      of: 3/3 backlog units complete, `ALL-DONE` reached, budget gauge never
+      tripped, at least one BUSY observation recorded, negative control clean.
+      Reuse the harness already written in T-3255 rather than rebuilding it —
+      only the transport defect blocked it, not the harness design.
+- [ ] The T-3254 refusal suite (tests/unit/t3254_driver_refusals.bats) still
+      passes with zero skips.
+- [ ] `fw cron resume continuous-driver-10m` is run to re-arm the paused cron
+      entry, and `fw cron generate && fw cron install` deploys it — this task is
+      what un-pauses the mitigation G-097/T-3255 put in place.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -135,10 +93,18 @@ bvp_scores_proposed:
 
 ## Verification
 
-# --- T-3255 gate ---
-timeout 600 bats tests/unit/t3254_driver_refusals.bats > /tmp/.t3255.out 2>&1 && ! grep -q "^not ok" /tmp/.t3255.out
-test "$(grep -c '# skip' /tmp/.t3255.out)" -eq 0
-bin/fw vendor self --check
+# --- T-3257 gate ---
+# Build-order: do not attempt real work until G-097 is closed or a workaround
+# is confirmed measured. Read directly rather than via `fw gaps` (no status filter).
+python3 -c "
+import yaml
+d = yaml.safe_load(open('.context/project/concerns.yaml'))
+g = next((c for c in d['concerns'] if c['id']=='G-097'), None)
+raise SystemExit(0 if (g and g.get('status') not in ('open', None)) else 1)
+"
+timeout 600 tools/t3255-livefire-agent.sh > /tmp/.t3257lf.out 2>&1 && grep -q "0 failed" /tmp/.t3257lf.out
+timeout 600 bats tests/unit/t3254_driver_refusals.bats > /tmp/.t3257.out 2>&1 && ! grep -q "^not ok" /tmp/.t3257.out
+test "$(grep -c '# skip' /tmp/.t3257.out)" -eq 0
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -295,29 +261,6 @@ bin/fw vendor self --check
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-09-03 — the real-agent live-fire found a defect one level deeper than expected
-
-- **What changed:** This task exists because T-3254's live-fire substituted a shell
-  script for an agent, leaving the AC5 claim unproven at the one point that
-  actually matters. Fixing the session-resolution gap (nothing sets
-  CONTINUOUS_SESSION) was straightforward and shipped. Building the real-agent
-  harness (`tools/t3255-livefire-agent.sh`) surfaced something underneath both:
-  `termlink inject` and `pty inject` do not deliver keystrokes into a `claude` TUI
-  session at all. Measured three ways against the identical target — text inject,
-  key inject, and `tmux send-keys` as a control — the first two silently fail
-  (exit 0, nothing delivered) and the third succeeds, both at the first-run trust
-  dialog and at the real interactive prompt.
-- **Plan impact:** The real-agent live-fire cannot be completed until this is
-  fixed or worked around, and per operator instruction the driver is PAUSED
-  (`fw cron pause continuous-driver-10m`) rather than patched around with a
-  different transport, pending a decision on whether the fix belongs in
-  TermLink or here. Scope cut: this task closes for the session-resolution work
-  only, which is real, tested, and independent of the transport defect.
-- **Triggered:** G-097 (gap register), T-3256 (TermLink product feedback,
-  human-owned, same pattern as T-682), T-3257 (resume the real-agent live-fire
-  once G-097 is closed or a workaround is confirmed — parked, build-order gated
-  on G-097's status).
-
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -370,7 +313,7 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-09-03T13:08:23Z — task-created [task-create-agent]
+### 2026-09-03T14:18:37Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3255-t-3254-follow-up-the-driver-cannot-resol.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3257-real-agent-live-fire-for-continuous-driv.md
 - **Context:** Initial task creation

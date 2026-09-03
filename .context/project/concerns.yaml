@@ -4329,26 +4329,26 @@ concerns:
     Two corrections follow.
 
 
-    (i) The premise of our request was wrong. We told them editor 0.11.0 "is not in this repo". It is —
-    two identical vendored copies at a pinned sha. This entry''s root enabler ("the lane dialect is not
-    covered by the SS6 machine-check against the reference editor") is therefore stronger than written:
+    (i) The premise of our request was wrong. We told them editor 0.11.0 "is not in this repo". It is
+    — two identical vendored copies at a pinned sha. This entry''s root enabler ("the lane dialect is
+    not covered by the SS6 machine-check against the reference editor") is therefore stronger than written:
     the reference artifact was never unavailable, so the check has been implementable with no new dependency
     the whole time. Carried into G-095.
 
 
     (ii) The reporter reads OWNER_FROM_AUTHORITY''s `external: ''''` (:1906) as "the editor already implements
-    external -> no task; your compiler is the only one of the three that does not; adopting external: ''''
-    is enough." REFUSED on evidence, because adopting it would produce a false green here. The sole consumer
-    of ownerFromAuthority is :5790, a read-only property-panel readout rendering "— none —"; the editor
-    has no task-emission surface at all, so it cannot implement "no task" — there is nothing there to suppress.
-    Its comment at :1902-1905 claims the mapping mirrors the standard; the comment agrees with the standard,
-    the code implements no-owner. The gap is invisible in the editor precisely because nothing downstream
-    of it emits tasks, and load-bearing in our compiler, which does. Mapped into our code, "adopt external:
-    ''''" means adding external to AUTHORITY_NO_OWNER — a class that per T-2567/T-2717 STILL emits the task
-    and falls back to name/type derivation, i.e. owner: agent. That is today''s broken behaviour with a
-    politer message: it satisfies the message half of T-3172 and silently fails the load-bearing AC. The
-    third-branch requirement recorded above is what protects this entry from that shortcut, and it stands
-    unchanged.
+    external -> no task; your compiler is the only one of the three that does not; adopting external:
+    '''' is enough." REFUSED on evidence, because adopting it would produce a false green here. The sole
+    consumer of ownerFromAuthority is :5790, a read-only property-panel readout rendering "— none —";
+    the editor has no task-emission surface at all, so it cannot implement "no task" — there is nothing
+    there to suppress. Its comment at :1902-1905 claims the mapping mirrors the standard; the comment
+    agrees with the standard, the code implements no-owner. The gap is invisible in the editor precisely
+    because nothing downstream of it emits tasks, and load-bearing in our compiler, which does. Mapped
+    into our code, "adopt external: ''''" means adding external to AUTHORITY_NO_OWNER — a class that per
+    T-2567/T-2717 STILL emits the task and falls back to name/type derivation, i.e. owner: agent. That
+    is today''s broken behaviour with a politer message: it satisfies the message half of T-3172 and silently
+    fails the load-bearing AC. The third-branch requirement recorded above is what protects this entry
+    from that shortcut, and it stands unchanged.
 
 
     So there are four semantics in play, not three vocabularies: no-owner-but-task (compiler, `authority`),
@@ -4549,21 +4549,21 @@ concerns:
 
     Both projects had been calling `none` "a fifth value the editor adds beyond the frozen standard''s
     four". It is not a value in that sense — it is the editor''s UNSET SENTINEL, and five sites in the
-    bundle agree: :8245 initialises every new lane to authority:''none''; :10142 reads a lane with no aef:laneMeta
-    authority attribute back as ''none''; :9894 exports authority unconditionally with no filtering, so
-    an untouched lane serialises as authority="none"; :1905 the collapse map''s own comment groups none
-    with external/unknown as "not derivable", making its omission from OWNER_FROM_AUTHORITY deliberate
-    rather than an oversight; and the older 0.2.0 bundle (.context/working/designer-rx/, :1323) already
-    carried all five values while having no OWNER_FROM_AUTHORITY at all — none predates the collapse map
-    rather than extending it.
+    bundle agree: :8245 initialises every new lane to authority:''none''; :10142 reads a lane with no
+    aef:laneMeta authority attribute back as ''none''; :9894 exports authority unconditionally with no
+    filtering, so an untouched lane serialises as authority="none"; :1905 the collapse map''s own comment
+    groups none with external/unknown as "not derivable", making its omission from OWNER_FROM_AUTHORITY
+    deliberate rather than an oversight; and the older 0.2.0 bundle (.context/working/designer-rx/, :1323)
+    already carried all five values while having no OWNER_FROM_AUTHORITY at all — none predates the collapse
+    map rather than extending it.
 
 
-    tools/bpmn_to_tasks.py has no ''none'' in AUTHORITY_DIALECT (:85), so it falls to the else-branch (:511-521)
-    and reports "very likely a typo or an out-of-band value". Reproduced at HEAD on a one-lane fixture
-    (authority="none" + one serviceTask): rc=0, one skeleton with owner: agent, and that WARN. The DEFAULT
-    authoring path of the editor we pin trips our typo accusation. Unlike `external` (G-091), which needs
-    a deliberate dropdown selection, this is what you get by drawing a lane and not touching it — so the
-    false accusation fires more often than the ratified-value one.
+    tools/bpmn_to_tasks.py has no ''none'' in AUTHORITY_DIALECT (:85), so it falls to the else-branch
+    (:511-521) and reports "very likely a typo or an out-of-band value". Reproduced at HEAD on a one-lane
+    fixture (authority="none" + one serviceTask): rc=0, one skeleton with owner: agent, and that WARN.
+    The DEFAULT authoring path of the editor we pin trips our typo accusation. Unlike `external` (G-091),
+    which needs a deliberate dropdown selection, this is what you get by drawing a lane and not touching
+    it — so the false accusation fires more often than the ratified-value one.
 
 
     The accusation is the defect. The author who has simply not yet assigned an authority is told they
@@ -4584,16 +4584,16 @@ concerns:
     no owner stopped being reported as a probable typo, on the L-527 reasoning that a signal which always
     fires stops meaning anything. That split is sound and stands. It reasoned about `authority`, a dialect
     member, and had no reason to consider a sentinel that is not a dialect member and should not become
-    one. Behaviour is also not silently wrong: a skeleton is emitted with owner: agent from name/type derivation,
-    which is the documented fallback and is defensible for a lane that asserts nothing.'
+    one. Behaviour is also not silently wrong: a skeleton is emitted with owner: agent from name/type
+    derivation, which is the documented fallback and is defensible for a lane that asserts nothing.'
   what_remains: 'T-3176: a FOURTH reporting class — "this lane has no authority set" — distinct from dialect-member-no-owner
     (authority), out-of-dialect (overlrd), and the ratified-external case G-091 adds. The fix is explicitly
-    NOT dialect membership: adding none to AUTHORITY_DIALECT would assert it is a ratified authority, which
-    the frozen standard does not say and the editor''s own comment contradicts. Scope is the message; whether
-    owner: agent is the right fallback for an unset lane is a separate judgement and would be a fourth
-    ticket, not a widening of T-3176. Ordering constraint: T-3172, T-3173 and T-3176 all touch the unknown_auth
-    reporting loop (:501-521) and the AUTHORITY_* constants — whichever lands last must not revert the others''
-    fixture expectations.
+    NOT dialect membership: adding none to AUTHORITY_DIALECT would assert it is a ratified authority,
+    which the frozen standard does not say and the editor''s own comment contradicts. Scope is the message;
+    whether owner: agent is the right fallback for an unset lane is a separate judgement and would be
+    a fourth ticket, not a widening of T-3176. Ordering constraint: T-3172, T-3173 and T-3176 all touch
+    the unknown_auth reporting loop (:501-521) and the AUTHORITY_* constants — whichever lands last must
+    not revert the others'' fixture expectations.
 
 
     Root enabler, sharpened from G-091: that entry named "the lane dialect is not covered by the SS6 machine-check
@@ -4626,16 +4626,16 @@ concerns:
     It does not. `lib/release.sh` contains ZERO references to `master` — verified by grep, not assumed.
     `release_tag_and_release()` (lib/release.sh:69) does exactly four things: resolve the latest v* tag,
     count commits since, create an annotated tag on whatever HEAD currently is, push that tag to every
-    remote, and best-effort `gh release create`. There is no checkout, no merge, no `push origin
-    HEAD:master`, no fast-forward of any kind. Master is never touched by the release path.
+    remote, and best-effort `gh release create`. There is no checkout, no merge, no `push origin HEAD:master`,
+    no fast-forward of any kind. Master is never touched by the release path.
 
 
     The failure mode is a false green of the exact family this session has been closing (T-3187: a guard
     that asserts reconcilability is silent on the branch-identity question it appears to answer). Here
     the command exits 0, prints "Creating annotated tag v1.6.768", pushes it successfully, and reports
     success — while `origin/master` stays exactly where it was. Every observable signal says the release
-    happened. The one thing a release is FOR under this model — advancing the consumer install surface —
-    is the one thing that silently did not occur. An operator reading CLAUDE.md, running the documented
+    happened. The one thing a release is FOR under this model — advancing the consumer install surface
+    — is the one thing that silently did not occur. An operator reading CLAUDE.md, running the documented
     command, and seeing it succeed has no surface anywhere that reports the omission.
 
 
@@ -4650,24 +4650,86 @@ concerns:
   detected_in: T-3190
   observed: '2026-08-27'
   reported_by: self (caught at the moment of first use — the release had not yet been cut)
-  blast_radius: every consumer of this framework. master is the documented public mirror
-    (lib/consumer-recover.sh:19) and the source `fw upgrade` / `fw vendor` pull from, so a master that
-    never advances freezes the install surface for all downstream projects, not just this repo.
+  blast_radius: every consumer of this framework. master is the documented public mirror (lib/consumer-recover.sh:19)
+    and the source `fw upgrade` / `fw vendor` pull from, so a master that never advances freezes the install
+    surface for all downstream projects, not just this repo.
   what_works_now: 'Tagging, multi-remote tag push, and GitHub Release creation all work and are unaffected
     — the defect is a missing leg, not a broken one. `fw release status` correctly reports the pending
-    delta (currently 146 commits since v1.6.767). The T-2394 master-guard (PROTECT_MASTER=1) is armed and
-    correct: it blocks direct AUTHORED commits on master while explicitly allowing fast-forwards
-    (agents/git/lib/master-guard.sh:7), which is exactly the transition the release needs — so the engine
-    can be built without touching or weakening any gate.'
-  what_remains: 'T-3190: add the fast-forward leg to `release_tag_and_release`, and make the release
-    REFUSE rather than silently no-op when the fast-forward is not clean (master ahead of bleeding-edge,
-    or the two diverged). The refusal matters more than the happy path: a release that cannot advance
-    master is the state an operator most needs told about, and it is precisely the state the current
-    code reports as success. Ordering constraint: tag must not be pushed before the fast-forward is known
-    to be possible, or a failed release leaves a published tag pointing at a commit master never received.'
+    delta (currently 146 commits since v1.6.767). The T-2394 master-guard (PROTECT_MASTER=1) is armed
+    and correct: it blocks direct AUTHORED commits on master while explicitly allowing fast-forwards (agents/git/lib/master-guard.sh:7),
+    which is exactly the transition the release needs — so the engine can be built without touching or
+    weakening any gate.'
+  what_remains: 'T-3190: add the fast-forward leg to `release_tag_and_release`, and make the release REFUSE
+    rather than silently no-op when the fast-forward is not clean (master ahead of bleeding-edge, or the
+    two diverged). The refusal matters more than the happy path: a release that cannot advance master
+    is the state an operator most needs told about, and it is precisely the state the current code reports
+    as success. Ordering constraint: tag must not be pushed before the fast-forward is known to be possible,
+    or a failed release leaves a published tag pointing at a commit master never received.'
   related:
   - T-3185
   - T-3187
   - T-3188
   - T-2394
   follow_up_task: T-3190
+- id: G-097
+  type: gap
+  title: termlink inject/pty-inject does not deliver keystrokes into a claude TUI session — the driver
+    reports success while doing nothing against its own primary target
+  description: 'arc-012''s continuous-run driver (T-3254, agents/context/continuous-driver.sh) exists
+    to inject a continuation prompt into a stopped agent session. Its transport is `termlink inject` with
+    `termlink pty inject` as fallback -- the exact mechanism CLAUDE.md''s own Cross-Agent Communication
+    Protocol names for this shape of message.
+
+
+    Measured (T-3255, live): spawn a real `claude` session in a fresh TermLink PTY-backed tmux session.
+    `termlink inject <session> --enter TEXT` against a plain `bash --norc -i` shell in the SAME kind of
+    session delivers correctly (T-3254''s live-fire proved this). Against a `claude` session at its first-run
+    trust dialog, `termlink inject` (both text and `-k Enter` key forms) returns success and delivers
+    nothing -- the dialog never advances, across 14 ticks. Past the trust dialog, at the real interactive
+    prompt, the same call against real text (`echo the word BANANA`) again delivers nothing -- the input
+    box stays empty, 0 tokens. `tmux send-keys -l TEXT` + `tmux send-keys Enter`, run directly against
+    the identical pane at the identical moment, delivers correctly both times -- Claude receives the text
+    and answers it.
+
+
+    So the defect is isolated to termlink''s inject path against an ink-based raw-mode TUI (Claude Code''s
+    own interface), not to PTY sessions in general and not to termlink as a whole -- a plain shell target
+    works. And it is not a hang or a visible error: `termlink inject` returns success (exit 0) on every
+    one of these silent-delivery calls.
+
+
+    That combination is the severity. The continuous-driver''s ledger writes `"reason": "injected"` on
+    a successful-exit-code call, which is exactly what happened here -- so if continuous mode were armed
+    today against a real claude session, the driver would report success every tick, forever, while delivering
+    nothing. That is the precise false-green class arc-012 exists to eliminate (T-3167, T-3233, T-3250''s
+    E9/E10 findings), now present in the delivery mechanism itself rather than in the bounds-checking
+    it was built to harden.'
+  spec_reference: CLAUDE.md §Cross-Agent Communication Protocol; agents/context/continuous-driver.sh (T-3254)
+  severity: high
+  status: open
+  detected_in: T-3255
+  observed: '2026-09-03'
+  reported_by: self (found while building the real-agent live-fire T-3254's own live-fire had substituted
+    a shell script for)
+  blast_radius: The continuous-driver cron entry (continuous-driver-10m) is installed on this host. Currently
+    inert (continuous mode disarmed, no CONTINUOUS_SESSION target) and now additionally PAUSED in the
+    cron registry as a direct mitigation. Any future arming against a real claude session, before this
+    is fixed, produces silent no-op with a false-positive ledger -- worse than not running at all, since
+    it reads as working.
+  what_works_now: 'The bounds-checking (six armed conditions), busy observation, ledger, cron wiring,
+    and session-resolution ladder (T-3255) are all real and independently tested against a shell-target
+    session, which IS a legitimate PTY target for the same transport. The defect is scoped to ONE class
+    of target: ink-based raw-mode TUI apps, of which `claude` itself is the one this mechanism cares about
+    most.'
+  what_remains: 'Homed at TermLink (Gap Homing, T-1333) since the fix belongs in `termlink inject`/`pty
+    inject`''s delivery path, not in the framework. Filed as product feedback: T-3256 (this repo, owner:
+    human, workflow: inception -- same pattern as T-682). Until fixed or a confirmed workaround exists,
+    the continuous-driver''s injection AC (T-3254 AC5, and T-3255''s real-agent live-fire) stays unverified
+    against its real target; T-3257 tracks resuming that proof once unblocked. `fw cron pause continuous-driver-10m`
+    applied as immediate mitigation regardless of arm state.'
+  related:
+  - T-3254
+  - T-3255
+  - T-3256
+  - T-3257
+  follow_up_task: T-3256
