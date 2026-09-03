@@ -1,5 +1,5 @@
-# Audit Results - 2026-09-03-2359
-timestamp: 2026-09-03T21:59:17Z
+# Audit Results - 2026-09-04-0009
+timestamp: 2026-09-03T22:09:05Z
 sections: "structure"
 summary:
   pass: 29
@@ -83,8 +83,8 @@ findings:
   - level: INFO
     check: "Stale draft(s), 30d+ untouched: draft-arc-lifecycle draft-exception-handling draft-knowledge-leveling draft-t2584-scratch draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"
   - level: WARN
-    check: "Continuous-run loop STOPPED: continuous-terminated"
-    mitigation: "Relaunch with: claude-fw"
+    check: "Continuous-run wrapper last recorded ARMED but the turn driver is not"
+    mitigation: "fw continuous arm --hours N --iterations N --directive '...' (T-3225). Same drift class as the 74-day and 8-day prior incidents (G-099)."
   - level: WARN
     check: "Continuous-run Stop hook is cycling on a stale terminate reason"
     mitigation: "bin/fw continuous disarm --reason \"<why it's stale now>\" (or fw continuous arm to re-arm cleanly)"

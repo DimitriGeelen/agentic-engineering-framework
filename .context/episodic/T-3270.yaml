@@ -1,0 +1,198 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3270: audit remediation cycle 1 — mechanical WARN fixes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T21:55:01Z
+# ============================================================================
+
+task_id: T-3270
+task_name: "audit remediation cycle 1 — mechanical WARN fixes"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-03T21:50:26Z
+completed: 2026-09-03T21:54:47Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-03T23:54:36+02:00
+last_commit: 2026-09-03T23:54:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit remediation cycle 1 — mechanical WARN fixes
+
+# Key outcomes
+outcomes:
+  - 'AC1 — T-2720''s `owner:` field and mangled description text fixed (evidenced by git history: the creation commit 8cf655926 already carried the corruption — a leaked `owner:\nagent` fragment landed inside the description scalar instead of its own frontmatter line).'
+  - 'AC2 — T-3244 has a `## Updates` section (was missing entirely; task ended at `## RCA`).'
+  - 'AC3 — T-2062, T-2063, T-2064, T-2065, T-2066 each reference their existing `docs/reports/T-<id>-*.md` research artifact from their `## Updates` section (C-001, all 5 were the audit''s top PRIORITY ACTIONS).'
+  - 'AC4 — T-3234 (completed, no episodic) has an episodic summary generated.'
+  - 'AC5 — `bin/fw fabric enrich` run to close dangling-edge fabric cards where it can act mechanically; result (edges closed / remaining) recorded here.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'audit remediation cycle 1 — mechanical WARN fixes'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/VERSION'
+  - '.context/audits/2026-09-03.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/full-audit-timing.yaml'
+  - '.context/audits/orchestrator-LATEST.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/episodic/T-3234.yaml'
+  - '.context/episodic/T-3269.yaml'
+  - '.context/handovers/S-2026-0903-2232.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/.verify-queue-state.json'
+  - '.fabric/components/agents-context-check-active-completed-dup.yaml'
+  - '.fabric/components/agents-context-check-active-task.yaml'
+  - '.fabric/components/agents-context-check-arc-id-py.yaml'
+  - '.fabric/components/agents-context-check-arc-id.yaml'
+  - '.fabric/components/agents-context-check-human-ac-tick-py.yaml'
+  - '.fabric/components/agents-context-check-human-ac-tick.yaml'
+  - '.fabric/components/agents-context-check-inception-decisions-py.yaml'
+  - '.fabric/components/agents-context-check-inception-decisions.yaml'
+  - '.fabric/components/agents-context-check-inception-recommendation-py.yaml'
+  - '.fabric/components/agents-context-check-inception-recommendation.yaml'
+  - '.fabric/components/agents-context-check-inception-schema-py.yaml'
+  - '.fabric/components/agents-context-check-inception-schema.yaml'
+  - '.fabric/components/agents-context-check-onboarding-gate-py.yaml'
+  - '.fabric/components/agents-context-check-task-ac-structure-py.yaml'
+  - '.fabric/components/agents-context-check-task-ac-structure.yaml'
+  - '.fabric/components/agents-context-consolidate.yaml'
+  - '.fabric/components/agents-context-lib-focus.yaml'
+  - '.fabric/components/agents-context-lib-memory-recall.yaml'
+  - '.fabric/components/agents-dispatch-yield-point.yaml'
+  - '.fabric/components/agents-docgen-generate_component.yaml'
+  - '.fabric/components/agents-docgen-test_docgen.yaml'
+  - '.fabric/components/agents-fabric-lib-enrich.yaml'
+  - '.fabric/components/agents-fabric-lib-expand_patterns.yaml'
+  - '.fabric/components/agents-handover-handover.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/context-project-decisions.yaml'
+  - '.fabric/components/learnings-data.yaml'
+  - '.fabric/components/learnings-route.yaml'
+  - '.fabric/components/lib-arc.yaml'
+  - '.fabric/components/lib-ask-py.yaml'
+  - '.fabric/components/lib-comment_strip.yaml'
+  - '.fabric/components/lib-config.yaml'
+  - '.fabric/components/lib-continuous-mode.yaml'
+  - '.fabric/components/lib-govd_policy.yaml'
+  - '.fabric/components/lib-hook_paths.yaml'
+  - '.fabric/components/lib-inception_decisions.yaml'
+  - '.fabric/components/lib-paths.yaml'
+  - '.fabric/components/lib-pause.yaml'
+  - '.fabric/components/lib-verification-port.yaml'
+  - '.fabric/components/lib-worktree.yaml'
+  - '.fabric/components/patterns-data.yaml'
+  - '.fabric/components/tests-lint-no-orphaned-test-dirs.yaml'
+  - '.fabric/components/tests-playwright-test_smoke.yaml'
+  - '.fabric/components/tests-unit-arc_id_validation_guard.yaml'
+  - '.fabric/components/tests-unit-check_task_ac_structure.yaml'
+  - '.fabric/components/tests-unit-fabric_coverage_single_source.yaml'
+  - '.fabric/components/tests-unit-fabric_watch_pattern_fitness.yaml'
+  - '.fabric/components/tests-unit-onboarding_gate_arc_tag_fp.yaml'
+  - '.fabric/components/tests-unit-t2457_fabric_atomic_card_write.yaml'
+  - '.fabric/components/tests-unit-t3045_embed_host_resolution.yaml'
+  - '.fabric/components/tests-unit-t3056_recall_open_tasks.yaml'
+  - '.fabric/components/tests-unit-t3268_continuous_cycling_detector.yaml'
+  - '.fabric/components/tests-unit-test_embed_health.yaml'
+  - '.fabric/components/tests-unit-test_enrich_unresolved_targets.yaml'
+  - '.fabric/components/tests-unit-test_incremental_reindex.yaml'
+  - '.fabric/components/tools-measure_chunk_tokens.yaml'
+  - '.fabric/components/tools-t2176-corpus-rescan.yaml'
+  - '.fabric/components/web-app.yaml'
+  - '.fabric/components/web-ask.yaml'
+  - '.fabric/components/web-blueprints-api.yaml'
+  - '.fabric/components/web-blueprints-core.yaml'
+  - '.fabric/components/web-blueprints-cron.yaml'
+  - '.fabric/components/web-blueprints-discoveries.yaml'
+  - '.fabric/components/web-blueprints-discovery.yaml'
+  - '.fabric/components/web-blueprints-quality.yaml'
+  - '.fabric/components/web-blueprints-settings.yaml'
+  - '.fabric/components/web-blueprints-tasks.yaml'
+  - '.fabric/components/web-config.yaml'
+  - '.fabric/components/web-conftest.yaml'
+  - '.fabric/components/web-embeddings.yaml'
+  - '.fabric/components/web-metrics_history.yaml'
+  - '.fabric/components/web-qa_feedback.yaml'
+  - '.fabric/components/web-recall_telemetry.yaml'
+  - '.fabric/components/web-secrets_store.yaml'
+  - '.fabric/components/web-shared.yaml'
+  - '.fabric/components/web-smoke_test.yaml'
+  - '.fabric/components/web-templates-_partials-search_input.yaml'
+  - '.fabric/components/web-templates-_partials-search_results.yaml'
+  - '.fabric/components/web-templates-search.yaml'
+  - '.fabric/components/web-terminal-adapters-claude_code.yaml'
+  - '.fabric/components/web-terminal-adapters-__init__.yaml'
+  - '.fabric/components/web-terminal-adapters-local_shell.yaml'
+  - '.fabric/components/web-test_app.yaml'
+  - '.fabric/components/web-wsgi.yaml'
+  - '.tasks/active/T-2062-watchtower-review-t-xxx-404-on-completed.md'
+  - '.tasks/active/T-2063-watchtower-complete-button-silent-fail.md'
+  - '.tasks/active/T-2064-task-surfaced-for-review-despite-zero-human-acs.md'
+  - '.tasks/active/T-2065-arc-driver-approve-no-member-bvp-recalc.md'
+  - '.tasks/active/T-2066-inception-detail-template-silently-drops.md'
+  - '.tasks/active/T-2720-keystone-onboarding-set-contains-nothing.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3244-fw-config-get-does-not-fall-back-to-the-.md'
+  - '.tasks/active/T-3270-audit-remediation-cycle-1--mechanical-wa.md'
+  - '.tasks/completed/T-3269-fabric-register-extension-collision-drop.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-03T23:54:36'
+    action: 'T-3270: audit remediation cycle 1 — mechanical WARN fixes'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 120
+  lines_added: 3342
+  lines_removed: 620
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3270-audit-remediation-cycle-1--mechanical-wa.md
+generated_by: context-agent-hybrid

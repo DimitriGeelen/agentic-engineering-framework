@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3271: push blocked — self-vendor drift on files a concurrent session owns
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T22:22:54Z
+# ============================================================================
+
+task_id: T-3271
+task_name: "push blocked — self-vendor drift on files a concurrent session owns"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-03T21:55:36Z
+completed: 2026-09-03T22:22:40Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-03T23:59:06+02:00
+last_commit: 2026-09-03T23:59:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unblock push — pre-existing vendor drift belongs to another session
+
+# Key outcomes
+outcomes:
+  - 'AC1 — confirmed (read-only) that the 4 flagged files'' vendor-vs-source drift originates from a pre-existing commit (6d8eddce4) predating this session, not from any commit made in this session.'
+  - 'AC2 — confirmed `fw vendor self` withholds these 4 files (does not silently absorb the concurrent session''s uncommitted edits) before using any bypass.'
+  - 'AC3 — pushed this session''s commits using the named, logged bypass (`FW_SKIP_SELF_VENDOR_CHECK=1`), not `--no-verify` (which would skip every push check, not just this one).'
+  - 'AC4 — filed a concern entry (OBS-252) cross-referencing T-3165/T-2244/T-3125 so the pre-existing drift is tracked, not silently bypassed and forgotten.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/VERSION'
+  - '.context/concerns.yaml'
+  - '.tasks/active/T-3271-push-blocked--self-vendor-drift-on-files.md'
+  - '.tasks/completed/T-3270-audit-remediation-cycle-1--mechanical-wa.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-03T23:59:06'
+    action: 'T-3271: unblock push — pre-existing vendor drift belongs to another session'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 27
+  commits: 1
+  files_changed: 4
+  lines_added: 348
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3271-push-blocked--self-vendor-drift-on-files.md
+generated_by: context-agent-hybrid
