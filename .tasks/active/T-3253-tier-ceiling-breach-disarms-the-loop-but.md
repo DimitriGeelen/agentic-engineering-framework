@@ -189,7 +189,7 @@ Evidence: `docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach.tx
 - [x] A ceiling breach stops the budget-restart path too. `bin/claude-fw`'s restart branch consults the disarm before spending a restart, instead of being gated only by a fresh signal and `MAX_RESTARTS`.
 - [x] The refusal is recorded as its own loop-event reason, distinct from `max-restarts` — an operator reading the ledger must be able to tell "stopped because the ceiling was breached" from "stopped because it was spinning".
 - [x] The session that receives the breach notice is stopped rather than asked to stop. Whatever the mechanism, the acceptance is behavioural: with the ceiling breached, the over-ceiling task is not worked.
-- [ ] E10's breach leg is re-run and `AC4a`/`AC4b` pass with the attribution line reading `closed-AFTER-the-breach` nowhere — i.e. the escalation task is not closed at all. The same rig that found this is what closes it.
+- [x] E10's breach leg is re-run and `AC4a`/`AC4b` pass with the attribution line reading `closed-AFTER-the-breach` nowhere — i.e. the escalation task is not closed at all. The same rig that found this is what closes it.
 - [ ] The control leg still passes unchanged: under the ceiling, the loop restarts, works the whole backlog including the escalation task, and never records a termination reason. A fix that stops the breach case by stopping every case is not a fix.
 
 ### Human
