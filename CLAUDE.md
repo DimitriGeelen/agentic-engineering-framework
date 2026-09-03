@@ -178,6 +178,52 @@ the operator asks for a worktree, use it — normally, immediately, no ceremony.
 This is a behavioural default, so it binds on agent discipline rather than on a
 gate. Do not read the absence of a gate as permission.
 
+## Session Launch Policy — TermLink Only (operator directive, 2026-09-03)
+
+**Async, parallel, or observable framework work runs through TermLink
+(`claude-fw --termlink`), not through Claude Code's own background-job
+daemon.** This is a distinct layer from the Sub-Agent Dispatch Protocol and
+the Built-in Task Tool Ban above: those govern dispatch *inside* a running
+conversation (Task-tool agents, TermLink workers); this governs how the
+*session itself* was launched, before any conversation starts.
+
+**What "background-job daemon" means, concretely (traced, not assumed —
+G-098, T-3259).** Claude Code ships a first-party, on-demand daemon
+(`claude daemon run`; confirmed via `claude daemon --help`: "the daemon runs
+on demand and exits when the last client disconnects"). It maintains a
+host-wide, project-agnostic pool of "spare" processes that get claimed
+(and re-claimed, across `/resume`) by whatever next requests a background
+job — with none of TermLink's per-project tagging, `termlink list`
+visibility, or `termlink attach` reachability. A session running this way is
+invisible to every observability assumption this file's TermLink Integration
+section makes.
+
+**Why this is written down now.** An operator audit of a live session found
+it running under exactly this daemon — traced via a `ps` ancestor walk to
+`claude daemon run`, corroborated against `~/.claude/daemon.log`'s
+claim/settle/reclaim timeline. In-session discipline held (the session's own
+transcript was grepped for every `Agent`-tool call and returned zero — no
+Task-tool subagent was spawned), which is what made the gap legible: the
+violation was one layer below anything CLAUDE.md named, so there was nothing
+written down for it to have broken.
+
+**What this section CANNOT do.** The daemon is Claude Code CLI
+infrastructure, launched before this repo's governance ever loads, by
+whatever process on the host requested a background job. No hook, gate, or
+`fw doctor` check running *inside* such a session can detect or prevent its
+own launch mode — that would require the session to already exist to check
+it. This is a written boundary for the operator and for whatever launches
+sessions on their behalf to honour, not a structural gate this repo can
+enforce from within. Do not claim otherwise; see G-098 for the standing gap
+and what would actually need to change (outside this repo) to close it.
+
+**The practical rule:** if you notice a session running under a background-job
+daemon rather than TermLink, name it plainly (as this section asks) rather
+than silently continuing as if it were a normal interactive or
+TermLink-wrapped session — and do not use `claude daemon stop` to "fix" it
+mid-session; stopping the daemon terminates background sessions, possibly
+including the one making the call.
+
 ## Watchtower Port (read this FIRST, before any `curl localhost:3000`)
 
 **Watchtower's port is per-project, not hard-coded to `3000`.** Two consumer projects on one host would collide if the framework assumed 3000 everywhere.
@@ -328,6 +374,14 @@ The chain is `tool-set.yaml` → `framework-mcp-manifest.json` — one transitio
 The verification command above checks BOTH the OK line (any tool count) AND the absence of the stale-WARN. T-2290 hardened doctor's stale-check to use content compare (md5 of `manifest-show` vs on-disk) instead of raw mtime — so `touch`/`git checkout`/`fw vendor self` no longer fire false positives, and only real content drift surfaces the WARN. The Verification command is therefore an authoritative content gate, not an mtime gate.
 
 If you edited `tool-set.yaml` without touching `agents/mcp/manifest.py`, regenerate before close: `bin/fw mcp emit-manifest`. If you edited the emitter, manifest content may shift even when tool-set.yaml is unchanged — same drill.
+
+**Vendored-path-touching tasks (OBS-250, T-3236) — sync BEFORE `--status work-completed`, not after.** If your task edited anything under `bin/fw`, `lib/`, `agents/`, `policy/`, `web/`, or `.tasks/templates/` in the framework repo, run `bin/fw vendor self` and confirm `bin/fw vendor self --check` is clean **before** closing the task, not as a follow-up step afterward. `## Verification` should include:
+
+```
+bin/fw vendor self --check
+```
+
+**Why the ordering matters and isn't just style:** `--status work-completed` clears `focus.yaml` as its last act, and `fw context focus` refuses to re-point at a task once it has moved to `.tasks/completed/` ("Focus must name a task the gates can still work under"). If the vendor sync is left for after close, there is no task the sync can run under: `fw context focus <closed-id>` refuses, `fw work-on <closed-id>` is silent, and the Tier-1 task gate (`check-active-task.sh`) refuses `fw vendor self` with focus null. Every remaining route is either filing a new task just to run one command, or a logged bypass — a real dead end, not a minor inconvenience. This was already informal convention in this repo's own commit history ("T-3233: close — arm-verb cluster landed, vendor synced") but was never written down where an agent reads it first. The gap itself — no route back to a just-closed task's own trailing work — is filed as OBS-250 in `.context/concerns.yaml`, not fixed here; candidate structural fixes (widen the focus gate for a grace window, carve a narrow allowlist for `fw vendor self`, or auto-sync as part of close) are named there with trade-offs, because each is a governance change and not a chore.
 
 ### Task Lifecycle
 

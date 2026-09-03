@@ -4733,3 +4733,45 @@ concerns:
   - T-3256
   - T-3257
   follow_up_task: T-3256
+- id: G-098
+  type: gap
+  title: Session-launch mode (Claude Code background-job daemon) sits entirely outside AEF/TermLink governance
+  description: 'This repo''s CLAUDE.md governs IN-SESSION dispatch exhaustively (Task-tool ban, Sub-Agent
+    Dispatch Protocol, TermLink Integration) but says nothing about the layer above it: how the session
+    ITSELF was launched. A session can run under Claude Code''s own on-demand background-job daemon (`claude
+    daemon run`, first-party CLI infra, confirmed via `claude daemon --help`: "the daemon runs on demand
+    and exits when the last client disconnects") -- a host-wide, project-agnostic process pool, claimed
+    and re-claimed by `/resume` across session boundaries, with none of TermLink''s per-project tagging
+    or `fw termlink` observability. The operator''s standing instruction is TermLink-only for anything
+    async/parallel/observable; this layer was never named, so there was no written rule for it to violate
+    and no `fw doctor` signal that would notice one running.
+
+    '
+  spec_reference: CLAUDE.md §TermLink Integration; §Sub-Agent Dispatch Protocol (both silent on session
+    launch mode, only in-session dispatch)
+  severity: high
+  status: open
+  detected_in: T-3259
+  observed: '2026-09-03'
+  reported_by: operator (direct instruction, RCA demanded) + self (traced via ps ancestor walk, `claude
+    daemon --help`, ~/.claude/daemon.log)
+  blast_radius: Any session launched via the background-job daemon (not `claude-fw --termlink`) runs
+    with none of the TermLink observability CLAUDE.md's Remote Session Access section assumes -- not
+    attachable via `termlink attach`, not listed in `termlink list`, invisible to the governance model
+    that assumes TermLink is the only async surface. This session (S-2026-0813-2305 / job 654cf2d7) is
+    a live instance, traced but not converted mid-session (converting would mean ending it).
+  what_works_now: 'In-session dispatch discipline held: the live transcript for this session was grepped
+    for every Agent-tool invocation and returned zero -- no Task-tool subagent was spawned inside the
+    conversation at any point. The violation, once traced, is one layer below that: the session''s own
+    launch mode, decided before the conversation starts, by whatever process requested a background job
+    from the daemon -- not something any in-session tool can start, stop, or reconfigure. `claude daemon
+    stop` exists but is destructive and was correctly not run mid-diagnosis.'
+  what_remains: 'Homed partially here (Gap Homing, T-1333): the daemon itself is Claude Code CLI infrastructure,
+    not fixable from this repo. What IS fixable here -- codifying the boundary explicitly in CLAUDE.md
+    so it is at minimum written down and citable -- is T-3259''s own deliverable. No structural gate can
+    enforce this from inside a session that is, by construction, already running under the mode the policy
+    forbids; enforcement (if wanted) would need to live in whatever launches these sessions in the first
+    place, outside this repo''s reach.'
+  related:
+  - T-3259
+  follow_up_task: T-3259
