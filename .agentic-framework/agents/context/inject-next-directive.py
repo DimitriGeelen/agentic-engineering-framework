@@ -423,6 +423,13 @@ def _migrate_legacy_state(project_root, target_path):
         pass
 
 
+# T-3253 AC3: exit code the wrapper reads to mean "a bound was breached; the
+# terminating state has been recorded; do not launch". Distinct from 0 (proceed)
+# and from 1/2 (argparse / unexpected failure) so a crash can never be mistaken
+# for a brake — failing open is correct for a crash and wrong for a breach.
+PREFLIGHT_BREACH_EXIT = 3
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-root", required=True, help="absolute path to PROJECT_ROOT")
@@ -436,6 +443,16 @@ def main(argv=None):
         "--now",
         default=None,
         help="ISO-8601 timestamp to use as 'now' (for tests); default = utcnow()",
+    )
+    parser.add_argument(
+        "--preflight",
+        action="store_true",
+        help=(
+            "T-3253 AC3: evaluate the planned next action WITHOUT launching a "
+            "session. Writes nothing and exits 0 when the loop may proceed; on a "
+            "recorded termination (ceiling breach or cap) writes the terminating "
+            "state and exits %d with the reason on stdout." % PREFLIGHT_BREACH_EXIT
+        ),
     )
     args = parser.parse_args(argv)
 
@@ -469,6 +486,39 @@ def main(argv=None):
     )
     if not section:
         return 0
+
+    # T-3253 AC3 — PREFLIGHT: decide BEFORE the session launches.
+    #
+    # E10 measured the hole this closes. The ceiling was evaluated in the
+    # SessionStart hook of a session that had ALREADY been relaunched, so the
+    # breach notice arrived as `additionalContext` competing with that session's
+    # own prompt — the armed directive, which says "do not stop until every task
+    # is closed". The notice lost, and the over-ceiling task was closed 4m26s
+    # after the brake fired. A notice that has to win an argument with a running
+    # session is not a brake. This is the only variant where the notice cannot be
+    # ignored, because there is nothing running to ignore it.
+    #
+    # SINGLE-WRITER (T-3233 W1-F3). `current_iteration` has exactly one writer.
+    # The wrapper must not become a second one, so the preflight lives HERE, on
+    # the injector that already owns the file, and the wrapper only reads its
+    # exit code.
+    #
+    # DO NOT WRITE ON THE CLEAR PATH. `evaluate()` returns an ADVANCED counter,
+    # and SessionStart is about to advance it again for the same restart. Writing
+    # here would double-advance every iteration — invisible until someone counted.
+    # Only the terminating path writes, and it writes a FROZEN counter.
+    #
+    # `--source` is not passed through by the wrapper on purpose: only `compact`
+    # changes the prediction (it resets the counter), and no restart path is a
+    # compact. `resume` and `startup` evaluate identically, so the preflight's
+    # verdict matches what SessionStart will conclude.
+    if args.preflight:
+        reason = (new_state.get("last_terminated_reason") or "").strip()
+        if not reason:
+            return 0
+        write_state(state_file, new_state)
+        sys.stdout.write(reason + "\n")
+        return PREFLIGHT_BREACH_EXIT
 
     write_state(state_file, new_state)
     sys.stdout.write(section)

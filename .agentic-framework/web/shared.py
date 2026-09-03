@@ -740,12 +740,26 @@ def _classify_rec_marker(label: str) -> str:
     return "other"
 
 
+# T-3252: matches a verdict token optionally wrapped in its own bold markers
+# (e.g. "**GO** — promote…"), since `_REC_MARKER_RE` only consumes the marker
+# label ("Recommendation:") and leaves any inline emphasis on the value itself
+# in the body span.
+_REC_VERDICT_RE = re_mod.compile(
+    r"\s*\*{0,2}(KEEP-OPEN|NO[-_]GO|CLOSE|GO|DEFER)\b\*{0,2}",
+    re_mod.IGNORECASE,
+)
+
+
 def extract_recommendation(body: str) -> dict:
     """Extract structured fields from a task body's ## Recommendation section.
 
     Returns dict with `verdict` (GO/NO-GO/DEFER/'?'), `rationale` (str), `evidence`
-    (str — concatenation of all Evidence-* sub-blocks), and `raw` (full section
-    text after HTML-comment strip). All keys always present.
+    (str — concatenation of all Evidence-* sub-blocks), `verdict_note` (str — any
+    prose trailing the verdict token on the Recommendation line itself), `other`
+    (str — everything else the tokeniser found: text before the first bold marker,
+    spans under a marker `_classify_rec_marker` doesn't recognise, and a
+    Recommendation span whose value didn't match a known verdict token), and `raw`
+    (full section text after HTML-comment strip). All keys always present.
 
     Tokenises the section by bold markers (`**Recommendation:**`, `**Rationale:**`,
     `**Evidence — closed (7):**`, `**Captured learning:** ...`) and buckets each
@@ -761,8 +775,16 @@ def extract_recommendation(body: str) -> dict:
     closed (7):**` and similar real-world labels, dumping evidence + captured
     learning back into the rationale block. This second implementation replaces
     the alternation with a generic marker tokenizer.
+
+    T-3252: that tokenizer then silently discarded every span it couldn't name
+    (`other`, `captured_learning`), the text before the first marker, and any
+    prose trailing the verdict token on the Recommendation line — measured at
+    602/1058 cards on this repo's own corpus, 3401 dropped fragments
+    (`docs/reports/T-3252-recommendation-text-loss.md`). Nothing is dropped now:
+    every span that isn't rationale/evidence/verdict lands in `other` instead,
+    with its author-written label preserved where it had one.
     """
-    out = {"verdict": "?", "rationale": "", "evidence": "", "raw": ""}
+    out = {"verdict": "?", "rationale": "", "evidence": "", "other": "", "verdict_note": "", "raw": ""}
     if not body:
         return out
     m = re_mod.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)",
@@ -774,7 +796,15 @@ def extract_recommendation(body: str) -> dict:
 
     # Walk all bold markers and slice the section into labeled spans.
     matches = list(_REC_MARKER_RE.finditer(section))
-    buckets: dict[str, list[str]] = {"rationale": [], "evidence": []}
+    buckets: dict[str, list[str]] = {"rationale": [], "evidence": [], "other": []}
+
+    # T-3252 shape (a): text before the first marker — never inside any span, so
+    # never bucketed. When there are no markers at all, the whole section is
+    # "before the first marker".
+    preamble = (section[:matches[0].start()] if matches else section).strip()
+    if preamble:
+        buckets["other"].append(preamble)
+
     for idx, mk in enumerate(matches):
         label = mk.group(1)
         bucket = _classify_rec_marker(label)
@@ -785,9 +815,22 @@ def extract_recommendation(body: str) -> dict:
         if bucket == "recommendation":
             # NO_GO underscore form tolerated and normalized to NO-GO (T-1391
             # contract; T-1575's alternation dropped it — T-2581 regression fix).
-            v = re_mod.match(r"\s*(KEEP-OPEN|NO[-_]GO|CLOSE|GO|DEFER)\b", body_span, re_mod.IGNORECASE)
+            # Tolerates the verdict token itself being bold-wrapped (T-3252).
+            v = _REC_VERDICT_RE.match(body_span)
             if v:
                 out["verdict"] = v.group(1).upper().replace("_", "-")
+                # T-3252 shape (b): prose after the verdict token on the same
+                # line (e.g. "GO — demand has not materialised") — previously
+                # discarded outright. Strip the author's own leading separator
+                # (dash/em-dash) since the renderer supplies its own — otherwise
+                # "GO" + " — " + "— demand…" doubles up.
+                trailing = re_mod.sub(r"^[—–\-]\s*", "", body_span[v.end():].strip())
+                if trailing:
+                    out["verdict_note"] = trailing
+            elif body_span:
+                # Recommendation marker present but no recognised verdict token
+                # (e.g. "SHIP", "DROP") — still real author text, keep it.
+                buckets["other"].append(body_span)
         elif bucket == "rationale":
             buckets["rationale"].append(body_span)
         elif bucket == "evidence":
@@ -800,11 +843,18 @@ def extract_recommendation(body: str) -> dict:
                 buckets["evidence"].append(f"**{heading}**\n\n{body_span}")
             else:
                 buckets["evidence"].append(body_span)
-        # 'captured_learning' and 'other' intentionally dropped — they belong in
-        # neither rationale nor evidence; raw is preserved for full-text needs.
+        else:
+            # T-3252 shape (c): 'captured_learning' and 'other' — previously
+            # dropped along with everything up to the next recognised marker.
+            # Keep the label so a reader can tell an author's own heading from
+            # one the parser understands.
+            if body_span or label.strip():
+                heading = label.strip().rstrip(":").strip()
+                buckets["other"].append(f"**{heading}**\n\n{body_span}" if body_span else f"**{heading}**")
 
     out["rationale"] = "\n\n".join(b for b in buckets["rationale"] if b).strip()
     out["evidence"] = "\n\n".join(b for b in buckets["evidence"] if b).strip()
+    out["other"] = "\n\n".join(b for b in buckets["other"] if b).strip()
     return out
 
 

@@ -178,6 +178,12 @@ def review(task_id):
     rec_complete = rec["verdict"] != "?" and bool(rec["rationale"].strip())
     rec_rationale_html = render_markdown_safe(rec["rationale"])
     rec_evidence_html = render_markdown_safe(rec["evidence"])
+    # T-3252: everything the tokenizer found that isn't rationale/evidence/verdict
+    # — text before the first bold marker, an author's own bold-labeled span, a
+    # trailing verdict-line note — previously discarded outright. Rendered so the
+    # card shows what the parser recovered instead of silently dropping it.
+    rec_other_html = render_markdown_safe(rec["other"])
+    rec_verdict_note = rec["verdict_note"]
     # T-1578: state distinguishes "no Recommendation block at all" (NO-REC)
     # from "block exists but verdict unparseable" (?). Same convention as
     # cockpit / approvals / review-queue / handover (T-1576, T-1577).
@@ -210,6 +216,8 @@ def review(task_id):
         state=rec_state,
         rec_rationale_html=rec_rationale_html,
         rec_evidence_html=rec_evidence_html,
+        rec_other_html=rec_other_html,
+        rec_verdict_note=rec_verdict_note,
         rec_rationale_text=rec["rationale"],
         rec_complete=rec_complete,
         decision_recorded=decision_recorded,

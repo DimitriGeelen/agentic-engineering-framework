@@ -186,9 +186,9 @@ Evidence: `docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach.tx
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A ceiling breach stops the budget-restart path too. `bin/claude-fw`'s restart branch consults the disarm before spending a restart, instead of being gated only by a fresh signal and `MAX_RESTARTS`.
-- [ ] The refusal is recorded as its own loop-event reason, distinct from `max-restarts` — an operator reading the ledger must be able to tell "stopped because the ceiling was breached" from "stopped because it was spinning".
-- [ ] The session that receives the breach notice is stopped rather than asked to stop. Whatever the mechanism, the acceptance is behavioural: with the ceiling breached, the over-ceiling task is not worked.
+- [x] A ceiling breach stops the budget-restart path too. `bin/claude-fw`'s restart branch consults the disarm before spending a restart, instead of being gated only by a fresh signal and `MAX_RESTARTS`.
+- [x] The refusal is recorded as its own loop-event reason, distinct from `max-restarts` — an operator reading the ledger must be able to tell "stopped because the ceiling was breached" from "stopped because it was spinning".
+- [x] The session that receives the breach notice is stopped rather than asked to stop. Whatever the mechanism, the acceptance is behavioural: with the ceiling breached, the over-ceiling task is not worked.
 - [ ] E10's breach leg is re-run and `AC4a`/`AC4b` pass with the attribution line reading `closed-AFTER-the-breach` nowhere — i.e. the escalation task is not closed at all. The same rig that found this is what closes it.
 - [ ] The control leg still passes unchanged: under the ceiling, the loop restarts, works the whole backlog including the escalation task, and never records a termination reason. A fix that stops the breach case by stopping every case is not a fix.
 
@@ -339,6 +339,17 @@ Evidence: `docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach.tx
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# --- T-3253 gate ---
+# The preflight brake, every case against a control (11 tests). Two lines because
+# they answer different questions: "did anything fail" and "did everything run" —
+# a skipped bats test reports `ok` (T-3217).
+timeout 300 bats tests/unit/t3253_preflight_brake.bats > /tmp/.t3253-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3253-bats.out
+test "$(grep -c '# skip' /tmp/.t3253-bats.out)" -eq 0
+# Vendored paths touched (bin/, agents/). The live-fire sandbox is a real `fw init`
+# project and runs the VENDORED injector, so an unsynced vendor makes the E10 legs
+# green for the wrong reason — the preflight would simply not be found and fail open.
+bin/fw vendor self --check
 
 ## RCA
 
