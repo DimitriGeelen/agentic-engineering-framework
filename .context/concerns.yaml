@@ -1,3 +1,29 @@
+- id: OBS-252
+  type: process
+  severity: low
+  surface: 'commit 6d8eddce4 ("T-3265: round 1 — fabric drift/enrich, watch-pattern gaps, branch
+    hygiene triage") committed a vendored-copy edit to 4 files (agents/context/{budget-gate,
+    checkpoint,post-compact-resume}.sh, lib/context_tokens.py) with no matching source commit —
+    a single-vendor-writer violation (T-2244 class) that blocked git push for an unrelated
+    session with "Stale in the COMMITTED tree being pushed".'
+  detected_in: T-3271 (push blocked mid audit-remediation sweep)
+  symptom: 'The vendored .agentic-framework/ copies of the 4 files above contain T-3241 content
+    (an "unknown"-state budget cache write, a --with-model surface) that the matching source
+    files at the same commit do not — diff confirmed read-only. T-3165 (work-completed) already
+    hardened fw vendor self to withhold uncommitted source from sync, and it worked correctly
+    here (confirmed: unscoped fw vendor self withheld all 5 in-progress files including
+    lib/paths.sh) — but that withholding cannot retroactively un-drift a commit that already
+    landed a vendor-side change without its source counterpart. Resolved for this session by
+    the named bypass (FW_SKIP_SELF_VENDOR_CHECK=1 git push, logged Tier-2), not by touching the
+    other session''s in-progress source edits.'
+  blast_radius: project
+  observed: '2026-09-03'
+  status: open
+  related:
+  - T-3165
+  - T-2244
+  - T-3125
+  follow_up_task: null
 - id: OBS-251
   type: process
   severity: medium
