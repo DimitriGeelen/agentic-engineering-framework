@@ -200,8 +200,26 @@ _do_register_file() {
 
     local card_file="$COMPONENTS_DIR/${slug}.yaml"
     if [ -f "$card_file" ]; then
-        echo -e "${YELLOW}Card already exists: $card_file${NC}"
-        return 0
+        # T-3269: the slug above strips the extension, so two distinct files
+        # that share a basename (check-arc-id.py, check-arc-id.sh) collide on
+        # the same slug. Confirm the existing card is actually THIS file
+        # before short-circuiting — otherwise the .py sibling silently never
+        # gets a card, `fw fabric register` reports success, and `fw fabric
+        # drift` flags it as unregistered forever.
+        local existing_location
+        existing_location=$(grep -m1 '^location:' "$card_file" | sed 's|^location: *||')
+        if [ "$existing_location" = "$rel_path" ]; then
+            echo -e "${YELLOW}Card already exists: $card_file${NC}"
+            return 0
+        fi
+        # Genuine collision: disambiguate by keeping the extension in the slug.
+        local ext="${rel_path##*.}"
+        slug="${slug}-${ext}"
+        card_file="$COMPONENTS_DIR/${slug}.yaml"
+        if [ -f "$card_file" ]; then
+            echo -e "${YELLOW}Card already exists: $card_file${NC}"
+            return 0
+        fi
     fi
 
     # Check for project-specific subsystem rules (T-369)
