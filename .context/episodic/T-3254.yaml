@@ -1,0 +1,147 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3254: arc-012: drive the loop from OUTSIDE when the agent stops early - cron reads status, injects a turn
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T12:47:20Z
+# ============================================================================
+
+task_id: T-3254
+task_name: "arc-012: drive the loop from OUTSIDE when the agent stops early - cron reads status, injects a turn"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-03T08:56:16Z
+completed: 2026-09-03T12:42:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-03T10:57:50+02:00
+last_commit: 2026-09-03T14:41:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the outside-in continuation driver (item 2). start — T-3253 closed, build-order gate satisfied. one evaluator, two output shapes, and the driver that reads it. record progress, the busy-state finding, and what remains. refresh vendored copies (lib/continuous-mode.sh, continuous-driver.sh). the refusal suite, and the injector path that made it inert everywhere else. wire the driver into cron, and prove the leg nothing usually proves. the registration check could never pass, and the stub is why. live-fire and its negative control, and a third false-quiet. the teardown needed three kills, and two of them were no-ops. refresh vendored continuous-driver.sh (registration check + pty false-quiet fixes)
+
+# Key outcomes
+outcomes:
+  - 'T-3253 is closed before any injection path is wired — verified by the task'
+  - 'The driver refuses to inject on every one of the six armed conditions, one'
+  - 'The driver refuses to inject into a `busy` session, and the test proves it'
+  - 'Every injection and every refusal appends a typed entry to'
+  - 'Live-fire: a sandbox session that stops early with backlog remaining is'
+  - 'Negative control for the live-fire: the identical run with `enabled: false`'
+  - 'Cron registry → generated → deployed is in sync (see `## Verification`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'refresh vendored continuous-driver.sh (registration check + pty false-quiet fixes)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/continuous-driver.sh'
+  - '.agentic-framework/lib/continuous-mode.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/continuous-driver.sh'
+  - '.context/audits/2026-09-02.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-09-03.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/concerns.yaml'
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/cron-registry.yaml'
+  - '.context/episodic/T-3171.yaml'
+  - '.context/episodic/T-3247.yaml'
+  - '.context/episodic/T-3252.yaml'
+  - '.context/episodic/T-3253.yaml'
+  - '.context/handovers/S-2026-0903-1102.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.approval-notified'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - 'docs/reports/T-3254-livefire.md'
+  - '.fabric/components/agents-context-continuous-driver.yaml'
+  - '.fabric/components/tests-unit-t3254_driver_refusals.yaml'
+  - '.fabric/components/tools-t3254-livefire.yaml'
+  - 'lib/continuous-mode.sh'
+  - '.tasks/active/T-3211-handover-suggested-first-action-truncate.md'
+  - '.tasks/active/T-3236-vendor-sync-after-close-is-unreachable--.md'
+  - '.tasks/active/T-3240-the-stop-hook-loop-caps-at-one-continuat.md'
+  - '.tasks/active/T-3241-budget-gauge-encodes-could-not-measure-a.md'
+  - '.tasks/active/T-3245-mandated-co-authored-by-trailer-voids-th.md'
+  - '.tasks/active/T-3254-arc-012-drive-the-loop-from-outside-when.md'
+  - '.tasks/completed/T-3253-tier-ceiling-breach-disarms-the-loop-but.md'
+  - 'tests/unit/t3254_driver_refusals.bats'
+  - 'tools/t3254-livefire.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-03T10:57:50'
+    action: 'T-3254: file the outside-in continuation driver (item 2)'
+  - time: '2026-09-03T12:11:28'
+    action: 'T-3254: start — T-3253 closed, build-order gate satisfied'
+  - time: '2026-09-03T12:15:32'
+    action: 'T-3254: one evaluator, two output shapes, and the driver that reads it'
+  - time: '2026-09-03T12:16:43'
+    action: 'T-3254: record progress, the busy-state finding, and what remains'
+  - time: '2026-09-03T12:17:44'
+    action: 'T-3254: refresh vendored copies (lib/continuous-mode.sh, continuous-driver.sh)'
+  - time: '2026-09-03T14:07:06'
+    action: 'T-3254: the refusal suite, and the injector path that made it inert everywhere else'
+  - time: '2026-09-03T14:18:22'
+    action: 'T-3254: wire the driver into cron, and prove the leg nothing usually proves'
+  - time: '2026-09-03T14:22:07'
+    action: 'T-3254: the registration check could never pass, and the stub is why'
+  - time: '2026-09-03T14:27:58'
+    action: 'T-3254: live-fire and its negative control, and a third false-quiet'
+  - time: '2026-09-03T14:41:34'
+    action: 'T-3254: the teardown needed three kills, and two of them were no-ops'
+  - time: '2026-09-03T14:41:54'
+    action: 'T-3254: refresh vendored continuous-driver.sh (registration check + pty false-quiet fixes)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 225 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 225
+  commits: 11
+  files_changed: 47
+  lines_added: 8896
+  lines_removed: 6471
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3254-arc-012-drive-the-loop-from-outside-when.md
+generated_by: context-agent-hybrid

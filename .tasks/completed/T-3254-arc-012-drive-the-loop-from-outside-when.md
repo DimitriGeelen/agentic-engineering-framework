@@ -14,13 +14,13 @@ description: >
   on T-3253: the brakes must actually stop things before the default flips from stop-on-silence
   to continue-unless-done.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 arc_id: continuous-run
 tags: []
-components: []
+components: [agents/context/continuous-driver.sh, tests/unit/t3254_driver_refusals.bats, tools/t3254-livefire.sh]
 related_tasks: [T-3253, T-3240, T-3239, T-3243]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -33,8 +33,8 @@ related_tasks: [T-3253, T-3240, T-3239, T-3243]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-03T08:56:16Z
-last_update: 2026-09-03T10:10:59Z
-date_finished:
+last_update: 2026-09-03T12:42:02Z
+date_finished: 2026-09-03T12:42:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -592,3 +592,20 @@ bin/fw vendor self --check
 ### 2026-09-03T10:10:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1188166a
+- **Timestamp:** 2026-09-03T12:47:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 121
+     - evidence: `ls .tasks/completed/T-3253-*.md >/dev/null 2>&1`
+
+### 2026-09-03T12:42:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
