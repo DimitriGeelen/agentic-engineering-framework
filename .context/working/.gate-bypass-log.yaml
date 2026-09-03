@@ -7849,3 +7849,11 @@ The opera'
   caller: 'check-active-task focus-drift'
   target: 'T-3236'
   command: 'bin/fw task update T-3236 --status work-completed --switch-focus 2>&1 | tail -50'
+- timestamp: '2026-09-03T17:20:08Z'
+  task: 'T-3174'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1100'
+  command: 'FW_SWITCH_FOCUS=1 cat > /opt/999-Agentic-Engineering-Framework/tests/unit/t3174_partial_complete_edit_matrix.bats << BATSEOF
+#!/usr/bin/env bats
+# T-3174: partial-complete state revokes a tasks aut'

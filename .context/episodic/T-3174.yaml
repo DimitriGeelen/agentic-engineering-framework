@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3174: partial-complete state revokes a task's authority to commit its own closure artefacts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T17:25:39Z
+# ============================================================================
+
+task_id: T-3174
+task_name: "partial-complete state revokes a task's authority to commit its own closure artefacts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-26T15:39:11Z
+completed: 2026-09-03T17:25:11Z
+duration_days: 8
+updates_count: 1
+first_commit: 2026-08-26T17:42:35+02:00
+last_commit: 2026-08-27T09:54:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register the inbound correction and the partial-complete commit trap. record what T-3179 closed and what remains (AC5 reopen-path is the residual)
+
+# Key outcomes
+outcomes:
+  - '`agents/context/check-active-task.sh` distinguishes **partial-complete**'
+  - 'Under partial-complete, a Bash command is allowed when it writes only governance'
+  - '`git commit` referencing the partial-complete task is permitted under that rule,'
+  - 'The block message no longer offers a remedy that cannot be executed. Today it'
+  - 'Whatever escape remains for the genuinely-blocked case names a mechanism that'
+  - 'Bats coverage pins the matrix end-to-end: {partial-complete, archived} ×'
+  - '`## Decisions` records why (a) was chosen over (b) and (c), including the measured'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-03 — AC5 remedy: graduated env-var bypass (a), not a new transition edge (b) or FW_SAFE_MODE (c)'
+    chose: 'a new, narrowly-scoped Tier-2-logged escape hatch, `FW_ALLOW_PARTIAL_COMPLETE_EDIT=1`, checked inside the existing `work-completed)` case branch in `check-active-task.sh`. It authorises exactly one thing — the next tool call, on the currently-focused partial-complete task — and writes an auditable entry to `.context/working/.gate-bypass-log.yaml` (task, flag, caller, and file-or-command). Same shape as the T-1890 focus-drift bypass (`FW_SWITCH_FOCUS=1`): env-var form because it must also work for `git commit`, whose parser rejects unrecognised flags outright.'
+    rationale: 'it is the minimal change that closes the actual deadlock (an agent that needs one more EDIT — not a commit, T-3179 already solved that — on a task the reviewer or human sent back) without touching the status state machine, without widening any existing exemption''s blast radius, and without disabling gates unrelated to this one task. - **Rejected — (b) add `work-completed → started-work` to `status-transitions.yaml`:** this is what the block message used to (wrongly) imply already worked. Adding the edge would make `fw work-on T-XXX` on the SAME task succeed, but `update-task.sh`''s transition to `started-work` also flips `owner` back and clears `date_finished` — semantically re-opening the task, not authorising a single edit. That is a bigger behavioural change than the bug warrants: partial-complete is a real, intentional state (P-013 steers every render-touching build task there by design) and silently permitting a full status rollback from it would let an agent erase the "this needs human review" signal the state exists to preserve, not just fix the deadlock. The env-var escape authorises the EDIT without touching `status:`/`owner:` at all. - **Rejected — (c) tell the agent to write closure artefacts before the status flips:** measured and disproved in `## Context` — the artefacts this task exists to unblock are written by `update-task.sh` in-process (`decisions.yaml`, `feedback-stream.yaml`, the task file itself) at the moment `--status work-completed` runs, and the PreToolUse hook only gates subsequent tool calls, not a script''s own writes. Those writes were never blocked. What was blocked is everything AFTER — the `git commit` (T-3179) and any correction edit (AC5, this decision) — and (c) reaches neither. - **Not `FW_SAFE_MODE=1`:** it disables the ENTIRE task gate for every command against every task for the rest of the session, not just the one edit on the one partial-complete task. The AC explicitly rules this out; the new mechanism is scoped to the `work-completed)` branch only and stops applying the instant the command completes.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.context/working/focus.yaml'
+  - '.tasks/active/T-3172-bpmn-compiler-rejects-the-frozen-standar.md'
+  - '.tasks/active/T-3173-lane-authority-dialect-check-is-unreacha.md'
+  - '.tasks/active/T-3174-partial-complete-state-revokes-a-tasks-a.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T17:42:35'
+    action: 'T-3174: register the inbound correction and the partial-complete commit trap'
+  - time: '2026-08-27T09:54:00'
+    action: 'T-3174: record what T-3179 closed and what remains (AC5 reopen-path is the residual)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11626 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11626
+  commits: 2
+  files_changed: 5
+  lines_added: 2984
+  lines_removed: 1912
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3174-partial-complete-state-revokes-a-tasks-a.md
+generated_by: context-agent-hybrid

@@ -3670,3 +3670,10 @@ decisions:
     date: 2026-08-30
     task: T-3217
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-527
+    decision: "a new, narrowly-scoped Tier-2-logged escape hatch,"
+    scope: project
+    date: 2026-09-03
+    task: T-3174
+    rationale: "Auto-captured from task file on completion"

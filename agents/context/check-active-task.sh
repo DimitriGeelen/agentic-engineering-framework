@@ -830,6 +830,39 @@ case "$TASK_STATUS" in
             exit 0
         fi
 
+        # T-3174 AC5: graduated escape for a further EDIT on a partial-complete
+        # task — the residual half T-3179 did not cover. T-3179 unblocked
+        # `git commit`; nothing unblocks a Write/Edit/other-Bash-write when the
+        # reviewer or human found something and the task needs one more pass
+        # while it stays partial-complete. The block message below used to name
+        # `fw work-on T-XXX` as the remedy — that transition does not exist
+        # (status-transitions.yaml has NO outgoing edge from work-completed, see
+        # `## Context`), so the only escape was FW_SAFE_MODE=1, which disables
+        # the ENTIRE task gate rather than authorising this one action.
+        #
+        # Same shape as the T-1890 focus-drift bypass: env-var form because it
+        # must work for `git commit` too (git rejects unknown flags), Tier-2
+        # logged so the authorisation is auditable rather than silent.
+        if [ "${FW_ALLOW_PARTIAL_COMPLETE_EDIT:-0}" = "1" ]; then
+            LOG_DIR="$PROJECT_ROOT/.context/working"
+            mkdir -p "$LOG_DIR" 2>/dev/null || true
+            LOG_FILE="$LOG_DIR/.gate-bypass-log.yaml"
+            _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            {
+                echo "- timestamp: '$_ts'"
+                echo "  task: '$CURRENT_TASK'"
+                echo "  flag: 'FW_ALLOW_PARTIAL_COMPLETE_EDIT'"
+                echo "  caller: 'check-active-task:partial-complete-edit'"
+                if [ -n "${BASH_CMD:-}" ]; then
+                    echo "  command: '$(printf '%s' "$BASH_CMD" | head -c 200 | tr -d "'")'"
+                else
+                    echo "  file: '${FILE_PATH:-}'"
+                fi
+            } >> "$LOG_FILE" 2>/dev/null || true
+            echo "NOTE: $CURRENT_TASK is work-completed (partial-complete) — allowing edit via FW_ALLOW_PARTIAL_COMPLETE_EDIT=1 (T-3174). Logged Tier-2." >&2
+            exit 0
+        fi
+
         echo "" >&2
         echo "BLOCKED: Task $CURRENT_TASK has status 'work-completed'." >&2
         echo "" >&2
@@ -838,13 +871,19 @@ case "$TASK_STATUS" in
         echo "were trying to commit, drop the redirect/heredoc from the line and" >&2
         echo "run the commit bare; write patterns void the allowance." >&2
         echo "" >&2
-        echo "To unblock further EDITS (not commits):" >&2
-        echo "  $(_fw_cmd) work-on T-XXX   (resume another task)" >&2
+        echo "To make ANOTHER EDIT on THIS task while it stays partial-complete" >&2
+        echo "(Tier-2, logged). Note: '$(_fw_cmd) work-on $CURRENT_TASK' will NOT" >&2
+        echo "work here — status-transitions.yaml has no outgoing edge from" >&2
+        echo "work-completed, so that command exits 1 with 'Invalid transition'." >&2
+        echo "  FW_ALLOW_PARTIAL_COMPLETE_EDIT=1 <command>" >&2
+        echo "" >&2
+        echo "To work on something else instead:" >&2
+        echo "  $(_fw_cmd) work-on T-XXX   (resume a DIFFERENT active task)" >&2
         echo "  $(_fw_cmd) work-on 'name'  (create a new task)" >&2
         _bootstrap_shape_hint "${BASH_CMD:-}"
         echo "" >&2
         echo "$(_blocked_subject)" >&2
-        echo "Policy: P-002 (Cannot modify files under a completed task)" >&2
+        echo "Policy: P-002 (Cannot modify files under a completed task) / T-3174 (graduated bypass)" >&2
         exit 2
         ;;
     "")
