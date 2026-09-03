@@ -115,7 +115,21 @@ fi
 [ -n "$SESSION" ] && [ "$SESSION" != "null" ] || _bail "refused" \
     "no target session: set one with 'fw config set CONTINUOUS_SESSION <name>' or pass --session"
 
-timeout 20 termlink info "$SESSION" >/dev/null 2>&1 \
+# Registration is checked with `discover`, NOT `info`. `termlink info` takes no
+# positional target at all -- it reports hub/runtime status -- so `info "$SESSION"`
+# exits non-zero with "unexpected argument" for EVERY session, registered or not.
+# The driver would have refused every target it was ever pointed at, and the refusal
+# message would have said "not registered", which is a plausible-sounding lie.
+#
+# It survived review because the unit test stubbed `info` to exit 0: the stub was
+# written against the driver's assumption instead of against the tool, so the two
+# agreed with each other and neither agreed with termlink. Pinned now by a contract
+# test that runs against the real binary (t3254 B4).
+#
+# `--name` is a SUBSTRING match, so the exact name is re-asserted with grep -Fxq --
+# otherwise 't3254' would happily match 't3254-other-session'.
+timeout 20 termlink discover --name "$SESSION" --names --no-header 2>/dev/null \
+    | grep -Fxq "$SESSION" \
     || _bail "refused" "target session '${SESSION}' is not registered"
 
 # ---------------------------------------------------------------------------
@@ -136,10 +150,29 @@ timeout 20 termlink info "$SESSION" >/dev/null 2>&1 \
 # The cost is one interleaved prompt; the cost of the opposite bias is never
 # injecting at all. Raise --settle where that trade is wrong.
 # ---------------------------------------------------------------------------
-_pty_snapshot() { timeout 15 termlink pty output "$SESSION" --strip-ansi 2>/dev/null | tail -c 4000; }
-SNAP_A="$(_pty_snapshot)"
+# The snapshot PROPAGATES failure instead of swallowing it. A session that is
+# registered but not PTY-backed answers `pty output` with an error and no bytes, so
+# both samples come back empty, the two compare EQUAL, and the session reads as
+# perfectly idle -- the driver then injects into something that cannot receive
+# keystrokes and fails at the last step, having reported quiet all the way down.
+#
+# Measured: a session spawned without --shell returns "No PTY session — output
+# capture not available", and `inject` refuses it with "39 byte(s) were resolved but
+# never reached a terminal". Neither is an idle session, and neither should look
+# like one. This is the same rule the ceiling check already follows: "could not
+# evaluate" is not a green light, and letting it collapse into "fine" is how a guard
+# stops guarding.
+_pty_snapshot() {
+    local out rc
+    out="$(timeout 15 termlink pty output "$SESSION" --strip-ansi 2>/dev/null)"; rc=$?
+    [ "$rc" -eq 0 ] || return "$rc"
+    printf '%s' "$out" | tail -c 4000
+}
+SNAP_A="$(_pty_snapshot)" || _bail "refused" \
+    "session '${SESSION}' is not PTY-backed (pty output unavailable) — it cannot receive an injected turn; re-create it with 'termlink spawn --shell'"
 sleep "$SETTLE"
-SNAP_B="$(_pty_snapshot)"
+SNAP_B="$(_pty_snapshot)" || _bail "refused" \
+    "session '${SESSION}' stopped answering pty output mid-check — refusing rather than guessing it is idle"
 
 if [ "$SNAP_A" != "$SNAP_B" ]; then
     _bail "refused" "session '${SESSION}' is BUSY (pty output changed across ${SETTLE}s) — injecting would interleave input"
