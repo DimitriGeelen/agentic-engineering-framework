@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3255: T-3254 follow-up: the driver cannot resolve a target session, and the live-fire never used a real agent
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T14:22:09Z
+# ============================================================================
+
+task_id: T-3255
+task_name: "T-3254 follow-up: the driver cannot resolve a target session, and the live-fire never used a real agent"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-03T13:08:23Z
+completed: 2026-09-03T14:21:33Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-03T15:13:07+02:00
+last_commit: 2026-09-03T15:13:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the driver could not resolve a session, because nothing ever sets the key
+
+# Key outcomes
+outcomes:
+  - 'The driver resolves a target session with NO manual configuration when the'
+  - 'Two or more candidate sessions produce a refusal that NAMES them, not a'
+  - 'The zero-candidate refusal names the actual precondition — that the project'
+  - '**Split out, not dropped.** Building the real-agent live-fire (harness in'
+  - 'The T-3254 suite still passes with zero skips, and the vendored copies are in'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/continuous-driver.sh'
+  - '.tasks/active/T-3255-t-3254-follow-up-the-driver-cannot-resol.md'
+  - 'tests/unit/t3254_driver_refusals.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-03T15:13:07'
+    action: 'T-3255: the driver could not resolve a session, because nothing ever sets the key'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 73 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 73
+  commits: 1
+  files_changed: 3
+  lines_added: 450
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3255-t-3254-follow-up-the-driver-cannot-resol.md
+generated_by: context-agent-hybrid
