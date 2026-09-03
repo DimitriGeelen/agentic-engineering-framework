@@ -4833,3 +4833,53 @@ concerns:
   - T-3262
   - G-098
   follow_up_task: T-3262
+- id: G-100
+  type: gap
+  title: P-011 verification runs once at close, with no notion of assertion temporal scope -- a
+    gitignored build artifact passes the gate and is gone by the next session
+  description: 'Field report dispatched from consumer project 001-CashWeb (their T-237), reporting
+    a third instance of a gap class they registered locally as their own G-009 (filed 2026-08-14;
+    two prior instances T-022/T-023, both in that project). Gap-homed here per CLAUDE.md''s Gap
+    Homing rule (T-1333): P-011 is framework-owned code (agents/task-create/update-task.sh),
+    vendored into consumers, so the fix -- if one is ever built -- belongs in this register, not
+    theirs. Their local G-009 numbering collides by coincidence with this repo''s own (unrelated,
+    already-closed) G-009; no relation between the two.
+
+    P-011 runs a task''s ## Verification commands exactly once, at work-completed CLOSE time. It
+    has no notion of an assertion''s temporal scope -- it cannot distinguish "true because the
+    task durably delivered it" from "true right now, for a reason that will stop being true."
+    Two prior instances (their T-022/T-023) involved a verification line asserting live/mutable
+    environment state (a worktree-reclaim count, another task''s file contents) that later drifted
+    -- fixable by asserting a durable property instead. This third instance (their T-036) is
+    structurally different: the verification line asserted a build artifact (a vector DB chunk
+    count) that was only ever session-local, in a path the project''s own .gitignore deliberately
+    excludes from version control. There is no durable property to assert instead -- the count
+    *is* the durable property, in the one place that has no durability. Every session since
+    inherited a task reading work-completed and an artifact that did not exist on disk, found by
+    chance during an unrelated /resume investigation, not by any structural check.
+
+    '
+  spec_reference: CLAUDE.md §Verification Gate (P-011); agents/task-create/update-task.sh
+  severity: medium
+  status: open
+  detected_in: T-3266
+  observed: '2026-09-03'
+  reported_by: '001-CashWeb consumer project, field report dispatched via their T-237 (three
+    instances total across their project history: T-022, T-023, T-036)'
+  blast_radius: 'Any consumer or framework task whose ## Verification line targets a path matching
+    the project''s own .gitignore can close work-completed on an assertion that is true only for
+    the remainder of the authoring session. Silent -- nothing in P-011, fw doctor, or fw audit
+    currently detects this shape, so drift is found only by chance (as here) or not at all.'
+  what_works_now: 'Two of three known instances (live/mutable state drift) are already covered by
+    G-009''s existing what_remains ask for a reviewer check "in the same family as
+    l387-sigpipe-risk" scanning verification SHAPE for temporal-scope risk -- not yet built.'
+  what_remains: 'No detector exists for either sub-case. The reporting project proposes a concrete,
+    narrower signature for this third sub-case specifically: flag any ## Verification line whose
+    target path matches an entry in the project''s own .gitignore -- a completion gate asserting
+    against a path git will never track is a strong prior that the assertion is true now, by
+    construction, for a reason that will not survive the session, independent of what count/pattern
+    is being checked. Not scoped or built here -- this entry is registration only, per the field
+    report''s explicit request ("not asking for a fix on a deadline... a vote that the class is
+    real and recurring").'
+  related:
+  - T-3266
