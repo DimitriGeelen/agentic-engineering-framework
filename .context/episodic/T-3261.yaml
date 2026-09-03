@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3261: continuous-run stuck disarmed since 2026-08-26 on stale June directive — re-arm and add drift surfacing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T16:17:29Z
+# ============================================================================
+
+task_id: T-3261
+task_name: "continuous-run stuck disarmed since 2026-08-26 on stale June directive — re-arm and add drift surfacing"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-03T16:14:03Z
+completed: 2026-09-03T16:17:12Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  continuous-run stuck disarmed since 2026-08-26 on stale June directive — re-arm and add drift surfacing
+
+# Key outcomes
+outcomes:
+  - '`fw continuous status` reports `ARMED` (enabled=true, non-expired directive, cleared termination latch)'
+  - 'G-099 gap entry recorded in `.context/project/concerns.yaml` and the file still parses as valid YAML'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3261-continuous-run-stuck-disarmed-since-2026.md
+generated_by: context-agent-hybrid

@@ -38925,3 +38925,21 @@ scan_id: R-8170cf20
 task_id: T-3236
 payload:
   task_file: .tasks/active/T-3236-vendor-sync-after-close-is-unreachable--.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T16:17:15Z'
+scan_id: R-55b5b193
+task_id: T-3261
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T16:17:15Z'
+scan_id: R-55b5b193
+task_id: T-3261
+payload:
+  task_file: .tasks/active/T-3261-continuous-run-stuck-disarmed-since-2026.md

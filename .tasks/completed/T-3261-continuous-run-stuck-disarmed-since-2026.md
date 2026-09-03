@@ -1,24 +1,15 @@
 ---
-id: T-3211
-name: "handover Suggested First Action truncates the task name at the first line of
-  a folded YAML scalar"
+id: T-3261
+name: "continuous-run stuck disarmed since 2026-08-26 on stale June directive — re-arm
+  and add drift surfacing"
 description: >
-  Split from T-3210 (one bug, one task). The selector reads the task name with re.search(r'^name:\s*(.+)',
-  content, re.M), which captures only the FIRST line of the frontmatter value. Most
-  task names are folded YAML scalars spanning two or more lines, so the suggestion
-  renders cut mid-phrase and with a leading double quote: 'Continue T-1719: "Embeddings
-  strategy V1 - Slice 1 (post-write hook + happiness signal + one-provider'. Both
-  T-3181 IW-4 cold-resume arms flagged the truncation as blocking - the reader cannot
-  tell what the task is. Distinct root cause from T-3210 (which fixed WHICH task is
-  named, not how its name is rendered). Fix shape: consume indented continuation lines
-  and strip surrounding quotes. Note for whoever takes it: bash -n does NOT catch
-  an unescaped quote inside that python3 -c block - see T-3210 Evolution, mutation
-  M3.
+  continuous-run stuck disarmed since 2026-08-26 on stale June directive — re-arm
+  and add drift surfacing
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -32,9 +23,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-29T10:06:43Z
-last_update: 2026-09-03T16:13:17Z
-date_finished:
+created: 2026-09-03T16:14:03Z
+last_update: 2026-09-03T16:17:12Z
+date_finished: 2026-09-03T16:17:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -46,17 +37,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-29T10:15:09Z'
+  - ts: '2026-09-03T16:15:10Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=235,acs=4)
+      (workflow:build); effort=8 (lines=258,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-29T10:15:15Z'
+  - ts: '2026-09-03T16:15:19Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -75,18 +66,25 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3211: handover Suggested First Action truncates the task name at the first line of a folded YAML scalar
+# T-3261: continuous-run stuck disarmed since 2026-08-26 on stale June directive — re-arm and add drift surfacing
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`.continuous-mode.yaml` has been `enabled: false` since 2026-08-26 because `.next-directive.yaml`
+was a one-shot arc-012 live-fire demo directive (filed 2026-06-14, `expires_at: 2026-06-17`) that
+was never replaced once the demo it was written for shipped. `claude-fw`'s restart guard
+(`_continuous_terminated()`, bin/claude-fw:388) replays the stored `last_terminated_reason`
+verbatim on every restart attempt without re-evaluating anything, so every relaunch cycled
+start→refuse→exit in ~16s with no operator-facing signal. Reported by operator as "kicked out
+again, continuous loop still not working." Registered as G-099. Fix: re-arm via the sanctioned
+`fw continuous arm` CLI (T-3225) with a fresh, bounded, non-task-specific directive.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw continuous status` reports `ARMED` (enabled=true, non-expired directive, cleared termination latch)
+- [x] G-099 gap entry recorded in `.context/project/concerns.yaml` and the file still parses as valid YAML
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,6 +166,29 @@ bvp_scores_proposed:
 #     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
 #
+# ── A SKIPPED BATS TEST REPORTS `ok` (T-3217) ─────────────────────────────────
+#
+# `! grep -q "^not ok"` does NOT mean the suite ran. Bats emits a skip as
+#     ok 6 <name> # skip <reason>
+# which is not a `not ok`, so the gate passes and the report says ok while the
+# thing the test covers was measured NOWHERE. Origin: T-3213 guarded a test with
+# `[ "$(id -u)" -eq 0 ] && skip` — the suite runs as root here and in CI, so it
+# skipped on every run that mattered, for as long as it existed.
+#
+# Add a skip clause to any bats verification line. `# skip` is the marker bats
+# writes; counting it is the whole check:
+#     timeout 300 bats <file> > /tmp/.out 2>&1 && ! grep -q "^not ok" /tmp/.out
+#     test "$(grep -c '# skip' /tmp/.out)" -eq 0
+# Two lines, because they answer different questions — "did anything fail" and
+# "did everything run". If some skips are legitimate on your host (an optional
+# dependency is genuinely absent), assert the COUNT you expect rather than zero,
+# and say in the task why that number is right.
+#
+# Corpus-wide, the same check runs from `bin/fw test lint`
+# (tools/bats-silent-skip-lint.py): static mode flags guards that are fixed for
+# a deployment rather than probing an optional dependency, and `--tap FILE`
+# reports the skips a real run actually fired.
+#
 # REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
 # shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
 # the same directory, the same second. To rehearse for real:
@@ -213,7 +234,34 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bin/fw continuous status 2>&1 | grep -q "Continuous mode: ARMED"
+python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
+grep -q "id: G-099" .context/project/concerns.yaml
+
 ## RCA
+
+**Symptom:** Operator repeatedly "kicked out" of the session with the continuous-run loop
+appearing dead; `continuous-run.jsonl` showed start→exit cycles as short as 16 seconds.
+
+**Root cause:** `.next-directive.yaml` was a one-shot demo directive (arc-012 live-fire,
+filed 2026-06-14, `expires_at: 2026-06-17`) never replaced after the demo shipped. Once
+expired, `fw continuous`'s stop-driver disarmed the loop (2026-08-26) and recorded
+`last_terminated_reason`. `claude-fw`'s restart guard then replays that stored string
+verbatim, unconditionally, on every subsequent restart attempt — by design a one-way latch
+requiring explicit operator re-arm — but nothing surfaces that the latch has been tripped
+for days.
+
+**Why structurally allowed:** No `fw doctor` check or cron watches `.continuous-mode.yaml`
+staleness (`enabled=false` age, or repeated rapid start/exit cycles in
+`continuous-run.jsonl`). The same symptom is already documented in
+`lib/continuous-mode.sh:165-186` from a prior 74-day instance — the earlier fix (T-3225)
+added `fw continuous status`/`arm` for on-demand diagnosis but no proactive surfacing, so
+the class recurred.
+
+**Prevention:** Registered as G-099 (this task is its follow-up). Candidate structural fix
+(scoped as future work, not done here): `fw doctor` WARN when continuous-mode has been
+disarmed longer than some threshold while restart signals keep reappearing, or when
+`continuous-run.jsonl` shows N consecutive short start→exit cycles within an hour.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -305,7 +353,24 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-29T10:06:43Z — task-created [task-create-agent]
+### 2026-09-03T16:14:03Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3211-handover-suggested-first-action-truncate.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3261-continuous-run-stuck-disarmed-since-2026.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-55b5b193
+- **Timestamp:** 2026-09-03T16:17:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 116
+     - evidence: `bin/fw continuous status 2>&1 | grep -q "Continuous mode: ARMED"`
+
+### 2026-09-03T16:17:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
