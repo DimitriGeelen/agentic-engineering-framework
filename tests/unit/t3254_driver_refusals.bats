@@ -241,6 +241,10 @@ case "\$verb" in
   pty)
     sub="\$1"; shift
     if [ "\$sub" = "output" ]; then
+        if [ "$mode" = nopty ]; then
+            echo "Error: Output query failed: No PTY session — output capture not available." >&2
+            exit 1
+        fi
         if [ "$mode" = busy ]; then
             n=\$(cat "$SB/tick" 2>/dev/null || echo 0); echo \$((n+1)) > "$SB/tick"
             echo "working... \$n"
@@ -284,6 +288,18 @@ _run_driver() {
     printf 'enabled: false\ncurrent_iteration: 0\n' > "$STATE_F"
     run _run_driver
     [ ! -f "$SB/injected" ] || { echo "injected while disarmed"; return 1; }
+}
+
+@test "B5 a session that cannot answer pty output is refused, not read as idle" {
+    # The failure this pins is a FALSE QUIET. A registered but non-PTY session
+    # answers `pty output` with an error and no bytes; two empty samples compare
+    # equal, so the busy check saw a perfectly idle session and injected into
+    # something that cannot receive keystrokes. Every observable said "quiet" right
+    # up to the moment the injection failed.
+    _stub_termlink nopty
+    run _run_driver
+    [ ! -f "$SB/injected" ] || { echo "injected into a session with no PTY"; return 1; }
+    grep -q "not PTY-backed" "$LEDGER" || { echo "refused, but the ledger does not say why:"; cat "$LEDGER"; return 1; }
 }
 
 # ── B4: the contract, against the REAL binary ────────────────────────────────

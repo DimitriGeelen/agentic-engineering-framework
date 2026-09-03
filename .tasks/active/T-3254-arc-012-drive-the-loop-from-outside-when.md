@@ -239,10 +239,10 @@ indistinguishability that made E9's ceiling result meaningless.
 - [x] Every injection and every refusal appends a typed entry to
       `.context/working/continuous-run.jsonl`, so a reader can reconstruct why the
       loop did or did not continue at each tick without re-running anything.
-- [ ] Live-fire: a sandbox session that stops early with backlog remaining is
+- [x] Live-fire: a sandbox session that stops early with backlog remaining is
       driven to completion by the cron path alone, with the budget gauge never
       tripping — proving this covers the `no-signal` case M2 cannot reach.
-- [ ] Negative control for the live-fire: the identical run with `enabled: false`
+- [x] Negative control for the live-fire: the identical run with `enabled: false`
       is NOT injected into and stays stopped. Without this leg, "the driver
       continued the work" and "the agent finished on its own" read identically.
 - [x] Cron registry → generated → deployed is in sync (see `## Verification`).
@@ -412,6 +412,10 @@ timeout 600 bats tests/unit/t3254_driver_refusals.bats > /tmp/.t3254.out 2>&1 &&
 test "$(grep -c '# skip' /tmp/.t3254.out)" -eq 0
 # Vendored paths: this task edits lib/ and agents/, both vendored. Sync BEFORE close
 # (OBS-250) — after close there is no task the sync can run under.
+# Live-fire (AC5) + negative control (AC6). Spawns a real PTY-backed TermLink
+# session and drives it with the real driver; ~90s. The negative control is inside
+# the same script deliberately — the two legs are only meaningful together.
+timeout 500 tools/t3254-livefire.sh > /tmp/.t3254lf.out 2>&1 && grep -q "0 failed" /tmp/.t3254lf.out
 bin/fw vendor self --check
 
 ## RCA
@@ -453,6 +457,55 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-03 — three defects of one shape, all invisible from inside the repo
+
+- **What changed:** Writing the refusal tests surfaced three defects in code that
+  had already shipped and been reviewed, and all three are the same shape: *code
+  that could only work in the environment it was written in, invisible to tests
+  written in that same environment.*
+
+  1. **The ceiling join imported the injector from `PROJECT_ROOT`.** That path
+     exists in this repo — where the project and framework roots coincide — and
+     nowhere else. On any consumer the import raised `FileNotFoundError`, which
+     `_emit_json` correctly refuses to read as a green light, so `may_inject` was
+     false forever. Fail-safe **and completely inert**: the mechanism could never
+     fire outside the repo it was written in.
+  2. **The registration check was `termlink info "$SESSION"`.** `termlink info`
+     takes no positional target; it exits 2 with "unexpected argument" for every
+     session. The driver would have refused every target it was pointed at, with
+     the message "target session is not registered" — a plausible-sounding lie.
+     It survived because the unit-test stub was written against the *driver's
+     belief* about termlink rather than against termlink. Stub and driver agreed
+     with each other; neither agreed with the tool.
+  3. **A non-PTY session read as idle.** `pty output` errors and returns no bytes
+     for a session registered without `--shell`; two empty samples compare equal,
+     so the busy check saw perfect quiet and injected into something that cannot
+     receive keystrokes. Every observable said "quiet" right up to the failure.
+
+- **Plan impact:** None to the design — all three are implementation defects, and
+  the design's own principle already covered the third ("could not evaluate is not
+  a green light", written for the ceiling check but not applied to the pty check).
+  What changed is the *evidence standard*: a stub is now treated as a claim about
+  an interface that must itself be pinned against the real binary (test B4), not
+  as a test fixture.
+
+- **Triggered:** No new tasks. The three fixes, plus tests B4 (real-CLI contract)
+  and B5 (false-quiet), landed inside this task because each is one edit and the
+  suite that found them is this task's deliverable.
+
+### 2026-09-03 — the busy check is an observation, and TermLink cannot help
+
+- **What changed:** The design sketch says "never inject into a `busy` session".
+  TermLink has no such state: `discover --json` reports `state: "ready"` for every
+  registered session — 127 of 127 on this host, mid-work ones included. `ready`
+  means REGISTERED, not IDLE.
+- **Plan impact:** Busy is **observed, not read** — sample the pty twice `--settle`
+  seconds apart, treat any change as output. Deliberately biased: a session
+  thinking silently can look quiet, so this may occasionally interleave one prompt.
+  The opposite bias never injects at all.
+- **Triggered:** Nothing filed; the trade is recorded in the driver's header so it
+  is not "simplified" away later.
 
 ## Recommendation
 

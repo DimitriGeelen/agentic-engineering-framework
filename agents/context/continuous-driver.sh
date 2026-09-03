@@ -150,10 +150,29 @@ timeout 20 termlink discover --name "$SESSION" --names --no-header 2>/dev/null \
 # The cost is one interleaved prompt; the cost of the opposite bias is never
 # injecting at all. Raise --settle where that trade is wrong.
 # ---------------------------------------------------------------------------
-_pty_snapshot() { timeout 15 termlink pty output "$SESSION" --strip-ansi 2>/dev/null | tail -c 4000; }
-SNAP_A="$(_pty_snapshot)"
+# The snapshot PROPAGATES failure instead of swallowing it. A session that is
+# registered but not PTY-backed answers `pty output` with an error and no bytes, so
+# both samples come back empty, the two compare EQUAL, and the session reads as
+# perfectly idle -- the driver then injects into something that cannot receive
+# keystrokes and fails at the last step, having reported quiet all the way down.
+#
+# Measured: a session spawned without --shell returns "No PTY session — output
+# capture not available", and `inject` refuses it with "39 byte(s) were resolved but
+# never reached a terminal". Neither is an idle session, and neither should look
+# like one. This is the same rule the ceiling check already follows: "could not
+# evaluate" is not a green light, and letting it collapse into "fine" is how a guard
+# stops guarding.
+_pty_snapshot() {
+    local out rc
+    out="$(timeout 15 termlink pty output "$SESSION" --strip-ansi 2>/dev/null)"; rc=$?
+    [ "$rc" -eq 0 ] || return "$rc"
+    printf '%s' "$out" | tail -c 4000
+}
+SNAP_A="$(_pty_snapshot)" || _bail "refused" \
+    "session '${SESSION}' is not PTY-backed (pty output unavailable) — it cannot receive an injected turn; re-create it with 'termlink spawn --shell'"
 sleep "$SETTLE"
-SNAP_B="$(_pty_snapshot)"
+SNAP_B="$(_pty_snapshot)" || _bail "refused" \
+    "session '${SESSION}' stopped answering pty output mid-check — refusing rather than guessing it is idle"
 
 if [ "$SNAP_A" != "$SNAP_B" ]; then
     _bail "refused" "session '${SESSION}' is BUSY (pty output changed across ${SETTLE}s) — injecting would interleave input"
