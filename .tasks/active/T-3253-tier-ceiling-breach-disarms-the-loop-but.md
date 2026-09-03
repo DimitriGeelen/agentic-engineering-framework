@@ -367,6 +367,41 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+
+**Symptom:** The bounded-autonomy ceiling fired, recorded `tier ceiling exceeded:
+T-022 blast-radius 5 > tier_ceiling 1`, froze the counter and disarmed the state
+file at 22:40:55 — and the loop restarted twice more (22:42:29, 22:43:38) and
+closed the over-ceiling task at 22:45:21, 4m26s after the brake. The control leg
+lost `max_iterations` to the identical hole.
+
+**Root cause:** Two places spend autonomy and only one of them read the disarm.
+`enabled` was consulted on the clean-exit **re-arm** branch (`bin/claude-fw:652`,
+via `_continuous_armed`) and nowhere on the **budget-restart** branch (`:506`),
+which entered on a fresh signal plus `MAX_RESTARTS` alone. Separately, the ceiling
+itself was evaluated in the SessionStart hook of a session that had *already
+launched* carrying the armed directive as its prompt, so the breach arrived as
+advisory `additionalContext` competing with "do not stop until every task is
+closed" — and lost.
+
+**Why structurally allowed:** Both halves are the same shape — a brake wired to
+the wrong side of the thing it brakes. The disarm was written by the injector and
+read by one consumer, so "recorded" and "enforced" were separate properties with
+nothing asserting they matched. And a notice delivered *into* a running session
+can only ever be advisory: the session's own prompt outranks it. Neither gap was
+visible from the state file, which holds only the last value of
+`current_iteration` — "the counter froze across the transition" is a claim about
+two adjacent samples, and nothing sampled.
+
+**Prevention:** `tests/unit/t3253_preflight_brake.bats` — 11 tests, every brake
+case against a control, including the ordering invariant (the preflight must
+precede `_restart_budget_take`, or a loop stopped by a BOUND gets reported as a
+RATE limit) and the two regression controls that the fix could plausibly have
+broken: the clear path must leave the state file byte-identical, and an absent
+state file must stay absent. The E10 rig's per-close attribution line
+(`closed-AFTER-the-breach` / `closed-BEFORE-the-breach`) is what separates "the
+session ignored the brake" from "the rig was too small for the brake to matter" —
+the two readings that were indistinguishable on the first run at N_BACKLOG=8.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -390,6 +425,47 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+
+### 2026-09-03 — the brake had to move before the launch, not into the session
+
+- **What changed:** Closing hole 2 (the restart branch consulting the disarm) was
+  necessary and not sufficient. The breach is discovered by the SessionStart hook
+  of a session that has, by then, already launched with the armed directive as its
+  prompt. In the E10 run that session happened not to work the over-ceiling task
+  after the notice — luck, not a guarantee. A notice that has to win an argument
+  with a running session is not a brake.
+- **Plan impact:** AC3 could not be satisfied by any refinement of the notice's
+  wording or delivery. The decision moved *before* the launch, where there is
+  nothing running to ignore it. That made the wrapper the enforcement point and
+  the injector the evaluator — a split the single-writer constraint then shaped.
+- **Triggered:** `--preflight` mode on `inject-next-directive.py` rather than
+  wrapper-side logic (T-3233 W1-F3: `current_iteration` has exactly one writer,
+  and a second one reintroduces the class this arc keeps hitting). The wrapper
+  reads only an exit code.
+
+### 2026-09-03 — the clear path must write nothing, and that is not an optimisation
+
+- **What changed:** `evaluate()` returns an *advanced* counter as a matter of
+  course, and SessionStart is about to advance it again for the same restart.
+  The obvious implementation — evaluate, write, then decide — double-advances
+  every iteration.
+- **Plan impact:** The preflight writes on the terminating path only, and that
+  write carries a frozen counter. The non-breach path is byte-identical, pinned by
+  a control test rather than left to review.
+- **Triggered:** Nothing new filed; the constraint was already recorded in this
+  task's Progress section before the build and held on contact.
+
+### 2026-09-03 — the vendored copy is what the live-fire actually runs
+
+- **What changed:** The E10 sandbox is a real `fw init` project, so it executes
+  `.agentic-framework/agents/context/inject-next-directive.py`, not the source
+  tree. An unsynced vendor would have made both legs green for the wrong reason:
+  the preflight would not be found, `_continuous_preflight` fails open by design,
+  and that is indistinguishable from a brake that held.
+- **Plan impact:** `bin/fw vendor self --check` is in `## Verification` as a
+  correctness gate for the evidence, not as vendored-path hygiene.
+- **Triggered:** Sync run before the legs were launched, not after.
 
 ## Recommendation
 
