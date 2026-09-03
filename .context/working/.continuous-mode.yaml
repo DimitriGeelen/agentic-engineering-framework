@@ -1,15 +1,15 @@
-enabled: true
+enabled: false
 max_iterations: 10
 tier_ceiling: 1
 expires_after_seconds: 86400
 current_iteration: 1
-tasks_completed: 3
+tasks_completed: 4
 max_tasks: null
-last_resumed_at: '2026-09-03T16:21:12Z'
+last_resumed_at: '2026-09-03T18:11:31Z'
 last_directive_seen: Resume standard framework operation. Pick up horizon:now active
   tasks per fw resume status / review-queue order. Respect all structural gates (Tier
   0/1/2) and the tier ceiling; no --force on any gate.
-last_terminated_reason: ''
+last_terminated_reason: human-gate:human-ac:T-3263
 last_source: compact
 disarmed_reason: "T-3164: shipped disarmed. Previously enabled: true while last_terminated_reason\
   \ showed expiry 70 days past \u2014 the flag asserted armed while the loop was structurally\
@@ -18,3 +18,5 @@ completed_task_ids:
 - T-3261
 - T-3260
 - T-3262
+- T-3174
+terminated_at: '2026-09-03T18:24:48Z'

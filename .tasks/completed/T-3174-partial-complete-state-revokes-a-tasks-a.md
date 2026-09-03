@@ -27,10 +27,10 @@ description: >
   repo
   has 243 of 409 active tasks (59%) in this state. Same class as G-092.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/context/check-active-task.sh, status-transitions.yaml, 
       agents/task-create/update-task.sh]
@@ -46,8 +46,8 @@ related_tasks: [T-1730, T-1890, T-679]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T15:39:11Z
-last_update: 2026-08-27T07:53:13Z
-date_finished:
+last_update: 2026-09-03T17:25:11Z
+date_finished: 2026-09-03T17:25:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -167,34 +167,34 @@ Here the *same file* is writable via one tool and unreachable via another.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `agents/context/check-active-task.sh` distinguishes **partial-complete**
+- [x] `agents/context/check-active-task.sh` distinguishes **partial-complete**
       (`status: work-completed` AND file still in `.tasks/active/` AND `owner: human`)
       from a task that is genuinely finished. The `work-completed)` branch at :750 is
       reached ONLY in the partial-complete case today — a fully-completed task exits
       earlier at :716 with a different message — so the branch can be specialised
       without touching the archived-task path
-- [ ] Under partial-complete, a Bash command is allowed when it writes only governance
+- [x] Under partial-complete, a Bash command is allowed when it writes only governance
       paths (`.context/`, `.tasks/`, `.claude/`), matching the exemption Write/Edit
       already gets at :441. Source-file writes stay blocked. This is **parity with an
       existing decision**, not a new policy: today `Write` to `.tasks/active/T-900.md`
       exits 0 while `git commit -m "T-900: ..."` exits 2, for the same task in the same
       state
-- [ ] `git commit` referencing the partial-complete task is permitted under that rule,
+- [x] `git commit` referencing the partial-complete task is permitted under that rule,
       so the task can commit its own closure artefacts under its own id. Verified by
       the probe that currently fails (see `## Context`)
-- [ ] The block message no longer offers a remedy that cannot be executed. Today it
+- [x] The block message no longer offers a remedy that cannot be executed. Today it
       prints `fw work-on T-XXX   (resume another task)`; `fw work-on <the-task-itself>`
       exits 1 with `Invalid transition 'work-completed' → 'started-work'` because
       `status-transitions.yaml` gives `work-completed` no outgoing edge at all. Whatever
       the message ends up saying must be executable as printed — L-399 / T-1890 contract
-- [ ] Whatever escape remains for the genuinely-blocked case names a mechanism that
+- [x] Whatever escape remains for the genuinely-blocked case names a mechanism that
       works for `git commit` (external parser — flags are rejected, so env-var form per
       T-1890 leg 3), and logs Tier-2 to `.context/working/.gate-bypass-log.yaml`.
       `FW_SAFE_MODE=1` is not an acceptable answer: it disables the whole task gate
-- [ ] Bats coverage pins the matrix end-to-end: {partial-complete, archived} ×
+- [x] Bats coverage pins the matrix end-to-end: {partial-complete, archived} ×
       {governance-path write, source write, `git commit`}. The partial-complete ×
       `git commit` cell is the regression cell
-- [ ] `## Decisions` records why (a) was chosen over (b) and (c), including the measured
+- [x] `## Decisions` records why (a) was chosen over (b) and (c), including the measured
       reason (c) is a no-op — see `## Context`
 
 ### Human
@@ -289,6 +289,10 @@ Here the *same file* is writable via one tool and unreachable via another.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t3174_partial_complete_edit_matrix.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3179_partial_complete_commit.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -360,6 +364,49 @@ Here the *same file* is writable via one tool and unreachable via another.
 
 ## Decisions
 
+### 2026-09-03 — AC5 remedy: graduated env-var bypass (a), not a new transition edge (b) or FW_SAFE_MODE (c)
+
+- **Chose:** a new, narrowly-scoped Tier-2-logged escape hatch,
+  `FW_ALLOW_PARTIAL_COMPLETE_EDIT=1`, checked inside the existing
+  `work-completed)` case branch in `check-active-task.sh`. It authorises
+  exactly one thing — the next tool call, on the currently-focused
+  partial-complete task — and writes an auditable entry to
+  `.context/working/.gate-bypass-log.yaml` (task, flag, caller, and
+  file-or-command). Same shape as the T-1890 focus-drift bypass
+  (`FW_SWITCH_FOCUS=1`): env-var form because it must also work for `git
+  commit`, whose parser rejects unrecognised flags outright.
+- **Why:** it is the minimal change that closes the actual deadlock (an
+  agent that needs one more EDIT — not a commit, T-3179 already solved
+  that — on a task the reviewer or human sent back) without touching the
+  status state machine, without widening any existing exemption's blast
+  radius, and without disabling gates unrelated to this one task.
+- **Rejected — (b) add `work-completed → started-work` to
+  `status-transitions.yaml`:** this is what the block message used to
+  (wrongly) imply already worked. Adding the edge would make `fw work-on
+  T-XXX` on the SAME task succeed, but `update-task.sh`'s transition to
+  `started-work` also flips `owner` back and clears `date_finished` —
+  semantically re-opening the task, not authorising a single edit. That
+  is a bigger behavioural change than the bug warrants: partial-complete
+  is a real, intentional state (P-013 steers every render-touching build
+  task there by design) and silently permitting a full status rollback
+  from it would let an agent erase the "this needs human review" signal
+  the state exists to preserve, not just fix the deadlock. The env-var
+  escape authorises the EDIT without touching `status:`/`owner:` at all.
+- **Rejected — (c) tell the agent to write closure artefacts before the
+  status flips:** measured and disproved in `## Context` — the artefacts
+  this task exists to unblock are written by `update-task.sh` in-process
+  (`decisions.yaml`, `feedback-stream.yaml`, the task file itself) at the
+  moment `--status work-completed` runs, and the PreToolUse hook only
+  gates subsequent tool calls, not a script's own writes. Those writes
+  were never blocked. What was blocked is everything AFTER — the `git
+  commit` (T-3179) and any correction edit (AC5, this decision) — and
+  (c) reaches neither.
+- **Not `FW_SAFE_MODE=1`:** it disables the ENTIRE task gate for every
+  command against every task for the rest of the session, not just the
+  one edit on the one partial-complete task. The AC explicitly rules
+  this out; the new mechanism is scoped to the `work-completed)` branch
+  only and stops applying the instant the command completes.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -415,3 +462,20 @@ three criteria. Measured, not assumed:
 
 **Remaining scope is therefore AC5 + AC7**, plus confirming AC6 is vacuous.
 Do not close this on T-3179's evidence alone.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-11fc6b27
+- **Timestamp:** 2026-09-03T17:25:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/unit/t3174_partial_complete_edit_matrix.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'`
+
+### 2026-09-03T17:25:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

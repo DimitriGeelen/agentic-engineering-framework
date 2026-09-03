@@ -78,10 +78,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 11626
-  commits: 2
-  files_changed: 5
-  lines_added: 2984
-  lines_removed: 1912
+  commits: 4
+  files_changed: 14
+  lines_added: 3386
+  lines_removed: 1918
+  footprint_refreshed_at: '2026-09-03T17:28:09Z'
+  footprint_refreshed_by_commit: 6ba11be53
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3174-partial-complete-state-revokes-a-tasks-a.md

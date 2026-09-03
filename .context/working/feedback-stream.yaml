@@ -39015,3 +39015,21 @@ scan_id: R-11fc6b27
 task_id: T-3174
 payload:
   task_file: .tasks/active/T-3174-partial-complete-state-revokes-a-tasks-a.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T18:24:48Z'
+scan_id: R-828fe335
+task_id: T-3263
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T18:24:48Z'
+scan_id: R-828fe335
+task_id: T-3263
+payload:
+  task_file: .tasks/active/T-3263-ship-worktree-bgisolation-setting-alongs.md

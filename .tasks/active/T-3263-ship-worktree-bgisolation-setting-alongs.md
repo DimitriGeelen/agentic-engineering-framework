@@ -4,12 +4,12 @@ name: "ship worktree bgIsolation setting alongside CLAUDE.md worktree policy"
 description: >
   ship worktree bgIsolation setting alongside CLAUDE.md worktree policy
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [C-009]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-03T17:31:31Z
-last_update: '2026-09-03T17:45:17Z'
-date_finished:
+last_update: 2026-09-03T18:19:56Z
+date_finished: 2026-09-03T18:19:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -426,3 +426,24 @@ open(p, 'a').write('\n')
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3263-ship-worktree-bgisolation-setting-alongs.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-828fe335
+- **Timestamp:** 2026-09-03T18:24:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 3
+     - evidence: `git ls-files --error-unmatch .claude/settings.json >/dev/null`
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `fleet-wide`
+
+### 2026-09-03T18:19:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

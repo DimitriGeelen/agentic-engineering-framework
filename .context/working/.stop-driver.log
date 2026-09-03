@@ -155,3 +155,7 @@
 2026-09-03T16:07:37Z decision=stop reason=terminated[stored@unknown](expires_at 2026-06-17T00:00:00Z passed)
 2026-09-03T16:10:46Z decision=stop reason=terminated[stored@unknown](expires_at 2026-06-17T00:00:00Z passed)
 2026-09-03T16:22:53Z decision=continue reason=iteration-2
+2026-09-03T17:03:07Z decision=stop reason=stop_hook_active=true (platform runaway guard)
+2026-09-03T17:32:21Z decision=continue reason=iteration-2
+2026-09-03T17:36:00Z decision=continue reason=iteration-2
+2026-09-03T17:36:09Z decision=stop reason=stop_hook_active=true (platform runaway guard)

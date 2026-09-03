@@ -1,3 +1,59 @@
+- id: OBS-251
+  type: process
+  severity: medium
+  surface: 'T-2993 inception conclusion ("cannot narrow [the worktree isolation guard]; not ours")
+    vs a real harness config lever (.claude/settings.json worktree.bgIsolation) that T-2993 never
+    found — plus B-005 (check-active-task.sh, agents/context/check-active-task.sh:421-472), which
+    has a governed CLI route for adding hooks but none for adding any other top-level
+    .claude/settings.json key'
+  detected_in: T-3263 (field correction received from another project, 001-CashWeb, their T-112,
+    against our T-2993)
+  symptom: 'T-2993 (2026-08-14, work-completed) investigated a worktree-isolation guard refusing
+    a `git -C <sibling-worktree>` redirect and concluded the guard is pure Claude Code harness
+    behavior outside framework control: "Cannot narrow (not ours)". That conclusion was
+    incomplete, not wrong about the guard itself, but silent on a second, distinct guard: the one
+    that force-isolates a *background* session into a worktree in the first place. CashWeb found
+    `.claude/settings.json` `{"worktree": {"bgIsolation": "none"}}` disables that second guard,
+    and reported losing real time to it on their own project (a standing "no worktrees unless
+    explicit" operator directive was silently overridden by the harness default because no
+    `worktree` key existed in their settings.json at all). Independently corroborated here, not
+    taken on trust: the literal string `bgIsolation` and the code paths
+    `so().worktree?.bgIsolation==="none"` / `o.bgIsolation==="none"&&f===o.sessionId&&...refused`
+    are present in this machine''s installed harness binary
+    (/root/.local/share/claude/versions/2.1.245), confirming the key is real and harness-
+    recognized, not a CashWeb-local artifact. Applying the fix here then hit a second, narrower
+    gap: B-005''s governed route (`fw hook-enable`) only covers the `hooks` object — there is no
+    CLI for adding a sibling top-level key like `worktree`, and B-005 has no bypass env var (by
+    design — hook/settings config is sovereignty-gated), so the edit could not be completed
+    agent-side at all.'
+  root_cause: 'T-2993''s scope was the guard it was actually blocked by (cross-worktree git
+    redirect refusal) — it never needed to ask "what forces a session into a worktree in the
+    first place", so it never found the earlier, disable-able guard. Separately, B-005 (T-229)
+    was designed around one threat model (hand-edited hook entries silently disabling
+    enforcement) and its CLI companion (`fw hook-enable`, T-3050) was scoped to match that model
+    exactly — neither anticipated a legitimate non-hook settings.json key an agent would need to
+    add on a human''s behalf.'
+  prevention: 'NOT YET BUILT — filed as an observation. Candidate fixes, named with trade-offs:
+    (a) ship the settings key here via a human-executed one-line edit (T-3263''s immediate ask)
+    — zero tooling change, but reactive per-repo rather than structural. (b) `fw init --provider
+    claude` scaffold the `worktree` key explicitly (CashWeb suggestion 1) so new projects state
+    intent either way instead of inheriting the harness default silently — moderate scope, touches
+    lib/init.sh. (c) `fw doctor` WARN when CLAUDE.md asserts a worktree policy (grep for
+    "Worktree Policy") but settings.json has no matching `worktree.bgIsolation` key (CashWeb
+    suggestion 2) — the same prose-vs-enforcement divergence class as L-300/L-301, a real doctor
+    check, its own task. (d) widen B-005''s governed route (or add a narrow `fw hook-enable
+    --settings-key` sibling) so non-hook settings.json keys have a CLI path instead of an
+    unconditional block with no bypass — the more principled fix, but a sovereignty-adjacent
+    change to a hook that was deliberately built without an escape hatch, so it needs the
+    operator''s call, not an agent''s.'
+  blast_radius: scoped
+  observed: '2026-09-03'
+  status: open
+  related:
+  - T-3263
+  - T-2993
+  - T-3132
+  follow_up_task: null
 - id: OBS-250
   type: process
   severity: medium
