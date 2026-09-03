@@ -22,3 +22,5 @@
 {"ts": "2026-09-03T09:01:56Z", "event": "iterate", "reason": "restart", "restart_count": 1, "wrapper_pid": 273177, "detail": "session=S-2026-0813-2305 tokens=301123"}
 {"ts": "2026-09-03T09:03:35Z", "event": "iterate", "reason": "restart", "restart_count": 2, "wrapper_pid": 273177, "detail": "session=S-2026-0813-2305 tokens=306801"}
 {"ts": "2026-09-03T09:03:44Z", "event": "iterate", "reason": "restart", "restart_count": 3, "wrapper_pid": 273177, "detail": "session=S-2026-0813-2305 tokens=306801"}
+{"ts": "2026-09-03T10:15:15Z", "event": "drive", "reason": "refused", "restart_count": 0, "wrapper_pid": 778532, "detail": "bounds say stop: enabled=False (not armed); recorded termination: expires_at 2026-06-17T00:00:00Z passed (now 2026-08-26T12:50:35Z); expires_at 2026-06-17T00:00:00Z lapsed"}
+{"ts": "2026-09-03T10:16:05Z", "event": "iterate", "reason": "restart", "restart_count": 4, "wrapper_pid": 273177, "detail": "session=S-2026-0813-2305 tokens=286650"}

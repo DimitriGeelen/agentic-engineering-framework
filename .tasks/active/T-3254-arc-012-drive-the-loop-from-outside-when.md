@@ -152,6 +152,79 @@ and a half minutes later (E10, T-3250). `max_iterations` has the identical hole.
    silence stops meaning two different things, which is the class this whole arc
    keeps tripping over.
 
+## Progress — 2026-09-03 (session hit budget critical mid-task)
+
+**Prerequisite cleared.** T-3253 closed with all five ACs green and live-fire
+evidence on both legs (breach 7/0, control 6/0). The build-order gate in
+`## Verification` (`ls .tasks/completed/T-3253-*.md`) passes.
+
+**Shipped and committed (`3ee3a88ac`):**
+
+1. **`fw continuous status --json`** (`lib/continuous-mode.sh`). The same
+   `verdict()` the text form prints, in machine-readable shape, plus the two
+   conditions `verdict()` does not reach — `terminated` and `ceiling_breached`.
+   This is the whole mitigation for going around the vendor guard: the driver
+   refuses on exactly the bounds the SessionStart path refuses on and **does not
+   re-type them**. If the bounds change they change in one place.
+   - An unresolvable blast radius is NOT a breach (the enforcer's own
+     `is not None` semantics) and is reported as `null`, so it stays
+     distinguishable from a measured zero.
+   - A ceiling check that *throws* becomes a blocker, never a green light. "No
+     breach" and "could not evaluate" must not collapse into each other.
+2. **`agents/context/continuous-driver.sh`** — reads that verdict, resolves the
+   target session, observes busy, injects, and writes a typed ledger entry for
+   **every** decision including refusals.
+
+**Verified live:** run against this repo's real (disarmed, lapsed) state it
+refused and logged all three actual blockers in the wrapper's own ledger schema,
+so both paths read as one history:
+
+```
+{"event": "drive", "reason": "refused", "detail": "bounds say stop:
+ enabled=False (not armed); recorded termination: expires_at 2026-06-17 passed;
+ expires_at 2026-06-17T00:00:00Z lapsed"}
+```
+
+**The finding that shaped the busy check, recorded so it is not "simplified"
+later.** The design sketch says to inject only into a session that is not `busy`.
+**TermLink has no such state.** `termlink discover --json` reports
+`state: "ready"` for every registered session — measured, 127 of 127 on this
+host, including sessions mid-work. `ready` means REGISTERED, not IDLE. Gating on
+that field would inject into a working session and interleave input, which is the
+exact failure the condition exists to prevent.
+
+So busy is **observed, not read**: sample the pty twice `--settle` seconds apart
+and treat any change as "this session is producing output". That is an
+observation of session state, which is what AC3 asks for, and it is testable in
+both directions. It is deliberately biased: a session thinking *silently* can look
+quiet, so this may occasionally inject one interleaved prompt. The opposite bias —
+requiring proof of idleness — never injects at all.
+
+Related measurement, in case it is assumed later: all 72 sessions tagged to this
+project have **live PIDs and heartbeats under 120s**. They are real idle shells,
+not stale registrations, so liveness is not the discriminator here — only
+activity is.
+
+**Remaining (none started):**
+
+- AC2/AC3 tests — six refusal conditions, one test per condition, each with a
+  passing control, plus the busy/quiet pair. The `--json` evaluator is the unit
+  under test for the six; the driver is the unit under test for busy.
+- AC4 is already satisfied in code (every path calls `_log`) but is untested.
+- Cron registry entry + `fw cron generate` + `fw cron install`, and the two-clause
+  doctor check already written into `## Verification`.
+- Live-fire (AC5) and its negative control (AC6) — a sandbox session that stops
+  early with backlog remaining, driven to completion by the cron path alone with
+  the budget gauge never tripping; then the identical run with `enabled: false`
+  which must NOT be injected into.
+- `bin/fw fabric register agents/context/continuous-driver.sh`, and
+  `bin/fw vendor self` (both `lib/` and `agents/` are vendored paths — the sync
+  must happen BEFORE close, per CLAUDE.md §Vendored-path-touching tasks).
+
+**Do not skip the negative control.** Without it, "the driver continued the work"
+and "the agent finished on its own" read identically — the same
+indistinguishability that made E9's ceiling result meaningless.
+
 ## Acceptance Criteria
 
 ### Agent
