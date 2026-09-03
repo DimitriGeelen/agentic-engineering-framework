@@ -38835,3 +38835,75 @@ scan_id: R-1392ea2c
 task_id: T-3253
 payload:
   task_file: .tasks/active/T-3253-tier-ceiling-breach-disarms-the-loop-but.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T12:47:06Z'
+scan_id: R-1188166a
+task_id: T-3254
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T12:47:06Z'
+scan_id: R-1188166a
+task_id: T-3254
+payload:
+  task_file: .tasks/active/T-3254-arc-012-drive-the-loop-from-outside-when.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T14:21:56Z'
+scan_id: R-879acdf5
+task_id: T-3255
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T14:21:56Z'
+scan_id: R-879acdf5
+task_id: T-3255
+payload:
+  task_file: .tasks/active/T-3255-t-3254-follow-up-the-driver-cannot-resol.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T15:11:20Z'
+scan_id: R-4e2fbb65
+task_id: T-3245
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T15:11:20Z'
+scan_id: R-4e2fbb65
+task_id: T-3245
+payload:
+  task_file: .tasks/active/T-3245-mandated-co-authored-by-trailer-voids-th.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T15:38:11Z'
+scan_id: R-6a8ebc12
+task_id: T-3259
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T15:38:11Z'
+scan_id: R-6a8ebc12
+task_id: T-3259
+payload:
+  task_file: .tasks/active/T-3259-codify-background-jobdaemon-session-boun.md

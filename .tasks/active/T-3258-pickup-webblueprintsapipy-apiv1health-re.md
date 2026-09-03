@@ -1,25 +1,17 @@
 ---
-id: T-3211
-name: "handover Suggested First Action truncates the task name at the first line of
-  a folded YAML scalar"
+id: T-3258
+name: "Pickup: web/blueprints/api.py: /api/v1/health returns 500 (not degraded-200)
+  when optional AI deps (web.llm/ollama) are absent; /ask, /ask/stream, /search likewise
+  500 instead of a clean 503. (from proxmox-ring20-management)"
 description: >
-  Split from T-3210 (one bug, one task). The selector reads the task name with re.search(r'^name:\s*(.+)',
-  content, re.M), which captures only the FIRST line of the frontmatter value. Most
-  task names are folded YAML scalars spanning two or more lines, so the suggestion
-  renders cut mid-phrase and with a leading double quote: 'Continue T-1719: "Embeddings
-  strategy V1 - Slice 1 (post-write hook + happiness signal + one-provider'. Both
-  T-3181 IW-4 cold-resume arms flagged the truncation as blocking - the reader cannot
-  tell what the task is. Distinct root cause from T-3210 (which fixed WHICH task is
-  named, not how its name is rendered). Fix shape: consume indented continuation lines
-  and strip surrounding quotes. Note for whoever takes it: bash -n does NOT catch
-  an unescaped quote inside that python3 -c block - see T-3210 Evolution, mutation
-  M3.
+  Auto-created from pickup envelope. Source: proxmox-ring20-management, task T-1710.
+  Type: bug-report.
 
 status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
+horizon: next
+tags: [pickup, bug-report]
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -32,8 +24,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-29T10:06:43Z
-last_update: 2026-09-03T14:33:50Z
+created: 2026-09-03T15:07:02Z
+last_update: '2026-09-03T15:15:17Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -45,18 +37,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+source_task_id_in_origin: T-1710
+source_project_in_origin: "proxmox-ring20-management"
 cost_estimate_proposed:
-  - ts: '2026-08-29T10:15:09Z'
+  - ts: '2026-09-03T15:15:09Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=235,acs=4)
+      (workflow:build); effort=8 (lines=258,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-29T10:15:15Z'
+  - ts: '2026-09-03T15:15:17Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -75,7 +69,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3211: handover Suggested First Action truncates the task name at the first line of a folded YAML scalar
+# T-3258: Pickup: web/blueprints/api.py: /api/v1/health returns 500 (not degraded-200) when optional AI deps (web.llm/ollama) are absent; /ask, /ask/stream, /search likewise 500 instead of a clean 503. (from proxmox-ring20-management)
 
 ## Context
 
@@ -167,6 +161,29 @@ bvp_scores_proposed:
 #     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
 #     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
+#
+# ── A SKIPPED BATS TEST REPORTS `ok` (T-3217) ─────────────────────────────────
+#
+# `! grep -q "^not ok"` does NOT mean the suite ran. Bats emits a skip as
+#     ok 6 <name> # skip <reason>
+# which is not a `not ok`, so the gate passes and the report says ok while the
+# thing the test covers was measured NOWHERE. Origin: T-3213 guarded a test with
+# `[ "$(id -u)" -eq 0 ] && skip` — the suite runs as root here and in CI, so it
+# skipped on every run that mattered, for as long as it existed.
+#
+# Add a skip clause to any bats verification line. `# skip` is the marker bats
+# writes; counting it is the whole check:
+#     timeout 300 bats <file> > /tmp/.out 2>&1 && ! grep -q "^not ok" /tmp/.out
+#     test "$(grep -c '# skip' /tmp/.out)" -eq 0
+# Two lines, because they answer different questions — "did anything fail" and
+# "did everything run". If some skips are legitimate on your host (an optional
+# dependency is genuinely absent), assert the COUNT you expect rather than zero,
+# and say in the task why that number is right.
+#
+# Corpus-wide, the same check runs from `bin/fw test lint`
+# (tools/bats-silent-skip-lint.py): static mode flags guards that are fixed for
+# a deployment rather than probing an optional dependency, and `--tap FILE`
+# reports the skips a real run actually fired.
 #
 # REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
 # shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
@@ -305,7 +322,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-29T10:06:43Z — task-created [task-create-agent]
+### 2026-09-03T15:07:02Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3211-handover-suggested-first-action-truncate.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3258-pickup-webblueprintsapipy-apiv1health-re.md
 - **Context:** Initial task creation

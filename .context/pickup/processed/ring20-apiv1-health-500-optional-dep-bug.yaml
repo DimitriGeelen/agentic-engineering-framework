@@ -1,0 +1,30 @@
+pickup_id: RING20-APIV1-001
+version: 1
+type: bug-report
+source:
+  project: proxmox-ring20-management
+  task_id: T-1710
+  agent: ring20-management-agent
+  timestamp: '2026-09-03T15:08:00Z'
+payload:
+  summary: 'web/blueprints/api.py: /api/v1/health returns 500 (not degraded-200) when optional AI deps (web.llm/ollama) are absent; /ask, /ask/stream, /search likewise 500 instead of a clean 503.'
+  detail: >
+    On a Watchtower host without the optional AI stack installed (e.g. ring20 .122, no ollama /
+    no tantivy), these vendored api.py handlers crash with an unhandled ModuleNotFoundError ->
+    HTTP 500: health() does `from web.llm import get_manager` at call time; ask()/ask_stream()
+    lazy-import web.ask+web.embeddings+web.llm; search() lazy-imports web.search (tantivy) and
+    web.embeddings. A health endpoint must NEVER 500 on an OPTIONAL dependency — it caused an
+    operator-visible "unreachable" render on a consuming dashboard. FIX APPLIED LOCALLY (ring20
+    vendored copy, offered upstream): wrap each optional import in try/except ImportError —
+    health() returns 200 {status:"degraded", active_provider:null, providers:[]}; ask/ask_stream/
+    search return 503 with a JSON error body; search's semantic/hybrid branch degrades to keyword
+    when embeddings are absent instead of erroring. Suggested upstream landing: same guards in
+    web/blueprints/api.py so any AI-dep-less Watchtower serves a truthful health + clean 503s.
+    Ring20 also added two ADDITIVE routes (/api/v1/tasks, /api/v1/gaps as JSON) via a project-local
+    blueprint — that part is ring20-local, not proposed upstream. No secrets.
+  priority: medium
+  tags:
+  - watchtower-api
+  - health-endpoint
+  - optional-dependency
+  - graceful-degradation

@@ -137,10 +137,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 225
-  commits: 11
-  files_changed: 47
-  lines_added: 8896
-  lines_removed: 6471
+  commits: 12
+  files_changed: 51
+  lines_added: 9067
+  lines_removed: 6478
+  footprint_refreshed_at: '2026-09-03T12:48:44Z'
+  footprint_refreshed_by_commit: 48317ed2a
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3254-arc-012-drive-the-loop-from-outside-when.md
