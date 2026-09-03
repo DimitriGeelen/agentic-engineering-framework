@@ -5,3 +5,15 @@
   pre-run: OK — the comparison the loop will make is reachable and has the expected sign for the control leg.
   filed directive resolves planned-next-action to: 'T-022'
 [control] running the loop (up to 3000s) ...
+
+----- assertions (LEG=control) -----
+  PASS  the budget trip produced a real restart (the ceiling is only reachable after one)  iterate/restart events = 4
+  PASS  AC5a under the ceiling the brake stayed OFF  last_terminated_reason = ''
+  PASS  AC5b no ceiling breach was ever recorded, at any point in the run  ceiling-breach samples = 0 in 884 sampled lines
+  PASS  AC5b2 the loop stayed armed  enabled = True
+  PASS  AC5c the counter ADVANCED (a resolvable radius that is not a breach is quiet)  current_iteration = 10
+  PASS  AC5d the same escalation task WAS worked when it was under the ceiling  escalation closes = 1 (this is the leg that makes AC4 mean something)
+
+PASS: 6  FAIL: 0
+
+evidence: /opt/999-Agentic-Engineering-Framework/docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-control.txt

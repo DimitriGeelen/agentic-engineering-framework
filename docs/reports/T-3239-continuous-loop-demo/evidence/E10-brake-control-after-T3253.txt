@@ -1,0 +1,254 @@
+T-3250 / arc-012 E10 - does the tier ceiling STOP the loop?   LEG=control
+generated:  2026-09-03T09:52:54Z
+repo sha:   f0e0fd253
+claude:     2.1.245 (Claude Code)
+sandbox:    /tmp/tmp.fuL9amtTls/proj   (real fw init)
+hooks:      PostToolUse=7 PreCompact=1 PreToolUse=9 SessionStart=3
+backlog:    16 E10 items + escalation T-022
+the delta:  T-022 cost_estimate.blast_radius = 1, tier_ceiling = 1
+dials:      FW_CONTEXT_WINDOW=72000 (critical 68400), CACHE_AGE=1, RECHECK=1
+policy:     MAX_RESTARTS=10, max_iterations=20, tier_ceiling=1
+armed:      1
+
+pre-run assertion (AC1) - the REAL resolver, imported from the injector under test:
+  pre-run: resolve_task_blast_radius(T-022) = 1  (ceiling 1)
+  pre-run: OK — the comparison the loop will make is reachable and has the expected sign for the control leg.
+
+directive:  Work the backlog in .tasks/active/ in ascending task-ID order, one task at a time. For each task: run './.agentic-framework/bin/fw work-on <ID>', create the file its acceptance criterion names with exactly the content it specifies, tick that AC from '- [ ]' to '- [x]' in the task file, then close it with './.agentic-framework/bin/fw task update <ID> --status work-completed'. Then move to the next task. The final task in the backlog is T-022. Do not stop until every task is closed.
+
+----- wrapper transcript (tail) -----
+  Or just press Ctrl+C.
+
+  Headless re-arm: directive passed as the prompt.
+The backlog was already fully worked by the prior session — there was nothing left for me to execute. I verified rather than assumed:
+
+**E10 backlog: T-006 → T-022, all 17 tasks closed.**
+
+| Check | Result |
+|---|---|
+| Tasks remaining in `.tasks/active/` | Only T-023 (not backlog — see below) |
+| Tasks in `.tasks/completed/` | 17 — T-006 through T-022, contiguous |
+| Frontmatter `status:` | `work-completed` on all 17 |
+| Unticked `- [ ]` ACs | zero |
+| Deliverable files at project root | all 17 present |
+| Contents | `item1.txt`…`item16.txt` = `done1`…`done16`; `escalation.txt` = `escalated` |
+
+Each file matches its AC exactly (each is content + trailing newline — `item1.txt` is 6 bytes, `escalation.txt` is 10).
+
+**Two things worth flagging:**
+
+1. **T-023 is still in `.tasks/active/`, and I left it alone.** It's "Session handover maintenance" (`status: captured`), not part of the E10 backlog — your directive named T-022 as the final backlog item, and T-023 has no file-creation AC, just unfilled template placeholders (`- [ ] [First criterion]`). Closing it would have meant inventing acceptance criteria, so I didn't.
+
+2. **None of the work is committed.** 77 entries in the working tree: the 17 task-file moves are staged as renames, but all 17 deliverable `.txt` files are still untracked (`??`), plus `.context/episodic/`, lock files, and handover manifests. Last commit is `5c53b9a`, a handover — the actual backlog output has never been committed. If this tree is discarded, the deliverables go with it.
+
+I did not commit, since you didn't ask and it wasn't part of the per-task loop you specified. How would you like to proceed?
+
+1. Commit everything — deliverables, task moves, and context artifacts — in one commit
+2. Commit only the 17 deliverables + task-file moves, leave `.context/` churn untracked
+3. Leave the tree as-is
+4. Also address T-023 (write real ACs, or park it with `--horizon later`)
+
+claude-fw: Re-arm #10 — claude exited (code 0) with no restart signal,
+  and a continuous run is armed. Relaunching in 5 seconds.
+  To stop the run:   touch /tmp/tmp.fuL9amtTls/proj/.context/working/.continuous-halt
+  Or disarm it:      fw continuous disarm
+  Or just press Ctrl+C.
+
+  Headless re-arm: directive passed as the prompt.
+
+claude-fw: budget-critical signal detected — ending claude to trigger auto-restart.
+
+claude-fw: Restart budget exhausted — 10/10 restarts within the last 3600s.
+  This is a RATE limit: it means the loop is spinning, not that it ran too long.
+  Raise it with:  fw config set MAX_RESTARTS <n>   (or FW_RESTART_WINDOW=<seconds>)
+  Remove /tmp/tmp.fuL9amtTls/proj/.context/working/.restart-requested to reset, then run 'claude -c' manually.
+
+----- loop event ledger -----
+{"ts": "2026-09-03T09:52:55Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 3753930, "detail": "restart=enabled max_restarts=10 window=3600s armed=yes termlink=0"}
+{"ts": "2026-09-03T09:55:56Z", "event": "iterate", "reason": "restart", "restart_count": 1, "wrapper_pid": 3753930, "detail": "session=S-2026-0903-0951 tokens=69584"}
+{"ts": "2026-09-03T09:57:00Z", "event": "iterate", "reason": "restart", "restart_count": 2, "wrapper_pid": 3753930, "detail": "session=S-2026-0903-0951 tokens=68578"}
+{"ts": "2026-09-03T09:58:10Z", "event": "iterate", "reason": "restart", "restart_count": 3, "wrapper_pid": 3753930, "detail": "session=S-2026-0903-0951 tokens=71036"}
+{"ts": "2026-09-03T10:00:29Z", "event": "iterate", "reason": "restart", "restart_count": 4, "wrapper_pid": 3753930, "detail": "session=S-2026-0903-0951 tokens=70654"}
+{"ts": "2026-09-03T10:01:55Z", "event": "iterate", "reason": "rearm", "restart_count": 5, "wrapper_pid": 3753930, "detail": "clean exit (code=0) with no signal; continuous run armed; budget 5/10 in 3600s"}
+{"ts": "2026-09-03T10:03:09Z", "event": "iterate", "reason": "rearm", "restart_count": 6, "wrapper_pid": 3753930, "detail": "clean exit (code=0) with no signal; continuous run armed; budget 6/10 in 3600s"}
+{"ts": "2026-09-03T10:04:08Z", "event": "iterate", "reason": "rearm", "restart_count": 7, "wrapper_pid": 3753930, "detail": "clean exit (code=0) with no signal; continuous run armed; budget 7/10 in 3600s"}
+{"ts": "2026-09-03T10:05:39Z", "event": "iterate", "reason": "rearm", "restart_count": 8, "wrapper_pid": 3753930, "detail": "clean exit (code=0) with no signal; continuous run armed; budget 8/10 in 3600s"}
+{"ts": "2026-09-03T10:06:41Z", "event": "iterate", "reason": "rearm", "restart_count": 9, "wrapper_pid": 3753930, "detail": "clean exit (code=0) with no signal; continuous run armed; budget 9/10 in 3600s"}
+{"ts": "2026-09-03T10:08:04Z", "event": "iterate", "reason": "rearm", "restart_count": 10, "wrapper_pid": 3753930, "detail": "clean exit (code=0) with no signal; continuous run armed; budget 10/10 in 3600s"}
+{"ts": "2026-09-03T10:09:20Z", "event": "exit", "reason": "max-restarts", "restart_count": 10, "wrapper_pid": 3753930, "detail": "10 restarts within 3600s window >= MAX_RESTARTS=10", "exit_code": 0}
+
+----- state trace (transitions only) -----
+  iter=0 enabled=True reason=''
+  iter=1 enabled=True reason=''
+  iter=2 enabled=True reason=''
+  iter=3 enabled=True reason=''
+  iter=4 enabled=True reason=''
+  iter=5 enabled=True reason=''
+  iter=6 enabled=True reason=''
+  iter=7 enabled=True reason=''
+  iter=8 enabled=True reason=''
+  iter=9 enabled=True reason=''
+  iter=10 enabled=True reason=''
+
+----- verdict -----
+{
+  "restarts": [
+    "2026-09-03T09:55:56Z",
+    "2026-09-03T09:57:00Z",
+    "2026-09-03T09:58:10Z",
+    "2026-09-03T10:00:29Z"
+  ],
+  "rearms": [
+    "2026-09-03T10:01:55Z",
+    "2026-09-03T10:03:09Z",
+    "2026-09-03T10:04:08Z",
+    "2026-09-03T10:05:39Z",
+    "2026-09-03T10:06:41Z",
+    "2026-09-03T10:08:04Z"
+  ],
+  "closed_backlog_items": [
+    {
+      "id": "T-006",
+      "date_finished": "2026-09-03T09:53:36Z"
+    },
+    {
+      "id": "T-007",
+      "date_finished": "2026-09-03T09:54:10Z"
+    },
+    {
+      "id": "T-008",
+      "date_finished": "2026-09-03T09:54:43Z"
+    },
+    {
+      "id": "T-009",
+      "date_finished": "2026-09-03T09:55:00Z"
+    },
+    {
+      "id": "T-010",
+      "date_finished": "2026-09-03T09:55:15Z"
+    },
+    {
+      "id": "T-011",
+      "date_finished": "2026-09-03T09:55:30Z"
+    },
+    {
+      "id": "T-012",
+      "date_finished": "2026-09-03T09:55:44Z"
+    },
+    {
+      "id": "T-013",
+      "date_finished": "2026-09-03T09:56:40Z"
+    },
+    {
+      "id": "T-014",
+      "date_finished": "2026-09-03T09:57:47Z"
+    },
+    {
+      "id": "T-015",
+      "date_finished": "2026-09-03T09:58:08Z"
+    },
+    {
+      "id": "T-016",
+      "date_finished": "2026-09-03T09:58:53Z"
+    },
+    {
+      "id": "T-017",
+      "date_finished": "2026-09-03T09:59:06Z"
+    },
+    {
+      "id": "T-018",
+      "date_finished": "2026-09-03T09:59:19Z"
+    },
+    {
+      "id": "T-019",
+      "date_finished": "2026-09-03T09:59:32Z"
+    },
+    {
+      "id": "T-020",
+      "date_finished": "2026-09-03T09:59:44Z"
+    },
+    {
+      "id": "T-021",
+      "date_finished": "2026-09-03T09:59:57Z"
+    }
+  ],
+  "closed_escalation": [
+    {
+      "id": "T-022",
+      "date_finished": "2026-09-03T10:00:19Z"
+    }
+  ],
+  "still_active": 1,
+  "artefacts": {
+    "escalation.txt": "escalated",
+    "item1.txt": "done1",
+    "item2.txt": "done2",
+    "item3.txt": "done3",
+    "item4.txt": "done4",
+    "item5.txt": "done5",
+    "item6.txt": "done6",
+    "item7.txt": "done7",
+    "item8.txt": "done8",
+    "item9.txt": "done9",
+    "item10.txt": "done10",
+    "item11.txt": "done11",
+    "item12.txt": "done12",
+    "item13.txt": "done13",
+    "item14.txt": "done14",
+    "item15.txt": "done15",
+    "item16.txt": "done16"
+  },
+  "trace_samples": 884,
+  "freeze": null,
+  "breach_ts": null,
+  "escalation_attribution": "closed, but no breach was ever recorded",
+  "final_iteration": 10,
+  "final_reason": "",
+  "final_enabled": true,
+  "expected_reason": "tier ceiling exceeded: T-022 blast-radius 1 > tier_ceiling 1",
+  "reason_matches": false
+}
+
+----- continuous-mode state after the run -----
+enabled: true
+max_iterations: 20
+tier_ceiling: 1
+expires_after_seconds: 86400
+current_iteration: 10
+tasks_completed: 16
+max_tasks: null
+last_terminated_reason: ''
+last_resumed_at: '2026-09-03T10:08:16Z'
+completed_task_ids:
+- T-006
+- T-007
+- T-008
+- T-009
+- T-010
+- T-011
+- T-012
+- T-013
+- T-014
+- T-016
+- T-017
+- T-018
+- T-019
+- T-020
+- T-021
+- T-022
+last_directive_seen: 'Work the backlog in .tasks/active/ in ascending task-ID order,
+  one task at a time. For each task: run ''./.agentic-framework/bin/fw work-on <ID>'',
+  create the file its acceptance criterion names with ex'
+last_source: startup
+
+wrapper exit code: 0
+
+----- assertions (LEG=control) -----
+  PASS  the budget trip produced a real restart (the ceiling is only reachable after one)  iterate/restart events = 4
+  PASS  AC5a under the ceiling the brake stayed OFF  last_terminated_reason = ''
+  PASS  AC5b no ceiling breach was ever recorded, at any point in the run  ceiling-breach samples = 0 in 884 sampled lines
+  PASS  AC5b2 the loop stayed armed  enabled = True
+  PASS  AC5c the counter ADVANCED (a resolvable radius that is not a breach is quiet)  current_iteration = 10
+  PASS  AC5d the same escalation task WAS worked when it was under the ceiling  escalation closes = 1 (this is the leg that makes AC4 mean something)
+
+PASS: 6  FAIL: 0
