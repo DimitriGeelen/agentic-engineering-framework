@@ -72,6 +72,10 @@ depends_on:
   type: calls
 - target: lib/verify_queue.py
   type: calls
+- target: lib/continuous-mode.sh
+  type: calls
+- target: lib/bats_red_attribution.py
+  type: calls
 depended_by:
 - target: cron-audit
   type: triggers
@@ -186,6 +190,10 @@ depended_by:
   type: called_by
 - target: tests/unit/test_index_doctor_rail.bats
   type: tests_by
+- target: lib/audit_timing.py
+  type: called_by
+- target: web/blueprints/config.py
+  type: called_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

@@ -20,9 +20,11 @@ depends_on:
   type: calls
 - target: lib/paths.sh
   type: calls
+- target: agents/git/lib/worker-commits.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: agents/handover/handover.sh
   type: called_by

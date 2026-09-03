@@ -12,9 +12,11 @@ depends_on:
   type: calls
 - target: lib/version-relation.sh
   type: calls
+- target: lib/hook_portability.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -68,3 +70,7 @@ depended_by:
   type: called_by
 - target: tests/unit/test_self_vendor_agents_md_filter.bats
   type: called_by
+- target: lib/hook_portability.py
+  type: called_by
+- target: tests/unit/upgrade_marked_region.bats
+  type: tests_by

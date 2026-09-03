@@ -40,9 +40,11 @@ depends_on:
   type: calls
 - target: lib/verification-verdict.sh
   type: calls
+- target: lib/continuous-mode.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: C-004
   type: called_by
@@ -132,6 +134,16 @@ depended_by:
   type: tests_by
 - target: tests/unit/verification_pipe_buffer.bats
   type: tests_by
+- target: tests/unit/t3232_verification_extractor_failure.bats
+  type: tests_by
+- target: tests/unit/t3235_archived_horizon_invariant.bats
+  type: tests_by
+- target: tests/unit/t3219_verification_count_reconciliation.bats
+  type: tests_by
+- target: tests/unit/t3220_verification_gate_exits.bats
+  type: tests_by
+- target: tests/unit/t3235_archived_horizon_invariant.bats
+  type: called_by
 docs:
 - path: docs/articles/deep-dives/06-authority-model.md
   title: 'Deep Dive: The Authority Model'

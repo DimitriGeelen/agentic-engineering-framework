@@ -1,0 +1,22 @@
+id: agents/context/check-worktree-governance-write.sh
+name: check-worktree-governance-write
+type: script
+subsystem: context-fabric
+location: agents/context/check-worktree-governance-write.sh
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: lib/paths.sh
+  type: calls
+- target: lib/config.sh
+  type: calls
+depended_by:
+- target: C-009
+  type: called_by
+- target: tests/unit/t3112_worktree_hook_parity.bats
+  type: called_by
+- target: tests/unit/t3113_upgrade_worktree_advisory.bats
+  type: called_by
+last_verified: 2026-09-03
+created_by: unknown
+last_enriched: '2026-09-03'

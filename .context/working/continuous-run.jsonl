@@ -51,3 +51,4 @@
 {"ts": "2026-09-03T16:03:05Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 2787948, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}
 {"ts": "2026-09-03T16:03:21Z", "event": "exit", "reason": "continuous-terminated", "restart_count": 0, "wrapper_pid": 2787948, "detail": "expires_at 2026-06-17T00:00:00Z passed (now 2026-08-26T12:50:35Z)", "exit_code": 0}
 {"ts": "2026-09-03T16:03:28Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 2794605, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}
+{"ts": "2026-09-03T20:27:02Z", "event": "exit", "reason": "continuous-terminated", "restart_count": 0, "wrapper_pid": 2794605, "detail": "human-gate:human-ac:T-3263", "exit_code": 0}

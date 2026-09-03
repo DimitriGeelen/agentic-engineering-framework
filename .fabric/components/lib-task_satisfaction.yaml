@@ -1,0 +1,16 @@
+id: lib/task_satisfaction.py
+name: task_satisfaction
+type: script
+subsystem: framework-core
+location: lib/task_satisfaction.py
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: agents/audit/active-task-scan.py
+  type: calls
+depended_by:
+- target: agents/audit/active-task-scan.py
+  type: called_by
+last_verified: 2026-09-03
+created_by: unknown
+last_enriched: '2026-09-03'

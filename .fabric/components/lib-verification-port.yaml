@@ -21,6 +21,8 @@ depended_by:
   type: tests_by
 - target: agents/task-create/update-task.sh
   type: called_by
+- target: tests/unit/t3232_verification_extractor_failure.bats
+  type: tests_by
 last_verified: 2026-08-02
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

@@ -59,6 +59,8 @@ depended_by:
   type: called_by
 - target: C-008
   type: called_by
+- target: tests/unit/episodic_worktree_mining.bats
+  type: tests_by
 last_verified: 2026-03-09
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

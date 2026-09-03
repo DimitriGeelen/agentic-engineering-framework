@@ -20,7 +20,9 @@ depends_on:
   type: calls
 - target: lib/upgrade.sh
   type: calls
+- target: agents/context/check-worktree-governance-write.sh
+  type: calls
 depended_by: []
 last_verified: 2026-08-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

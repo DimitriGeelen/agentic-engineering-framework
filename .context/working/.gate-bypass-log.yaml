@@ -7857,3 +7857,9 @@ The opera'
   command: 'FW_SWITCH_FOCUS=1 cat > /opt/999-Agentic-Engineering-Framework/tests/unit/t3174_partial_complete_edit_matrix.bats << BATSEOF
 #!/usr/bin/env bats
 # T-3174: partial-complete state revokes a tasks aut'
+- timestamp: '2026-09-03T18:31:05Z'
+  task: 'T-1719'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3263'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-3263: sweep trailing pre-push audit churn" -m "Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"'

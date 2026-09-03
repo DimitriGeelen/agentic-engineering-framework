@@ -183,6 +183,16 @@ depended_by:
   type: called_by
 - target: tests/unit/t2380_transcript_dir_encoding.bats
   type: called_by
+- target: agents/context/check-worktree-governance-write.sh
+  type: called_by
+- target: tests/lint/no-project-markers-above-bats-tmpdir.bats
+  type: tests_by
+- target: tests/unit/t3219_verification_count_reconciliation.bats
+  type: tests_by
+- target: tests/unit/t3220_verification_gate_exits.bats
+  type: tests_by
+- target: tests/lint/no-project-markers-above-bats-tmpdir.bats
+  type: mirrors_by
 last_verified: 2026-03-10
 created_by: T-412
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

@@ -1,0 +1,16 @@
+id: agents/git/lib/worker-commits.sh
+name: worker-commits
+type: script
+subsystem: git-traceability
+location: agents/git/lib/worker-commits.sh
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on: []
+depended_by:
+- target: agents/git/git.sh
+  type: called_by
+- target: tests/unit/git_worker_commits.bats
+  type: tests_by
+last_verified: 2026-09-03
+created_by: unknown
+last_enriched: '2026-09-03'

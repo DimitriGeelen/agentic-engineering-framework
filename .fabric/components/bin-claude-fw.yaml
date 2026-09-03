@@ -14,6 +14,8 @@ depends_on:
 depended_by:
 - target: bin/claude-fw-router
   type: triggers_by
+- target: tests/unit/t3213_start_event_confirmation.bats
+  type: tests_by
 last_verified: 2026-03-01
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

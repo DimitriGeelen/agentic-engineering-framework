@@ -3,19 +3,21 @@ name: t3220_verification_gate_exits
 type: script
 subsystem: tests
 location: tests/unit/t3220_verification_gate_exits.bats
-tags: [tests, bats, verification-gate, errexit-dependency, T-3220]
-
-purpose: "Pins that every failure path in run_verification_commands exits rather than returns, and that the choice does not depend on set -euo pipefail 1700 lines away. Four measured cells (exit/return x errexit present/absent) isolate the dependency; the two control cells stop the suite passing against anything."
-
+tags:
+- tests
+- bats
+- verification-gate
+- errexit-dependency
+- T-3220
+purpose: Pins that every failure path in run_verification_commands exits rather than returns, and that the choice does not
+  depend on set -euo pipefail 1700 lines away. Four measured cells (exit/return x errexit present/absent) isolate the dependency;
+  the two control cells stop the suite passing against anything.
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  - target: agents/task-create/update-task.sh
-    type: tests
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/task-create/update-task.sh
+  type: tests
+- target: lib/paths.sh
+  type: tests
+depended_by: []
 last_verified: 2026-08-29
 created_by: T-3220
+last_enriched: '2026-09-03'

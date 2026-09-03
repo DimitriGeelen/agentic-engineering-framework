@@ -3,19 +3,20 @@ name: t3219_verification_count_reconciliation
 type: script
 subsystem: tests
 location: tests/unit/t3219_verification_count_reconciliation.bats
-tags: [tests, bats, verification-gate, T-3219]
-
-purpose: "Pins the P-011 verification gate against unreconciled counts: a stdin-reading verification command must not swallow the rest of the block, and pass+fail must equal total or the close is refused. Runs mutated copies of update-task.sh from a symlink farm because FRAMEWORK_ROOT is derived from script location."
-
+tags:
+- tests
+- bats
+- verification-gate
+- T-3219
+purpose: 'Pins the P-011 verification gate against unreconciled counts: a stdin-reading verification command must not swallow
+  the rest of the block, and pass+fail must equal total or the close is refused. Runs mutated copies of update-task.sh from
+  a symlink farm because FRAMEWORK_ROOT is derived from script location.'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  - target: agents/task-create/update-task.sh
-    type: tests
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/task-create/update-task.sh
+  type: tests
+- target: lib/paths.sh
+  type: tests
+depended_by: []
 last_verified: 2026-08-29
 created_by: T-3219
+last_enriched: '2026-09-03'

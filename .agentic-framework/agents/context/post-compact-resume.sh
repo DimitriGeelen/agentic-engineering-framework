@@ -87,8 +87,15 @@ done
 # a usage block hasn't landed yet on the first few tool calls). Seeding with
 # ok lets fast path serve the correct initial state for STATUS_MAX_AGE (90s),
 # during which real post-compact usage entries accumulate in the JSONL.
+# T-3241 (folds in field report 001-CashWeb T-222/G-087): stamp session_id even
+# on this deliberate reset, so a reader (checkpoint.sh budget) can tell this
+# value apart from a stale or foreign-session cache.
+_pcr_session_id=""
+if [ -f "$PROJECT_ROOT/.context/working/session.yaml" ]; then
+    _pcr_session_id=$(grep "^session_id:" "$PROJECT_ROOT/.context/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
+fi
 cat > "$PROJECT_ROOT/.context/working/.budget-status" <<BUDGET_EOF
-{"level": "ok", "tokens": 0, "timestamp": $(date +%s), "source": "post-compact-resume"}
+{"level": "ok", "tokens": 0, "timestamp": $(date +%s), "session_id": "${_pcr_session_id:-unknown}", "source": "post-compact-resume"}
 BUDGET_EOF
 
 # T-1088: Write the session-start timestamp in ISO-8601 Z format. budget-gate.sh
@@ -321,7 +328,7 @@ CONTEXT="${CONTEXT}
 
 Any budget assertion you see in the **handover narrative above** (e.g. \"Budget at 92%\", \"stopping new work\", \"context near critical\") was true at handover time but is **STALE in this resumed session**. The budget gauge was reset to {ok, 0, now} on resume (T-1087/T-1088). Do not defer to the prior session's budget statements when deciding whether to start new work.
 
-- **Live gauge (fast):** \`cat .context/working/.budget-status\` — current level, tokens, age (refreshed by PostToolUse).
+- **Live gauge (fast, safe):** \`./agents/context/checkpoint.sh budget\` — current level, tokens, age; reports \`unknown\` with a reason instead of a raw cat's plausible-looking but untrustworthy value (T-3241: a scan failure or a stale/foreign-session cache both used to read byte-identical to a healthy fresh session).
 - **On-demand probe:** \`./agents/context/checkpoint.sh status\` — exact token count from session JSONL.
 - **Doctor surface:** \`bin/fw doctor\` — flags out-of-range budget alongside other health.
 

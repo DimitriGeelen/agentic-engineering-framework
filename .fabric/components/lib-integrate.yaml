@@ -8,6 +8,8 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: bin/fw
   type: calls
+- target: lib/branch-hygiene.sh
+  type: calls
 depended_by:
 - target: tests/unit/t2399_integrate_check.bats
   type: tests_by
@@ -19,4 +21,4 @@ depended_by:
   type: called_by
 last_verified: 2026-06-14
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-09-03'

@@ -24,9 +24,11 @@ depends_on:
   type: uses
 - target: web/subprocess_utils.py
   type: uses
+- target: lib/decided_unclosed.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -56,4 +58,10 @@ depended_by:
 - target: web/blueprints/approvals.py
   type: uses_by
 - target: web/blueprints/review.py
+  type: uses_by
+- target: tests/unit/test_inception_close_card.py
+  type: called_by
+- target: tests/unit/test_inception_close_card.py
+  type: registered_by
+- target: tests/unit/test_inception_close_card.py
   type: uses_by

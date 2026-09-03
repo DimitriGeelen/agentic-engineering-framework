@@ -1,0 +1,18 @@
+id: tools/aef_meta_census.py
+name: aef_meta_census
+type: script
+subsystem: unknown
+location: tools/aef_meta_census.py
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: tools/corpus_conformance.py
+  type: calls
+- target: tools/corpus_overlay.py
+  type: calls
+- target: tools/bpmn_to_tasks.py
+  type: calls
+depended_by: []
+last_verified: 2026-09-03
+created_by: unknown
+last_enriched: '2026-09-03'

@@ -18,6 +18,8 @@ depends_on:
   type: uses
 - target: lib/spawn.py
   type: uses
+- target: lib/worker_identity.py
+  type: uses
 depended_by:
 - target: lib/resolver.sh
   type: called_by
@@ -61,4 +63,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

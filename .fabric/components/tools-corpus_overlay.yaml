@@ -13,6 +13,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_corpus_overlay.py
   type: called_by
+- target: tools/aef_meta_census.py
+  type: called_by
 last_verified: 2026-07-27
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

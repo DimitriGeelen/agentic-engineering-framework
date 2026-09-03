@@ -1,10 +1,10 @@
-# Audit Results - 2026-09-03-2025
-timestamp: 2026-09-03T18:25:57Z
+# Audit Results - 2026-09-03-2044
+timestamp: 2026-09-03T18:44:24Z
 sections: "structure"
 summary:
-  pass: 30
+  pass: 29
   warn: 6
-  fail: 0
+  fail: 1
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -65,8 +65,9 @@ findings:
     check: "Hook threshold: no hooks failing over threshold"
   - level: PASS
     check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
-  - level: PASS
-    check: "Invariant suite green — examined 108 structural invariant(s) (tests/lint/)"
+  - level: FAIL
+    check: "Invariant suite: 1 of 108 structural invariant(s) RED (T-2837)"
+    mitigation: "Run: fw test invariants"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS

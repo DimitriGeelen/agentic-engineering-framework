@@ -8,6 +8,8 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/heredoc_guard.py
   type: calls
+- target: bin/fw
+  type: calls
 depended_by:
 - target: tests/unit/test_heredoc_cmd_sub_guard.bats
   type: called_by
@@ -19,4 +21,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

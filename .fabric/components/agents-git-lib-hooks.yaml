@@ -26,9 +26,11 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: lib/episodic_footprint.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: agents/git/git.sh
   type: called_by
@@ -39,4 +41,6 @@ depended_by:
 - target: tests/unit/inception_commit_counter.bats
   type: tests_by
 - target: tests/unit/hook_version_marker_parity.bats
+  type: tests_by
+- target: tests/unit/episodic_footprint_refresh.bats
   type: tests_by

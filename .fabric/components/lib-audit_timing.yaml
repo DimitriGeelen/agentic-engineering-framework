@@ -4,17 +4,15 @@ type: script
 subsystem: framework-core
 location: lib/audit_timing.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: C-004
+  type: calls
+- target: bin/fw
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: bin/fw
+  type: called_by
 last_verified: 2026-08-25
 created_by: unknown
+last_enriched: '2026-09-03'

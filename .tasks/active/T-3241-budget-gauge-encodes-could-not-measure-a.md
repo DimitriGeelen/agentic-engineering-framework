@@ -18,7 +18,7 @@ description: >
   distinct from 0, surfaced at every gauge that consumes it; blast radius is why this
   is its own task rather than an inline change.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -36,7 +36,7 @@ related_tasks: [T-3239, T-2885, T-2403]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T07:31:04Z
-last_update: '2026-09-02T08:00:21Z'
+last_update: 2026-09-03T18:52:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -134,12 +134,72 @@ The fix direction is unchanged and unaffected by this note: emit an explicit
 safe value. This observation only argues the blast radius is every session start,
 not a rare transcript shape.
 
+### Third trigger path — external field report (001-CashWeb T-222/G-087, folded in via T-3264)
+
+001-CashWeb (a consumer project) hit the same fabricated-`ok`/0 shape independently
+in production, from a different code path than either of the two above, and sent a
+tested patch. Verified independently against this repo's own `lib/context_tokens.py`
+before trusting it:
+
+`context_tokens.py:111` (`main()`) passes `sys.stdin` directly into the line
+iterator inside `compute_context_tokens_detail`. The `try/except` at
+`context_tokens.py:60-63` only guards `json.loads(line)` — it does not guard the
+`next()` call the `for line in lines:` loop performs to *produce* each line. A
+transcript containing invalid UTF-8 bytes raises `UnicodeDecodeError` during that
+iteration, outside any guard, so the whole Python process crashes: empty stdout,
+exit 1, traceback on stderr. `budget-gate.sh`'s slow-path regex fallback
+(`[[ "$TOKENS" =~ ^[0-9]+$ ]] || TOKENS=0`) cannot distinguish "scan legitimately
+measured zero" from "scan crashed and produced nothing" — both collapse to
+`TOKENS=0` → `LEVEL=ok` → `{"level":"ok","tokens":0}` written to `.budget-status`,
+byte-identical to a healthy fresh session. In 001-CashWeb's production incident this
+fired once at ~297,923 real tokens (~99% of window) and once at ~70,549 (~23%) — in
+both cases the gate later blocked mid-task on the real number, after the false
+"you have budget" reading had already let a full task get picked up.
+
+A second, independent gap the same report surfaces: `.budget-status` carries no
+`session_id`. One cache file per project (not per session) means a fresh cache from
+session A is indistinguishable from a stale-but-still-fresh-enough cache, or a
+foreign session's cache, when read by session B.
+
+**Fix shape adopted here (adapted from the external diff, re-verified against this
+repo's code rather than applied verbatim):**
+1. `budget-gate.sh` slow path: distinguish "scan produced a valid integer" from
+   "scan failed/produced nothing" (`SCAN_OK`). Only a successful scan computes and
+   writes a real `ok/warn/urgent/critical` level; a failed scan writes
+   `{"level":"unknown","tokens":null,...}`. This is the same `unknown`-state
+   architecture T-3241 already commits to for the other two trigger paths — one
+   fix, three triggers. Gate enforcement is unchanged: no case arm matches
+   `unknown`, so a failed scan still fails open exactly like the existing
+   no-transcript path; only the on-disk claim changes.
+2. Both the real-measurement branch and the `unknown` branch, plus
+   `post-compact-resume.sh`'s deliberate `{ok,0}` reset seed, stamp `session_id`
+   (read from `session.yaml`, same pattern `_write_restart_signal` already uses at
+   `budget-gate.sh:58-60`).
+3. `checkpoint.sh` gains a `budget` subcommand: a safe reader that reports
+   `level: unknown` (with a `reason:`) when the cache is writer-marked unknown,
+   older than `BUDGET_STATUS_MAX_AGE`, or was written by a different `session_id` —
+   rather than trusting a plausible-looking but wrong cached level. Verified not to
+   false-positive on a fresh, valid, own-session cache.
+4. `budget-gate.sh`'s own fast-path cache-trust logic (the code gating every tool
+   call) is deliberately left untouched — it already re-validates stale `critical`
+   against the live transcript, and adding session-identity checking to the hottest
+   path in the framework is a larger, separately-justified change. The
+   `unknown`-vs-fabricated-`ok` guarantee is scoped to the cache *writer* (both
+   trigger paths) and to the new dedicated *reader* (`checkpoint.sh budget`), not
+   to the fast-path gate itself.
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `budget-gate.sh` slow path writes `{"level":"unknown","tokens":null,...}` (not a fabricated `ok`/0) when `context_tokens.py` crashes or produces no parseable output (SCAN_OK=false), and a negative test proves it using a transcript with invalid UTF-8 bytes.
+- [x] Control: a transcript with ≥2 dominant-model usage entries whose token totals are genuinely all zero (a confident measurement, not an under-fill) still writes a real `{"level":"ok","tokens":0}` — the fix does not turn every honest zero into a false alarm.
+- [x] `budget-gate.sh` slow path writes `{"level":"unknown",...}` (not `ok`) for T-3241's original two trigger paths: fewer than 2 dominant-model usage entries since the last compact boundary, and zero usage entries found in the transcript at all.
+- [ ] Every branch that writes `.budget-status` (budget-gate.sh real-measurement branch, budget-gate.sh unknown branch, post-compact-resume.sh's `{ok,0}` reset seed) stamps `session_id` read from `session.yaml`.
+- [ ] `checkpoint.sh budget` reports `level: unknown` plus a `reason:` line when the cache is writer-marked unknown, older than `BUDGET_STATUS_MAX_AGE`, or written by a different `session_id` than the caller's own.
+- [ ] Control: `checkpoint.sh budget` reports the real cached level cleanly (no false "unknown") for a fresh, valid, own-session cache.
+- [ ] `budget-gate.sh`'s existing fast-path enforcement behavior is unchanged: no case arm added for `unknown`, so an `unknown`-level cache still falls through to the slow path / fails open exactly as the pre-existing no-transcript path does today. Existing `tests/e2e/tier-a/test-budget-gate.sh` still passes.
+- [ ] The four files this task touched (`lib/context_tokens.py`, `agents/context/budget-gate.sh`, `agents/context/checkpoint.sh`, `agents/context/post-compact-resume.sh`) are resynced to the vendored `.agentic-framework/` copy (`FW_VENDOR_ONLY="<paths>" bin/fw vendor self`), per CLAUDE.md §Vendored-path-touching tasks. (Whole-repo `bin/fw vendor self --check` may still report DRIFT from other in-flight, unrelated uncommitted files — not this task's scope.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,21 +349,60 @@ not a rare transcript shape.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t3241_budget_status_unknown_state.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t2885_context_tokens_model_scope.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3204_budget_cap_legibility.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash tests/e2e/tier-a/test-budget-gate.sh > /tmp/.t3241-e2e.out 2>&1; echo $? | grep -q '^0$'
+bash -n agents/context/budget-gate.sh
+bash -n agents/context/checkpoint.sh
+bash -n agents/context/post-compact-resume.sh
+python3 -c "import ast; ast.parse(open('lib/context_tokens.py').read())"
+# fw vendor self --check reports whole-repo drift, including any OTHER task's
+# unrelated in-flight changes (e.g. lib/paths.sh at time of writing) — this
+# task's own AC is scoped to the four files it actually touched.
+diff -q lib/context_tokens.py .agentic-framework/lib/context_tokens.py && diff -q agents/context/budget-gate.sh .agentic-framework/agents/context/budget-gate.sh && diff -q agents/context/checkpoint.sh .agentic-framework/agents/context/checkpoint.sh && diff -q agents/context/post-compact-resume.sh .agentic-framework/agents/context/post-compact-resume.sh
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `.context/working/.budget-status` writes `{"level":"ok","tokens":0}`
+(or, before the token count is added at all, silently reports a healthy level) in at
+least three distinct situations that are NOT a healthy fresh session: (1) fewer than
+2 dominant-model usage entries since the last compact boundary — `context_tokens.py`'s
+documented "return 0 rather than guess" path; (2) no transcript file can be located
+at all; (3) the transcript scan crashes (e.g. `UnicodeDecodeError` on invalid UTF-8
+bytes during line iteration) and produces empty stdout. All three collapse, via
+`budget-gate.sh`'s `[[ "$TOKENS" =~ ^[0-9]+$ ]] || TOKENS=0` fallback, into the exact
+same on-disk shape as a genuinely healthy zero-usage session — the reading the
+`/resume` protocol treats as canonical (T-2155/T-2156).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** the cache schema has no way to represent "I could not measure this"
+as distinct from "I measured zero". Three independent code paths (a designed
+under-fill guard, a missing-file guard, and an unguarded exception) all fail into
+the same value space (`level=ok, tokens=0`) because that value space was never
+designed to carry a failure signal — it was designed to carry a measurement.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the gate's own safety property (fail open rather than
+block a session on a measurement it cannot trust) was implemented by defaulting the
+*ambiguous* state to the *safe* state, rather than by adding a third state and
+routing both "ok" and "unknown" to the same enforcement outcome (allow) while
+keeping the on-disk claim honest. Nothing downstream (the `/resume` skill, prose
+budget statements, `checkpoint.sh`'s own reads) had a way to ask "was this actually
+measured?" — the schema had no field to ask it of. Reproduced live in S-2026-0901
+(T-3239 E3: two transcripts carrying an identical 400k-token volume, one scopeable
+→ correctly reports critical, one not → reports ok/0) and independently in
+production by a consumer project (001-CashWeb, their T-222/G-087) via the third
+(crash) path.
+
+**Prevention:** `.budget-status` gains a genuine third state (`level: "unknown"`,
+`tokens: null`) that every writer (`budget-gate.sh`, `post-compact-resume.sh`) uses
+for all three trigger paths, plus a `session_id` field so a reader can also tell a
+cache apart from a stale or foreign-session one. `checkpoint.sh budget` is the
+dedicated safe reader that surfaces `unknown` (with a reason) rather than ever
+echoing a plausible-looking but untrustworthy cached level. The negative-test bats
+file (six cases: crash→unknown, honest-zero control→ok, session-id present,
+stale-cache→unknown, foreign-session→unknown, fresh-valid-own-session control→passes
+through) pins the distinction so a future edit that re-collapses the states fails a
+test rather than shipping silently, the way this one did for the life of the file.
 
 ## Evolution
 
@@ -328,6 +427,23 @@ not a rare transcript shape.
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-03 — third trigger path folded in from field report
+
+- **What changed:** filing-time scope was two trigger paths (scoping <2 entries,
+  no transcript). A field report from consumer project 001-CashWeb (their T-222,
+  origin G-087) surfaced a third — `context_tokens.py` crashing on invalid UTF-8
+  during transcript scan — that collapses into the identical fabricated-`ok`/0
+  shape. Verified independently against this repo's own code before trusting it.
+- **Plan impact:** none to the fix architecture (the `unknown`-state design already
+  chosen here covers all three paths without modification) — only widened the ACs
+  and negative-test matrix to assert all three, plus adopted the report's
+  `session_id` addition and `checkpoint.sh budget` safe-reader, which weren't part
+  of the original filing.
+- **Triggered:** a separate task T-3264 was opened first (before the overlap with
+  this task was noticed), then demoted to `captured`/`later` and its evidence
+  folded in here rather than shipping two patches to the same file. See T-3264 for
+  the demotion record.
 
 ## Recommendation
 
@@ -385,3 +501,6 @@ not a rare transcript shape.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3241-budget-gauge-encodes-could-not-measure-a.md
 - **Context:** Initial task creation
+
+### 2026-09-03T18:52:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

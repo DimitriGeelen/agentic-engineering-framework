@@ -4,17 +4,15 @@ type: script
 subsystem: unknown
 location: tests/unit/episodic_worktree_mining.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/compat.sh
+  type: tests
+- target: lib/tasks.sh
+  type: tests
+- target: agents/context/lib/episodic.sh
+  type: tests
+depended_by: []
 last_verified: 2026-08-25
 created_by: unknown
+last_enriched: '2026-09-03'

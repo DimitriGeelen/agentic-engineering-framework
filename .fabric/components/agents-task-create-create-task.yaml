@@ -12,6 +12,8 @@ depends_on:
   type: calls
 - target: lib/keylock.sh
   type: calls
+- target: C-001
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -49,7 +51,7 @@ depended_by:
   type: tests_by
 - target: tests/unit/test_task_create_description_yaml.py
   type: called_by
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'

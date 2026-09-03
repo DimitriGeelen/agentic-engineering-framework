@@ -8,6 +8,8 @@ purpose: 'Full page template: approvals queue — wrapper around _approvals_cont
 depends_on:
 - target: web/templates/_approvals_content.html
   type: includes
+- target: web/templates/_continuous_halt.html
+  type: includes
 depended_by:
 - target: web/blueprints/approvals.py
   type: rendered_by
@@ -15,4 +17,4 @@ depended_by:
   type: called_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-09-03'

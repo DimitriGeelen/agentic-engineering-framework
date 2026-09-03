@@ -4,17 +4,13 @@ type: script
 subsystem: unknown
 location: tools/bats-dead-negation-lint.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/lint/bats-dead-negation.bats
+  type: tests_by
+- target: tools/bats-dead-negation-mutants.py
+  type: called_by
 last_verified: 2026-08-25
 created_by: unknown
+last_enriched: '2026-09-03'

@@ -1,21 +1,15 @@
 id: tools/t1704-hermes3-probe.sh
 name: t1704-hermes3-probe
 type: script
-standalone: true  # T-1754 — by-design orphan, no framework imports
+standalone: true
 subsystem: unknown
 location: tools/t1704-hermes3-probe.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: bin/fw
+  type: calls
+depended_by: []
 last_verified: 2026-05-03
 created_by: unknown
+last_enriched: '2026-09-03'

@@ -16,6 +16,8 @@ depends_on:
   type: renders
 - target: web/shared.py
   type: uses
+- target: web/templates/_error.html
+  type: renders
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -30,4 +32,4 @@ depended_by:
   type: uses_by
 last_verified: 2026-03-09
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

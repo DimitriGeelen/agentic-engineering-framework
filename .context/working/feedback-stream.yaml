@@ -39033,3 +39033,21 @@ scan_id: R-828fe335
 task_id: T-3263
 payload:
   task_file: .tasks/active/T-3263-ship-worktree-bgisolation-setting-alongs.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T19:48:18Z'
+scan_id: R-aaa7e8f5
+task_id: T-3266
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T19:48:18Z'
+scan_id: R-aaa7e8f5
+task_id: T-3266
+payload:
+  task_file: .tasks/active/T-3266-register-g-100-p-011-gitignored-artifact.md

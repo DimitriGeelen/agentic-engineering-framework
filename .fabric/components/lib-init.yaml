@@ -21,7 +21,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -71,4 +71,6 @@ depended_by:
 - target: tests/unit/hook_producer_site_parity.bats
   type: read_by
 - target: tests/unit/t2912_upgrade_hook_regen_convergence.bats
+  type: called_by
+- target: lib/worker_identity.py
   type: called_by

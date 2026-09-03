@@ -12,7 +12,11 @@ depends_on:
   type: tests
 - target: agents/git/lib/common.sh
   type: tests
+- target: agents/git/lib/worker-commits.sh
+  type: tests
+- target: lib/worker_identity.py
+  type: tests
 depended_by: []
 last_verified: 2026-08-11
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

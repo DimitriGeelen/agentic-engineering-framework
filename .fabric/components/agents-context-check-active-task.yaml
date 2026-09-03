@@ -99,10 +99,26 @@ depended_by:
   type: called_by
 - target: agents/context/check-onboarding-gate.sh
   type: read_by
+- target: tests/unit/t3174_partial_complete_edit_matrix.bats
+  type: tests_by
+- target: tests/unit/t3179_partial_complete_commit.bats
+  type: tests_by
+- target: tests/unit/t3221_commit_exemption_clause.bats
+  type: tests_by
+- target: tests/unit/t3222_fetch_writes_file.bats
+  type: tests_by
+- target: tests/unit/t3231_help_exemption_scope.bats
+  type: tests_by
+- target: tests/unit/t3245_trailer_quote_strip.bats
+  type: tests_by
+- target: tests/unit/t3221_commit_exemption_clause.bats
+  type: called_by
+- target: tests/unit/t3222_fetch_writes_file.bats
+  type: called_by
 last_verified: 2026-03-01
 created_by: unknown
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'
   type: deep-dive
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

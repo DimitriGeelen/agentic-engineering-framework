@@ -86,6 +86,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_index_doctor_rail.bats
   type: called_by
+- target: agents/context/check-worktree-governance-write.sh
+  type: called_by
 last_verified: 2026-04-03
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

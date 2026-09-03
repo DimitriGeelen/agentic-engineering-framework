@@ -187,9 +187,21 @@ depends_on:
   type: calls
 - target: lib/verify_queue.py
   type: calls
+- target: lib/vendor-visibility.sh
+  type: calls
+- target: lib/continuous-mode.sh
+  type: calls
+- target: lib/push-state.sh
+  type: calls
+- target: lib/hook_portability.py
+  type: calls
+- target: lib/audit_timing.py
+  type: calls
+- target: tools/bats-silent-skip-lint.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -981,3 +993,51 @@ depended_by:
   type: tests_by
 - target: tests/unit/hook_producer_site_parity.bats
   type: triggers_by
+- target: agents/context/check-heredoc-cmd-sub.sh
+  type: called_by
+- target: agents/context/lib/safe-commands.sh
+  type: called_by
+- target: agents/termlink/termlink.sh
+  type: called_by
+- target: lib/arc.sh
+  type: called_by
+- target: lib/audit_timing.py
+  type: called_by
+- target: lib/hook_portability.py
+  type: called_by
+- target: lib/worktree.sh
+  type: called_by
+- target: tests/lint/bats-silent-skip.bats
+  type: tests_by
+- target: tests/unit/t3213_start_event_confirmation.bats
+  type: tests_by
+- target: tests/unit/t3221_commit_exemption_clause.bats
+  type: tests_by
+- target: tests/unit/t3222_fetch_writes_file.bats
+  type: tests_by
+- target: tests/unit/t3231_help_exemption_scope.bats
+  type: tests_by
+- target: tests/unit/t3233_arm_bounds.bats
+  type: tests_by
+- target: tests/unit/t3235_archived_horizon_invariant.bats
+  type: tests_by
+- target: tests/unit/t3254_driver_refusals.bats
+  type: tests_by
+- target: tests/unit/upgrade_marked_region.bats
+  type: tests_by
+- target: tests/unit/vendor_visibility.bats
+  type: tests_by
+- target: tools/ewcr-arc0-unknown-overlap.py
+  type: called_by
+- target: tools/gaps-render-agreement.py
+  type: called_by
+- target: tools/t1700-ollama-harness.sh
+  type: called_by
+- target: tools/t1703-probe-matrix.sh
+  type: called_by
+- target: tools/t1704-hermes3-probe.sh
+  type: called_by
+- target: tools/t3254-livefire.sh
+  type: called_by
+- target: web/blueprints/config.py
+  type: called_by

@@ -43,3 +43,52 @@ patterns:
   - glob: "bin/*"
     expected_type: script
     note: "CLI entry points"
+
+  - glob: "web/*.py"
+    expected_type: script
+    note: "Top-level Flask app modules (app.py, shared.py, search.py, etc.) — T-3265, closed a real coverage gap (11 files, incl. app.py itself)"
+
+  - glob: "web/terminal/*.py"
+    expected_type: script
+    note: "Terminal-chrome integration surface — T-3265"
+
+  - glob: "web/terminal/adapters/*.py"
+    expected_type: script
+    note: "Terminal adapter implementations (claude_code, local_shell, base) — T-3265"
+
+  - glob: "web/static/*.js"
+    expected_type: script
+    note: "Top-level static JS assets — T-3265"
+    exclude: ["web/static/*.min.js", "web/static/htmx-ext-*.js"]
+
+  - glob: "web/static/js/*.js"
+    expected_type: script
+    note: "Nested static JS assets — T-3265"
+
+  - glob: "web/static/css/*.css"
+    expected_type: script
+    note: "Static stylesheets — T-3265"
+
+  - glob: "web/templates/_partials/*.html"
+    expected_type: fragment
+    note: "Nested partial templates — the flat _*.html pattern does not cross the _partials/ directory boundary (glob.glob semantics, not fnmatch) — T-3265"
+
+  - glob: "docs/architecture/*.md"
+    expected_type: doc
+    note: "Architecture design docs — T-3265"
+
+  - glob: "docs/runbooks/*.md"
+    expected_type: doc
+    note: "Operational runbooks — T-3265"
+
+  - glob: "agents/*/*.py"
+    expected_type: script
+    note: "Agent entry points written in Python (sibling to the *.sh pattern above) — T-3265"
+
+  - glob: "agents/*/lib/*.py"
+    expected_type: script
+    note: "Agent library functions written in Python — T-3265"
+
+  - glob: "tools/*.sh"
+    expected_type: script
+    note: "Shell utility scripts (sibling to the *.py pattern above) — T-3265"

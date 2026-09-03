@@ -54,6 +54,8 @@ depended_by:
   type: called_by
 - target: tests/unit/t2919_budget_gate_command_classify.bats
   type: tests_by
+- target: tests/unit/template_budget_parity.bats
+  type: tests_by
 shared_constants:
   TOKEN_WARN: 120000
   TOKEN_URGENT: 150000
@@ -65,4 +67,4 @@ docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'
   type: deep-dive
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

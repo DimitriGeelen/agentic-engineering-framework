@@ -467,8 +467,68 @@ except Exception: print('')
             echo "Context tokens: unavailable (no transcript)"
         fi
         ;;
+    budget)
+        # T-3241 (folds in field report 001-CashWeb T-222/G-087): safe reader for
+        # .budget-status. Never echoes a cached "ok" when the writer marked the
+        # measurement unknown, the cache has aged past STATUS_MAX_AGE, or it was
+        # written by a different session — each of those now reports "unknown"
+        # plus the reason, instead of a plausible-looking but wrong level. Prefer
+        # this over `cat .budget-status` directly (the exploitation path named in
+        # the field report — CLAUDE.md's own Post-Compact Budget Note pointed
+        # agents straight at a raw cat of this file as the "live gauge").
+        BUDGET_FILE="$CONTEXT_DIR/working/.budget-status"
+        MY_SESSION_ID=""
+        if [ -f "$CONTEXT_DIR/working/session.yaml" ]; then
+            MY_SESSION_ID=$(grep "^session_id:" "$CONTEXT_DIR/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
+        fi
+        if [ ! -f "$BUDGET_FILE" ]; then
+            echo "level: unknown"
+            echo "reason: no cache file"
+            exit 0
+        fi
+        BUDGET_FILE="$BUDGET_FILE" MY_SESSION_ID="$MY_SESSION_ID" STATUS_MAX_AGE="$(fw_config_int "BUDGET_STATUS_MAX_AGE" 90)" python3 -c "
+import json, os, time, sys
+
+budget_file = os.environ['BUDGET_FILE']
+my_sid = os.environ.get('MY_SESSION_ID') or 'unknown'
+max_age = int(os.environ['STATUS_MAX_AGE'])
+
+try:
+    with open(budget_file) as f:
+        s = json.load(f)
+except Exception as e:
+    print('level: unknown')
+    print(f'reason: cache unreadable ({type(e).__name__})')
+    sys.exit(0)
+
+level = s.get('level', 'unknown')
+tokens = s.get('tokens')
+ts = s.get('timestamp', 0) or 0
+sid = s.get('session_id', 'unknown')
+age = int(time.time()) - ts if ts else 999999
+
+reasons = []
+if level == 'unknown':
+    reasons.append('writer marked this measurement unknown (scan failed or could not be confirmed)')
+if age > max_age:
+    reasons.append(f'cache is {age}s old (max {max_age}s)')
+if sid != 'unknown' and my_sid != 'unknown' and sid != my_sid:
+    reasons.append(f'cache was written by session {sid}, not this session ({my_sid})')
+
+if reasons:
+    print('level: unknown')
+    for r in reasons:
+        print(f'reason: {r}')
+    print(f'raw_level: {level}')
+    print(f'raw_tokens: {tokens}')
+else:
+    print(f'level: {level}')
+    print(f'tokens: {tokens}')
+    print(f'age_seconds: {age}')
+"
+        ;;
     *)
-        echo "Usage: checkpoint.sh {post-tool|reset|status}"
+        echo "Usage: checkpoint.sh {post-tool|reset|status|budget}"
         exit 1
         ;;
 esac

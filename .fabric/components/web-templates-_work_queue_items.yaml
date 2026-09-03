@@ -1,0 +1,20 @@
+id: web/templates/_work_queue_items.html
+name: _work_queue_items
+type: fragment
+subsystem: watchtower
+location: web/templates/_work_queue_items.html
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-03
+created_by: unknown

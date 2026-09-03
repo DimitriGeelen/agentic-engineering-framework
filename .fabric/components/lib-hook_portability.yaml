@@ -1,0 +1,22 @@
+id: lib/hook_portability.py
+name: hook_portability
+type: script
+subsystem: framework-core
+location: lib/hook_portability.py
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: lib/upgrade.sh
+  type: calls
+- target: bin/fw
+  type: calls
+depended_by:
+- target: bin/fw
+  type: called_by
+- target: lib/hook_parity.py
+  type: called_by
+- target: lib/upgrade.sh
+  type: called_by
+last_verified: 2026-09-03
+created_by: unknown
+last_enriched: '2026-09-03'

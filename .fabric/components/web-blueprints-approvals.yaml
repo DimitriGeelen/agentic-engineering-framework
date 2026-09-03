@@ -40,6 +40,12 @@ depends_on:
   type: uses
 - target: web/blueprints/bvp.py
   type: uses
+- target: agents/context/stop-driver.sh
+  type: calls
+- target: lib/decided_unclosed.py
+  type: calls
+- target: web/app.py
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -80,4 +86,4 @@ depended_by:
   type: uses_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

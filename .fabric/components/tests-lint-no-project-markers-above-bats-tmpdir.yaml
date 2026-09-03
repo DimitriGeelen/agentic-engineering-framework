@@ -3,30 +3,32 @@ name: no-project-markers-above-bats-tmpdir
 type: script
 subsystem: testing
 location: tests/lint/no-project-markers-above-bats-tmpdir.bats
-tags: [invariant, lint, test-isolation, host-state, false-green, T-3234, OBS-358]
+tags:
+- invariant
+- lint
+- test-isolation
+- host-state
+- false-green
+- T-3234
+- OBS-358
+purpose: 'Corpus-level invariant: no .framework.yaml or .tasks may sit on the path from the bats temp base up to "/". Nearly
+  every hook suite builds its fixture under BATS_TEST_TMPDIR, and the hooks call lib/paths.sh:fw_reanchor_from_cwd, which
+  walks that ancestry for exactly those markers — so the ambient project is an undeclared input to all of them. When an fw
+  init ran with cwd=/tmp on this host (OBS-358), fixtures re-anchored to /tmp and read its null focus: one suite went red
+  with a message that read like a code regression, and any suite whose fixture lacks markers of its own could equally have
+  gone GREEN for a reason unrelated to its subject. The walk mirrors the resolver including its stop-before-"/" condition,
+  and two legs grep the resolver so the mirror cannot drift. A third leg proves the detector fires, since a guard that cannot
+  fail proves nothing; TMPDIR is the lever for the whole-suite red, because bats overwrites BATS_TMPDIR from it at startup.
 
-purpose: >
-  Corpus-level invariant: no .framework.yaml or .tasks may sit on the path from
-  the bats temp base up to "/". Nearly every hook suite builds its fixture under
-  BATS_TEST_TMPDIR, and the hooks call lib/paths.sh:fw_reanchor_from_cwd, which
-  walks that ancestry for exactly those markers — so the ambient project is an
-  undeclared input to all of them. When an fw init ran with cwd=/tmp on this host
-  (OBS-358), fixtures re-anchored to /tmp and read its null focus: one suite went
-  red with a message that read like a code regression, and any suite whose fixture
-  lacks markers of its own could equally have gone GREEN for a reason unrelated to
-  its subject. The walk mirrors the resolver including its stop-before-"/"
-  condition, and two legs grep the resolver so the mirror cannot drift. A third
-  leg proves the detector fires, since a guard that cannot fail proves nothing;
-  TMPDIR is the lever for the whole-suite red, because bats overwrites
-  BATS_TMPDIR from it at startup.
-
+  '
 depends_on:
-  - target: lib/paths.sh
-    type: mirrors
-
+- target: lib/paths.sh
+  type: mirrors
+- target: lib/paths.sh
+  type: tests
 depended_by:
-  - target: tests/unit/check_active_task_cwd_resolution.bats
-    type: diagnoses
-
+- target: tests/unit/check_active_task_cwd_resolution.bats
+  type: diagnoses
 last_verified: 2026-08-31
 created_by: T-3234
+last_enriched: '2026-09-03'

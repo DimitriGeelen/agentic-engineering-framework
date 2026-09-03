@@ -71,6 +71,8 @@ depended_by:
   type: called_by
 - target: tests/unit/update_task_episodic_gen.bats
   type: tests_by
+- target: agents/task-create/create-task.sh
+  type: called_by
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-05-06'
+last_enriched: '2026-09-03'

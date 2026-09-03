@@ -108,12 +108,32 @@ def main():
     flags = {a for a in sys.argv[1:] if a.startswith("--")}
     session_start_ts = args[0].strip() if args else ""
 
-    tokens, model = compute_context_tokens_detail(sys.stdin, session_start_ts)
+    # T-3241 (folds in field report 001-CashWeb T-222/G-087): a transcript
+    # containing invalid UTF-8 bytes raises UnicodeDecodeError while iterating
+    # `sys.stdin` for the NEXT line — outside the try/except above, which only
+    # guards json.loads on a line already successfully decoded. Uncaught, that
+    # produced a bare traceback on stderr + empty stdout + exit 1; callers
+    # (budget-gate.sh) already treat "no parseable integer on stdout" as a scan
+    # failure, so catching here just makes that outcome deliberate and quiet
+    # instead of an accidental crash with the same effect.
+    try:
+        tokens, model = compute_context_tokens_detail(sys.stdin, session_start_ts)
+    except Exception:
+        sys.exit(1)
 
-    # DEFAULT STDOUT IS A BARE INTEGER AND MUST STAY THAT WAY. Both gauges
-    # (checkpoint.sh, budget-gate.sh) capture this straight into a shell integer;
-    # an unconditional extra field would corrupt CONTEXT_TOKENS in both at once.
-    # The model is therefore strictly opt-in (T-3204).
+    # DEFAULT STDOUT IS A BARE INTEGER AND MUST STAY THAT WAY (T-2885/T-3204
+    # pinned contract — tests/unit/t2885_context_tokens_model_scope.bats asserts
+    # "0" verbatim for the under-filled-scope cases). Both gauges capture this
+    # straight into a shell integer; an unconditional extra field would corrupt
+    # CONTEXT_TOKENS in both at once. The model is therefore strictly opt-in
+    # (T-3204) — and doubles, via --with-model, as the T-3241 "was this
+    # confidently measured" signal: model=="" on BOTH give-up branches of
+    # compute_context_tokens_detail (no entries; fewer than 2 dominant-model
+    # entries since the last boundary), and is likewise absent whenever this
+    # process exits via the except above. A confirmed measurement always
+    # carries a non-empty dominant_model. Callers that need to distinguish
+    # "confidently zero" from "could not measure" pass --with-model and check
+    # the model field, not the bare integer.
     if "--with-model" in flags:
         print(f"{tokens}\t{model}")
     else:

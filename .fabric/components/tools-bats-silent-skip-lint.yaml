@@ -3,19 +3,22 @@ name: bats-silent-skip-lint
 type: script
 subsystem: tests
 location: tools/bats-silent-skip-lint.py
-tags: [lint, tests, verification-gate, T-3217]
-
-purpose: "Reports bats skips that the P-011 verification idiom cannot see. Static mode flags two guard shapes with no legitimate reading (unconditional, and guards fixed for a deployment rather than probing an optional dependency); --tap mode reports the skips a real run actually fired. Wired into fw test lint."
-
+tags:
+- lint
+- tests
+- verification-gate
+- T-3217
+purpose: Reports bats skips that the P-011 verification idiom cannot see. Static mode flags two guard shapes with no legitimate
+  reading (unconditional, and guards fixed for a deployment rather than probing an optional dependency); --tap mode reports
+  the skips a real run actually fired. Wired into fw test lint.
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  - target: tests/lint/bats-silent-skip.bats
-    type: tested-by
-
+- target: tests/lint/bats-silent-skip.bats
+  type: tested-by
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: bin/fw
+  type: called_by
+- target: tests/lint/bats-silent-skip.bats
+  type: tests_by
 last_verified: 2026-08-29
 created_by: T-3217
+last_enriched: '2026-09-03'

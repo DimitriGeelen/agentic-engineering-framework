@@ -12,6 +12,8 @@ depends_on:
   type: calls
 - target: lib/watchtower.sh
   type: calls
+- target: bin/fw
+  type: calls
 depended_by:
 - target: tests/unit/test_arc_system.py
   type: called_by
@@ -71,4 +73,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

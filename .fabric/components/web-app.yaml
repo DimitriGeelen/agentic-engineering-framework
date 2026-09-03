@@ -81,7 +81,7 @@ depends_on:
   type: uses
 last_verified: 2026-02-20
 created_by: T-227
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -269,3 +269,9 @@ depended_by:
   type: uses_by
 - target: web/test_costs.py
   type: uses_by
+- target: tests/unit/test_inception_close_card.py
+  type: called_by
+- target: tests/unit/test_inception_close_card.py
+  type: uses_by
+- target: web/blueprints/approvals.py
+  type: called_by

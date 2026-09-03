@@ -9,6 +9,8 @@ purpose: Single-pass scan of active task files that checks compliance, quality, 
 depends_on:
 - target: lib/task-audit.sh
   type: calls
+- target: lib/task_satisfaction.py
+  type: calls
 depended_by:
 - target: C-004
   type: called_by
@@ -28,6 +30,8 @@ depended_by:
   type: called_by
 - target: tests/unit/t3073_c001_recommendation_bearing_inceptions.bats
   type: tests_by
+- target: lib/task_satisfaction.py
+  type: called_by
 last_verified: 2026-04-06
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

@@ -32,9 +32,11 @@ depends_on:
   type: calls
 - target: lib/config.sh
   type: calls
+- target: lib/push-state.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: agents/context/pre-compact.sh
   type: called_by

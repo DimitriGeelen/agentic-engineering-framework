@@ -51,6 +51,8 @@ depended_by:
   type: tests_by
 - target: tests/unit/lib_tasks.bats
   type: tests_by
+- target: tests/unit/episodic_worktree_mining.bats
+  type: tests_by
 last_verified: 2026-03-11
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-09-03'

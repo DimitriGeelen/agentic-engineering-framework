@@ -348,6 +348,17 @@ if [ -z "${TRANSCRIPT:-}" ]; then
 fi
 
 if [ -z "${TRANSCRIPT:-}" ]; then
+    # T-3241: previously exited silently, leaving whatever cache already existed
+    # in place — a stale "ok" from an earlier, real reading sits there
+    # indefinitely with nothing marking it untrustworthy. Write an honest
+    # "unknown" instead. Fails open exactly as before (no case arm matches
+    # "unknown"); only the on-disk claim changes.
+    NT_SESSION_ID=""
+    if [ -f "$CONTEXT_DIR/working/session.yaml" ]; then
+        NT_SESSION_ID=$(grep "^session_id:" "$CONTEXT_DIR/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
+    fi
+    printf '{"level": "unknown", "tokens": null, "timestamp": %d, "session_id": "%s", "source": "budget-gate", "note": "no transcript found"}' \
+        "$(date +%s)" "${NT_SESSION_ID:-unknown}" > "$STATUS_FILE" 2>/dev/null || true
     exit 0
 fi
 
@@ -362,21 +373,58 @@ TS_FILE="$CONTEXT_DIR/working/.session-start-ts"
 if [ -f "$TS_FILE" ]; then
     SESSION_START_TS=$(tr -d '[:space:]' < "$TS_FILE" 2>/dev/null) || SESSION_START_TS=""
 fi
-TOKENS=$(tail -c 10000000 "$TRANSCRIPT" 2>/dev/null | python3 "$FRAMEWORK_ROOT/lib/context_tokens.py" "$SESSION_START_TS" 2>/dev/null)
-[[ "$TOKENS" =~ ^[0-9]+$ ]] || TOKENS=0
-
-LEVEL="ok"
-if [ "$TOKENS" -ge "$TOKEN_CRITICAL" ]; then
-    LEVEL="critical"
-elif [ "$TOKENS" -ge "$TOKEN_URGENT" ]; then
-    LEVEL="urgent"
-elif [ "$TOKENS" -ge "$TOKEN_WARN" ]; then
-    LEVEL="warn"
+# T-3241 (folds in field report 001-CashWeb T-222/G-087): --with-model surfaces
+# the "was this confidently measured" signal context_tokens.py already computes
+# internally (an empty model = give-up, whether from too-few-in-scope-entries,
+# no entries at all, or an uncaught scan crash e.g. UnicodeDecodeError on invalid
+# UTF-8 during transcript line iteration) but which the bare-integer form this
+# used to call collapses into an indistinguishable "0". Pre-fix, the regex
+# fallback `[[ "$TOKENS" =~ ^[0-9]+$ ]] || TOKENS=0` fed a crash/give-up AND a
+# genuine zero-usage session into the same branch below, producing
+# {"level":"ok","tokens":0} in both cases — byte-identical to every reader.
+# SCAN_OK preserves the distinction that fallback erased.
+SCAN_RESULT=$(tail -c 10000000 "$TRANSCRIPT" 2>/dev/null | python3 "$FRAMEWORK_ROOT/lib/context_tokens.py" "$SESSION_START_TS" --with-model 2>/dev/null)
+RAW_TOKENS=$(printf '%s' "$SCAN_RESULT" | cut -f1)
+RAW_MODEL=$(printf '%s' "$SCAN_RESULT" | cut -sf2)
+if [[ "$RAW_TOKENS" =~ ^[0-9]+$ ]] && [ -n "$RAW_MODEL" ]; then
+    TOKENS="$RAW_TOKENS"
+    SCAN_OK=1
+else
+    TOKENS=0
+    SCAN_OK=0
 fi
 
-# Write status file (fast-path cache for subsequent gate calls)
-printf '{"level": "%s", "tokens": %d, "timestamp": %d, "source": "budget-gate"}' \
-    "$LEVEL" "$TOKENS" "$(date +%s)" > "$STATUS_FILE" 2>/dev/null || true
+# T-3241: the cache now carries its own writer identity so a reader can
+# mechanically tell "this number is not from my session" instead of trusting a
+# plausible-looking but foreign or stale value.
+BG_SESSION_ID=""
+if [ -f "$CONTEXT_DIR/working/session.yaml" ]; then
+    BG_SESSION_ID=$(grep "^session_id:" "$CONTEXT_DIR/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
+fi
+
+if [ "$SCAN_OK" -eq 1 ]; then
+    LEVEL="ok"
+    if [ "$TOKENS" -ge "$TOKEN_CRITICAL" ]; then
+        LEVEL="critical"
+    elif [ "$TOKENS" -ge "$TOKEN_URGENT" ]; then
+        LEVEL="urgent"
+    elif [ "$TOKENS" -ge "$TOKEN_WARN" ]; then
+        LEVEL="warn"
+    fi
+    # Write status file (fast-path cache for subsequent gate calls)
+    printf '{"level": "%s", "tokens": %d, "timestamp": %d, "session_id": "%s", "source": "budget-gate"}' \
+        "$LEVEL" "$TOKENS" "$(date +%s)" "${BG_SESSION_ID:-unknown}" > "$STATUS_FILE" 2>/dev/null || true
+else
+    # T-3241: scan failed (unreadable/unparseable transcript, or too few in-scope
+    # entries to trust a scope decision — context_tokens.py's own "return 0 rather
+    # than guess" path) — write "unknown", never a fabricated "ok". No case arm
+    # below matches "unknown", so this call still fails open (same as the
+    # pre-existing no-transcript path) — only the ON-DISK claim changes, not gate
+    # enforcement.
+    LEVEL="unknown"
+    printf '{"level": "unknown", "tokens": null, "timestamp": %d, "session_id": "%s", "source": "budget-gate", "note": "scan failed or produced no data"}' \
+        "$(date +%s)" "${BG_SESSION_ID:-unknown}" > "$STATUS_FILE" 2>/dev/null || true
+fi
 LEVEL=${LEVEL:-ok}
 TOKENS=${TOKENS:-0}
 
