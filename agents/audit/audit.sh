@@ -3047,6 +3047,39 @@ PY
 }
 check_continuous_run_turn_driver
 
+# T-3268 (G-099 what_remains): "no detector yet for claude-fw cycling
+# start/exit"... the recurrence T-3268 measured was not seconds-fast restarts
+# but the SAME check_continuous_run_turn_driver-invisible symptom — a stale
+# `last_terminated_reason` (bin/claude-fw:388's one-way latch) replayed on
+# every turn in .stop-driver.log, which neither that check above nor doctor's
+# equivalent reads (both only tail continuous-run.jsonl, a sibling ledger).
+# Mirrors bin/fw doctor's twin of this check (T-3268) so the daily cron catches
+# the cycling without a manual `fw doctor` run — same rationale T-3262 gave for
+# porting its own check here.
+check_continuous_run_cycling() {
+    [ -f "$FRAMEWORK_ROOT/lib/continuous-mode.sh" ] || return 0
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/continuous-mode.sh"
+    local _out
+    _out=$(fw_continuous_cycling_facts "$PROJECT_ROOT" 3600 3 2>/dev/null)
+    [ -n "$_out" ] || return 0
+    local _count _cause _first _last _task _status
+    _count=$(printf '%s' "$_out" | cut -f1)
+    _cause=$(printf '%s' "$_out" | cut -f3)
+    _first=$(printf '%s' "$_out" | cut -f4)
+    _last=$(printf '%s' "$_out" | cut -f5)
+    _task=$(printf '%s' "$_cause" | sed -n 's/.*human-gate:human-ac:\(T-[0-9]*\).*/\1/p')
+    local _note=""
+    if [ -n "$_task" ]; then
+        _status=$(cat "$PROJECT_ROOT"/.tasks/active/"${_task}"-*.md "$PROJECT_ROOT"/.tasks/completed/"${_task}"-*.md 2>/dev/null | grep -m1 "^status:" | sed 's/^status: *//' || true)
+        [ "$_status" = "work-completed" ] && _note=" — ${_task} is already work-completed, latch is provably stale"
+    fi
+    warn "Continuous-run Stop hook is cycling on a stale terminate reason" \
+         "'${_cause}' repeated ${_count}x between ${_first} and ${_last}${_note}" \
+         "bin/fw continuous disarm --reason \"<why it's stale now>\" (or fw continuous arm to re-arm cleanly)"
+}
+check_continuous_run_cycling
+
 echo ""
 fi # end structure
 

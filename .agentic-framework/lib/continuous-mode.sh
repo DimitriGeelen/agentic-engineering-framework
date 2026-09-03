@@ -162,6 +162,75 @@ os.replace(tmp, state_path)
 PY
 }
 
+# fw_continuous_cycling_facts [project_root] [window_seconds] [threshold]   — T-3268 (G-099)
+#
+# G-099 found the 74-day and 8-day instances of a WRONG "armed" flag, and its own
+# what_remains named the class it did NOT cover: `last_terminated_reason` is a
+# one-way latch (bin/claude-fw:388's `_continuous_terminated` reads it back
+# verbatim, never re-evaluating whether the thing that set it is still true).
+# `.stop-driver.log` is where every restart attempt records the SAME stale
+# reason, one line per attempt, and nothing reads that log for repetition — it
+# is pure text, appended forever, checked by no instrument (T-3262's own comment
+# says as much about the sibling ledger).
+#
+# This does not assume the stale reason is a human-gate, or that repeats land
+# seconds apart (G-099 imagined "cycling every few seconds"; the real recurrence
+# T-3268 measured was every few MINUTES over 2.5+ hours) — it just counts how
+# many times the IDENTICAL (stored_ts, cause) pair shows up as a `decision=stop`
+# line within the trailing window. A latch being replayed at all past the
+# threshold is the signal; how fast or why is a detail for the caller to add.
+#
+# Prints one tab-separated line `count<TAB>stored_ts<TAB>cause<TAB>first_ts<TAB>last_ts`
+# to stdout when a (stored_ts, cause) pair recurs >= threshold times inside the
+# window; prints nothing otherwise. Always exits 0 — same fail-safe posture as
+# the rest of this file: a detector that can crash `fw doctor` or the daily
+# audit is worse than one that occasionally says nothing.
+fw_continuous_cycling_facts() {
+    local root="${1:-${PROJECT_ROOT:-$(pwd)}}"
+    local window="${2:-3600}"
+    local threshold="${3:-3}"
+    local log="${root}/.context/working/.stop-driver.log"
+
+    [ -f "$log" ] || return 0
+    command -v python3 >/dev/null 2>&1 || return 0
+
+    python3 - "$log" "$window" "$threshold" <<'PY' 2>/dev/null || true
+import sys, re, datetime
+from collections import defaultdict
+
+path, window, threshold = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+pat = re.compile(r'^(\S+) decision=stop reason=terminated\[stored@([^\]]+)\]\((.*)\)$')
+now = datetime.datetime.now(datetime.timezone.utc)
+groups = defaultdict(list)
+
+try:
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            m = pat.match(line.rstrip("\n"))
+            if not m:
+                continue
+            ts_s, stored, cause = m.groups()
+            try:
+                ts = datetime.datetime.fromisoformat(ts_s.replace("Z", "+00:00"))
+            except Exception:
+                continue
+            if (now - ts).total_seconds() > window:
+                continue
+            groups[(stored, cause)].append(ts_s)
+except Exception:
+    raise SystemExit(0)
+
+worst = None
+for (stored, cause), tss in groups.items():
+    if len(tss) >= threshold and (worst is None or len(tss) > worst[0]):
+        worst = (len(tss), stored, cause, tss[0], tss[-1])
+
+if worst:
+    count, stored, cause, first, last = worst
+    print(f"{count}\t{stored}\t{cause}\t{first}\t{last}")
+PY
+}
+
 # ---------------------------------------------------------------------------
 # fw_continuous_cli <arm|disarm|status> [opts]   — T-3225
 #

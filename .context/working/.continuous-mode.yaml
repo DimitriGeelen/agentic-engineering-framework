@@ -9,7 +9,8 @@ last_resumed_at: '2026-09-03T18:11:31Z'
 last_directive_seen: Resume standard framework operation. Pick up horizon:now active
   tasks per fw resume status / review-queue order. Respect all structural gates (Tier
   0/1/2) and the tier ceiling; no --force on any gate.
-last_terminated_reason: human-gate:human-ac:T-3263
+last_terminated_reason: T-3263 resolved (work-completed 2026-09-03); clearing stale
+  human-gate latch that had cycled 4+ times since 18:24:48Z (T-3268)
 last_source: compact
 disarmed_reason: "T-3164: shipped disarmed. Previously enabled: true while last_terminated_reason\
   \ showed expiry 70 days past \u2014 the flag asserted armed while the loop was structurally\

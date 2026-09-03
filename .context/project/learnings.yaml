@@ -4888,3 +4888,9 @@ X'` returning empty group."
   task: T-3262
   date: 2026-09-03
   context: Added via context agent
+- id: L-659
+  learning: "grep against two glob patterns (.tasks/active/T-X-*.md .tasks/completed/T-X-*.md) exits non-zero when only one matches, even though it found and printed the match in the other file. Under set -euo pipefail (bin/fw's own shebang-adjacent setting), that non-zero propagates through a pipe (grep | head | sed) as the pipeline's exit status and set -e aborts the whole script immediately after — silently dropping every check that would have run after it. Fix: pipe through 'cat file1 file2 2>/dev/null | grep ...' so grep only ever reads an already-open stream, and append '|| true' to the assignment. Any future doctor/audit check that greps across both .tasks/{active,completed}/ needs this guard, since a task being in exactly one of the two directories is the common case, not the edge case."
+  source: P-001
+  task: T-3268
+  date: 2026-09-03
+  context: Added via context agent

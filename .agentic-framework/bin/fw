@@ -2526,6 +2526,40 @@ PY
         fi
     fi
 
+    # Check: continuous-run STALE-TERMINATE CYCLING (T-3268, G-099 what_remains).
+    # Distinct from the block above, which reads continuous-run.jsonl (the
+    # WRAPPER's ledger, one line per restart). This reads .stop-driver.log (the
+    # STOP HOOK's ledger, one line per turn) — the file G-099's own text says
+    # "no instrument reads". `last_terminated_reason` is a one-way latch
+    # (bin/claude-fw:388) that gets replayed verbatim on every turn regardless
+    # of whether the thing that set it is still true; this catches the replay
+    # itself rather than any single stale value.
+    if [ -f "$FRAMEWORK_ROOT/lib/continuous-mode.sh" ]; then
+        # shellcheck source=/dev/null
+        . "$FRAMEWORK_ROOT/lib/continuous-mode.sh"
+        _cyc_out=$(fw_continuous_cycling_facts "$PROJECT_ROOT" 3600 3 2>/dev/null)
+        if [ -n "$_cyc_out" ]; then
+            _cyc_count=$(printf '%s' "$_cyc_out" | cut -f1)
+            _cyc_cause=$(printf '%s' "$_cyc_out" | cut -f3)
+            _cyc_first=$(printf '%s' "$_cyc_out" | cut -f4)
+            _cyc_last=$(printf '%s' "$_cyc_out" | cut -f5)
+            echo -e "  ${YELLOW}WARN${NC}  Continuous-run Stop hook is CYCLING on a stale terminate reason"
+            echo -e "         '${_cyc_cause}' repeated ${_cyc_count}x between ${_cyc_first} and ${_cyc_last} (last hour)"
+            # human-gate:human-ac:T-XXXX reasons are checkable against the task's
+            # own status — if it already closed, the latch is provably stale.
+            _cyc_task=$(printf '%s' "$_cyc_cause" | sed -n 's/.*human-gate:human-ac:\(T-[0-9]*\).*/\1/p')
+            if [ -n "$_cyc_task" ]; then
+                _cyc_status=$(cat "$PROJECT_ROOT"/.tasks/active/"${_cyc_task}"-*.md "$PROJECT_ROOT"/.tasks/completed/"${_cyc_task}"-*.md 2>/dev/null | grep -m1 "^status:" | sed 's/^status: *//' || true)
+                if [ "$_cyc_status" = "work-completed" ]; then
+                    echo -e "         ${_cyc_task} is already work-completed — this latch is provably stale"
+                fi
+            fi
+            echo -e "         Clear it:  bin/fw continuous disarm --reason \"<why it's stale now>\""
+            echo -e "         Re-arm:    bin/fw continuous arm --hours N --iterations N --directive '...'"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # Check: on-PATH claude-fw drift (T-2501) — does the wrapper the operator
     # actually runs match repo source? The supervision check above tells you THIS
     # session is unsupervised; this tells you WHY — the installed claude-fw can be
