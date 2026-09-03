@@ -24,7 +24,7 @@ tags: [arc:continuous-run, loop, sovereignty]
 components: []
 related_tasks: [T-3239, T-3233, T-3163]
 created: 2026-09-01T07:30:33Z
-last_update: '2026-09-01T07:45:17Z'
+last_update: '2026-09-03T09:00:10Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,6 +43,15 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-03T09:00:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=157,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-09-01T07:45:17Z'

@@ -1,7 +1,7 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-02T03:23:02.917556+00:00
-corpus_total: 2805
+generated: 2026-09-03T03:23:02.393921+00:00
+corpus_total: 2808
 bug_class_total: 502
 bug_class_pct: 17
 h1_flagged: 363
@@ -34,15 +34,15 @@ recent_sample:
     name: "A release can advance master and then fail to publish its tag, and the GitHub"
 h2_top:
   - learning: "P-011"
-    task_count: 2388
+    task_count: 2397
   - learning: "L-387"
-    task_count: 2141
+    task_count: 2150
   - learning: "L-291"
-    task_count: 1099
+    task_count: 1102
   - learning: "L-398"
-    task_count: 846
+    task_count: 849
   - learning: "P-010"
-    task_count: 481
+    task_count: 484
   - learning: "L-399"
     task_count: 94
   - learning: "L-006"

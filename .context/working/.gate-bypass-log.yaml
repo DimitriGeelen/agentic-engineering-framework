@@ -7819,3 +7819,27 @@ t3249_rearm_hea'
   command: 'git add -A && FW_SWITCH_FOCUS=1 git commit -q -m "T-3250: E10 breach leg - the brake fires, and the loop keeps going anyway
 
 Re-derived N_BACKLOG from this rigs own first run rather than E9s. These '
+- timestamp: '2026-09-02T08:49:01Z'
+  task: 'T-3250'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3171'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-3171: close — id validation for fw cron generate already shipped, backfill ACs/RCA/verification
+
+The write-side id/duplicate-id refusal in fw cron generate (and it'
+- timestamp: '2026-09-03T08:57:50Z'
+  task: 'T-3250'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3254'
+  command: 'git add .tasks/active/T-3254-arc-012-drive-the-loop-from-outside-when.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-3254: file the outside-in continuation driver (item 2)
+
+The loop gives up whenever the'
+- timestamp: '2026-09-03T08:58:29Z'
+  task: 'T-3250'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3240'
+  command: 'git add .tasks/active/T-3240-the-stop-hook-loop-caps-at-one-continuat.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-3240: record Candidate C - drive from outside instead of widening the guard
+
+The opera'

@@ -92,10 +92,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 565
-  commits: 2
-  files_changed: 19
-  lines_added: 447
-  lines_removed: 244
+  commits: 3
+  files_changed: 28
+  lines_added: 1157
+  lines_removed: 285
+  footprint_refreshed_at: '2026-09-02T08:04:47Z'
+  footprint_refreshed_by_commit: dda47ddbc
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3252-recommendation-card-silently-drops-text-.md

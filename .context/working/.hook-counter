@@ -1,9 +1,9 @@
-audit-task-tools=12
+audit-task-tools=3
 
-check-tier0=165
-check-project-boundary=167
-budget-gate=166
-check-active-task=160
-loop-detect=163
-error-watchdog=150
-checkpoint=12
+check-tier0=18
+checkpoint=3
+budget-gate=4
+check-project-boundary=4
+check-active-task=3
+loop-detect=2
+error-watchdog=2

@@ -1,0 +1,115 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3253: tier-ceiling breach disarms the loop but neither stops the running session nor the budget-restart path, which never consults enabled
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T10:10:37Z
+# ============================================================================
+
+task_id: T-3253
+task_name: "tier-ceiling breach disarms the loop but neither stops the running session nor the budget-restart path, which never consults enabled"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T22:47:09Z
+completed: 2026-09-03T10:10:17Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-09-03T11:02:09+02:00
+last_commit: 2026-09-03T12:10:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a recorded termination now stops the restart path, not just the re-arm. record progress and the settled AC3 design before wrapping up. the breaching session is never launched (AC3). pin the preflight brake, every case against a control. tick AC1-AC3, give the task a real P-011 gate, sync vendor. RCA and Evolution — the brake was wired to the wrong side of the thing it brakes. E10 breach leg after the fix — the over-ceiling task is never worked. teach the E10 rig the new brake shape - proxy replaced by measurement. AC4 green — breach leg 7/0, and the trail shows why the rig edit was honest. AC5 green — the control leg proves the brake stops one case, not every case
+
+# Key outcomes
+outcomes:
+  - 'A ceiling breach stops the budget-restart path too. `bin/claude-fw`''s restart branch consults the disarm before spending a restart, instead of being gated only by a fresh signal and `MAX_RESTARTS`.'
+  - 'The refusal is recorded as its own loop-event reason, distinct from `max-restarts` — an operator reading the ledger must be able to tell "stopped because the ceiling was breached" from "stopped because it was spinning".'
+  - 'The session that receives the breach notice is stopped rather than asked to stop. Whatever the mechanism, the acceptance is behavioural: with the ceiling breached, the over-ceiling task is not worked.'
+  - 'E10''s breach leg is re-run and `AC4a`/`AC4b` pass with the attribution line reading `closed-AFTER-the-breach` nowhere — i.e. the escalation task is not closed at all. The same rig that found this is what closes it.'
+  - 'The control leg still passes unchanged: under the ceiling, the loop restarts, works the whole backlog including the escalation task, and never records a termination reason. A fix that stops the breach case by stopping every case is not a fix.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'E10 breach leg after the fix — the over-ceiling task is never worked'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/inject-next-directive.py'
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/blueprints/review.py'
+  - '.agentic-framework/web/shared.py'
+  - '.agentic-framework/web/templates/review.html'
+  - 'agents/context/inject-next-directive.py'
+  - 'bin/claude-fw'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach-after-T3253-rig-updated.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach-after-T3253.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-control-after-T3253.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-control.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-T3253-breach2.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-T3253-breach.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-T3253-control.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/livefire-brake-tier-ceiling.sh'
+  - '.fabric/components/tests-unit-t3253_preflight_brake.yaml'
+  - '.tasks/active/T-3253-tier-ceiling-breach-disarms-the-loop-but.md'
+  - 'tests/unit/t3253_preflight_brake.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-03T11:02:09'
+    action: 'T-3253: a recorded termination now stops the restart path, not just the re-arm'
+  - time: '2026-09-03T11:02:40'
+    action: 'T-3253: record progress and the settled AC3 design before wrapping up'
+  - time: '2026-09-03T11:49:25'
+    action: 'T-3253: the breaching session is never launched (AC3)'
+  - time: '2026-09-03T11:52:06'
+    action: 'T-3253: pin the preflight brake, every case against a control'
+  - time: '2026-09-03T11:53:19'
+    action: 'T-3253: tick AC1-AC3, give the task a real P-011 gate, sync vendor'
+  - time: '2026-09-03T11:55:24'
+    action: 'T-3253: RCA and Evolution — the brake was wired to the wrong side of the thing it brakes'
+  - time: '2026-09-03T11:57:44'
+    action: 'T-3253: E10 breach leg after the fix — the over-ceiling task is never worked'
+  - time: '2026-09-03T11:59:16'
+    action: 'T-3253: teach the E10 rig the new brake shape - proxy replaced by measurement'
+  - time: '2026-09-03T12:07:50'
+    action: 'T-3253: AC4 green — breach leg 7/0, and the trail shows why the rig edit was honest'
+  - time: '2026-09-03T12:10:13'
+    action: 'T-3253: AC5 green — the control leg proves the brake stops one case, not every case'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 2123 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2123
+  commits: 11
+  files_changed: 29
+  lines_added: 1791
+  lines_removed: 301
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3253-tier-ceiling-breach-disarms-the-loop-but.md
+generated_by: context-agent-hybrid

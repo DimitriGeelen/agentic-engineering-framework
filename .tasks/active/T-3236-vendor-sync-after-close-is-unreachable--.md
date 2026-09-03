@@ -133,20 +133,20 @@ noted here only because it compounds the window described above.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `bin/fw vendor self --check` is clean and the pre-push self-vendor-drift
+- [x] `bin/fw vendor self --check` is clean and the pre-push self-vendor-drift
       gate (T-2240) lets the T-3234/T-3235 commits through.
-- [ ] The dead-end is characterised precisely, because it is the actual finding:
+- [x] The dead-end is characterised precisely, because it is the actual finding:
       closing a task that touched a vendored path leaves work that CANNOT be done
       under any focus. `fw context focus <closed-id>` refuses ("Focus must name a
       task the gates can still work under"), `fw work-on <closed-id>` is silent,
       and the task gate refuses `fw vendor self` with focus null. Every remaining
       route is either a new task or a bypass.
-- [ ] The ordering that avoids it is written down where an agent will hit it:
+- [x] The ordering that avoids it is written down where an agent will hit it:
       **sync the vendor BEFORE the close, not after.** The repo's own history
       already does this ("T-3233: close — arm-verb cluster landed, vendor synced")
       — it was convention, carried in commit messages, not stated anywhere an
       agent reads first.
-- [ ] Filed as a registered observation rather than fixed here, with the
+- [x] Filed as a registered observation rather than fixed here, with the
       candidate fixes named and their trade-offs stated. Widening the focus gate
       to admit just-closed tasks is a governance change, not a chore, and it is
       not this task's call to make.
@@ -299,6 +299,9 @@ noted here only because it compounds the window described above.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bin/fw vendor self --check
+python3 -c "import yaml; yaml.safe_load(open('.context/concerns.yaml'))"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -367,6 +370,25 @@ noted here only because it compounds the window described above.
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+
+**Rationale:** All four Agent ACs are satisfied with direct evidence. The vendor
+drift found live (3 web/ files + VERSION) is synced and `bin/fw vendor self
+--check` now exits 0, so the pre-push gate is clear. The dead-end is registered
+as OBS-250 in `.context/concerns.yaml` rather than fixed — widening any of the
+three composing gates (focus resolution, Tier-1 mutation gate, close-time
+focus-clear) is a governance decision this task shouldn't make unilaterally.
+The convention (sync before close) is now written into CLAUDE.md's
+"Verification" guidance, in the same sibling pattern as the existing
+cron/tool-set drift rules, so the next agent reads it before hitting the same
+dead end rather than after.
+
+**Evidence:**
+- `bin/fw vendor self --check` → `Self-vendor: vendored .agentic-framework/ in sync with source.` (exit 0)
+- Drift found and closed: `web/shared.py`, `web/blueprints/review.py`, `web/templates/review.html`, `VERSION` — diffed byte-identical against `.agentic-framework/` counterparts post-sync
+- `OBS-250` registered in `.context/concerns.yaml` (parses clean, `python3 -c "import yaml; yaml.safe_load(...)"` passes) with root cause, four named candidate fixes with trade-offs, and `status: open`
+- `CLAUDE.md` §Verification Gate (P-011) gained a "Vendored-path-touching tasks" rule mirroring the existing Cron-touching / Tool-set.yaml-touching sibling rules
 
 ## Decisions
 

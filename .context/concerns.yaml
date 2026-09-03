@@ -1,3 +1,56 @@
+- id: OBS-250
+  type: process
+  severity: medium
+  surface: 'fw context focus / fw work-on (focus resolution) vs check-active-task.sh (Tier-1 task
+    gate) vs update-task.sh --status work-completed (focus auto-clear) — three independently
+    correct gates that compose into a dead end for a closed task''s own trailing work'
+  detected_in: T-3236 (investigating why `fw vendor self` after closing a vendor-touching task
+    had no route to run)
+  symptom: 'Closing a task that touched a vendored path (bin/fw, lib/, agents/, policy/, web/,
+    .tasks/templates/) leaves the vendor-sync command it owes with no focus to run under.
+    `--status work-completed` clears focus.yaml as its last act; `fw context focus <closed-id>`
+    then refuses with "Focus must name a task the gates can still work under" because it resolves
+    only against .tasks/active/; `fw work-on <closed-id>` on an id already in completed/ is silent
+    (no error, no re-open); and the Tier-1 gate (check-active-task.sh) refuses `fw vendor self`
+    outright with focus null. Every remaining route is either filing a brand-new task just to
+    run one command, or a logged Tier-2 bypass — not a minor inconvenience, a structural dead
+    end for exactly the piece of work the close itself creates.'
+  root_cause: 'Each of the three gates is independently correct in isolation: focus resolution
+    against active/ only prevents pointing focus at something the gates can no longer act on;
+    the Tier-1 mutation gate correctly requires a task context for any Write/Edit/Bash; and
+    clearing focus at close correctly signals "this task''s work is done". None of the three
+    was designed with the others in view, so their composition creates a window with no
+    focusable task for work a vendor-touching close structurally generates. An earlier draft
+    of this same investigation additionally claimed the close instructs a commit command that
+    the same gate then refuses (heredoc vs literal git commit) — that claim was probed directly
+    against the hook and retracted same-session: the prescribed next-step command passes, only
+    a self-authored heredoc variant was blocked. Recorded in T-3236''s body as a worked example
+    of a negative result reported before the probe matched the claim (see L-653/L-555 class).'
+  prevention: 'NOT YET BUILT — filed as an observation, not fixed, because widening any of the
+    three gates is a governance change outside a single task''s scope. Candidate fixes, named
+    with trade-offs: (a) convention — sync the vendor BEFORE closing, not after, so the window
+    never opens; zero code change, documented in CLAUDE.md (this task), but depends on the agent
+    remembering and was previously only informal (visible in this repo''s own commit history,
+    e.g. "T-3233: close — arm-verb cluster landed, vendor synced"). (b) widen `fw context focus`
+    to accept a just-closed task id for a bounded grace window — lets the closing session finish
+    its own trailing work, but blurs the active/completed boundary the gate exists to enforce
+    and needs its own scoping rule for how long "just closed" lasts. (c) a narrow allowlist in
+    check-active-task.sh admitting `fw vendor self` specifically with focus null — smallest
+    blast radius (the command is self-contained, idempotent, and its own --check verifies the
+    outcome), but is a special case carved into the gate for one command, which invites the
+    next command to ask for the same carve-out. (d) make `--status work-completed` auto-run
+    `fw vendor self` as part of the close sequence when the closing diff touched a vendored
+    path — removes the window by construction, but couples the close transition to vendor-sync
+    logic and changes close''s side effects for every vendor-touching task, including ones
+    where the agent already synced manually.'
+  blast_radius: scoped
+  observed: '2026-09-02'
+  status: open
+  related:
+  - T-3236
+  - T-2240
+  - T-3233
+  follow_up_task: null
 - id: OBS-249
   type: bug
   severity: high

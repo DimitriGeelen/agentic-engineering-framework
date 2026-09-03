@@ -38781,3 +38781,57 @@ scan_id: R-5b48e2fd
 task_id: T-3252
 payload:
   task_file: .tasks/active/T-3252-recommendation-card-silently-drops-text-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-02T08:32:04Z'
+scan_id: R-99b82cfb
+task_id: T-3247
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-02T08:32:04Z'
+scan_id: R-99b82cfb
+task_id: T-3247
+payload:
+  task_file: .tasks/active/T-3247-restart-relaunches-headless-claude-with-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-02T08:47:49Z'
+scan_id: R-4d365554
+task_id: T-3171
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-02T08:47:49Z'
+scan_id: R-4d365554
+task_id: T-3171
+payload:
+  task_file: .tasks/active/T-3171-fw-cron-generateinstall-accept-an-id-les.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T10:10:22Z'
+scan_id: R-1392ea2c
+task_id: T-3253
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T10:10:22Z'
+scan_id: R-1392ea2c
+task_id: T-3253
+payload:
+  task_file: .tasks/active/T-3253-tier-ceiling-breach-disarms-the-loop-but.md
