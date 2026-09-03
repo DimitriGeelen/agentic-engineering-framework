@@ -38943,3 +38943,21 @@ scan_id: R-55b5b193
 task_id: T-3261
 payload:
   task_file: .tasks/active/T-3261-continuous-run-stuck-disarmed-since-2026.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T16:24:15Z'
+scan_id: R-a37f796b
+task_id: T-3260
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T16:24:15Z'
+scan_id: R-a37f796b
+task_id: T-3260
+payload:
+  task_file: .tasks/active/T-3260-session-housekeeping-sweep--audit.md

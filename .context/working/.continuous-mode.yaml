@@ -2,19 +2,18 @@ enabled: true
 max_iterations: 10
 tier_ceiling: 1
 expires_after_seconds: 86400
-current_iteration: 0
-last_resumed_at: '2026-09-03T16:16:47Z'
-last_directive_seen: 'arc-012 continuous-run is BUILD-COMPLETE. The minimum-viable
-  self-driving loop
-
-  has shipped and is live on master: the budget gauge (stdin transcript + worktree
-
-  dir resolution), budget-critical -> auto'
-last_terminated_reason: null
-last_source: resume
+current_iteration: 1
+tasks_completed: 2
+max_tasks: null
+last_resumed_at: '2026-09-03T16:21:12Z'
+last_directive_seen: Resume standard framework operation. Pick up horizon:now active
+  tasks per fw resume status / review-queue order. Respect all structural gates (Tier
+  0/1/2) and the tier ceiling; no --force on any gate.
+last_terminated_reason: ''
+last_source: compact
 disarmed_reason: "T-3164: shipped disarmed. Previously enabled: true while last_terminated_reason\
   \ showed expiry 70 days past \u2014 the flag asserted armed while the loop was structurally\
   \ terminated."
-tasks_completed: 1
 completed_task_ids:
 - T-3261
+- T-3260

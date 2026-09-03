@@ -4,12 +4,12 @@ name: "session housekeeping sweep + audit"
 description: >
   session housekeeping sweep + audit
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tools/t3255-livefire-agent.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-03T15:39:12Z
-last_update: '2026-09-03T15:45:20Z'
-date_finished:
+last_update: 2026-09-03T16:24:14Z
+date_finished: 2026-09-03T16:24:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -77,20 +77,17 @@ bvp_scores_proposed:
 - [x] Accumulated framework bookkeeping (episodic footprints, discard manifests,
   pickup-bridge state, cron/audit snapshots, working-memory files) is committed
   rather than left to keep accumulating uncommitted. Committed (T-3260 sweep commit).
-- [ ] `bin/fw audit` is run and its result reported (pass/warn/fail counts,
+- [x] `bin/fw audit` is run and its result reported (pass/warn/fail counts,
   whether any warning is new/session-caused vs pre-existing drift).
-  **NOT DONE — honest status, not forced green.** `bin/fw audit` was launched
-  and hung: two of its own processes (parent + child) sat blocked in
-  `pipe_read`/`do_wait` for 15+ minutes with zero output, while a THIRD,
-  separately-triggered `audit.sh` (the installed cron entry,
-  `agentic-audit-999-agentic-engineering-framework`) was running concurrently
-  against the same repo. Killed my own two stuck processes (SIGTERM then
-  SIGKILL) rather than leave them running past session end; did NOT touch the
-  cron-triggered instance — not mine to kill. Root cause not investigated
-  (session hit budget-critical wrap-up immediately after); worth a fresh
-  `bin/fw audit` run, and if it hangs again, worth its own bug task —
-  possibly host memory pressure (free -h showed 32GB/64GB swap in use earlier
-  this session) or concurrent-audit lock contention, neither confirmed.
+  **DONE, via the pre-push audit gate on the T-3261 push (2026-09-03T16:18:32Z,
+  saved to `.context/audits/2026-09-03.yaml`): 30 pass / 5 warn / 0 fail.**
+  All 5 warnings are pre-existing systemic drift, none session-caused: GO-scope-not-propagated
+  inceptions (183 of 356, tracked separately T-2078/T-2091/T-3099), fabric drift
+  (62 cards with no edges, 13 source files with no card, 766 cards pointing at
+  unwatched paths), and branch hygiene (22 stale branch/worktree/remote-ref
+  findings). The earlier hang (prior Update) was not reproduced this run —
+  the concurrent cron-triggered audit.sh instance had presumably finished by
+  the time this run fired inline from the push gate.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -336,3 +333,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3260-session-housekeeping-sweep--audit.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a37f796b
+- **Timestamp:** 2026-09-03T16:24:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-03T16:24:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,126 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3260: session housekeeping sweep + audit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T16:24:27Z
+# ============================================================================
+
+task_id: T-3260
+task_name: "session housekeeping sweep + audit"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-03T15:39:12Z
+completed: 2026-09-03T16:24:14Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-03T17:40:31+02:00
+last_commit: 2026-09-03T18:04:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  housekeeping sweep — accumulated framework bookkeeping and background-agent state. record that fw audit hung and was killed rather than force a false green. sweep trailing audit/episodic churn from the pre-push hook's own audit run. housekeeping sweep — fabric registration, metrics, discard manifest
+
+# Key outcomes
+outcomes:
+  - 'Accumulated framework bookkeeping (episodic footprints, discard manifests,'
+  - '`bin/fw audit` is run and its result reported (pass/warn/fail counts,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/VERSION'
+  - '.context/audits/2026-09-03.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/full-audit-timing.yaml'
+  - '.context/episodic/T-3236.yaml'
+  - '.context/episodic/T-3245.yaml'
+  - '.context/episodic/T-3254.yaml'
+  - '.context/episodic/T-3255.yaml'
+  - '.context/episodic/T-3259.yaml'
+  - '.context/handovers/S-2026-0903-1216.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0903-1222.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0903-1633.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0903-1757.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/pickup/.bridge-posted/d67444fb5d2c250b9bd65ed209348159b1c6a15625f298c4e4dda122c46c6117'
+  - '.context/pickup/dedup.log'
+  - '.context/pickup/processed/ring20-apiv1-health-500-optional-dep-bug.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.approval-notified'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pickup-bridge.log'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - 'docs/generated/components/tests-unit-t3247_restart_headless_prompt.md'
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - '.fabric/components/tools-t3255-livefire-agent.yaml'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3211-handover-suggested-first-action-truncate.md'
+  - '.tasks/active/T-3256-termlink-product-feedback--injectpty-inj.md'
+  - '.tasks/active/T-3257-real-agent-live-fire-for-continuous-driv.md'
+  - '.tasks/active/T-3258-pickup-webblueprintsapipy-apiv1health-re.md'
+  - '.tasks/active/T-3260-session-housekeeping-sweep--audit.md'
+  - 'tools/t3255-livefire-agent.sh'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-03T17:40:31'
+    action: 'T-3260: housekeeping sweep — accumulated framework bookkeeping and background-agent state'
+  - time: '2026-09-03T17:57:26'
+    action: 'T-3260: record that fw audit hung and was killed rather than force a false green'
+  - time: '2026-09-03T18:03:08'
+    action: 'T-3260: sweep trailing audit/episodic churn from the pre-push hook''s own audit run'
+  - time: '2026-09-03T18:04:05'
+    action: 'T-3260: housekeeping sweep — fabric registration, metrics, discard manifest'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 45 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 45
+  commits: 4
+  files_changed: 46
+  lines_added: 2842
+  lines_removed: 1481
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3260-session-housekeeping-sweep--audit.md
+generated_by: context-agent-hybrid
