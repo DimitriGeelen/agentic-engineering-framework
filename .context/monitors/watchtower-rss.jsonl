@@ -4302,3 +4302,13 @@
 {"timestamp":"2026-09-04T00:10:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":358596,"rss_kb":355752,"vsz_kb":2317112,"pcpu":7.3,"state":"up"}
 {"timestamp":"2026-09-04T00:15:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":358896,"rss_kb":284140,"vsz_kb":2317112,"pcpu":7.3,"state":"up"}
 {"timestamp":"2026-09-04T00:20:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":359196,"rss_kb":284160,"vsz_kb":2317112,"pcpu":7.3,"state":"up"}
+{"timestamp":"2026-09-04T00:25:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":359496,"rss_kb":284176,"vsz_kb":2317112,"pcpu":7.3,"state":"up"}
+{"timestamp":"2026-09-04T00:30:02+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":359797,"rss_kb":275352,"vsz_kb":2317112,"pcpu":7.3,"state":"up"}
+{"timestamp":"2026-09-04T00:35:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":360096,"rss_kb":265500,"vsz_kb":2317112,"pcpu":7.3,"state":"up"}
+{"timestamp":"2026-09-04T00:40:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":360396,"rss_kb":265524,"vsz_kb":2317112,"pcpu":7.3,"state":"up"}
+{"timestamp":"2026-09-04T00:45:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":360696,"rss_kb":265536,"vsz_kb":2317112,"pcpu":7.3,"state":"up"}
+{"timestamp":"2026-09-04T00:50:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":360996,"rss_kb":283332,"vsz_kb":2317160,"pcpu":7.3,"state":"up"}
+{"timestamp":"2026-09-04T00:55:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":361296,"rss_kb":331304,"vsz_kb":2317128,"pcpu":7.3,"state":"up"}
+{"timestamp":"2026-09-04T01:00:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":361596,"rss_kb":344856,"vsz_kb":2317112,"pcpu":7.4,"state":"up"}
+{"timestamp":"2026-09-04T01:05:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":361896,"rss_kb":363588,"vsz_kb":2317128,"pcpu":7.4,"state":"up"}
+{"timestamp":"2026-09-04T01:10:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":362196,"rss_kb":364220,"vsz_kb":2317112,"pcpu":7.4,"state":"up"}

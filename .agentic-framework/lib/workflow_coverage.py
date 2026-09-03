@@ -31,6 +31,15 @@ WORKFLOWS_DIR = PROJECT_ROOT / ".context" / "project" / "workflows"
 DISPATCHES_JSONL = PROJECT_ROOT / ".context" / "dispatches.jsonl"
 LIB_DIR = Path(__file__).resolve().parent
 
+# T-3273: worker_kinds that are valid (lib.resolver.VALID_WORKER_KINDS) but
+# deliberately absent from lib.spawn._DISPATCHERS — they never spawn a worker
+# at all, so "not in _DISPATCHERS" is not the runtime-trap this checker exists
+# to catch. "ollama-direct" (T-1719 A3) answers synchronously in fw ask's own
+# process; see .context/project/workflows/ask.yaml's header comment and
+# lib/resolver.py:95. Sibling exemption to the `inline:` flag, which excludes
+# non-resolver-driven workflows from the staleness check the same way.
+NON_SPAWNING_WORKER_KINDS = {"ollama-direct"}
+
 # T-1803: a workflow declared but not dispatched in this many days is "stale" —
 # a maintenance signal (consider deprecating), not a runtime failure. Surfaced
 # as audit WARN, not FAIL. Threshold picked as ≈ one quarter; param-injectable
@@ -134,7 +143,9 @@ def check_workflow_dispatcher_coverage(
     unroutable_workflows = [
         {"name": name, "worker_kind": d["worker_kind"]}
         for name, d in workflow_data.items()
-        if d["worker_kind"] and d["worker_kind"] not in routable
+        if d["worker_kind"]
+        and d["worker_kind"] not in routable
+        and d["worker_kind"] not in NON_SPAWNING_WORKER_KINDS
     ]
     # T-1800: pi workflows MUST declare a provider field — lib/spawn._spawn_pi
     # raises SpawnError when both envelope and workflow lack one. Audit-time

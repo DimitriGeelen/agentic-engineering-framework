@@ -4613,7 +4613,7 @@ for task_file in "$TASKS_DIR/active"/*.md "$TASKS_DIR/completed"/*.md; do
     task_commits=$(git -C "$PROJECT_ROOT" log --oneline --all --grep="$task_id" 2>/dev/null | wc -l | tr -d ' ')
     if [ "$task_commits" -gt 2 ]; then
         # Check for decision
-        has_decision=$(grep -c "inception-decision\|fw inception decide\|Decision:.*GO\|Decision:.*NO-GO\|Decision\*\*: DEFER\|Decision: DEFER\|Decision\*\*: SUPERSEDED\|Decision: SUPERSEDED" "$task_file" 2>/dev/null || true)
+        has_decision=$(grep -c "inception-decision\|fw inception decide\|Decision:.*GO\|Decision:.*NO-GO\|Decision\*\*: GO\|Decision\*\*: NO-GO\|Decision\*\*: DEFER\|Decision: DEFER\|Decision\*\*: SUPERSEDED\|Decision: SUPERSEDED" "$task_file" 2>/dev/null || true)
         has_decision=$(echo "$has_decision" | tr -d '[:space:]')
         # Check for bypass log entries
         has_bypass=$(grep -c "$task_id" "$CONTEXT_DIR/bypass-log.yaml" 2>/dev/null || true)

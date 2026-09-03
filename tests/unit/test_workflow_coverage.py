@@ -124,6 +124,34 @@ def test_completely_invalid_worker_kind_fails(coverage):
     assert r["unroutable_workflows"][0]["worker_kind"] == "frobnicate-3000"
 
 
+def test_ollama_direct_not_flagged_unroutable(coverage):
+    """T-3273: ollama-direct is a VALID_WORKER_KINDS member deliberately
+    absent from _DISPATCHERS (fw ask answers synchronously, never spawns).
+    It must not be reported as the runtime-trap class this checker exists
+    to catch."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "wf-pi", "pi", provider="anthropic")
+    _write_workflow(wf_dir, "ask", "ollama-direct")
+
+    r = wc.check_workflow_dispatcher_coverage()
+    assert r["ok"] is True
+    assert r["unroutable_workflows"] == []
+
+
+def test_ollama_direct_exemption_does_not_widen_to_other_kinds(coverage):
+    """The ollama-direct exemption is scoped to that one documented kind —
+    a genuinely unroutable worker_kind alongside it must still fail."""
+    wc, wf_dir = coverage
+    _write_workflow(wf_dir, "ask", "ollama-direct")
+    _write_workflow(wf_dir, "wf-task", "Task")
+
+    r = wc.check_workflow_dispatcher_coverage()
+    assert r["ok"] is False
+    bad = r["unroutable_workflows"]
+    assert len(bad) == 1
+    assert bad[0]["name"] == "wf-task"
+
+
 # ─── degradation paths ──────────────────────────────────────────────────────
 
 

@@ -39123,3 +39123,39 @@ scan_id: R-1c17c138
 task_id: T-3271
 payload:
   task_file: .tasks/active/T-3271-push-blocked--self-vendor-drift-on-files.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T23:09:04Z'
+scan_id: R-ba047425
+task_id: T-3272
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T23:09:04Z'
+scan_id: R-ba047425
+task_id: T-3272
+payload:
+  task_file: .tasks/active/T-3272-ctl-009-grep-misses-bold-markdown-decisi.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T23:11:50Z'
+scan_id: R-58b841bc
+task_id: T-3273
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T23:11:50Z'
+scan_id: R-58b841bc
+task_id: T-3273
+payload:
+  task_file: .tasks/active/T-3273-workflowcoverage-fail-false-positive-on-.md
