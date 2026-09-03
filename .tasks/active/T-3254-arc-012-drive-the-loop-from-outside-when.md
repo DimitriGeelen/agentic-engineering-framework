@@ -229,14 +229,14 @@ indistinguishability that made E9's ceiling result meaningless.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] T-3253 is closed before any injection path is wired — verified by the task
+- [x] T-3253 is closed before any injection path is wired — verified by the task
       being in `.tasks/completed/`. This is a build-order gate, not a courtesy.
-- [ ] The driver refuses to inject on every one of the six armed conditions, one
+- [x] The driver refuses to inject on every one of the six armed conditions, one
       test per condition, each with a passing control so a refusal that fires for
       the wrong reason is distinguishable from one that fires for the right one.
-- [ ] The driver refuses to inject into a `busy` session, and the test proves it
+- [x] The driver refuses to inject into a `busy` session, and the test proves it
       by observing the session state rather than by asserting the refusal message.
-- [ ] Every injection and every refusal appends a typed entry to
+- [x] Every injection and every refusal appends a typed entry to
       `.context/working/continuous-run.jsonl`, so a reader can reconstruct why the
       loop did or did not continue at each tick without re-running anything.
 - [ ] Live-fire: a sandbox session that stops early with backlog remaining is
@@ -405,6 +405,14 @@ ls .tasks/completed/T-3253-*.md >/dev/null 2>&1
 # task adds a cron entry, so BOTH clauses are required - the in-sync line alone still
 # fires when the registry was edited and never regenerated.
 out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+# The refusal suite. Two lines because they answer different questions: "did anything
+# fail" and "did everything run" — a bats skip reports as `ok` (T-3217), and the six
+# armed conditions are exactly the kind of thing that would skip silently.
+timeout 600 bats tests/unit/t3254_driver_refusals.bats > /tmp/.t3254.out 2>&1 && ! grep -q "^not ok" /tmp/.t3254.out
+test "$(grep -c '# skip' /tmp/.t3254.out)" -eq 0
+# Vendored paths: this task edits lib/ and agents/, both vendored. Sync BEFORE close
+# (OBS-250) — after close there is no task the sync can run under.
+bin/fw vendor self --check
 
 ## RCA
 

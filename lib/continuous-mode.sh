@@ -184,6 +184,25 @@ PY
 # 2026-06-17 passed (now 2026-08-26)" — a frozen `now`, recited rather than
 # computed, which reads as current and is not.
 # ---------------------------------------------------------------------------
+# T-3254 follow-up. The injector is FRAMEWORK-owned code, not project data, so it is
+# resolved from FRAMEWORK_ROOT and only falls back to the project tree.
+#
+# It used to be "${root}/agents/context/inject-next-directive.py", with root =
+# PROJECT_ROOT. That path exists in THIS repo (where the two roots coincide) and
+# nowhere else. On any consumer project the import raised FileNotFoundError, which
+# `_emit_json` correctly refuses to treat as a green light -- so `may_inject` was
+# false forever and the driver could never fire. Fail-safe, and completely inert:
+# exactly the shape that passes every test written inside the framework repo.
+_cm_injector_path() {
+    local proj="${1:-}" c
+    for c in "${FRAMEWORK_ROOT:-}" "$proj" "$proj/.agentic-framework"; do
+        [ -n "$c" ] || continue
+        [ -f "$c/agents/context/inject-next-directive.py" ] || continue
+        printf '%s\n' "$c/agents/context/inject-next-directive.py"; return 0
+    done
+    printf '%s\n' "${FRAMEWORK_ROOT:-$proj}/agents/context/inject-next-directive.py"
+}
+
 fw_continuous_cli() {
     local action="${1:-status}"; shift || true
     local root="${PROJECT_ROOT:-$(pwd)}"
@@ -222,7 +241,7 @@ fw_continuous_cli() {
     FW_CM_HALT="$halt" FW_CM_HOURS="$hours" FW_CM_ITERS="$iters" \
     FW_CM_CEILING="$ceiling" FW_CM_REASON="$reason" FW_CM_TEXT="$text" \
     FW_CM_MAXTASKS="$maxtasks" FW_CM_JSON="$json" FW_CM_ROOT="$root" \
-    FW_CM_INJECTOR="${root}/agents/context/inject-next-directive.py" \
+    FW_CM_INJECTOR="$(_cm_injector_path "$root")" \
     python3 - <<'PYCM'
 import os, sys, datetime, tempfile, json
 try:
