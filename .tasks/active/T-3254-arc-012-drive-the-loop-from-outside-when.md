@@ -507,6 +507,31 @@ bin/fw vendor self --check
 - **Triggered:** Nothing filed; the trade is recorded in the driver's header so it
   is not "simplified" away later.
 
+### 2026-09-03 — tearing down a spawned session takes three kills, not one
+
+- **What changed:** The live-fire harness leaked ten orphan sessions across its
+  debugging runs before this was noticed. `termlink spawn` uses a tmux backend AND
+  a separate long-lived `termlink register --name <session>` process holds the
+  registration, so neither obvious teardown is sufficient:
+  - `tmux kill-session` ends the shell but leaves the register holder alive; the
+    session keeps appearing in `termlink list` as `ready`, with a live PID and no
+    terminal behind it.
+  - `termlink clean` removes only STALE registrations and correctly reports "No
+    stale sessions found" while that holder runs — it is not stale, it is alive
+    and pointing at a tmux session that no longer exists.
+  - **`termlink deregister` does not exist as a CLI subcommand at all** (only as
+    an MCP tool). Under `2>/dev/null` it is a silent no-op, which is exactly how
+    the first version of the trap appeared to work while cleaning nothing.
+- **Plan impact:** None to the driver — this is harness hygiene. But it is the
+  *fourth* instance today of the same shape: a command that looks like it worked
+  because its failure was discarded. Three were in the driver, this one in the
+  test harness, and CLAUDE.md's own cleanup guidance (`termlink signal SIGTERM` +
+  `termlink clean`) is incomplete for spawned sessions for the same reason.
+- **Triggered:** Trap corrected to kill all three. Worth noting that this is the
+  same "ready means REGISTERED, not IDLE" fact the busy check is built around,
+  surfacing here as sessions reporting ready with their terminal already gone —
+  which is corroboration of that design note from an unexpected direction.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it

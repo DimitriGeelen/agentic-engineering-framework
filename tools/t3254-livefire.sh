@@ -37,9 +37,41 @@ say()  { printf '\n\033[1m%s\033[0m\n' "$*"; }
 ok()   { PASS=$((PASS+1)); printf '  \033[0;32mPASS\033[0m  %s\n' "$*"; }
 bad()  { FAIL=$((FAIL+1)); printf '  \033[0;31mFAIL\033[0m  %s\n' "$*"; }
 
+# CLEANUP TAKES THREE KILLS, AND THE OBVIOUS TWO ARE NOT ENOUGH.
+#
+# `spawn` uses a tmux backend and registration is held by a separate long-lived
+# `termlink register --name <session>` process. So:
+#   - `tmux kill-session` ends the shell but leaves the register holder alive, and
+#     the session keeps appearing in `termlink list` as `ready` with a live PID;
+#   - `termlink clean` removes only STALE registrations, and correctly reports
+#     "No stale sessions found" while that holder is running — it is not stale,
+#     it is alive and pointing at a tmux session that no longer exists;
+#   - `termlink deregister` DOES NOT EXIST as a CLI subcommand (it exists only as
+#     an MCP tool). Calling it is a silent no-op under 2>/dev/null, which is how
+#     the first version of this trap appeared to work while cleaning nothing.
+#
+# Measured: ten orphans accumulated across the debugging runs of this very script.
+# Note this is the same "ready means REGISTERED, not IDLE" fact the driver's busy
+# check is built around — here it shows up as sessions reporting ready with their
+# terminal already gone.
 cleanup() {
     timeout 15 termlink signal "$SESSION" SIGTERM >/dev/null 2>&1
-    timeout 15 termlink deregister "$SESSION" >/dev/null 2>&1
+    tmux kill-session -t "tl-$SESSION" >/dev/null 2>&1
+    # The registration holder, matched on its own command line. NOT via
+    # `termlink list`: that table TRUNCATES display names ("t3254-livefire…"), so a
+    # name match against its output silently finds nothing and the holder survives —
+    # which is how this trap still leaked one session after the first fix.
+    #
+    # pgrep-then-kill rather than `pkill -f`, and self is skipped explicitly: a
+    # -f pattern matches ANY process whose command line contains it, including the
+    # shell that is running the pkill. Measured the hard way — a bare
+    # `pkill -f "termlink register --name t3254"` typed at a prompt killed its own
+    # shell (exit 144, no output), because the pattern was sitting in its argv.
+    local _p
+    for _p in $(pgrep -f "termlink register --name $SESSION" 2>/dev/null); do
+        [ "$_p" = "$$" ] && continue
+        kill "$_p" >/dev/null 2>&1
+    done
     timeout 15 termlink clean >/dev/null 2>&1
     [ "$KEEP" = 1 ] || rm -rf "$BASE"
 }
