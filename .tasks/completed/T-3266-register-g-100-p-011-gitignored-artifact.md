@@ -6,10 +6,10 @@ description: >
   Register G-100: P-011 gitignored-artifact verification gap (dispatched from 001-CashWeb
   T-237)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-03T19:44:42Z
-last_update: '2026-09-03T19:45:20Z'
-date_finished:
+last_update: 2026-09-03T19:48:15Z
+date_finished: 2026-09-03T19:48:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -336,3 +336,20 @@ out=$(python3 -c "import yaml; d=yaml.safe_load(open('.context/project/concerns.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3266-register-g-100-p-011-gitignored-artifact.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-aaa7e8f5
+- **Timestamp:** 2026-09-03T19:48:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `.context/project/concerns.yaml` contains a new `G-100` entry documenting the
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/concerns.yaml in: `.context/project/concerns.yaml` contains a new `G-100` entry documenting the`
+
+### 2026-09-03T19:48:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

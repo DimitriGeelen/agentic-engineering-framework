@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3266: Register G-100: P-011 gitignored-artifact verification gap (dispatched from 001-CashWeb T-237)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T19:48:34Z
+# ============================================================================
+
+task_id: T-3266
+task_name: "Register G-100: P-011 gitignored-artifact verification gap (dispatched from 001-CashWeb T-237)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-03T19:44:42Z
+completed: 2026-09-03T19:48:15Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-03T21:48:10+02:00
+last_commit: 2026-09-03T21:48:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register G-100 — P-011 gitignored-artifact verification gap
+
+# Key outcomes
+outcomes:
+  - '`.context/project/concerns.yaml` contains a new `G-100` entry documenting the'
+  - 'The entry cross-links the reporting task (`001-CashWeb T-237`) and this task (`T-3266`)'
+  - '`concerns.yaml` still parses as valid YAML after the edit'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-3266-register-g-100-p-011-gitignored-artifact.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-03T21:48:10'
+    action: 'T-3266: register G-100 — P-011 gitignored-artifact verification gap'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 388
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3266-register-g-100-p-011-gitignored-artifact.md
+generated_by: context-agent-hybrid
