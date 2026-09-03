@@ -149,11 +149,56 @@ bvp_scores_proposed:
 # matching build command (dotnet build / go build / cargo check / tsc --noEmit /
 # mvn compile) to that build task's ## Verification — P-011 only runs what you write.
 
+## Candidate Answers
+
+<!-- Agent-supplied candidates. The decision itself remains the operator's; nothing
+     here modifies the Recommendation below. -->
+
+### 2026-09-03 — Candidate C: drive from outside, not from inside (operator-proposed)
+
+Filed as **T-3254**. An external cron reads `.continuous-mode.yaml` and **injects**
+a turn into an idle registered session when the armed conditions hold.
+
+**Why it bears on this decision.** An injected prompt is a *new user turn*, not a
+hook-driven continuation, so Claude Code never sets `stop_hook_active` for it. The
+cap this task was filed about is therefore **sidestepped rather than widened** —
+the vendor's runaway guard stays exactly where it is, fully intact, and keeps
+doing its job for the M1 path we would no longer be using.
+
+**It dissolves half the stated blocker.** The rationale below says the question
+"cannot be answered without also deciding what in-session counter would bound it."
+Candidate C needs **no in-session counter at all**: cron is wall-clock
+rate-limited by construction, so the runaway ceiling is a property of the
+scheduler rather than of logic we have to get right. A hook loop can re-drive
+itself at machine speed; this cannot inject more than once per tick. That is a
+materially stronger guarantee than any counter we would have written.
+
+**What it does NOT dissolve.** The autonomy-ceiling half is untouched, and one
+thing gets sharper: going *around* the guard means **we own the bounding
+entirely**. The exposure is relocated, not removed. So the operator question
+narrows from *"should a session drive more than one turn, and bounded by what?"*
+to *"is an externally-driven turn acceptable, given that our four bounds
+(`max_iterations`, `max_tasks`, expiry, tier ceiling) are the only thing standing
+behind it?"*
+
+**Hard prerequisite.** Those four bounds do not currently bind. E10 (T-3250)
+measured the tier ceiling recording a breach, freezing the counter and disarming
+the state file while the session closed the over-ceiling task anyway;
+`max_iterations` has the identical hole. **T-3253 must land first** — T-3254
+asserts that mechanically rather than trusting anyone to remember it.
+
 ## Recommendation
 
 **Recommendation:** DEFER
 
 **Rationale:** Evidence gap is genuine: the measurement establishes the cap is one continuation, but whether the loop SHOULD run longer per session is an operator call about autonomy ceiling, and it cannot be answered without also deciding what in-session counter would bound it. Both halves need the operator.
+
+<!-- 2026-09-03: the second half of this rationale ("cannot be answered without
+     deciding what in-session counter would bound it") is superseded by Candidate C
+     above, which requires no in-session counter. Left unedited because the
+     Recommendation is the operator's to revise, not the agent's. -->
+
+## Decisions
 
 ## Decisions
 
