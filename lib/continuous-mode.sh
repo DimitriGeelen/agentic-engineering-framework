@@ -191,7 +191,7 @@ fw_continuous_cli() {
     local state="$wdir/.continuous-mode.yaml"
     local directive="$wdir/.next-directive.yaml"
     local halt="${FW_CONTINUOUS_HALT:-$wdir/.continuous-halt}"
-    local hours="" iters="" ceiling="" reason="" text="" maxtasks=""
+    local hours="" iters="" ceiling="" reason="" text="" maxtasks="" json=0
 
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -201,6 +201,7 @@ fw_continuous_cli() {
             --max-tasks) maxtasks="$2"; shift 2 ;;
             --reason) reason="$2"; shift 2 ;;
             --directive) text="$2"; shift 2 ;;
+            --json) json=1; shift ;;
             *) echo "fw continuous: unknown option '$1'" >&2; return 2 ;;
         esac
     done
@@ -220,9 +221,10 @@ fw_continuous_cli() {
     FW_CM_ACTION="$action" FW_CM_STATE="$state" FW_CM_DIRECTIVE="$directive" \
     FW_CM_HALT="$halt" FW_CM_HOURS="$hours" FW_CM_ITERS="$iters" \
     FW_CM_CEILING="$ceiling" FW_CM_REASON="$reason" FW_CM_TEXT="$text" \
-    FW_CM_MAXTASKS="$maxtasks" \
+    FW_CM_MAXTASKS="$maxtasks" FW_CM_JSON="$json" FW_CM_ROOT="$root" \
+    FW_CM_INJECTOR="${root}/agents/context/inject-next-directive.py" \
     python3 - <<'PYCM'
-import os, sys, datetime, tempfile
+import os, sys, datetime, tempfile, json
 try:
     import yaml
 except ImportError:
@@ -323,7 +325,97 @@ def effective_max_tasks(st, dr):
 
 state, directive = load(sp), load(dp)
 
+# T-3254: the machine-readable form of the SAME verdict the text form prints.
+#
+# The driver that injects a continuation turn from OUTSIDE the session must refuse
+# on exactly the bounds the SessionStart path refuses on. The way to guarantee that
+# is not to re-type them in the driver -- it is to have ONE evaluator and give it a
+# second output shape. `verdict()` above is that evaluator; this adds the shape.
+#
+# It also carries the two conditions `verdict()` does not reach, so a caller sees
+# all six in one place:
+#   - `terminated`: a recorded death. T-3167 makes a terminating write also disarm,
+#     so this is strictly narrower than `enabled` and never disagrees with it -- but
+#     it is reported separately because "never armed" and "armed, then stopped" mean
+#     opposite things to whoever reads the refusal.
+#   - `ceiling_breached`: needs the planned next action AND its blast-radius, which
+#     is the injector's join, so the injector's own functions are imported rather
+#     than reimplemented. An unresolvable radius is NOT a breach (the enforcer's own
+#     `is not None` semantics) and is reported as null, so it stays distinguishable
+#     from a measured zero.
+def _emit_json(state, directive):
+    st, why = verdict(state, directive)
+    blockers = []
+    if os.path.exists(halt):
+        blockers.append("halt-file present at %s" % halt)
+    if state.get("enabled") is not True:
+        blockers.append("enabled=%r (not armed)" % state.get("enabled"))
+    stored = state.get("last_terminated_reason")
+    stored = stored.strip() if isinstance(stored, str) and stored.strip() else None
+    if stored:
+        blockers.append("recorded termination: %s" % stored)
+    cur = as_int(state.get("current_iteration"), 0) or 0
+    mi = as_int(directive.get("max_iterations"), as_int(state.get("max_iterations")))
+    if mi is not None and cur + 1 > mi:
+        blockers.append("max_iterations reached (%d > %d)" % (cur + 1, mi))
+    dn = as_int(state.get("tasks_completed"), 0) or 0
+    mt = effective_max_tasks(state, directive)
+    if mt is not None and dn >= mt:
+        blockers.append("max_tasks reached (%d >= %d)" % (dn, mt))
+    exp = parse_ts(directive.get("expires_at"))
+    if exp is None:
+        secs, filed = as_int(state.get("expires_after_seconds")), parse_ts(directive.get("filed_at"))
+        if secs is not None and filed is not None:
+            exp = filed + datetime.timedelta(seconds=secs)
+    if exp is not None and now > exp:
+        blockers.append("expires_at %s lapsed" % exp.strftime(Z))
+
+    ceiling = effective_ceiling(state, directive)
+    task_ref, blast, breached = None, None, None
+    try:
+        import importlib.util, pathlib
+        spec = importlib.util.spec_from_file_location("_inj", os.environ.get("FW_CM_INJECTOR", ""))
+        inj = importlib.util.module_from_spec(spec); spec.loader.exec_module(inj)
+        d_text = directive.get("directive") or ""
+        task_ref = directive.get("next_task") or inj.find_task_reference(d_text)
+        if task_ref:
+            blast = inj.resolve_task_blast_radius(pathlib.Path(os.environ.get("FW_CM_ROOT", ".")), task_ref)
+            if blast is not None and blast > ceiling:
+                breached = True
+                blockers.append("tier ceiling exceeded: %s blast-radius %d > tier_ceiling %d" % (task_ref, blast, ceiling))
+            elif blast is not None:
+                breached = False
+    except Exception as exc:
+        # Reported, never swallowed. A caller must be able to tell "no breach" from
+        # "the breach could not be evaluated" -- the second is not a green light,
+        # and silently treating it as one is how a ceiling stops binding.
+        blockers.append("ceiling check unavailable: %s" % exc.__class__.__name__)
+
+    print(json.dumps({
+        "status": st,
+        "reason": why,
+        "may_inject": st == "ARMED" and not blockers,
+        "blockers": blockers,
+        "enabled": state.get("enabled") is True,
+        "terminated": stored,
+        "halted": os.path.exists(halt),
+        "iteration": cur,
+        "max_iterations": mi,
+        "tasks_completed": dn,
+        "max_tasks": mt,
+        "tier_ceiling": ceiling,
+        "planned_task": task_ref,
+        "planned_blast_radius": blast,
+        "ceiling_breached": breached,
+        "expires_at": exp.strftime(Z) if exp is not None else None,
+        "now": now.strftime(Z),
+        "directive": (directive.get("directive") or "").strip() or None,
+    }, indent=2))
+    sys.exit(0 if (st == "ARMED" and not blockers) else 1)
+
 if act == "status":
+    if os.environ.get("FW_CM_JSON") == "1":
+        _emit_json(state, directive)
     st, why = verdict(state, directive)
     print(f"Continuous mode: {st}")
     print(f"  Reason (live): {why}")
