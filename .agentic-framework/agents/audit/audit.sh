@@ -2990,6 +2990,63 @@ check_gitignore_register() {
 }
 check_gitignore_register
 
+# T-3262 (G-099). `fw doctor` (bin/fw:2390+) already compares the
+# continuous-run wrapper ledger against the turn-driver state and WARNs when
+# they disagree — but doctor is pull-only, and it was THIS daily cron that
+# actually ran unattended through the 8-day blind window (2026-08-26 ->
+# 2026-09-03) the disagreement produced, with nothing in it watching for the
+# same drift. Mirror doctor's comparison here so the cron path catches it
+# without anyone needing to run `fw doctor` by hand.
+check_continuous_run_turn_driver() {
+    local _crl="$PROJECT_ROOT/.context/working/continuous-run.jsonl"
+    [ -f "$_crl" ] || return 0
+    local _out
+    _out=$(python3 - "$_crl" <<'PY' 2>/dev/null
+import json, sys
+last = None
+try:
+    with open(sys.argv[1], encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                last = json.loads(line)
+            except Exception:
+                continue
+except Exception:
+    pass
+if last:
+    print(f"{last.get('event','?')}\t{last.get('reason','?')}\t{last.get('ts','?')}\t{last.get('detail','')}")
+PY
+)
+    [ -n "$_out" ] || return 0
+    local _ev _reason _ts _detail
+    _ev=$(printf '%s' "$_out" | cut -f1)
+    _reason=$(printf '%s' "$_out" | cut -f2)
+    _ts=$(printf '%s' "$_out" | cut -f3)
+    _detail=$(printf '%s' "$_out" | cut -f4)
+    case "$_ev" in
+        start|iterate)
+            [ -f "$FRAMEWORK_ROOT/lib/continuous-mode.sh" ] || return 0
+            # shellcheck source=/dev/null
+            source "$FRAMEWORK_ROOT/lib/continuous-mode.sh"
+            local _live
+            if ! _live=$(fw_continuous_cli status 2>/dev/null); then
+                warn "Continuous-run wrapper last recorded ARMED but the turn driver is not" \
+                     "$(printf '%s' "$_live" | sed -n 's/^  Reason (live): //p')" \
+                     "fw continuous arm --hours N --iterations N --directive '...' (T-3225). Same drift class as the 74-day and 8-day prior incidents (G-099)."
+            fi
+            ;;
+        exit)
+            warn "Continuous-run loop STOPPED: ${_reason}" \
+                 "${_ts} — ${_detail}" \
+                 "Relaunch with: claude-fw"
+            ;;
+    esac
+}
+check_continuous_run_turn_driver
+
 echo ""
 fi # end structure
 

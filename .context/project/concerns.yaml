@@ -4777,25 +4777,32 @@ concerns:
   follow_up_task: T-3259
 - id: G-099
   type: gap
-  title: continuous-run circuit breaker replays a frozen termination reason forever with no operator-facing drift surface
-  description: '.continuous-mode.yaml has been `enabled: false` since 2026-08-26 (8 days) because `.next-directive.yaml`
-    is a one-shot arc-012 live-fire demo directive filed 2026-06-14 with `expires_at: 2026-06-17` --
+  title: continuous-run circuit breaker's drift detector existed only in pull-only `fw doctor`, not the daily cron
+  description: '.continuous-mode.yaml had been `enabled: false` since 2026-08-26 (8 days) because `.next-directive.yaml`
+    was a one-shot arc-012 live-fire demo directive filed 2026-06-14 with `expires_at: 2026-06-17` --
     three months stale -- and nothing replaced it once the demo it was written for completed and shipped.
     `claude-fw`''s restart guard (`_continuous_terminated()`, bin/claude-fw:388) reads `last_terminated_reason`
     as a static string and replays it verbatim on every restart attempt without re-evaluating anything
     -- a deliberate one-way latch (lib/continuous-mode.sh:165-186 comment already documents an IDENTICAL
-    prior 74-day instance of this exact symptom). Nothing in `fw doctor` or any cron surfaces "continuous-run
-    has sat disarmed for N days" or "claude-fw is cycling start/exit every few seconds" -- the only way
-    to discover it was reading `continuous-run.jsonl` by hand and noticing repeated ~16-second start-to-exit
-    cycles. Combined with a session running under the G-098 background-job daemon (this instance: job
-    b7479a99, sibling to G-098''s 654cf2d7), the operator experienced this as "kicked out again, continuous
-    loop still not working" with no diagnostic surfaced anywhere.
+    prior 74-day instance of this exact symptom).
+
+    CORRECTION (T-3262, same-day self-catch before shipping a duplicate fix): the original filing of
+    this gap claimed "nothing in fw doctor... surfaces this" -- that was wrong. `fw doctor` (bin/fw:2390+)
+    already compares the wrapper ledger (continuous-run.jsonl) against the live turn-driver state and
+    explicitly WARNs "...but the TURN DRIVER is not armed" on exactly this disagreement, carrying its
+    own comment describing the prior 74-day incident. The REAL gap was narrower: that detector is
+    pull-only (manual `fw doctor` invocation), and the thing that actually ran unattended through the
+    8-day blind window -- the daily cron''d `fw audit` (agents/audit/audit.sh) -- had zero continuous-mode
+    checks at all. Combined with a session running under the G-098 background-job daemon (this instance:
+    job b7479a99, sibling to G-098''s 654cf2d7), the operator experienced this as "kicked out again,
+    continuous loop still not working" with no cron-surfaced diagnostic anywhere.
 
     '
   spec_reference: lib/continuous-mode.sh:165-186 (comment documents the identical prior 74-day instance);
-    bin/claude-fw:370-408 (_continuous_terminated, _continuous_preflight)
+    bin/fw:2390-2469 (the pre-existing doctor comparison, correct all along); agents/audit/audit.sh (had
+    zero continuous-mode coverage prior to T-3262)
   severity: medium
-  status: open
+  status: mitigated
   detected_in: T-3261
   observed: '2026-09-03'
   reported_by: operator ("I was not able to come back in this session again. We got kicked out again.
@@ -4805,19 +4812,24 @@ concerns:
     file is present spins a full refuse-and-exit cycle (~16s) instead of either launching a normal interactive
     session or surfacing the disarmed state clearly at launch time. This is the SECOND occurrence of the
     exact symptom lib/continuous-mode.sh already documents from a prior 74-day instance -- T-3225's status/arm
-    CLI improved diagnosability (fw continuous status now re-evaluates live) but added no proactive surfacing,
-    so the same class recurred and again went unnoticed for over a week.
-  what_works_now: '`fw continuous status` re-evaluates the predicate chain live and correctly reports
-    STOPPED with the real reasons (enabled=False, directive expired) -- diagnosis took minutes once someone
-    ran it. `fw continuous arm` exists as a sanctioned single-command re-arm path (T-3225), avoiding the
-    old five-field hand-edit-across-two-files failure mode.'
-  what_remains: 'No proactive signal exists for "continuous-mode has been disarmed for >N days" or "claude-fw
-    keeps cycling start/exit within seconds of each other." Both are cheap `fw doctor` checks: (a) WARN
-    when enabled=false and age(last_resumed_at) exceeds a threshold while a restart-signal keeps reappearing,
-    or (b) WARN when continuous-run.jsonl shows N consecutive start-to-exit pairs under some short interval
-    (e.g. <60s) within the trailing hour. Filed as follow-up scope on T-3261 rather than fixed here, since
-    it is a new detector, not a re-arm.'
+    CLI improved diagnosability and bin/fw:2390+''s doctor check improved detection, but neither ran
+    unattended, so the same class recurred and again went unnoticed for over a week.
+  what_works_now: '`fw continuous status`/`fw doctor` both re-evaluate the predicate chain live and correctly
+    report the real disagreement between wrapper ledger and turn driver. `fw continuous arm` exists as
+    a sanctioned single-command re-arm path (T-3225). T-3262 ported the same comparison into `agents/audit/audit.sh`,
+    so the daily cron now WARNs on this drift class without anyone needing to run `fw doctor` by hand --
+    verified against 3 isolated fixture cases (disarmed+expired -> WARN, armed+fresh -> silent, wrapper
+    exit-recorded -> WARN) and a clean `bash -n` + vendor-sync check; a full end-to-end `bin/fw audit`
+    run was not completed as evidence (see T-3262 AC notes -- the audit is long-running by design, not
+    hung, and the isolated verification stands on its own).'
+  what_remains: 'No detector yet for "claude-fw is cycling start/exit every few seconds" (as opposed to
+    "wrapper says armed but turn driver disagrees", which T-3262 now covers). A WARN when continuous-run.jsonl
+    shows N consecutive start-to-exit pairs under some short interval (e.g. <60s) within the trailing hour
+    would catch the cycling pattern itself, one level earlier than the drift it produces. Not filed as
+    its own task -- narrow enough to fold into a future continuous-run audit pass if the cycling pattern
+    recurs.'
   related:
   - T-3261
+  - T-3262
   - G-098
-  follow_up_task: T-3261
+  follow_up_task: T-3262

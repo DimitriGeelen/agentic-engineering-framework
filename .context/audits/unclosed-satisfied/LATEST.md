@@ -26,7 +26,7 @@ alone (CLAUDE.md Human Task Completion Rule).
 Rows with an empty `## Verification` block need that scrutiny most —
 nothing mechanical would gate their close.
 
-## Qualifying tasks (16)
+## Qualifying tasks (15)
 
 | Task | Status | Workflow | Name | Agent ACs | Verification cmds? |
 |------|--------|----------|------|----------:|--------------------|
@@ -42,7 +42,6 @@ nothing mechanical would gate their close.
 | T-2876 | started-work | inception | Interpreter-mediated writes bypass the Bash task gat... | 3 | **no** |
 | T-2969 | started-work | build | draft arc with all constituents complete is reported... | 5 | yes |
 | T-3215 | started-work | build | Port T-1032 next-hint from consumer 002 — post-move ... | 5 | yes |
-| T-3236 | started-work | build | vendor sync after close is unreachable — the focus g... | 4 | yes |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |

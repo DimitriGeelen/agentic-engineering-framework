@@ -3,7 +3,7 @@ max_iterations: 10
 tier_ceiling: 1
 expires_after_seconds: 86400
 current_iteration: 1
-tasks_completed: 2
+tasks_completed: 3
 max_tasks: null
 last_resumed_at: '2026-09-03T16:21:12Z'
 last_directive_seen: Resume standard framework operation. Pick up horizon:now active
@@ -17,3 +17,4 @@ disarmed_reason: "T-3164: shipped disarmed. Previously enabled: true while last_
 completed_task_ids:
 - T-3261
 - T-3260
+- T-3262

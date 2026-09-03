@@ -38961,3 +38961,21 @@ scan_id: R-a37f796b
 task_id: T-3260
 payload:
   task_file: .tasks/active/T-3260-session-housekeeping-sweep--audit.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T16:57:02Z'
+scan_id: R-ac901814
+task_id: T-3262
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T16:57:02Z'
+scan_id: R-ac901814
+task_id: T-3262
+payload:
+  task_file: .tasks/active/T-3262-fw-doctor-warn-when-continuous-run-has-b.md

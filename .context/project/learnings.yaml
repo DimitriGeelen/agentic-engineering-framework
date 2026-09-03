@@ -4882,3 +4882,9 @@ X'` returning empty group."
   task: T-3250
   date: 2026-09-02
   context: Added via context agent
+- id: L-658
+  learning: "Before filing a gap claiming 'no detector/check exists for X', grep the codebase for an existing one first. G-099's first draft claimed no fw doctor check covered continuous-run staleness; a pre-existing, well-designed check already lived at bin/fw:2390+ (wrapper-ledger-vs-turn-driver comparison). The real gap was narrower and different: the check was pull-only (manual fw doctor) while the thing that ran unattended (daily cron'd fw audit) had zero coverage. Caught before shipping a duplicate/wrong fix only because a bash -n + doctor-output diff was run before committing — cheap verification that should be routine before any 'this is missing' claim, not just before any code change."
+  source: P-001
+  task: T-3262
+  date: 2026-09-03
+  context: Added via context agent

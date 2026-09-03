@@ -116,10 +116,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 45
-  commits: 4
-  files_changed: 46
-  lines_added: 2842
-  lines_removed: 1481
+  commits: 5
+  files_changed: 50
+  lines_added: 3085
+  lines_removed: 1559
+  footprint_refreshed_at: '2026-09-03T16:25:14Z'
+  footprint_refreshed_by_commit: 253a55a46
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3260-session-housekeeping-sweep--audit.md
