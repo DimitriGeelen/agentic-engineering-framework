@@ -69,10 +69,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 4082
-  commits: 2
-  files_changed: 1
-  lines_added: 417
-  lines_removed: 20
+  commits: 3
+  files_changed: 3
+  lines_added: 512
+  lines_removed: 24
+  footprint_refreshed_at: '2026-09-03T15:46:43Z'
+  footprint_refreshed_by_commit: 5af0e55f2
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3236-vendor-sync-after-close-is-unreachable--.md

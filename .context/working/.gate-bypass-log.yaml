@@ -7843,3 +7843,9 @@ The loop gives up whenever the'
   command: 'git add .tasks/active/T-3240-the-stop-hook-loop-caps-at-one-continuat.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-3240: record Candidate C - drive from outside instead of widening the guard
 
 The opera'
+- timestamp: '2026-09-03T15:46:12Z'
+  task: 'T-3260'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3236'
+  command: 'bin/fw task update T-3236 --status work-completed --switch-focus 2>&1 | tail -50'
