@@ -984,7 +984,27 @@ is_commit_checkpoint_command() {
     # patched at that one call site, so the guarantee travels with the predicate
     # to every caller. This is also what makes the T-3179 block message's claim
     # that "write patterns void the allowance" true; it was not before.
-    has_bash_write_pattern "$cmd" && return 1
+    #
+    # T-3245: judged on a QUOTE-STRIPPED view, not the raw line. CLAUDE.md
+    # mandates a `Co-Authored-By: ... <noreply@anthropic.com>` trailer on every
+    # commit, and that `<...>` sits inside a quoted `-m` argument —
+    # has_bash_write_pattern's redirect regex cannot tell it from a real `<`
+    # operator, so the ONLY remedy the T-3179 block message names ("drop the
+    # redirect and run the commit bare") was unreachable for a commit carrying
+    # the trailer the framework itself requires. Scope decision: reuse
+    # _fw_strip_quoted (the same primitive _fw_is_git_commit_clause already
+    # trusts, a few lines below) HERE ONLY, rather than making
+    # has_bash_write_pattern itself quote-aware. That keeps the blast radius to
+    # this one predicate's two call sites (T-2054 null-focus, T-3179
+    # partial-complete) instead of every caller of has_bash_write_pattern
+    # (T-3096's sed/awk/yq write-detection among them) — a general rewrite of
+    # that scanner is a separate, larger change this task does not need to make
+    # to close the measured deadlock. Fails closed the same way _fw_strip_quoted
+    # always has: an unbalanced quote makes it return non-zero, cmd_view falls
+    # back to the untouched original, and the stray metacharacter still blocks.
+    local cmd_view
+    cmd_view="$(_fw_strip_quoted "$cmd")" || cmd_view="$cmd"
+    has_bash_write_pattern "$cmd_view" && return 1
 
     # T-3223: `-d ''` — see the splitter's contract note.
     while IFS= read -r -d '' seg; do

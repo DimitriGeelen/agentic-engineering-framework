@@ -19,7 +19,7 @@ tags: [bug, gate, false-positive]
 components: [agents/context/lib/safe-commands.sh]
 related_tasks: [T-3179, T-3236, T-3174, T-3243, T-3237, T-3238]
 created: 2026-09-01T10:40:00Z
-last_update: '2026-09-02T11:00:10Z'
+last_update: '2026-09-03T14:30:21Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-09-01T10:40:18Z'
@@ -37,6 +37,24 @@ bvp_scores_proposed:
     rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
       (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=1 (body/components:prompt-incidental); F1=1 
+      (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-03T14:30:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 1
+      F2: 1
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=1 
       (body/components:context-fabric-incidental); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
@@ -241,26 +259,52 @@ started-work task active at the moment of a close would have no exit at all.
 
 ### Agent
 
-- [ ] A `git commit` whose message contains an angle-bracketed email in a quoted `-m`
+- [x] A `git commit` whose message contains an angle-bracketed email in a quoted `-m`
   argument is NOT treated as a write pattern, and the partial-complete bare-commit
   allowance holds. Pinned by a test that reproduces the two commands above.
-- [ ] Control leg: a genuine redirect OUTSIDE quotes (`git commit -m "x" > f`) is still
+  `tests/unit/t3245_trailer_quote_strip.bats` tests 1-2, against the real hook.
+- [x] Control leg: a genuine redirect OUTSIDE quotes (`git commit -m "x" > f`) is still
   refused. Fixing the false positive must not open a false negative.
-- [ ] Control leg: the existing refusals for `rm`, `tee`, `sed -i` and heredocs are
+  Tests 3-4 (both branches).
+- [x] Control leg: the existing refusals for `rm`, `tee`, `sed -i` and heredocs are
   unchanged, asserted against the current behaviour rather than assumed.
-- [ ] Decide and record the scope of the fix: quote-aware scanning is the general answer
+  Tests 5-7, plus the full `t3221_commit_exemption_clause.bats` +
+  `context_safe_commands.bats` + `t2936`/`t3222`/`t3096`/`t2987`/`t3231` suites
+  (151 tests total) re-run clean against the fix.
+- [x] Decide and record the scope of the fix: quote-aware scanning is the general answer
   but has blast radius across every gate that consumes `safe-commands.sh`; a narrow
   "angle-bracketed token containing @ is not a redirect" rule is cheaper and covers the
   measured case. Either is defensible — the point is that it is chosen, with the
   trade-off written down.
-- [ ] CLAUDE.md's commit-trailer instruction and the block message's "run it bare" remedy
+  **Decided:** neither of the two framed options. Reused the existing
+  `_fw_strip_quoted` primitive (already load-bearing for
+  `_fw_is_git_commit_clause` a few lines below in the same file), scoped to
+  `is_commit_checkpoint_command`'s write-pattern check only — not a rewrite of
+  `has_bash_write_pattern` itself. This is the general quote-aware answer (not
+  an email-shaped special case, so it also covers a bare `<` from any other
+  quoted argument, not just this trailer) but with blast radius held to this
+  one predicate's two call sites (T-2054 null-focus, T-3179 partial-complete)
+  rather than every caller of `has_bash_write_pattern` — T-3096's sed/awk/yq
+  write-detection among them stays untouched. See the fix's own comment in
+  `agents/context/lib/safe-commands.sh` for the full rationale.
+- [x] CLAUDE.md's commit-trailer instruction and the block message's "run it bare" remedy
   are consistent after the fix — verified by performing the T-3243 close commit WITH the
   trailer.
+  T-3243 itself is already closed, so the exact historical commit can't be
+  re-run; the equivalent reproduction (same task shape: partial-complete,
+  `-m` message + `-m` trailer with `<noreply@anthropic.com>`) is
+  `t3245_trailer_quote_strip.bats` test 2, run against the live, shipped hook
+  — ADMITTED. A `-F -` heredoc form was tried too and is refused for an
+  unrelated, already-documented reason (the heredoc SHAPE itself isn't on the
+  read-only allowlist — see task body "Fourth occurrence") — out of this AC's
+  scope, noted rather than silently dropped.
 
 ## Verification
 
-# (to be written with the fix)
 bash -n agents/context/lib/safe-commands.sh
+bats tests/unit/t3245_trailer_quote_strip.bats
+bats tests/unit/t3221_commit_exemption_clause.bats tests/unit/context_safe_commands.bats tests/unit/t2936_bootstrap_quoted_redirect.bats tests/unit/t3222_fetch_writes_file.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/t2987_bootstrap_shape_hint.bats tests/unit/t3231_help_exemption_scope.bats
+bin/fw vendor self --check
 
 ## RCA
 
@@ -281,6 +325,13 @@ author was looking at.
 **Prevention.** A test that performs a real partial-complete commit with the mandated
 trailer — i.e. exercising the documented happy path end to end rather than either rule on
 its own.
+
+**Fix shipped.** `is_commit_checkpoint_command` (safe-commands.sh) now judges the
+write-pattern check against a quote-stripped view (`_fw_strip_quoted`) instead of
+the raw command string, at the one predicate both the T-2054 and T-3179
+call sites share. `tests/unit/t3245_trailer_quote_strip.bats` exercises the
+documented happy path end to end (real hook, real stdin JSON, mutation
+control derived from live source) — closing exactly the gap this RCA names.
 
 ### 2026-09-01T10:40:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
