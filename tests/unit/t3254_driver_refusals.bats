@@ -55,6 +55,10 @@ exec env PROJECT_ROOT="$SB" FRAMEWORK_ROOT="$REPO" "$REPO/bin/fw" "\$@"
 SHIM
     chmod +x "$SB/bin/fw"
 
+    # The sessions the stubbed termlink considers registered. Seeded with the one
+    # the Part B tests target; the resolution tests (Part D) rewrite it.
+    echo "sandbox-session" > "$SB/sessions"
+
     _armed_state
     _armed_directive
 }
@@ -231,12 +235,24 @@ case "\$verb" in
     if [ \$# -gt 0 ]; then echo "error: unexpected argument found" >&2; exit 2; fi
     exit 0 ;;
   discover)
-    # Mirrors: discover --name NAME --names --no-header  -> prints matching names.
-    want=""
+    # Models the real verb closely enough to be worth testing against:
+    #   --tag  TAG   -> the sessions carrying that tag  ($SB/tagged)
+    #   --name PAT   -> SUBSTRING match over registered sessions ($SB/sessions)
+    # The substring semantics matter: it is why the driver re-asserts an exact
+    # match with grep -Fxq, and why the claude- name probe finds a family.
+    want=""; tag=""
     while [ \$# -gt 0 ]; do
-        if [ "\$1" = "--name" ]; then want="\$2"; shift 2; else shift; fi
+        case "\$1" in
+            --name) want="\$2"; shift 2 ;;
+            --tag)  tag="\$2";  shift 2 ;;
+            *) shift ;;
+        esac
     done
-    [ -n "\$want" ] && echo "\$want"
+    if [ -n "\$tag" ]; then
+        [ -f "$SB/tagged" ] && cat "$SB/tagged"
+        exit 0
+    fi
+    [ -f "$SB/sessions" ] && grep -F -- "\$want" "$SB/sessions"
     exit 0 ;;
   pty)
     sub="\$1"; shift
@@ -332,6 +348,77 @@ _run_driver() {
 
     # And the driver must not have drifted back to it.
     ! grep -qE 'termlink info "\$SESSION"' "$DRIVER"
+}
+
+# ═══ PART D — resolving WHICH session to drive (T-3255) ══════════════════════
+#
+# The first version of the driver read CONTINUOUS_SESSION and nothing else. Nothing
+# in the framework ever writes that key, so on any real install the driver refused
+# forever with "no target session" — inert by construction, and its failure looked
+# like a tidy refusal rather than a defect. That is the third instance of the shape
+# in this file (injector path, `info` check, this), which is why resolution is now
+# a ladder with discovery in it rather than a single required setting.
+
+# Runs WITHOUT --session, which is the whole point: these must pass with no pin.
+_run_driver_unpinned() {
+    PATH="$SB/stub:$PATH" PROJECT_ROOT="$SB" \
+        bash "$DRIVER" --project-root "$SB" --settle 1 "$@"
+}
+
+@test "D1 one discoverable session is resolved with NO configuration at all" {
+    _stub_termlink quiet
+    # No CONTINUOUS_SESSION anywhere, no --session flag. If this passes by way of a
+    # pin, it is measuring the thing it exists to make unnecessary.
+    grep -q "CONTINUOUS_SESSION" "$SB/.framework.yaml" 2>/dev/null && \
+        { echo "fixture leaked a pin — D1 would prove nothing"; return 1; }
+
+    echo "claude-master-4242" > "$SB/sessions"
+    echo "claude-master-4242" > "$SB/tagged"
+
+    run _run_driver_unpinned
+    [ -f "$SB/injected" ] || { echo "no injection — resolution failed"; echo "$output"; cat "$LEDGER"; return 1; }
+    grep -q "auto-resolved target session 'claude-master-4242'" "$LEDGER" \
+        || { echo "resolved, but the ledger does not record which session or why:"; cat "$LEDGER"; return 1; }
+}
+
+@test "D2 two candidates refuse and NAME them rather than guessing" {
+    _stub_termlink quiet
+    printf 'claude-master-1\nclaude-master-2\n' > "$SB/sessions"
+    printf 'claude-master-1\nclaude-master-2\n' > "$SB/tagged"
+
+    run _run_driver_unpinned
+    [ ! -f "$SB/injected" ] || { echo "GUESSED a session out of two candidates"; cat "$SB/injected"; return 1; }
+    # Naming them is the difference between an actionable refusal and a dead end:
+    # the operator has to know what to pin.
+    grep -q "claude-master-1" "$LEDGER" && grep -q "claude-master-2" "$LEDGER" \
+        || { echo "refused without naming the candidates:"; cat "$LEDGER"; return 1; }
+}
+
+@test "D3 a pin breaks the tie that D2 refuses" {
+    # Control for D2: the ambiguity is resolvable, and by the documented mechanism.
+    _stub_termlink quiet
+    printf 'claude-master-1\nclaude-master-2\n' > "$SB/sessions"
+    printf 'claude-master-1\nclaude-master-2\n' > "$SB/tagged"
+
+    run env PATH="$SB/stub:$PATH" PROJECT_ROOT="$SB" \
+        bash "$DRIVER" --project-root "$SB" --session claude-master-2 --settle 1
+    [ -f "$SB/injected" ] || { echo "pin did not resolve the tie"; echo "$output"; cat "$LEDGER"; return 1; }
+}
+
+@test "D4 zero candidates refuse by naming the PRECONDITION, not just the setting" {
+    _stub_termlink quiet
+    : > "$SB/sessions"
+    : > "$SB/tagged"
+
+    run _run_driver_unpinned
+    [ ! -f "$SB/injected" ]
+    # "no target session" is true and useless — it cannot tell the reader whether
+    # they forgot a setting or whether the session they are sitting in was never
+    # registered. It is almost always the second.
+    grep -q "claude-fw --termlink" "$LEDGER" \
+        || { echo "refusal does not name the fix:"; cat "$LEDGER"; return 1; }
+    grep -qi "precondition" "$LEDGER" \
+        || { echo "refusal does not say registration is a precondition:"; cat "$LEDGER"; return 1; }
 }
 
 # ═══ PART C — every decision is in the ledger ════════════════════════════════

@@ -109,11 +109,55 @@ DIRECTIVE="$(printf '%s' "$STATUS_JSON" | python3 -c "import json,sys; print((js
 # ---------------------------------------------------------------------------
 command -v termlink >/dev/null 2>&1 || _bail "refused" "termlink not on PATH"
 
+# TARGET RESOLUTION IS A LADDER, NOT A SINGLE CONFIG KEY.
+#
+# T-3255. The first version read CONTINUOUS_SESSION and nothing else. NOTHING in the
+# framework ever SETS that key -- no verb writes it, `fw init` does not seed it, and
+# the wrapper that launches a session does not register it -- so on any real install
+# the driver refused forever with "no target session". Same inert-by-construction
+# shape as the injector path and the `info` check: a mechanism that cannot fire in
+# the environment it ships to, whose failure reads as a tidy refusal, not a defect.
+#
+# So the target is DISCOVERED, with configuration as an override rather than a
+# prerequisite:
+#   1. --session          explicit, wins outright
+#   2. CONTINUOUS_SESSION operator pin, for when several sessions qualify
+#   3. tag project:<name> the tag the wrapper applies
+#   4. name claude-*      the wrapper's naming convention (claude-master-<PID>)
+#
+# A TIE IS NOT BROKEN BY GUESSING. Multiple candidates refuse and name them:
+# injecting a continuation turn into the wrong agent is worse than not injecting,
+# and "first in list order" is not a decision anyone made.
+_candidates() {
+    local proj; proj="$(basename "$ROOT")"
+    local by_tag
+    by_tag="$(timeout 20 termlink discover --tag "project:${proj}" --names --no-header 2>/dev/null)"
+    if [ -n "$by_tag" ]; then printf '%s\n' "$by_tag"; return 0; fi
+    timeout 20 termlink discover --name "claude-" --names --no-header 2>/dev/null
+}
+
 if [ -z "$SESSION" ]; then
     SESSION="$("$FW" config get CONTINUOUS_SESSION 2>/dev/null | tr -d '[:space:]')"
+    [ "$SESSION" = "null" ] && SESSION=""
 fi
-[ -n "$SESSION" ] && [ "$SESSION" != "null" ] || _bail "refused" \
-    "no target session: set one with 'fw config set CONTINUOUS_SESSION <name>' or pass --session"
+
+if [ -z "$SESSION" ]; then
+    CAND="$(_candidates)"
+    N="$(printf '%s' "$CAND" | grep -c . || true)"
+    if [ "${N:-0}" -eq 1 ]; then
+        SESSION="$(printf '%s' "$CAND" | head -1)"
+        _log "resolved" "auto-resolved target session '${SESSION}' (no CONTINUOUS_SESSION pin needed)"
+    elif [ "${N:-0}" -gt 1 ]; then
+        _bail "refused" "${N} candidate sessions and no pin — refusing to guess which agent to drive: $(printf '%s' "$CAND" | tr '\n' ' '). Pin one: fw config set CONTINUOUS_SESSION <name>"
+    fi
+fi
+
+# THE REFUSAL NAMES THE FIX. "no target session" was true and useless: a reader
+# cannot tell from it whether they forgot to configure something or whether the
+# session they are sitting in was never registered at all. It is almost always the
+# second -- registration is a PRECONDITION of this whole mechanism, not a setting --
+# and the fix is to relaunch under the wrapper.
+[ -n "$SESSION" ] || _bail "refused" "no target session for project '$(basename "$ROOT")': it has NO TermLink-registered session. Registration is a precondition, not a setting -- the driver injects into a registered PTY session and there is nothing here to inject into. Fix: relaunch with 'claude-fw --termlink', or pin an existing session with 'fw config set CONTINUOUS_SESSION <name>'"
 
 # Registration is checked with `discover`, NOT `info`. `termlink info` takes no
 # positional target at all -- it reports hub/runtime status -- so `info "$SESSION"`
