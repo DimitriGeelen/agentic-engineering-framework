@@ -407,6 +407,46 @@ PY
     printf '%s\n' "$reason"
 }
 
+# _continuous_preflight — would the session we are about to launch breach a bound?
+# (T-3253 AC3)
+#
+# `_continuous_terminated` above answers "did the loop ALREADY record a death".
+# This answers the different question that E10 exposed: "will the session we are
+# about to spend a restart on record one the moment it starts?" Those diverge for
+# exactly one restart — the one that matters — because the breach is discovered by
+# the SessionStart hook of a session that has, by then, already launched carrying
+# the armed directive as its prompt. The notice arrives as advisory
+# `additionalContext` and loses the argument with "do not stop until every task is
+# closed". Measured: the over-ceiling task closed 4m26s after the brake fired.
+#
+# So the decision moves BEFORE the launch. There is nothing running to ignore it.
+#
+# SINGLE-WRITER (T-3233 W1-F3). This does NOT read or write `.continuous-mode.yaml`
+# itself. `current_iteration` has exactly one writer and a second one reintroduces
+# the class this arc keeps hitting, so the evaluation runs inside the injector that
+# already owns the file, in `--preflight` mode, and this function reads only its
+# exit code and stdout.
+#
+# FAILS OPEN, deliberately. Any outcome other than the injector's explicit breach
+# code (3) — missing injector, absent python, malformed YAML, crash — returns 1
+# (proceed). A brake that jams on when its own machinery is broken would delete
+# T-179 budget auto-restart for every user who never armed a run. The breach code
+# is distinct from argparse's 1/2 precisely so a crash can never be read as a stop.
+_continuous_preflight() {
+    local root injector reason rc
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
+    injector="${root}/agents/context/inject-next-directive.py"
+    [ -f "$injector" ] || injector="${root}/.agentic-framework/agents/context/inject-next-directive.py"
+    [ -f "$injector" ] || return 1
+    set +e
+    reason=$(python3 "$injector" --project-root "$root" --preflight 2>/dev/null)
+    rc=$?
+    set -e
+    [ "$rc" -eq 3 ] || return 1
+    [ -n "$reason" ] || reason="a configured bound was breached (reason not reported)"
+    printf '%s\n' "$reason"
+}
+
 # _continuous_halted — Brake 1, the halt file, same path stop-driver.sh:60 uses.
 # It outranks every other vote here exactly as it does there.
 _continuous_halted() {
@@ -567,6 +607,28 @@ while true; do
             echo "    .context/working/.continuous-mode.yaml   (an operator decision, by design)"
             rm -f "$signal_file"
             _record_loop_event exit continuous-terminated "$term_reason" 0
+            exit 0
+        fi
+        # T-3253 AC3: the same question one step earlier — not "did it already
+        # die" but "will it die the instant it starts". Ordered after the
+        # already-recorded check (cheap, no subprocess) and before the budget
+        # spend, for the same reason that one is: a loop stopped by a BOUND must
+        # not have the ledger report a RATE limit as its cause.
+        #
+        # The two refusals carry different reasons on purpose. `continuous-terminated`
+        # means the death was on the books before we looked; `continuous-preflight`
+        # means we found it by evaluating the planned next action and the breaching
+        # session was never launched. Collapsing them would hide which brake fired.
+        if pre_reason=$(_continuous_preflight); then
+            echo ""
+            echo "claude-fw: Planned next action breaches a bound — refusing to launch."
+            echo "  Reason: ${pre_reason}"
+            echo "  Caught BEFORE the session started, so the over-ceiling work cannot be done."
+            echo "  Review it with:  fw continuous status"
+            echo "  To resume, clear last_terminated_reason and set enabled: true in"
+            echo "    .context/working/.continuous-mode.yaml   (an operator decision, by design)"
+            rm -f "$signal_file"
+            _record_loop_event exit continuous-preflight "$pre_reason" 0
             exit 0
         fi
         # T-3243: spend-check BEFORE taking the budget, so MAX_RESTARTS=N permits
