@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3245: mandated Co-Authored-By trailer voids the partial-complete bare-commit allowance
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T15:11:32Z
+# ============================================================================
+
+task_id: T-3245
+task_name: "mandated Co-Authored-By trailer voids the partial-complete bare-commit allowance"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T10:40:00Z
+completed: 2026-09-03T15:09:59Z
+duration_days: 2
+updates_count: 0
+first_commit: 2026-09-01T12:40:42+02:00
+last_commit: 2026-09-03T17:09:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the trailer-vs-bare-commit contradiction, reproduced during T-3243 close. second occurrence - the close-then-commit variant. third occurrence, and it closes two more escape hatches. fourth occurrence — the second exit is a search, not a single hop. quote-strip the commit-checkpoint write-pattern check. register fabric card for the new trailer/quote-strip test
+
+# Key outcomes
+outcomes:
+  - 'A `git commit` whose message contains an angle-bracketed email in a quoted `-m`'
+  - 'Control leg: a genuine redirect OUTSIDE quotes (`git commit -m "x" > f`) is still'
+  - 'Control leg: the existing refusals for `rm`, `tee`, `sed -i` and heredocs are'
+  - 'Decide and record the scope of the fix: quote-aware scanning is the general answer'
+  - 'CLAUDE.md''s commit-trailer instruction and the block message''s "run it bare" remedy'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/episodic/T-3246.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.fabric/components/tests-unit-t3245_trailer_quote_strip.yaml'
+  - '.tasks/active/T-3245-mandated-co-authored-by-trailer-voids-th.md'
+  - 'tests/unit/t3245_trailer_quote_strip.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-01T12:40:42'
+    action: 'T-3245: file the trailer-vs-bare-commit contradiction, reproduced during T-3243 close'
+  - time: '2026-09-01T22:55:36'
+    action: 'T-3245: second occurrence - the close-then-commit variant'
+  - time: '2026-09-03T14:49:19'
+    action: 'T-3245: third occurrence, and it closes two more escape hatches'
+  - time: '2026-09-03T16:24:01'
+    action: 'T-3245: fourth occurrence — the second exit is a search, not a single hop'
+  - time: '2026-09-03T17:09:31'
+    action: 'T-3245: quote-strip the commit-checkpoint write-pattern check'
+  - time: '2026-09-03T17:09:55'
+    action: 'T-3245: register fabric card for the new trailer/quote-strip test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 3149 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, gate, false-positive]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3149
+  commits: 6
+  files_changed: 10
+  lines_added: 581
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3245-mandated-co-authored-by-trailer-voids-th.md
+generated_by: context-agent-hybrid
