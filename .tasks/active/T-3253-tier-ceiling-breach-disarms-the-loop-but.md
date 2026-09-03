@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T22:47:09Z
-last_update: '2026-09-01T23:00:21Z'
+last_update: 2026-09-03T08:58:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -115,6 +115,53 @@ recorded at 22:51:30 with `enabled -> false` — and the wrapper restarted again
 termination the injector records disarms the loop and nothing else**, because the
 disarm is only read on the re-arm branch. The ceiling is simply the bound with the
 sharpest consequence.
+
+## Progress — 2026-09-03 (session hit budget critical mid-task)
+
+**Hole 2 is CLOSED and committed** (`450a5952b`). `bin/claude-fw` gained
+`_continuous_terminated()` and the restart branch consults it before spending
+budget. Verified against four cases: absent state file → allow (the regression
+guard), armed+running → allow, ceiling termination → refuse with reason,
+`max_iterations` termination → refuse with reason.
+
+**The trap that shaped the fix, recorded so it is not "simplified" later.** The
+obvious spelling is `! _continuous_armed`. That is wrong: `_continuous_armed`
+returns 1 on an *absent* state file, so gating the restart branch on it reads
+"no continuous mode configured" as "do not restart" and **silently deletes
+T-179 budget auto-restart for every user who never armed a run** — nearly all of
+them. `_continuous_terminated` is the narrow predicate: it fires only when a
+termination was actually written. `enabled: false` on a fresh file means "never
+switched on"; a non-empty `last_terminated_reason` means "switched on, then
+stopped for this reason". Only the second is a brake.
+
+**Hole 1 (AC3) is NOT started.** The design settled on, with reasoning:
+
+- Fix-2 alone does **not** satisfy AC3. The breach is recorded at SessionStart of
+  a session that has *already launched* with the armed directive as its prompt.
+  That session can still work the over-ceiling task; in the E10 run it happened
+  not to, which is luck, not a guarantee.
+- The mechanism chosen is a **pre-launch ceiling check**: the wrapper evaluates
+  the planned next action *before* spending the restart, so the breaching session
+  never launches. That is the only variant where the notice cannot be ignored,
+  because there is nothing running to ignore it.
+- **Single-writer constraint (T-3233 W1-F3).** The wrapper must NOT write
+  `.continuous-mode.yaml` itself — `current_iteration` has exactly one writer and
+  a second one reintroduces the class this arc keeps hitting. So the preflight
+  must be a new mode ON the injector (`agents/context/inject-next-directive.py`,
+  which already exposes `evaluate`, `resolve_task_blast_radius` and
+  `find_task_reference` as importable functions), invoked earlier by the wrapper.
+- **The preflight must not double-advance the counter.** On the non-breach path it
+  evaluates and writes NOTHING, letting SessionStart do its normal single write.
+  Only the breach path writes (terminate + disarm + frozen counter) and signals
+  the wrapper to refuse. Getting this wrong advances `current_iteration` twice per
+  restart, which would be invisible until someone counted.
+
+**Remaining:** AC3 (above), then AC4 (re-run E10 breach leg — `AC4a`/`AC4b` must
+pass and no `closed-AFTER-the-breach` attribution) and AC5 (control leg unchanged).
+Both legs run via `LEG=breach|control bash
+docs/reports/T-3239-continuous-loop-demo/livefire-brake-tier-ceiling.sh`, ~35 min
+each, and they may run concurrently. **Run them from a copy** — editing the script
+while a run executes it corrupts that run (bash reads scripts by byte offset).
 
 That widens AC 1: the restart branch must consult the disarm, not consult a
 ceiling-specific flag.
