@@ -383,7 +383,7 @@ import glob, json, os, re, sys, yaml
 from datetime import datetime, timezone
 sandbox, log, trace, esc_id, ceiling, blast = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], int(sys.argv[5]), int(sys.argv[6])
 
-restarts, rearms = [], []
+restarts, rearms, preflights = [], [], []
 try:
     for line in open(log, encoding="utf-8"):
         line = line.strip()
@@ -392,6 +392,13 @@ try:
         except Exception: continue
         if d.get("event") == "iterate":
             (restarts if d.get("reason") == "restart" else rearms).append(d.get("ts", ""))
+        # T-3253: the brake now fires in the wrapper's PREFLIGHT, before the restart
+        # is spent, so a breach run legitimately records zero `iterate/restart`
+        # events. This is the ledger proof that the loop nonetheless reached the
+        # brake -- without it, "no restart" is indistinguishable from "the run died
+        # before anything could be evaluated".
+        elif d.get("event") == "exit" and d.get("reason") == "continuous-preflight":
+            preflights.append(d.get("ts", ""))
 except Exception:
     pass
 
@@ -469,6 +476,7 @@ expected_reason = "tier ceiling exceeded: %s blast-radius %d > tier_ceiling %d" 
 print(json.dumps({
     "restarts": restarts,
     "rearms": rearms,
+    "preflight_refusals": preflights,
     "closed_backlog_items": closed_items,
     "closed_escalation": closed_esc,
     "still_active": len(glob.glob(os.path.join(sandbox, ".tasks/active/T-*.md"))),
@@ -520,6 +528,7 @@ V="${SANDBOX}/verdict.json"
 jq_() { python3 -c "import json;d=json.load(open('$V'));print(d$1)" 2>/dev/null || echo ""; }
 
 n_restart=$(jq_ "['restarts'].__len__()")
+n_preflight=$(jq_ "['preflight_refusals'].__len__()")
 matched=$(jq_ "['reason_matches']")
 frozen=$(jq_ "['freeze']['frozen'] if d['freeze'] else 'no-transition'")
 esc_closed=$(jq_ "['closed_escalation'].__len__()")
@@ -540,14 +549,46 @@ chk() { if [ "$2" = 0 ]; then echo "  PASS  $1  $3"; pass=$((pass+1)); else echo
 {
   echo
   echo "----- assertions (LEG=${LEG}) -----"
-  chk "the budget trip produced a real restart (the ceiling is only reachable after one)" \
-      "$([ "${n_restart:-0}" -ge 1 ] && echo 0 || echo 1)" "iterate/restart events = ${n_restart}"
+  # T-3253 CHANGED THE SHAPE OF THIS EVIDENCE, so the assertion is restated rather
+  # than relaxed. It used to read "the budget trip produced a real restart (the
+  # ceiling is only reachable after one)" -- and that parenthetical was the whole
+  # justification. It is now false BY DESIGN: the wrapper evaluates the planned next
+  # action in a preflight and refuses BEFORE spending the restart, so a working brake
+  # produces zero restarts. Asserting `n_restart >= 1` would therefore fail the fix
+  # for succeeding.
+  #
+  # The intent it was a proxy for is unchanged and still worth guarding: the run must
+  # actually have REACHED the point where the brake is evaluated, or a green AC4 means
+  # only that the loop died early. That intent is now directly measurable -- the
+  # wrapper writes an `exit continuous-preflight` ledger event naming the bound -- so
+  # the proxy is replaced by the measurement, which is strictly stronger, and both
+  # routes are accepted because both are real.
+  chk "the loop REACHED the brake (a real restart, or a preflight refusal before one)" \
+      "$([ "${n_restart:-0}" -ge 1 ] || [ "${n_preflight:-0}" -ge 1 ] && echo 0 || echo 1)" \
+      "iterate/restart events = ${n_restart}, preflight refusals = ${n_preflight}"
 
   if [ "$LEG" = "breach" ]; then
     chk "AC2  the brake FIRED with the exact reason" \
         "$([ "$matched" = "True" ] && echo 0 || echo 1)" "last_terminated_reason = '${final_reason}'"
-    chk "AC3  the counter FROZE across the breaching transition (brake, not crash)" \
-        "$([ "$frozen" = "True" ] && echo 0 || echo 1)" "freeze = ${frozen}"
+    # AC3 asks whether this was a BRAKE or a CRASH. The discriminator was the counter
+    # freezing across the transition where `last_terminated_reason` first becomes
+    # non-empty -- a claim about two adjacent trace samples.
+    #
+    # Under the preflight that transition no longer exists to be sampled: the
+    # breaching session is never launched, so SessionStart never runs a second time
+    # and the counter never advances from its armed value at all. "Frozen across the
+    # transition" is the weaker of the two outcomes; "never advanced" is the stronger,
+    # and reporting it as `no-transition` FAIL inverts the reading.
+    #
+    # The crash-distinction is preserved and is not weakened by this: a crash does not
+    # write `last_terminated_reason`, still less the exact ceiling string, and AC2
+    # above already asserts that string matched. So the second route requires BOTH the
+    # preflight refusal AND an unadvanced counter -- a crashed run satisfies neither.
+    ac3_ok=1
+    [ "$frozen" = "True" ] && ac3_ok=0
+    [ "${n_preflight:-0}" -ge 1 ] && [ "$(jq_ "['final_iteration']")" = "0" ] && ac3_ok=0
+    chk "AC3  the counter did not advance past the brake (brake, not crash)" \
+        "$ac3_ok" "freeze = ${frozen}, preflight refusals = ${n_preflight}, final_iteration = $(jq_ "['final_iteration']")"
     chk "AC4a the over-ceiling task was NOT closed" \
         "$([ "${esc_closed:-1}" = "0" ] && echo 0 || echo 1)" "escalation closes = ${esc_closed}"
     chk "AC4b no artefact of the over-ceiling task exists" \
