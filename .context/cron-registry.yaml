@@ -1,4 +1,26 @@
 jobs:
+- id: continuous-driver-10m
+  name: Continuous-run outside driver (10 min)
+  schedule: 7,17,27,37,47,57 * * * *
+  command: flock -n /var/lock/agentic-cron-continuous-driver.lock -c '/opt/999-Agentic-Engineering-Framework/agents/context/continuous-driver.sh
+    --project-root /opt/999-Agentic-Engineering-Framework'
+  source_file: agentic-audit.crontab
+  origin_task: T-3254
+  status: active
+  description: 'Drives the continuous-run loop from OUTSIDE when the agent stops early.
+    The live ledger records three `exit no-signal` entries: the loop ended because
+    the agent stopped before filling 285K tokens, not because the backlog was empty.
+    M1 (Stop-hook continuation) is capped at exactly one turn by the vendor runaway
+    guard; M2 (compact-resume) only fires at budget-critical. Neither reaches the
+    early-stop case. This reads `fw continuous status --json` — the SAME evaluator
+    the SessionStart path reads, never a re-typed copy — and injects a continuation
+    turn only when all six bounds allow it and the target session is observably idle.
+    An injected prompt is a new USER turn, so stop_hook_active is never set and this
+    does not fight the vendor guard. The runaway ceiling is structural rather than a
+    counter: cron injects at most once per tick, bounded by wall clock. Inert until
+    someone arms continuous mode AND sets CONTINUOUS_SESSION — with either unset it
+    refuses and logs why. Offset to :07 off the :00/:05/:10/:15/:30/:45 audit slots
+    (T-3070 collision class), though it takes its own lock, not audit.lock.'
 - id: reviewer-audit-daily
   name: Reviewer Layer-3 audit (daily Pass B)
   schedule: 37 4 * * *

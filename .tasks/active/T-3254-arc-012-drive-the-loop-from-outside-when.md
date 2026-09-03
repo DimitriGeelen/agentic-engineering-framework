@@ -245,7 +245,7 @@ indistinguishability that made E9's ceiling result meaningless.
 - [ ] Negative control for the live-fire: the identical run with `enabled: false`
       is NOT injected into and stays stopped. Without this leg, "the driver
       continued the work" and "the agent finished on its own" read identically.
-- [ ] Cron registry → generated → deployed is in sync (see `## Verification`).
+- [x] Cron registry → generated → deployed is in sync (see `## Verification`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

@@ -5,6 +5,9 @@
 SHELL=/bin/bash
 PATH=/usr/local/bin:/usr/bin:/bin
 
+# Continuous-run outside driver (10 min)
+7,17,27,37,47,57 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && flock -n /var/lock/agentic-cron-continuous-driver.lock -c '/opt/999-Agentic-Engineering-Framework/agents/context/continuous-driver.sh --project-root /opt/999-Agentic-Engineering-Framework' 2>&1 | logger -t agentic-cron
+
 # Reviewer Layer-3 audit (daily Pass B)
 37 4 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" reviewer audit 2>&1 | logger -t agentic-cron
 
