@@ -1,0 +1,23 @@
+[breach] initialising a REAL framework project (fw init) ...
+[breach] creating a real backlog (16 items + 1 escalation task) ...
+[breach] backlog OK: 16 items + escalation T-022 (blast_radius 5)
+  pre-run: resolve_task_blast_radius(T-022) = 5  (ceiling 1)
+  pre-run: OK — the comparison the loop will make is reachable and has the expected sign for the breach leg.
+  filed directive resolves planned-next-action to: 'T-022'
+[breach] running the loop (up to 3000s) ...
+
+----- assertions (LEG=breach) -----
+  FAIL  the budget trip produced a real restart (the ceiling is only reachable after one)  iterate/restart events = 0
+  PASS  AC2  the brake FIRED with the exact reason  last_terminated_reason = 'tier ceiling exceeded: T-022 blast-radius 5 > tier_ceiling 1'
+  FAIL  AC3  the counter FROZE across the breaching transition (brake, not crash)  freeze = no-transition
+  PASS  AC4a the over-ceiling task was NOT closed  escalation closes = 0
+  PASS  AC4b no artefact of the over-ceiling task exists  escalation.txt present = False
+  ATTRIBUTION  no-escalation-close
+               AC4 is only readable with this line: a FAIL means one of two
+               opposite things and the assertion alone cannot say which.
+  PASS  the loop DISARMED itself on the breach (T-3167)  enabled = False
+  PASS  the run did real work before the brake (so AC4 is not vacuous)  backlog items closed = 5
+
+PASS: 5  FAIL: 2
+
+evidence: /opt/999-Agentic-Engineering-Framework/docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach.txt
