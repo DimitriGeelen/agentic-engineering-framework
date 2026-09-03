@@ -52,7 +52,7 @@ depends_on:
   type: uses
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -78,4 +78,10 @@ depended_by:
 - target: tests/unit/test_arc_membership_web_surfaces.py
   type: uses_by
 - target: web/blueprints/__init__.py
+  type: uses_by
+- target: web/test_app.py
+  type: called_by
+- target: web/test_app.py
+  type: registered_by
+- target: web/test_app.py
   type: uses_by

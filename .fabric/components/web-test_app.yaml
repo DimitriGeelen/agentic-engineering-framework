@@ -4,17 +4,29 @@ type: script
 subsystem: watchtower
 location: web/test_app.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/app.py
+  type: calls
+- target: web/shared.py
+  type: calls
+- target: web/blueprints/core.py
+  type: calls
+- target: web/blueprints/core.py
+  type: registers
+- target: web/app.py
+  type: uses
+- target: web/shared.py
+  type: uses
+- target: web/blueprints/core.py
+  type: uses
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/lint/no-orphaned-test-dirs.bats
+  type: tests_by
+- target: web/app.py
+  type: called_by
+- target: web/blueprints/quality.py
+  type: called_by
 last_verified: 2026-09-03
 created_by: unknown
+last_enriched: '2026-09-03'

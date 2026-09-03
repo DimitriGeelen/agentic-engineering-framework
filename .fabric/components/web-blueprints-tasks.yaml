@@ -30,7 +30,7 @@ depends_on:
   type: uses
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -97,3 +97,5 @@ depended_by:
   type: uses_by
 - target: web/blueprints/review.py
   type: uses_by
+- target: agents/fabric/lib/enrich.py
+  type: called_by

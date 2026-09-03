@@ -79,6 +79,12 @@ depends_on:
   type: uses
 - target: web/embeddings.py
   type: uses
+- target: web/config.py
+  type: calls
+- target: web/test_app.py
+  type: calls
+- target: web/config.py
+  type: uses
 last_verified: 2026-02-20
 created_by: T-227
 last_enriched: '2026-09-03'
@@ -275,3 +281,15 @@ depended_by:
   type: uses_by
 - target: web/blueprints/approvals.py
   type: called_by
+- target: web/smoke_test.py
+  type: called_by
+- target: web/smoke_test.py
+  type: uses_by
+- target: web/test_app.py
+  type: called_by
+- target: web/test_app.py
+  type: uses_by
+- target: web/wsgi.py
+  type: called_by
+- target: web/wsgi.py
+  type: uses_by

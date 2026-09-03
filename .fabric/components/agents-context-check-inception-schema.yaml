@@ -5,12 +5,16 @@ subsystem: context-fabric
 location: agents/context/check-inception-schema.sh
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: agents/context/check-inception-schema.py
+  type: calls
 depended_by:
 - target: C-009
   type: called_by
 - target: tests/unit/settings_regenerate_preserves_hooks.bats
   type: called_by
+- target: agents/fabric/lib/enrich.py
+  type: called_by
 last_verified: 2026-06-02
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

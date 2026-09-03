@@ -4,17 +4,11 @@ type: script
 subsystem: component-fabric
 location: agents/fabric/lib/expand_patterns.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/fabric_coverage_single_source.bats
+  type: tests_by
 last_verified: 2026-09-03
 created_by: unknown
+last_enriched: '2026-09-03'

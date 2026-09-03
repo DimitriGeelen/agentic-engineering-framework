@@ -4,17 +4,47 @@ type: script
 subsystem: watchtower
 location: web/config.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/t3045_embed_host_resolution.bats
+  type: tests_by
+- target: tests/unit/test_embed_health.py
+  type: called_by
+- target: tests/unit/test_embed_health.py
+  type: uses_by
+- target: tests/unit/test_incremental_reindex.py
+  type: called_by
+- target: tests/unit/test_incremental_reindex.py
+  type: uses_by
+- target: tools/measure_chunk_tokens.py
+  type: called_by
+- target: tools/measure_chunk_tokens.py
+  type: uses_by
+- target: web/app.py
+  type: called_by
+- target: web/app.py
+  type: uses_by
+- target: web/ask.py
+  type: called_by
+- target: web/ask.py
+  type: uses_by
+- target: web/blueprints/cron.py
+  type: called_by
+- target: web/blueprints/cron.py
+  type: uses_by
+- target: web/blueprints/settings.py
+  type: called_by
+- target: web/blueprints/settings.py
+  type: uses_by
+- target: web/embeddings.py
+  type: called_by
+- target: web/embeddings.py
+  type: uses_by
+- target: web/recall_telemetry.py
+  type: called_by
+- target: web/recall_telemetry.py
+  type: uses_by
 last_verified: 2026-09-03
 created_by: unknown
+last_enriched: '2026-09-03'

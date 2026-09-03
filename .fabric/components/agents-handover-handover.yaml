@@ -94,6 +94,8 @@ depended_by:
   type: called_by
 - target: tests/unit/t2927_observation_inbox_listing.bats
   type: tests_by
+- target: agents/fabric/lib/enrich.py
+  type: called_by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

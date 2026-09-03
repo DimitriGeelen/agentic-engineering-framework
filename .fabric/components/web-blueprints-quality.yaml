@@ -20,9 +20,11 @@ depends_on:
   type: uses
 - target: web/context_loader.py
   type: uses
+- target: web/test_app.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: web/app.py
   type: called_by

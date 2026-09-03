@@ -15,6 +15,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_govd_policy.py
   type: called_by
+- target: agents/fabric/lib/enrich.py
+  type: called_by
 last_verified: 2026-06-18
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-09-03'

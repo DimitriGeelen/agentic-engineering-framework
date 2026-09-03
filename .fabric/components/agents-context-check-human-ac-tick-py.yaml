@@ -4,17 +4,19 @@ type: script
 subsystem: context-fabric
 location: agents/context/check-human-ac-tick.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: lib/verification-port.sh
+  type: calls
+- target: lib/comment_strip.py
+  type: calls
+- target: agents/context/check-active-task.sh
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/context/check-human-ac-tick.sh
+  type: called_by
+- target: lib/comment_strip.py
+  type: called_by
 last_verified: 2026-09-03
 created_by: unknown
+last_enriched: '2026-09-03'

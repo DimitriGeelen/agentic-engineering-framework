@@ -23,6 +23,8 @@ depended_by:
   type: called_by
 - target: tests/unit/t3232_verification_extractor_failure.bats
   type: tests_by
+- target: agents/context/check-human-ac-tick.py
+  type: called_by
 last_verified: 2026-08-02
 created_by: unknown
 last_enriched: '2026-09-03'

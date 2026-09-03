@@ -40,9 +40,13 @@ depends_on:
   type: uses
 - target: web/search.py
   type: uses
+- target: web/config.py
+  type: calls
+- target: web/config.py
+  type: uses
 last_verified: 2026-02-22
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 depended_by:
 - target: C-003
   type: called_by
@@ -96,3 +100,7 @@ depended_by:
   type: uses_by
 - target: web/recall_telemetry.py
   type: called_by
+- target: agents/context/lib/memory-recall.py
+  type: called_by
+- target: agents/context/lib/memory-recall.py
+  type: uses_by

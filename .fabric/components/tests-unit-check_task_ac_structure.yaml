@@ -10,7 +10,9 @@ depends_on:
   type: calls
 - target: agents/context/check-task-ac-structure.sh
   type: tests
+- target: agents/context/check-task-ac-structure.py
+  type: tests
 depended_by: []
 last_verified: 2026-06-16
 created_by: unknown
-last_enriched: '2026-06-16'
+last_enriched: '2026-09-03'

@@ -280,3 +280,5 @@ Evidence:
 ### 2026-05-28T17:59:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+- **Research artifact:** docs/reports/T-2063-watchtower-complete-button-silent-fail.md

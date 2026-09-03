@@ -15,6 +15,26 @@ depended_by:
   type: called_by
 - target: agents/context/check-active-completed-dup.py
   type: uses_by
+- target: agents/context/check-arc-id.py
+  type: called_by
+- target: agents/context/check-arc-id.py
+  type: uses_by
+- target: agents/context/check-inception-decisions.py
+  type: called_by
+- target: agents/context/check-inception-decisions.py
+  type: uses_by
+- target: agents/context/check-inception-recommendation.py
+  type: called_by
+- target: agents/context/check-inception-recommendation.py
+  type: uses_by
+- target: agents/context/check-inception-schema.py
+  type: called_by
+- target: agents/context/check-inception-schema.py
+  type: uses_by
+- target: agents/context/check-onboarding-gate.py
+  type: called_by
+- target: agents/context/check-onboarding-gate.py
+  type: uses_by
 last_verified: 2026-07-07
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

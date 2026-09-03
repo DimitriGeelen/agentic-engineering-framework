@@ -18,6 +18,10 @@ depends_on:
   type: uses
 - target: lib/outcome.py
   type: uses
+- target: web/ask.py
+  type: calls
+- target: web/ask.py
+  type: uses
 depended_by:
 - target: agents/context/lib/focus.sh
   type: called_by
@@ -31,4 +35,4 @@ depended_by:
   type: tests_by
 last_verified: 2026-05-06
 created_by: T-1759
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

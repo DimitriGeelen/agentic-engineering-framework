@@ -12,7 +12,11 @@ depends_on:
   type: calls
 - target: C-004
   type: calls
-depended_by: []
+- target: agents/context/check-human-ac-tick.py
+  type: calls
+depended_by:
+- target: agents/context/check-human-ac-tick.py
+  type: called_by
 last_verified: 2026-08-12
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

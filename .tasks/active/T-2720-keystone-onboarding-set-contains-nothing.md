@@ -4,13 +4,13 @@ name: "Keystone: onboarding set contains nothing the agent cannot resolve"
 description: >
   Arc keystone for T-2715 GO item 4. Redesign per IW-13/IW-14/IW-15: keep the agent
   prologue, interleave the human curriculum but leave it UNGATED, route to corpus
-  maps rather than embedding content, and enforce the new invariant that nothing owner:
-  agenthuman or agent-unresolvable may sit in the T-532-gated onboarding set. Carries
+  maps rather than embedding content, and enforce the new invariant that nothing
+  human or agent-unresolvable may sit in the T-532-gated onboarding set. Carries
   the arc's closure Recommendation.
 
 status: started-work
 workflow_type: design
-owner:
+owner: agent
 horizon: now
 tags: [arc:onboarding-curriculum]
 components: []

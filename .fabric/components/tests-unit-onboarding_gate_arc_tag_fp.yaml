@@ -10,7 +10,9 @@ depends_on:
   type: calls
 - target: agents/context/check-active-task.sh
   type: tests
+- target: agents/context/check-onboarding-gate.py
+  type: tests
 depended_by: []
 last_verified: 2026-08-08
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

@@ -44,4 +44,8 @@ depended_by:
   type: called_by
 - target: tests/playwright/test_api_context_capture.py
   type: called_by
-last_enriched: '2026-07-07'
+- target: agents/context/consolidate.py
+  type: called_by
+- target: agents/context/lib/memory-recall.py
+  type: called_by
+last_enriched: '2026-09-03'

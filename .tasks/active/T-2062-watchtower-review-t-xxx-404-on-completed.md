@@ -262,3 +262,5 @@ If the human wants the original (a) shape anyway — render completed tasks read
 ### 2026-05-28T17:59:23Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: NO-GO
+
+- **Research artifact:** docs/reports/T-2062-watchtower-review-404-completed.md

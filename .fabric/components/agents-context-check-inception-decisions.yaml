@@ -5,7 +5,9 @@ subsystem: context-fabric
 location: agents/context/check-inception-decisions.sh
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: agents/context/check-inception-decisions.py
+  type: calls
 depended_by:
 - target: C-009
   type: called_by
@@ -13,4 +15,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-22
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

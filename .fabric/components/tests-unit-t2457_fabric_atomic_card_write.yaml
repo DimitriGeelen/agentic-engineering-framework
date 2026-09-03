@@ -12,7 +12,9 @@ depends_on:
   type: tests
 - target: lib/pickup.sh
   type: tests
+- target: agents/fabric/lib/enrich.py
+  type: tests
 depended_by: []
 last_verified: 2026-06-22
 created_by: unknown
-last_enriched: '2026-06-22'
+last_enriched: '2026-09-03'

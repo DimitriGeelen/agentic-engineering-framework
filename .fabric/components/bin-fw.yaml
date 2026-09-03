@@ -199,6 +199,12 @@ depends_on:
   type: calls
 - target: tools/bats-silent-skip-lint.py
   type: calls
+- target: agents/context/consolidate.py
+  type: calls
+- target: agents/context/lib/memory-recall.py
+  type: calls
+- target: web/smoke_test.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 last_enriched: '2026-09-03'
@@ -1040,4 +1046,12 @@ depended_by:
 - target: tools/t3254-livefire.sh
   type: called_by
 - target: web/blueprints/config.py
+  type: called_by
+- target: agents/context/check-inception-recommendation.py
+  type: called_by
+- target: agents/fabric/lib/enrich.py
+  type: called_by
+- target: tools/t2176-corpus-rescan.sh
+  type: called_by
+- target: web/conftest.py
   type: called_by

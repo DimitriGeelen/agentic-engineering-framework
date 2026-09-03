@@ -5,10 +5,12 @@ subsystem: context-fabric
 location: agents/context/check-inception-recommendation.sh
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: agents/context/check-inception-recommendation.py
+  type: calls
 depended_by:
 - target: tests/unit/check_inception_recommendation.bats
   type: tests_by
 last_verified: 2026-06-04
 created_by: unknown
-last_enriched: '2026-06-07'
+last_enriched: '2026-09-03'

@@ -286,3 +286,5 @@ Evidence:
 - The fix surface is bounded — one Python file, one template.
 - Author-side friction observed in this very session: I filed 4 inceptions with bug-class headings because the RCA shape matched the user's request ("RCA + remediate"). The render-side accommodation closes the gap structurally instead of asking every author to remember the schema mismatch.
 - Adjacent precedent: T-1177 / T-1391 / T-1585 each added structural rendering for specific section classes; T-2066 continues that pattern for the 5 dropped headings.
+
+- **Research artifact:** docs/reports/T-2066-inception-detail-template-silent-drop.md

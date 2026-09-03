@@ -193,6 +193,12 @@ depended_by:
   type: tests_by
 - target: tests/lint/no-project-markers-above-bats-tmpdir.bats
   type: mirrors_by
+- target: agents/context/check-arc-id.py
+  type: called_by
+- target: agents/context/check-inception-recommendation.py
+  type: called_by
+- target: agents/context/check-inception-schema.py
+  type: called_by
 last_verified: 2026-03-10
 created_by: T-412
 last_enriched: '2026-09-03'

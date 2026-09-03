@@ -9,7 +9,9 @@ tags:
 - task-validation
 purpose: 'PreToolUse hook entry point — validates that ### Human subsection sits inside ## Acceptance Criteria block (T-2420).
   Bash wrapper execs check-task-ac-structure.py with the same argv (sibling parity with check-arc-id.sh / check-heredoc-cmd-sub.sh).'
-depends_on: []
+depends_on:
+- target: agents/context/check-task-ac-structure.py
+  type: calls
 depended_by:
 - target: tests/unit/check_task_ac_structure.bats
   type: called_by
@@ -17,4 +19,4 @@ depended_by:
   type: tests_by
 last_verified: 2026-06-16
 created_by: T-2420
-last_enriched: '2026-06-16'
+last_enriched: '2026-09-03'

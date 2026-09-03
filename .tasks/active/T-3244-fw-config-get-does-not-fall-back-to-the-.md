@@ -126,3 +126,8 @@ pressure to fix it.
 
 **Prevention.** A test asserting tier-4 for a key deliberately absent from
 `.framework.yaml`, which is the only configuration in which the defect is observable.
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->

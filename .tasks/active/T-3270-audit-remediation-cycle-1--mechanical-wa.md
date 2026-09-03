@@ -1,8 +1,8 @@
 ---
-id: T-3269
-name: "fabric register: extension-collision drops .py card when a same-name .sh exists"
+id: T-3270
+name: "audit remediation cycle 1 — mechanical WARN fixes"
 description: >
-  fabric register: extension-collision drops .py card when a same-name .sh exists
+  audit remediation cycle 1 — mechanical WARN fixes
 
 status: started-work
 workflow_type: build
@@ -21,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-03T21:46:31Z
-last_update: 2026-09-03T21:46:31Z
+created: 2026-09-03T21:50:26Z
+last_update: 2026-09-03T21:50:26Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,41 +36,27 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-3269: fabric register: extension-collision drops .py card when a same-name .sh exists
+# T-3270: audit remediation cycle 1 — mechanical WARN fixes
 
 ## Context
 
-`fw fabric drift` has flagged the same 7 files as "unregistered" across at least
-8 of the last 14 daily audits (trend-analysis section, cycle-1 audit this
-session). `fw fabric register agents/context/check-arc-id.py` reports "Card
-already exists" and exits 0 — but the card it finds
-(`.fabric/components/agents-context-check-arc-id.yaml`) has
-`location: agents/context/check-arc-id.sh`, a different file. Root cause:
-`_do_register_file` in `agents/fabric/lib/register.sh:196` derives the slug by
-stripping the extension entirely (`sed 's|/|-|g; s|\.[^./-]*$||; s|^\.||'`), so
-`check-arc-id.py` and `check-arc-id.sh` collapse to the identical slug
-`agents-context-check-arc-id`. The existing-card short-circuit
-(register.sh:200-203) then treats the .sh card as covering the .py file too,
-silently declines to create a card, and returns success — so `fw fabric
-register` never errors, and `fw fabric drift` never stops flagging it. Same
-false-green shape CLAUDE.md warns about elsewhere: a command that reports OK
-while the thing it was asked to do didn't happen.
-
-Fix: before short-circuiting on an existing card, compare the existing card's
-`location:` against the target file. If they match, current behaviour (skip,
-return 0) is correct — same file, already registered. If they differ, the slug
-collided across two real, distinct files; disambiguate by keeping the
-extension in the slug for BOTH (or for the new one, leaving the first alone) so
-each file gets its own card.
+Mechanical, evidence-backed WARN fixes surfaced by this session's full `fw audit`
+(cycle 1, .context/audits/2026-09-03.yaml). Scope is deliberately narrow to items
+with a single, low-judgment correct fix — not the large human-owned backlogs
+(199-task review queue, 183 GO-scope-unpropagated inceptions, branch hygiene
+forks) which stay reported, not auto-remediated, per CLAUDE.md's Human Task
+Completion Rule.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] AC1 — `_do_register_file` compares the existing card's `location:` to the target path before short-circuiting; on a genuine collision (different file, same slug) it derives a disambiguated slug instead of silently declining.
-- [x] AC2 — `fw fabric register agents/context/check-arc-id.py` creates a distinct card (not "Card already exists") without touching `agents-context-check-arc-id.yaml`'s existing `location: agents/context/check-arc-id.sh`.
-- [x] AC3 — all 7 files named in this session's `fw fabric drift` (check-arc-id.py, check-inception-decisions.py, check-inception-recommendation.py, check-inception-schema.py, check-task-ac-structure.py, check-onboarding-gate.py, check-human-ac-tick.py) get their own card; `fw fabric drift` reports 0 unregistered for these.
-- [x] AC4 — the identical-file case (re-running `fw fabric register` on an already-registered file, no collision) still short-circuits with "Card already exists" and does not create a duplicate.
+- [x] AC1 — T-2720's `owner:` field and mangled description text fixed (evidenced by git history: the creation commit 8cf655926 already carried the corruption — a leaked `owner:\nagent` fragment landed inside the description scalar instead of its own frontmatter line).
+- [x] AC2 — T-3244 has a `## Updates` section (was missing entirely; task ended at `## RCA`).
+- [x] AC3 — T-2062, T-2063, T-2064, T-2065, T-2066 each reference their existing `docs/reports/T-<id>-*.md` research artifact from their `## Updates` section (C-001, all 5 were the audit's top PRIORITY ACTIONS).
+- [x] AC4 — T-3234 (completed, no episodic) has an episodic summary generated.
+- [x] AC5 — `bin/fw fabric enrich` run to close dangling-edge fabric cards where it can act mechanically; result (edges closed / remaining) recorded here.
+  **Result:** 258 edges added across 84 cards. 112 unresolved targets remain (67 real files with no card, 45 ignorable directories) — a separate registration backlog, out of this task's scope.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -220,37 +206,28 @@ each file gets its own card.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bash -n agents/fabric/lib/register.sh
-bin/fw fabric register agents/context/check-arc-id.py > /tmp/.t3269a.out 2>&1; grep -q "Card already exists" /tmp/.t3269a.out
-bin/fw fabric drift > /tmp/.t3269b.out 2>&1; grep -q "unregistered: 0" /tmp/.t3269b.out
-grep -q "^location: agents/context/check-arc-id.sh$" .fabric/components/agents-context-check-arc-id.yaml
-grep -q "^location: agents/context/check-arc-id.py$" .fabric/components/agents-context-check-arc-id-py.yaml
-diff agents/fabric/lib/register.sh .agentic-framework/agents/fabric/lib/register.sh
+grep -q "^owner: agent$" .tasks/active/T-2720-keystone-onboarding-set-contains-nothing.md
+! grep -q "owner: agenthuman" .tasks/active/T-2720-keystone-onboarding-set-contains-nothing.md
+grep -q "^## Updates" .tasks/active/T-3244-fw-config-get-does-not-fall-back-to-the-.md
+grep -q "docs/reports/T-2062-" .tasks/active/T-2062-watchtower-review-t-xxx-404-on-completed.md
+grep -q "docs/reports/T-2066-" .tasks/active/T-2066-inception-detail-template-silently-drops.md
+test -f .context/episodic/T-3234.yaml
 
 ## RCA
 
-**Symptom:** `fw fabric drift` re-flagged the same 7 `.py` files as unregistered
-across 8+ of the last 14 daily audits. Running `fw fabric register <file>.py`
-against any of them reported "Card already exists" and exited 0, with nothing
-changing — a false green that let the WARN recur indefinitely.
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
 
-**Root cause:** `_do_register_file`'s slug derivation strips the file extension
-entirely, so two distinct files sharing a basename but differing only in
-extension (`check-arc-id.py` / `check-arc-id.sh`) map to the same slug. The
-existing-card short-circuit then matched on slug alone, never checking whether
-the found card actually described the target file.
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
 
-**Why structurally allowed:** the short-circuit was written for the common case
-(re-registering the same file) and never considered that the slug function is
-lossy (extension-stripping) — two real inputs can hash to one slug. No test
-exercised the basename-collision case, so nothing caught the divergence between
-"a card with this slug exists" and "this file is registered."
-
-**Prevention:** the fix (register.sh:200-215) compares the existing card's
-`location:` against the target path before short-circuiting, and only
-disambiguates (extension-suffixed slug) on a genuine mismatch — so the
-identical-file short-circuit stays correct (AC4) while the collision case now
-creates a real card (AC2/AC3) instead of silently declining.
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -328,7 +305,7 @@ creates a real card (AC2/AC3) instead of silently declining.
 
 ## Updates
 
-### 2026-09-03T21:46:31Z — task-created [task-create-agent]
+### 2026-09-03T21:50:26Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3269-fabric-register-extension-collision-drop.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3270-audit-remediation-cycle-1--mechanical-wa.md
 - **Context:** Initial task creation

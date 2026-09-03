@@ -5,7 +5,9 @@ subsystem: context-fabric
 location: agents/context/check-arc-id.sh
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: agents/context/check-arc-id.py
+  type: calls
 depended_by:
 - target: tests/unit/arc_id_validation_guard.bats
   type: called_by
@@ -17,4 +19,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-16
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

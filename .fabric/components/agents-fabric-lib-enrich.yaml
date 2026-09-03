@@ -4,17 +4,35 @@ type: script
 subsystem: component-fabric
 location: agents/fabric/lib/enrich.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/shared.py
+  type: calls
+- target: lib/govd_policy.py
+  type: calls
+- target: bin/fw
+  type: calls
+- target: lib/arc.sh
+  type: calls
+- target: lib/config.sh
+  type: calls
+- target: agents/handover/handover.sh
+  type: calls
+- target: agents/dispatch/yield-point.sh
+  type: calls
+- target: web/blueprints/tasks.py
+  type: calls
+- target: lib/pause.sh
+  type: calls
+- target: lib/worktree.sh
+  type: calls
+- target: agents/context/check-inception-schema.sh
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/t2457_fabric_atomic_card_write.bats
+  type: tests_by
+- target: tests/unit/test_enrich_unresolved_targets.py
+  type: called_by
 last_verified: 2026-09-03
 created_by: unknown
+last_enriched: '2026-09-03'

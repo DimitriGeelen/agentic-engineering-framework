@@ -4,17 +4,21 @@ type: script
 subsystem: watchtower
 location: web/qa_feedback.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/shared.py
+  type: calls
+- target: web/shared.py
+  type: uses
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: C-003
+  type: called_by
+- target: C-003
+  type: uses_by
+- target: web/blueprints/discovery.py
+  type: called_by
+- target: web/blueprints/discovery.py
+  type: uses_by
 last_verified: 2026-09-03
 created_by: unknown
+last_enriched: '2026-09-03'

@@ -8,6 +8,8 @@ purpose: Context Agent - focus command
 depends_on:
 - target: lib/ask.py
   type: calls
+- target: agents/context/lib/memory-recall.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -29,7 +31,7 @@ depended_by:
   type: tests_by
 - target: web/embed_health.py
   type: called_by
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'

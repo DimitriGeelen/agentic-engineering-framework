@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3234: cwd-resolution test premise is unasserted, so host pollution reads as a code regression
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T21:53:30Z
+# ============================================================================
+
+task_id: T-3234
+task_name: "cwd-resolution test premise is unasserted, so host pollution reads as a code regression"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-31T18:36:45Z
+completed: 2026-08-31T18:56:50Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-08-31T21:03:08+02:00
+last_commit: 2026-08-31T21:03:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a corpus-level guard for the ancestry every hook suite silently depends on
+
+# Key outcomes
+outcomes:
+  - 'A corpus-level invariant exists under `tests/lint/` that walks from the bats'
+  - 'Its failure output names the offending directory, the marker file, and'
+  - 'The walk mirrors `lib/paths.sh:fw_reanchor_from_cwd` exactly, INCLUDING its'
+  - 'A second mirror leg pins the marker set (`.framework.yaml` / `.tasks`) against'
+  - 'The guard is RED against the polluted state and GREEN against the clean one,'
+  - '`tests/unit/check_active_task_cwd_resolution.bats` "cwd outside any project"'
+  - 'That leg carries a PREMISE comment naming the host dependency and pointing at'
+  - 'The new lint is collected by the runner that already globs `tests/lint/`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-08-31.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/episodic/T-3222.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/.t3234-push.log'
+  - '.context/working/watchtower.log'
+  - '.fabric/components/tests-lint-no-project-markers-above-bats-tmpdir.yaml'
+  - '.tasks/active/T-3224-ac-body-parser-drops-steps-content-the-o.md'
+  - '.tasks/active/T-3225-fw-continuous-armdisarmstatus--the-loop-.md'
+  - '.tasks/completed/T-3234-cwd-resolution-test-premise-is-unasserte.md'
+  - 'tests/lint/no-project-markers-above-bats-tmpdir.bats'
+  - 'tests/unit/check_active_task_cwd_resolution.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-31T21:03:08'
+    action: 'T-3234: a corpus-level guard for the ancestry every hook suite silently depends on'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 20
+  commits: 1
+  files_changed: 21
+  lines_added: 771
+  lines_removed: 62
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3234-cwd-resolution-test-premise-is-unasserte.md
+generated_by: context-agent-hybrid

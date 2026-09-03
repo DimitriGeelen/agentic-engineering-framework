@@ -71,6 +71,8 @@ depended_by:
   type: called_by
 - target: tests/unit/arc_next_numeric_id_octal.bats
   type: called_by
+- target: agents/fabric/lib/enrich.py
+  type: called_by
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-09-03'

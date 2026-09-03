@@ -282,4 +282,26 @@ depended_by:
   type: uses_by
 - target: web/subprocess_utils.py
   type: uses_by
-last_enriched: '2026-08-23'
+- target: agents/fabric/lib/enrich.py
+  type: called_by
+- target: web/ask.py
+  type: called_by
+- target: web/ask.py
+  type: uses_by
+- target: web/metrics_history.py
+  type: called_by
+- target: web/metrics_history.py
+  type: uses_by
+- target: web/qa_feedback.py
+  type: called_by
+- target: web/qa_feedback.py
+  type: uses_by
+- target: web/secrets_store.py
+  type: called_by
+- target: web/secrets_store.py
+  type: uses_by
+- target: web/test_app.py
+  type: called_by
+- target: web/test_app.py
+  type: uses_by
+last_enriched: '2026-09-03'

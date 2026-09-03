@@ -4,17 +4,21 @@ type: script
 subsystem: context-fabric
 location: agents/context/check-inception-recommendation.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: lib/hook_paths.py
+  type: calls
+- target: lib/paths.sh
+  type: calls
+- target: bin/fw
+  type: calls
+- target: lib/hook_paths.py
+  type: uses
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/context/check-inception-recommendation.sh
+  type: called_by
+- target: agents/context/check-onboarding-gate.py
+  type: called_by
 last_verified: 2026-09-03
 created_by: unknown
+last_enriched: '2026-09-03'

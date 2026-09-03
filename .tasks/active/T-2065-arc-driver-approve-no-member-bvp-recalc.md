@@ -237,3 +237,5 @@ Evidence:
 ### 2026-05-28T18:00:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+- **Research artifact:** docs/reports/T-2065-arc-approve-driver-no-rescore.md

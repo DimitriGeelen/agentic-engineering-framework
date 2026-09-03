@@ -9,6 +9,8 @@ depends_on: []
 depended_by:
 - target: agents/orchestrator/orchestrator-graph.py
   type: called_by
+- target: agents/fabric/lib/enrich.py
+  type: called_by
 last_verified: 2026-06-11
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-09-03'

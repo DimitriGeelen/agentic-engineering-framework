@@ -8,6 +8,10 @@ purpose: 'Watchtower UI page: Search'
 depends_on:
 - target: web/templates/_partials/chat_tab.html
   type: includes
+- target: web/templates/_partials/search_input.html
+  type: includes
+- target: web/templates/_partials/search_results.html
+  type: includes
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -17,4 +21,4 @@ depended_by:
   type: rendered_by
 - target: web/blueprints/discovery.py
   type: rendered_by
-last_enriched: '2026-04-09'
+last_enriched: '2026-09-03'

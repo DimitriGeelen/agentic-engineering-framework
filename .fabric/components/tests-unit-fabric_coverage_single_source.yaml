@@ -10,7 +10,9 @@ depends_on:
   type: calls
 - target: C-004
   type: tests
+- target: agents/fabric/lib/expand_patterns.py
+  type: tests
 depended_by: []
 last_verified: 2026-08-02
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

@@ -52,6 +52,14 @@ depends_on:
   type: uses
 - target: web/search_utils.py
   type: uses
+- target: web/ask.py
+  type: calls
+- target: web/qa_feedback.py
+  type: calls
+- target: web/ask.py
+  type: uses
+- target: web/qa_feedback.py
+  type: uses
 depended_by:
 - target: web/search.py
   type: used-by
@@ -70,4 +78,4 @@ depended_by:
   type: uses_by
 last_verified: 2026-04-05
 created_by: T-917
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'

@@ -10,7 +10,9 @@ depends_on:
   type: calls
 - target: agents/context/check-arc-id.sh
   type: tests
+- target: agents/context/check-arc-id.py
+  type: tests
 depended_by: []
 last_verified: 2026-05-16
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-09-03'

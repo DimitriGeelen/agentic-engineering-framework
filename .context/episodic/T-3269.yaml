@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3269: fabric register: extension-collision drops .py card when a same-name .sh exists
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T21:50:18Z
+# ============================================================================
+
+task_id: T-3269
+task_name: "fabric register: extension-collision drops .py card when a same-name .sh exists"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-03T21:46:31Z
+completed: 2026-09-03T21:49:54Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-03T23:49:48+02:00
+last_commit: 2026-09-03T23:49:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix fabric register extension-collision false-green
+
+# Key outcomes
+outcomes:
+  - 'AC1 — `_do_register_file` compares the existing card''s `location:` to the target path before short-circuiting; on a genuine collision (different file, same slug) it derives a disambiguated slug instead of silently declining.'
+  - 'AC2 — `fw fabric register agents/context/check-arc-id.py` creates a distinct card (not "Card already exists") without touching `agents-context-check-arc-id.yaml`''s existing `location: agents/context/check-arc-id.sh`.'
+  - 'AC3 — all 7 files named in this session''s `fw fabric drift` (check-arc-id.py, check-inception-decisions.py, check-inception-recommendation.py, check-inception-schema.py, check-task-ac-structure.py, check-onboarding-gate.py, check-human-ac-tick.py) get their own card; `fw fabric drift` reports 0 unregistered for these.'
+  - 'AC4 — the identical-file case (re-running `fw fabric register` on an already-registered file, no collision) still short-circuits with "Card already exists" and does not create a duplicate.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix fabric register extension-collision false-green'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/lib/register.sh'
+  - 'agents/fabric/lib/register.sh'
+  - '.fabric/components/agents-context-check-arc-id-py.yaml'
+  - '.fabric/components/agents-context-check-human-ac-tick-py.yaml'
+  - '.fabric/components/agents-context-check-inception-decisions-py.yaml'
+  - '.fabric/components/agents-context-check-inception-recommendation-py.yaml'
+  - '.fabric/components/agents-context-check-inception-schema-py.yaml'
+  - '.fabric/components/agents-context-check-onboarding-gate-py.yaml'
+  - '.fabric/components/agents-context-check-task-ac-structure-py.yaml'
+  - '.tasks/active/T-3269-fabric-register-extension-collision-drop.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-03T23:49:48'
+    action: 'T-3269: fix fabric register extension-collision false-green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 10
+  lines_added: 514
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3269-fabric-register-extension-collision-drop.md
+generated_by: context-agent-hybrid

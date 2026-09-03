@@ -66,6 +66,14 @@ depends_on:
   type: uses
 - target: web/search_utils.py
   type: uses
+- target: web/ask.py
+  type: calls
+- target: web/qa_feedback.py
+  type: calls
+- target: web/ask.py
+  type: uses
+- target: web/qa_feedback.py
+  type: uses
 depended_by:
 - target: C-006
   type: htmx
@@ -82,4 +90,4 @@ depended_by:
   type: registered_by
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-03'
