@@ -1,18 +1,17 @@
-error-watchdog=29
-
+audit-task-tools=7
 
 check-fabric-new-file=5
 post-compact-resume=1
-check-project-boundary=48
+check-project-boundary=63
 check-active-completed-dup=4
 check-arc-id=4
 check-inception-schema=4
-checkpoint=20
-check-tier0=20
-budget-gate=20
-check-active-task=17
-loop-detect=19
-audit-task-tools=18
+checkpoint=34
+check-tier0=35
+budget-gate=35
+check-active-task=30
+loop-detect=33
+audit-task-tools=25
 check-human-ac-tick=3
 check-heredoc-cmd-sub=3
 check-inception-decisions=3
@@ -23,3 +22,4 @@ check-rail-mcp-label=1
 check-dispatch=1
 commit-cadence=1
 check-settings-edit=1
+error-watchdog=5

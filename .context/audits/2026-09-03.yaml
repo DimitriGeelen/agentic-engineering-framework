@@ -1,9 +1,9 @@
-# Audit Results - 2026-09-03-2012
-timestamp: 2026-09-03T18:12:10Z
+# Audit Results - 2026-09-03-2025
+timestamp: 2026-09-03T18:25:57Z
 sections: "structure"
 summary:
   pass: 30
-  warn: 5
+  warn: 6
   fail: 0
 findings:
   - level: PASS
@@ -81,3 +81,6 @@ findings:
     check: "Map conformance: aef-tier0-escalation matches its enforced machine"
   - level: INFO
     check: "Stale draft(s), 30d+ untouched: draft-arc-lifecycle draft-exception-handling draft-knowledge-leveling draft-t2584-scratch draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"
+  - level: WARN
+    check: "Continuous-run wrapper last recorded ARMED but the turn driver is not"
+    mitigation: "fw continuous arm --hours N --iterations N --directive '...' (T-3225). Same drift class as the 74-day and 8-day prior incidents (G-099)."
