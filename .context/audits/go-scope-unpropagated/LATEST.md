@@ -15,7 +15,7 @@ A completed task qualifies when ALL of:
 
 ## Population examined
 
-- completed inceptions: 453
+- completed inceptions: 452
 - with a GO recorded:   356
 - findings:             183
 
