@@ -4733,6 +4733,72 @@ concerns:
   - T-3256
   - T-3257
   follow_up_task: T-3256
+- id: G-101
+  type: gap
+  title: continuous-driver infers injection delivery from an exit code — it already owns the snapshot
+    primitive that would confirm delivery, and never calls it after injecting
+  description: 'G-097 records that `termlink inject` returns exit 0 while delivering nothing into a
+    claude TUI. This entry records the reason that could go undetected, which is a separate flaw and
+    lives in THIS repo rather than upstream.
+
+
+    `agents/context/continuous-driver.sh:234-238` treats a zero exit status as proof of delivery:
+
+
+      if timeout 30 termlink inject "$SESSION" --enter "$DIRECTIVE" ... \
+
+         || timeout 30 termlink pty inject "$SESSION" --enter "$DIRECTIVE" ...; then
+
+          _log "injected" "session=${SESSION} directive=..."
+
+
+    Nothing between the call and the ledger write observes the target. So "the transport accepted the
+    call" and "the agent received a turn" are the same event as far as the driver is concerned, and
+    a silent-delivery transport writes a truthful-looking `"reason": "injected"` on every tick.
+
+
+    The sharp part: the driver ALREADY has the primitive that would settle it. `_pty_snapshot()` is
+    defined at line 209 and used twice BEFORE injecting — SNAP_A vs SNAP_B across the settle window
+    is how busy-session detection works. It is simply never called a third time afterward. The
+    capability to tell delivery from silence is present, tested, and unused at the one point it
+    matters.
+
+
+    This is the same class as L-346 ("claude -p exit=0 is NOT a tool-use signal") — a process
+    exiting cleanly is not evidence that the semantic work happened. That learning was captured in
+    T-1700 and did not reach this code path.
+
+
+    Consequence if left: an upstream TermLink fix for G-097 closes the current instance and leaves
+    this gap fully intact. Any future transport regression — theirs or ours — reproduces the same
+    silent false-green, and the ledger keeps saying "injected".'
+  spec_reference: agents/context/continuous-driver.sh:209 (_pty_snapshot), :234-238 (inject + ledger
+    write); L-346; CLAUDE.md §Post-Fix Root Cause Escalation (G-019)
+  severity: high
+  status: open
+  detected_in: T-3275 (code read of the G-097 defect site, 2026-09-04)
+  observed: '2026-09-04'
+  reported_by: self (found while scoping whether to add a non-termlink transport leg for G-097)
+  blast_radius: Scoped to the continuous-run driver. Currently inert — `continuous-driver-10m` is
+    paused at all three cron transitions (registry status:paused, generated, /etc/cron.d), verified
+    2026-09-04. The gap has no live effect while that pause holds; it becomes live the moment the
+    entry is resumed, which is exactly what T-3257's final AC does.
+  what_works_now: 'Everything the driver checks BEFORE injecting is real and independently tested:
+    six armed conditions, session resolution ladder (T-3255), PTY-backed check, and busy detection
+    via the same snapshot helper. The blindness is confined to the window after the inject call.'
+  what_remains: 'Homed HERE (Gap Homing, T-1333) — the confirmation fix belongs in this repo''s
+    driver, not in termlink. T-3275 builds it: re-snapshot after inject and refuse rather than log
+    "injected" when the pane did not change. Needs a negative control (inject into a target known
+    not to receive) or the confirmation reproduces the same class one level up — a self-redrawing
+    pane could read as delivery. Independent of G-097: landing this does not require the upstream
+    fix, and the upstream fix does not close this.'
+  related:
+  - G-097
+  - T-3254
+  - T-3255
+  - T-3275
+  - T-3276
+  follow_up_task: T-3275
 - id: G-098
   type: gap
   title: Session-launch mode (Claude Code background-job daemon) sits entirely outside AEF/TermLink governance

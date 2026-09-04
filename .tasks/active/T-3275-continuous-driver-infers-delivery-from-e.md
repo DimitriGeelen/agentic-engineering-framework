@@ -1,21 +1,10 @@
 ---
-id: T-3211
-name: "handover Suggested First Action truncates the task name at the first line of
-  a folded YAML scalar"
+id: T-3275
+name: "continuous-driver infers delivery from exit code instead of confirming it"
 description: >
-  Split from T-3210 (one bug, one task). The selector reads the task name with re.search(r'^name:\s*(.+)',
-  content, re.M), which captures only the FIRST line of the frontmatter value. Most
-  task names are folded YAML scalars spanning two or more lines, so the suggestion
-  renders cut mid-phrase and with a leading double quote: 'Continue T-1719: "Embeddings
-  strategy V1 - Slice 1 (post-write hook + happiness signal + one-provider'. Both
-  T-3181 IW-4 cold-resume arms flagged the truncation as blocking - the reader cannot
-  tell what the task is. Distinct root cause from T-3210 (which fixed WHICH task is
-  named, not how its name is rendered). Fix shape: consume indented continuation lines
-  and strip surrounding quotes. Note for whoever takes it: bash -n does NOT catch
-  an unescaped quote inside that python3 -c block - see T-3210 Evolution, mutation
-  M3.
+  continuous-driver infers delivery from exit code instead of confirming it
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -32,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-29T10:06:43Z
-last_update: 2026-09-04T08:44:29Z
-date_finished:
+created: 2026-09-04T15:01:50Z
+last_update: 2026-09-04T15:01:50Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -45,48 +34,59 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-08-29T10:15:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=235,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-08-29T10:15:15Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3211: handover Suggested First Action truncates the task name at the first line of a folded YAML scalar
+# T-3275: continuous-driver infers delivery from exit code instead of confirming it
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`agents/context/continuous-driver.sh:234-238` treats a zero exit status from
+`termlink inject` as proof that a continuation turn reached the agent, then writes
+`_log "injected"` to the ledger. Nothing observes the target between the call and
+the ledger write, so "the transport accepted the call" and "the agent received a
+turn" are indistinguishable to the driver.
+
+G-097 is the live instance of that being wrong: `termlink inject` returns exit 0
+and delivers nothing into a `claude` TUI. This task does not fix G-097 — that is
+homed upstream at TermLink. It fixes the reason G-097 could have run undetected
+every ten minutes forever while the ledger reported success.
+
+The driver already owns the primitive that settles it. `_pty_snapshot()` (line 209)
+is called twice *before* injecting — `SNAP_A` vs `SNAP_B` across the settle window
+is how busy-session detection works. It is never called a third time afterward.
+
+Same class as **L-346** ("claude -p exit=0 is NOT a tool-use signal", T-1700): a
+clean exit is not evidence the semantic work happened. That learning did not reach
+this code path.
+
+Registered as **G-101** before building, per §When discovering structural flaws.
+Independent of G-097 in both directions: this lands without the upstream fix, and
+the upstream fix does not close this.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] After a successful inject call, the driver takes a post-inject snapshot via
+      the existing `_pty_snapshot()` helper and compares it against the pre-inject
+      state, rather than proceeding straight to the ledger write.
+- [ ] When delivery cannot be confirmed, the driver `_bail "refused"` with a message
+      naming the unconfirmed-delivery condition — it does NOT write
+      `_log "injected"`. A tick that delivered nothing must leave a refusal in the
+      ledger, not a success.
+- [ ] **Negative control:** a test proves the confirmation REFUSES against a target
+      that accepts the call but does not receive it (the G-097 shape, simulated with
+      a stub transport that exits 0 and writes nothing). Without this leg the suite
+      cannot distinguish "confirmation works" from "confirmation always passes".
+- [ ] **Positive control:** a test proves the confirmation ALLOWS a genuine delivery
+      against a shell-backed PTY target, which G-097 establishes is a working
+      transport path. Guards against a confirmation so strict it refuses everything.
+- [ ] The false-negative case is addressed explicitly: a target whose pane redraws on
+      its own (spinner, clock) must not read as delivery. Either the comparison keys
+      on the directive's own text appearing, or the task records in `## Decisions`
+      why change-detection alone is sufficient here.
+- [ ] `tests/unit/t3254_driver_refusals.bats` still passes with zero skips.
+- [ ] `bin/fw vendor self --check` is clean before close (`agents/` is a vendored
+      path — OBS-250 ordering: sync BEFORE `--status work-completed`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,6 +168,29 @@ bvp_scores_proposed:
 #     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
 #
+# ── A SKIPPED BATS TEST REPORTS `ok` (T-3217) ─────────────────────────────────
+#
+# `! grep -q "^not ok"` does NOT mean the suite ran. Bats emits a skip as
+#     ok 6 <name> # skip <reason>
+# which is not a `not ok`, so the gate passes and the report says ok while the
+# thing the test covers was measured NOWHERE. Origin: T-3213 guarded a test with
+# `[ "$(id -u)" -eq 0 ] && skip` — the suite runs as root here and in CI, so it
+# skipped on every run that mattered, for as long as it existed.
+#
+# Add a skip clause to any bats verification line. `# skip` is the marker bats
+# writes; counting it is the whole check:
+#     timeout 300 bats <file> > /tmp/.out 2>&1 && ! grep -q "^not ok" /tmp/.out
+#     test "$(grep -c '# skip' /tmp/.out)" -eq 0
+# Two lines, because they answer different questions — "did anything fail" and
+# "did everything run". If some skips are legitimate on your host (an optional
+# dependency is genuinely absent), assert the COUNT you expect rather than zero,
+# and say in the task why that number is right.
+#
+# Corpus-wide, the same check runs from `bin/fw test lint`
+# (tools/bats-silent-skip-lint.py): static mode flags guards that are fixed for
+# a deployment rather than probing an optional dependency, and `--tap FILE`
+# reports the skips a real run actually fired.
+#
 # REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
 # shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
 # the same directory, the same second. To rehearse for real:
@@ -212,6 +235,26 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+bash -n agents/context/continuous-driver.sh
+
+# The confirmation must exist AFTER the inject call, not merely somewhere in the
+# file — `_pty_snapshot` already appears twice above it for busy-detection, so a
+# plain occurrence count would pass on the unfixed script (the false green this
+# very task is about). Assert on the post-inject region only.
+awk '/^if timeout .*termlink inject/,0' agents/context/continuous-driver.sh > /tmp/.t3275-tail && grep -q '_pty_snapshot' /tmp/.t3275-tail
+
+# The unconfirmed path must refuse, not log a success.
+awk '/^if timeout .*termlink inject/,0' agents/context/continuous-driver.sh > /tmp/.t3275-tail && grep -q '_bail "refused"' /tmp/.t3275-tail
+
+# New suite: both control legs must actually run (T-3217 — a skip reports `ok`).
+out=$(bats tests/unit/t3275_delivery_confirmation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
+
+# Pre-existing refusal suite still green, zero skips (T-3254).
+out=$(bats tests/unit/t3254_driver_refusals.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
+
+# Vendored path (agents/) — OBS-250: sync BEFORE close, not after.
+bin/fw vendor self --check
 
 ## RCA
 
@@ -305,7 +348,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-08-29T10:06:43Z — task-created [task-create-agent]
+### 2026-09-04T15:01:50Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3211-handover-suggested-first-action-truncate.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3275-continuous-driver-infers-delivery-from-e.md
 - **Context:** Initial task creation
