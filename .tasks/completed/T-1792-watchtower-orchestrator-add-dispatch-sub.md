@@ -9,13 +9,13 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [web, observability]
 components: []
 related_tasks: [T-1788, T-1789, T-1647]
 arc_id: orchestrator-rethink
 created: 2026-05-12T21:11:52Z
-last_update: '2026-08-16T22:23:59Z'
+last_update: 2026-09-03T23:55:21Z
 date_finished: 2026-05-12T21:16:07Z
 bvp_scores_proposed:
   - ts: '2026-05-28T22:54:09Z'

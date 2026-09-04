@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-06-24T19:10:09Z
+# Generated: 2026-09-03T23:59:10Z
 # ============================================================================
 
 task_id: T-2488
@@ -13,13 +13,15 @@ enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-06-24T18:59:46Z
-completed: 2026-06-24T19:09:59Z
-duration_days: 0
+completed: 2026-09-03T23:58:56Z
+duration_days: 71
 updates_count: 1
+first_commit: 2026-06-24T21:09:49+02:00
+last_commit: 2026-06-24T21:10:55+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  fix OBS-088 — bare dispatch worker inherited parent .mcp.json (~175K tokens) → 'Prompt is too long'. complete — RCA+fix landed, PL-015 captured (strict-mcp lean worker)
 
 # Key outcomes
 outcomes:
@@ -30,30 +32,40 @@ outcomes:
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  - description: 'complete — RCA+fix landed, PL-015 captured (strict-mcp lean worker)'
+    source: git-mined
+  - description: 'fix OBS-088 — bare dispatch worker inherited parent .mcp.json (~175K tokens) → ''Prompt is too long'''
+    source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: '[date] — [topic]'
-    chose: '[what was decided]'
-    rationale: '[rationale]'
-    alternatives_rejected: ['[alternatives and why not]']
   - decision: '2026-06-24 — strict-mcp as the default, not per-workflow opt-in'
-    chose: 'Resolver-dispatched TermLink workers run strict-mcp by default'
-    rationale: 'Antifragility/Reliability — the safe failure mode is "too few tools"'
-    alternatives_rejected: ['(a) Capping/trimming the prompt template — wrong layer; the']
+    chose: 'Resolver-dispatched TermLink workers run strict-mcp by default (`envelope strict_mcp_config` defaults `True`; `default.yaml` declares it explicitly). Workflows that need MCP opt IN via `strict_mcp_config: false` + `mcp_config: <path>`.'
+    rationale: 'Antifragility/Reliability — the safe failure mode is "too few tools" (worker says it lacks a tool, observable, recoverable), not "175K tokens of silent inherited schema that blows the window before any work" (opaque, expensive, only visible post-mortem). A bare task worker rarely needs MCP; making the expensive thing opt-in matches the cost.'
+    alternatives_rejected: ['(a) Capping/trimming the prompt template — wrong layer; the template was never the problem. (b) Per-workflow opt-IN to strict (leave default inheriting) — keeps the foot-gun armed for every new workflow. (c) Relying on `--tools`/`--allowed-tools` — those gate calling, not schema injection; proven insufficient (the failed run had them set).']
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - '.context/concerns.yaml'
+  - '.context/project/workflows/default.yaml'
+  - 'lib/resolver.py'
+  - 'lib/spawn.py'
+  - 'lib/termlink_worker.py'
+  - '.tasks/active/T-2488-rca--fix-bare-dispatch-worker-hits-promp.md'
+  - '.tasks/completed/T-2487-stand-up-litellm-4000-proxy-local-model-.md'
+  - '.tasks/completed/T-2488-rca--fix-bare-dispatch-worker-hits-promp.md'
+  - 'tests/unit/t2488_strict_mcp_lean_worker.bats'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: '2026-06-24T21:09:49'
+    action: 'T-2488: fix OBS-088 — bare dispatch worker inherited parent .mcp.json (~175K tokens) → ''Prompt is too long'''
+  - time: '2026-06-24T21:10:55'
+    action: 'T-2488: complete — RCA+fix landed, PL-015 captured (strict-mcp lean worker)'
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 10 min
+  # Completed successfully in 2 commit(s), 102539 min
 
 # Related tasks
 related_tasks:
@@ -66,12 +78,16 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 10
-  commits: 0
-  files_changed: 0
-  lines_added: 0
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 102539
+  commits: 2
+  files_changed: 8
+  lines_added: 391
   lines_removed: 0
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2488-rca--fix-bare-dispatch-worker-hits-promp.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2488-rca--fix-bare-dispatch-worker-hits-promp.md
 generated_by: context-agent-hybrid

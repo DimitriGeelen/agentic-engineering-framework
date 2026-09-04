@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1792: Watchtower /orchestrator: add Dispatch substrate panel — by_model breakdown (CLI parity with T-1788)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T23:55:22Z
+# ============================================================================
+
+task_id: T-1792
+task_name: "Watchtower /orchestrator: add Dispatch substrate panel — by_model breakdown (CLI parity with T-1788)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-12T21:11:52Z
+completed: 2026-08-16T22:23:59Z
+duration_days: 96
+updates_count: 2
+first_commit: 2026-05-12T23:16:54+02:00
+last_commit: 2026-05-12T23:16:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower /orchestrator — Dispatch substrate panel (CLI parity for by_model breakdown)
+
+# Key outcomes
+outcomes:
+  - '`_dispatch_substrate()` added to `web/blueprints/orchestrator.py`.'
+  - 'Reads `.context/dispatches.jsonl` (graceful: returns'
+  - 'Excludes synthetic rows (task_id startswith `T-stress-`) consistent'
+  - 'Returns `{available, path, total, synthetic_total, by_model}` shape.'
+  - '`by_model` Counter excludes rows missing `model` (mirror of CLI'
+  - 'New `<h2>Dispatch substrate</h2>` panel added to'
+  - 'Shows totals (real + synthetic) and `by_model` breakdown sorted'
+  - 'Empty-state message when `available=False` or `total=0`.'
+  - 'New file `tests/unit/test_orchestrator_dispatch_substrate.py`:'
+  - 'Route-level test: GET `/orchestrator` renders the by_model rows'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1792-watchtower-orchestrator-add-dispatch-sub.md'
+  - 'tests/unit/test_orchestrator_dispatch_substrate.py'
+  - 'web/blueprints/orchestrator.py'
+  - 'web/templates/orchestrator.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-05-12T23:16:54'
+    action: 'T-1792: Watchtower /orchestrator — Dispatch substrate panel (CLI parity for by_model breakdown)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 138312 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [web, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 138312
+  commits: 1
+  files_changed: 4
+  lines_added: 444
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1792-watchtower-orchestrator-add-dispatch-sub.md
+generated_by: context-agent-hybrid

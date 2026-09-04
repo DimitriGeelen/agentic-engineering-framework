@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-07-06T16:32:19Z
+# Generated: 2026-09-04T00:09:50Z
 # ============================================================================
 
 task_id: T-2509
@@ -13,13 +13,15 @@ enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-07-06T16:14:26Z
-completed: 2026-07-06T16:32:09Z
-duration_days: 0
+completed: 2026-09-04T00:09:37Z
+duration_days: 60
 updates_count: 1
+first_commit: 2026-07-06T18:19:45+02:00
+last_commit: 2026-07-06T18:34:21+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  Watchtower decision-commit passes FW_ALLOW_MASTER_COMMIT on master checkout. tick AC3 (live proof) + record push-boundary decision. complete — Watchtower decision-commit master-guard fix (verified live). episodic (via Watchtower master-guard fix)
 
 # Key outcomes
 outcomes:
@@ -29,7 +31,10 @@ outcomes:
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  - description: 'episodic (via Watchtower master-guard fix)'
+    source: git-mined
+  - description: 'complete — Watchtower decision-commit master-guard fix (verified live)'
+    source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
@@ -44,15 +49,26 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.context/episodic/T-2509.yaml'
+  - '.tasks/active/T-2509-watchtower-decision-commit-blocked-by-ma.md'
+  - '.tasks/completed/T-2509-watchtower-decision-commit-blocked-by-ma.md'
+  - 'web/blueprints/inception.py'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: '2026-07-06T18:19:45'
+    action: 'T-2509: Watchtower decision-commit passes FW_ALLOW_MASTER_COMMIT on master checkout'
+  - time: '2026-07-06T18:31:57'
+    action: 'T-2509: tick AC3 (live proof) + record push-boundary decision'
+  - time: '2026-07-06T18:33:12'
+    action: 'T-2509: complete — Watchtower decision-commit master-guard fix (verified live)'
+  - time: '2026-07-06T18:34:21'
+    action: 'T-2509: episodic (via Watchtower master-guard fix)'
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 17 min
+  # Completed successfully in 5 commit(s), 85435 min
 
 # Related tasks
 related_tasks:
@@ -65,12 +81,16 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 17
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 85435
+  commits: 5
+  files_changed: 6
+  lines_added: 377
+  lines_removed: 9
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-2509-watchtower-decision-commit-blocked-by-ma.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2509-watchtower-decision-commit-blocked-by-ma.md
 generated_by: context-agent-hybrid

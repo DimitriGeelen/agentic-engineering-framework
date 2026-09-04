@@ -9,12 +9,12 @@ description: >
   origin/master' produced 100+ conflicts instead of a fast-forward. Discovered 2026-07-05
   during go-live.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
 tags: []
-components: []
+components: [C-004, agents/handover/handover.sh, bin/fw, lib/branch-hygiene.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-05T16:38:02Z
-last_update: '2026-08-17T12:36:12Z'
-date_finished:
+last_update: 2026-09-03T23:57:10Z
+date_finished: 2026-09-03T23:57:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -341,3 +341,20 @@ many sessions — a systemic flaw, not a one-off.
 
 ### 2026-07-05T17:13:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-650b31dc
+- **Timestamp:** 2026-09-03T23:57:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Mechanism documented with evidence: enumerate ≥2 commits/files that landed on only one side (e.g. host-only `tests/unit/test_audit_emit_tasks.bats`, `test_task_cache_t100140.py` — confirmed via `git c
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/test_audit_emit_tasks.bats in: Mechanism documented with evidence: enumerate ≥2 commits/files that landed on only one side (e.g. host-only `tests/unit/test_audit_emit_tasks.bats`, ``
+
+### 2026-09-03T23:57:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,9 +1,9 @@
-# Audit Results - 2026-09-04-0028
-timestamp: 2026-09-03T22:28:16Z
+# Audit Results - 2026-09-04-0122
+timestamp: 2026-09-03T23:22:25Z
 summary:
-  pass: 771
+  pass: 772
   warn: 111
-  fail: 5
+  fail: 3
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -16,7 +16,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3258 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3260 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 30 project YAML file(s)"
   - level: PASS
@@ -84,9 +84,6 @@ findings:
   - level: WARN
     check: "Continuous-run wrapper last recorded ARMED but the turn driver is not"
     mitigation: "fw continuous arm --hours N --iterations N --directive '...' (T-3225). Same drift class as the 74-day and 8-day prior incidents (G-099)."
-  - level: WARN
-    check: "Continuous-run Stop hook is cycling on a stale terminate reason"
-    mitigation: "bin/fw continuous disarm --reason \"<why it's stale now>\" (or fw continuous arm to re-arm cleanly)"
   - level: PASS
     check: "Secret scan: tracked tree clean"
   - level: PASS
@@ -99,12 +96,12 @@ findings:
     check: "15 active task(s) have every Agent AC ticked and no Human AC outstanding, but are still started-work/issues"
     mitigation: "Candidates for close, not closures — spot-check with 'fw task verify T-XXX' per task, then 'fw task update T-XXX --status work-completed'. Full list: /opt/999-Agentic-Engineering-Framework/.context/audits/unclosed-satisfied/LATEST.md"
   - level: PASS
-    check: "Git traceability: 99% (8903/8951 commits reference tasks)"
+    check: "Git traceability: 99% (8905/8953 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
   - level: PASS
-    check: "All commit task refs resolve to actual tasks — examined 8903 task-referencing commit(s) in full history"
+    check: "All commit task refs resolve to actual tasks — examined 8905 task-referencing commit(s) in full history"
   - level: PASS
     check: "Corpus canaries: retrieval verified end to end"
   - level: PASS
@@ -125,11 +122,11 @@ findings:
   - level: PASS
     check: "Bugfix-learning coverage: 74% (339/456 bugfixes have learnings)"
   - level: PASS
-    check: "All completed tasks have episodic summaries — examined 2823 completed task(s)"
+    check: "All completed tasks have episodic summaries — examined 2825 completed task(s)"
   - level: PASS
-    check: "All episodic summaries have quality content — examined 2826 episodic summary file(s)"
+    check: "All episodic summaries have quality content — examined 2828 episodic summary file(s)"
   - level: PASS
-    check: "No orphaned episodic files — examined 2826 episodic file(s)"
+    check: "No orphaned episodic files — examined 2828 episodic file(s)"
   - level: WARN
     check: "38 urgent observation(s) still pending"
     mitigation: "Run: fw note triage"
@@ -225,16 +222,16 @@ findings:
   - level: PASS
     check: "CTL-001: Focus file has active task (T-3265)"
   - level: WARN
-    check: "CTL-003: Budget status file stale (16min old)"
+    check: "CTL-003: Budget status file stale (20min old)"
     mitigation: "Check PreToolUse hook wiring for budget-gate.sh"
   - level: PASS
-    check: "CTL-004: Tool counter at 7 (last commit: 22 minutes ago)"
+    check: "CTL-004: Tool counter at 5 (last commit: 21 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
-    check: "CTL-020: 1 cron audit file(s) in last hour"
+    check: "CTL-020: 2 cron audit file(s) in last hour"
   - level: PASS
     check: "CTL-002: Tier 0 guard installed and wired in settings.json"
   - level: PASS
@@ -883,9 +880,8 @@ findings:
     check: "CTL-009: Inception T-307 has decision (51 commits)"
   - level: PASS
     check: "CTL-009: Inception T-3093 has decision (6 commits)"
-  - level: FAIL
-    check: "CTL-009: Inception T-3097 has 10 commits but no decision or bypass log"
-    mitigation: "Run: fw git install-hooks"
+  - level: PASS
+    check: "CTL-009: Inception T-3097 has decision (10 commits)"
   - level: PASS
     check: "CTL-009: Inception T-3149 has decision (8 commits)"
   - level: PASS
@@ -899,7 +895,7 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-325 has decision (52 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-327 has decision (5 commits)"
+    check: "CTL-009: Inception T-327 has decision (7 commits)"
   - level: PASS
     check: "CTL-009: Inception T-339 has decision (3 commits)"
   - level: PASS
@@ -1688,7 +1684,7 @@ findings:
     check: "CTL-028: T-2853 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)"
     mitigation: "Fix: bin/fw task update T-2853 --status work-completed — the normal close runs the AC and verification gates and usually passes (832 measured 3 of 4 real drifted tasks closing clean two weeks stale). If a gate legitimately fails, fix the work or re-open it. Only as a last resort: add --force, which BYPASSES those gates and logs a Tier-2 entry. Do not hand-edit frontmatter — that is the git-mv bypass (L-390) this control detects."
   - level: PASS
-    check: "CTL-030: All completed/ tasks have null/absent stored horizon (arc-009) — examined 2823 completed task(s)"
+    check: "CTL-030: All completed/ tasks have null/absent stored horizon (arc-009) — examined 2825 completed task(s)"
   - level: WARN
     check: "CTL-029: T-100201 has all Agent ACs ticked but status='started-work' — completable, not closed"
     mitigation: "Run: bin/fw task update T-100201 --status work-completed"
@@ -1804,9 +1800,9 @@ findings:
     check: "CTL-012: Completed task T-678 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
   - level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (18/2826)"
+    check: "D1: Episodic quality — 0% [TODO] (18/2828)"
   - level: FAIL
-    check: "D2: Human review queue — 199 task(s) waiting >30d: T-100131(59d) T-100188(59d) T-1701(100d) T-1702(95d) T-1707(99d) T-1718(99d) T-1773(113d) T-1774(113d) T-1775(113d) T-1776(95d) T-1792(114d) T-1794(114d) T-1795(114d) T-1796(114d) T-1797(114d) T-1799(114d) T-1801(113d) T-1802(113d) T-1803(113d) T-1805(113d) T-1806(113d) T-1807(113d) T-1808(113d) T-1810(113d) T-1811(113d) T-1818(113d) T-1827(104d) T-1834(111d) T-1842(104d) T-1843(104d) T-1844(104d) T-1891(108d) T-1909(106d) T-1910(106d) T-1911(106d) T-1928(107d) T-1929(107d) T-1930(107d) T-1933(107d) T-1934(106d) T-1935(106d) T-1936(106d) T-1939(106d) T-1947(106d) T-1951(104d) T-1954(106d) T-1955(106d) T-1957(106d) T-1960(105d) T-1961(105d) T-1963(105d) T-1964(106d) T-1965(106d) T-1968(106d) T-1969(105d) T-1970(105d) T-1971(105d) T-1976(104d) T-1977(105d) T-1978(104d) T-1980(104d) T-1982(105d) T-1984(104d) T-1985(104d) T-1988(104d) T-1989(101d) T-1990(100d) T-1991(104d) T-1992(101d) T-1993(101d) T-1994(100d) T-1999(103d) T-2002(100d) T-2003(100d) T-2004(100d) T-2006(100d) T-2008(100d) T-2009(100d) T-2010(100d) T-2011(100d) T-2012(100d) T-2013(100d) T-2015(100d) T-2016(100d) T-2017(100d) T-2018(100d) T-2019(100d) T-2020(100d) T-2021(100d) T-2022(100d) T-2023(100d) T-2024(100d) T-2025(100d) T-2026(100d) T-2027(100d) T-2028(100d) T-2029(100d) T-2031(100d) T-2033(100d) T-2034(100d) T-2038(100d) T-2039(100d) T-2040(100d) T-2041(100d) T-2043(100d) T-2044(100d) T-2045(100d) T-2046(100d) T-2047(100d) T-2049(100d) T-2051(100d) T-2054(100d) T-2062(98d) T-2063(98d) T-2064(98d) T-2065(98d) T-2066(98d) T-2075(97d) T-2077(97d) T-2080(98d) T-2082(98d) T-2084(97d) T-2085(97d) T-2086(97d) T-2087(97d) T-2088(97d) T-2089(97d) T-2102(96d) T-2103(96d) T-2106(96d) T-2110(96d) T-2111(96d) T-2112(96d) T-2114(96d) T-2116(96d) T-2117(96d) T-2119(89d) T-2136(95d) T-2160(94d) T-2167(94d) T-2174(93d) T-2175(93d) T-2176(89d) T-2179(93d) T-2183(82d) T-2185(91d) T-2192(92d) T-2222(90d) T-2240(88d) T-2265(87d) T-2274(86d) T-2278(86d) T-2281(86d) T-2332(84d) T-2335(44d) T-2336(84d) T-2342(84d) T-2349(59d) T-2369(82d) T-2373(82d) T-2376(82d) T-2395(23d) T-2403(81d) T-2406(80d) T-2417(79d) T-2428(77d) T-2430(77d) T-2463(59d) T-2474(71d) T-2479(59d) T-2525(55d) T-2529(54d) T-2530(54d) T-2555(46d) T-2558(46d) T-2561(46d) T-2563(46d) T-2565(46d) T-2578(44d) T-2586(44d) T-2589(44d) T-2596(43d) T-2618(42d) T-2623(39d) T-2624(38d) T-2629(38d) T-2630(38d) T-2631(38d) T-2632(38d) T-2634(38d) T-2651(37d) T-2674(36d) T-2686(36d) T-2713(33d) T-2741(31d) T-2774(31d) T-2775(30d) T-2780(30d) T-2781(30d) T-2787(30d) T-2807(29d) T-2809(29d) T-2831(28d) T-2838(28d) T-2842(28d) T-2864(26d) T-2870(26d) T-2891(25d) T-2896(25d) T-2904(25d) T-2905(25d) T-2974(20d) T-2979(20d) T-2986(20d) T-2994(20d) T-3006(19d) T-3010(19d) T-3011(19d) T-3012(19d) T-3013(19d) T-3016(19d) T-3017(19d) T-3019(19d) T-3024(19d) T-3028(18d) T-3030(18d) T-3046(16d) T-3065(17d) T-3066(17d) T-3078(15d) T-3080(15d) T-3090(15d) T-3091(14d) T-3094(14d) T-3096(14d)"
+    check: "D2: Human review queue — 199 task(s) waiting >30d: T-100131(59d) T-100188(59d) T-1701(100d) T-1702(95d) T-1707(99d) T-1718(99d) T-1773(113d) T-1774(113d) T-1775(113d) T-1776(95d) T-1792(114d) T-1794(114d) T-1795(114d) T-1796(114d) T-1797(114d) T-1799(114d) T-1801(113d) T-1802(113d) T-1803(113d) T-1805(113d) T-1806(113d) T-1807(113d) T-1808(113d) T-1810(113d) T-1811(113d) T-1818(113d) T-1827(104d) T-1834(111d) T-1842(104d) T-1843(104d) T-1844(104d) T-1891(108d) T-1909(106d) T-1910(106d) T-1911(106d) T-1928(107d) T-1929(107d) T-1930(107d) T-1933(107d) T-1934(106d) T-1935(106d) T-1936(106d) T-1939(106d) T-1947(106d) T-1951(104d) T-1954(106d) T-1955(106d) T-1957(106d) T-1960(105d) T-1961(105d) T-1963(105d) T-1964(106d) T-1965(106d) T-1968(106d) T-1969(105d) T-1970(105d) T-1971(105d) T-1976(104d) T-1977(105d) T-1978(104d) T-1980(104d) T-1982(105d) T-1984(105d) T-1985(104d) T-1988(104d) T-1989(101d) T-1990(100d) T-1991(104d) T-1992(101d) T-1993(101d) T-1994(100d) T-1999(103d) T-2002(100d) T-2003(100d) T-2004(100d) T-2006(100d) T-2008(100d) T-2009(101d) T-2010(101d) T-2011(101d) T-2012(100d) T-2013(100d) T-2015(100d) T-2016(100d) T-2017(100d) T-2018(100d) T-2019(100d) T-2020(101d) T-2021(101d) T-2022(101d) T-2023(101d) T-2024(101d) T-2025(101d) T-2026(101d) T-2027(100d) T-2028(100d) T-2029(101d) T-2031(100d) T-2033(100d) T-2034(100d) T-2038(100d) T-2039(100d) T-2040(100d) T-2041(100d) T-2043(100d) T-2044(100d) T-2045(100d) T-2046(100d) T-2047(100d) T-2049(100d) T-2051(100d) T-2054(100d) T-2062(98d) T-2063(98d) T-2064(98d) T-2065(98d) T-2066(98d) T-2075(98d) T-2077(98d) T-2080(98d) T-2082(98d) T-2084(97d) T-2085(97d) T-2086(97d) T-2087(97d) T-2088(97d) T-2089(97d) T-2102(96d) T-2103(96d) T-2106(97d) T-2110(96d) T-2111(96d) T-2112(96d) T-2114(96d) T-2116(96d) T-2117(96d) T-2119(89d) T-2136(95d) T-2160(94d) T-2167(94d) T-2174(93d) T-2175(93d) T-2176(89d) T-2179(93d) T-2183(82d) T-2185(92d) T-2192(92d) T-2222(90d) T-2240(88d) T-2265(87d) T-2274(86d) T-2278(86d) T-2281(86d) T-2332(84d) T-2335(44d) T-2336(84d) T-2342(84d) T-2349(59d) T-2369(82d) T-2373(82d) T-2376(82d) T-2395(23d) T-2403(81d) T-2406(80d) T-2417(79d) T-2428(77d) T-2430(77d) T-2463(59d) T-2474(71d) T-2479(59d) T-2525(55d) T-2529(54d) T-2530(54d) T-2555(46d) T-2558(46d) T-2561(46d) T-2563(46d) T-2565(46d) T-2578(45d) T-2586(44d) T-2589(44d) T-2596(43d) T-2618(42d) T-2623(39d) T-2624(38d) T-2629(38d) T-2630(38d) T-2631(38d) T-2632(38d) T-2634(38d) T-2651(37d) T-2674(36d) T-2686(36d) T-2713(33d) T-2741(32d) T-2774(31d) T-2775(31d) T-2780(30d) T-2781(30d) T-2787(30d) T-2807(29d) T-2809(29d) T-2831(28d) T-2838(28d) T-2842(28d) T-2864(26d) T-2870(26d) T-2891(25d) T-2896(25d) T-2904(25d) T-2905(25d) T-2974(20d) T-2979(20d) T-2986(20d) T-2994(20d) T-3006(19d) T-3010(19d) T-3011(19d) T-3012(19d) T-3013(19d) T-3016(19d) T-3017(19d) T-3019(19d) T-3024(19d) T-3028(18d) T-3030(18d) T-3046(16d) T-3065(17d) T-3066(17d) T-3078(15d) T-3080(15d) T-3090(15d) T-3091(15d) T-3094(14d) T-3096(14d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
@@ -1819,17 +1815,17 @@ findings:
   - level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - level: WARN
-    check: "D5: Task lifecycle — 27 anomaly(s): T-801(153d-active) T-802(153d-active) T-803(153d-active) T-2899(25d-active) T-2876(26d-active) T-1542(129d-active) T-1624(126d-active) T-1820(112d-active) T-2170(94d-active) T-2171(94d-active) (+17 more)"
+    check: "D5: Task lifecycle — 27 anomaly(s): T-801(153d-active) T-802(153d-active) T-803(153d-active) T-2899(25d-active) T-2876(26d-active) T-1542(129d-active) T-1624(126d-active) T-1820(113d-active) T-2170(94d-active) T-2171(94d-active) (+17 more)"
     mitigation: "Review flagged tasks for process issues"
   - level: WARN
     check: "D13: Inception limbo — 7 task(s): A=6/B=1 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2428(A:1hu) T-2876(B)"
     mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=2 avg=32 ratio=0.1x)"
+    check: "D3: Commit velocity — normal (PASS today=4 avg=32 ratio=0.1x)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 64_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 66_commits_24h)"
   - level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=7.3 earlier=9.6)"
+    check: "D6: Completion velocity — normal (PASS recent=8.0 earlier=9.6)"
   - level: PASS
     check: "D12: Bypass log — no log file"
   - level: PASS
@@ -1848,9 +1844,9 @@ findings:
     check: "framework-mcp scan: PASS — 6/22 tools gated (manifest present)"
   - level: PASS
     check: "framework-mcp manifest: PASS — in sync with tool-set.yaml"
-  - level: FAIL
-    check: "Workflow dispatcher coverage: 1/9 unroutable worker_kind: ask(ollama-direct)"
-    mitigation: "Either add a handler to lib/spawn._DISPATCHERS, or change the workflow's worker_kind to a routable one (pi, ollama-loop, TermLink)"
+  - level: WARN
+    check: "Workflow dispatcher coverage: all 9 workflows route to a registered dispatcher and pi workflows declare a provider; declarable-but-unroutable: ['Task', 'ollama-direct']; 2 stale workflow(s): cheap-research, prompt-triage"
+    mitigation: "Run: bin/fw resolver workflows ; review which workflows are still relevant"
   - level: WARN
     check: "Arc 'arc-005': 47/47 tasks completed (1.0000) but arc still in-progress"
     mitigation: "Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-005 --demo <path"

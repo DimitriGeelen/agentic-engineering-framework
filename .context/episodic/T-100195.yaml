@@ -1,20 +1,20 @@
 # ============================================================================
-# EPISODIC MEMORY - T-100195: Guard trunk divergence: fw doctor WARN on host↔origin-master fork + safe go-live
+# EPISODIC MEMORY - T-100195: Guard trunk divergence: fw doctor WARN on host↔origin-master fork + safe go-live path (not raw git merge)
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-07-07T17:08:52Z
+# Generated: 2026-09-03T23:57:43Z
 # ============================================================================
 
 task_id: T-100195
-task_name: "Guard trunk divergence: fw doctor WARN on host↔origin-master fork + safe go-live"
+task_name: "Guard trunk divergence: fw doctor WARN on host↔origin-master fork + safe go-live path (not raw git merge)"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-07-05T16:38:42Z
-completed: 2026-07-05T17:18:36Z
-duration_days: 0
+completed: 2026-09-03T23:57:28Z
+duration_days: 60
 updates_count: 2
 first_commit: 2026-07-05T19:25:14+02:00
 last_commit: 2026-07-05T19:25:14+02:00
@@ -61,12 +61,12 @@ artifacts:
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  - time: "2026-07-05T19:25:14"
-    action: "T-100195: detect bidirectional trunk fork (diverged-fork WARN)"
+  - time: '2026-07-05T19:25:14'
+    action: 'T-100195: detect bidirectional trunk fork (diverged-fork WARN)'
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 2 commit(s), 39 min
+  # Completed successfully in 2 commit(s), 86838 min
 
 # Related tasks
 related_tasks:
@@ -79,7 +79,11 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 39
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 86838
   commits: 2
   files_changed: 10
   lines_added: 773

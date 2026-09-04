@@ -3,23 +3,25 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-06-24T20:25:45Z
+# Generated: 2026-09-04T00:07:52Z
 # ============================================================================
 
 task_id: T-2493
 task_name: "land orchestrator autonomy work to master (T-2488..2492)"
 workflow_type: build
-enrichment_status: complete  # AC checked + decisions recorded
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
 
 # Timeline
 created: 2026-06-24T20:20:51Z
-completed: 2026-06-24T20:25:37Z
-duration_days: 0
+completed: 2026-09-04T00:07:39Z
+duration_days: 72
 updates_count: 1
+first_commit: 2026-06-24T22:22:53+02:00
+last_commit: 2026-07-01T23:39:40+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  re-vendor .agentic-framework libs for T-2488/2490/2491 source edits. full .agentic-framework re-vendor sync (fw vendor self). complete — orchestrator autonomy work landed to origin/master. Session wrap-up — autonomous HV/LC sweep complete
 
 # Key outcomes
 outcomes:
@@ -32,22 +34,68 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: '[date] — [topic]'
-    chose: '[what was decided]'
-    rationale: '[rationale]'
-    alternatives_rejected: ['[alternatives and why not]']
+  # No decisions recorded (mechanical task or old template)
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - '.agentic-framework/agents/mcp/framework-mcp-manifest.json'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/bin/integrate-go-live.sh'
+  - '.agentic-framework/docs/reports/T-2397-layer2-integration-queue-spec.md'
+  - '.agentic-framework/docs/reports/T-2428-payload-mediation-design.md'
+  - '.agentic-framework/docs/reports/T-2428-payload-mediation-spike.md'
+  - '.agentic-framework/docs/reports/T-2441-aef-onboarding-dogfooding.md'
+  - '.agentic-framework/docs/reports/T-2447-f8-shim-routing.md'
+  - '.agentic-framework/docs/reports/T-2458-aef-mcp-adoption-strategy.md'
+  - '.agentic-framework/docs/reports/T-2464-worktree-reliability-rca.md'
+  - '.agentic-framework/docs/reports/T-2484-orchestrator-spine.md'
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/lib/spawn.py'
+  - '.agentic-framework/lib/termlink_worker.py'
+  - '.agentic-framework/lib/ts/dist/loop-detect.js'
+  - '.agentic-framework/VERSION'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-2493.yaml'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0701-2327.md'
+  - '.context/handovers/S-2026-0701-2331.md'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.tasks/active/T-2490-wire-check-task-ac-structure-hook-in-set.md'
+  - '.tasks/active/T-2493-land-orchestrator-autonomy-work-to-maste.md'
+  - '.tasks/completed/T-2492-dogfood-the-autonomous-pickerloop-live-p.md'
+  - '.tasks/completed/T-2493-session-wrap-up-autonomous-hvlc-sweep.md'
+  - 'tests/unit/test_audit_emit_tasks.bats'
+  - 'VERSION'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: '2026-06-24T22:22:53'
+    action: 'T-2493: re-vendor .agentic-framework libs for T-2488/2490/2491 source edits'
+  - time: '2026-06-24T22:23:26'
+    action: 'T-2493: full .agentic-framework re-vendor sync (fw vendor self)'
+  - time: '2026-06-24T22:25:36'
+    action: 'T-2493: complete — orchestrator autonomy work landed to origin/master'
+  - time: '2026-07-01T23:39:40'
+    action: 'T-2493: Session wrap-up — autonomous HV/LC sweep complete'
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 4 min
+  # Completed successfully in 4 commit(s), 102466 min
 
 # Related tasks
 related_tasks:
@@ -60,12 +108,16 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 4
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 102466
+  commits: 4
+  files_changed: 43
+  lines_added: 5549
+  lines_removed: 132
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2493-land-orchestrator-autonomy-work-to-maste.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2493-land-orchestrator-autonomy-work-to-maste.md
 generated_by: context-agent-hybrid

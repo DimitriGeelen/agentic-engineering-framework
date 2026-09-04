@@ -4,7 +4,7 @@ name: "dogfood the autonomous picker+loop live (post-compaction)"
 description: >
   dogfood the autonomous picker+loop live (post-compaction)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-24T20:12:31Z
-last_update: '2026-08-17T12:36:21Z'
-date_finished:
+last_update: 2026-09-04T00:07:22Z
+date_finished: 2026-09-04T00:07:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -227,3 +227,20 @@ out=$(bin/fw outcome read 7af88c8c 2>&1); echo "$out" | grep -q 'T-1687'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2492-dogfood-the-autonomous-pickerloop-live-p.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-76978b5d
+- **Timestamp:** 2026-09-04T00:07:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 33
+     - evidence: `bin/fw resolver pick --json >/dev/null`
+
+### 2026-09-04T00:07:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

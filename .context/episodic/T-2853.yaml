@@ -3,18 +3,18 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-08-07T11:22:37Z
+# Generated: 2026-09-04T00:10:10Z
 # ============================================================================
 
 task_id: T-2853
 task_name: "fw update misroutes a git-based global install into the vendored path and demands upstream_repo install.sh never writes"
 workflow_type: build
-enrichment_status: complete  # AC checked + decisions recorded
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
 
 # Timeline
 created: 2026-08-07T08:23:42Z
-completed: 2026-08-07T11:22:25Z
-duration_days: 0
+completed: 2026-09-04T00:09:56Z
+duration_days: 28
 updates_count: 1
 first_commit: 2026-08-07T10:27:48+02:00
 last_commit: 2026-08-07T10:27:53+02:00
@@ -36,10 +36,7 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: '[date] — [topic]'
-    chose: '[what was decided]'
-    rationale: '[rationale]'
-    alternatives_rejected: ['[alternatives and why not]']
+  # No decisions recorded (mechanical task or old template)
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
@@ -59,7 +56,7 @@ git_timeline:
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 2 commit(s), 178 min
+  # Completed successfully in 2 commit(s), 39826 min
 
 # Related tasks
 related_tasks:
@@ -72,7 +69,11 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 178
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 39826
   commits: 2
   files_changed: 6
   lines_added: 523

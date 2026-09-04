@@ -3677,3 +3677,45 @@ decisions:
     date: 2026-09-03
     task: T-3174
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-528
+    decision: "classify `diverged-fork` only when BOTH `behind > FW_BRANCH_BEHIND_WARN` AND `ahead > FW_BRANCH_BEHIND_WARN`."
+    scope: project
+    date: 2026-09-03
+    task: T-100195
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-529
+    decision: "implement Leg 1 in a throwaway worktree checked out from origin/master, then land via `fw integrate run master --push`."
+    scope: project
+    date: 2026-09-03
+    task: T-100195
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-530
+    decision: "ship detection here; spin the safe go-live *action* out as T-100196 (horizon later)."
+    scope: project
+    date: 2026-09-03
+    task: T-100195
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-531
+    decision: "Resolver-dispatched TermLink workers run strict-mcp by default"
+    scope: project
+    date: 2026-09-03
+    task: T-2488
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-532
+    decision: "Recreate T-2505's scoped decision (rename active→completed + episodic) in the clean worktree at origin/master and FF-land it."
+    scope: project
+    date: 2026-09-04
+    task: T-2509
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-533
+    decision: "Scope T-2509 to the master-guard block only; disclose the push/divergence boundary separately."
+    scope: project
+    date: 2026-09-04
+    task: T-2509
+    rationale: "Auto-captured from task file on completion"

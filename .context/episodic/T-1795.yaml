@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1795: Watchtower /orchestrator: extend Dispatch substrate panel with by_worker_kind breakdown
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-03T23:55:30Z
+# ============================================================================
+
+task_id: T-1795
+task_name: "Watchtower /orchestrator: extend Dispatch substrate panel with by_worker_kind breakdown"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-12T21:28:40Z
+completed: 2026-08-16T22:23:59Z
+duration_days: 96
+updates_count: 2
+first_commit: 2026-05-12T23:32:01+02:00
+last_commit: 2026-05-12T23:32:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower /orchestrator — Dispatch substrate panel by_worker_kind breakdown (closes trio)
+
+# Key outcomes
+outcomes:
+  - '`_dispatch_substrate()` returns `by_worker_kind` field — same shape'
+  - 'Rows missing `worker_kind` excluded from `by_worker_kind`.'
+  - 'Synthetic rows excluded from `by_worker_kind`.'
+  - '`<h3>By worker-kind</h3>` sub-table after By task-type in the'
+  - 'Empty-state: sub-table omitted when `by_worker_kind` is empty.'
+  - '`tests/unit/test_orchestrator_dispatch_substrate.py` extends with:'
+  - '`python3 -m pytest tests/unit/test_orchestrator_dispatch_substrate.py tests/unit/test_orchestrator_learned_routing.py tests/unit/test_orchestrator_status_terminal_events.py tests/unit/test_orchestrator_routes.py -v` exits 0.'
+  - '[REVIEW] Three sub-tables stack cleanly — panel doesn''t overflow'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1795-watchtower-orchestrator-extend-dispatch-.md'
+  - 'tests/unit/test_orchestrator_dispatch_substrate.py'
+  - 'web/blueprints/orchestrator.py'
+  - 'web/templates/orchestrator.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-05-12T23:32:01'
+    action: 'T-1795: Watchtower /orchestrator — Dispatch substrate panel by_worker_kind breakdown (closes trio)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 138295 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [web, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 138295
+  commits: 1
+  files_changed: 4
+  lines_added: 209
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1795-watchtower-orchestrator-extend-dispatch-.md
+generated_by: context-agent-hybrid

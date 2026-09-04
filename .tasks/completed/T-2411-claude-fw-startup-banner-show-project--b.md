@@ -4,12 +4,12 @@ name: "claude-fw startup banner: show project / branch / focus / arc"
 description: >
   claude-fw startup banner: show project / branch / focus / arc
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
 tags: []
-components: []
+components: [bin/claude-fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-15T20:55:28Z
-last_update: '2026-08-17T12:36:20Z'
-date_finished:
+last_update: 2026-09-03T23:57:46Z
+date_finished: 2026-09-03T23:57:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -258,9 +258,12 @@ can't reintroduce per-iteration noise. Opt-out via `FW_NO_STARTUP_BANNER=1`.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-dca15a1a
-- **Timestamp:** 2026-06-15T20:58:54Z
+- **Scan ID:** R-0fe1e2c7
+- **Timestamp:** 2026-09-03T23:58:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-09-03T23:57:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -39159,3 +39159,255 @@ scan_id: R-58b841bc
 task_id: T-3273
 payload:
   task_file: .tasks/active/T-3273-workflowcoverage-fail-false-positive-on-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T23:57:12Z'
+scan_id: R-650b31dc
+task_id: T-100194
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T23:57:12Z'
+scan_id: R-650b31dc
+task_id: T-100194
+payload:
+  task_file: .tasks/completed/T-100194-rca-host-working-branch-forked-198287-co.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T23:57:31Z'
+scan_id: R-b25f07e5
+task_id: T-100195
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T23:57:31Z'
+scan_id: R-b25f07e5
+task_id: T-100195
+payload:
+  task_file: .tasks/completed/T-100195-guard-trunk-divergence-fw-doctor-warn-on.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T23:58:09Z'
+scan_id: R-0fe1e2c7
+task_id: T-2411
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T23:58:09Z'
+scan_id: R-0fe1e2c7
+task_id: T-2411
+payload:
+  task_file: .tasks/completed/T-2411-claude-fw-startup-banner-show-project--b.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T23:58:26Z'
+scan_id: R-04b5d84e
+task_id: T-2486
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T23:58:26Z'
+scan_id: R-04b5d84e
+task_id: T-2486
+payload:
+  task_file: .tasks/completed/T-2486-fix-obs-087-exec-bit-fw-resolveroutcomep.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T23:58:41Z'
+scan_id: R-631a26a7
+task_id: T-2487
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T23:58:41Z'
+scan_id: R-631a26a7
+task_id: T-2487
+payload:
+  task_file: .tasks/completed/T-2487-stand-up-litellm-4000-proxy-local-model-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-03T23:58:58Z'
+scan_id: R-baa4e397
+task_id: T-2488
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-03T23:58:58Z'
+scan_id: R-baa4e397
+task_id: T-2488
+payload:
+  task_file: .tasks/completed/T-2488-rca--fix-bare-dispatch-worker-hits-promp.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T00:07:07Z'
+scan_id: R-f0071473
+task_id: T-2491
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T00:07:07Z'
+scan_id: R-f0071473
+task_id: T-2491
+payload:
+  task_file: .tasks/completed/T-2491-wire-fw-resolver-pick-into-a-bounded-aut.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T00:07:27Z'
+scan_id: R-76978b5d
+task_id: T-2492
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T00:07:27Z'
+scan_id: R-76978b5d
+task_id: T-2492
+payload:
+  task_file: .tasks/completed/T-2492-dogfood-the-autonomous-pickerloop-live-p.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T00:07:41Z'
+scan_id: R-4243a005
+task_id: T-2493
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T00:07:41Z'
+scan_id: R-4243a005
+task_id: T-2493
+payload:
+  task_file: .tasks/completed/T-2493-land-orchestrator-autonomy-work-to-maste.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T00:08:00Z'
+scan_id: R-da760d1a
+task_id: T-2495
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T00:08:00Z'
+scan_id: R-da760d1a
+task_id: T-2495
+payload:
+  task_file: .tasks/completed/T-2495-ship-resolver-loop-systemd-timerservice-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T00:08:44Z'
+scan_id: R-9fff72d5
+task_id: T-2497
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T00:08:44Z'
+scan_id: R-9fff72d5
+task_id: T-2497
+payload:
+  task_file: .tasks/completed/T-2497-wire-bvp-ranking-into-resolver-pickrankk.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T00:09:03Z'
+scan_id: R-0ede770c
+task_id: T-2498
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T00:09:03Z'
+scan_id: R-0ede770c
+task_id: T-2498
+payload:
+  task_file: .tasks/completed/T-2498-fix-integrate-go-livesh-missing-exec-bit.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T00:09:38Z'
+scan_id: R-9beceabc
+task_id: T-2509
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T00:09:38Z'
+scan_id: R-9beceabc
+task_id: T-2509
+payload:
+  task_file: .tasks/completed/T-2509-watchtower-decision-commit-blocked-by-ma.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T00:09:57Z'
+scan_id: R-26c664ba
+task_id: T-2853
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T00:09:57Z'
+scan_id: R-26c664ba
+task_id: T-2853
+payload:
+  task_file: .tasks/completed/T-2853-fw-update-misroutes-a-git-based-global-i.md

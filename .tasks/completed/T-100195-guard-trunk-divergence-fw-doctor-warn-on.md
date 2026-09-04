@@ -9,12 +9,12 @@ description: >
   safely (ff-only / union resolver / auto-merge-back after fw integrate) instead of
   a raw 'git merge origin/master' that explodes into conflicts.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
 tags: []
-components: []
+components: [agents/handover/handover.sh, bin/fw, lib/branch-hygiene.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-05T16:38:42Z
-last_update: '2026-08-17T12:36:12Z'
-date_finished:
+last_update: 2026-09-03T23:57:28Z
+date_finished: 2026-09-03T23:57:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -282,3 +282,26 @@ integrate` on a fork. Pinned by `tests/unit/t100195_diverged_fork.bats`. The rec
 ### 2026-07-05T17:18:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b25f07e5
+- **Timestamp:** 2026-09-03T23:57:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 35
+     - evidence: `git show origin/master:lib/branch-hygiene.sh | grep -q "diverged-fork"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 36
+     - evidence: `git show origin/master:lib/branch-hygiene.sh | grep -q "^        echo \"fork ahead="`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-09-03T23:57:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,12 +4,12 @@ name: "fix OBS-087 exec-bit: fw resolver/outcome/pause die on Permission denied"
 description: >
   fix OBS-087 exec-bit: fw resolver/outcome/pause die on Permission denied
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
 tags: []
-components: []
+components: [lib/outcome.sh, lib/pause.sh, lib/resolver.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-24T16:18:36Z
-last_update: '2026-08-17T12:36:21Z'
-date_finished:
+last_update: 2026-09-03T23:58:23Z
+date_finished: 2026-09-03T23:58:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -204,3 +204,20 @@ exec-style verbs (including any added later), not just the three found broken to
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2486-fix-obs-087-exec-bit-fw-resolveroutcomep.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-04b5d84e
+- **Timestamp:** 2026-09-03T23:58:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 35
+     - evidence: `bin/fw resolver workflows >/dev/null 2>&1`
+
+### 2026-09-03T23:58:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -3,23 +3,25 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-06-24T16:39:36Z
+# Generated: 2026-09-03T23:58:52Z
 # ============================================================================
 
 task_id: T-2487
 task_name: "stand up litellm :4000 proxy (local-model lane, T-2484 slice 3)"
 workflow_type: build
-enrichment_status: complete  # AC checked + decisions recorded
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
 
 # Timeline
 created: 2026-06-24T16:34:26Z
-completed: 2026-06-24T16:39:28Z
-duration_days: 0
+completed: 2026-09-03T23:58:40Z
+duration_days: 71
 updates_count: 1
+first_commit: 2026-06-24T18:39:27+02:00
+last_commit: 2026-06-24T18:39:27+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  stand up litellm :4000 (local-model lane) — proxy live, 12 aliases, real completion works; first real fw resolver dispatch (T-2484 slices 2+3)
 
 # Key outcomes
 outcomes:
@@ -34,22 +36,20 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: '[date] — [topic]'
-    chose: '[what was decided]'
-    rationale: '[rationale]'
-    alternatives_rejected: ['[alternatives and why not]']
+  # No decisions recorded (mechanical task or old template)
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - '.tasks/active/T-2487-stand-up-litellm-4000-proxy-local-model-.md'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: '2026-06-24T18:39:27'
+    action: 'T-2487: stand up litellm :4000 (local-model lane) — proxy live, 12 aliases, real completion works; first real fw resolver dispatch (T-2484 slices 2+3)'
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 5 min
+  # Completed successfully in 1 commit(s), 102684 min
 
 # Related tasks
 related_tasks:
@@ -62,12 +62,16 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 5
-  commits: 0
-  files_changed: 0
-  lines_added: 0
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 102684
+  commits: 1
+  files_changed: 1
+  lines_added: 201
   lines_removed: 0
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2487-stand-up-litellm-4000-proxy-local-model-.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2487-stand-up-litellm-4000-proxy-local-model-.md
 generated_by: context-agent-hybrid

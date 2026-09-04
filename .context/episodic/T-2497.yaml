@@ -3,23 +3,25 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-06-25T06:58:57Z
+# Generated: 2026-09-04T00:08:56Z
 # ============================================================================
 
 task_id: T-2497
 task_name: "wire BVP ranking into resolver _pick_rank_key so the live loop grinds HV/LC by value (autonomous HV/LC clearance)"
 workflow_type: build
-enrichment_status: complete  # AC checked + decisions recorded
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
 
 # Timeline
 created: 2026-06-25T06:40:59Z
-completed: 2026-06-25T06:58:44Z
-duration_days: 0
+completed: 2026-09-04T00:08:38Z
+duration_days: 71
 updates_count: 1
+first_commit: 2026-06-25T08:58:21+02:00
+last_commit: 2026-07-02T22:25:25+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  BVP-aware picker — _pick_rank_key ranks HV/LC quadrant by value. complete — BVP-aware picker verified live (top pick T-2171 hv-lc). episodic summary. commit vendored resolver.py (BVP picker) — self-vendor sync. Watchtower /escalation/rules page. refresh vendored copies (web/ files). Verify 4 CTL-030 findings resolved by T-2435 migration
 
 # Key outcomes
 outcomes:
@@ -35,22 +37,46 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: '[date] — [topic]'
-    chose: '[what was decided]'
-    rationale: '[rationale]'
-    alternatives_rejected: ['[alternatives and why not]']
+  # No decisions recorded (mechanical task or old template)
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/web/blueprints/escalation.py'
+  - '.agentic-framework/web/templates/escalation_rules.html'
+  - '.context/episodic/T-2497.yaml'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0702-1000.md'
+  - '.fabric/components/web-templates-escalation_rules.yaml'
+  - 'lib/resolver.py'
+  - '.tasks/active/T-2497-watchtower-escalationrules-page---viewve.md'
+  - '.tasks/active/T-2497-wire-bvp-ranking-into-resolver-pickrankk.md'
+  - '.tasks/completed/T-2497-close-4-ctl-030-audit-tasks---all-resolv.md'
+  - '.tasks/completed/T-2497-wire-bvp-ranking-into-resolver-pickrankk.md'
+  - 'tests/unit/t2497_resolver_bvp_rank.bats'
+  - 'web/blueprints/escalation.py'
+  - 'web/templates/escalation_rules.html'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: '2026-06-25T08:58:21'
+    action: 'T-2497: BVP-aware picker — _pick_rank_key ranks HV/LC quadrant by value'
+  - time: '2026-06-25T08:59:08'
+    action: 'T-2497: complete — BVP-aware picker verified live (top pick T-2171 hv-lc)'
+  - time: '2026-06-25T08:59:54'
+    action: 'T-2497: episodic summary'
+  - time: '2026-06-25T11:41:49'
+    action: 'T-2497: commit vendored resolver.py (BVP picker) — self-vendor sync'
+  - time: '2026-07-02T10:12:48'
+    action: 'T-2497: Watchtower /escalation/rules page'
+  - time: '2026-07-02T11:29:25'
+    action: 'T-2497: refresh vendored copies (web/ files)'
+  - time: '2026-07-02T22:25:25'
+    action: 'T-2497: Verify 4 CTL-030 findings resolved by T-2435 migration'
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 17 min
+  # Completed successfully in 8 commit(s), 101847 min
 
 # Related tasks
 related_tasks:
@@ -63,12 +89,16 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 17
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 101847
+  commits: 8
+  files_changed: 24
+  lines_added: 4366
+  lines_removed: 51
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2497-wire-bvp-ranking-into-resolver-pickrankk.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2497-wire-bvp-ranking-into-resolver-pickrankk.md
 generated_by: context-agent-hybrid

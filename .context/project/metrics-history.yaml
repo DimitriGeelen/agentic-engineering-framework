@@ -2,16 +2,6 @@
 # Auto-appended by audit.sh on each run
 # 30-day rolling retention
 entries:
-- timestamp: '2026-08-05T00:02:09Z'
-  pass: 29
-  warn: 3
-  fail: 0
-  active_tasks: 317
-  completed_tasks: 2474
-  velocity: 79
-  traceability_pct: 100
-  episodic_quality_pct: 10
-  open_gaps: 5
 - timestamp: '2026-08-06T00:02:42Z'
   pass: 36
   warn: 53
@@ -232,60 +222,10 @@ entries:
   traceability_pct: 100
   episodic_quality_pct: 9
   open_gaps: 14
-- timestamp: '2026-08-27T23:15:08Z'
-  pass: 8
-  warn: 20
-  fail: 0
-  active_tasks: 416
-  completed_tasks: 2774
-  velocity: 48
-  traceability_pct: 100
-  episodic_quality_pct: 9
-  open_gaps: 14
-- timestamp: '2026-08-27T23:30:03Z'
-  pass: 2
-  warn: 0
-  fail: 0
-  active_tasks: 416
-  completed_tasks: 2774
-  velocity: 48
-  traceability_pct: 100
-  episodic_quality_pct: 9
-  open_gaps: 14
-- timestamp: '2026-08-27T23:37:11Z'
-  pass: 38
-  warn: 59
-  fail: 1
-  active_tasks: 416
-  completed_tasks: 2774
-  velocity: 48
-  traceability_pct: 100
-  episodic_quality_pct: 9
-  open_gaps: 14
-- timestamp: '2026-08-27T23:45:08Z'
-  pass: 8
-  warn: 20
-  fail: 0
-  active_tasks: 416
-  completed_tasks: 2774
-  velocity: 48
-  traceability_pct: 100
-  episodic_quality_pct: 9
-  open_gaps: 14
 - timestamp: '2026-08-28T00:03:58Z'
   pass: 13
   warn: 3
   fail: 0
-  active_tasks: 416
-  completed_tasks: 2774
-  velocity: 48
-  traceability_pct: 100
-  episodic_quality_pct: 9
-  open_gaps: 14
-- timestamp: '2026-08-28T00:07:11Z'
-  pass: 38
-  warn: 59
-  fail: 1
   active_tasks: 416
   completed_tasks: 2774
   velocity: 48
@@ -10889,6 +10829,56 @@ entries:
   active_tasks: 435
   completed_tasks: 2824
   velocity: 64
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 14
+- timestamp: '2026-09-03T23:16:59Z'
+  pass: 29
+  warn: 5
+  fail: 2
+  active_tasks: 435
+  completed_tasks: 2825
+  velocity: 65
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 14
+- timestamp: '2026-09-03T23:22:17Z'
+  pass: 29
+  warn: 5
+  fail: 2
+  active_tasks: 435
+  completed_tasks: 2825
+  velocity: 66
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 14
+- timestamp: '2026-09-03T23:54:35Z'
+  pass: 772
+  warn: 111
+  fail: 3
+  active_tasks: 435
+  completed_tasks: 2825
+  velocity: 66
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 14
+- timestamp: '2026-09-04T00:04:16Z'
+  pass: 12
+  warn: 4
+  fail: 0
+  active_tasks: 432
+  completed_tasks: 2828
+  velocity: 66
+  traceability_pct: 100
+  episodic_quality_pct: 9
+  open_gaps: 14
+- timestamp: '2026-09-04T00:09:25Z'
+  pass: 38
+  warn: 53
+  fail: 3
+  active_tasks: 432
+  completed_tasks: 2828
+  velocity: 66
   traceability_pct: 100
   episodic_quality_pct: 9
   open_gaps: 14
