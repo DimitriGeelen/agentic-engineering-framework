@@ -3719,3 +3719,31 @@ decisions:
     date: 2026-09-04
     task: T-2509
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-534
+    decision: "delivery is confirmed only when a whitespace-stripped 32-char prefix of"
+    scope: project
+    date: 2026-09-04
+    task: T-3275
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-535
+    decision: "`tr -d '[:space:]'` on both needle and haystack before matching."
+    scope: project
+    date: 2026-09-04
+    task: T-3275
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-536
+    decision: "capture the squashed pane into a variable and match with `case`."
+    scope: project
+    date: 2026-09-04
+    task: T-3275
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-537
+    decision: "fix `_stub_termlink` in `tests/unit/t3254_driver_refusals.bats` so an"
+    scope: project
+    date: 2026-09-04
+    task: T-3275
+    rationale: "Auto-captured from task file on completion"

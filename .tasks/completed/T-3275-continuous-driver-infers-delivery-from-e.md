@@ -4,12 +4,12 @@ name: "continuous-driver infers delivery from exit code instead of confirming it
 description: >
   continuous-driver infers delivery from exit code instead of confirming it
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/continuous-driver.sh, tests/unit/t3254_driver_refusals.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-04T15:01:50Z
-last_update: '2026-09-04T15:15:17Z'
-date_finished:
+last_update: 2026-09-04T22:03:52Z
+date_finished: 2026-09-04T22:03:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -487,3 +487,20 @@ makes the driver honest about failure; it does not make it succeed.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3275-continuous-driver-infers-delivery-from-e.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ec44d68f
+- **Timestamp:** 2026-09-04T22:04:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/unit/t3275_delivery_confirmation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'`
+
+### 2026-09-04T22:03:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -39465,3 +39465,21 @@ scan_id: R-f0c81d41
 task_id: T-3141
 payload:
   task_file: .tasks/active/T-3141-fwfocusfile-ignores-contextdir-override-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T22:04:33Z'
+scan_id: R-ec44d68f
+task_id: T-3275
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T22:04:33Z'
+scan_id: R-ec44d68f
+task_id: T-3275
+payload:
+  task_file: .tasks/active/T-3275-continuous-driver-infers-delivery-from-e.md

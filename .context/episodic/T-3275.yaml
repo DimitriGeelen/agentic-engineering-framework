@@ -1,0 +1,124 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3275: continuous-driver infers delivery from exit code instead of confirming it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-04T22:04:51Z
+# ============================================================================
+
+task_id: T-3275
+task_name: "continuous-driver infers delivery from exit code instead of confirming it"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-04T15:01:50Z
+completed: 2026-09-04T22:03:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-04T17:06:37+02:00
+last_commit: 2026-09-05T00:02:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the framework-side blindness behind G-097 — driver trusts exit code, never confirms delivery. the driver confirms delivery instead of inferring it from an exit code
+
+# Key outcomes
+outcomes:
+  - 'After a successful inject call, the driver takes a post-inject snapshot via'
+  - 'When delivery cannot be confirmed, the driver `_bail "refused"` with a message'
+  - '**Negative control:** a test proves the confirmation REFUSES against a target'
+  - '**Positive control:** a test proves the confirmation ALLOWS a delivery whose'
+  - 'The false-negative case is addressed explicitly: a target whose pane redraws on'
+  - '`tests/unit/t3254_driver_refusals.bats` still passes with zero skips.'
+  - '`bin/fw vendor self --check` is clean before close (`agents/` is a vendored'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-04 — confirm on the directive''s TEXT, not on "the pane changed"'
+    chose: 'delivery is confirmed only when a whitespace-stripped 32-char prefix of the directive appears in the post-inject pane capture. Fail closed: if it never appears, refuse.'
+    rationale: 'change-detection is the cheaper check and was the obvious first instinct, but it cannot separate delivery from a pane redrawing itself. A spinner, clock or progress line changes the capture without any input having landed, so a change-based guard reports success on an undelivered tick — reintroducing the exact false green G-101 exists to remove. The asymmetry decides it: a wrong refusal costs ONE tick and announces itself in the ledger; a wrong success costs every tick after it and announces nothing. C3 is the regression test — it passes a change-based guard and fails a text-based one, which is why it exists.'
+    alternatives_rejected: ['(a) change-detection alone, for the reason above. (b) Requiring the *whole* directive to appear — a TUI wraps long input and the capture is tailed to 4000 bytes, so a long directive would produce false refusals. (c) Accepting either signal (text OR change) — that is change-detection with extra steps, since the weaker condition always decides.']
+  - decision: '2026-09-04 — strip ALL whitespace from both sides of the comparison'
+    chose: '`tr -d ''[:space:]''` on both needle and haystack before matching.'
+    rationale: 'a TUI wrapping input can insert a newline mid-word (`backl\nog`), which defeats a matcher that merely collapses whitespace runs. Stripping whitespace entirely makes the needle wrap-immune. C6 pins it.'
+    alternatives_rejected: ['collapsing runs to single spaces (`tr -s`) — fails the mid-word wrap, which is the common case for a long directive in a narrow pane.']
+  - decision: '2026-09-04 — `case` on a captured variable, never a pipe into `grep -q`'
+    chose: 'capture the squashed pane into a variable and match with `case`.'
+    rationale: 'the script runs under `set -uo pipefail`. An early-exiting `grep -q` SIGPIPEs its upstream and the pipeline returns 141 (L-387), so the guard would manufacture false refusals through its own plumbing — a bug in the same family as the one it is fixing.'
+  - decision: '2026-09-04 — T-3254''s stub was modelling the bug as its success case'
+    chose: 'fix `_stub_termlink` in `tests/unit/t3254_driver_refusals.bats` so an injecting transport also writes the text into the pane the stub serves.'
+    rationale: 'its `quiet` mode returned a constant pane, so its C2 ("an injection is recorded") was exercising a transport that accepts and delivers nothing — the G-097 shape — and calling it success. That is why the pre-existing suite could never have caught G-097, and it is the more interesting half of this finding: the fixture encoded the same assumption the production code did. Both were fixed here.'
+    alternatives_rejected: ['special-casing the new guard to tolerate a constant pane. That would have kept the suite green by teaching the guard to accept the exact input it exists to reject.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/continuous-driver.sh'
+  - '.context/audits/2026-09-04.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/handovers/S-2026-0904-1044.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0904-1401.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/concerns.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3211-handover-suggested-first-action-truncate.md'
+  - '.tasks/active/T-3275-continuous-driver-infers-delivery-from-e.md'
+  - '.tasks/active/T-3276-should-continuous-driver-carry-a-non-ter.md'
+  - 'tests/unit/t3254_driver_refusals.bats'
+  - 'tests/unit/t3275_delivery_confirmation.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-04T17:06:37'
+    action: 'T-3275: file the framework-side blindness behind G-097 — driver trusts exit code, never confirms delivery'
+  - time: '2026-09-05T00:02:48'
+    action: 'T-3275: the driver confirms delivery instead of inferring it from an exit code'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 422 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 422
+  commits: 2
+  files_changed: 29
+  lines_added: 3819
+  lines_removed: 2666
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3275-continuous-driver-infers-delivery-from-e.md
+generated_by: context-agent-hybrid
