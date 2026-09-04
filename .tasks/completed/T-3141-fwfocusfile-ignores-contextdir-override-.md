@@ -12,12 +12,12 @@ description: >
   See docs/reports/T-3104-task-corpus-views.md 'Incidental finding' section for the
   original discovery (explicitly left unfiled for the parent session).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/paths.sh, tests/unit/create_task.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -30,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T11:39:05Z
-last_update: '2026-08-25T11:45:08Z'
-date_finished:
+last_update: 2026-09-04T21:50:41Z
+date_finished: 2026-09-04T21:50:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -82,10 +82,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw_focus_file()` in `lib/paths.sh` honours a `CONTEXT_DIR` override (falls back to `${root}/.context/working` only when `CONTEXT_DIR` is unset/empty) — both the session-scoped (`FW_SESSION_SCOPED_FOCUS=1`) and default branches
-- [ ] `tests/unit/create_task.bats` test 3 ("T-2832: --start writes focus inside the sandbox, not the live .context") passes without clobbering the real session's `.context/working/focus*.yaml`
-- [ ] A regression test in `tests/unit/` pins `fw_focus_file` returning a path under an overridden `CONTEXT_DIR`, not `PROJECT_ROOT/.context`
-- [ ] Full `tests/unit/create_task.bats` suite is green (30/30)
+- [x] `fw_focus_file()` in `lib/paths.sh` honours a `CONTEXT_DIR` override (falls back to `${root}/.context/working` only when `CONTEXT_DIR` is unset/empty) — both the session-scoped (`FW_SESSION_SCOPED_FOCUS=1`) and default branches
+- [x] `tests/unit/create_task.bats` test 3 ("T-2832: --start writes focus inside the sandbox, not the live .context") passes without clobbering the real session's `.context/working/focus*.yaml`
+- [x] A regression test in `tests/unit/` pins `fw_focus_file` returning a path under an overridden `CONTEXT_DIR`, not `PROJECT_ROOT/.context`
+- [x] Full `tests/unit/create_task.bats` suite is green (30/30)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -119,6 +119,9 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t3141_focus_file_context_dir_override.bats > /tmp/.t3141a.out 2>&1 && grep -q "^1\.\.3" /tmp/.t3141a.out && ! grep -q "not ok" /tmp/.t3141a.out
+bats tests/unit/create_task.bats > /tmp/.t3141b.out 2>&1 && grep -q "^1\.\.30" /tmp/.t3141b.out && ! grep -q "not ok" /tmp/.t3141b.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -294,3 +297,15 @@ cost_estimate_proposed:
 ### 2026-08-25T11:43:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f0c81d41
+- **Timestamp:** 2026-09-04T21:51:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-04T21:50:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

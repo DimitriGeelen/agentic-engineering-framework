@@ -1,0 +1,131 @@
+T-3250 / arc-012 — E11: a dispatched worker advancing task-to-task, caught live
+================================================================================
+Captured 2026-09-04T22:00:09Z (23:58-00:01 CEST) by the parent session, while it
+was reading the driver source for an unrelated reason. NOT a staged run: no rig
+was armed, no dial was moved, nothing was spawned for the purpose. The parent
+noticed agents/context/continuous-driver.sh change size underneath it mid-read
+and went looking for the writer.
+
+WHY THIS IS DIFFERENT FROM E1-E10
+--------------------------------------------------------------------------------
+E1-E10 are constructed experiments: the rig arms the loop, drives it, and reads
+the result. Each is answerable with "the rig made that happen". E11 is the
+opposite shape — an unplanned observation of the production tree, where the
+parent session is a WITNESS rather than an operator. Every source below is
+third-party to the loop: the process table, filesystem mtimes, and git. None of
+them is authored by the driver, the ledger, or any framework self-report. That
+matters because the whole class under investigation (G-097, G-101, L-346, L-652)
+is a component reporting its own success.
+
+WHAT WAS OBSERVED
+--------------------------------------------------------------------------------
+A TermLink-dispatched worker was given ONE task and, unattended, closed it and
+selected the next one on its own.
+
+  process ancestry (ps, verbatim shape):
+    tmux new-session -d -s tl-opencode-agent                        pid  703059
+      +- termlink register --name tl-85b4b62d
+                           --tags task:T-3141,task-type:default     pid  993783
+          +- bash /tmp/tl-dispatch/tl-85b4b62d/run.sh               pid  994285
+              +- claude -p "# Default Workflow Prompt ...
+                            **Task ID:** T-3141"                    pid  994289
+
+  The worker's prompt names T-3141 and only T-3141. It was never told about
+  T-3275.
+
+TIMELINE (mtime + git + ps; all clocks CEST 2026-09-04/05)
+--------------------------------------------------------------------------------
+  23:38:50  parent session starts (claude-fw wrapper pid 910398)
+  23:47:39  worker dispatched for T-3141                      (pid 994289)
+  23:51:46  T-3141 -> .tasks/completed/   commit 27f5cf739
+            message: "close - fw_focus_file CONTEXT_DIR fix and tests already
+            landed, bookkeeping only"   <- found the work done, said so, did not
+                                           re-do it or claim it
+  23:52:12  worker writes its OWN scoped focus -> T-3275      <- ADVANCE
+  23:56:47  parent writes its focus       -> T-3275              (independent)
+  23:57:27  agents/context/continuous-driver.sh edited          (the G-101 fix)
+  23:58:34  tests/unit/t3275_delivery_confirmation.bats written (6 tests)
+  23:59:12  worker running shellcheck
+  00:01:12  worker exits 0, leaving the work UNCOMMITTED and T-3275 still open
+
+ATTRIBUTION (L-654 — emit the verdict, never leave the failure ambiguous)
+--------------------------------------------------------------------------------
+Q: did the worker advance to T-3275 by itself, or did it merely follow the
+   parent session's focus write?
+
+This is exactly the two-opposite-causes shape L-654 exists for. "The worker
+worked on T-3275" is true under both, and both would have been written up as an
+autonomous advance.
+
+   worker scoped focus  .context/working/focus.tl-85b4b62d.yaml -> T-3275
+                        written 23:52:12
+   parent focus         .context/working/focus.yaml             -> T-3275
+                        written 23:56:47
+
+   VERDICT: the worker selected T-3275 4m35s BEFORE the parent did.
+            Parent causation is RULED OUT by ordering, not by argument.
+
+The discriminator only exists because worker focus is session-scoped (T-3038).
+Had both written the same focus.yaml, the timestamps would have collapsed onto
+one file and the question would be undecidable. The CONTEXT_DIR isolation that
+keeps those two files apart was itself repaired and committed EARLIER THE SAME
+EVENING as T-3141 (e90812bf6) — by the parent, hours before it needed it. The
+fix that made this measurement possible is the fix the worker was dispatched to
+confirm.
+
+WHICH MECHANISM THIS IS, AND WHICH IT IS NOT (L-652 discipline)
+--------------------------------------------------------------------------------
+L-652 warns that arc-012's headline sentence bundles mechanisms that fail
+independently, and that no line of evidence may stand for more than one. E11 is
+evidence for a THIRD path, which the REPORT.md M1/M2 table does not carry:
+
+  M1  Stop-hook drives another turn in-session   NOT evidenced here.
+      Still capped at exactly one continuation (E2, T-3240). Untouched by E11.
+
+  M2  budget critical -> handover -> restart     NOT evidenced here.
+      No budget trip occurred; nothing restarted. Untouched by E11.
+
+  M3  external dispatch -> worker -> close -> advance    THIS.
+      The worker is a `claude -p` process, not an injected turn and not a
+      hook continuation.
+
+  Consequence: E11 does NOT rehabilitate M1, and does NOT bear on G-097.
+  G-097 is about termlink inject failing to deliver into an ink-mode TUI; no
+  byte was injected into any TUI here. The advance happened through dispatch,
+  which never needed the broken transport. Do not read E11 as evidence that
+  injection works. It is evidence that ADVANCE does not require injection.
+
+WHAT IS PROVEN
+--------------------------------------------------------------------------------
+  [x] a dispatched worker closes its task without operator input
+  [x] it declines to re-do work already landed, and records why
+  [x] it selects a NEXT task on its own                     (attribution above)
+  [x] it produces real, verified work on that next task     (6/6 + 21/21 green)
+  [x] arc focus was continuously set to continuous-run throughout
+      (.context/working/arc-focus.yaml, focused_at 2026-08-26T14:25:37Z)
+
+WHAT IS NOT PROVEN
+--------------------------------------------------------------------------------
+  [ ] that the advance is BOUNDED. No brake was reached in this run. The worker
+      stopped because it finished, not because anything stopped it. E1's 11/11
+      brake table and t3254_driver_refusals.bats 21/21 cover the brakes under
+      test; neither was exercised by this live run. An unbounded-in-practice
+      advance and a correctly-bounded one look identical over one hop.
+  [ ] that the advance is REPEATABLE. n=1, unplanned. It cannot be replayed from
+      this record; it can only be waited for again.
+  [ ] who issued the dispatch at 23:47:39. Not determined. The continuous-mode
+      flag was `enabled: false` and the `continuous-driver-10m` cron was
+      `[paused]` throughout, so this did NOT come from the armed continuous loop.
+      Recording the open question rather than guessing at a cause.
+  [ ] that the loop closes its own work. The worker exited 0 with the fix
+      uncommitted and T-3275 still in .tasks/active/. A hop that ends in
+      uncommitted work is a hop that can be lost.
+
+THE HONEST SHAPE OF IT
+--------------------------------------------------------------------------------
+One hop, observed once, unbounded as run, ending in uncommitted work. That is
+considerably less than "the continuous loop works" and considerably more than
+anything E1-E10 had for autonomous task-to-task advance, which was nothing.
+
+Files: agents/context/continuous-driver.sh, tests/unit/t3275_delivery_confirmation.bats
+Commit: see `git log --oneline --grep T-3275`

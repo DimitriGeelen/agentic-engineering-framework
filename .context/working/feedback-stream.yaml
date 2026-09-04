@@ -39447,3 +39447,21 @@ scan_id: R-faf7496f
 task_id: T-3215
 payload:
   task_file: .tasks/active/T-3215-port-t-1032-next-hint-from-consumer-002-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T21:51:25Z'
+scan_id: R-f0c81d41
+task_id: T-3141
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T21:51:25Z'
+scan_id: R-f0c81d41
+task_id: T-3141
+payload:
+  task_file: .tasks/active/T-3141-fwfocusfile-ignores-contextdir-override-.md
