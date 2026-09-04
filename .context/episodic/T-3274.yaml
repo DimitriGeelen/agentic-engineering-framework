@@ -1,0 +1,304 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3274: Verification blocks pin .tasks/active/T-XXXX and decay to permanent false-reds once that task completes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-04T08:14:53Z
+# ============================================================================
+
+task_id: T-3274
+task_name: "Verification blocks pin .tasks/active/T-XXXX and decay to permanent false-reds once that task completes"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-04T08:06:05Z
+completed: 2026-09-04T08:14:38Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-04T10:14:03+02:00
+last_commit: 2026-09-04T10:14:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verification refs pinned to .tasks/active/ decay into permanent false-reds
+
+# Key outcomes
+outcomes:
+  - 'Detector `detect_decaying_task_path_ref` in `lib/reviewer/static_scan.py` flags a Verification line pinning `.tasks/active/<T-XXXX>` and returns no finding for the path-agnostic `.tasks/*/` form'
+  - 'Detector distinguishes *decayed* (referenced task not in `active/`) from *live* references, so it does not cry wolf on a task that legitimately references an in-flight sibling'
+  - 'Pattern registered in `policy/anti-patterns.yaml` under id `decaying-task-path-ref`'
+  - 'Non-blocking advisory fires at `--status started-work` in `agents/task-create/update-task.sh`, mirroring the L-387 sibling (suppress via `FW_SKIP_DECAY_ADVISORY=1`, never blocks)'
+  - 'T-1894''s two decayed verification lines repaired to the path-agnostic form and both re-run green'
+  - 'Pinning tests cover both directions (flags the decayed form; stays silent on the repaired form and on live references)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - '.agentic-framework/policy/anti-patterns.yaml'
+  - '.agentic-framework/VERSION'
+  - 'agents/task-create/update-task.sh'
+  - '.context/audits/2026-09-04.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/full-audit-timing.yaml'
+  - '.context/audits/orchestrator-LATEST.yaml'
+  - '.context/audits/reviewer/2026-09-04.yaml'
+  - '.context/concerns.yaml'
+  - '.context/handovers/S-2026-0904-0921.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/.verify-queue-state.json'
+  - 'docs/generated/components/agents-antigravity-subagent_dispatch.md'
+  - 'docs/generated/components/agents-audit-active-task-scan.md'
+  - 'docs/generated/components/agents-context-check-active-completed-dup.md'
+  - 'docs/generated/components/agents-context-check-active-task.md'
+  - 'docs/generated/components/agents-context-check-arc-id.md'
+  - 'docs/generated/components/agents-context-check-arc-id-py.md'
+  - 'docs/generated/components/agents-context-check-heredoc-cmd-sub.md'
+  - 'docs/generated/components/agents-context-check-human-ac-tick.md'
+  - 'docs/generated/components/agents-context-check-human-ac-tick-py.md'
+  - 'docs/generated/components/agents-context-check-inception-decisions.md'
+  - 'docs/generated/components/agents-context-check-inception-decisions-py.md'
+  - 'docs/generated/components/agents-context-check-inception-recommendation.md'
+  - 'docs/generated/components/agents-context-check-inception-recommendation-py.md'
+  - 'docs/generated/components/agents-context-check-inception-schema.md'
+  - 'docs/generated/components/agents-context-check-inception-schema-py.md'
+  - 'docs/generated/components/agents-context-check-onboarding-gate.md'
+  - 'docs/generated/components/agents-context-check-onboarding-gate-py.md'
+  - 'docs/generated/components/agents-context-check-task-ac-structure.md'
+  - 'docs/generated/components/agents-context-check-task-ac-structure-py.md'
+  - 'docs/generated/components/agents-context-check-worktree-governance-write.md'
+  - 'docs/generated/components/agents-context-consolidate.md'
+  - 'docs/generated/components/agents-context-continuous-driver.md'
+  - 'docs/generated/components/agents-context-inject-next-directive.md'
+  - 'docs/generated/components/agents-context-lib-episodic.md'
+  - 'docs/generated/components/agents-context-lib-focus.md'
+  - 'docs/generated/components/agents-context-lib-memory-recall.md'
+  - 'docs/generated/components/agents-context-lib-safe-commands.md'
+  - 'docs/generated/components/agents-context-stop-driver.md'
+  - 'docs/generated/components/agents-context-test-tier0-patterns.md'
+  - 'docs/generated/components/agents-dispatch-yield-point.md'
+  - 'docs/generated/components/agents-docgen-generate_component.md'
+  - 'docs/generated/components/agents-docgen-test_docgen.md'
+  - 'docs/generated/components/agents-fabric-lib-enrich.md'
+  - 'docs/generated/components/agents-fabric-lib-expand_patterns.md'
+  - 'docs/generated/components/agents-git-git.md'
+  - 'docs/generated/components/agents-git-lib-hooks.md'
+  - 'docs/generated/components/agents-git-lib-worker-commits.md'
+  - 'docs/generated/components/agents-handover-handover.md'
+  - 'docs/generated/components/agents-task-create-create-task.md'
+  - 'docs/generated/components/agents-task-create-update-task.md'
+  - 'docs/generated/components/agents-termlink-termlink.md'
+  - 'docs/generated/components/audit-yaml-validator.md'
+  - 'docs/generated/components/bin-claude-fw.md'
+  - 'docs/generated/components/bin-fw.md'
+  - 'docs/generated/components/budget-gate.md'
+  - 'docs/generated/components/context-dispatcher.md'
+  - 'docs/generated/components/context-project-decisions.md'
+  - 'docs/generated/components/hook-config.md'
+  - 'docs/generated/components/learnings-data.md'
+  - 'docs/generated/components/learnings-route.md'
+  - 'docs/generated/components/lib-antigravity_bridge.md'
+  - 'docs/generated/components/lib-antigravity_steps.md'
+  - 'docs/generated/components/lib-arc.md'
+  - 'docs/generated/components/lib-ask-py.md'
+  - 'docs/generated/components/lib-audit_timing.md'
+  - 'docs/generated/components/lib-bats_red_attribution.md'
+  - 'docs/generated/components/lib-branch-hygiene.md'
+  - 'docs/generated/components/lib-colors.md'
+  - 'docs/generated/components/lib-comment_strip.md'
+  - 'docs/generated/components/lib-compat.md'
+  - 'docs/generated/components/lib-config.md'
+  - 'docs/generated/components/lib-continuous-mode.md'
+  - 'docs/generated/components/lib-decided_unclosed.md'
+  - 'docs/generated/components/lib-episodic_footprint.md'
+  - 'docs/generated/components/lib-git-identity.md'
+  - 'docs/generated/components/lib-govd_policy.md'
+  - 'docs/generated/components/lib-hook_parity.md'
+  - 'docs/generated/components/lib-hook_paths.md'
+  - 'docs/generated/components/lib-hook_portability.md'
+  - 'docs/generated/components/lib-inception_decisions.md'
+  - 'docs/generated/components/lib-init.md'
+  - 'docs/generated/components/lib-integrate.md'
+  - 'docs/generated/components/lib-paths.md'
+  - 'docs/generated/components/lib-pause.md'
+  - 'docs/generated/components/lib-push-state.md'
+  - 'docs/generated/components/lib-resolver.md'
+  - 'docs/generated/components/lib-task_satisfaction.md'
+  - 'docs/generated/components/lib-tasks.md'
+  - 'docs/generated/components/lib-upgrade.md'
+  - 'docs/generated/components/lib-vendor-visibility.md'
+  - 'docs/generated/components/lib-verification-port.md'
+  - 'docs/generated/components/lib-verify_queue.md'
+  - 'docs/generated/components/lib-worker_identity.md'
+  - 'docs/generated/components/lib-workflow_coverage.md'
+  - 'docs/generated/components/lib-worktree.md'
+  - 'docs/generated/components/patterns-data.md'
+  - 'docs/generated/components/tests-lint-bats-dead-negation.md'
+  - 'docs/generated/components/tests-lint-bats-silent-skip.md'
+  - 'docs/generated/components/tests-lint-no-orphaned-test-dirs.md'
+  - 'docs/generated/components/tests-lint-no-project-markers-above-bats-tmpdir.md'
+  - 'docs/generated/components/tests-playwright-test_smoke.md'
+  - 'docs/generated/components/tests-unit-arc_id_validation_guard.md'
+  - 'docs/generated/components/tests-unit-check_inception_schema.md'
+  - 'docs/generated/components/tests-unit-check_task_ac_structure.md'
+  - 'docs/generated/components/tests-unit-episodic_footprint_refresh.md'
+  - 'docs/generated/components/tests-unit-episodic_worktree_mining.md'
+  - 'docs/generated/components/tests-unit-fabric_coverage_single_source.md'
+  - 'docs/generated/components/tests-unit-fabric_watch_pattern_fitness.md'
+  - 'docs/generated/components/tests-unit-git_worker_commits.md'
+  - 'docs/generated/components/tests-unit-onboarding_gate_arc_tag_fp.md'
+  - 'docs/generated/components/tests-unit-stop_driver.md'
+  - 'docs/generated/components/tests-unit-t2457_fabric_atomic_card_write.md'
+  - 'docs/generated/components/tests-unit-t3045_embed_host_resolution.md'
+  - 'docs/generated/components/tests-unit-t3056_recall_open_tasks.md'
+  - 'docs/generated/components/tests-unit-t3112_worktree_hook_parity.md'
+  - 'docs/generated/components/tests-unit-t3113_upgrade_worktree_advisory.md'
+  - 'docs/generated/components/tests-unit-t3174_partial_complete_edit_matrix.md'
+  - 'docs/generated/components/tests-unit-t3179_partial_complete_commit.md'
+  - 'docs/generated/components/tests-unit-t3187_branch_identity_guard.md'
+  - 'docs/generated/components/tests-unit-t3213_start_event_confirmation.md'
+  - 'docs/generated/components/tests-unit-t3219_verification_count_reconciliation.md'
+  - 'docs/generated/components/tests-unit-t3220_verification_gate_exits.md'
+  - 'docs/generated/components/tests-unit-t3221_commit_exemption_clause.md'
+  - 'docs/generated/components/tests-unit-t3222_fetch_writes_file.md'
+  - 'docs/generated/components/tests-unit-t3231_help_exemption_scope.md'
+  - 'docs/generated/components/tests-unit-t3232_verification_extractor_failure.md'
+  - 'docs/generated/components/tests-unit-t3233_arm_bounds.md'
+  - 'docs/generated/components/tests-unit-t3235_archived_horizon_invariant.md'
+  - 'docs/generated/components/tests-unit-t3245_trailer_quote_strip.md'
+  - 'docs/generated/components/tests-unit-t3253_preflight_brake.md'
+  - 'docs/generated/components/tests-unit-t3254_driver_refusals.md'
+  - 'docs/generated/components/tests-unit-t3268_continuous_cycling_detector.md'
+  - 'docs/generated/components/tests-unit-template_budget_parity.md'
+  - 'docs/generated/components/tests-unit-termlink.md'
+  - 'docs/generated/components/tests-unit-test_embed_health.md'
+  - 'docs/generated/components/tests-unit-test_enrich_unresolved_targets.md'
+  - 'docs/generated/components/tests-unit-test_inception_close_card.md'
+  - 'docs/generated/components/tests-unit-test_incremental_reindex.md'
+  - 'docs/generated/components/tests-unit-upgrade_marked_region.md'
+  - 'docs/generated/components/tests-unit-vendor_visibility.md'
+  - 'docs/generated/components/tools-aef_meta_census.md'
+  - 'docs/generated/components/tools-bats-dead-negation-lint.md'
+  - 'docs/generated/components/tools-bats-dead-negation-mutants.md'
+  - 'docs/generated/components/tools-bats-silent-skip-lint.md'
+  - 'docs/generated/components/tools-bpmn_to_tasks.md'
+  - 'docs/generated/components/tools-corpus_conformance.md'
+  - 'docs/generated/components/tools-corpus_explain.md'
+  - 'docs/generated/components/tools-corpus_overlay.md'
+  - 'docs/generated/components/tools-ewcr-arc0-unknown-overlap.md'
+  - 'docs/generated/components/tools-gaps-render-agreement.md'
+  - 'docs/generated/components/tools-measure_chunk_tokens.md'
+  - 'docs/generated/components/tools-t1700-ollama-harness.md'
+  - 'docs/generated/components/tools-t1703-probe-matrix.md'
+  - 'docs/generated/components/tools-t1704-hermes3-probe.md'
+  - 'docs/generated/components/tools-t2176-corpus-rescan.md'
+  - 'docs/generated/components/tools-t3254-livefire.md'
+  - 'docs/generated/components/tools-t3255-livefire-agent.md'
+  - 'docs/generated/components/web-app.md'
+  - 'docs/generated/components/web-ask.md'
+  - 'docs/generated/components/web-blueprints-api.md'
+  - 'docs/generated/components/web-blueprints-approvals.md'
+  - 'docs/generated/components/web-blueprints-config.md'
+  - 'docs/generated/components/web-blueprints-core.md'
+  - 'docs/generated/components/web-blueprints-cron.md'
+  - 'docs/generated/components/web-blueprints-discoveries.md'
+  - 'docs/generated/components/web-blueprints-discovery.md'
+  - 'docs/generated/components/web-blueprints-docs.md'
+  - 'docs/generated/components/web-blueprints-inception.md'
+  - 'docs/generated/components/web-blueprints-quality.md'
+  - 'docs/generated/components/web-blueprints-session.md'
+  - 'docs/generated/components/web-blueprints-settings.md'
+  - 'docs/generated/components/web-blueprints-tasks.md'
+  - 'docs/generated/components/web-config.md'
+  - 'docs/generated/components/web-conftest.md'
+  - 'docs/generated/components/web-embeddings.md'
+  - 'docs/generated/components/web-metrics_history.md'
+  - 'docs/generated/components/web-qa_feedback.md'
+  - 'docs/generated/components/web-recall_telemetry.md'
+  - 'docs/generated/components/web-secrets_store.md'
+  - 'docs/generated/components/web-shared.md'
+  - 'docs/generated/components/web-smoke_test.md'
+  - 'docs/generated/components/web-static-js-search-qa.md'
+  - 'docs/generated/components/web-templates-approvals.md'
+  - 'docs/generated/components/web-templates-_continuous_halt.md'
+  - 'docs/generated/components/web-templates-_error.md'
+  - 'docs/generated/components/web-templates-_partials-ask_answer_card.md'
+  - 'docs/generated/components/web-templates-_partials-inline_select.md'
+  - 'docs/generated/components/web-templates-_partials-search_input.md'
+  - 'docs/generated/components/web-templates-_partials-search_results.md'
+  - 'docs/generated/components/web-templates-search.md'
+  - 'docs/generated/components/web-templates-_stale_tasks_items.md'
+  - 'docs/generated/components/web-templates-_work_queue_items.md'
+  - 'docs/generated/components/web-terminal-adapters-claude_code.md'
+  - 'docs/generated/components/web-terminal-adapters-__init__.md'
+  - 'docs/generated/components/web-terminal-adapters-local_shell.md'
+  - 'docs/generated/components/web-terminal-session.md'
+  - 'docs/generated/components/web-test_app.md'
+  - 'docs/generated/components/web-wsgi.md'
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'lib/reviewer/static_scan.py'
+  - 'policy/anti-patterns.yaml'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3274-verification-blocks-pin-tasksactivet-xxx.md'
+  - '.tasks/completed/T-1894-re-class-mis-classified-human-acs-on-4-a.md'
+  - 'tests/unit/test_reviewer_decaying_task_path_ref.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-04T10:14:03'
+    action: 'T-3274: verification refs pinned to .tasks/active/ decay into permanent false-reds'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 226
+  lines_added: 6973
+  lines_removed: 2351
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3274-verification-blocks-pin-tasksactivet-xxx.md
+generated_by: context-agent-hybrid

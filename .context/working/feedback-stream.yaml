@@ -39411,3 +39411,39 @@ scan_id: R-26c664ba
 task_id: T-2853
 payload:
   task_file: .tasks/completed/T-2853-fw-update-misroutes-a-git-based-global-i.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T08:14:41Z'
+scan_id: R-59a78498
+task_id: T-3274
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T08:14:41Z'
+scan_id: R-59a78498
+task_id: T-3274
+payload:
+  task_file: .tasks/active/T-3274-verification-blocks-pin-tasksactivet-xxx.md
+---
+kind: scan_emitted
+timestamp: '2026-09-04T08:37:36Z'
+scan_id: R-faf7496f
+task_id: T-3215
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-04T08:37:36Z'
+scan_id: R-faf7496f
+task_id: T-3215
+payload:
+  task_file: .tasks/active/T-3215-port-t-1032-next-hint-from-consumer-002-.md

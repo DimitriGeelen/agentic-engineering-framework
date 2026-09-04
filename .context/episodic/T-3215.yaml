@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3215: Port T-1032 next-hint from consumer 002 — post-move commit hint
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-04T08:37:49Z
+# ============================================================================
+
+task_id: T-3215
+task_name: "Port T-1032 next-hint from consumer 002 — post-move commit hint"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-29T14:08:43Z
+completed: 2026-09-04T08:37:35Z
+duration_days: 6
+updates_count: 3
+first_commit: 2026-08-29T16:12:31+02:00
+last_commit: 2026-08-29T16:13:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  port T-1032 post-move next-hint from consumer 002. refresh vendored update-task.sh with the T-1032 next-hint
+
+# Key outcomes
+outcomes:
+  - '`_print_move_next_hint()` helper exists in `agents/task-create/update-task.sh`, placed directly after `_t2864_reconcile_index()` and before the `# Gate bypass audit log (T-1142)` comment'
+  - 'Helper honours `FW_QUIET_NEXT_HINT=1` (returns 0, emits nothing) and defaults its task id to `$TASK_ID` when called with no argument'
+  - 'Both `Moved to completed/` emit sites call `_print_move_next_hint "$TASK_ID"` on the immediately following line, matching indentation — parity, no site left silent'
+  - '`bash -n agents/task-create/update-task.sh` passes (no syntax regression)'
+  - 'Standalone helper self-test emits exactly two `↳` lines naming the index invariant and the `git add .context/episodic/<id>.yaml && git commit && git push` next step'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.tasks/active/T-3215-port-t-1032-next-hint-from-consumer-002-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-29T16:12:31'
+    action: 'T-3215: port T-1032 post-move next-hint from consumer 002'
+  - time: '2026-08-29T16:13:58'
+    action: 'T-3215: refresh vendored update-task.sh with the T-1032 next-hint'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8308 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8308
+  commits: 2
+  files_changed: 3
+  lines_added: 333
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3215-port-t-1032-next-hint-from-consumer-002-.md
+generated_by: context-agent-hybrid
