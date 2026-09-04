@@ -36,6 +36,14 @@ setup() {
     # so the suite exercises create-task.sh's own logic, not the caller's
     # environment. The T-2207 gate keeps its own dedicated coverage.
     unset CLAUDECODE FW_ALLOW_EMPTY_RECOMMENDATION FW_INCEPTION_PRE_GATED
+
+    # T-3141 hermeticity (same class as T-100185 above): when this suite runs
+    # inside a TermLink-dispatched worker, FW_SESSION_SCOPED_FOCUS=1 and
+    # FW_FOCUS_SESSION_KEY are set in the caller's own environment (T-3038).
+    # Inherited here, fw_focus_file() resolves focus.<key>.yaml instead of the
+    # plain focus.yaml the T-2832 test below asserts on — a false failure that
+    # has nothing to do with create-task.sh's own logic.
+    unset FW_SESSION_SCOPED_FOCUS FW_FOCUS_SESSION_KEY
 }
 
 teardown() {

@@ -173,10 +173,18 @@ except Exception:
 # Default (unset/0) returns the shared path verbatim: existing single-session
 # behaviour is unchanged, which is what keeps this safe to land without migration.
 #
+# T-3141: honour a CONTEXT_DIR override instead of re-deriving "$root/.context".
+# Callers always pass PROJECT_ROOT as $1, but tests (create_task.bats, T-2832)
+# sandbox CONTEXT_DIR alone — leaving PROJECT_ROOT pointed at the real repo so
+# template resolution still works — to stop --start's focus write from landing
+# in the live session's .context/working/. Re-deriving from root here defeated
+# that sandbox and clobbered the live focus.yaml. Fall back to "$root/.context"
+# only when CONTEXT_DIR is unset/empty, so non-test callers are unaffected.
+#
 # Usage: focus_file=$(fw_focus_file "$PROJECT_ROOT")
 fw_focus_file() {
     local root="${1:-$PROJECT_ROOT}"
-    local dir="$root/.context/working"
+    local dir="${CONTEXT_DIR:-$root/.context}/working"
 
     if [ "${FW_SESSION_SCOPED_FOCUS:-0}" != "1" ]; then
         printf '%s\n' "$dir/focus.yaml"
