@@ -34,7 +34,7 @@ Usage:
 | [focus](/docs/generated/agents-context-lib-focus) | calls | Context Agent - focus command |
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
-## Used By (15)
+## Used By (16)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -53,6 +53,7 @@ Usage:
 | [context_pattern](/docs/generated/tests-unit-context_pattern) | called-by | Unit tests for context pattern (11 tests) |
 | [update_task_episodic_gen](/docs/generated/tests-unit-update_task_episodic_gen) | called_by | Regression test — episodic auto-gen on status: work-completed. Four tasks in one session (T-1363/1364/1366/1367) transitioned to work-completed (date_finished set, [task-update-agent] Updates entry) yet no episodic was generated. Pins the happy path so any regression surfaces. |
 | [update_task_episodic_gen](/docs/generated/tests-unit-update_task_episodic_gen) | tests_by | Regression test — episodic auto-gen on status: work-completed. Four tasks in one session (T-1363/1364/1366/1367) transitioned to work-completed (date_finished set, [task-update-agent] Updates entry) yet no episodic was generated. Pins the happy path so any regression surfaces. |
+| [create-task](/docs/generated/agents-task-create-create-task) | called_by | Task Creation Agent - Mechanical Operations |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-dispatcher.yaml`*

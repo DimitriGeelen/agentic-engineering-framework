@@ -17,7 +17,13 @@ Categories (27 patterns):
 2. File reading (7 patterns)
 3. Searching (4 patterns)
 
-## Used By (15)
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
+## Used By (20)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -36,6 +42,11 @@ Categories (27 patterns):
 | [t2936_bootstrap_quoted_redirect](/docs/generated/tests-unit-t2936_bootstrap_quoted_redirect) | tests_by | TODO: describe what this component does |
 | [t2988_grouped_command_classification](/docs/generated/tests-unit-t2988_grouped_command_classification) | called_by | TODO: describe what this component does |
 | [t2988_grouped_command_classification](/docs/generated/tests-unit-t2988_grouped_command_classification) | tests_by | TODO: describe what this component does |
+| [t3221_commit_exemption_clause](/docs/generated/tests-unit-t3221_commit_exemption_clause) | tests_by | Pins the commit-checkpoint exemption in the Bash task gate. Both exemption branches (T-2054 null-focus, T-3179 partial-complete) once admitted any command whose raw text CONTAINED "git commit" — so a trailing `; rm -rf` rode through, a `\| tee` write the gate had already flagged was admitted anyway, and an unknown binary passed because a quoted argument said the words. This suite probes the SHIPPED hook through its real stdin JSON contract rather than re-implementing the predicate, and carries two controls that decide whether a green run means anything: a mutation control that rebuilds the pre-fix hook from live source (so reverting the fix reddens the suite), and a 16-command no-widening sweep asserting the fixed hook admits nothing the pre-fix one blocked. |
+| [t3222_fetch_writes_file](/docs/generated/tests-unit-t3222_fetch_writes_file) | tests_by | Pins that curl and wget are admitted by the Bash safe-list only when they do not write a file. Both sat in the list unconditionally, so `curl -o FILE` and `wget -O FILE` — which write with no shell redirect, and are therefore invisible to has_bash_write_pattern — ran with no active task. Covers 22 spellings in both directions, including the stdout forms (`-o -`, `-O -`) that must stay safe and the framework's own documented verification idiom `curl -sf "$(bin/fw watchtower url)/page"`. Two legs carry the design decision: one asserts a commit whose MESSAGE mentions `curl -o` is still admitted (why the check is clause-scoped rather than in the whole-string write scanner), and one asserts a commit chained to a fetch-write is now refused with no change to the T-3221 commit predicate. Mutation control restores the unconditional arm from live source; a no-widening sweep asserts the fix admits nothing the pre-fix version blocked. |
+| [t3245_trailer_quote_strip](/docs/generated/tests-unit-t3245_trailer_quote_strip) | tests_by | TODO: describe what this component does |
+| [t3221_commit_exemption_clause](/docs/generated/tests-unit-t3221_commit_exemption_clause) | called_by | Pins the commit-checkpoint exemption in the Bash task gate. Both exemption branches (T-2054 null-focus, T-3179 partial-complete) once admitted any command whose raw text CONTAINED "git commit" — so a trailing `; rm -rf` rode through, a `\| tee` write the gate had already flagged was admitted anyway, and an unknown binary passed because a quoted argument said the words. This suite probes the SHIPPED hook through its real stdin JSON contract rather than re-implementing the predicate, and carries two controls that decide whether a green run means anything: a mutation control that rebuilds the pre-fix hook from live source (so reverting the fix reddens the suite), and a 16-command no-widening sweep asserting the fixed hook admits nothing the pre-fix one blocked. |
+| [t3222_fetch_writes_file](/docs/generated/tests-unit-t3222_fetch_writes_file) | called_by | Pins that curl and wget are admitted by the Bash safe-list only when they do not write a file. Both sat in the list unconditionally, so `curl -o FILE` and `wget -O FILE` — which write with no shell redirect, and are therefore invisible to has_bash_write_pattern — ran with no active task. Covers 22 spellings in both directions, including the stdout forms (`-o -`, `-O -`) that must stay safe and the framework's own documented verification idiom `curl -sf "$(bin/fw watchtower url)/page"`. Two legs carry the design decision: one asserts a commit whose MESSAGE mentions `curl -o` is still admitted (why the check is clause-scoped rather than in the whole-string write scanner), and one asserts a commit chained to a fetch-write is now refused with no change to the T-3221 commit predicate. Mutation control restores the unconditional arm from live source; a no-widening sweep asserts the fix admits nothing the pre-fix version blocked. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-safe-commands.yaml`*

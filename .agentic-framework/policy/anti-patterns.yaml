@@ -282,6 +282,44 @@ patterns:
       - 'echo "yes" | grep -q "yes"'
       - 'printf "ok\n" | grep -q "ok"'
 
+  - id: decaying-task-path-ref
+    name: "Verification pins a .tasks/active/ path that has decayed"
+    detection_confidence: deterministic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_decaying_task_path_ref"
+    description: >
+      Verification command that pins another task's file by its
+      `.tasks/active/<T-XXXX>` path. The reference DECAYS: it passes at close
+      (the referenced task is still in active/ then) and becomes a permanent
+      false-red the moment that task moves to `.tasks/completed/`.
+
+      Nothing fires at the moment of decay, which is what makes the class
+      invisible — the referenced task's own close breaks a DIFFERENT task's
+      verification block, and no gate looks sideways. CTL-013 re-runs only a
+      rotating window (latest 3 completed + a review-queue slice), so each
+      decayed task reports its false failure only when it happens to rotate
+      into view.
+
+      Measured at introduction (T-3274, round 5 of the T-3265 audit sweep):
+      79 completed tasks pin such a path inside `## Verification`; 54 had
+      already decayed. Second independent hit on the class — round 3 of the
+      same sweep found all 14 CTL-028 status backfills blocked by the
+      SELF-referential form (`.tasks/active/<its own file>`), which is why
+      this is registered rather than patched locally.
+
+      Safe form — glob both trays, matching wherever the task now lives:
+      `grep -l PATTERN .tasks/*/T-1851-*.md`.
+
+      Only decayed references are flagged. A live reference to an in-flight
+      sibling is legitimate and common; flagging it would cry wolf on nearly
+      every task that coordinates with another.
+    examples_positive:
+      - 'test "$(grep -lE ''X'' .tasks/active/T-1851-*.md | wc -l)" -eq 1'
+      - 'grep -q "status: work-completed" .tasks/active/T-1445-*.md'
+    examples_negative:
+      - 'test "$(grep -lE ''X'' .tasks/*/T-1851-*.md | wc -l)" -eq 1'
+      - 'grep -q "pattern" .tasks/completed/T-1851-*.md'
+
   - id: audience-mismatch
     name: "[REVIEW] Human AC asks about agent experience (should be Agent self-eval)"
     detection_confidence: heuristic

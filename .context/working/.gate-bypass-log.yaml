@@ -7954,3 +7954,11 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" 2>&1 | tail -20'
   caller: 'check-active-task focus-drift'
   target: 'T-2853'
   command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-2853 --status work-completed --skip-verification 2>&1 | grep -E "^Task:|checked|date_finished set|ERROR"'
+- timestamp: '2026-09-04T01:00:47Z'
+  task: 'T-3265'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3028'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-3028: post-handover housekeeping — audit artifacts, session metrics
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" 2>&1 | tail -10'

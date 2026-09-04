@@ -10,7 +10,7 @@
 The 6 named presets from the arc headline mechanic. Each is a curated combo
 over the S0 foundation axes (T-1991). Axis values MUST match foundations.css.
 
-## Dependencies (5)
+## Dependencies (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -19,6 +19,10 @@ over the S0 foundation axes (T-1991). Axis values MUST match foundations.css.
 | [settings](/docs/generated/web-templates-settings) | renders | Full page template: settings — hook configuration, notification state, framework paths. |
 | [appearance](/docs/generated/web-templates-appearance) | renders | TODO: describe what this component does |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [config](/docs/generated/web-config) | calls | TODO: describe what this component does |
+| [secrets_store](/docs/generated/web-secrets_store) | calls | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | uses | TODO: describe what this component does |
+| [secrets_store](/docs/generated/web-secrets_store) | uses | TODO: describe what this component does |
 
 ## Used By (12)
 

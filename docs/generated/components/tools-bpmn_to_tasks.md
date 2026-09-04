@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -15,6 +15,7 @@
 | [test_pair_draft3_intake](/docs/generated/tests-web-test_pair_draft3_intake) | called_by | T-2590/T-2591 drop-point test for 832's pair-draft #3 byte-fixture: sha-verifies tests/fixtures/832/pair-draft-3.bpmn against its .sha256 pin, compiles via Pass-5, and asserts contract-v0 three-leg taxonomy (RESOLVED silent / GHOST claim-WARN / LEGACY legacy-WARN); skips cleanly while the fixture is absent, with a synthetic three-leg sibling keeping the assertions proven |
 | [test_s4_exemplar_intake](/docs/generated/tests-web-test_s4_exemplar_intake) | called_by | Drop-point intake harness for 832's future PICKER-authored S4 exemplar (their T-228): skips until tests/fixtures/832/s4-exemplar.{bpmn,sha256} are delivered, then flips to full asserts — sha pin verify, editor-authorship fingerprint (workflowMeta uuid present, no linkEventThrow/Catch host tags, links ride extensionElements on intermediate throw/catch), Pass-5 three-leg classification vs the live corpus, and per-leg registry outcome via sync_project_refs on a meta-clone store. Synthetic editor-dialect test runs green pre-delivery (T-2593; pattern sibling of test_pair_draft3_intake). |
 | [test_importer_fidelity](/docs/generated/tests-unit-test_importer_fidelity) | called_by | TODO: describe what this component does |
+| [aef_meta_census](/docs/generated/tools-aef_meta_census) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-bpmn_to_tasks.yaml`*

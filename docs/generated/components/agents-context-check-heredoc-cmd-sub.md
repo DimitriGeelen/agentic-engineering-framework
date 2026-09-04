@@ -17,11 +17,12 @@ not every heredoc-in-cmd-sub is dangerous (the stable multi-line-clean
 legitimate maintenance edits to an existing heredoc.
 Exit codes:
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [heredoc_guard](/docs/generated/lib-heredoc_guard) | calls | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ## Used By (4)
 

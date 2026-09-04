@@ -20,7 +20,7 @@ Scripts that source lib/paths.sh get colors for free.
 |-----------|--------------|-------------|
 | [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
 
-## Used By (58)
+## Used By (59)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -82,6 +82,7 @@ Scripts that source lib/paths.sh get colors for free.
 | [t3113_upgrade_worktree_advisory](/docs/generated/tests-unit-t3113_upgrade_worktree_advisory) | tests_by | TODO: describe what this component does |
 | [errors](/docs/generated/lib-errors) | called_by | Consistent error/warning/info output functions with TTY-aware coloring. Provides die(), error(), warn(), info(), success(), block() with standardized exit codes (0=ok, 1=error, 2=blocking). Auto-sourced by lib/paths.sh. |
 | [t3113_upgrade_worktree_advisory](/docs/generated/tests-unit-t3113_upgrade_worktree_advisory) | called_by | TODO: describe what this component does |
+| [upgrade_marked_region](/docs/generated/tests-unit-upgrade_marked_region) | tests_by | TODO: describe what this component does |
 
 ## Related
 

@@ -17,6 +17,14 @@ STRUCTURALLY INVISIBLE from a normal checkout: run the rest of the suite
 from a plain clone and it passes. The control below therefore builds a
 synthetic repo in a tmpdir and `git worktree add`s a linked worktree,
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [compat](/docs/generated/lib-compat) | tests | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
+| [tasks](/docs/generated/lib-tasks) | tests | fw task subcommand dispatcher: routes task create/update/list/verify/review to agents/task-create/ scripts. |
+| [episodic](/docs/generated/agents-context-lib-episodic) | tests | Context Agent - generate-episodic command |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-episodic_worktree_mining.yaml`*
 *Last verified: 2026-08-25*

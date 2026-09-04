@@ -17,6 +17,13 @@ DIRECTIVE-first and used the stale `1` sitting in `.next-directive.yaml`. Both
 numbers were individually correct about their own file. Only the comparison is
 the defect. Measured on the pre-fix code:
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3233_arm_bounds.yaml`*
 *Last verified: 2026-08-31*

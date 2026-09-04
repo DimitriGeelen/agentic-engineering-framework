@@ -12,7 +12,7 @@ both the linker and this route consult. Kept here as a deprecated alias
 for any out-of-tree imports — but contains the FULL list now, not the old
 4-prefix subset.
 
-## Dependencies (5)
+## Dependencies (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -21,6 +21,7 @@ for any out-of-tree imports — but contains the FULL list now, not the old
 | [docs_index](/docs/generated/web-templates-docs_index) | renders | Full page template: document index — lists docs/reports/ and docs/articles/ files with last-modified dates. |
 | [docs_detail](/docs/generated/web-templates-docs_detail) | renders | Full page template: document detail — renders markdown file content with breadcrumbs and navigation. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [_error](/docs/generated/web-templates-_error) | renders | Error page template — displays HTTP error codes and messages |
 
 ## Used By (6)
 

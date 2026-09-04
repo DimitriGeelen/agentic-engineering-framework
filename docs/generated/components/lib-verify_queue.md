@@ -18,7 +18,7 @@ exists to remove.
 |-----------|--------------|-------------|
 | [verification-port](/docs/generated/lib-verification-port) | calls | TODO: describe what this component does |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -26,6 +26,7 @@ exists to remove.
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [t2991_verification_preflight](/docs/generated/tests-unit-t2991_verification_preflight) | called_by | TODO: describe what this component does |
 | [t2991_verification_preflight](/docs/generated/tests-unit-t2991_verification_preflight) | tests_by | TODO: describe what this component does |
+| [t3232_verification_extractor_failure](/docs/generated/tests-unit-t3232_verification_extractor_failure) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-verify_queue.yaml`*

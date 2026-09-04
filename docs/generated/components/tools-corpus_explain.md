@@ -13,11 +13,12 @@
 | [corpus_spec](/docs/generated/tools-corpus_spec) | uses | TODO: describe what this component does |
 | [corpus_conformance](/docs/generated/tools-corpus_conformance) | uses | TODO: describe what this component does |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [vendor_visibility](/docs/generated/tests-unit-vendor_visibility) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-corpus_explain.yaml`*

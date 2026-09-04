@@ -1765,6 +1765,58 @@ PY
             fi
         fi
 
+        # === Decaying .tasks/active/ verification reference advisory (T-3274) ===
+        # Non-blocking heuristic, sibling of the L-387 advisory above. Warns when
+        # the ## Verification block pins another task by its `.tasks/active/<T-XXXX>`
+        # path AND that task is no longer in active/. Such a reference passes at
+        # close and turns into a permanent false-red the moment the referenced task
+        # completes — nothing fires at the moment of decay, because the referenced
+        # task's own close breaks a DIFFERENT task's verification block and no gate
+        # looks sideways. CTL-013 re-runs only a rotating window, so the population
+        # stays latent: 79 completed tasks pinned such a path when this landed, 54
+        # already decayed (T-3274, round 5 of the T-3265 audit sweep).
+        #
+        # Bypass: FW_SKIP_DECAY_ADVISORY=1 (advisory anyway — does NOT block).
+        if [ "$NEW_STATUS" = "started-work" ] && [ -z "${FW_SKIP_DECAY_ADVISORY:-}" ]; then
+            if command -v python3 >/dev/null 2>&1; then
+                _decay_findings=$(python3 - "$TASK_FILE" 2>/dev/null <<'PY' || true
+import sys
+from pathlib import Path
+for parent in [Path(sys.argv[0]).resolve()] + list(Path(sys.argv[0]).resolve().parents):
+    if (parent / "lib" / "reviewer" / "static_scan.py").exists():
+        sys.path.insert(0, str(parent))
+        break
+else:
+    sys.exit(0)
+try:
+    from lib.reviewer import static_scan as ss
+except Exception:
+    sys.exit(0)
+tf = sys.argv[1]
+try:
+    text = Path(tf).read_text()
+except Exception:
+    sys.exit(0)
+verif = ss.extract_section(text, "Verification") or ""
+if not verif:
+    sys.exit(0)
+for f in ss.detect_decaying_task_path_ref(verif, tf):
+    print(f"  - {f.location}: {f.evidence}")
+PY
+                )
+                if [ -n "$_decay_findings" ]; then
+                    echo ""
+                    echo -e "${YELLOW}ADVISORY (T-3274): Verification pins a .tasks/active/ path that has decayed${NC}"
+                    echo "$_decay_findings"
+                    echo "  These lines can no longer pass — the task they name has moved to completed/."
+                    echo "  Safe form (matches either tray):  grep -l PATTERN .tasks/*/T-XXXX-*.md"
+                    echo "  Suppress (does not block):  FW_SKIP_DECAY_ADVISORY=1 bin/fw task update ..."
+                    echo "  Reviewer pattern: decaying-task-path-ref (policy/anti-patterns.yaml)"
+                    echo ""
+                fi
+            fi
+        fi
+
         # === BVP Estimator Trigger (T-1922) ===
         # On transition to started-work ("ready"), fire the BVP estimator
         # in the background. Heuristic engine is ~10ms so the update latency

@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Dependencies (6)
+## Dependencies (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -16,6 +16,7 @@
 | [bvp](/docs/generated/lib-bvp) | calls | TODO: describe what this component does |
 | [keylock-py](/docs/generated/lib-keylock-py) | uses | Python sibling of lib/keylock.sh: sidecar fcntl.flock advisory locks in .context/locks/, with a bounded timeout that raises loudly rather than degrading to a silent skipped write. Guards the dispatch ledger against the concurrent-append erasure fixed in T-3042. |
 | [spawn](/docs/generated/lib-spawn) | uses | TODO: describe what this component does |
+| [worker_identity](/docs/generated/lib-worker_identity) | uses | TODO: describe what this component does |
 
 ## Used By (20)
 

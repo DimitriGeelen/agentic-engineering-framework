@@ -11,6 +11,12 @@
 T-2420: Task AC structure validation hook (bash wrapper).
 The fw hook dispatcher (bin/fw) loads .sh files; actual logic in check-task-ac-structure.py.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-task-ac-structure](/docs/generated/agents-context-check-task-ac-structure-py) | calls | TODO: describe what this component does |
+
 ## Used By (2)
 
 | Component | Relationship | Description |

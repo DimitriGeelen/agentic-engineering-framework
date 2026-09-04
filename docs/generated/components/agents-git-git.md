@@ -9,7 +9,7 @@
 Git Agent - Structural Enforcement for Git Operations
 Ensures every commit connects to a task (T-XXX pattern)
 
-## Dependencies (7)
+## Dependencies (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -20,6 +20,7 @@ Ensures every commit connects to a task (T-XXX pattern)
 | [bypass](/docs/generated/agents-git-lib-bypass) | calls | Git Agent - Bypass logging subcommand |
 | [log](/docs/generated/agents-git-lib-log) | calls | Git Agent - Log subcommand |
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [worker-commits](/docs/generated/agents-git-lib-worker-commits) | calls | TODO: describe what this component does |
 
 ## Used By (14)
 

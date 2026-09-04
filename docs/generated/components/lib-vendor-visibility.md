@@ -17,6 +17,13 @@ The check must run in the TARGET repo. `git check-ignore` is answered by the
 consumer's `.gitignore`, which is the thing at fault; asking our own repo the
 question returns a clean answer about the wrong tree.
 
+## Used By (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [vendor_visibility](/docs/generated/tests-unit-vendor_visibility) | tests_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-vendor-visibility.yaml`*
 *Last verified: 2026-08-25*

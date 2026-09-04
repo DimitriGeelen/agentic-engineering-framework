@@ -6,10 +6,13 @@
 
 ## What It Does
 
-T-1803: a workflow declared but not dispatched in this many days is "stale" —
-a maintenance signal (consider deprecating), not a runtime failure. Surfaced
-as audit WARN, not FAIL. Threshold picked as ≈ one quarter; param-injectable
-for tests, no config plumbing until pressure (T-819 pattern).
+T-3273: worker_kinds that are valid (lib.resolver.VALID_WORKER_KINDS) but
+deliberately absent from lib.spawn._DISPATCHERS — they never spawn a worker
+at all, so "not in _DISPATCHERS" is not the runtime-trap this checker exists
+to catch. "ollama-direct" (T-1719 A3) answers synchronously in fw ask's own
+process; see .context/project/workflows/ask.yaml's header comment and
+lib/resolver.py:95. Sibling exemption to the `inline:` flag, which excludes
+non-resolver-driven workflows from the staleness check the same way.
 
 ## Dependencies (2)
 

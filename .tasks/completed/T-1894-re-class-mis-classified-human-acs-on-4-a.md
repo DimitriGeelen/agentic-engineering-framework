@@ -121,9 +121,12 @@ The 3 other arc-grooming partials (T-1852, T-1853, T-1891, plus T-1893's closure
 # verification commands embedded in those tasks pass when re-run here.
 
 # (a) Each task has a [REVIEWER] or re-class Agent AC line.
-test "$(grep -lE 'REVIEWER\]|T-1894 re-class' .tasks/active/T-1851-*.md .tasks/active/T-1857-*.md .tasks/active/T-1890-*.md .tasks/active/T-1893-*.md | wc -l)" -eq 4
+# T-3274: globs widened from .tasks/active/ to .tasks/*/ — all four referenced
+# tasks have since completed, which made (a) and (b) permanent false-reds. The
+# assertion is unchanged; only the tray the files live in moved.
+test "$(grep -lE 'REVIEWER\]|T-1894 re-class' .tasks/*/T-1851-*.md .tasks/*/T-1857-*.md .tasks/*/T-1890-*.md .tasks/*/T-1893-*.md | wc -l)" -eq 4
 # (b) Each Recommendation carries the re-class note.
-test "$(grep -lE 'T-1894 re-class note' .tasks/active/T-1851-*.md .tasks/active/T-1857-*.md .tasks/active/T-1890-*.md .tasks/active/T-1893-*.md | wc -l)" -eq 4
+test "$(grep -lE 'T-1894 re-class note' .tasks/*/T-1851-*.md .tasks/*/T-1857-*.md .tasks/*/T-1890-*.md .tasks/*/T-1893-*.md | wc -l)" -eq 4
 # (c) Re-execute the lifted mechanical claims (already verified in isolation).
 test "$(grep -c 'T-1850' docs/reports/T-1653-arcs-as-first-class.md)" -ge 1
 test -f docs/reports/T-1846-arc-grooming-inception.md

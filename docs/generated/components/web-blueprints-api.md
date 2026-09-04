@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Dependencies (7)
+## Dependencies (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -17,6 +17,8 @@
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [embeddings](/docs/generated/web-embeddings) | uses | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
 | [search](/docs/generated/web-search) | uses | Tantivy BM25 full-text search engine — indexes all YAML/Markdown files, provides ranked search with snippets |
+| [ask](/docs/generated/web-ask) | calls | TODO: describe what this component does |
+| [ask](/docs/generated/web-ask) | uses | TODO: describe what this component does |
 
 ## Used By (9)
 

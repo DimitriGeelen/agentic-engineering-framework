@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (33)
+## Dependencies (34)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -45,6 +45,7 @@
 | [check-active-completed-dup-sh](/docs/generated/agents-context-check-active-completed-dup-sh) | calls | Thin wrapper (T-2517) the fw hook dispatcher loads for the active/completed duplicate write-time guard. Execs check-active-completed-dup.py; the shell layer exists only because bin/fw's hook loader globs .sh files. |
 | [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate) | calls | T-2815 PreToolUse Write/Edit hook — refuses adding an agent-unresolvable task (owner != human but agent-unresolvable: inception workflow_type or an unticked ### Human AC) to the T-532 gated onboarding set. Bash wrapper exec's the real logic in check-onboarding-gate.py. |
 | [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | calls | TODO: describe what this component does |
+| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | calls | TODO: describe what this component does |
 
 ## Used By (2)
 

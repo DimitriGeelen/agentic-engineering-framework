@@ -8,7 +8,7 @@
 
 _load_latest_audit moved to web.shared.load_latest_audit (T-431/A7)
 
-## Dependencies (7)
+## Dependencies (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -19,6 +19,7 @@ _load_latest_audit moved to web.shared.load_latest_audit (T-431/A7)
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [subprocess_utils](/docs/generated/web-subprocess_utils) | uses | Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling. |
 | [context_loader](/docs/generated/web-context_loader) | uses | Centralized YAML loading for context project files (learnings, patterns, decisions, practices, concerns, directives). Replaces duplicated try/except blocks across blueprints. Uses shared.load_yaml() for error collection. |
+| [test_app](/docs/generated/web-test_app) | calls | TODO: describe what this component does |
 
 ## Used By (7)
 

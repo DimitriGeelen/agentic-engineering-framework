@@ -17,6 +17,12 @@ ID. That is the common case, not an edge one: P-013 steers every
 render-touching build task into partial-complete by design.
 The allowance must be SCOPED. Three things have to stay true, and each has
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-active-task](/docs/generated/agents-context-check-active-task) | tests | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3179_partial_complete_commit.yaml`*
 *Last verified: 2026-08-26*

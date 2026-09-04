@@ -17,6 +17,12 @@ compare them. They deliberately do NOT assert a literal 75/85/95, because a hard
 expectation in the test drifts in exactly the same way the template did — it would
 re-create the defect one level up and look green while doing it.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [budget-gate](/docs/generated/budget-gate) | tests | Block Write/Edit/Bash tool execution when context budget reaches critical level (>=170K tokens). Primary enforcement for P-009. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-template_budget_parity.yaml`*
 *Last verified: 2026-08-26*

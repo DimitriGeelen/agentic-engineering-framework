@@ -17,12 +17,13 @@ tags: [arc:onboarding-curriculum]   an ARC — a grouping, gates nothing
 Found when arc-017's Half A build task (T-2877, the human curriculum) was
 refused by arc-017's Half B invariant for carrying an unticked `### Human` AC.
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | tests | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate-py) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-onboarding_gate_arc_tag_fp.yaml`*

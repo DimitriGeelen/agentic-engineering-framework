@@ -17,6 +17,13 @@ measuring from a vantage point where both the broken and the fixed system look
 identical, which makes it indistinguishable from a test that asserts nothing.
 The value has to be captured AT GENERATION — before the commit lands — and
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [episodic_footprint](/docs/generated/lib-episodic_footprint) | tests | TODO: describe what this component does |
+| [hooks](/docs/generated/agents-git-lib-hooks) | tests | Git Agent - Hook installation subcommand |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-episodic_footprint_refresh.yaml`*
 *Last verified: 2026-08-25*

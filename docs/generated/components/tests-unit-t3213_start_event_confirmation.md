@@ -19,11 +19,12 @@ fact. Neither suite ever invoked the wrapper: t3206 asserts the call site is
 defined and called, t3209 drives doctor's block against synthetic ledgers it
 writes itself. Both are correct and neither can see whether claude-fw, run,
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [claude-fw](/docs/generated/bin-claude-fw) | tests | Claude Code wrapper with auto-restart support. Runs claude normally, then checks for a restart signal file written by checkpoint.sh when auto-handover fires at critical budget. If found and fresh, auto-restarts with claude -c to continue seamlessly. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3213_start_event_confirmation.yaml`*

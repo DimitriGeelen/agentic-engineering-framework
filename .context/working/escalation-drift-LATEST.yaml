@@ -1,12 +1,12 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-03T03:23:02.393921+00:00
-corpus_total: 2808
-bug_class_total: 502
+generated: 2026-09-04T03:23:02.561790+00:00
+corpus_total: 2827
+bug_class_total: 504
 bug_class_pct: 17
-h1_flagged: 363
+h1_flagged: 364
 h1_pct_of_bug_class: 72
-h2_repeat_patterns: 162
+h2_repeat_patterns: 163
 h3_flagged: 265
 h3_pct_of_bug_class: 52
 recent_30d_flagged: 11
@@ -16,8 +16,6 @@ recent_sample:
     name: "Fix critical hook PROJECT_ROOT bug for external projects"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
-  - tid: "T-2792-fresh-install-onboarding-path-broken-mak"
-    name: "Fresh-install onboarding path broken: make the new-project prompt work end"
   - tid: "T-2830-work-on-switch-focus-fails-silently"
     name: "fw work-on --switch-focus fails silently (RC=1, zero output)"
   - tid: "T-2886-vendor-sync--push-t-2885-budget-gauge-fi"
@@ -32,24 +30,26 @@ recent_sample:
     name: "106 bats assertions cannot fail: bash exempts !-inverted commands from errexit"
   - tid: "T-3193-a-release-can-advance-master-and-then-fa"
     name: "A release can advance master and then fail to publish its tag, and the GitHub"
+  - tid: "T-3226-fw-doctor-reports-a-spurious-fail-on-any"
+    name: "fw doctor reports a spurious FAIL on any direct-script hook using CLAUDE_PROJECT"
 h2_top:
   - learning: "P-011"
-    task_count: 2397
+    task_count: 2448
   - learning: "L-387"
-    task_count: 2150
+    task_count: 2198
   - learning: "L-291"
-    task_count: 1102
+    task_count: 1117
   - learning: "L-398"
-    task_count: 849
+    task_count: 865
   - learning: "P-010"
-    task_count: 484
+    task_count: 499
   - learning: "L-399"
-    task_count: 94
+    task_count: 95
   - learning: "L-006"
     task_count: 56
   - learning: "L-001"
     task_count: 51
   - learning: "L-364"
-    task_count: 45
+    task_count: 46
   - learning: "L-408"
-    task_count: 43
+    task_count: 44

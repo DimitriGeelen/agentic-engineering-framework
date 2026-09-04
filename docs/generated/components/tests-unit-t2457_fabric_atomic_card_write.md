@@ -17,13 +17,14 @@ path then dropped out of the registered set, so the file it points to was
 reported "unregistered" — a spurious FP that cleared on immediate re-run once
 the write completed (observed 2x during T-2440, which was actively
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [register](/docs/generated/agents-fabric-lib-register) | calls | Fabric Agent - register and scan commands |
 | [register](/docs/generated/agents-fabric-lib-register) | tests | Fabric Agent - register and scan commands |
 | [pickup](/docs/generated/lib-pickup) | tests | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2457_fabric_atomic_card_write.yaml`*

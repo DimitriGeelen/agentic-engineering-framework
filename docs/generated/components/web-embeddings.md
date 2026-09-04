@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (16)
+## Dependencies (18)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -26,8 +26,10 @@
 | [search_utils](/docs/generated/web-search_utils) | uses | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [search](/docs/generated/web-search) | uses | Tantivy BM25 full-text search engine — indexes all YAML/Markdown files, provides ranked search with snippets |
+| [config](/docs/generated/web-config) | calls | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | uses | TODO: describe what this component does |
 
-## Used By (26)
+## Used By (28)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -57,6 +59,8 @@
 | [embeddings](/docs/generated/web-blueprints-embeddings) | called_by | TODO: describe what this component does |
 | [embeddings](/docs/generated/web-blueprints-embeddings) | uses_by | TODO: describe what this component does |
 | [recall_telemetry](/docs/generated/web-recall_telemetry) | called_by | TODO: describe what this component does |
+| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | called_by | TODO: describe what this component does |
+| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | uses_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-embeddings.yaml`*

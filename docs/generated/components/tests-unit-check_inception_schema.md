@@ -15,7 +15,7 @@ these fields. Bypass: FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 (logged Tier-2).
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| `agents/context/check-inception-schema.py` | tests | — |
+| [check-inception-schema](/docs/generated/agents-context-check-inception-schema-py) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-check_inception_schema.yaml`*

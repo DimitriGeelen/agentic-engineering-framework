@@ -10,6 +10,12 @@ T-1849: arc_id task-frontmatter validation hook (bash wrapper for Python).
 The fw hook dispatcher (bin/fw:5489) loads .sh files; the actual logic
 lives in check-arc-id.py to keep YAML parsing + arc resolution clean.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | calls | TODO: describe what this component does |
+
 ## Used By (4)
 
 | Component | Relationship | Description |

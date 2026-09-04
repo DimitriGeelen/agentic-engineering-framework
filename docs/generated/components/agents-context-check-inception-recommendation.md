@@ -11,6 +11,12 @@ template-only ## Recommendation block under $CLAUDECODE=1.
 Bash wrapper that exec's the Python implementation (same pattern as
 check-arc-id.sh / check-inception-decisions.sh).
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation-py) | calls | TODO: describe what this component does |
+
 ## Used By (1)
 
 | Component | Relationship | Description |

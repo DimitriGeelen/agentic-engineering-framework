@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [_approvals_content](/docs/generated/web-templates-_approvals_content) | includes | htmx partial: approvals content fragment — task list with AC checkboxes, loaded by htmx swap into approvals page. |
+| [_continuous_halt](/docs/generated/web-templates-_continuous_halt) | includes | TODO: describe what this component does |
 
 ## Used By (2)
 

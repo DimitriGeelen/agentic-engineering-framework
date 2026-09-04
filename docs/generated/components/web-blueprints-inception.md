@@ -20,7 +20,7 @@ When the active task has `workflow_type: inception`:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (9)
+## Dependencies (10)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -33,8 +33,9 @@ When the active task has `workflow_type: inception`:
 | [inception](/docs/generated/lib-inception) | calls | fw inception - Inception phase workflow |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [subprocess_utils](/docs/generated/web-subprocess_utils) | uses | Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling. |
+| [decided_unclosed](/docs/generated/lib-decided_unclosed) | calls | TODO: describe what this component does |
 
-## Used By (15)
+## Used By (18)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -52,6 +53,9 @@ When the active task has `workflow_type: inception`:
 | [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
 | [approvals](/docs/generated/web-blueprints-approvals) | uses_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
 | [review](/docs/generated/web-blueprints-review) | uses_by | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
+| [test_inception_close_card](/docs/generated/tests-unit-test_inception_close_card) | called_by | TODO: describe what this component does |
+| [test_inception_close_card](/docs/generated/tests-unit-test_inception_close_card) | registered_by | TODO: describe what this component does |
+| [test_inception_close_card](/docs/generated/tests-unit-test_inception_close_card) | uses_by | TODO: describe what this component does |
 
 ## Related
 

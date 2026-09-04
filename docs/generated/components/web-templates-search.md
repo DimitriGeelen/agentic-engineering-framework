@@ -6,11 +6,13 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [chat_tab](/docs/generated/web-templates-_partials-chat_tab) | includes | Ask AI chat tab HTML partial — message thread, input bar, model/provider selector, scope filter, saved conversations sidebar |
+| [search_input](/docs/generated/web-templates-_partials-search_input) | includes | TODO: describe what this component does |
+| [search_results](/docs/generated/web-templates-_partials-search_results) | includes | TODO: describe what this component does |
 
 ## Used By (3)
 

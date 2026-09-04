@@ -19,11 +19,12 @@ apart, on the real script: both shapes print the ERROR and exit 1.
 The fix was right; the stated mechanism was not. A comment describing a
 mechanism is a model of it, and this one had drifted before the ink dried.
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+| [paths](/docs/generated/lib-paths) | tests | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3220_verification_gate_exits.yaml`*

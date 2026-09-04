@@ -17,6 +17,12 @@ silent, and silence is precisely what the broken guard produced too. So
 below is paired with a firing one over the same fixture — that pairing is
 the control leg.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [branch-hygiene](/docs/generated/lib-branch-hygiene) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3187_branch_identity_guard.yaml`*
 *Last verified: 2026-08-26*

@@ -17,7 +17,7 @@ author already knew about (L-533, from the T-2729/T-2730/T-2731 escape family).
 Usage: source "$FRAMEWORK_ROOT/lib/verification-port.sh"
 find_port_literals "$text"   # prints offending lines, one per line
 
-## Used By (7)
+## Used By (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -28,6 +28,8 @@ find_port_literals "$text"   # prints offending lines, one per line
 | [t2991_verification_preflight](/docs/generated/tests-unit-t2991_verification_preflight) | called_by | TODO: describe what this component does |
 | [t2991_verification_preflight](/docs/generated/tests-unit-t2991_verification_preflight) | tests_by | TODO: describe what this component does |
 | [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+| [t3232_verification_extractor_failure](/docs/generated/tests-unit-t3232_verification_extractor_failure) | tests_by | TODO: describe what this component does |
+| [check-human-ac-tick](/docs/generated/agents-context-check-human-ac-tick-py) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-verification-port.yaml`*

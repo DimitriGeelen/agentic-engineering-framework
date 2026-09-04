@@ -17,7 +17,7 @@ A fabricated directory layout would assert nothing about that.
 This is the test that protects the fix from being undone by the next
 person who needs the comparison in a third place and copies it. The
 
-## Dependencies (6)
+## Dependencies (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -27,6 +27,7 @@ person who needs the comparison in a third place and copies it. The
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 | [checkpoint](/docs/generated/checkpoint) | calls | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3112_worktree_hook_parity.yaml`*

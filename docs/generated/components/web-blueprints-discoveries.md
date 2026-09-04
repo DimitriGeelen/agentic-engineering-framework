@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -16,6 +16,7 @@
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [discoveries](/docs/generated/web-templates-discoveries) | renders | Jinja2 template rendering the discoveries page. Shows audit discovery results with pass/warn/fail indicators. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [metrics_history](/docs/generated/web-metrics_history) | calls | TODO: describe what this component does |
 
 ## Used By (5)
 

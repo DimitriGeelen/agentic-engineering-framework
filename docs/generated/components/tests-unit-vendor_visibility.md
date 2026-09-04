@@ -17,6 +17,14 @@ The tests that carry real weight are the three marked [instrument]. Each one
 is a false positive this check ACTUALLY SHIPPED WITH during T-3144, caught by
 running it against real trees rather than by reading it:
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [vendor-visibility](/docs/generated/lib-vendor-visibility) | tests | TODO: describe what this component does |
+| [corpus_explain](/docs/generated/tools-corpus_explain) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-vendor_visibility.yaml`*
 *Last verified: 2026-08-25*

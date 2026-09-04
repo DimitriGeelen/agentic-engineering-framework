@@ -19,7 +19,7 @@ audit.sh --cron                       # Shorthand for --output .context/audits/c
 audit.sh schedule install|remove|status  # Manage cron schedule
 Sections: structure, compliance, quality, traceability, enforcement,
 
-## Dependencies (27)
+## Dependencies (29)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -50,8 +50,10 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | [gitignore-register](/docs/generated/lib-gitignore-register) | calls | TODO: describe what this component does |
 | [corpus_lint](/docs/generated/tools-corpus_lint) | calls | TODO: describe what this component does |
 | [verify_queue](/docs/generated/lib-verify_queue) | calls | TODO: describe what this component does |
+| [continuous-mode](/docs/generated/lib-continuous-mode) | calls | TODO: describe what this component does |
+| [bats_red_attribution](/docs/generated/lib-bats_red_attribution) | calls | TODO: describe what this component does |
 
-## Used By (56)
+## Used By (58)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -111,6 +113,8 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | [test_audit_frontmatter_variants](/docs/generated/tests-unit-test_audit_frontmatter_variants) | called_by | TODO: describe what this component does |
 | [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | called_by | TODO: describe what this component does |
 | [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | tests_by | TODO: describe what this component does |
+| [audit_timing](/docs/generated/lib-audit_timing) | called_by | TODO: describe what this component does |
+| [config](/docs/generated/web-blueprints-config) | called_by | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
 
 ## Related
 

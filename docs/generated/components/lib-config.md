@@ -33,7 +33,7 @@ Agent-relevant settings:
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (38)
+## Used By (40)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -75,6 +75,8 @@ Agent-relevant settings:
 | [config-file](/docs/generated/lib-config-file) | called_by | Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments |
 | [watchtower](/docs/generated/lib-watchtower) | called_by | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
 | [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | called_by | TODO: describe what this component does |
+| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | called_by | TODO: describe what this component does |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
 
 ## Related
 

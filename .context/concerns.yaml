@@ -1,3 +1,37 @@
+- id: OBS-253
+  type: structural
+  severity: low
+  surface: '53 completed tasks still carry a `## Verification` line pinning
+    `.tasks/active/<T-XXXX>` for a task that has since moved to `.tasks/completed/`
+    — permanent false-reds that surface only when CTL-013''s rotating re-run window
+    happens to reach them.'
+  detected_in: T-3274 (round 5 of the T-3265 audit-remediation sweep)
+  symptom: 'A verification reference pinned to `.tasks/active/` DECAYS: it passes at
+    close (the referenced task is still active then) and breaks later, when a
+    DIFFERENT task closes and moves out of active/. No gate looks in that direction —
+    nothing on the close path asks whether another task''s verification block pins
+    the file being moved. Because CTL-013 re-runs only a rotating window (latest 3
+    completed + a review-queue slice), the population never presents as a class: it
+    looks like one flaky task per audit run, a different one each time. Measured at
+    detection: 79 completed tasks pin such a path, 54 already decayed. T-3274 shipped
+    PREVENTION (reviewer detector `decaying-task-path-ref`, non-blocking advisory at
+    started-work in update-task.sh, pinning tests) and repaired exactly ONE instance
+    (T-1894, the one CTL-013 had surfaced). The remaining 53 are untouched — the fix
+    stops new instances, it does not retroactively repair old ones. Registered rather
+    than bulk-rewritten because editing 53 completed tasks verification blocks is a
+    corpus-wide mutation that deserves its own task and its own review, not a
+    side-effect of a round-5 sweep.'
+  note: 'Repairing the remaining 53 is mechanical (widen `.tasks/active/` to
+    `.tasks/*/`) but touches completed-task files corpus-wide; file a dedicated task
+    if it is wanted.'
+  blast_radius: project
+  observed: '2026-09-04'
+  status: open
+  related:
+  - T-3274
+  - T-1894
+  - T-3265
+  follow_up_task: null
 - id: OBS-252
   type: process
   severity: low

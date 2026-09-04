@@ -11,7 +11,7 @@
 Project Learnings - Knowledge gained during development
 Added via: fw context add-learning "description" --task T-XXX
 
-## Used By (6)
+## Used By (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -21,6 +21,8 @@ Added via: fw context add-learning "description" --task T-XXX
 | [generate_article](/docs/generated/agents-docgen-generate_article) | called_by | Python implementation for AI-assisted subsystem article generation from fabric cards |
 | [generate_component](/docs/generated/agents-docgen-generate_component) | called_by | Python implementation for component reference documentation generation from fabric cards |
 | [test_api_context_capture](/docs/generated/tests-playwright-test_api_context_capture) | called_by | Playwright tests for context capture API endpoints (T-1030). |
+| [consolidate](/docs/generated/agents-context-consolidate) | called_by | TODO: describe what this component does |
+| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | called_by | TODO: describe what this component does |
 
 ## Related
 

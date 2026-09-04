@@ -27,7 +27,7 @@ Path resolution
 | [static_scan](/docs/generated/lib-reviewer-static_scan) | calls | TODO: describe what this component does |
 | [settings](/docs/generated/web-blueprints-settings) | uses | Watchtower settings blueprint: framework configuration display — shows hooks, cron config, notification state. |
 
-## Used By (122)
+## Used By (133)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -153,6 +153,17 @@ Path resolution
 | [search](/docs/generated/web-search) | uses_by | Tantivy BM25 full-text search engine — indexes all YAML/Markdown files, provides ranked search with snippets |
 | [search_utils](/docs/generated/web-search_utils) | uses_by | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
 | [subprocess_utils](/docs/generated/web-subprocess_utils) | uses_by | Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling. |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
+| [ask](/docs/generated/web-ask) | called_by | TODO: describe what this component does |
+| [ask](/docs/generated/web-ask) | uses_by | TODO: describe what this component does |
+| [metrics_history](/docs/generated/web-metrics_history) | called_by | TODO: describe what this component does |
+| [metrics_history](/docs/generated/web-metrics_history) | uses_by | TODO: describe what this component does |
+| [qa_feedback](/docs/generated/web-qa_feedback) | called_by | TODO: describe what this component does |
+| [qa_feedback](/docs/generated/web-qa_feedback) | uses_by | TODO: describe what this component does |
+| [secrets_store](/docs/generated/web-secrets_store) | called_by | TODO: describe what this component does |
+| [secrets_store](/docs/generated/web-secrets_store) | uses_by | TODO: describe what this component does |
+| [test_app](/docs/generated/web-test_app) | called_by | TODO: describe what this component does |
+| [test_app](/docs/generated/web-test_app) | uses_by | TODO: describe what this component does |
 
 ## Related
 

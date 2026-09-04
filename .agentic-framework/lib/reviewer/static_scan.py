@@ -2085,6 +2085,89 @@ def detect_l387_sigpipe_risk(verification_section: str) -> list[Finding]:
     return findings
 
 
+_DECAY_TASK_PATH_RE = re.compile(r"\.tasks/active/(T-[0-9]+)")
+
+
+def _resolve_tasks_dir(task_path: str | None) -> Path | None:
+    """Find the `.tasks/` directory that owns `task_path`, or None.
+
+    Walks up from the task file rather than assuming a CWD, because the reviewer
+    runs from Watchtower (FRAMEWORK_ROOT) as well as the CLI (PROJECT_ROOT) —
+    the same split that made T-1317 add an explicit `cd` to the P-011 runner.
+    """
+    if not task_path:
+        return None
+    try:
+        p = Path(task_path).resolve()
+    except (OSError, ValueError):
+        return None
+    for parent in p.parents:
+        if parent.name == ".tasks" and (parent / "active").is_dir():
+            return parent
+    return None
+
+
+def detect_decaying_task_path_ref(
+    verification_section: str, task_path: str | None = None
+) -> list[Finding]:
+    """Verification line pins another task by its `.tasks/active/` path.
+
+    That path is a *decaying* reference. It passes at close — the referenced
+    task is still in `active/` then — and becomes a permanent false-red the
+    moment that task moves to `.tasks/completed/`. Nothing fires at the moment
+    of decay: the referenced task's own close breaks a *different* task's
+    verification block, and no gate looks sideways.
+
+    Safe rewrite — glob both trays, which matches wherever the task now lives:
+        grep -l PATTERN .tasks/*/T-1851-*.md
+
+    Only *decayed* references are flagged (referenced task no longer in
+    `active/`). A live reference to an in-flight sibling is legitimate and
+    common, so flagging it would cry wolf on ~every task that coordinates with
+    another. That distinction needs the filesystem, so when the tasks dir
+    cannot be resolved the detector stays silent rather than guessing.
+
+    Measured population at introduction (T-3274): 79 completed tasks pin such a
+    path in `## Verification`; 54 had already decayed. Only 1-2 surface per
+    audit run because CTL-013 re-runs a rotating window, so the rest sit latent
+    until they rotate into view.
+    """
+    findings: list[Finding] = []
+    if not verification_section:
+        return findings
+    tasks_dir = _resolve_tasks_dir(task_path)
+    if tasks_dir is None:
+        return findings
+    active_dir = tasks_dir / "active"
+    for lineno, raw in enumerate(verification_section.splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        refs = _DECAY_TASK_PATH_RE.findall(line)
+        if not refs:
+            continue
+        # Self-references decay too (the task's own file moves on close), and
+        # are the shape that blocked all 14 CTL-028 backfills in T-3265 round 3.
+        decayed = [r for r in dict.fromkeys(refs) if not list(active_dir.glob(f"{r}-*.md"))]
+        if not decayed:
+            continue
+        findings.append(
+            Finding(
+                pattern_id="decaying-task-path-ref",
+                pattern_name="Verification pins a .tasks/active/ path that has decayed",
+                detection_confidence="deterministic",
+                # `partial` keeps the verdict at CONCERN. The verification line
+                # is genuinely broken, but the WORK it attested to is usually
+                # intact — only the path moved. Failing the task would punish
+                # the author for a sibling task's later close.
+                lie_severity="partial",
+                location=f"Verification:line {lineno}",
+                evidence=f"{', '.join(decayed)} no longer in active/ — {line[:150]}",
+            )
+        )
+    return findings
+
+
 def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> list[Finding]:
     """AC checked AND mentions a specific file path, but no verification line touches it.
 
@@ -2641,6 +2724,9 @@ def scan_task(
     findings.extend(detect_reviewer_prose_mismatch(ac_section))
     # v1.5 +1: T-2059 — L-387 SIGPIPE detector (closes 7+ historical captures)
     findings.extend(detect_l387_sigpipe_risk(verif_section))
+    # v1.7 +1: T-3274 — decaying `.tasks/active/<T-XXXX>` verification refs
+    # (54 already-decayed instances in the corpus at introduction)
+    findings.extend(detect_decaying_task_path_ref(verif_section, task_path))
     # v1.6 +1: T-2147 — audience-mismatch (T-2143 leg B); reviewer-time
     # backstop for CLAUDE.md §AC Classification audience axis (T-2148).
     findings.extend(detect_audience_mismatch(ac_section))

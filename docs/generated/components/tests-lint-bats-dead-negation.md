@@ -17,6 +17,12 @@ tests/unit/errexit_negation_mechanism.bats. This file tests the LINT: that it
 finds the shape, and — as much as it matters — that it does not invent it.
 Every fixture here is written into BATS_TEST_TMPDIR (L-599). None of the
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [bats-dead-negation-lint](/docs/generated/tools-bats-dead-negation-lint) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-bats-dead-negation.yaml`*
 *Last verified: 2026-08-25*

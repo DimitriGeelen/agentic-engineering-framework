@@ -13,12 +13,13 @@ writes under agent control when arc_id is set + non-empty + does not
 resolve to .context/arcs/*.yaml. Empty/missing arc_id passes through.
 Predicated on T-1848 D-Immutability — valid refs stay valid forever.
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [check-arc-id](/docs/generated/agents-context-check-arc-id) | calls | TODO: describe what this component does |
 | [check-arc-id](/docs/generated/agents-context-check-arc-id) | tests | TODO: describe what this component does |
+| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_id_validation_guard.yaml`*

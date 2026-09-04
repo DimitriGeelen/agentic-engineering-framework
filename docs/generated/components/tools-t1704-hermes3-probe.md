@@ -13,6 +13,12 @@ couldn't. 3 cells × N=3 = 9 dispatches.
 Output: docs/reports/T-1704-hermes3-probe.md
 Usage: tools/t1704-hermes3-probe.sh [N_per_cell]   (default 3)
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tools-t1704-hermes3-probe.yaml`*
 *Last verified: 2026-05-03*

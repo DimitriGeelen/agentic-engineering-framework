@@ -9,11 +9,12 @@
 Context Agent - focus command
 Set or show current task focus
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [ask-py](/docs/generated/lib-ask-py) | calls | Python implementation of fw ask subcommand (sibling of lib/ask.sh) |
+| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | calls | TODO: describe what this component does |
 
 ## Used By (9)
 

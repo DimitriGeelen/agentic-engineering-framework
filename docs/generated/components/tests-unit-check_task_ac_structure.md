@@ -17,12 +17,13 @@ Covers:
 - override env-var FW_ALLOW_AC_STRUCTURE_DRIFT=1 → allow + log
 - non-task file path → pass-through
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [check-task-ac-structure](/docs/generated/agents-context-check-task-ac-structure) | calls | PreToolUse hook entry point — validates that ### Human subsection sits inside ## Acceptance Criteria block (T-2420). Bash wrapper execs check-task-ac-structure.py with the same argv (sibling parity with check-arc-id.sh / check-heredoc-cmd-sub.sh). |
 | [check-task-ac-structure](/docs/generated/agents-context-check-task-ac-structure) | tests | PreToolUse hook entry point — validates that ### Human subsection sits inside ## Acceptance Criteria block (T-2420). Bash wrapper execs check-task-ac-structure.py with the same argv (sibling parity with check-arc-id.sh / check-heredoc-cmd-sub.sh). |
+| [check-task-ac-structure](/docs/generated/agents-context-check-task-ac-structure-py) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-check_task_ac_structure.yaml`*

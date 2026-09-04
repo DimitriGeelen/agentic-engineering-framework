@@ -8,11 +8,12 @@
 
 Populated from conftest.py base_url fixture
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [smoke_test](/docs/generated/web-smoke_test) | calls | TODO: describe what this component does |
 
 ## Related
 

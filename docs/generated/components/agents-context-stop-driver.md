@@ -17,6 +17,13 @@ is trying to cause. This hook is that turn.
 THE CONTRACT, MEASURED (T-3163) — do not "simplify" this:
 {"decision": "block", "reason": "..."}  -> Claude takes ANOTHER turn.   WORKS.
 
+## Used By (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [stop_driver](/docs/generated/tests-unit-stop_driver) | tests_by | TODO: describe what this component does |
+| [approvals](/docs/generated/web-blueprints-approvals) | called_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-stop-driver.yaml`*
 *Last verified: 2026-08-26*

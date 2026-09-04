@@ -17,11 +17,12 @@ non-zero exit as "do not write".
 Design properties:
 - Pure file polling, zero IPC dependency. Works on single host without
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [orchestrator-graph](/docs/generated/agents-orchestrator-orchestrator-graph) | called_by | TODO: describe what this component does |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-dispatch-yield-point.yaml`*

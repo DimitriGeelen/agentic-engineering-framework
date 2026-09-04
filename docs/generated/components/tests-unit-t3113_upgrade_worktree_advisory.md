@@ -17,7 +17,7 @@ asserted "bin/fw holds zero copies" — true, and blind to a THIRD copy sitting
 in lib/upgrade.sh that no assertion looked at. The scan here is repo-wide and
 counts definitions, so the next copy cannot hide in a file nobody thought to
 
-## Dependencies (7)
+## Dependencies (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -28,6 +28,7 @@ counts definitions, so the next copy cannot hide in a file nobody thought to
 | [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 | [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
 | [upgrade](/docs/generated/lib-upgrade) | calls | fw upgrade - Sync framework improvements to a consumer project |
+| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3113_upgrade_worktree_advisory.yaml`*

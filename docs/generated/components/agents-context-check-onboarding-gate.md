@@ -15,7 +15,7 @@ lives in check-onboarding-gate.py to keep parsing clean.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| `agents/context/check-onboarding-gate.py` | calls | — |
+| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate-py) | calls | TODO: describe what this component does |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | reads | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 
 ## Used By (2)

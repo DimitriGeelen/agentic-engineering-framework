@@ -17,6 +17,12 @@ nothing was right.
 These tests cannot see settings.yaml (nor should they). What they CAN pin is
 the resolution RULE in web/config.py, which is tracked: unset falls back to
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config](/docs/generated/web-config) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3045_embed_host_resolution.yaml`*
 *Last verified: 2026-08-16*

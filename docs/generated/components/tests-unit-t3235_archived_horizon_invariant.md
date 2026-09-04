@@ -20,11 +20,13 @@ T-2163 wrote the horizon null-ing inside the first, and T-2300 widened it
 there after eight CTL-030 instances. No widening of a site can reach a branch
 whose entry condition is that site's complement, so the recheck branch
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3235_archived_horizon_invariant.yaml`*

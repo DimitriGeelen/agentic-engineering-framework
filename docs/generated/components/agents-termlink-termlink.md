@@ -17,25 +17,23 @@ Part of: Agentic Engineering Framework (T-503, from T-502 inception)
 
 ### Framework Reference
 
-The Task tool and TermLink dispatch are two different mechanisms for parallel work. **Choose based on the work type:**
-
-| Factor | Task tool agent | TermLink dispatch (`fw termlink dispatch`) |
-|--------|----------------|---------------------------------------------|
-| Edit/Write tools | Yes (sub-agent) | Yes (spawns full `claude -p` worker) |
-| Context isolation | No (shares parent context window) | Yes (independent process, zero context cost) |
-| Max parallel | 5 (hard limit) | Unlimited (real OS processes) |
-| Observable from outside | No | Yes (attach, stream, output) |
-| Survives context
+**Async, parallel, or observable framework work runs through TermLink
+(`claude-fw --termlink`), not through Claude Code's own background-job
+daemon.** This is a distinct layer from the Sub-Agent Dispatch Protocol and
+the Built-in Task Tool Ban above: those govern dispatch *inside* a running
+conversation (Task-tool agents, TermLink workers); this governs how the
+*session itself* was launched, before any conversation starts.
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 | [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | calls | TODO: describe what this component does |
 | [git-identity](/docs/generated/lib-git-identity) | calls | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ## Used By (13)
 

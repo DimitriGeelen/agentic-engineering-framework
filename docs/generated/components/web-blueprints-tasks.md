@@ -38,7 +38,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | [subprocess_utils](/docs/generated/web-subprocess_utils) | uses | Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling. |
 | [bvp](/docs/generated/web-blueprints-bvp) | uses | TODO: describe what this component does |
 
-## Used By (33)
+## Used By (34)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -74,6 +74,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | [approvals](/docs/generated/web-blueprints-approvals) | uses_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
 | [cockpit](/docs/generated/web-blueprints-cockpit) | uses_by | Flask blueprint: Cockpit |
 | [review](/docs/generated/web-blueprints-review) | uses_by | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-tasks.yaml`*

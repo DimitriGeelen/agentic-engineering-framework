@@ -29,7 +29,7 @@ Performance target: <100ms per invocation
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 | [context_tokens](/docs/generated/lib-context_tokens) | calls | TODO: describe what this component does |
 
-## Used By (11)
+## Used By (12)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -44,6 +44,7 @@ Performance target: <100ms per invocation
 | [prescribed-commands-are-allowed](/docs/generated/tests-lint-prescribed-commands-are-allowed) | tests_by | TODO: describe what this component does |
 | [t2919_budget_gate_command_classify](/docs/generated/tests-unit-t2919_budget_gate_command_classify) | called_by | TODO: describe what this component does |
 | [t2919_budget_gate_command_classify](/docs/generated/tests-unit-t2919_budget_gate_command_classify) | tests_by | TODO: describe what this component does |
+| [template_budget_parity](/docs/generated/tests-unit-template_budget_parity) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

@@ -14,6 +14,12 @@ The three failure directions, all of which look like success from outside:
 - firing on everything    -> open tasks take every slot, learnings vanish (A3)
 Fixtures use nonsense vocabulary so a hit cannot come from the real corpus.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3056_recall_open_tasks.yaml`*
 *Last verified: 2026-08-17*

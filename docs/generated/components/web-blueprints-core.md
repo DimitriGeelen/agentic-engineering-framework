@@ -39,7 +39,7 @@ Active tasks with no recent update — use shared cache
 | [costs](/docs/generated/web-blueprints-costs) | uses | Watchtower /costs page — token usage dashboard with session table and project summary (T-802) |
 | [cockpit](/docs/generated/web-blueprints-cockpit) | uses | Flask blueprint: Cockpit |
 
-## Used By (15)
+## Used By (18)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -53,6 +53,9 @@ Active tasks with no recent update — use shared cache
 | [test_landing_arc_cards](/docs/generated/tests-playwright-test_landing_arc_cards) | rendered_by | Playwright DOM-content assertion (per T-1575/T-971) pinning the landing-page arc-cards render contract and the /tasks?arc=<id> filter contract after the T-1850 arc_id migration. Two tests: - test_landing_arc_cards_show_nonzero_counts: every in-progress arc card   on / renders with a non-zero task count (arc-005 ≥14); no zero-count   cards (the migration-blindness regression signal). - test_tasks_filter_by_arc_returns_members: /tasks?arc=arc-grooming lists   ≥4 known arc-grooming task IDs.  Re-classifies T-1879's Human [REVIEW] AC to Agent. Origin: T-1879 migration-blindness #2 sweep — 5 sites read arc:<slug> tag only after the migration stripped them, surfacing zero arc memberships on the landing page. |
 | [test_arc_membership_web_surfaces](/docs/generated/tests-unit-test_arc_membership_web_surfaces) | uses_by | TODO: describe what this component does |
 | [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
+| [test_app](/docs/generated/web-test_app) | called_by | TODO: describe what this component does |
+| [test_app](/docs/generated/web-test_app) | registered_by | TODO: describe what this component does |
+| [test_app](/docs/generated/web-test_app) | uses_by | TODO: describe what this component does |
 
 ## Related
 

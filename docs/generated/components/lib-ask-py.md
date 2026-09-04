@@ -10,7 +10,7 @@
 
 Add project root to path so web modules are importable
 
-## Dependencies (5)
+## Dependencies (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -19,6 +19,8 @@ Add project root to path so web modules are importable
 | [embeddings](/docs/generated/web-embeddings) | uses | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
 | [resolver](/docs/generated/lib-resolver) | uses | TODO: describe what this component does |
 | [outcome](/docs/generated/lib-outcome) | uses | TODO: describe what this component does |
+| [ask](/docs/generated/web-ask) | calls | TODO: describe what this component does |
+| [ask](/docs/generated/web-ask) | uses | TODO: describe what this component does |
 
 ## Used By (5)
 

@@ -9,6 +9,12 @@
 T-1984: inception_decisions / unlocks_inception_decision validation hook (bash wrapper).
 The fw hook dispatcher (bin/fw:5639) loads .sh files; actual logic in check-inception-decisions.py.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-inception-decisions](/docs/generated/agents-context-check-inception-decisions-py) | calls | TODO: describe what this component does |
+
 ## Used By (2)
 
 | Component | Relationship | Description |

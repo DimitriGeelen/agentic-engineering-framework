@@ -13,15 +13,12 @@ Origin: T-930
 
 ### Framework Reference
 
-The Task tool and TermLink dispatch are two different mechanisms for parallel work. **Choose based on the work type:**
-
-| Factor | Task tool agent | TermLink dispatch (`fw termlink dispatch`) |
-|--------|----------------|---------------------------------------------|
-| Edit/Write tools | Yes (sub-agent) | Yes (spawns full `claude -p` worker) |
-| Context isolation | No (shares parent context window) | Yes (independent process, zero context cost) |
-| Max parallel | 5 (hard limit) | Unlimited (real OS processes) |
-| Observable from outside | No | Yes (attach, stream, output) |
-| Survives context
+**Async, parallel, or observable framework work runs through TermLink
+(`claude-fw --termlink`), not through Claude Code's own background-job
+daemon.** This is a distinct layer from the Sub-Agent Dispatch Protocol and
+the Built-in Task Tool Ban above: those govern dispatch *inside* a running
+conversation (Task-tool agents, TermLink workers); this governs how the
+*session itself* was launched, before any conversation starts.
 
 *(truncated — see CLAUDE.md for full section)*
 

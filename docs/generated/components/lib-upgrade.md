@@ -11,15 +11,16 @@ Runs in a consumer project directory, reads .framework.yaml to find the
 framework, then updates governance sections, templates, hooks, and seeds.
 Project-specific content is preserved.
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [git](/docs/generated/agents-git-git) | calls | Git Agent - Structural Enforcement for Git Operations |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [version-relation](/docs/generated/lib-version-relation) | calls | TODO: describe what this component does |
+| [hook_portability](/docs/generated/lib-hook_portability) | calls | TODO: describe what this component does |
 
-## Used By (26)
+## Used By (28)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -49,6 +50,8 @@ Project-specific content is preserved.
 | [t2912_upgrade_hook_regen_convergence](/docs/generated/tests-unit-t2912_upgrade_hook_regen_convergence) | called_by | End-to-end (real fw init'd consumer, env -i) proof that fw upgrade's hook-regeneration step reports its own verified effect instead of the pre-write trigger — a regen that cannot supply a detected-missing hook must report FAILED/PARTIAL, not UPDATED, on every run, and must not write a fresh .bak for a no-op. |
 | [t3113_upgrade_worktree_advisory](/docs/generated/tests-unit-t3113_upgrade_worktree_advisory) | called_by | TODO: describe what this component does |
 | [test_self_vendor_agents_md_filter](/docs/generated/tests-unit-test_self_vendor_agents_md_filter) | called_by | TODO: describe what this component does |
+| [hook_portability](/docs/generated/lib-hook_portability) | called_by | TODO: describe what this component does |
+| [upgrade_marked_region](/docs/generated/tests-unit-upgrade_marked_region) | tests_by | TODO: describe what this component does |
 
 ## Related
 

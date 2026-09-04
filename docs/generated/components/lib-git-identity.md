@@ -17,7 +17,7 @@ A warning that fires when nothing is wrong stops carrying information (L-527),
 and this one fired on every automated run.
 `git var GIT_COMMITTER_IDENT` is the authoritative probe because it is the same
 
-## Used By (9)
+## Used By (10)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -30,6 +30,7 @@ and this one fired on every automated run.
 | [preflight](/docs/generated/lib-preflight) | called_by | fw preflight subcommand. Validates system prerequisites (bash version, git version, python3, PyYAML) before framework operations. |
 | [setup](/docs/generated/lib-setup) | called_by | fw setup - Guided onboarding wizard for new projects |
 | [validate-init](/docs/generated/lib-validate-init) | called_by | Post-init validation — reads #@init: tags from init.sh and validates each creation unit exists and is correct. Called automatically at end of fw init and available as fw validate-init. |
+| [worker_identity](/docs/generated/lib-worker_identity) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-git-identity.yaml`*

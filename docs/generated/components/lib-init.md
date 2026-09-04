@@ -21,7 +21,7 @@ for a project to use the framework.
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [git-identity](/docs/generated/lib-git-identity) | calls | TODO: describe what this component does |
 
-## Used By (24)
+## Used By (25)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -49,6 +49,7 @@ for a project to use the framework.
 | [t2912_upgrade_hook_regen_convergence](/docs/generated/tests-unit-t2912_upgrade_hook_regen_convergence) | tests_by | End-to-end (real fw init'd consumer, env -i) proof that fw upgrade's hook-regeneration step reports its own verified effect instead of the pre-write trigger — a regen that cannot supply a detected-missing hook must report FAILED/PARTIAL, not UPDATED, on every run, and must not write a fresh .bak for a no-op. |
 | [hook_producer_site_parity](/docs/generated/tests-unit-hook_producer_site_parity) | read_by | Guards that lib/init.sh:generate_claude_code_config never diverges again from the framework repo's own .claude/settings.json (the cumulative record of every 'fw hook-enable' call) — name-keyed comparison plus an explicit framework-only allowlist and a negative control proving the comparator is non-vacuous. |
 | [t2912_upgrade_hook_regen_convergence](/docs/generated/tests-unit-t2912_upgrade_hook_regen_convergence) | called_by | End-to-end (real fw init'd consumer, env -i) proof that fw upgrade's hook-regeneration step reports its own verified effect instead of the pre-write trigger — a regen that cannot supply a detected-missing hook must report FAILED/PARTIAL, not UPDATED, on every run, and must not write a fresh .bak for a no-op. |
+| [worker_identity](/docs/generated/lib-worker_identity) | called_by | TODO: describe what this component does |
 
 ## Related
 

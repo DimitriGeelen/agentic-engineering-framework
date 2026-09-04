@@ -8,12 +8,13 @@
 
 ## What It Does
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [hook_paths](/docs/generated/lib-hook_paths) | calls | TODO: describe what this component does |
 | [hook_paths](/docs/generated/lib-hook_paths) | uses | TODO: describe what this component does |
+| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | calls | TODO: describe what this component does |
 
 ## Used By (3)
 

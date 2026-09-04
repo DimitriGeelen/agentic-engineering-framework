@@ -10,7 +10,7 @@ T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports
 T-2645 (832 G-004 sibling): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution broke
 split-root consumers (masked here by the try/except fallback, feature silently dead).
 
-## Dependencies (17)
+## Dependencies (20)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -31,6 +31,9 @@ split-root consumers (masked here by the try/except fallback, feature silently d
 | [tasks](/docs/generated/web-blueprints-tasks) | uses | Flask blueprint: Tasks |
 | [arcs](/docs/generated/web-blueprints-arcs) | uses | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [bvp](/docs/generated/web-blueprints-bvp) | uses | TODO: describe what this component does |
+| [stop-driver](/docs/generated/agents-context-stop-driver) | calls | TODO: describe what this component does |
+| [decided_unclosed](/docs/generated/lib-decided_unclosed) | calls | TODO: describe what this component does |
+| [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 
 ## Used By (19)
 

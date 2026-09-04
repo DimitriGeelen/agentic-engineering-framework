@@ -12,6 +12,12 @@ Stop hook that continues when it should not takes the operator's session away
 from them, so every test below is written so that removing the guard it covers
 turns it red.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [stop-driver](/docs/generated/agents-context-stop-driver) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-stop_driver.yaml`*
 *Last verified: 2026-08-26*

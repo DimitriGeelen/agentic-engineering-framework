@@ -12,12 +12,14 @@
 |-----------|--------------|-------------|
 | [costs](/docs/generated/lib-costs) | calls | Token usage tracking from JSONL transcripts — parses Claude Code session data for cost reporting (T-801) |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [terminal](/docs/generated/web-blueprints-terminal) | called_by | Flask blueprint providing the interactive web terminal API with session creation, I/O, resize, and profile-based configuration |
 | [terminal](/docs/generated/web-blueprints-terminal) | uses_by | Flask blueprint providing the interactive web terminal API with session creation, I/O, resize, and profile-based configuration |
+| [__init__](/docs/generated/web-terminal-adapters-__init__) | called_by | TODO: describe what this component does |
+| [__init__](/docs/generated/web-terminal-adapters-__init__) | uses_by | TODO: describe what this component does |
 
 ## Related
 

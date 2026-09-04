@@ -29,7 +29,7 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
 | [worktree-identity](/docs/generated/lib-worktree-identity) | calls | TODO: describe what this component does |
 
-## Used By (80)
+## Used By (88)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -113,6 +113,14 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | [inception](/docs/generated/lib-inception) | called_by | fw inception - Inception phase workflow |
 | [review](/docs/generated/lib-review) | called_by | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
 | [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | called_by | TODO: describe what this component does |
+| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | called_by | TODO: describe what this component does |
+| [no-project-markers-above-bats-tmpdir](/docs/generated/tests-lint-no-project-markers-above-bats-tmpdir) | tests_by | Corpus-level invariant: no .framework.yaml or .tasks may sit on the path from the bats temp base up to "/". Nearly every hook suite builds its fixture under BATS_TEST_TMPDIR, and the hooks call lib/paths.sh:fw_reanchor_from_cwd, which walks that ancestry for exactly those markers — so the ambient project is an undeclared input to all of them. When an fw init ran with cwd=/tmp on this host (OBS-358), fixtures re-anchored to /tmp and read its null focus: one suite went red with a message that read like a code regression, and any suite whose fixture lacks markers of its own could equally have gone GREEN for a reason unrelated to its subject. The walk mirrors the resolver including its stop-before-"/" condition, and two legs grep the resolver so the mirror cannot drift. A third leg proves the detector fires, since a guard that cannot fail proves nothing; TMPDIR is the lever for the whole-suite red, because bats overwrites BATS_TMPDIR from it at startup. |
+| [t3219_verification_count_reconciliation](/docs/generated/tests-unit-t3219_verification_count_reconciliation) | tests_by | Pins the P-011 verification gate against unreconciled counts: a stdin-reading verification command must not swallow the rest of the block, and pass+fail must equal total or the close is refused. Runs mutated copies of update-task.sh from a symlink farm because FRAMEWORK_ROOT is derived from script location. |
+| [t3220_verification_gate_exits](/docs/generated/tests-unit-t3220_verification_gate_exits) | tests_by | Pins that every failure path in run_verification_commands exits rather than returns, and that the choice does not depend on set -euo pipefail 1700 lines away. Four measured cells (exit/return x errexit present/absent) isolate the dependency; the two control cells stop the suite passing against anything. |
+| [no-project-markers-above-bats-tmpdir](/docs/generated/tests-lint-no-project-markers-above-bats-tmpdir) | mirrors_by | Corpus-level invariant: no .framework.yaml or .tasks may sit on the path from the bats temp base up to "/". Nearly every hook suite builds its fixture under BATS_TEST_TMPDIR, and the hooks call lib/paths.sh:fw_reanchor_from_cwd, which walks that ancestry for exactly those markers — so the ambient project is an undeclared input to all of them. When an fw init ran with cwd=/tmp on this host (OBS-358), fixtures re-anchored to /tmp and read its null focus: one suite went red with a message that read like a code regression, and any suite whose fixture lacks markers of its own could equally have gone GREEN for a reason unrelated to its subject. The walk mirrors the resolver including its stop-before-"/" condition, and two legs grep the resolver so the mirror cannot drift. A third leg proves the detector fires, since a guard that cannot fail proves nothing; TMPDIR is the lever for the whole-suite red, because bats overwrites BATS_TMPDIR from it at startup. |
+| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | called_by | TODO: describe what this component does |
+| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation-py) | called_by | TODO: describe what this component does |
+| [check-inception-schema](/docs/generated/agents-context-check-inception-schema-py) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-paths.yaml`*

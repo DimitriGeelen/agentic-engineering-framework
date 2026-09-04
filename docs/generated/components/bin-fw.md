@@ -22,7 +22,7 @@ When run from inside the framework repo itself, it auto-detects.
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (90)
+## Dependencies (99)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -116,8 +116,17 @@ When run from inside the framework repo itself, it auto-detects.
 | [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
 | [message_router](/docs/generated/lib-message_router) | calls | TODO: describe what this component does |
 | [verify_queue](/docs/generated/lib-verify_queue) | calls | TODO: describe what this component does |
+| [vendor-visibility](/docs/generated/lib-vendor-visibility) | calls | TODO: describe what this component does |
+| [continuous-mode](/docs/generated/lib-continuous-mode) | calls | TODO: describe what this component does |
+| [push-state](/docs/generated/lib-push-state) | calls | TODO: describe what this component does |
+| [hook_portability](/docs/generated/lib-hook_portability) | calls | TODO: describe what this component does |
+| [audit_timing](/docs/generated/lib-audit_timing) | calls | TODO: describe what this component does |
+| [bats-silent-skip-lint](/docs/generated/tools-bats-silent-skip-lint) | calls | Reports bats skips that the P-011 verification idiom cannot see. Static mode flags two guard shapes with no legitimate reading (unconditional, and guards fixed for a deployment rather than probing an optional dependency); --tap mode reports the skips a real run actually fired. Wired into fw test lint. |
+| [consolidate](/docs/generated/agents-context-consolidate) | calls | TODO: describe what this component does |
+| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | calls | TODO: describe what this component does |
+| [smoke_test](/docs/generated/web-smoke_test) | calls | TODO: describe what this component does |
 
-## Used By (392)
+## Used By (420)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -512,6 +521,34 @@ When run from inside the framework repo itself, it auto-detects.
 | [validate_init_hook_path_expansion](/docs/generated/tests-unit-validate_init_hook_path_expansion) | tests_by | TODO: describe what this component does |
 | [version_relation](/docs/generated/tests-unit-version_relation) | tests_by | TODO: describe what this component does |
 | [hook_producer_site_parity](/docs/generated/tests-unit-hook_producer_site_parity) | triggers_by | Guards that lib/init.sh:generate_claude_code_config never diverges again from the framework repo's own .claude/settings.json (the cumulative record of every 'fw hook-enable' call) — name-keyed comparison plus an explicit framework-only allowlist and a negative control proving the comparator is non-vacuous. |
+| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | called_by | TODO: describe what this component does |
+| [safe-commands](/docs/generated/agents-context-lib-safe-commands) | called_by | Allowlist of safe bash commands for task gate bypass — git status, ls, cat, grep etc. that dont need an active task. |
+| [termlink](/docs/generated/agents-termlink-termlink) | called_by | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
+| [arc](/docs/generated/lib-arc) | called_by | TODO: describe what this component does |
+| [audit_timing](/docs/generated/lib-audit_timing) | called_by | TODO: describe what this component does |
+| [hook_portability](/docs/generated/lib-hook_portability) | called_by | TODO: describe what this component does |
+| [worktree](/docs/generated/lib-worktree) | called_by | TODO: describe what this component does |
+| [bats-silent-skip](/docs/generated/tests-lint-bats-silent-skip) | tests_by | Tests the silent-skip lint. Half the legs are false-positive controls: a detector that reddens legitimate optional-dependency skips gets suppressed wholesale, so the legs asserting it stays quiet are the ones that decide whether it survives. Includes the mutation control and the two heredoc-blindness regressions found by reconciling the census against a naive grep. |
+| [t3213_start_event_confirmation](/docs/generated/tests-unit-t3213_start_event_confirmation) | tests_by | End-to-end confirmation suite for the claude-fw start-event ledger: runs the real bin/claude-fw in a scratch git repo with a stubbed claude binary and asserts the start event is written, is idempotent, and degrades correctly when the ledger path is unwritable. |
+| [t3221_commit_exemption_clause](/docs/generated/tests-unit-t3221_commit_exemption_clause) | tests_by | Pins the commit-checkpoint exemption in the Bash task gate. Both exemption branches (T-2054 null-focus, T-3179 partial-complete) once admitted any command whose raw text CONTAINED "git commit" — so a trailing `; rm -rf` rode through, a `\| tee` write the gate had already flagged was admitted anyway, and an unknown binary passed because a quoted argument said the words. This suite probes the SHIPPED hook through its real stdin JSON contract rather than re-implementing the predicate, and carries two controls that decide whether a green run means anything: a mutation control that rebuilds the pre-fix hook from live source (so reverting the fix reddens the suite), and a 16-command no-widening sweep asserting the fixed hook admits nothing the pre-fix one blocked. |
+| [t3222_fetch_writes_file](/docs/generated/tests-unit-t3222_fetch_writes_file) | tests_by | Pins that curl and wget are admitted by the Bash safe-list only when they do not write a file. Both sat in the list unconditionally, so `curl -o FILE` and `wget -O FILE` — which write with no shell redirect, and are therefore invisible to has_bash_write_pattern — ran with no active task. Covers 22 spellings in both directions, including the stdout forms (`-o -`, `-O -`) that must stay safe and the framework's own documented verification idiom `curl -sf "$(bin/fw watchtower url)/page"`. Two legs carry the design decision: one asserts a commit whose MESSAGE mentions `curl -o` is still admitted (why the check is clause-scoped rather than in the whole-string write scanner), and one asserts a commit chained to a fetch-write is now refused with no change to the T-3221 commit predicate. Mutation control restores the unconditional arm from live source; a no-widening sweep asserts the fix admits nothing the pre-fix version blocked. |
+| [t3231_help_exemption_scope](/docs/generated/tests-unit-t3231_help_exemption_scope) | tests_by | TODO: describe what this component does |
+| [t3233_arm_bounds](/docs/generated/tests-unit-t3233_arm_bounds) | tests_by | TODO: describe what this component does |
+| [t3235_archived_horizon_invariant](/docs/generated/tests-unit-t3235_archived_horizon_invariant) | tests_by | Pins that a task file under .tasks/completed/ carries horizon: null whichever branch archived it. Two branches move a task there and their entry conditions are exact complements, so the null-ing written at the first site (T-2163, widened T-2300 after eight CTL-030 instances) could never reach the partial-complete recheck branch. The sharp end is fw task archive-eligible, which re-invokes --status work-completed and therefore drives exclusively through the branch that was unfixed. Every leg asserts WHICH branch ran before asserting the outcome, because the obvious fixture leaves status started-work and never enters the recheck branch at all — a rig that checks only the outcome goes green against the wrong path. A control pins the deliberate case the fix must NOT break: a partial-complete that stays in active/ keeps its stored horizon, which is why the post-condition keys on location, not status. The mutation control removes the post-condition from a live-derived copy and needs a symlink farm, since update-task.sh derives FRAMEWORK_ROOT from its own location and a dead subject reads exactly like a regressed one. Reported by peer 832-Workflow-designer (their T-654 BUG 1); confirmed in-tree first. |
+| [t3254_driver_refusals](/docs/generated/tests-unit-t3254_driver_refusals) | tests_by | TODO: describe what this component does |
+| [upgrade_marked_region](/docs/generated/tests-unit-upgrade_marked_region) | tests_by | TODO: describe what this component does |
+| [vendor_visibility](/docs/generated/tests-unit-vendor_visibility) | tests_by | TODO: describe what this component does |
+| [ewcr-arc0-unknown-overlap](/docs/generated/tools-ewcr-arc0-unknown-overlap) | called_by | TODO: describe what this component does |
+| [gaps-render-agreement](/docs/generated/tools-gaps-render-agreement) | called_by | TODO: describe what this component does |
+| [t1700-ollama-harness](/docs/generated/tools-t1700-ollama-harness) | called_by | TODO: describe what this component does |
+| [t1703-probe-matrix](/docs/generated/tools-t1703-probe-matrix) | called_by | TODO: describe what this component does |
+| [t1704-hermes3-probe](/docs/generated/tools-t1704-hermes3-probe) | called_by | TODO: describe what this component does |
+| [t3254-livefire](/docs/generated/tools-t3254-livefire) | called_by | TODO: describe what this component does |
+| [config](/docs/generated/web-blueprints-config) | called_by | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
+| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation-py) | called_by | TODO: describe what this component does |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
+| [t2176-corpus-rescan](/docs/generated/tools-t2176-corpus-rescan) | called_by | TODO: describe what this component does |
+| [conftest](/docs/generated/web-conftest) | called_by | TODO: describe what this component does |
 
 ## Documentation
 

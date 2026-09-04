@@ -19,7 +19,7 @@ task file owns AC + decisions, episodic merges both automatically.
 | [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
 | [compat](/docs/generated/lib-compat) | calls | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
 
-## Used By (12)
+## Used By (14)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -35,6 +35,8 @@ task file owns AC + decisions, episodic merges both automatically.
 | [episodic_yaml_timeline_escape](/docs/generated/tests-unit-episodic_yaml_timeline_escape) | tests_by | TODO: describe what this component does |
 | [t1719_post_write_index](/docs/generated/tests-unit-t1719_post_write_index) | called_by | TODO: describe what this component does |
 | [t1719_post_write_index](/docs/generated/tests-unit-t1719_post_write_index) | tests_by | TODO: describe what this component does |
+| [episodic_footprint](/docs/generated/lib-episodic_footprint) | called_by | TODO: describe what this component does |
+| [episodic_worktree_mining](/docs/generated/tests-unit-episodic_worktree_mining) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

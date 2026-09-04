@@ -11,13 +11,14 @@ one definition, and the one with tests (tests/unit/test_task_satisfaction.py).
 `parents[2]` is the framework root in both layouts: agents/audit/x.py in the
 framework repo, and .agentic-framework/agents/audit/x.py in a vendored consumer.
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [task-audit](/docs/generated/lib-task-audit) | calls | Scans task files for literal placeholder content that should have been replaced during authoring, blocking review and inception decisions until resolved |
+| [task_satisfaction](/docs/generated/lib-task_satisfaction) | calls | TODO: describe what this component does |
 
-## Used By (9)
+## Used By (10)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -30,6 +31,7 @@ framework repo, and .agentic-framework/agents/audit/x.py in a vendored consumer.
 | [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | tests_by | TODO: describe what this component does |
 | [t3073_c001_recommendation_bearing_inceptions](/docs/generated/tests-unit-t3073_c001_recommendation_bearing_inceptions) | called_by | TODO: describe what this component does |
 | [t3073_c001_recommendation_bearing_inceptions](/docs/generated/tests-unit-t3073_c001_recommendation_bearing_inceptions) | tests_by | TODO: describe what this component does |
+| [task_satisfaction](/docs/generated/lib-task_satisfaction) | called_by | TODO: describe what this component does |
 
 ## Related
 

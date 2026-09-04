@@ -14,6 +14,13 @@
 |-----------|--------------|-------------|
 | [bats-silent-skip](/docs/generated/tests-lint-bats-silent-skip) | tested-by | Tests the silent-skip lint. Half the legs are false-positive controls: a detector that reddens legitimate optional-dependency skips gets suppressed wholesale, so the legs asserting it stays quiet are the ones that decide whether it survives. Includes the mutation control and the two heredoc-blindness regressions found by reconciling the census against a naive grep. |
 
+## Used By (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [bats-silent-skip](/docs/generated/tests-lint-bats-silent-skip) | tests_by | Tests the silent-skip lint. Half the legs are false-positive controls: a detector that reddens legitimate optional-dependency skips gets suppressed wholesale, so the legs asserting it stays quiet are the ones that decide whether it survives. Includes the mutation control and the two heredoc-blindness regressions found by reconciling the census against a naive grep. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tools-bats-silent-skip-lint.yaml`*
 *Last verified: 2026-08-29*

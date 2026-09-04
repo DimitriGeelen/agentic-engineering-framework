@@ -17,6 +17,14 @@ INDISTINGUISHABLE from success-with-nothing-to-do. Measured before the fix:
 clean block            -> 12 bytes, rc=0
 same block + one 0xff  ->  0 bytes, rc=0     <-- same answer, different world
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+| [verification-port](/docs/generated/lib-verification-port) | tests | TODO: describe what this component does |
+| [verify_queue](/docs/generated/lib-verify_queue) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3232_verification_extractor_failure.yaml`*
 *Last verified: 2026-08-31*

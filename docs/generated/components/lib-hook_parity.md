@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -14,6 +14,7 @@
 | [upgrade](/docs/generated/lib-upgrade) | calls | fw upgrade - Sync framework improvements to a consumer project |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+| [hook_portability](/docs/generated/lib-hook_portability) | calls | TODO: describe what this component does |
 
 ## Used By (3)
 

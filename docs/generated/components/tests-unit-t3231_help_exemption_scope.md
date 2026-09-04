@@ -17,6 +17,13 @@ re-broken (peer 577-CashWeb's G-072 class, and the reason T-3228's suite extract
 the real brake instead of copying it). Here we run the actual script.
 WHY THE TEMP PROJECT ROOT: with an active task in focus the gate allows
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-active-task](/docs/generated/agents-context-check-active-task) | tests | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3231_help_exemption_scope.yaml`*
 *Last verified: 2026-08-31*

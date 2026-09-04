@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (20)
+## Dependencies (24)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -32,6 +32,10 @@
 | [gaps](/docs/generated/lib-gaps) | uses | TODO: describe what this component does |
 | [search](/docs/generated/web-search) | uses | Tantivy BM25 full-text search engine — indexes all YAML/Markdown files, provides ranked search with snippets |
 | [search_utils](/docs/generated/web-search_utils) | uses | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
+| [ask](/docs/generated/web-ask) | calls | TODO: describe what this component does |
+| [qa_feedback](/docs/generated/web-qa_feedback) | calls | TODO: describe what this component does |
+| [ask](/docs/generated/web-ask) | uses | TODO: describe what this component does |
+| [qa_feedback](/docs/generated/web-qa_feedback) | uses | TODO: describe what this component does |
 
 ## Used By (8)
 

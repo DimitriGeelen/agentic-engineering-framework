@@ -8,12 +8,14 @@
 
 classify() — one class per failure shape
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [embed_health](/docs/generated/web-embed_health) | calls | TODO: describe what this component does |
 | [embeddings](/docs/generated/web-embeddings) | calls | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
+| [config](/docs/generated/web-config) | calls | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | uses | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_embed_health.yaml`*

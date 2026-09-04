@@ -18,7 +18,7 @@ When building a web application:
 3. **Report access options** — localhost, LAN IP (for other devices), internet (if applicable)
 4. Never leave a built web app unstarted without informing the user
 
-## Dependencies (35)
+## Dependencies (38)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -57,8 +57,11 @@ When building a web application:
 | [arcs](/docs/generated/web-blueprints-arcs) | uses | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [__init__](/docs/generated/web-blueprints-__init__) | uses | Flask blueprint:   Init |
 | [embeddings](/docs/generated/web-embeddings) | uses | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
+| [config](/docs/generated/web-config) | calls | TODO: describe what this component does |
+| [test_app](/docs/generated/web-test_app) | calls | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | uses | TODO: describe what this component does |
 
-## Used By (94)
+## Used By (103)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -154,6 +157,15 @@ When building a web application:
 | [test_onboarding_maps_reachable](/docs/generated/tests-web-test_onboarding_maps_reachable) | called_by | TODO: describe what this component does |
 | [test_onboarding_maps_reachable](/docs/generated/tests-web-test_onboarding_maps_reachable) | uses_by | TODO: describe what this component does |
 | [test_costs](/docs/generated/web-test_costs) | uses_by | 24 pytest tests for costs blueprint — _fmt_tokens, _parse_session, _load_all_sessions, route (T-810) |
+| [test_inception_close_card](/docs/generated/tests-unit-test_inception_close_card) | called_by | TODO: describe what this component does |
+| [test_inception_close_card](/docs/generated/tests-unit-test_inception_close_card) | uses_by | TODO: describe what this component does |
+| [approvals](/docs/generated/web-blueprints-approvals) | called_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
+| [smoke_test](/docs/generated/web-smoke_test) | called_by | TODO: describe what this component does |
+| [smoke_test](/docs/generated/web-smoke_test) | uses_by | TODO: describe what this component does |
+| [test_app](/docs/generated/web-test_app) | called_by | TODO: describe what this component does |
+| [test_app](/docs/generated/web-test_app) | uses_by | TODO: describe what this component does |
+| [wsgi](/docs/generated/web-wsgi) | called_by | TODO: describe what this component does |
+| [wsgi](/docs/generated/web-wsgi) | uses_by | TODO: describe what this component does |
 
 ## Related
 

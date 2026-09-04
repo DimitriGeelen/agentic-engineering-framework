@@ -19,11 +19,18 @@ no pinning; what needs pinning is that the detector finds the two shapes it
 claims to and, much more importantly, DOES NOT INVENT THEM. Most skips in this
 corpus are correct — an optional dependency is absent — and a detector that
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [bats-silent-skip-lint](/docs/generated/tools-bats-silent-skip-lint) | tests | Reports bats skips that the P-011 verification idiom cannot see. Static mode flags two guard shapes with no legitimate reading (unconditional, and guards fixed for a deployment rather than probing an optional dependency); --tap mode reports the skips a real run actually fired. Wired into fw test lint. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
+## Used By (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [bats-silent-skip-lint](/docs/generated/tools-bats-silent-skip-lint) | tested-by_by | Reports bats skips that the P-011 verification idiom cannot see. Static mode flags two guard shapes with no legitimate reading (unconditional, and guards fixed for a deployment rather than probing an optional dependency); --tap mode reports the skips a real run actually fired. Wired into fw test lint. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-bats-silent-skip.yaml`*

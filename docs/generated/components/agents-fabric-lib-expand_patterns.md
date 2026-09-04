@@ -17,6 +17,12 @@ Centralising the expansion here means the exclude predicate has one source
 of truth — the same bug class cannot recur independently in register.sh and
 drift.sh again.
 
+## Used By (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fabric_coverage_single_source](/docs/generated/tests-unit-fabric_coverage_single_source) | tests_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-fabric-lib-expand_patterns.yaml`*
-*Last verified: 2026-05-14*
+*Last verified: 2026-09-03*

@@ -16,7 +16,7 @@ Creates handover documents for session continuity
 - When generating handover: fill in ALL [TODO] sections immediately in the same operation
 - For mid-session checkpoints: `fw handover --checkpoint`
 
-## Dependencies (13)
+## Dependencies (14)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -33,8 +33,9 @@ Creates handover documents for session continuity
 | [branch-hygiene](/docs/generated/lib-branch-hygiene) | calls | TODO: describe what this component does |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [push-state](/docs/generated/lib-push-state) | calls | TODO: describe what this component does |
 
-## Used By (28)
+## Used By (29)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -66,6 +67,7 @@ Creates handover documents for session continuity
 | [handover_task_classification](/docs/generated/tests-unit-handover_task_classification) | tests_by | TODO: describe what this component does |
 | [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | called_by | TODO: describe what this component does |
 | [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | tests_by | TODO: describe what this component does |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
 
 ## Documentation
 

@@ -24,7 +24,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (22)
+## Used By (23)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -50,6 +50,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | [lib_inception](/docs/generated/tests-unit-lib_inception) | called_by | Unit tests for inception (12 tests) |
 | [lib_inception](/docs/generated/tests-unit-lib_inception) | tests_by | Unit tests for inception (12 tests) |
 | [lib_tasks](/docs/generated/tests-unit-lib_tasks) | tests_by | Unit tests for tasks (10 tests) |
+| [episodic_worktree_mining](/docs/generated/tests-unit-episodic_worktree_mining) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-tasks.yaml`*

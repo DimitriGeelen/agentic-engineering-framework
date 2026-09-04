@@ -17,6 +17,14 @@ The fix replaces the positional contract with a declared one: a
 `<!-- project-owned: begin -->` / `<!-- project-owned: end -->` region survives
 wherever it sits.
 
+## Dependencies (3)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
+| [colors](/docs/generated/lib-colors) | tests | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-upgrade_marked_region.yaml`*
 *Last verified: 2026-08-26*
