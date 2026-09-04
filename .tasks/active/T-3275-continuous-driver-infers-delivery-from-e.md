@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-04T15:01:50Z
-last_update: 2026-09-04T15:01:50Z
-date_finished: null
+last_update: '2026-09-04T15:15:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-04T15:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=317,acs=9)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-04T15:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3275: continuous-driver infers delivery from exit code instead of confirming it
@@ -66,26 +94,31 @@ the upstream fix does not close this.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] After a successful inject call, the driver takes a post-inject snapshot via
-      the existing `_pty_snapshot()` helper and compares it against the pre-inject
-      state, rather than proceeding straight to the ledger write.
-- [ ] When delivery cannot be confirmed, the driver `_bail "refused"` with a message
+- [x] After a successful inject call, the driver takes a post-inject snapshot via
+      the existing `_pty_snapshot()` helper and checks it, rather than proceeding
+      straight to the ledger write. (`continuous-driver.sh`, section 5.)
+- [x] When delivery cannot be confirmed, the driver `_bail "refused"` with a message
       naming the unconfirmed-delivery condition — it does NOT write
       `_log "injected"`. A tick that delivered nothing must leave a refusal in the
-      ledger, not a success.
-- [ ] **Negative control:** a test proves the confirmation REFUSES against a target
+      ledger, not a success. (C1, C3 assert on the ledger, not on stdout prose.)
+- [x] **Negative control:** a test proves the confirmation REFUSES against a target
       that accepts the call but does not receive it (the G-097 shape, simulated with
       a stub transport that exits 0 and writes nothing). Without this leg the suite
-      cannot distinguish "confirmation works" from "confirmation always passes".
-- [ ] **Positive control:** a test proves the confirmation ALLOWS a genuine delivery
-      against a shell-backed PTY target, which G-097 establishes is a working
-      transport path. Guards against a confirmation so strict it refuses everything.
-- [ ] The false-negative case is addressed explicitly: a target whose pane redraws on
-      its own (spinner, clock) must not read as delivery. Either the comparison keys
-      on the directive's own text appearing, or the task records in `## Decisions`
-      why change-detection alone is sufficient here.
-- [ ] `tests/unit/t3254_driver_refusals.bats` still passes with zero skips.
-- [ ] `bin/fw vendor self --check` is clean before close (`agents/` is a vendored
+      cannot distinguish "confirmation works" from "confirmation always passes". (C1.)
+- [x] **Positive control:** a test proves the confirmation ALLOWS a delivery whose
+      text reaches the pane, so the guard cannot pass C1 by refusing everything. (C2.)
+      **Scope correction (build-time):** as filed this AC said "against a shell-backed
+      PTY target". The test stubs the transport, so it *models* delivery rather than
+      performing it — a real end-to-end leg would need a working `termlink`, which is
+      precisely what G-097 says we do not have. C2 + C5 form the mutation control
+      instead: same fixture, confirmation on → refused, confirmation off → injected.
+      Recorded rather than silently reworded.
+- [x] The false-negative case is addressed explicitly: a target whose pane redraws on
+      its own (spinner, clock) must not read as delivery. Resolved by keying on the
+      directive's own text, not on change-detection — see `## Decisions`. (C3.)
+- [x] `tests/unit/t3254_driver_refusals.bats` still passes with zero skips.
+      (21/21; its stub required a fix — see `## Decisions`.)
+- [x] `bin/fw vendor self --check` is clean before close (`agents/` is a vendored
       path — OBS-250 ordering: sync BEFORE `--status work-completed`).
 
 ### Human
@@ -242,10 +275,14 @@ bash -n agents/context/continuous-driver.sh
 # file — `_pty_snapshot` already appears twice above it for busy-detection, so a
 # plain occurrence count would pass on the unfixed script (the false green this
 # very task is about). Assert on the post-inject region only.
-awk '/^if timeout .*termlink inject/,0' agents/context/continuous-driver.sh > /tmp/.t3275-tail && grep -q '_pty_snapshot' /tmp/.t3275-tail
+awk '/termlink inject .*--enter/,0' agents/context/continuous-driver.sh > /tmp/.t3275-tail && grep -q '_pty_snapshot' /tmp/.t3275-tail
 
 # The unconfirmed path must refuse, not log a success.
-awk '/^if timeout .*termlink inject/,0' agents/context/continuous-driver.sh > /tmp/.t3275-tail && grep -q '_bail "refused"' /tmp/.t3275-tail
+awk '/termlink inject .*--enter/,0' agents/context/continuous-driver.sh > /tmp/.t3275-tail && grep -q '_bail "refused"' /tmp/.t3275-tail
+
+# The guard must key on the directive TEXT, not merely on the pane changing —
+# C3 is the test, this is the static pin.
+grep -q 'NEEDLE=' agents/context/continuous-driver.sh
 
 # New suite: both control legs must actually run (T-3217 — a skip reports `ok`).
 out=$(bats tests/unit/t3275_delivery_confirmation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
@@ -271,6 +308,55 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the continuous-run driver would report a successful injection on every
+tick while the target agent received nothing. Not observed in production only because
+the driver was never armed against a real session — G-097's live-fire (T-3255) is what
+surfaced it, and the cron entry has been paused since.
+
+**Root cause:** `continuous-driver.sh` treated the transport's exit status as evidence
+of delivery. `termlink inject … && _log "injected"` conflates *the call was accepted*
+with *the agent received a turn*. Those are different events, and G-097 is the proof
+that they come apart in exactly the case the driver cares about most.
+
+**Why structurally allowed:** three things had to line up.
+
+1. **The primitive existed but was not applied at the decision point.** `_pty_snapshot`
+   was already written, tested, and called twice — for busy detection, immediately
+   above. The capability to tell delivery from silence was present and simply never
+   used where it mattered. Nothing flags a helper that is used for one judgement and
+   not for the adjacent one.
+2. **The learning existed and did not reach the code.** L-346 (T-1700) says verbatim
+   that `claude -p exit=0 is NOT a tool-use signal`. Same class, recorded, and it
+   never propagated to a second consumer of the same reasoning. Learnings are
+   retrieved by whoever thinks to search; nothing pushes them at a new code path that
+   is about to repeat the mistake.
+3. **The test fixture encoded the same assumption as the code.** T-3254's stub served
+   a constant pane, so its "an injection is recorded" case was modelling an accepting,
+   non-delivering transport and asserting success on it. A suite written by the same
+   reasoning as the implementation inherits its blind spot — the fixture agreed with
+   the bug, so the bug looked tested.
+
+The third is the one worth carrying forward: the code and its test were not
+independent checks, and 21 green tests read as coverage of exactly the thing they
+could not see.
+
+**Prevention (distinct from the fix):**
+
+- `tests/unit/t3275_delivery_confirmation.bats` — 6 tests, with C1/C2 as a mutation
+  control pair (same fixture; confirmation on → refused, off → injected) so the suite
+  cannot pass by always-refusing or always-allowing, and C3 as the discriminator that
+  a change-detection implementation would fail.
+- T-3254's stub corrected, so the pre-existing suite no longer asserts the bug.
+- Static pins in `## Verification` scoped to the **post-inject region** — a whole-file
+  grep for `_pty_snapshot` passes on the unfixed script, which is the same false green
+  as the defect.
+- **G-101** stays open in the register until the guard has run against a real target
+  (T-3257); a passing unit suite is not a live-fire.
+
+**Not prevented here:** the driver still cannot reach a session launched outside
+TermLink (G-098), and the transport itself is still broken upstream (G-097). This task
+makes the driver honest about failure; it does not make it succeed.
 
 ## Evolution
 
@@ -326,6 +412,55 @@ bin/fw vendor self --check
 -->
 
 ## Decisions
+
+### 2026-09-04 — confirm on the directive's TEXT, not on "the pane changed"
+
+- **Chose:** delivery is confirmed only when a whitespace-stripped 32-char prefix of
+  the directive appears in the post-inject pane capture. Fail closed: if it never
+  appears, refuse.
+- **Why:** change-detection is the cheaper check and was the obvious first instinct,
+  but it cannot separate delivery from a pane redrawing itself. A spinner, clock or
+  progress line changes the capture without any input having landed, so a
+  change-based guard reports success on an undelivered tick — reintroducing the
+  exact false green G-101 exists to remove. The asymmetry decides it: a wrong
+  refusal costs ONE tick and announces itself in the ledger; a wrong success costs
+  every tick after it and announces nothing. C3 is the regression test — it passes
+  a change-based guard and fails a text-based one, which is why it exists.
+- **Rejected:** (a) change-detection alone, for the reason above. (b) Requiring the
+  *whole* directive to appear — a TUI wraps long input and the capture is tailed to
+  4000 bytes, so a long directive would produce false refusals. (c) Accepting either
+  signal (text OR change) — that is change-detection with extra steps, since the
+  weaker condition always decides.
+
+### 2026-09-04 — strip ALL whitespace from both sides of the comparison
+
+- **Chose:** `tr -d '[:space:]'` on both needle and haystack before matching.
+- **Why:** a TUI wrapping input can insert a newline mid-word (`backl\nog`), which
+  defeats a matcher that merely collapses whitespace runs. Stripping whitespace
+  entirely makes the needle wrap-immune. C6 pins it.
+- **Rejected:** collapsing runs to single spaces (`tr -s`) — fails the mid-word wrap,
+  which is the common case for a long directive in a narrow pane.
+
+### 2026-09-04 — `case` on a captured variable, never a pipe into `grep -q`
+
+- **Chose:** capture the squashed pane into a variable and match with `case`.
+- **Why:** the script runs under `set -uo pipefail`. An early-exiting `grep -q`
+  SIGPIPEs its upstream and the pipeline returns 141 (L-387), so the guard would
+  manufacture false refusals through its own plumbing — a bug in the same family as
+  the one it is fixing.
+
+### 2026-09-04 — T-3254's stub was modelling the bug as its success case
+
+- **Chose:** fix `_stub_termlink` in `tests/unit/t3254_driver_refusals.bats` so an
+  injecting transport also writes the text into the pane the stub serves.
+- **Why:** its `quiet` mode returned a constant pane, so its C2 ("an injection is
+  recorded") was exercising a transport that accepts and delivers nothing — the
+  G-097 shape — and calling it success. That is why the pre-existing suite could
+  never have caught G-097, and it is the more interesting half of this finding: the
+  fixture encoded the same assumption the production code did. Both were fixed here.
+- **Rejected:** special-casing the new guard to tolerate a constant pane. That would
+  have kept the suite green by teaching the guard to accept the exact input it
+  exists to reject.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

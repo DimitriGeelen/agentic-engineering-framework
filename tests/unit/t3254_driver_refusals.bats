@@ -266,13 +266,24 @@ case "\$verb" in
             echo "working... \$n"
         else
             echo "idle prompt >"
+            # T-3275/G-101: a delivering transport puts the text WHERE THE PANE
+            # SHOWS IT. Before this line the stub returned a constant pane, so its
+            # own success case was modelling the G-097 silent-delivery shape —
+            # which is why this suite could never have caught G-097.
+            cat "$SB/pane" 2>/dev/null
         fi
         exit 0
     fi
-    if [ "\$sub" = "inject" ]; then echo "\$*" >> "$SB/injected"; exit 0; fi
+    if [ "\$sub" = "inject" ]; then
+        echo "\$*" >> "$SB/injected"
+        printf '%s\n' "\$*" >> "$SB/pane"
+        exit 0
+    fi
     exit 0 ;;
   inject)
-    echo "\$*" >> "$SB/injected"; exit 0 ;;
+    echo "\$*" >> "$SB/injected"
+    printf '%s\n' "\$*" >> "$SB/pane"
+    exit 0 ;;
   *) exit 0 ;;
 esac
 STUB

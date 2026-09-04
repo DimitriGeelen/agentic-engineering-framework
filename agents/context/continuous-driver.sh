@@ -231,11 +231,65 @@ if [ "$DRY_RUN" = 1 ]; then
     exit 0
 fi
 
-if timeout 30 termlink inject "$SESSION" --enter "$DIRECTIVE" >/dev/null 2>&1 \
-   || timeout 30 termlink pty inject "$SESSION" --enter "$DIRECTIVE" >/dev/null 2>&1; then
-    _log "injected" "session=${SESSION} directive=${DIRECTIVE:0:200}"
-    echo "continuous-driver: injected a continuation turn into '${SESSION}'"
+if ! timeout 30 termlink inject "$SESSION" --enter "$DIRECTIVE" >/dev/null 2>&1 \
+   && ! timeout 30 termlink pty inject "$SESSION" --enter "$DIRECTIVE" >/dev/null 2>&1; then
+    _bail "refused" "termlink inject failed for session '${SESSION}'"
+fi
+
+# ---------------------------------------------------------------------------
+# 5. Confirm the turn actually LANDED. G-101.
+# ---------------------------------------------------------------------------
+# A zero exit status from the transport is not evidence of delivery. G-097:
+# `termlink inject` returns 0 and delivers nothing into an ink-based raw-mode TUI
+# — measured three ways at two points, with `tmux send-keys` succeeding against
+# the identical pane at the identical moment. A driver that trusts the exit code
+# therefore writes `"reason": "injected"` every tick, forever, while the agent
+# never receives a turn. Same class as L-346 (claude -p exit=0 is NOT a tool-use
+# signal): a clean exit says the call was accepted, never that the work happened.
+#
+# THE PRIMITIVE WAS ALREADY HERE. `_pty_snapshot` is called twice above for busy
+# detection. This is the third call — the one that closes the loop.
+#
+# FAIL CLOSED, AND KEY ON THE TEXT — NOT ON "THE PANE CHANGED". Change-detection
+# alone would read a spinner, clock or progress line as delivery, which
+# reintroduces the exact false green this guard exists to remove. So confirmation
+# requires the directive's own text to appear. The asymmetry justifies it: a wrong
+# refusal costs ONE tick and says so loudly in the ledger; a wrong success costs
+# every tick after it and says nothing.
+#
+# WHITESPACE IS STRIPPED FROM BOTH SIDES because a TUI wraps long input across
+# lines, and a wrap inserted mid-word ("backl\nog") defeats a substring match that
+# only collapses runs. Stripping all whitespace makes the needle wrap-immune.
+#
+# NO PIPE INTO `grep -q` (L-387). Under `set -o pipefail` an early-exiting grep
+# SIGPIPEs its upstream and the pipeline returns 141 — a false refusal produced by
+# the guard's own plumbing. `case` on a captured variable has no such failure mode.
+CONFIRM_TRIES="${FW_DRIVER_CONFIRM_TRIES:-3}"
+_squash() { printf '%s' "${1:-}" | tr -d '[:space:]'; }
+NEEDLE="$(_squash "$DIRECTIVE" | cut -c1-32)"
+
+if [ "${FW_DRIVER_SKIP_DELIVERY_CONFIRM:-0}" = 1 ]; then
+    _log "injected" "session=${SESSION} confirmed=SKIPPED-BY-ENV directive=${DIRECTIVE:0:200}"
+    echo "continuous-driver: injected into '${SESSION}' (delivery confirmation SKIPPED)"
     exit 0
 fi
 
-_bail "refused" "termlink inject failed for session '${SESSION}'"
+[ -n "$NEEDLE" ] || _bail "refused" \
+    "cannot confirm delivery for session '${SESSION}': the directive is all whitespace once stripped, so there is no text to look for. Refusing rather than logging an unverifiable success."
+
+CONFIRMED=0
+for _try in $(seq 1 "$CONFIRM_TRIES"); do
+    SNAP_C="$(_pty_snapshot)" || SNAP_C=""
+    case "$(_squash "$SNAP_C")" in
+        *"$NEEDLE"*) CONFIRMED=1; break ;;
+    esac
+    [ "$_try" -lt "$CONFIRM_TRIES" ] && sleep 1
+done
+
+if [ "$CONFIRMED" != 1 ]; then
+    _bail "refused" "delivery UNCONFIRMED for session '${SESSION}': the transport returned success but the directive's text never appeared in the pane across ${CONFIRM_TRIES} samples. This is the G-097 shape — inject exits 0 and delivers nothing into an ink-based raw-mode TUI. NOT logging 'injected', because that would be a false success and the loop would look alive while doing nothing. Check by hand: termlink pty output '${SESSION}' --strip-ansi. If this target legitimately consumes input without echoing it, set FW_DRIVER_SKIP_DELIVERY_CONFIRM=1 (which restores the pre-G-101 blind behaviour — prefer fixing the transport)."
+fi
+
+_log "injected" "session=${SESSION} confirmed=text-in-pane directive=${DIRECTIVE:0:200}"
+echo "continuous-driver: injected a continuation turn into '${SESSION}' (delivery confirmed)"
+exit 0
