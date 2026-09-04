@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3141: fw_focus_file ignores CONTEXT_DIR override, breaking create_task.bats sandboxing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-04T21:51:39Z
+# ============================================================================
+
+task_id: T-3141
+task_name: "fw_focus_file ignores CONTEXT_DIR override, breaking create_task.bats sandboxing"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-25T11:39:05Z
+completed: 2026-09-04T21:50:41Z
+duration_days: 10
+updates_count: 6
+first_commit: 2026-08-25T13:43:28+02:00
+last_commit: 2026-09-04T23:49:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  mark ready for next session (started-work, horizon now); refresh T-3104 episodic footprint. fw_focus_file honours CONTEXT_DIR instead of re-deriving it from PROJECT_ROOT. sync vendored .agentic-framework/lib/paths.sh with the CONTEXT_DIR fix
+
+# Key outcomes
+outcomes:
+  - '`fw_focus_file()` in `lib/paths.sh` honours a `CONTEXT_DIR` override (falls back to `${root}/.context/working` only when `CONTEXT_DIR` is unset/empty) — both the session-scoped (`FW_SESSION_SCOPED_FOCUS=1`) and default branches'
+  - '`tests/unit/create_task.bats` test 3 ("T-2832: --start writes focus inside the sandbox, not the live .context") passes without clobbering the real session''s `.context/working/focus*.yaml`'
+  - 'A regression test in `tests/unit/` pins `fw_focus_file` returning a path under an overridden `CONTEXT_DIR`, not `PROJECT_ROOT/.context`'
+  - 'Full `tests/unit/create_task.bats` suite is green (30/30)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'sync vendored .agentic-framework/lib/paths.sh with the CONTEXT_DIR fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/paths.sh'
+  - '.context/episodic/T-3104.yaml'
+  - 'lib/paths.sh'
+  - '.tasks/active/T-3141-fwfocusfile-ignores-contextdir-override-.md'
+  - 'tests/unit/create_task.bats'
+  - 'tests/unit/t3141_focus_file_context_dir_override.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-25T13:43:28'
+    action: 'T-3141: mark ready for next session (started-work, horizon now); refresh T-3104 episodic footprint'
+  - time: '2026-09-04T23:46:09'
+    action: 'T-3141: fw_focus_file honours CONTEXT_DIR instead of re-deriving it from PROJECT_ROOT'
+  - time: '2026-09-04T23:49:06'
+    action: 'T-3141: sync vendored .agentic-framework/lib/paths.sh with the CONTEXT_DIR fix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 15011 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15011
+  commits: 3
+  files_changed: 6
+  lines_added: 105
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3141-fwfocusfile-ignores-contextdir-override-.md
+generated_by: context-agent-hybrid
