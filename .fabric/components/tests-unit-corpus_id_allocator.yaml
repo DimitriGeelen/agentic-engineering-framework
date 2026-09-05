@@ -12,7 +12,9 @@ depends_on:
   type: tests
 - target: C-002
   type: tests
+- target: agents/context/lib/learning.sh
+  type: tests
 depended_by: []
 last_verified: 2026-08-10
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-05'

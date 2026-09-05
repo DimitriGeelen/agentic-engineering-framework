@@ -13,6 +13,8 @@ depended_by:
   type: tests_by
 - target: C-002
   type: called_by
+- target: agents/context/lib/learning.sh
+  type: called_by
 last_verified: 2026-08-10
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-05'

@@ -47,7 +47,9 @@ depends_on:
   type: calls
 - target: C-002
   type: tests
+- target: agents/context/lib/learning.sh
+  type: tests
 depended_by: []
 last_verified: 2026-05-18
 created_by: claude
-last_enriched: '2026-05-20'
+last_enriched: '2026-09-05'

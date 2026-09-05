@@ -39,6 +39,8 @@ depends_on:
   type: calls
 - target: lib/paths.sh
   type: calls
+- target: agents/context/lib/learning.sh
+  type: calls
 depended_by:
 - target: fw-cli
   type: calls
@@ -75,4 +77,4 @@ depended_by:
   type: called_by
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-05'

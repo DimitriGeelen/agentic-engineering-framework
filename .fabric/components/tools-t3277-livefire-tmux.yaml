@@ -1,0 +1,20 @@
+id: tools/t3277-livefire-tmux.sh
+name: t3277-livefire-tmux
+type: script
+subsystem: unknown
+location: tools/t3277-livefire-tmux.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-05
+created_by: unknown
