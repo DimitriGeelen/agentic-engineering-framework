@@ -39483,3 +39483,21 @@ scan_id: R-ec44d68f
 task_id: T-3275
 payload:
   task_file: .tasks/active/T-3275-continuous-driver-infers-delivery-from-e.md
+---
+kind: scan_emitted
+timestamp: '2026-09-05T08:50:53Z'
+scan_id: R-d2a787df
+task_id: T-3241
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-05T08:50:53Z'
+scan_id: R-d2a787df
+task_id: T-3241
+payload:
+  task_file: .tasks/active/T-3241-budget-gauge-encodes-could-not-measure-a.md

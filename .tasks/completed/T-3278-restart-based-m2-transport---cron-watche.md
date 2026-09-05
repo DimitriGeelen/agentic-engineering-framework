@@ -6,7 +6,7 @@ description: >
   Inception: Restart-based M2 transport - cron-watched flag launches claude-fw, directive
   injected at SessionStart instead of live PTY injection
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-09-05T10:40:56Z
-last_update: '2026-09-05T10:45:10Z'
+last_update: 2026-09-05T10:51:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -70,24 +70,24 @@ The M2 continuous loop's cross-session continuation currently depends on live ke
 
 - **IW-1: Who ends the session in a restart-based loop — agent-initiated exit on directive completion, budget-critical exit, or does the cron leg treat any running session as busy and skip?**
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: Session-exit contract is a build-slice design decision; exploration plan names skip-while-running as the safe default (docs/reports/T-3278-restart-based-m2-transport.md IW-1); GO recorded 2026-09-05 with this deferral explicit.
 - **IW-2: Is cron-tick latency (>=60s per hop) acceptable for the M2 loop?**
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: Yes - the continuous-driver cron already runs on minute ticks (arc-012 practice since T-3239); operator raised no latency concern at GO.
 - **IW-3: Should the cron leg launch claude-fw headless or inside an observable tmux/TermLink pane (Session Launch Policy 2026-09-03 mandates TermLink for observable framework work)?**
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: Launch shape is a build-slice decision bounded by Session Launch Policy 2026-09-03 (TermLink observability mandated); headless-vs-pane resolved at build.
 - **IW-4: Does .next-directive.yaml suffice as the cron flag, or does launch-arming need a separate file so 'directive present' and 'cron may launch' are independently controllable?**
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: Default is reuse of .next-directive.yaml + existing halt file; separate arm-file is a build-slice schema decision, does not affect go/no-go.
 - **IW-5: If restart-based hops become the primary loop, does the T-3240 Stop-hook one-continuation cap stop mattering (each session takes few turns then exits; the LOOP is the restart chain)?**
   confidence: 1
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: The Stop-hook cap bounds turns-per-session only; loop bounding moves to the iteration counter in a restart chain. T-3240 stays its own inception, unaffected by this GO.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh

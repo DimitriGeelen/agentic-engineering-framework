@@ -8000,3 +8000,8 @@ FW_SWITCH_FOCUS=1 bin/fw task update T-3275 --status work-completed 2>&1 | tail 
   target: 'T-3275'
   command: 'cd /opt/999-Agentic-Engineering-Framework
 git add -A -- . :!lib/paths.sh :!agents/context/budget-gate.sh :!agents/context/checkpoint.sh :!agents/context/post-compact-resume.sh :!lib/context_t'
+- timestamp: '2026-09-05T10:47:43Z'
+  task: 'T-3278'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'

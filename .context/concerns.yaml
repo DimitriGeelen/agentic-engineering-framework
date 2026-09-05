@@ -1,3 +1,43 @@
+- id: OBS-254
+  type: structural
+  severity: medium
+  surface: 'A sandboxed `fw init` test rig (E10, `livefire-brake-tier-ceiling.sh`)
+    silently wrote 40 real task files into THIS repo''s `.tasks/active/` instead of
+    its own `mktemp -d` sandbox, when invoked from a dispatched-worker shell that
+    already carried `PROJECT_ROOT`/`FRAMEWORK_ROOT` pointing at this repo.'
+  detected_in: T-3250 (dispatched worker re-running the E10 rig after T-3253 landed)
+  symptom: '`bin/fw`''s PROJECT_ROOT resolution (T-2391, `_project_root_is_stale`)
+    deliberately trusts an inherited `PROJECT_ROOT` env var over cwd-based
+    autodetection whenever it points at a real, non-`$HOME` project — by design, to
+    survive the daemon-poison class T-2391 fixed. But "real, non-`$HOME` project" and
+    "the project this sandboxed rig intends to operate on" are different questions,
+    and the code only asks the first. A worker/session env that legitimately sets
+    `PROJECT_ROOT=<this repo>` for its OWN top-level `fw` use makes every `cd
+    $SANDBOX && ./.agentic-framework/bin/fw ...` inside that shell resolve back to
+    the real repo instead of the sandbox — no error, no warning, `fw task create`
+    reports success and prints the (wrong, real) file path, which is easy to miss
+    inside a loop whose stdout is redirected to a log. Confirmed by direct
+    reproduction: `env | grep PROJECT_ROOT` showed it set to this repo; `env -u
+    PROJECT_ROOT -u FRAMEWORK_ROOT` before the same invocation fixed it immediately
+    (sandbox got its own `T-006..T-022` ids instead of polluting the real `T-32xx`
+    range). Cleaned up in-session (40 untracked stray files removed, no commits or
+    `.continuous-mode.yaml`/`focus.yaml` state were touched in the real repo).'
+  note: 'Candidate fix lives in the rig, not in `bin/fw`: `bin/fw`''s env-wins
+    behaviour is deliberate T-2391 policy and correct for its own case. Every
+    sandboxed livefire/E-series harness that shells out to a vendored `fw` inside a
+    `mktemp` sandbox should `env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u
+    CLAUDE_PROJECT_DIR` before doing so, or assert `$($FW config get PROJECT_ROOT)`
+    resolves inside `$SANDBOX` before trusting the run. File a dedicated task if a
+    structural guard (e.g. a `fw doctor`-style self-check inside these rigs, or a
+    shared sandbox-invocation helper) is wanted; not fixed here.'
+  blast_radius: project
+  observed: '2026-09-05'
+  status: open
+  related:
+  - T-3250
+  - T-2391
+  - T-3239
+  follow_up_task: null
 - id: OBS-253
   type: structural
   severity: low
