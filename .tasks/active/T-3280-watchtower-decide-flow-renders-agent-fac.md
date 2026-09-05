@@ -1,8 +1,10 @@
 ---
-id: T-3279
-name: "inception decide half-transition - T-2190 disposition predicate enforced only at completion, never at decide preflight or review emission (producer/consumer parity, L-399 class)"
+id: T-3280
+name: "Watchtower decide flow renders agent-facing gate stderr - Tier-2 bypass flags
+  and --skip-sovereignty warning shown to operator as the response"
 description: >
-  inception decide half-transition - T-2190 disposition predicate enforced only at completion, never at decide preflight or review emission (producer/consumer parity, L-399 class)
+  Watchtower decide flow renders agent-facing gate stderr - Tier-2 bypass flags and
+  --skip-sovereignty warning shown to operator as the response
 
 status: started-work
 workflow_type: build
@@ -21,9 +23,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-05T10:51:39Z
-last_update: 2026-09-05T10:51:39Z
-date_finished: null
+created: 2026-09-05T10:59:36Z
+last_update: '2026-09-05T11:00:23Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,25 +36,59 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-05T11:00:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=258,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-05T11:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3279: inception decide half-transition - T-2190 disposition predicate enforced only at completion, never at decide preflight or review emission (producer/consumer parity, L-399 class)
+# T-3280: Watchtower decide flow renders agent-facing gate stderr - Tier-2 bypass flags and --skip-sovereignty warning shown to operator as the response
 
 ## Context
 
-Origin incident + full RCA in the ## RCA section below and G-102 (concerns register). Sibling defect B (Watchtower renders agent-facing gate stderr with Tier-2 bypass flags to the operator) is filed separately.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The disposition predicate is extracted into a shared library function (one implementation) that takes a task-file path and reports under-disposed IW/Q questions; `update-task.sh check_disposition_gate` calls it instead of carrying its own copy — parity by construction, not by duplication
-- [x] `do_inception_decide` (go/no-go branch) runs the shared predicate in its T-1503 preflight BEFORE writing the Decision block or ticking ACs; an under-disposed inception is refused with the task body untouched — no more class-2 stuck state from this predicate
-- [x] The decide-preflight refusal message is operator-and-agent readable: it names the under-disposed questions and says dispositions must be filled before deciding — and does NOT print Tier-2 bypass flags as the primary remedy
-- [x] `fw task review` emission (lib/review.sh) on an inception with under-disposed questions prints a loud warning naming them, so the agent is told BEFORE handing the human a decision that will refuse
-- [x] Regression: a fully-disposed inception decides GO end-to-end (decision recorded, ACs ticked, task moves to completed/) — the preflight does not refuse valid flow
-- [x] Bats tests pin all of the above: refusal-before-mutation (body unchanged after refused decide), review-emission warning, and the green path; zero skips
-- [x] `bin/fw vendor self --check` clean before close (lib/ and agents/ are vendored paths — OBS-250 ordering)
+- [x] A sanitizer function in `web/blueprints/inception.py` translates fw stderr to operator-facing text: drops Tier-2 bypass instruction lines (`--skip-*` flags, `FW_*=1` env bypasses, the "Options:" block), the internal `--skip-sovereignty` warning line, and `=== Task Update ===` header noise — keeping the substantive reason lines
+- [x] Both operator-facing render paths in `record_decision` (side-effect warning AND decision-not-recorded failure) route their stderr through the sanitizer before display
+- [x] The side-effect warning preamble says in operator language what happened and what happens next (decision saved; completion blocked by a gate; agent-side recovery exists) instead of the bare "side-effect warning:" label
+- [x] Unit tests pin the sanitizer: bypass flags and sovereignty warnings are stripped, substantive reason text survives, empty input degrades safely; zero skips
+- [x] `bin/fw vendor self --check` clean before close (web/ is a vendored path — OBS-250 ordering)
+
+### Human (render-surface, T-1766)
+- [ ] [REVIEW] The sanitized decide-failure message reads clean to an operator with no framework-internals context
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw serve` (if not running), then trigger any inception decide whose completion a gate refuses (or re-read the T-3278 incident text vs the new copy in `web/blueprints/inception.py:_operator_facing_stderr`)
+  2. Compare with the T-3278 incident response (raw gate dump with `--skip-disposition-gate` options)
+  **Expected:** message states the decision is saved, names the blocking reason, no bypass flags, no `=== Task Update ===` noise
+  **If not:** note which fragment still reads agent-internal; the sanitizer's drop-patterns are a single list to extend
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -67,7 +103,7 @@ Origin incident + full RCA in the ## RCA section below and G-102 (concerns regis
      See CLAUDE.md §AC Classification Guidance for the conversion rule.
 
      [REVIEW] example (genuine human judgment):
-       - [x] [REVIEW] Dashboard renders correctly
+       - [ ] [REVIEW] Dashboard renders correctly
          **Steps:**
          1. Open https://example.com/dashboard in browser
          2. Verify all panels load within 2 seconds
@@ -76,7 +112,7 @@ Origin incident + full RCA in the ## RCA section below and G-102 (concerns regis
          **If not:** Screenshot the broken panel and note the console error
 
      [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [x] [REVIEWER] Block message names both bypass mechanisms
+       - [ ] [REVIEWER] Block message names both bypass mechanisms
          **Steps:**
          1. Run `bin/fw reviewer T-XXX`
          **Expected:** Verdict: PASS; no findings on `block-message-completeness`
@@ -202,23 +238,24 @@ Origin incident + full RCA in the ## RCA section below and G-102 (concerns regis
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-timeout 300 bats tests/unit/t3279_decision_readiness_parity.bats > /tmp/.t3279v.out 2>&1 && ! grep -q "^not ok" /tmp/.t3279v.out
-test "$(grep -c '# skip' /tmp/.t3279v.out)" -eq 0
-timeout 300 bats tests/unit/disposition_gate.bats > /tmp/.t3279dg.out 2>&1 && ! grep -q "^not ok" /tmp/.t3279dg.out
-test "$(grep -c '# skip' /tmp/.t3279dg.out)" -eq 0
-timeout 300 bats tests/unit/inception_decide_ac_tick.bats > /tmp/.t3279at.out 2>&1 && ! grep -q "^not ok" /tmp/.t3279at.out
+python3 -m pytest tests/unit/test_operator_facing_stderr.py -q > /tmp/.t3280v.out 2>&1 && grep -q passed /tmp/.t3280v.out && ! grep -q failed /tmp/.t3280v.out
 bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** Operator recorded GO on T-3278 via Watchtower and received a raw error dump: decision recorded, `--skip-sovereignty` warning leaked, then "ERROR: Cannot complete inception — 5 Open Question(s) under-disposed" with Tier-2 bypass flags (`--skip-disposition-gate`, `FW_SKIP_DISPOSITION_GATE=1`) rendered as the operator-facing remedy. Task stuck in class-2 state (decision recorded, status started-work).
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
 
-**Root cause:** The T-2190 disposition predicate existed ONLY inside `update-task.sh:check_disposition_gate` — the completion enforcement point. `do_inception_decide` records the decision first and completes second (lib/inception.sh:743); its T-1503 preflight validates Agent-AC state before mutation but was never extended with the disposition predicate when T-2190 shipped (2026-06-03). `lib/review.sh` emission checks recommendation presence (T-2421) but not decision-readiness. So every surface that INVITES the decision was blind to a predicate guaranteed to refuse it.
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
 
-**Why structurally allowed:** L-399/T-1890 producer/consumer parity class, recurring: gate authors wire predicates at the enforcement point with no requirement to audit upstream invitation surfaces. The predicate was a private bash function inside update-task.sh — structurally uncallable from the other surfaces, so parity COULD not be maintained without extraction. T-2219 previously encountered this exact stderr in Watchtower and widened the rendering rather than questioning why the operator sees agent-facing gate text — symptom decoration masked the cause for 3 further months.
-
-**Prevention:** (1) The predicate now lives in `lib/inception-readiness.sh` — one implementation, three call sites: parity by construction. (2) Decide refuses BEFORE any mutation, so the class-2 stuck state cannot arise from this predicate. (3) Review emission warns the agent at handoff time. (4) G-102 registered for the CLASS (predicate-propagation audits when adding completion gates + the Watchtower stderr rendering defect, tracked as its own task). Pinned by tests/unit/t3279_decision_readiness_parity.bats (10 tests incl. refusal-leaves-body-byte-identical and green-path control).
-
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -246,32 +283,14 @@ bin/fw vendor self --check
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** The sanitizer fixes the operator-facing register of decide-failure messages: the T-3278 incident text now renders as "decision saved + reason" with Tier-2 bypass flags, sovereignty warnings, and update-task banner noise stripped — while the substantive gate reason survives verbatim (pinned by tests against the literal incident fixture). With the T-3279 preflight upstream, this path fires far less often, but any future completion-gate side-effect failure now degrades to operator language instead of an agent-internal dump.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
-
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Evidence:**
+- `web/blueprints/inception.py:_operator_facing_stderr` — one drop-pattern list, both render paths routed through it
+- `tests/unit/test_operator_facing_stderr.py` — 5/5, fixture is the literal T-3278 incident text
+- Sibling structural fix: T-3279 (decide preflight parity), G-102 registered
 
 ## Decisions
 
@@ -296,7 +315,7 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-09-05T10:51:39Z — task-created [task-create-agent]
+### 2026-09-05T10:59:36Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3279-inception-decide-half-transition---t-219.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3280-watchtower-decide-flow-renders-agent-fac.md
 - **Context:** Initial task creation

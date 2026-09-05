@@ -528,6 +528,51 @@ def resolve_assumption(assumption_id):
     return redirect(url_for("inception.assumptions_list"))
 
 
+def _operator_facing_stderr(text):
+    """T-3280 (G-102 defect B): translate fw gate stderr into operator-facing text.
+
+    Origin: the T-3278 GO incident (2026-09-05) — the disposition gate's refusal
+    was rendered raw to the operator, including its Tier-2 bypass instructions
+    (`--skip-disposition-gate`, `FW_SKIP_DISPOSITION_GATE=1`), the internal
+    `--skip-sovereignty` warning, and `=== Task Update ===` header noise. Gate
+    block messages are written FOR AGENTS (CLAUDE.md requires them to name their
+    bypass mechanisms); the operator is not the audience, and showing a human
+    bypass flags as the remedy normalises Tier-2 bypass for what is actually an
+    authoring gap. T-2219 widened this rendering; this function keeps the width
+    (the reason must stay visible) and fixes the register.
+
+    Drops instruction/noise lines, keeps substantive reason lines. The
+    drop-patterns are one list so a [REVIEW] finding can extend it in one place.
+    """
+    import re as _re
+    if not text:
+        return ""
+    drop_patterns = [
+        r"--skip-[a-z-]+",                # any Tier-2 skip-flag instruction line
+        r"FW_[A-Z_]+=1",                  # env-var bypass instruction line
+        r"^\s*Options:\s*$",              # the bypass-options block header
+        r"^\s*\d+\.\s",                   # numbered option lines under it
+        r"logged Tier-2",                  # bypass-logging notes
+        r"=== Task Update ===",            # update-task.sh banner noise
+        r"^Task:\s|^File:\s",              # update-task.sh header lines
+        r"WARNING: Completing human-owned task",  # internal sovereignty note
+    ]
+    kept = []
+    for line in text.splitlines():
+        if any(_re.search(p, line) for p in drop_patterns):
+            continue
+        kept.append(line)
+    # collapse runs of blank lines left by the drops
+    out, prev_blank = [], False
+    for line in kept:
+        blank = not line.strip()
+        if blank and prev_blank:
+            continue
+        out.append(line)
+        prev_blank = blank
+    return "\n".join(out).strip()
+
+
 @bp.route("/inception/<task_id>/decide", methods=["POST"])
 def record_decision(task_id):
     if not re_mod.match(r"^T-\d{3,}$", task_id):
@@ -598,11 +643,16 @@ def record_decision(task_id):
                 # Mirrors the sibling escape+pre-wrap pattern at line ~579 (the
                 # pre-decision validation rejection path).
                 import html as _html
+                # T-3280: operator-facing translation — decision status + reason,
+                # bypass instructions and internal banners stripped.
+                _reason = _operator_facing_stderr((stderr or stdout)[:3000])[:1500]
                 warning_html = (
                     f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
                     f'white-space:pre-wrap;">'
-                    f'⚠ Decision recorded; side-effect warning: '
-                    f'{_html.escape((stderr or stdout)[:1500])}'
+                    f'⚠ Your decision is saved. Automatic completion was blocked by a '
+                    f'framework gate — the agent session can recover this '
+                    f'(fw inception sweep); no action needed from you unless it persists.\n'
+                    f'Reason: {_html.escape(_reason)}'
                     f'</div>'
                 )
             if not commit_ok:
@@ -632,7 +682,11 @@ def record_decision(task_id):
         # and the reason is visible inline. The logging.error above preserves
         # server-side observability regardless of the client-facing status.
         import html as _html
-        reason = _html.escape((stderr or stdout or "Unknown error from fw inception decide")[:300])
+        # T-3280: same operator-facing translation on the failure path.
+        reason = _html.escape(
+            _operator_facing_stderr((stderr or stdout or "Unknown error from fw inception decide")[:3000])[:300]
+            or "Unknown error from fw inception decide"
+        )
         return (
             f'<div class="go-decision" style="border:1px solid #ef4444; border-radius:6px; padding:0.6rem;">'
             f'<strong>{task_id}</strong>: '

@@ -1,0 +1,128 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3279: inception decide half-transition - T-2190 disposition predicate enforced only at completion, never at decide preflight or review emission (producer/consumer parity, L-399 class)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-05T10:59:25Z
+# ============================================================================
+
+task_id: T-3279
+task_name: "inception decide half-transition - T-2190 disposition predicate enforced only at completion, never at decide preflight or review emission (producer/consumer parity, L-399 class)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-05T10:51:39Z
+completed: 2026-09-05T10:58:59Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-05T12:52:26+02:00
+last_commit: 2026-09-05T12:58:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  recover T-3278 from class-2 stuck state — dispose IW-1..5, inception sweep (GO stands); file parity bug task. decision-readiness parity — shared disposition predicate at all three surfaces (G-102). RCA + verification + AC tick
+
+# Key outcomes
+outcomes:
+  - 'The disposition predicate is extracted into a shared library function (one implementation) that takes a task-file path and reports under-disposed IW/Q questions; `update-task.sh check_disposition_gate` calls it instead of carrying its own copy — parity by construction, not by duplication'
+  - '`do_inception_decide` (go/no-go branch) runs the shared predicate in its T-1503 preflight BEFORE writing the Decision block or ticking ACs; an under-disposed inception is refused with the task body untouched — no more class-2 stuck state from this predicate'
+  - 'The decide-preflight refusal message is operator-and-agent readable: it names the under-disposed questions and says dispositions must be filled before deciding — and does NOT print Tier-2 bypass flags as the primary remedy'
+  - '`fw task review` emission (lib/review.sh) on an inception with under-disposed questions prints a loud warning naming them, so the agent is told BEFORE handing the human a decision that will refuse'
+  - 'Regression: a fully-disposed inception decides GO end-to-end (decision recorded, ACs ticked, task moves to completed/) — the preflight does not refuse valid flow'
+  - 'Bats tests pin all of the above: refusal-before-mutation (body unchanged after refused decide), review-emission warning, and the green path; zero skips'
+  - '`bin/fw vendor self --check` clean before close (lib/ and agents/ are vendored paths — OBS-250 ordering)'
+  - '[REVIEW] Dashboard renders correctly'
+  - '[REVIEWER] Block message names both bypass mechanisms'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'recover T-3278 from class-2 stuck state — dispose IW-1..5, inception sweep (GO stands); file parity bug task'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/inception-readiness.sh'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/review.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/task-create/update-task.sh'
+  - '.context/audits/2026-09-05.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/concerns.yaml'
+  - '.context/episodic/T-3241.yaml'
+  - '.context/handovers/S-2026-0905-1044.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0905-1237.discard-manifest.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/concerns.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - 'lib/inception-readiness.sh'
+  - 'lib/inception.sh'
+  - 'lib/review.sh'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3279-inception-decide-half-transition---t-219.md'
+  - '.tasks/completed/T-2876-interpreter-mediated-writes-bypass-the-b.md'
+  - '.tasks/completed/T-3278-restart-based-m2-transport---cron-watche.md'
+  - 'tests/unit/t3279_decision_readiness_parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-05T12:52:26'
+    action: 'T-3279: recover T-3278 from class-2 stuck state — dispose IW-1..5, inception sweep (GO stands); file parity bug task'
+  - time: '2026-09-05T12:57:22'
+    action: 'T-3279: decision-readiness parity — shared disposition predicate at all three surfaces (G-102)'
+  - time: '2026-09-05T12:58:35'
+    action: 'T-3279: RCA + verification + AC tick'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 3
+  files_changed: 41
+  lines_added: 1352
+  lines_removed: 469
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3279-inception-decide-half-transition---t-219.md
+generated_by: context-agent-hybrid
