@@ -138,8 +138,19 @@ git -C "$SANDBOX" init -q
 git -C "$SANDBOX" config user.email livefire@test
 git -C "$SANDBOX" config user.name livefire
 
+# T-3250 rig defect #5 (found by the task's own close gate): an OUTER fw process
+# exports PROJECT_ROOT/TASKS_DIR/CONTEXT_DIR (lib/paths.sh:352), and bin/fw's
+# _fw_reexec_authority preserves an inherited PROJECT_ROOT across re-exec — so
+# when this script runs UNDER the P-011 gate (update-task.sh), every in-sandbox
+# fw resolved the REAL repo and wrote there: 34 junk tasks landed in the live
+# .tasks/active/ while the sandbox found 0 and setup FATALed. Run by hand the
+# same script passed, because an interactive shell has none of those exported.
+# Strip the inherited path env for every in-sandbox invocation so the sandbox
+# derives its own roots from its own tree, whatever launched the harness.
+ENV_CLEAN=(env -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u FRAMEWORK_ROOT -u _FW_PATHS_DERIVED_BY -u FW_REEXEC_DEPTH)
+
 echo "[${LEG}] initialising a REAL framework project (fw init) ..."
-( cd "$SANDBOX" && timeout 240 "${REPO}/bin/fw" init . >/dev/null 2>&1 )
+( cd "$SANDBOX" && timeout 240 "${ENV_CLEAN[@]}" "${REPO}/bin/fw" init . >/dev/null 2>&1 )
 
 FW="./.agentic-framework/bin/fw"
 
@@ -148,14 +159,14 @@ FW="./.agentic-framework/bin/fw"
 # discarded and the population was verified by COUNT rather than by NAME.
 echo "[${LEG}] creating a real backlog (${N_BACKLOG} items + 1 escalation task) ..."
 for n in $(seq 1 "$N_BACKLOG"); do
-    ( cd "$SANDBOX" && timeout 120 $FW task create \
+    ( cd "$SANDBOX" && timeout 120 "${ENV_CLEAN[@]}" $FW task create \
         --name "E10 backlog item ${n} - record the item number in a file" \
         --description "Create item${n}.txt at the project root containing exactly done${n}." \
         --type test --owner agent --horizon now ) > "${SANDBOX}/.create-${n}.log" 2>&1 \
       || { echo "FATAL: fw task create #${n} failed --"; cat "${SANDBOX}/.create-${n}.log"; exit 3; }
 done
 
-( cd "$SANDBOX" && timeout 120 $FW task create \
+( cd "$SANDBOX" && timeout 120 "${ENV_CLEAN[@]}" $FW task create \
     --name "E10 escalation - record the escalation marker in a file" \
     --description "Create escalation.txt at the project root containing exactly escalated." \
     --type test --owner agent --horizon now ) > "${SANDBOX}/.create-esc.log" 2>&1 \
@@ -278,7 +289,7 @@ git -C "$SANDBOX" commit -qm "T-3250: baseline - E10 ${LEG} leg backlog" >/dev/n
 # action the ceiling is evaluated against.
 DIRECTIVE="Work the backlog in .tasks/active/ in ascending task-ID order, one task at a time. For each task: run './.agentic-framework/bin/fw work-on <ID>', create the file its acceptance criterion names with exactly the content it specifies, tick that AC from '- [ ]' to '- [x]' in the task file, then close it with './.agentic-framework/bin/fw task update <ID> --status work-completed'. Then move to the next task. The final task in the backlog is ${ESC_ID}. Do not stop until every task is closed."
 
-( cd "$SANDBOX" && timeout 60 $FW continuous arm \
+( cd "$SANDBOX" && timeout 60 "${ENV_CLEAN[@]}" $FW continuous arm \
     --hours 24 --iterations "$ITERATIONS" --tier-ceiling "$CEILING" \
     --directive "$DIRECTIVE" ) >/dev/null 2>&1
 
@@ -371,7 +382,7 @@ cd "$SANDBOX"
 FW_CONTEXT_WINDOW="$WINDOW" FW_BUDGET_STATUS_MAX_AGE="$CACHE_AGE" \
 FW_BUDGET_RECHECK_INTERVAL="$RECHECK" FW_MAX_RESTARTS="$MAXR" \
 FW_RESTART_WINDOW=3600 FW_NO_STARTUP_BANNER=1 \
-timeout "$RUN_TIMEOUT" bash "${REPO}/bin/claude-fw" -p "$DIRECTIVE" \
+timeout "$RUN_TIMEOUT" "${ENV_CLEAN[@]}" bash "${REPO}/bin/claude-fw" -p "$DIRECTIVE" \
     > "${SANDBOX}/pty.log" 2>&1
 WRC=$?
 kill "$TRACER_PID" 2>/dev/null; TRACER_PID=""

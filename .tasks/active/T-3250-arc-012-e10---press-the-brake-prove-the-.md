@@ -496,6 +496,30 @@ grep -q 'ATTRIBUTION' docs/reports/T-3239-continuous-loop-demo/evidence/E10-brak
 - **Triggered:** nothing new — T-3253 already closed the loop this entry
   documents.
 
+### 2026-09-05 — rig defect #5: the close gate's own environment poisoned the rig
+
+- **What changed:** The first `--status work-completed` attempt was refused —
+  both SETUP_ONLY verification legs exited 3 with `expected 16 backlog + 1
+  escalation, found 0`. Under the P-011 gate, `update-task.sh` exports
+  `PROJECT_ROOT`/`TASKS_DIR`/`CONTEXT_DIR` (lib/paths.sh:352), and `bin/fw`'s
+  `_fw_reexec_authority` preserves an inherited `PROJECT_ROOT` across re-exec
+  — so every in-sandbox `fw task create` resolved the REAL repo and wrote
+  there: **34 junk tasks (T-3285…) landed in the live `.tasks/active/`** while
+  the sandbox found 0. Run by hand the same script passed, because an
+  interactive shell exports none of that.
+- **Same shape, fifth instance:** "works by hand, fails under the gate" with
+  the failure invisible at the surface where it acts — the leak wrote to a
+  different tree than the one the FATAL was reported from.
+- **Fix:** all five in-sandbox invocations (init, task create ×2, continuous
+  arm, the claude-fw loop) now run under `env -u PROJECT_ROOT -u TASKS_DIR
+  -u CONTEXT_DIR -u FRAMEWORK_ROOT -u _FW_PATHS_DERIVED_BY -u FW_REEXEC_DEPTH`.
+  Red→green proven: SETUP_ONLY with the poisoned env exported now passes with
+  zero leakage. The 34 junk tasks were removed (untracked, never committed).
+- **Triggered:** the underlying cross-project inheritance is a framework bug,
+  not a rig bug — a nested fw in a DIFFERENT project silently inherits the
+  outer project's root and writes across the boundary. Filed as its own task
+  + OBS; G-063-adjacent but a distinct, demonstrated class.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
