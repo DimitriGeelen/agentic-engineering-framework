@@ -527,3 +527,33 @@ files in the working tree at dispatch start (`.context/audits/*`,
 `.tasks/active/T-32{85..05}*` E10-backlog task files, `VERSION`) are the same
 class of unrelated concurrent-session state churn round 6 already declined to
 bundle in — left untouched again for the same reason.
+
+### 2026-09-05 — Round 8 (fresh dispatch): re-verified, no new remediation found
+
+Re-checked every AC directly rather than assuming round 7's state still holds:
+
+- **AC1** — `bin/fw fabric drift` still `unregistered: 0, orphaned: 0, stale: 0`.
+- **AC3/branch hygiene** — `git branch -vv` shows the same 9 non-mainline
+  branches as round 1/6 (no new merges, no new stale refs). Attempted the
+  still-outstanding `arc012-ultrareview` safekeeping push again
+  (`git ls-remote origin refs/heads/arc012-ultrareview` was empty, confirming
+  it never landed) — the pre-push hook's own structure-section audit run
+  took over the 2-minute command budget and the push was killed before
+  completing; branch remains local-only, exactly where round 1/6 left it.
+  Not forcing `--no-verify` around the hook for a low-priority safekeeping
+  branch.
+- **AC4** — `T-3263` (the human-gate rationale for staying disarmed) is still
+  `status: work-completed`/`owner: human` with its `[REVIEW]` Human AC on
+  `bgIsolation` still unticked, and `.continuous-mode.yaml` is still
+  `enabled: false`. Round 6's decision to leave continuous mode disarmed
+  stands unchanged — the human gate it depends on has not moved.
+- **AC6** — a live `audit.sh --section structure` run during the push attempt
+  (above) gives a fresh cross-check: GO-scope-not-propagated now 184/358
+  (was 183/356), watch-pattern-gap now 713 (was 712/767 across rounds), fabric
+  no-edge 43/1124. Same entrenched-backlog shape as every prior round; no
+  targeted action taken, consistent with round 1/6/7's rationale.
+- **No new fabric drift, no new branches, no status change on the human
+  gate** — this round's honest finding is "nothing changed, nothing new to
+  fix," which is itself the evidence the sweep has converged on its
+  tractable subset. Only this doc update is committed/pushed for this round
+  (AC7) — no unrelated working-tree files touched.
