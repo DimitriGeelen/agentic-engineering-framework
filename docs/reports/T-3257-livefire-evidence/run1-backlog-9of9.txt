@@ -1,0 +1,33 @@
+
+Spawning a real Claude agent DIRECTLY in a tmux pane (claude-haiku-4-5-20251001)
+  PASS  a real Claude TUI is up in pane 't3257bk1502357:0.0'
+  PASS  a real claude process is running in the sandbox
+
+Armed: driving a REAL agent that stops after every single unit
+  tick  1: refused   done=0 
+  tick  2: injected  done=0 | continuous-driver: injected a continuation turn into 't3257bk1502357:0.0' (delivery confirmed)
+      busy-probe: refused   
+  tick  3: injected  done=1 | continuous-driver: injected a continuation turn into 't3257bk1502357:0.0' (delivery confirmed)
+      busy-probe: refused   
+  tick  4: injected  done=2 | continuous-driver: injected a continuation turn into 't3257bk1502357:0.0' (delivery confirmed)
+      busy-probe: refused   
+  tick  5: injected  done=3 | continuous-driver: injected a continuation turn into 't3257bk1502357:0.0' (delivery confirmed)
+      busy-probe: injected  | continuous-driver: injected a continuation turn into 't3257bk1502357:0.0' (delivery confirmed)
+  agent signalled ALL-DONE
+  units complete: 3/3   ALL-DONE: yes
+  PASS  all 3 units completed by a real agent, driven only by injection
+  PASS  agent reached its own terminal signal
+  PASS  budget gauge never tripped — this is the no-signal case M2 cannot reach
+  PASS  ledger records 5 injections
+  PASS  observed the agent BUSY 4 time(s) and refused to interleave
+
+Negative control: identical run, enabled: false
+  ..    agent is idle — the armed phase has fully drained
+  tick 1: refused
+  tick 2: refused
+  tick 3: refused
+  units complete: 0/3
+  PASS  the agent did nothing while disarmed — it really was the driver
+  PASS  zero injections while disarmed
+
+RESULT: 9 passed, 0 failed

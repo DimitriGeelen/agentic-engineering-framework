@@ -1,22 +1,13 @@
 ---
-id: T-3257
-name: "Real-agent live-fire for continuous-driver — blocked on G-097 upstream termlink
-  fix"
+id: T-3283
+name: "Re-arm continuous-driver-10m cron once a drivable substrate exists"
 description: >
-  T-3254's AC5 live-fire drove a shell script, not an agent -- it proved transport/bounds/ledger
-  but assumed the one property that actually matters (an agent stopping early gets
-  driven to completion). T-3255 built the real thing (tools/t3255-livefire-agent.sh,
-  spawns a real claude session, one backlog item per turn) and it is CORRECT, but
-  it cannot pass: termlink inject/pty-inject does not deliver keystrokes into a claude
-  TUI session at all (G-097). This task resumes and completes that proof once G-097
-  is fixed upstream or a confirmed workaround exists. Do not attempt with a stub or
-  a different transport substitution -- that would recreate the exact gap this task
-  exists to close.
+  T-3257 proved the driver drives a real agent to completion (9/9, twice) but deliberately did NOT lift the cron pause. Two blockers: (1) the registry command passes no --transport so it runs the termlink leg, still blocked by G-097; (2) the live session runs under claude daemon run (G-098), neither tmux-paned nor TermLink-registered, so the driver can resolve no target. Re-arm when a drivable substrate exists: either G-097 closes upstream (T-3256), or the registry entry gains --transport tmux AND the session is launched into a tmux pane.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
@@ -30,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-03T14:18:37Z
-last_update: 2026-09-05T07:56:06Z
-date_finished:
+created: 2026-09-05T14:29:04Z
+last_update: 2026-09-05T14:29:04Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -43,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-03T14:30:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=282,acs=6)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-03T14:30:21Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3257: Real-agent live-fire for continuous-driver — blocked on G-097 upstream termlink fix
+# T-3283: Re-arm continuous-driver-10m cron once a drivable substrate exists
 
 ## Context
 
@@ -83,47 +46,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] G-097 is closed or a workaround is confirmed measured (not assumed) before
-      this task starts real work — checked by the build-order gate in
-      `## Verification`.
-      **Met by workaround, not closure.** G-097 remains open. The workaround is
-      measured, not assumed: `tools/t3250-transport-probe.sh` (T-3277) recorded
-      `termlink inject → live Claude TUI: exits 0, delivers NOTHING` against
-      `tmux send-keys → live Claude TUI: DELIVERS`, on the installed binaries.
-- [x] A real `claude` session is driven to all of: 3/3 backlog units complete,
-      `ALL-DONE` reached, budget gauge never tripped, at least one BUSY
-      observation recorded, negative control clean.
-      **SCOPE CORRECTION — harness substituted, and the substitution is the
-      finding.** As filed this AC named `tools/t3255-livefire-agent.sh` and said
-      to reuse it because "only the transport defect blocked it, not the harness
-      design". The first half of that is wrong in a way that matters: T-3255
-      spawns its agent with `termlink spawn --shell -- bash -lc '… exec claude …'`,
-      nesting `tmux pane → termlink register → inner PTY → shell → claude TUI`.
-      Per T-3277's measured matrix, `termlink inject` dies at the TUI (G-097) AND
-      `tmux send-keys` at the outer pane lands on `termlink register`'s stdin and
-      is swallowed. **Neither transport reaches a termlink-wrapped agent**, so no
-      transport flag rescues that harness — its substrate IS the blocked case.
-      `tools/t3257-livefire-backlog.sh` ports T-3255's design verbatim (same
-      directive, same one-unit-per-turn early stop, same five assertions, same
-      negative control) onto a Claude TUI running DIRECTLY in a tmux pane, which
-      is the case measured as drivable. Recorded rather than silently reworded.
-      Result: **9/9, twice.**
-- [x] The T-3254 refusal suite (tests/unit/t3254_driver_refusals.bats) still
-      passes with zero skips. — 21/21, 0 failures, 0 skips.
-**Dropped AC — cron re-arm, carried to T-3283.** As filed, a fourth Agent AC read
-"`fw cron resume continuous-driver-10m` is run to re-arm the paused cron entry …
-this task is what un-pauses the mitigation". It is deliberately NOT done, and is
-removed from the criteria above rather than left unticked, because it is now a
-different task's precondition — not unfinished work here.
-Re-arming now would produce noise, not autonomy, for two measured reasons.
-      (1) The registry command passes no `--transport`, so it would run the
-      termlink leg, which G-097 still blocks — every 10 minutes it would refuse
-      (loudly, thanks to T-3275's guard) rather than drive anything. (2) More
-      decisively, this session runs under `claude daemon run` (G-098): it is
-      neither in a tmux pane nor TermLink-registered, so the driver has no
-      drivable target to resolve at all. The mitigation should be lifted when a
-      drivable substrate exists, which is a different precondition than the one
-      this AC assumed.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -157,45 +81,6 @@ Re-arming now would produce noise, not autonomy, for two measured reasons.
 -->
 
 ## Verification
-
-bash -n tools/t3257-livefire-backlog.sh
-test -x tools/t3257-livefire-backlog.sh
-# The substitution IS the finding: the harness must drive a DIRECT tmux pane, never a
-# termlink-wrapped session. If someone "restores" the T-3255 spawn shape, this goes red
-# rather than the run silently going back to measuring an undrivable target.
-grep -q -- '--transport tmux' tools/t3257-livefire-backlog.sh
-# Anchored to non-comment lines. The bare `! grep -q 'termlink spawn'` form was RED on
-# a correct harness: the file explains at length why it does not use termlink spawn,
-# so the check matched its own prose. A guard that reads documentation as behaviour
-# fails on exactly the file that documents itself best.
-! grep -qE '^[^#]*termlink spawn' tools/t3257-livefire-backlog.sh
-# Both recorded runs are 9/9 with no FAIL line. Evidence, not a re-run: the live-fire
-# needs a real claude session and ~10 min, so it is captured rather than re-executed
-# on every close.
-grep -q 'RESULT: 9 passed, 0 failed' docs/reports/T-3257-livefire-evidence/run1-backlog-9of9.txt
-grep -q 'RESULT: 9 passed, 0 failed' docs/reports/T-3257-livefire-evidence/run2-backlog-9of9.txt
-! grep -q '^  FAIL' docs/reports/T-3257-livefire-evidence/run1-backlog-9of9.txt
-timeout 600 bats tests/unit/t3254_driver_refusals.bats > /tmp/.t3257-t3254.out 2>&1 && ! grep -q '^not ok' /tmp/.t3257-t3254.out
-test "$(grep -c '# skip' /tmp/.t3257-t3254.out)" -eq 0
-
-# --- T-3257 build-order gate (corrected) ---
-# The rule was always "G-097 closed OR a workaround confirmed measured", but the
-# original predicate only tested closure — the disjunction lived in the comment and
-# never in the code, so the gate asserted something stricter than the rule it cites.
-# G-097 is still open and the workaround IS measured, which is exactly the state the
-# comment allowed and the code refused. Corrected to test the actual disjunction.
-python3 -c "
-import os, yaml
-d = yaml.safe_load(open('.context/project/concerns.yaml'))
-g = next((c for c in d['concerns'] if c['id'] == 'G-097'), None)
-closed = bool(g) and g.get('status') not in ('open', None)
-# Workaround leg: the probe that measured it exists, AND the driver carries the
-# transport it measured. Both, so a stray file or a stray flag cannot satisfy it alone.
-probe = os.path.exists('tools/t3250-transport-probe.sh')
-driver = open('agents/context/continuous-driver.sh').read()
-measured = probe and 'tmux send-keys' in driver and 'termlink|tmux' in driver
-raise SystemExit(0 if (closed or measured) else 1)
-"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -383,56 +268,6 @@ raise SystemExit(0 if (closed or measured) else 1)
 
 ## Decisions
 
-### 2026-09-05 — Port the proof to a drivable substrate rather than wait for G-097
-
-- **Chose:** keep T-3255's design and move its substrate — agent runs directly in a
-  tmux pane, driver invoked `--transport tmux --session <pane>`.
-- **Why:** T-3255's harness cannot run *by construction*, not by defect. It spawns
-  via `termlink spawn --shell`, and T-3277 measured that neither transport reaches a
-  termlink-wrapped agent — `termlink inject` dies at the ink TUI (G-097), and
-  `tmux send-keys` at the outer pane lands on `termlink register`'s stdin. Waiting
-  for G-097 would have parked a proof that was already achievable on a different
-  wire.
-- **Rejected:** substituting a stub or a shell script for the agent — the task's own
-  description forbids it, and it is the exact gap T-3255 existed to close.
-- **Kept honest:** G-097 stays open. A termlink-wrapped agent remains undrivable, and
-  that is a real limit on where the continuous driver can be deployed today.
-
-### 2026-09-05 — Two failing assertions were harness artifacts, and both were fixed rather than relaxed
-
-- **Busy guard never fired (run 2).** With a 25s gap and a fast model, the agent had
-  always finished before the driver looked, so the guard was never exercised — a
-  green that measured nothing. Fixed by probing deliberately ~3s after each
-  confirmed injection, landing inside the turn. Runs 3 and 4 observed BUSY 4× and 1×.
-  Waiting for luck to exercise a guard is not a test.
-- **"1 unit completed while disarmed" (run 2).** Not a leak. The agent was still
-  finishing the turn the last armed injection started when the control wiped the
-  backlog; that in-flight turn ticked a fresh unit-1. The control's claim is
-  *no injection ⇒ no progress*, so it can only start from an idle agent. Fixed with
-  a quiet-wait before the control arms.
-- **Rejected:** loosening either assertion to `>= 0`. Both were telling the truth
-  about the harness; the assertions were the only reason either was visible.
-
-### 2026-09-05 — The harness reimplements idle-detection instead of sharing the driver's
-
-- **Chose:** `wait_quiet()` in the harness duplicates the two-identical-captures idea
-  the driver uses.
-- **Why:** the control must be able to tell "idle" from "idle" *independently of the
-  code under test*. Sharing the helper would make the control agree with the driver
-  by construction — which is precisely the T-3254 defect, where the test stub encoded
-  the same assumption as the production bug and 21 green tests covered nothing.
-
-### 2026-09-05 — Did not lift the cron pause
-
-- **Chose:** leave `continuous-driver-10m` paused; carry the re-arm to T-3283.
-- **Why:** the registry command passes no `--transport`, so it would run the
-  G-097-blocked termlink leg and refuse every 10 minutes. And this session runs under
-  `claude daemon run` (G-098) — neither tmux-paned nor TermLink-registered — so the
-  driver can resolve no target at all. Re-arming buys noise, not autonomy.
-- **Note:** this is the AC whose premise the work disproved. The original wording
-  ("this task is what un-pauses the mitigation") assumed the proof and the deployment
-  precondition were the same event. They are not.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -454,11 +289,7 @@ raise SystemExit(0 if (closed or measured) else 1)
 
 ## Updates
 
-### 2026-09-03T14:18:37Z — task-created [task-create-agent]
+### 2026-09-05T14:29:04Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3257-real-agent-live-fire-for-continuous-driv.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3283-re-arm-continuous-driver-10m-cron-once-a.md
 - **Context:** Initial task creation
-
-### 2026-09-05T07:56:06Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: later → now (auto-sync)

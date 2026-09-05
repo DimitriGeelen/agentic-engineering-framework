@@ -1,0 +1,22 @@
+1..21
+ok 1 A1 enabled: false refuses; enabled: true is the control
+ok 2 A2 a recorded termination refuses; no recorded termination is the control
+ok 3 A3 max_iterations reached refuses; one under is the control
+ok 4 A4 max_tasks reached refuses; one under is the control
+ok 5 A5 a lapsed expires_at refuses; a future one is the control
+ok 6 A6 a blast-radius over the ceiling refuses; under the ceiling is the control
+ok 7 A7 the halt file refuses; its absence is the control (Brake 1, outranks all)
+ok 8 A8 the ceiling join resolves from FRAMEWORK_ROOT, so a consumer is not inert
+ok 9 A9 an unevaluable ceiling is a blocker, never a green light
+ok 10 B1 a busy session is not injected into
+ok 11 B2 control: a quiet session IS injected into
+ok 12 B3 the bounds outrank a quiet session — disarmed means no injection
+ok 13 B5 a session that cannot answer pty output is refused, not read as idle
+ok 14 B4 the driver's termlink verbs match the real termlink CLI
+ok 15 D1 one discoverable session is resolved with NO configuration at all
+ok 16 D2 two candidates refuse and NAME them rather than guessing
+ok 17 D3 a pin breaks the tie that D2 refuses
+ok 18 D4 zero candidates refuse by naming the PRECONDITION, not just the setting
+ok 19 C1 a refusal is recorded with its reason, reconstructable without re-running
+ok 20 C2 an injection is recorded too, so both outcomes read as one history
+ok 21 C3 a dry run records itself and injects nothing
