@@ -4894,3 +4894,9 @@ X'` returning empty group."
   task: T-3268
   date: 2026-09-03
   context: Added via context agent
+- id: L-660
+  learning: "A detector is only as good as the surfaces that run it unprompted. The T-2938 stale-Watchtower predicate was correct for 24 days and caught nothing, because it lived only in fw doctor (on-demand); the class recurred under green cron and pre-push audits that had no call site. When shipping a detector, enumerate the surfaces that run WITHOUT being asked (cron audit, pre-push, close gate) and wire it into at least one of them — doctor-only detection is wired, not deployed (L-364 applied to detection itself)."
+  source: P-001
+  task: T-3282
+  date: 2026-09-05
+  context: Added via context agent
