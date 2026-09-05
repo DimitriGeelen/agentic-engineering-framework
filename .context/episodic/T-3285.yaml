@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3285: nested fw inherits outer PROJECT_ROOT across project boundaries and writes into the wrong repo (OBS-370)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-05T19:45:36Z
+# ============================================================================
+
+task_id: T-3285
+task_name: "nested fw inherits outer PROJECT_ROOT across project boundaries and writes into the wrong repo (OBS-370)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-05T18:19:14Z
+completed: 2026-09-05T19:45:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-05T21:44:29+02:00
+last_commit: 2026-09-05T21:44:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  provenance beats validity — nested fw re-anchors to the tree it stands in. vendor self — resolver fix into .agentic-framework
+
+# Key outcomes
+outcomes:
+  - 'bin/fw re-anchors an fw-derived inherited PROJECT_ROOT (sentinel == value) to the cwd''s project root when they name different real projects — pinned by new `tests/unit/t3285_nested_fw_cross_project.bats` (t1 6/6 green; red-check: with the fix stashed, the same probe resolves the OUTER root)'
+  - 'Operator-explicit env still wins unconditionally: no sentinel, or sentinel != PROJECT_ROOT, keeps the inherited root (t2/t3 green; t2446 t4 green; test_resolve_project_root_env_wins_unconditionally green)'
+  - 'Write-leg proof: with the full T-3250 poisoned-env shape (PROJECT_ROOT+TASKS_DIR+CONTEXT_DIR+sentinel from the outer project), `fw task create` in the inner project writes to the INNER `.tasks/`, zero files in the outer (t6 green)'
+  - 'All resolution-adjacent suites stay green: 34 bats tests across t2289/t2390/t2391/t2446/guard_project_root/resolve_framework/t3285 — 0 not-ok, 0 skips; t3111_worktree_reexec 16/16 incl. "PROJECT_ROOT does NOT move to the authority"; test_project_root_discovery.py 7/7'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor self — resolver fix into .agentic-framework'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.tasks/active/T-3285-nested-fw-inherits-outer-projectroot-acr.md'
+  - 'tests/unit/t3285_nested_fw_cross_project.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-05T21:44:29'
+    action: 'T-3285: provenance beats validity — nested fw re-anchors to the tree it stands in'
+  - time: '2026-09-05T21:44:52'
+    action: 'T-3285: vendor self — resolver fix into .agentic-framework'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 85 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 85
+  commits: 2
+  files_changed: 6
+  lines_added: 300
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3285-nested-fw-inherits-outer-projectroot-acr.md
+generated_by: context-agent-hybrid

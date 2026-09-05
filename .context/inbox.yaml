@@ -4247,3 +4247,20 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-369
+  text: "Focus stomped twice in one hour by a stale-session writer: focus.yaml rewritten to current_task T-1719 with focus_session S-2026-0813-2305 (an Aug-13 session id, same id as the stale .budget-status cache) while the live session worked T-3284. Measured 2026-09-05 ~16:50 and ~16:56 — the T-1730 drift gate caught both. G-083 class (single-slot focus, shared tree); the fingerprint narrows it to machinery replaying S-2026-0813-2305 state, not a concurrent live session."
+  captured: 2026-09-05T16:56:12Z
+  context_task: T-1719
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-370
+  text: "Nested fw crosses project boundaries: with PROJECT_ROOT/TASKS_DIR/CONTEXT_DIR exported by an outer fw process (lib/paths.sh:352), a DIFFERENT project's vendored bin/fw inherits them (_fw_reexec_authority preserves inherited PROJECT_ROOT, bin/fw:361) and writes into the OUTER project. Demonstrated 2026-09-05: T-3250's P-011 close gate ran its livefire sandbox harness; the sandbox's fw task create wrote 34 junk tasks (T-3285..) into the LIVE /opt/999-AEF .tasks/active/ while the sandbox saw 0 and FATALed. Works-by-hand/fails-under-gate; the write lands in a different tree than the error points at. Harness now env-cleans (rig-level); the framework-level fix — re-derive root when inherited PROJECT_ROOT does not contain PWD's project tree — filed as a task. G-063-adjacent, distinct class."
+  captured: 2026-09-05T18:19:00Z
+  context_task: T-3250
+  tags: []
+  status: dismissed
+  dismissed_reason: "Fixed structurally in T-3285 (closed): bin/fw re-anchors fw-derived inherited PROJECT_ROOT to the cwd's project when they name different real projects; pinned by tests/unit/t3285_nested_fw_cross_project.bats incl. write-leg replay of the 34-junk-task incident"
+  dismissed_at: 2026-09-05T19:46:18Z
+  promoted_to: null
+  urgent: true
