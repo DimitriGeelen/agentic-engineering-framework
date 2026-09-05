@@ -184,18 +184,12 @@ test "$(grep -c '# skip' /tmp/.t3257-t3254.out)" -eq 0
 # never in the code, so the gate asserted something stricter than the rule it cites.
 # G-097 is still open and the workaround IS measured, which is exactly the state the
 # comment allowed and the code refused. Corrected to test the actual disjunction.
-python3 -c "
-import os, yaml
-d = yaml.safe_load(open('.context/project/concerns.yaml'))
-g = next((c for c in d['concerns'] if c['id'] == 'G-097'), None)
-closed = bool(g) and g.get('status') not in ('open', None)
-# Workaround leg: the probe that measured it exists, AND the driver carries the
-# transport it measured. Both, so a stray file or a stray flag cannot satisfy it alone.
-probe = os.path.exists('tools/t3250-transport-probe.sh')
-driver = open('agents/context/continuous-driver.sh').read()
-measured = probe and 'tmux send-keys' in driver and 'termlink|tmux' in driver
-raise SystemExit(0 if (closed or measured) else 1)
-"
+# Body in a file, not `python3 -c`: P-011 runs ONE LINE AT A TIME, so a multi-line
+# -c block is not one command — lines 2+ execute as SHELL. That is the T-2990 class
+# (56MB of ImageMagick PostScript in the repo root, from `import yaml, sys` running
+# as bash where `import` is a screenshot tool). The gate caught this on the first
+# close attempt of this very task; the original in-task predicate had the same shape.
+python3 tools/t3257-build-order-gate.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
