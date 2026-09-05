@@ -4900,3 +4900,9 @@ X'` returning empty group."
   task: T-3282
   date: 2026-09-05
   context: Added via context agent
+- id: L-661
+  learning: "Validity checks cannot catch cross-project env leakage that is internally consistent: fw-exported PROJECT_ROOT+_FW_PATHS_DERIVED_BY match each other AND name a real project, so T-2391 (staleness) and T-2289 (sentinel mismatch) both pass. The discriminator is PROVENANCE — the sentinel's mere presence means fw machinery set the value (operator shells never source lib/paths.sh), so sentinel==root + cwd in a different real project = leakage, re-anchor to cwd. Ask 'who set this env var' not just 'is it valid'."
+  source: OBS-370
+  task: T-3285
+  date: 2026-09-05
+  context: Added via context agent
