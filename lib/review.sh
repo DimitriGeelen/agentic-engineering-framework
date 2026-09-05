@@ -131,6 +131,27 @@ emit_review() {
     if [ "$workflow_type" = "inception" ]; then
         [ -n "$review_url" ] || review_url="${base_url}/inception/${task_id}"
         review_label="Inception Review"
+
+        # T-3279 (G-102): decision-readiness warning at the INVITATION surface.
+        # The review handoff invites a go/no-go; if the T-2190 disposition gate
+        # would refuse the completion that decision triggers, say so NOW — to the
+        # agent emitting the handoff — instead of letting the human discover it
+        # as a half-failed decide (T-3278 origin incident). Warn-only: dialogue
+        # on the review page is a legitimate way to reach dispositions, so
+        # emission is not blocked.
+        source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || true
+        if command -v inception_underdisposed_questions >/dev/null 2>&1; then
+            local _underdisposed
+            _underdisposed=$(inception_underdisposed_questions "$task_file")
+            if [ -n "$_underdisposed" ]; then
+                echo "" >&2
+                echo "WARNING: this inception is NOT decision-ready — $(printf '%s\n' "$_underdisposed" | grep -c .) Open Question(s) lack disposition/rationale:" >&2
+                printf '%s\n' "$_underdisposed" | sed 's/^/    - /' >&2
+                echo "  A go/no-go recorded now will be refused by the disposition gate (T-2190)." >&2
+                echo "  Dispose each IW-N (answered|deferred|dissolved + rationale) BEFORE handing off the decision." >&2
+                echo "" >&2
+            fi
+        fi
     else
         [ -n "$review_url" ] || review_url="${base_url}/review/${task_id}"
         review_label="Human AC Review"

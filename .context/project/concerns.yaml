@@ -5001,3 +5001,46 @@ concerns:
     real and recurring").'
   related:
   - T-3266
+- id: G-102
+  type: gap
+  title: Completion-gate predicates are not propagated to the surfaces that INVITE completion --
+    a human-facing decide flow can be guaranteed to half-fail, and the failure is rendered as
+    raw agent-facing gate stderr including Tier-2 bypass flags
+  description: 'Origin incident (2026-09-05, T-3278): operator recorded GO via Watchtower on an
+    inception with 5 undisposed IW questions. fw inception decide records the decision FIRST,
+    then runs --status work-completed as a side-effect; the T-2190 disposition gate refused,
+    leaving the documented class-2 stuck state (decision recorded, status started-work), and
+    Watchtower surfaced the raw gate stderr -- bullet list, --skip-disposition-gate and
+    FW_SKIP_DISPOSITION_GATE=1 Tier-2 bypass instructions, plus the leaked --skip-sovereignty
+    warning -- as the operator-facing response.
+
+    The structural class (L-399/T-1890 producer/consumer parity, recurring): a completion-gate
+    predicate is wired at the enforcement point only. do_inception_decide has a preflight built
+    for EXACTLY this class (T-1503, April 2026: validate AC state before mutating the task body)
+    -- but when T-2190 added the disposition predicate to the completion gate (2026-06-03), the
+    preflight was not extended, and lib/review.sh emission (the surface that invites the human
+    to decide) checks recommendation presence (T-2421) but not decision-readiness. Blind for 3
+    months. T-2219 encountered this same disposition-gate stderr in Watchtower earlier and
+    "fixed" it by widening the rendering 150->1500 chars -- decorating the symptom instead of
+    asking why an operator sees agent-facing gate text at all. Two independent defects: (A) the
+    parity gap itself; (B) Watchtower rendering agent-facing stderr with bypass flags to the
+    operator.
+
+    Prevention shape for the class (not just this instance): the predicate must live in ONE
+    shared implementation callable from every surface, so parity holds by construction; and gate
+    authors adding a completion predicate must audit which upstream surfaces invite the
+    completion they now block (decide preflight, review emission, Watchtower forms).'
+  spec_reference: CLAUDE.md §Hook Bypass Contract Parity (L-399/T-1890); lib/inception.sh
+    do_inception_decide; agents/task-create/update-task.sh check_disposition_gate; lib/review.sh;
+    web/blueprints/inception.py record_decision
+  severity: high
+  status: open
+  detected_in: T-3279
+  observed: '2026-09-05'
+  blast_radius: 'Every inception decided via Watchtower or CLI while carrying an under-disposed
+    question; more broadly every future completion-gate predicate added without propagation to
+    invitation surfaces. Operator-facing: bypass flags shown to the human normalise Tier-2
+    bypass as the remedy for what is actually an authoring gap.'
+  related:
+  - T-3279
+  - T-3280

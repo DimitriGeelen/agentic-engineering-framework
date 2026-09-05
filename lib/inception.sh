@@ -546,6 +546,36 @@ do_inception_decide() {
     # Mirrors update-task.sh:73-105 AC counting logic; no new behavior, just
     # early validation. (T-131 in downstream 003-NTB-ATC-Plugin / P-010.)
     if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]; then
+        # T-3279 (G-102): decision-readiness preflight — runs the SAME disposition
+        # predicate the completion gate (T-2190) enforces, BEFORE anything mutates
+        # the task body (tick_inception_decide_acs writes the file too). Without
+        # this, a decide on an under-disposed inception records the decision, then
+        # the completion side-effect refuses — the class-2 stuck state (decision
+        # recorded, status started-work) the operator hit on T-3278, with the
+        # gate's agent-facing stderr surfaced raw in Watchtower. Refuse HERE,
+        # body untouched, in language both operator and agent can act on.
+        source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || true
+        if command -v inception_underdisposed_questions >/dev/null 2>&1; then
+            local _underdisposed
+            _underdisposed=$(inception_underdisposed_questions "$task_file")
+            if [ -n "$_underdisposed" ]; then
+                local _ud_count
+                _ud_count=$(printf '%s\n' "$_underdisposed" | grep -c .)
+                echo -e "${RED}ERROR: Cannot record $decision_upper — $_ud_count Open Question(s) not yet disposed.${NC}" >&2
+                echo "" >&2
+                echo "This inception's decision is not ready: each IW-N under '## Open Questions'" >&2
+                echo "needs 'disposition: answered|deferred|dissolved' plus a one-line rationale" >&2
+                echo "before a go/no-go can complete (T-2190 disposition gate)." >&2
+                echo "" >&2
+                echo "Not yet disposed:" >&2
+                printf '%s\n' "$_underdisposed" | sed 's/^/    - /' >&2
+                echo "" >&2
+                echo "Nothing was written — the task body is untouched. Fill the dispositions" >&2
+                echo "(deferring a question to the build work is a valid disposition), then decide again." >&2
+                return 1
+            fi
+        fi
+
         tick_inception_decide_acs "$task_file"
 
         local _ac_section _agent_acs _agent_total _agent_checked _agent_unchecked
