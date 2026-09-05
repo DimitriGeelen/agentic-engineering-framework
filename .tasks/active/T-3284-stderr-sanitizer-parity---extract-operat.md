@@ -6,12 +6,12 @@ description: >
   stderr sanitizer parity - extract _operator_facing_stderr to web/shared, apply on
   inception redirect + approvals render points (G-102 defect B residual)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/approvals.py, web/blueprints/inception.py, web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-05T16:36:00Z
-last_update: '2026-09-05T16:45:33Z'
-date_finished:
+last_update: 2026-09-05T16:55:04Z
+date_finished: 2026-09-05T16:55:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -93,10 +93,10 @@ call sites were found by auditing every `stderr` render in `web/blueprints/`.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `operator_facing_stderr` lives in `web/shared.py` as the single implementation; `web/blueprints/inception.py` imports it (alias `_operator_facing_stderr` kept for existing references) and carries no second copy of the drop-pattern list
-- [ ] All four residual render points route through the sanitizer: `inception.py` redirect `?warning=`/`?error=` params, `approvals.py` decide-endpoint `error` field, `approvals.py` batch-complete `errors` entries
-- [ ] `tests/unit/test_operator_facing_stderr.py` imports from `web.shared`, keeps all T-3280 behaviour tests green, and adds a source-scan test pinning that every `stderr`-rendering site in `inception.py`/`approvals.py` references the sanitizer — so a fifth raw render point cannot be added without failing the pin
-- [ ] Watchtower restarted after the change and `bin/fw watchtower current` exits 0 (G-104 — the fix must be live, not just on disk)
+- [x] `operator_facing_stderr` lives in `web/shared.py` as the single implementation; `web/blueprints/inception.py` imports it (alias `_operator_facing_stderr` kept for existing references) and carries no second copy of the drop-pattern list
+- [x] All four residual render points route through the sanitizer: `inception.py` redirect `?warning=`/`?error=` params, `approvals.py` decide-endpoint `error` field, `approvals.py` batch-complete `errors` entries
+- [x] `tests/unit/test_operator_facing_stderr.py` imports from `web.shared`, keeps all T-3280 behaviour tests green, and adds a source-scan test pinning that every `stderr`-rendering site in `inception.py`/`approvals.py` references the sanitizer — so a fifth raw render point cannot be added without failing the pin
+- [x] Watchtower restarted after the change and `bin/fw watchtower current` exits 0 (G-104 — the fix must be live, not just on disk)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -263,6 +263,34 @@ bin/fw vendor self --check
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The G-102 defect-B residual is closed structurally, not
+point-fixed: the sanitizer is now a single implementation in `web/shared.py`,
+every subprocess-stderr render point in the decide/approvals surfaces routes
+through it, and a source-scan test pins the invariant so a new raw render
+point fails CI instead of waiting for an operator to see bypass flags. The
+pin demonstrated its value on its first run by catching four additional raw
+sites (the git-commit helper's returns) beyond the four this task was filed
+for. The fix is live on the running Watchtower (restarted, `watchtower
+current` rc=0) — the exact gap (fix on disk, stale server) that made the
+original incident visible today. The one [REVIEW] AC extends the
+already-approved T-3280 copy to the approvals surfaces; no new wording was
+introduced.
+
+**Evidence:**
+- `tests/unit/test_operator_facing_stderr.py` — 7/7 pass: all T-3280
+  behaviour tests green after the move, plus the identity pin (blueprint
+  alias IS the shared function) and the source-scan pin.
+- Eight render points sanitized total: inception htmx ×2 (T-3280),
+  inception redirect `?warning=`/`?error=` ×2, approvals decide `error`,
+  approvals batch-complete `errors`, git-helper returns ×4 (found by the pin).
+- `bin/fw vendor self --check` clean; `bin/fw watchtower current` rc=0
+  (pid 2969219, post-fix).
+- Commits: 7ef84ca56 (fix + tests), vendored sync follow-up.
+
 ## RCA
 
 **Symptom:** Operator re-raised the T-3278 GO incident render (raw disposition-gate
@@ -387,3 +415,20 @@ predicate/render propagation audits.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3284-stderr-sanitizer-parity---extract-operat.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-07af9d6a
+- **Timestamp:** 2026-09-05T16:55:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `operator_facing_stderr` lives in `web/shared.py` as the single implementation; `web/blueprints/inception.py` imports it (alias `_operator_facing_stderr` kept for existing references) and carries no s
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: `operator_facing_stderr` lives in `web/shared.py` as the single implementation; `web/blueprints/inception.py` imports it (alias `_operator_facing_stde`
+
+### 2026-09-05T16:55:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
