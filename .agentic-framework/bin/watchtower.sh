@@ -352,6 +352,38 @@ do_status() {
 }
 
 # ---------------------------------------------------------------------------
+# do_current — Is the RUNNING process serving the code on disk? (T-3282, G-104)
+# ---------------------------------------------------------------------------
+# rc 0 = current, OR no Watchtower running (nothing can be stale — this keeps
+#        the verb safe inside ## Verification blocks on headless/CI/worktree
+#        hosts, same scoping idea as `command -v dotnet && dotnet build`).
+# rc 1 = the running process predates at least one file under web/ — every
+#        web/ change since it started is inert, including operator-facing
+#        fixes already closed green. Both prior incidents (T-2938, T-3282)
+#        polluted a live human decision this way.
+do_current() {
+    local pid=""
+    # set -euo pipefail is active: a missing pid file must read as "not
+    # running", not abort the script mid-verdict.
+    [ -f "$PID_FILE" ] && pid=$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || true)
+    if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
+        log_info "current: no Watchtower running — nothing to be stale"
+        return 0
+    fi
+    # shellcheck source=/dev/null
+    . "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh"
+    local stale
+    if stale=$(watchtower_stale_sources "$pid" "$PROJECT_ROOT/web"); then
+        log_error "STALE: Watchtower pid $pid predates $(printf '%s\n' "$stale" | grep -c .) file(s) under web/"
+        printf '%s\n' "$stale" | head -5 | sed 's|^|  - |' >&2
+        log_error "Every web/ change since it started is inert. Run: bin/fw watchtower restart"
+        return 1
+    fi
+    log_info "current: Watchtower pid $pid is newer than every file under web/"
+    return 0
+}
+
+# ---------------------------------------------------------------------------
 # do_port / do_url — Public accessors for triple-file source-of-truth (T-1376 B5)
 # ---------------------------------------------------------------------------
 do_port() {
@@ -444,6 +476,7 @@ case "$cmd" in
     status)  do_status ;;
     port)    do_port ;;
     url)     do_url ;;
+    current) do_current ;;
     ""|help|-h|--help)
         echo "Usage: $(basename "$0") {start|stop|restart|status|port|url} [options]"
         echo ""
@@ -454,6 +487,7 @@ case "$cmd" in
         echo "  status                         Show current state"
         echo "  port                           Print current port (triple-file source of truth; T-1376 B5)"
         echo "  url                            Print current URL (triple-file source of truth; T-1376 B5)"
+        echo "  current                        Exit 1 if the running process predates web/ source (T-3282)"
         echo ""
         echo "Environment:"
         echo "  FW_PORT  Default port (default: 3000)"

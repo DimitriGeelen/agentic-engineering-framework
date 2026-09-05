@@ -2421,6 +2421,36 @@ elif [ -f "$_cron_registry" ]; then
     fi
 fi
 
+# T-3282 (G-104): the RUNNING Watchtower is a deployment surface of its own —
+# source can be fixed, tested, and closed green while the process serves the
+# pre-fix bytes (Flask debug=False, no reloader). The T-2938 detector fired
+# only in `fw doctor`, an on-demand surface; both incidents (2026-08-12: six
+# days stale, five inert web/ commits; 2026-09-05: six days, 201 commits
+# including an operator-approved stderr sanitizer) ran under green cron and
+# pre-push audits that had no line for it. This deploys the same detector to
+# the surfaces that run unprompted. WARN, not FAIL: the state is
+# host-environment (T-2437 classification), transiently true after every web/
+# commit, and the remedy is one restart. Skipped in linked worktrees (host
+# state is owned by the main checkout) and when no Watchtower is running.
+_wt_cur_pid_f="$PROJECT_ROOT/.context/working/watchtower.pid"
+if ! fw_is_linked_worktree "$PROJECT_ROOT" && [ -f "$_wt_cur_pid_f" ] \
+   && [ -f "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh" ]; then
+    _wt_cur_pid=$(tr -d '[:space:]' < "$_wt_cur_pid_f" 2>/dev/null)
+    if [ -n "$_wt_cur_pid" ] && kill -0 "$_wt_cur_pid" 2>/dev/null; then
+        # shellcheck source=/dev/null
+        . "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh"
+        if _wt_cur_list=$(watchtower_stale_sources "$_wt_cur_pid" "$PROJECT_ROOT/web"); then
+            _wt_cur_n=$(printf '%s\n' "$_wt_cur_list" | grep -c .)
+            _wt_cur_sample=$(printf '%s\n' "$_wt_cur_list" | head -3 | while IFS= read -r _f; do basename "$_f"; done | tr '\n' ' ')
+            warn "Watchtower serving stale code: pid $_wt_cur_pid predates $_wt_cur_n file(s) under web/" \
+                 "${_wt_cur_sample}— every web/ change since the process started is inert, including operator review/decision surfaces (G-104)" \
+                 "Run: bin/fw watchtower restart"
+        else
+            pass "Watchtower currency: running pid $_wt_cur_pid is newer than every file under web/"
+        fi
+    fi
+fi
+
 # T-1722: cron-misload lint — detect dormant USER-field crontab files.
 # PL-173 case (2): a source-of-truth crontab at .context/cron/*.crontab uses
 # /etc/cron.d/ USER-field syntax ('m h dom mon dow USER cmd') but no matching
