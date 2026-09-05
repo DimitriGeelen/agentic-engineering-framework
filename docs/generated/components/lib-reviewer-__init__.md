@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Used By (10)
+## Used By (12)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -20,6 +20,8 @@
 | [test_reviewer_audit_pass_b](/docs/generated/tests-unit-test_reviewer_audit_pass_b) | uses_by | TODO: describe what this component does |
 | [test_reviewer_human_ac_mechanical_signal](/docs/generated/tests-unit-test_reviewer_human_ac_mechanical_signal) | uses_by | TODO: describe what this component does |
 | [test_reviewer_overrides](/docs/generated/tests-unit-test_reviewer_overrides) | uses_by | TODO: describe what this component does |
+| [test_reviewer_decaying_task_path_ref](/docs/generated/tests-unit-test_reviewer_decaying_task_path_ref) | called_by | TODO: describe what this component does |
+| [test_reviewer_decaying_task_path_ref](/docs/generated/tests-unit-test_reviewer_decaying_task_path_ref) | uses_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-__init__.yaml`*

@@ -29,7 +29,7 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
 | [worktree-identity](/docs/generated/lib-worktree-identity) | calls | TODO: describe what this component does |
 
-## Used By (88)
+## Used By (89)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -121,6 +121,7 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | called_by | TODO: describe what this component does |
 | [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation-py) | called_by | TODO: describe what this component does |
 | [check-inception-schema](/docs/generated/agents-context-check-inception-schema-py) | called_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-paths.yaml`*

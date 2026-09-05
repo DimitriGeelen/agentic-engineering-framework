@@ -12,7 +12,7 @@
 |-----------|--------------|-------------|
 | [corpus_spec](/docs/generated/tools-corpus_spec) | uses | TODO: describe what this component does |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -20,6 +20,7 @@
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [audit_corpus_lint_findings](/docs/generated/tests-unit-audit_corpus_lint_findings) | called_by | TODO: describe what this component does |
 | [audit_corpus_lint_findings](/docs/generated/tests-unit-audit_corpus_lint_findings) | tests_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-corpus_lint.yaml`*

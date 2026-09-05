@@ -57,3 +57,5 @@
 {"ts": "2026-09-03T22:04:29Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 1193004, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}
 {"ts": "2026-09-04T21:38:47Z", "event": "exit", "reason": "stale-signal", "restart_count": 0, "wrapper_pid": 1193004, "detail": "signal 84901s old, freshness window 300s", "exit_code": 0}
 {"ts": "2026-09-04T21:38:51Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 910398, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}
+{"ts": "2026-09-04T22:44:29Z", "event": "exit", "reason": "continuous-terminated", "restart_count": 0, "wrapper_pid": 910398, "detail": "T-3263 resolved (work-completed 2026-09-03); clearing stale human-gate latch that had cycled 4+ times since 18:24:48Z (T-3268)", "exit_code": 0}
+{"ts": "2026-09-05T08:00:24Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 3341781, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}

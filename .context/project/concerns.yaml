@@ -3090,6 +3090,58 @@ concerns:
   - T-100144
   - T-2473
   - T-100139
+- id: OBS-092
+  type: structural
+  title: delivery confirmation reads the TERMINAL, not the application — tty echo alone satisfies it
+  description: 'G-101''s confirmation (T-3275) proves a turn landed by looking for the directive''s text
+    in a pane capture. Measured 2026-09-05 during T-3257 live-fire: that is satisfied by the tty line
+    discipline ECHOING the keystrokes, which happens even when the target process never reads them.
+
+
+    Reproduced directly: a tmux pane running `sleep 600` was sent the directive; `sleep` cannot read
+    input, yet `tmux capture-pane` showed the text and the driver recorded `"reason": "injected"`. The
+    same pane with `stty -echo` correctly produced a refusal — which is what the live-fire''s negative
+    control now uses.
+
+
+    So the confirmation''s real claim is narrower than its name: it proves the keystrokes reached the
+    TERMINAL, not that the APPLICATION consumed them. For the target class that matters — an ink-based
+    raw-mode TUI, which disables echo and renders input itself — presence in the pane does mean the TUI
+    drew it, so the guard is sound there. It is unsound for shell-like or non-reading targets.
+
+
+    Two further boundaries measured in the same run, both narrowing where the guard applies rather than
+    breaking it: (a) on a Claude CONVERSATION screen the submitted prompt stays in the transcript, so
+    the post-Enter sample can still see it — this is why the guard works; (b) on the bare-`claude`
+    session-PICKER screen the input box clears on Enter WITHOUT starting a turn and retains nothing, so
+    the guard false-negatives there. (b) is arguably correct behaviour, since driving the picker does
+    not produce a turn at all — verified by hand: text typed, Enter pressed, nothing happened.'
+  spec_reference: agents/context/continuous-driver.sh (section 5, delivery confirmation); tools/t3257-livefire-driver.sh
+    (LEG A)
+  severity: medium
+  status: open
+  detected_in: T-3257 (live-fire, 2026-09-05)
+  observed: '2026-09-05'
+  reported_by: self (found by building the live-fire the operator asked for, not by review)
+  blast_radius: Scoped to the continuous-run driver's tmux transport. No live effect — continuous-driver-10m
+    remains paused. The guard remains a strict improvement over the pre-G-101 behaviour it replaced,
+    which trusted an exit code and checked nothing at all.
+  what_works_now: The guard fires correctly against its real target class (Claude TUI, echo off, prompt
+    retained in transcript) — proven end-to-end by tools/t3257-livefire-driver.sh, 5/5 across two runs,
+    including a real agent computing and returning a token absent from the directive.
+  what_remains: 'Candidate hardening, none yet chosen: (a) confirm BEFORE sending Enter, so the check
+    reads the input box rather than racing its submission — the natural fit for the tmux leg, where text
+    and Enter are already separate send-keys calls, though impossible for termlink''s atomic `inject --enter`;
+    (b) require a post-turn CHANGE in addition to the text, distinguishing an echo from a processed turn;
+    (c) accept the narrower claim and document the guard as terminal-level, which is what this entry does
+    for now. Note the driver file is currently owned by in-flight T-3277 — coordinate before editing.'
+  related:
+  - G-101
+  - G-097
+  - T-3275
+  - T-3257
+  - T-3277
+  follow_up_task: T-3257
 - id: OBS-091
   type: structural-gap
   severity: low

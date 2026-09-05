@@ -33,7 +33,7 @@ Agent-relevant settings:
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (40)
+## Used By (41)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -77,6 +77,7 @@ Agent-relevant settings:
 | [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | called_by | TODO: describe what this component does |
 | [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | called_by | TODO: describe what this component does |
 | [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ## Related
 

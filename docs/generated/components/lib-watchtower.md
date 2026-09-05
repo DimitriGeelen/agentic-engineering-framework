@@ -34,7 +34,7 @@ Resolution order (T-885, T-1287, T-1376):
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (14)
+## Used By (15)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -52,6 +52,7 @@ Resolution order (T-885, T-1287, T-1376):
 | [watchtower_url_no_guess](/docs/generated/tests-unit-watchtower_url_no_guess) | tests_by | TODO: describe what this component does |
 | [arc](/docs/generated/lib-arc) | called_by | TODO: describe what this component does |
 | [review](/docs/generated/lib-review) | called_by | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-watchtower.yaml`*

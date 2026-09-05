@@ -207,7 +207,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-05'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -1054,4 +1054,6 @@ depended_by:
 - target: tools/t2176-corpus-rescan.sh
   type: called_by
 - target: web/conftest.py
+  type: called_by
+- target: agents/audit/audit.sh
   type: called_by

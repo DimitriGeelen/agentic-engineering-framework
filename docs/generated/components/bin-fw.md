@@ -126,7 +126,7 @@ When run from inside the framework repo itself, it auto-detects.
 | [memory-recall](/docs/generated/agents-context-lib-memory-recall) | calls | TODO: describe what this component does |
 | [smoke_test](/docs/generated/web-smoke_test) | calls | TODO: describe what this component does |
 
-## Used By (420)
+## Used By (421)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -549,6 +549,7 @@ When run from inside the framework repo itself, it auto-detects.
 | [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
 | [t2176-corpus-rescan](/docs/generated/tools-t2176-corpus-rescan) | called_by | TODO: describe what this component does |
 | [conftest](/docs/generated/web-conftest) | called_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ## Documentation
 

@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Used By (9)
+## Used By (10)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -19,6 +19,7 @@
 | [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | tests_by | TODO: describe what this component does |
 | [audit_ctl012_missing_decide_grandfather](/docs/generated/tests-unit-audit_ctl012_missing_decide_grandfather) | called_by | TODO: describe what this component does |
 | [audit_ctl012_missing_decide_grandfather](/docs/generated/tests-unit-audit_ctl012_missing_decide_grandfather) | tests_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ## Related
 

@@ -17,7 +17,7 @@ secret-scan.sh scan-tree         Scan the entire working tree (audit mode)
 secret-scan.sh scan-file <path>  Scan a specific file
 Configuration:
 
-## Used By (7)
+## Used By (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -28,6 +28,7 @@ Configuration:
 | [secret_scan_span_rule](/docs/generated/tests-unit-secret_scan_span_rule) | called_by | TODO: describe what this component does |
 | [secret_scan_span_rule](/docs/generated/tests-unit-secret_scan_span_rule) | tests_by | TODO: describe what this component does |
 | [upgrade_fresh_machine_simulation](/docs/generated/tests-unit-upgrade_fresh_machine_simulation) | tests_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-secret-scan.yaml`*

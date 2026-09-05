@@ -32,6 +32,8 @@ depended_by:
   type: tests_by
 - target: lib/task_satisfaction.py
   type: called_by
+- target: agents/audit/audit.sh
+  type: called_by
 last_verified: 2026-04-06
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-05'

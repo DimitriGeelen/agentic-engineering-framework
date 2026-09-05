@@ -41,7 +41,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | [context_tokens](/docs/generated/lib-context_tokens) | calls | TODO: describe what this component does |
 | [compat](/docs/generated/lib-compat) | calls | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
 
-## Used By (19)
+## Used By (20)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -64,6 +64,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | [upgrade_duplicate_hook_detection](/docs/generated/tests-unit-upgrade_duplicate_hook_detection) | called_by | TODO: describe what this component does |
 | [context_tokens](/docs/generated/lib-context_tokens) | called_by | TODO: describe what this component does |
 | [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | called_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ## Documentation
 

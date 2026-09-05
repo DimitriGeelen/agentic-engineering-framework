@@ -1,0 +1,14 @@
+id: .context/project/learnings.yaml
+name: learnings
+type: data
+subsystem: unknown
+location: .context/project/learnings.yaml
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on: []
+depended_by:
+- target: tests/unit/add_learning_id_allocator.bats
+  type: read_by
+last_verified: 2026-09-04
+created_by: unknown
+last_enriched: '2026-09-05'

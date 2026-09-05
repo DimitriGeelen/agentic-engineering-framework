@@ -10,11 +10,15 @@ depends_on:
   type: uses
 - target: lib/resolver.py
   type: uses
+- target: lib/resolver.py
+  type: calls
 depended_by:
 - target: tests/unit/test_workflow_coverage.py
   type: called_by
 - target: C-004
   type: called_by
+- target: agents/audit/audit.sh
+  type: called_by
 last_verified: 2026-05-12
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-05'

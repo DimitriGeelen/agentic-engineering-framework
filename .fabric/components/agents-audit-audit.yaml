@@ -1,0 +1,74 @@
+id: agents/audit/audit.sh
+name: audit
+type: script
+subsystem: audit
+location: agents/audit/audit.sh
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: lib/paths.sh
+  type: calls
+- target: lib/config.sh
+  type: calls
+- target: lib/watchtower.sh
+  type: calls
+- target: lib/traceability.sh
+  type: calls
+- target: lib/cron-registry.sh
+  type: calls
+- target: lib/gitignore-register.sh
+  type: calls
+- target: lib/continuous-mode.sh
+  type: calls
+- target: lib/inception_recommendation.sh
+  type: calls
+- target: lib/notify.sh
+  type: calls
+- target: bin/fw
+  type: calls
+- target: lib/branch-hygiene.sh
+  type: calls
+- target: agents/git/lib/secret-scan.sh
+  type: calls
+- target: agents/git/lib/large-file-scan.sh
+  type: calls
+- target: C-008
+  type: calls
+- target: agents/context/check-tier0.sh
+  type: calls
+- target: agents/context/error-watchdog.sh
+  type: calls
+- target: agents/task-create/update-task.sh
+  type: calls
+- target: agents/audit/orchestrator-mcp-scan.sh
+  type: calls
+- target: agents/audit/active-task-scan.py
+  type: calls
+- target: agents/audit/completed-task-scan.py
+  type: calls
+- target: tools/corpus_lint.py
+  type: calls
+- target: lib/cron_dry_run.py
+  type: calls
+- target: lib/hook-threshold.py
+  type: calls
+- target: lib/bats_red_attribution.py
+  type: calls
+- target: tools/corpus_conformance.py
+  type: calls
+- target: lib/verify_queue.py
+  type: calls
+- target: agents/mcp/manifest.py
+  type: calls
+- target: lib/workflow_coverage.py
+  type: calls
+depended_by:
+- target: tests/unit/audit.bats
+  type: called_by
+- target: tests/unit/audit_d10_html_comment_blindness.bats
+  type: tests_by
+- target: tests/unit/audit_null_timestamp.bats
+  type: called_by
+last_verified: 2026-09-04
+created_by: unknown
+last_enriched: '2026-09-05'

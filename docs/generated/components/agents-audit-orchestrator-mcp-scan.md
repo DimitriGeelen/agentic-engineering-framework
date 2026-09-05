@@ -17,7 +17,7 @@ Exit codes:
 0  baseline match
 1  drift: new unclassified tools (manual classification needed) or ratchet candidates
 
-## Used By (10)
+## Used By (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -31,6 +31,7 @@ Exit codes:
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [orchestrator](/docs/generated/web-blueprints-orchestrator) | called_by | TODO: describe what this component does |
 | [upgrade_fresh_machine_simulation](/docs/generated/tests-unit-upgrade_fresh_machine_simulation) | tests_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-audit-orchestrator-mcp-scan.yaml`*

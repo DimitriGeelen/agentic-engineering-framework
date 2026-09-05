@@ -27,6 +27,10 @@ depended_by:
   type: uses_by
 - target: tests/unit/test_reviewer_overrides.py
   type: uses_by
+- target: tests/unit/test_reviewer_decaying_task_path_ref.py
+  type: called_by
+- target: tests/unit/test_reviewer_decaying_task_path_ref.py
+  type: uses_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-05'

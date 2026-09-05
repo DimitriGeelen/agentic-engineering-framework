@@ -18,7 +18,7 @@
 | [spawn](/docs/generated/lib-spawn) | uses | TODO: describe what this component does |
 | [worker_identity](/docs/generated/lib-worker_identity) | uses | TODO: describe what this component does |
 
-## Used By (20)
+## Used By (21)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -42,6 +42,7 @@
 | [t3030_two_writer_guard](/docs/generated/tests-unit-t3030_two_writer_guard) | called_by | TODO: describe what this component does |
 | [t3030_two_writer_guard](/docs/generated/tests-unit-t3030_two_writer_guard) | tests_by | TODO: describe what this component does |
 | [test_spawn](/docs/generated/tests-unit-test_spawn) | called_by | TODO: describe what this component does |
+| [workflow_coverage](/docs/generated/lib-workflow_coverage) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-resolver.yaml`*

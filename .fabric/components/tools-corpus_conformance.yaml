@@ -19,6 +19,8 @@ depended_by:
   type: uses_by
 - target: tools/aef_meta_census.py
   type: called_by
+- target: agents/audit/audit.sh
+  type: called_by
 last_verified: 2026-07-26
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-05'

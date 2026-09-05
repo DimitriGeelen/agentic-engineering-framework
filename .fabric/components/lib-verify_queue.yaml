@@ -19,6 +19,8 @@ depended_by:
   type: tests_by
 - target: tests/unit/t3232_verification_extractor_failure.bats
   type: tests_by
+- target: agents/audit/audit.sh
+  type: called_by
 last_verified: 2026-08-03
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-05'

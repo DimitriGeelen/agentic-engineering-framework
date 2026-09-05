@@ -17,7 +17,7 @@ Finding classes (one token-prefixed line each):
 merged-undeleted <branch>                    local branch tip contained in TARGET
 behind-threshold <branch> behind=<n> days=<d> (threshold <t>)
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -26,6 +26,7 @@ behind-threshold <branch> behind=<n> days=<d> (threshold <t>)
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [integrate](/docs/generated/lib-integrate) | called_by | TODO: describe what this component does |
 | [t3187_branch_identity_guard](/docs/generated/tests-unit-t3187_branch_identity_guard) | tests_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-branch-hygiene.yaml`*

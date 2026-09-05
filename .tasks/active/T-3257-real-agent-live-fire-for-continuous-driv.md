@@ -13,10 +13,10 @@ description: >
   a different transport substitution -- that would recreate the exact gap this task
   exists to close.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -31,7 +31,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-03T14:18:37Z
-last_update: '2026-09-03T14:30:21Z'
+last_update: 2026-09-05T07:56:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -354,3 +354,7 @@ test "$(grep -c '# skip' /tmp/.t3257.out)" -eq 0
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3257-real-agent-live-fire-for-continuous-driv.md
 - **Context:** Initial task creation
+
+### 2026-09-05T07:56:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

@@ -199,6 +199,8 @@ depended_by:
   type: called_by
 - target: agents/context/check-inception-schema.py
   type: called_by
+- target: agents/audit/audit.sh
+  type: called_by
 last_verified: 2026-03-10
 created_by: T-412
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-05'

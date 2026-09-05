@@ -1,7 +1,7 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-04T03:23:02.561790+00:00
-corpus_total: 2827
+generated: 2026-09-05T03:23:02.895994+00:00
+corpus_total: 2831
 bug_class_total: 504
 bug_class_pct: 17
 h1_flagged: 364
@@ -34,17 +34,17 @@ recent_sample:
     name: "fw doctor reports a spurious FAIL on any direct-script hook using CLAUDE_PROJECT"
 h2_top:
   - learning: "P-011"
-    task_count: 2448
+    task_count: 2461
   - learning: "L-387"
-    task_count: 2198
+    task_count: 2214
   - learning: "L-291"
-    task_count: 1117
+    task_count: 1121
   - learning: "L-398"
-    task_count: 865
+    task_count: 869
   - learning: "P-010"
-    task_count: 499
+    task_count: 501
   - learning: "L-399"
-    task_count: 95
+    task_count: 96
   - learning: "L-006"
     task_count: 56
   - learning: "L-001"

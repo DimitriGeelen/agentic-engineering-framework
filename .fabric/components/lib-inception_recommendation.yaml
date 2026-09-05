@@ -15,6 +15,8 @@ depended_by:
   type: called_by
 - target: tests/unit/t2318_retrofit_injector_append_missing.bats
   type: tests_by
+- target: agents/audit/audit.sh
+  type: called_by
 last_verified: 2026-05-04
 created_by: unknown
-last_enriched: '2026-06-10'
+last_enriched: '2026-09-05'

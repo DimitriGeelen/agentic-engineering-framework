@@ -18,7 +18,7 @@ framework repo, and .agentic-framework/agents/audit/x.py in a vendored consumer.
 | [task-audit](/docs/generated/lib-task-audit) | calls | Scans task files for literal placeholder content that should have been replaced during authoring, blocking review and inception decisions until resolved |
 | [task_satisfaction](/docs/generated/lib-task_satisfaction) | calls | TODO: describe what this component does |
 
-## Used By (10)
+## Used By (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -32,6 +32,7 @@ framework repo, and .agentic-framework/agents/audit/x.py in a vendored consumer.
 | [t3073_c001_recommendation_bearing_inceptions](/docs/generated/tests-unit-t3073_c001_recommendation_bearing_inceptions) | called_by | TODO: describe what this component does |
 | [t3073_c001_recommendation_bearing_inceptions](/docs/generated/tests-unit-t3073_c001_recommendation_bearing_inceptions) | tests_by | TODO: describe what this component does |
 | [task_satisfaction](/docs/generated/lib-task_satisfaction) | called_by | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ## Related
 
