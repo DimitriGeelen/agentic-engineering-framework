@@ -39519,3 +39519,21 @@ scan_id: R-6f53d032
 task_id: T-3279
 payload:
   task_file: .tasks/active/T-3279-inception-decide-half-transition---t-219.md
+---
+kind: scan_emitted
+timestamp: '2026-09-05T11:02:36Z'
+scan_id: R-5991d549
+task_id: T-3280
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-05T11:02:36Z'
+scan_id: R-5991d549
+task_id: T-3280
+payload:
+  task_file: .tasks/active/T-3280-watchtower-decide-flow-renders-agent-fac.md

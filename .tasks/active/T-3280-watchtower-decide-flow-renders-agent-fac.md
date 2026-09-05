@@ -6,12 +6,12 @@ description: >
   Watchtower decide flow renders agent-facing gate stderr - Tier-2 bypass flags and
   --skip-sovereignty warning shown to operator as the response
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/inception.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-05T10:59:36Z
-last_update: '2026-09-05T11:00:23Z'
-date_finished:
+last_update: 2026-09-05T11:02:32Z
+date_finished: 2026-09-05T11:02:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -82,7 +82,7 @@ bvp_scores_proposed:
 - [x] Unit tests pin the sanitizer: bypass flags and sovereignty warnings are stripped, substantive reason text survives, empty input degrades safely; zero skips
 - [x] `bin/fw vendor self --check` clean before close (web/ is a vendored path — OBS-250 ordering)
 
-### Human (render-surface, T-1766)
+### Human
 - [ ] [REVIEW] The sanitized decide-failure message reads clean to an operator with no framework-internals context
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw serve` (if not running), then trigger any inception decide whose completion a gate refuses (or re-read the T-3278 incident text vs the new copy in `web/blueprints/inception.py:_operator_facing_stderr`)
@@ -90,36 +90,6 @@ bvp_scores_proposed:
   **Expected:** message states the decision is saved, names the blocking reason, no bypass flags, no `=== Task Update ===` noise
   **If not:** note which fragment still reads agent-internal; the sanitizer's drop-patterns are a single list to extend
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
 
@@ -319,3 +289,20 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3280-watchtower-decide-flow-renders-agent-fac.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5991d549
+- **Timestamp:** 2026-09-05T11:02:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — A sanitizer function in `web/blueprints/inception.py` translates fw stderr to operator-facing text: drops Tier-2 bypass instruction lines (`--skip-*` flags, `FW_*=1` env bypasses, the "Options:" block
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: A sanitizer function in `web/blueprints/inception.py` translates fw stderr to operator-facing text: drops Tier-2 bypass instruction lines (`--skip-*` `
+
+### 2026-09-05T11:02:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
