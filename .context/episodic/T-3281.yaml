@@ -1,0 +1,118 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3281: Orphaned cron.d fixtures from temp-dir installs starve the audit lock
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-05T11:51:37Z
+# ============================================================================
+
+task_id: T-3281
+task_name: "Orphaned cron.d fixtures from temp-dir installs starve the audit lock"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-05T11:14:08Z
+completed: 2026-09-05T11:47:29Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-05T13:36:02+02:00
+last_commit: 2026-09-05T13:47:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  detect deployed cron entries whose PROJECT_ROOT is gone (G-103). 11/11 green — report split into lib, canonicalisation defect fixed
+
+# Key outcomes
+outcomes:
+  - '`fw doctor` reports orphaned cron.d entries — deployed `/etc/cron.d/agentic-*` files whose declared `PROJECT_ROOT` does not exist on disk — as a WARN naming each file and its dead root'
+  - 'The check is silent (no WARN, no output noise) when every deployed entry''s `PROJECT_ROOT` resolves, so a clean host stays clean'
+  - 'The WARN prints a copy-pasteable remediation command per CLAUDE.md §Copy-Pasteable Commands (single line, `cd`-prefixed)'
+  - 'The check reads a directory override (`FW_CRON_INSTALL_DIR`) so it is testable without touching the host''s real `/etc/cron.d`'
+  - 'Bats coverage pins both legs — orphan present → WARN fires; all roots valid → silent — with no skipped tests (T-3217)'
+  - 'The six live orphans on this host are surfaced by the new check when run against the real `/etc/cron.d`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: '11/11 green — report split into lib, canonicalisation defect fixed'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-05 — Detection here, root cause registered rather than fixed'
+    chose: 'ship the `fw doctor` orphan check; leave `bin/fw`''s PROJECT_ROOT fallback alone and register it as G-103 (defect A).'
+    rationale: 'PROJECT_ROOT resolution is the highest-blast-radius path in `bin/fw`, it is vendored to every consumer, and a second session was live in this checkout while this task ran. Changing what a stale root resolves to is not a same-session edit made around someone else''s work.'
+    alternatives_rejected: ['fixing the fallback here (correct fix, wrong moment); adding `fw cron uninstall` (a second deliverable — the doctor WARN already prints the exact `rm` command, so the verb buys ergonomics, not capability).']
+  - decision: '2026-09-05 — Filter orphans by the `bin/fw` they invoke'
+    chose: 'report only entries invoking this `FRAMEWORK_ROOT/bin/fw`.'
+    rationale: 'that is precisely the set that falls through onto this framework root and competes for its audit lock. It also keeps the check quiet on hosts with many projects — an unfiltered scan would repeat the same WARN from all 20+ projects on this host.'
+    alternatives_rejected: ['reporting every orphan in `/etc/cron.d`. Verified this matters: the unfiltered scan flags `agentic-audit-termlink`, whose `PROJECT_ROOT` is the literal unexpanded string `$(pwd)`. That entry is genuinely broken, but it invokes a different `bin/fw`, so its harm lands elsewhere and it is not this project''s finding to report.']
+  - decision: '2026-09-05 — Entries declaring no PROJECT_ROOT are not orphans'
+    chose: 'skip them silently (pinned by C3).'
+    rationale: '14 of the 33 deployed entries on this host use the older format with no `PROJECT_ROOT` line; they resolve by cwd. The variable''s absence says nothing about whether the project still exists, so flagging them would be a guess presented as a finding — and 14 false WARNs would make the real 6 invisible, which is the failure mode this check exists to end.'
+  - decision: '2026-09-05 — Rendering moved into the lib after the first C8 went red'
+    chose: 'split `cron_orphan_report()` out of `bin/fw` into the lib, cover both rendering legs there, and keep exactly **one** real `fw doctor` test (C11).'
+    rationale: 'the first cut put the WARN block inline in `bin/fw` and tested it with two full doctor runs. Each costs minutes on this host (OBS-368 — `bats --count` over 606 files), which made the suite ~10 minutes and would have put that on every close through `## Verification`. A renderer only reachable through a command that slow is a renderer that stops being tested.'
+    alternatives_rejected: ['dropping the real doctor test entirely. That would leave "doctor calls the report, with the right arguments" unproven — the `mock-only-integration` class the reviewer flags. One slow test buys exactly that, and nothing else.']
+  - decision: '2026-09-05 — The first C8 failure was a real defect, not just a bad fixture'
+    chose: 'fix both sides — canonicalise `fw_path` inside `cron_orphan_scan`, and `pwd -P` the root in the test''s `setup()`. Pinned by C8, which now asserts the odd spelling matches. - **Why both:** the fixture was wrong, but a scan that silently reports *nothing* when handed a valid-but-uncanonical path fails in the worst direction — it looks exactly like a clean host. That is the same false-green shape as the T-3254 stub and the T-3275 tty echo: the failure mode of a detector is silence, so silence has to be the thing under test. - **Known limit, accepted:** a cron entry that spells the path differently from `FRAMEWORK_ROOT` is still missed. `fw cron install` writes the canonical form, so this does not affect real entries; it is why the scan takes `fw_path` as an argument rather than assuming it.'
+  - decision: '2026-09-05 — Verification asserts the scan runs, not that orphans exist'
+    chose: '`cron_orphan_scan /etc/cron.d "$PWD/bin/fw" >/dev/null` — exit code only.'
+    rationale: 'asserting non-empty output would pass today and go red the moment the operator removes the six, i.e. exactly when the check starts working. A verification line whose meaning inverts on success is worse than none.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/cron-orphans.sh'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.context/inbox.yaml'
+  - '.context/project/concerns.yaml'
+  - 'docs/reports/T-3281-orphan-cron-backup/agentic-audit-proj-schedule-install'
+  - 'docs/reports/T-3281-orphan-cron-backup/agentic-audit-proj-schedule-install-4afedaec'
+  - 'docs/reports/T-3281-orphan-cron-backup/agentic-audit-proj-schedule-install-76854ad3'
+  - 'docs/reports/T-3281-orphan-cron-backup/agentic-audit-proj-schedule-install-baa83268'
+  - 'docs/reports/T-3281-orphan-cron-backup/agentic-audit-proj-schedule-install-cce5bb73'
+  - 'docs/reports/T-3281-orphan-cron-backup/agentic-audit-proj-schedule-install-ef7ae545'
+  - 'docs/reports/T-3281-orphan-cron-backup/README.md'
+  - '.fabric/components/lib-cron-orphans.yaml'
+  - '.fabric/components/tests-unit-t3281_cron_orphan_scan.yaml'
+  - 'lib/cron-orphans.sh'
+  - '.tasks/active/T-3281-orphaned-crond-fixtures-from-temp-dir-in.md'
+  - 'tests/unit/t3281_cron_orphan_scan.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-05T13:36:02'
+    action: 'T-3281: detect deployed cron entries whose PROJECT_ROOT is gone (G-103)'
+  - time: '2026-09-05T13:47:09'
+    action: 'T-3281: 11/11 green — report split into lib, canonicalisation defect fixed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 33 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 33
+  commits: 2
+  files_changed: 18
+  lines_added: 1298
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3281-orphaned-crond-fixtures-from-temp-dir-in.md
+generated_by: context-agent-hybrid
