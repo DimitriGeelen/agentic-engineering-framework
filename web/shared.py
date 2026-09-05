@@ -1259,6 +1259,58 @@ def _check_render_page_fragment_convention(template_name):
         return  # convention satisfied (or unrelated content) — done
 
 
+def operator_facing_stderr(text):
+    """T-3280 (G-102 defect B): translate fw gate stderr into operator-facing text.
+
+    Origin: the T-3278 GO incident (2026-09-05) — the disposition gate's refusal
+    was rendered raw to the operator, including its Tier-2 bypass instructions
+    (`--skip-disposition-gate`, `FW_SKIP_DISPOSITION_GATE=1`), the internal
+    `--skip-sovereignty` warning, and `=== Task Update ===` header noise. Gate
+    block messages are written FOR AGENTS (CLAUDE.md requires them to name their
+    bypass mechanisms); the operator is not the audience, and showing a human
+    bypass flags as the remedy normalises Tier-2 bypass for what is actually an
+    authoring gap. T-2219 widened this rendering; this function keeps the width
+    (the reason must stay visible) and fixes the register.
+
+    T-3284: lives here (not in a blueprint) because every Watchtower surface
+    that renders a subprocess's stderr to the operator is this function's
+    audience — inception decide (htmx + redirect paths) and the approvals
+    decide/batch-complete endpoints all call it. One implementation, N call
+    sites: parity by construction (L-399, same move as T-3279's predicate
+    extraction into lib/inception-readiness.sh).
+
+    Drops instruction/noise lines, keeps substantive reason lines. The
+    drop-patterns are one list so a [REVIEW] finding can extend it in one place.
+    """
+    import re as _re
+    if not text:
+        return ""
+    drop_patterns = [
+        r"--skip-[a-z-]+",                # any Tier-2 skip-flag instruction line
+        r"FW_[A-Z_]+=1",                  # env-var bypass instruction line
+        r"^\s*Options:\s*$",              # the bypass-options block header
+        r"^\s*\d+\.\s",                   # numbered option lines under it
+        r"logged Tier-2",                  # bypass-logging notes
+        r"=== Task Update ===",            # update-task.sh banner noise
+        r"^Task:\s|^File:\s",              # update-task.sh header lines
+        r"WARNING: Completing human-owned task",  # internal sovereignty note
+    ]
+    kept = []
+    for line in text.splitlines():
+        if any(_re.search(p, line) for p in drop_patterns):
+            continue
+        kept.append(line)
+    # collapse runs of blank lines left by the drops
+    out, prev_blank = [], False
+    for line in kept:
+        blank = not line.strip()
+        if blank and prev_blank:
+            continue
+        out.append(line)
+        prev_blank = blank
+    return "\n".join(out).strip()
+
+
 def render_page(template_name, **context):
     """Render a full page or an htmx content fragment.
 

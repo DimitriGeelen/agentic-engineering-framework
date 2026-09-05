@@ -9,7 +9,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from web.blueprints.inception import _operator_facing_stderr
+# T-3284: the implementation moved to web.shared (one copy, N call sites).
+from web.shared import operator_facing_stderr as _operator_facing_stderr
 
 
 INCIDENT = """=== Task Update ===
@@ -65,3 +66,63 @@ def test_empty_and_none_degrade_safely():
 def test_blank_line_runs_are_collapsed():
     out = _operator_facing_stderr(INCIDENT)
     assert "\n\n\n" not in out
+
+
+# ── T-3284: parity pins ──────────────────────────────────────────────────────
+# The 2026-09-05 T-3278 incident cluster produced three fixes of the same
+# L-399 shape (a fix authored only at the surface where the failure fired).
+# These pins make the *class* fail loudly instead of waiting for an operator.
+
+def test_blueprint_alias_is_the_shared_implementation():
+    """inception.py must not re-grow its own copy of the sanitizer."""
+    from web.blueprints import inception as _inc
+    from web import shared as _sh
+    assert _inc._operator_facing_stderr is _sh.operator_facing_stderr
+
+
+def test_every_stderr_render_site_is_sanitized():
+    """Source-scan pin: in the blueprints that render subprocess stderr to the
+    operator (inception decide paths, approvals decide/batch endpoints), every
+    line that puts `stderr` into rendered output must reference the sanitizer.
+
+    Heuristic: within web/blueprints/{inception,approvals}.py, any statement
+    line mentioning `stderr` inside a return/append/assignment that feeds a
+    render must also mention `operator_facing_stderr` (allowing the multi-line
+    pattern where the sanitizer call wraps on the previous line). Capture and
+    plumbing lines (subprocess capture, logging, tuple unpack, comments) are
+    exempt. A new raw render point fails here rather than in production."""
+    import re
+
+    root = Path(__file__).resolve().parents[2]
+    exempt = re.compile(
+        r"^\s*#"                                  # comments
+        r"|capture_output|PIPE|communicate"        # subprocess plumbing
+        r"|logging\.|logger\.|log_"                # server-side logs, not renders
+        r"|stdout, stderr, ok = "                  # tuple unpack from run_fw_command
+        r"|proc\.stderr or \"\"\)\s*$"             # bare capture without render
+        r"|def |import "
+    )
+    offenders = []
+    for rel in ("web/blueprints/inception.py", "web/blueprints/approvals.py"):
+        lines = (root / rel).read_text(encoding="utf-8").splitlines()
+        for i, line in enumerate(lines):
+            if "stderr" not in line or "_operator_facing_stderr" in line \
+                    or "operator_facing_stderr" in line:
+                continue
+            if exempt.search(line):
+                continue
+            # is stderr being rendered (returned/appended/formatted)?
+            if re.search(r"return|append|warning|error|reason|warn\b|err\b", line):
+                # allow the wrapped-call shape: sanitizer named on a nearby line
+                ctx = "\n".join(lines[max(0, i - 2): i + 2])
+                if "operator_facing_stderr" in ctx:
+                    continue
+                # server-side logging calls span lines; their continuation args
+                # mention stderr but render nothing to the operator
+                if re.search(r"logging\.|logger\.", "\n".join(lines[max(0, i - 3): i + 1])):
+                    continue
+                offenders.append(f"{rel}:{i + 1}: {line.strip()}")
+    assert not offenders, (
+        "raw stderr reaches an operator render without operator_facing_stderr:\n"
+        + "\n".join(offenders)
+    )
