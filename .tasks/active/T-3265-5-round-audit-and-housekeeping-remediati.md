@@ -507,3 +507,23 @@ avoided in favour of the same underlying Python/shell checks `fw audit` calls).
   `.context/working/.hook-counter`/`.loop-detect.json`/`.stop-driver.log`,
   `VERSION`) deliberately left untouched — not this task's remediation, and
   bundling it in would misattribute another session's state churn to T-3265.
+
+### 2026-09-05 — Round 7 (fresh dispatch, `bdc197f50`): fabric drift back to 0
+
+Concurrent T-3257 live-fire work landed 3 more unregistered files
+(`tools/t3257-livefire-driver.sh`, `tools/t3277-livefire-tmux.sh`, plus one
+more) between round 6's close-out and this dispatch — same recurring pattern
+rounds 1 and 6 already named ("new files land faster than any single sweep
+can chase"; this is expected steady-state maintenance, not a regression).
+`fw fabric scan`/`register` created 4 genuinely new cards; `fw fabric enrich`
+wired edges onto 19 already-registered cards. `bin/fw fabric drift` confirmed
+back to `unregistered: 0, orphaned: 0, stale: 0` (AC1 re-verified clean this
+round, on a fresh dispatch, after this doc-only pass added the round's own
+narrative — the fabric commit itself had already landed under `bdc197f50`
+before this dispatch started). Committed/pushed scope for this round was the
+`.fabric/components/*` cards only (already in `bdc197f50`); the ~55 dirty
+files in the working tree at dispatch start (`.context/audits/*`,
+`.context/monitors/*`, `.context/working/.*-counter` etc., unrelated
+`.tasks/active/T-32{85..05}*` E10-backlog task files, `VERSION`) are the same
+class of unrelated concurrent-session state churn round 6 already declined to
+bundle in — left untouched again for the same reason.
