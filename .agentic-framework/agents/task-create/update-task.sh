@@ -844,59 +844,21 @@ check_evolution_log() {
 #   FW_SKIP_DISPOSITION_GATE=1           (git/wrapper / env-only callers)
 # Both logged Tier-2 to .context/working/.gate-bypass-log.yaml.
 check_disposition_gate() {
-    # Only fires on inception tasks
-    local wf
-    wf=$(grep -E "^workflow_type:" "$TASK_FILE" | head -1 | awk '{print $2}' | tr -d '"' | tr -d "'")
-    if [ "$wf" != "inception" ]; then
-        return 0
-    fi
+    # T-3279 (G-102): the parsing predicate moved to lib/inception-readiness.sh so
+    # the decide preflight (lib/inception.sh) and review emission (lib/review.sh)
+    # run the SAME implementation — parity by construction. This function keeps
+    # the enforcement-point policy: messaging, bypass contract, Tier-2 logging.
+    source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || return 0
 
-    # Backward-compat: if ## Open Questions section absent, no-op (grandfathered)
-    if ! grep -qE "^## Open Questions" "$TASK_FILE"; then
-        return 0
-    fi
-
-    # Extract the Open Questions section between '## Open Questions' and the next '## '
-    local oq
-    oq=$(awk '/^## Open Questions/{flag=1;next} /^## /{flag=0} flag' "$TASK_FILE")
-
-    # Find IW-N (or any question marker) lines; for each, look for a sibling
-    # "disposition:" and "rationale:" within the same block.
-    # A "block" = lines from one question marker to the next (or section end).
-    local missing=0 missing_list=""
-    local current_q="" has_disposition=false has_rationale=false
-
-    while IFS= read -r line; do
-        # Match question markers (T-2218 RC5 fix): anchored to start-of-line marker
-        # forms only. The previous unanchored `IW-[0-9]+` branch matched IW-N
-        # mentions in prose (e.g. rationale text "depends on IW-1's answer"),
-        # causing a false flush of the prior question's disposition/rationale.
-        #   Valid: "- **IW-1: text**", "- IW-1: text", "### IW-1 title"
-        #   Plus the legacy Q-N list-item form (unchanged).
-        if echo "$line" | grep -qE "(^[[:space:]]*-[[:space:]]*\*?\*?IW-[0-9]+|^###[[:space:]]+IW-[0-9]+|^[[:space:]]*-[[:space:]]*Q-?[0-9]+)"; then
-            # Flush previous question's verdict
-            if [ -n "$current_q" ] && { [ "$has_disposition" = false ] || [ "$has_rationale" = false ]; }; then
-                missing=$((missing + 1))
-                missing_list="$missing_list\n    - $current_q (disposition=$has_disposition rationale=$has_rationale)"
-            fi
-            current_q=$(echo "$line" | grep -oE "IW-[0-9]+|Q-?[0-9]+" | head -1)
-            has_disposition=false
-            has_rationale=false
-            continue
-        fi
-        # Match dispositions
-        if echo "$line" | grep -qE "disposition:[[:space:]]*(answered|deferred|dissolved)"; then
-            has_disposition=true
-        fi
-        if echo "$line" | grep -qE "rationale:[[:space:]]*.+"; then
-            has_rationale=true
-        fi
-    done <<< "$oq"
-
-    # Flush the last question
-    if [ -n "$current_q" ] && { [ "$has_disposition" = false ] || [ "$has_rationale" = false ]; }; then
-        missing=$((missing + 1))
-        missing_list="$missing_list\n    - $current_q (disposition=$has_disposition rationale=$has_rationale)"
+    local underdisposed missing=0 missing_list=""
+    underdisposed=$(inception_underdisposed_questions "$TASK_FILE")
+    if [ -n "$underdisposed" ]; then
+        local q_id q_disp q_rat
+        while IFS=' ' read -r q_id q_disp q_rat; do
+            [ -n "$q_id" ] || continue
+            missing=$((missing + 1))
+            missing_list="$missing_list\n    - $q_id (${q_disp} ${q_rat})"
+        done <<< "$underdisposed"
     fi
 
     if [ "$missing" -eq 0 ]; then

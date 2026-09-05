@@ -4233,3 +4233,10 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-367
+  text: "Pre-existing red test found during T-3279: tests/unit/audit_inception_recommendation.bats test 5 ('emit_review: non-inception (build) passes through silently') fails on bleeding-edge BEFORE the T-3279 change (verified by git-stash control, both sides red). Independent defect - emit_review exits non-zero for a build task fixture where the test expects silent pass-through. Needs its own task."
+  captured: 2026-09-05T10:57:57Z
+  context_task: T-3279
+  tags: []
+  status: pending
+  promoted_to: null

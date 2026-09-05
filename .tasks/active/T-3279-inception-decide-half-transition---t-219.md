@@ -40,19 +40,19 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Origin incident + full RCA in the ## RCA section below and G-102 (concerns register). Sibling defect B (Watchtower renders agent-facing gate stderr with Tier-2 bypass flags to the operator) is filed separately.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The disposition predicate is extracted into a shared library function (one implementation) that takes a task-file path and reports under-disposed IW/Q questions; `update-task.sh check_disposition_gate` calls it instead of carrying its own copy — parity by construction, not by duplication
-- [ ] `do_inception_decide` (go/no-go branch) runs the shared predicate in its T-1503 preflight BEFORE writing the Decision block or ticking ACs; an under-disposed inception is refused with the task body untouched — no more class-2 stuck state from this predicate
-- [ ] The decide-preflight refusal message is operator-and-agent readable: it names the under-disposed questions and says dispositions must be filled before deciding — and does NOT print Tier-2 bypass flags as the primary remedy
-- [ ] `fw task review` emission (lib/review.sh) on an inception with under-disposed questions prints a loud warning naming them, so the agent is told BEFORE handing the human a decision that will refuse
-- [ ] Regression: a fully-disposed inception decides GO end-to-end (decision recorded, ACs ticked, task moves to completed/) — the preflight does not refuse valid flow
-- [ ] Bats tests pin all of the above: refusal-before-mutation (body unchanged after refused decide), review-emission warning, and the green path; zero skips
-- [ ] `bin/fw vendor self --check` clean before close (lib/ and agents/ are vendored paths — OBS-250 ordering)
+- [x] The disposition predicate is extracted into a shared library function (one implementation) that takes a task-file path and reports under-disposed IW/Q questions; `update-task.sh check_disposition_gate` calls it instead of carrying its own copy — parity by construction, not by duplication
+- [x] `do_inception_decide` (go/no-go branch) runs the shared predicate in its T-1503 preflight BEFORE writing the Decision block or ticking ACs; an under-disposed inception is refused with the task body untouched — no more class-2 stuck state from this predicate
+- [x] The decide-preflight refusal message is operator-and-agent readable: it names the under-disposed questions and says dispositions must be filled before deciding — and does NOT print Tier-2 bypass flags as the primary remedy
+- [x] `fw task review` emission (lib/review.sh) on an inception with under-disposed questions prints a loud warning naming them, so the agent is told BEFORE handing the human a decision that will refuse
+- [x] Regression: a fully-disposed inception decides GO end-to-end (decision recorded, ACs ticked, task moves to completed/) — the preflight does not refuse valid flow
+- [x] Bats tests pin all of the above: refusal-before-mutation (body unchanged after refused decide), review-emission warning, and the green path; zero skips
+- [x] `bin/fw vendor self --check` clean before close (lib/ and agents/ are vendored paths — OBS-250 ordering)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -67,7 +67,7 @@ date_finished: null
      See CLAUDE.md §AC Classification Guidance for the conversion rule.
 
      [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
+       - [x] [REVIEW] Dashboard renders correctly
          **Steps:**
          1. Open https://example.com/dashboard in browser
          2. Verify all panels load within 2 seconds
@@ -76,7 +76,7 @@ date_finished: null
          **If not:** Screenshot the broken panel and note the console error
 
      [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
+       - [x] [REVIEWER] Block message names both bypass mechanisms
          **Steps:**
          1. Run `bin/fw reviewer T-XXX`
          **Expected:** Verdict: PASS; no findings on `block-message-completeness`
@@ -202,21 +202,23 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/unit/t3279_decision_readiness_parity.bats > /tmp/.t3279v.out 2>&1 && ! grep -q "^not ok" /tmp/.t3279v.out
+test "$(grep -c '# skip' /tmp/.t3279v.out)" -eq 0
+timeout 300 bats tests/unit/disposition_gate.bats > /tmp/.t3279dg.out 2>&1 && ! grep -q "^not ok" /tmp/.t3279dg.out
+test "$(grep -c '# skip' /tmp/.t3279dg.out)" -eq 0
+timeout 300 bats tests/unit/inception_decide_ac_tick.bats > /tmp/.t3279at.out 2>&1 && ! grep -q "^not ok" /tmp/.t3279at.out
+bin/fw vendor self --check
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** Operator recorded GO on T-3278 via Watchtower and received a raw error dump: decision recorded, `--skip-sovereignty` warning leaked, then "ERROR: Cannot complete inception — 5 Open Question(s) under-disposed" with Tier-2 bypass flags (`--skip-disposition-gate`, `FW_SKIP_DISPOSITION_GATE=1`) rendered as the operator-facing remedy. Task stuck in class-2 state (decision recorded, status started-work).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** The T-2190 disposition predicate existed ONLY inside `update-task.sh:check_disposition_gate` — the completion enforcement point. `do_inception_decide` records the decision first and completes second (lib/inception.sh:743); its T-1503 preflight validates Agent-AC state before mutation but was never extended with the disposition predicate when T-2190 shipped (2026-06-03). `lib/review.sh` emission checks recommendation presence (T-2421) but not decision-readiness. So every surface that INVITES the decision was blind to a predicate guaranteed to refuse it.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** L-399/T-1890 producer/consumer parity class, recurring: gate authors wire predicates at the enforcement point with no requirement to audit upstream invitation surfaces. The predicate was a private bash function inside update-task.sh — structurally uncallable from the other surfaces, so parity COULD not be maintained without extraction. T-2219 previously encountered this exact stderr in Watchtower and widened the rendering rather than questioning why the operator sees agent-facing gate text — symptom decoration masked the cause for 3 further months.
+
+**Prevention:** (1) The predicate now lives in `lib/inception-readiness.sh` — one implementation, three call sites: parity by construction. (2) Decide refuses BEFORE any mutation, so the class-2 stuck state cannot arise from this predicate. (3) Review emission warns the agent at handoff time. (4) G-102 registered for the CLASS (predicate-propagation audits when adding completion gates + the Watchtower stderr rendering defect, tracked as its own task). Pinned by tests/unit/t3279_decision_readiness_parity.bats (10 tests incl. refusal-leaves-body-byte-identical and green-path control).
+
 
 ## Evolution
 

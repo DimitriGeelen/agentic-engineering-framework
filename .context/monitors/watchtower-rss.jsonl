@@ -4740,3 +4740,4 @@
 {"timestamp":"2026-09-05T12:40:02+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":489997,"rss_kb":263328,"vsz_kb":2383672,"pcpu":7.5,"state":"up"}
 {"timestamp":"2026-09-05T12:45:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":490297,"rss_kb":261540,"vsz_kb":2383672,"pcpu":7.5,"state":"up"}
 {"timestamp":"2026-09-05T12:50:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":490596,"rss_kb":287376,"vsz_kb":2383672,"pcpu":7.5,"state":"up"}
+{"timestamp":"2026-09-05T12:55:01+02:00","host":"dimitrimintdev","pid":3913519,"etime_sec":490896,"rss_kb":288332,"vsz_kb":2383672,"pcpu":7.5,"state":"up"}
