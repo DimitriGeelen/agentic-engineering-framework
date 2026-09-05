@@ -486,3 +486,39 @@ assumptions:
   linked_task: T-2679
   created: '2026-07-29'
   resolved_date: '2026-07-29'
+- id: A-050
+  statement: SessionStart additionalContext injection delivers the directive reliably
+    from a cron-launched cold start, with none of the G-097/T-3275 keystroke-emulation
+    failure classes
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-3278
+  created: '2026-09-05'
+  resolved_date: null
+- id: A-051
+  statement: A cron leg can determine no-session-running from the process table (pidfile/pgrep),
+    replacing pane-diff busy detection
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-3278
+  created: '2026-09-05'
+  resolved_date: null
+- id: A-052
+  statement: 60s-plus hop latency is acceptable for the M2 loop
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-3278
+  created: '2026-09-05'
+  resolved_date: null
+- id: A-053
+  statement: The existing brake set can gate the cron leg at launch time - the L-652
+    AUTO_RESTART gating asymmetry is avoidable
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-3278
+  created: '2026-09-05'
+  resolved_date: null
