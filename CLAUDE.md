@@ -383,6 +383,16 @@ bin/fw vendor self --check
 
 **Why the ordering matters and isn't just style:** `--status work-completed` clears `focus.yaml` as its last act, and `fw context focus` refuses to re-point at a task once it has moved to `.tasks/completed/` ("Focus must name a task the gates can still work under"). If the vendor sync is left for after close, there is no task the sync can run under: `fw context focus <closed-id>` refuses, `fw work-on <closed-id>` is silent, and the Tier-1 task gate (`check-active-task.sh`) refuses `fw vendor self` with focus null. Every remaining route is either filing a new task just to run one command, or a logged bypass — a real dead end, not a minor inconvenience. This was already informal convention in this repo's own commit history ("T-3233: close — arm-verb cluster landed, vendor synced") but was never written down where an agent reads it first. The gap itself — no route back to a just-closed task's own trailing work — is filed as OBS-250 in `.context/concerns.yaml`, not fixed here; candidate structural fixes (widen the focus gate for a grace window, carve a narrow allowlist for `fw vendor self`, or auto-sync as part of close) are named there with trade-offs, because each is a governance change and not a chore.
 
+**Web-touching tasks (T-3282, G-104) — restart the server, then prove currency.** If your task edited anything under `web/`, run `bin/fw watchtower restart` once the change is final, and `## Verification` MUST include:
+
+```
+bin/fw watchtower current
+```
+
+The running Watchtower is a deployment surface of its own: Flask runs `debug=False` (no reloader), so a fix can be on disk, unit-green, and closed while the process serves the pre-fix bytes indefinitely. The verb exits 1 when the running process predates any file under `web/`, and exits 0 when it is current **or when no Watchtower is running** (safe on headless/CI/worktree hosts — same scoping idea as `command -v dotnet && dotnet build`). Unit tests of `web/` code do NOT satisfy this: they import the fixed source directly and say nothing about the process the operator's browser talks to.
+
+**Why a rule and not just the doctor WARN:** this class shipped twice. T-2938 (2026-08-12, L-587) — six days stale, five inert `web/` commits, two [REVIEW] tasks queued in a server not running them — produced `lib/watchtower-staleness.sh` and a `fw doctor` WARN. T-3282 (2026-09-05) — six days stale, 201 commits, the G-102 stderr sanitizer approved in [REVIEW] and never live — happened anyway, because doctor is on-demand and nothing else looked. The detector now also runs in `fw audit` (cron + pre-push), but the earliest gate is your own close: a `[REVIEW]` verdict taken against a stale server is worse than no verdict — it looks like evidence.
+
 ### Task Lifecycle
 
 ```

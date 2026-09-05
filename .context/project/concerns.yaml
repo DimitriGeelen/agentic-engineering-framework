@@ -5094,3 +5094,46 @@ concerns:
   related:
   - T-3281
   - G-075
+- id: G-104
+  type: gap
+  title: Watchtower staleness detection exists only on an on-demand surface -- operator-facing
+    fixes close green while the running server serves the pre-fix code, second occurrence
+  description: 'Origin incident (2026-09-05, T-3282): the operator re-surfaced the raw agent-stderr
+    render on the T-3278 GO decision page -- the exact defect the G-102 remediation (T-3280,
+    commit 122655001) had shipped, tested, and had approved in [REVIEW] hours earlier. The
+    sanitizer was on disk and unit-green, but the running Watchtower process started 2026-08-30
+    20:33 and was serving code 201 commits stale. Flask runs debug=False (no reloader); nothing
+    restarts the process after web/ commits.
+
+    This is the SECOND occurrence of the class. The first (2026-08-12, T-2938 / L-587: six days
+    stale, five web/ commits inert, two [REVIEW] tasks queued in a server not running them)
+    produced lib/watchtower-staleness.sh and a fw doctor WARN. But the detector was deployed
+    ONLY to fw doctor -- an on-demand surface nobody is prompted to run. The instruments that
+    DO run unprompted (30-min cron audit, pre-push audit gate) have zero coverage: the incident
+    session pushed twice through a full audit (30 pass / 6 warn) with the server 200+ commits
+    stale and no line mentioning it. The L-364 wired!=deployed chain applied to the detector
+    itself: detection was wired into doctor, never deployed to the surfaces that actually run.
+
+    The deeper close-gate leg: a web/-touching task can reach work-completed with unit-level
+    verification only. T-3280 did exactly that -- pytest of the sanitizer function, no assertion
+    that the operator-facing surface serves the fixed bytes. The render-surface gate (T-1766)
+    forces a Human [REVIEW] AC but the human reviews against the STALE server, so review itself
+    is polluted: the operator approved message copy in chat because the live page could not show
+    it.'
+  spec_reference: lib/watchtower-staleness.sh (T-2938); bin/fw doctor Watchtower triple check;
+    agents/audit/audit.sh (no staleness check before T-3282); CLAUDE.md SS Verification Gate
+    (no web/-touching rule before T-3282)
+  severity: high
+  status: open
+  detected_in: T-3282
+  observed: '2026-09-05'
+  blast_radius: 'Every web/ commit on a host with a long-running Watchtower. The victim class
+    is operator decisions: review pages, inception decide, approvals all render from the stale
+    process, so [REVIEW] verdicts, GO/NO-GO calls and Tier-0 grants are made against code the
+    repo no longer contains. Both occurrences polluted a live human decision (T-2925 GO blocked
+    by an already-fixed defect; T-3278 GO rendered raw stderr an already-approved sanitizer
+    should have caught).'
+  related:
+  - T-3282
+  - T-2938
+  - G-102
