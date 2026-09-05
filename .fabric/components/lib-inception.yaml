@@ -14,6 +14,8 @@ depends_on:
   type: calls
 - target: lib/paths.sh
   type: calls
+- target: lib/inception-readiness.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -62,4 +64,4 @@ depended_by:
   type: called_by
 - target: tests/integration/t2922_greenfield_first_inception.bats
   type: tests_by
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-05'

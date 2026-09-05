@@ -4,17 +4,11 @@ type: script
 subsystem: unknown
 location: tools/t3250-transport-probe.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tools/t3257-build-order-gate.py
+  type: called_by
 last_verified: 2026-09-04
 created_by: unknown
+last_enriched: '2026-09-05'

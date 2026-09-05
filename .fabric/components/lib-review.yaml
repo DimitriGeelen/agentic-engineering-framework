@@ -12,6 +12,8 @@ depends_on:
   type: calls
 - target: lib/task-audit.sh
   type: calls
+- target: lib/inception-readiness.sh
+  type: calls
 depended_by:
 - target: agents/task-create/update-task.sh
   type: called_by
@@ -49,4 +51,4 @@ depended_by:
   type: tests_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-05'

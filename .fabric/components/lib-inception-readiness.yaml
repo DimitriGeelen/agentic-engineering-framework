@@ -1,20 +1,20 @@
-id: lib/watchtower-staleness.sh
-name: watchtower-staleness
+id: lib/inception-readiness.sh
+name: inception-readiness
 type: script
 subsystem: framework-core
-location: lib/watchtower-staleness.sh
+location: lib/inception-readiness.sh
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on: []
 depended_by:
-- target: bin/fw
+- target: agents/task-create/update-task.sh
   type: called_by
-- target: agents/audit/audit.sh
+- target: lib/inception.sh
   type: called_by
-- target: C-004
+- target: lib/review.sh
   type: called_by
-- target: bin/watchtower.sh
+- target: web/shared.py
   type: called_by
-last_verified: 2026-08-12
+last_verified: 2026-09-05
 created_by: unknown
 last_enriched: '2026-09-05'

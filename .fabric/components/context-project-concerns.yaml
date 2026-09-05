@@ -3,19 +3,22 @@ name: concerns
 type: data
 subsystem: context-fabric
 location: .context/project/concerns.yaml
-tags: [context, project-memory, governance]
-
-purpose: "Unified concerns register (gaps + risks) tracking spec-reality gaps, identified risks, severity, mitigation plans, and resolution status. Consolidated from gaps.yaml, issues.yaml, and risks.yaml by T-397."
-
+tags:
+- context
+- project-memory
+- governance
+purpose: Unified concerns register (gaps + risks) tracking spec-reality gaps, identified risks, severity, mitigation plans,
+  and resolution status. Consolidated from gaps.yaml, issues.yaml, and risks.yaml by T-397.
 depends_on: []
-
 depended_by:
-  - target: web/blueprints/risks.py
-    type: read_by
-  - target: agents/audit/audit.sh
-    type: read_by
-  - target: agents/handover/handover.sh
-    type: read_by
-
+- target: web/blueprints/risks.py
+  type: read_by
+- target: agents/audit/audit.sh
+  type: read_by
+- target: agents/handover/handover.sh
+  type: read_by
+- target: tools/t3257-build-order-gate.py
+  type: called_by
 last_verified: 2026-03-10
 created_by: T-401
+last_enriched: '2026-09-05'

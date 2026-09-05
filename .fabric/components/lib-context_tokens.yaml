@@ -21,6 +21,8 @@ depended_by:
   type: called_by
 - target: web/blueprints/costs.py
   type: called_by
+- target: agents/context/checkpoint.sh
+  type: called_by
 last_verified: 2026-08-09
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-05'

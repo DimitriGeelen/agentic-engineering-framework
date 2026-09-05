@@ -92,6 +92,8 @@ depended_by:
   type: called_by
 - target: agents/audit/audit.sh
   type: called_by
+- target: agents/context/checkpoint.sh
+  type: called_by
 last_verified: 2026-04-03
 created_by: unknown
 last_enriched: '2026-09-05'

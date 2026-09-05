@@ -36,7 +36,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-05'
 depended_by:
 - target: agents/context/pre-compact.sh
   type: called_by
@@ -95,6 +95,8 @@ depended_by:
 - target: tests/unit/t2927_observation_inbox_listing.bats
   type: tests_by
 - target: agents/fabric/lib/enrich.py
+  type: called_by
+- target: agents/context/checkpoint.sh
   type: called_by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md

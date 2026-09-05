@@ -61,6 +61,8 @@ depended_by:
   type: called_by
 - target: tests/unit/episodic_worktree_mining.bats
   type: tests_by
+- target: agents/context/checkpoint.sh
+  type: called_by
 last_verified: 2026-03-09
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-05'

@@ -9,6 +9,8 @@ depends_on: []
 depended_by:
 - target: tests/unit/t3254_driver_refusals.bats
   type: tests_by
+- target: tools/t3257-build-order-gate.py
+  type: called_by
 last_verified: 2026-09-03
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-05'

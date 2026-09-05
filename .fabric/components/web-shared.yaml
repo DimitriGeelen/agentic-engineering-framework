@@ -35,6 +35,8 @@ depends_on:
   type: calls
 - target: web/blueprints/settings.py
   type: uses
+- target: lib/inception-readiness.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: T-227
 depended_by:
@@ -304,4 +306,4 @@ depended_by:
   type: called_by
 - target: web/test_app.py
   type: uses_by
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-05'

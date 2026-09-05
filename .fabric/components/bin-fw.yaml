@@ -205,6 +205,8 @@ depends_on:
   type: calls
 - target: web/smoke_test.py
   type: calls
+- target: lib/cron-orphans.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 last_enriched: '2026-09-05'
@@ -1057,3 +1059,5 @@ depended_by:
   type: called_by
 - target: agents/audit/audit.sh
   type: called_by
+- target: tests/unit/t3281_cron_orphan_scan.bats
+  type: tests_by

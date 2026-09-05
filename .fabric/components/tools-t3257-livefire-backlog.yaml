@@ -1,0 +1,20 @@
+id: tools/t3257-livefire-backlog.sh
+name: t3257-livefire-backlog
+type: script
+subsystem: unknown
+location: tools/t3257-livefire-backlog.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-05
+created_by: unknown

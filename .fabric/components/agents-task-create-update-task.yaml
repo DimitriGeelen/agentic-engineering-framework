@@ -42,6 +42,8 @@ depends_on:
   type: calls
 - target: lib/continuous-mode.sh
   type: calls
+- target: lib/inception-readiness.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 last_enriched: '2026-09-05'

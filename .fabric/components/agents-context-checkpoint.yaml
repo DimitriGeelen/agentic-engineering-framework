@@ -1,0 +1,30 @@
+id: agents/context/checkpoint.sh
+name: checkpoint
+type: script
+subsystem: context-fabric
+location: agents/context/checkpoint.sh
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: lib/paths.sh
+  type: calls
+- target: lib/config.sh
+  type: calls
+- target: lib/compat.sh
+  type: calls
+- target: agents/handover/handover.sh
+  type: calls
+- target: lib/context_tokens.py
+  type: calls
+depended_by:
+- target: agents/context/commit-cadence.sh
+  type: read_by
+- target: agents/context/session-metrics.sh
+  type: called_by
+- target: tests/unit/checkpoint.bats
+  type: called_by
+- target: tests/unit/handover_push_timeout.bats
+  type: called_by
+last_verified: 2026-09-05
+created_by: unknown
+last_enriched: '2026-09-05'

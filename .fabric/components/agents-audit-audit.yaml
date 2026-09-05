@@ -62,6 +62,8 @@ depends_on:
   type: calls
 - target: lib/workflow_coverage.py
   type: calls
+- target: lib/watchtower-staleness.sh
+  type: calls
 depended_by:
 - target: tests/unit/audit.bats
   type: called_by

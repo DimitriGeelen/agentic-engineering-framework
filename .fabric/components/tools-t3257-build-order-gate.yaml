@@ -1,0 +1,18 @@
+id: tools/t3257-build-order-gate.py
+name: t3257-build-order-gate
+type: script
+subsystem: unknown
+location: tools/t3257-build-order-gate.py
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: .context/project/concerns.yaml
+  type: calls
+- target: tools/t3250-transport-probe.sh
+  type: calls
+- target: agents/context/continuous-driver.sh
+  type: calls
+depended_by: []
+last_verified: 2026-09-05
+created_by: unknown
+last_enriched: '2026-09-05'
