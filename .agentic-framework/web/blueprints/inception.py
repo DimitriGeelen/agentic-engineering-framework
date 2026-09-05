@@ -528,49 +528,9 @@ def resolve_assumption(assumption_id):
     return redirect(url_for("inception.assumptions_list"))
 
 
-def _operator_facing_stderr(text):
-    """T-3280 (G-102 defect B): translate fw gate stderr into operator-facing text.
-
-    Origin: the T-3278 GO incident (2026-09-05) — the disposition gate's refusal
-    was rendered raw to the operator, including its Tier-2 bypass instructions
-    (`--skip-disposition-gate`, `FW_SKIP_DISPOSITION_GATE=1`), the internal
-    `--skip-sovereignty` warning, and `=== Task Update ===` header noise. Gate
-    block messages are written FOR AGENTS (CLAUDE.md requires them to name their
-    bypass mechanisms); the operator is not the audience, and showing a human
-    bypass flags as the remedy normalises Tier-2 bypass for what is actually an
-    authoring gap. T-2219 widened this rendering; this function keeps the width
-    (the reason must stay visible) and fixes the register.
-
-    Drops instruction/noise lines, keeps substantive reason lines. The
-    drop-patterns are one list so a [REVIEW] finding can extend it in one place.
-    """
-    import re as _re
-    if not text:
-        return ""
-    drop_patterns = [
-        r"--skip-[a-z-]+",                # any Tier-2 skip-flag instruction line
-        r"FW_[A-Z_]+=1",                  # env-var bypass instruction line
-        r"^\s*Options:\s*$",              # the bypass-options block header
-        r"^\s*\d+\.\s",                   # numbered option lines under it
-        r"logged Tier-2",                  # bypass-logging notes
-        r"=== Task Update ===",            # update-task.sh banner noise
-        r"^Task:\s|^File:\s",              # update-task.sh header lines
-        r"WARNING: Completing human-owned task",  # internal sovereignty note
-    ]
-    kept = []
-    for line in text.splitlines():
-        if any(_re.search(p, line) for p in drop_patterns):
-            continue
-        kept.append(line)
-    # collapse runs of blank lines left by the drops
-    out, prev_blank = [], False
-    for line in kept:
-        blank = not line.strip()
-        if blank and prev_blank:
-            continue
-        out.append(line)
-        prev_blank = blank
-    return "\n".join(out).strip()
+# T-3284: single implementation lives in web/shared.py (parity by construction,
+# L-399). The underscore alias keeps existing references and tests working.
+from web.shared import operator_facing_stderr as _operator_facing_stderr
 
 
 @bp.route("/inception/<task_id>/decide", methods=["POST"])
@@ -702,10 +662,14 @@ def record_decision(task_id):
     # the user sees a silent redirect and clicks GO repeatedly.
     if not ok:
         if primary_landed:
-            # T-1470: primary succeeded, surface as warning (not error)
-            warn = (stderr or stdout or "side-effect warning")[:300]
+            # T-1470: primary succeeded, surface as warning (not error).
+            # T-3284: sanitize like the htmx sibling above — this redirect path
+            # renders to the operator too, and previously leaked bypass flags.
+            warn = (_operator_facing_stderr((stderr or stdout or "")[:3000])
+                    or "side-effect warning")[:300]
             return redirect(url_for("inception.inception_detail", task_id=task_id, warning=warn))
-        err = (stderr or stdout or "Unknown error from fw inception decide")[:300]
+        err = (_operator_facing_stderr((stderr or stdout or "")[:3000])
+               or "Unknown error from fw inception decide")[:300]
         return redirect(url_for("inception.inception_detail", task_id=task_id, error=err))
 
     # T-2053: success — surface a commit failure as a warning (no silent failure).
@@ -832,7 +796,8 @@ def _commit_decision(task_id: str, decision: str):
             cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
         )
         if status.returncode != 0:
-            return False, (status.stderr or status.stdout or "git status failed").strip()[:200]
+            return False, (_operator_facing_stderr(status.stderr or status.stdout or "")
+                           or "git status failed").strip()[:200]
 
         wanted = []
         for line in status.stdout.splitlines():
@@ -889,7 +854,7 @@ def _commit_decision(task_id: str, decision: str):
                 env=_env,
             )
             if read_tree.returncode != 0:
-                return False, (read_tree.stderr or read_tree.stdout
+                return False, (_operator_facing_stderr(read_tree.stderr or read_tree.stdout or "")
                                or "git read-tree failed").strip()[:200]
 
             # `git add` on the scratch index reads the working tree (shared) but
@@ -902,7 +867,8 @@ def _commit_decision(task_id: str, decision: str):
                 env=_env,
             )
             if add.returncode != 0:
-                return False, (add.stderr or add.stdout or "git add failed").strip()[:200]
+                return False, (_operator_facing_stderr(add.stderr or add.stdout or "")
+                               or "git add failed").strip()[:200]
 
             msg = f"{task_id}: inception decision {decision.upper()} (via Watchtower)"
             commit = subprocess.run(
@@ -911,7 +877,8 @@ def _commit_decision(task_id: str, decision: str):
                 env=_env,
             )
             if commit.returncode != 0:
-                return False, (commit.stderr or commit.stdout or "git commit failed").strip()[:200]
+                return False, (_operator_facing_stderr(commit.stderr or commit.stdout or "")
+                               or "git commit failed").strip()[:200]
             return True, msg
     except Exception as e:  # never let a commit problem break the decision response
         return False, str(e)[:200]

@@ -795,7 +795,11 @@ def _execute_inception_decide(command_preview: str) -> dict:
         stdout_tail = (proc.stdout or "")[-400:]
         if proc.returncode == 0:
             return {"ok": True, "summary": f"{task_id} decided {verdict}", "error": None, "stdout_tail": stdout_tail}
-        return {"ok": False, "error": (proc.stderr or "").strip()[:400] or f"exit {proc.returncode}", "summary": "", "stdout_tail": stdout_tail}
+        # T-3284: operator-facing translation (G-102 defect B) — this error is
+        # rendered on /approvals; raw gate stderr carries agent-audience bypass
+        # instructions the operator must not be handed as the remedy.
+        from web.shared import operator_facing_stderr
+        return {"ok": False, "error": operator_facing_stderr((proc.stderr or "")[:3000]).strip()[:400] or f"exit {proc.returncode}", "summary": "", "stdout_tail": stdout_tail}
     except subprocess.TimeoutExpired:
         return {"ok": False, "error": "timeout (30s)", "summary": "", "stdout_tail": ""}
     except Exception as e:
@@ -845,7 +849,9 @@ def complete_batch():
             if result.returncode == 0:
                 completed.append(task_id)
             else:
-                errors.append(f"{task_id}: {result.stderr[:100]}")
+                # T-3284: sanitize before rendering to the operator (G-102 defect B)
+                from web.shared import operator_facing_stderr
+                errors.append(f"{task_id}: {operator_facing_stderr((result.stderr or '')[:3000])[:100] or f'exit {result.returncode}'}")
         except Exception as e:
             errors.append(f"{task_id}: {str(e)[:100]}")
 
