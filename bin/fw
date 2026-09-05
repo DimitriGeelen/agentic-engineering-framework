@@ -3426,6 +3426,38 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         fi
     fi
 
+    # T-3281: orphaned deployed entries — the FOURTH cron drift class. The three
+    # checks above all compare this project's registry against this project's
+    # deployed file, so none of them can see a deployed entry with no registry
+    # behind it, left by a project that no longer exists. Those entries fall
+    # through to FRAMEWORK_ROOT (bin/fw treats the vanished root as stale and
+    # re-resolves) and compete for its audit lock. Sits outside the registry
+    # branch above on purpose: an orphan is a host fact, not a fact about whether
+    # THIS project happens to declare cron jobs. Skipped in a linked worktree for
+    # the same reason as T-2435 — cron is host-level, managed from the main
+    # checkout. Scan logic lives in its own lib per L-332/L-408 (T-1944 precedent).
+    if [ "$_fw_is_wt" != "1" ] && [ -f "$FRAMEWORK_ROOT/lib/cron-orphans.sh" ]; then
+        # shellcheck source=/dev/null
+        source "$FRAMEWORK_ROOT/lib/cron-orphans.sh" 2>/dev/null || true
+        if declare -f cron_orphan_scan >/dev/null 2>&1; then
+            local _cron_orphans _orphan_files=""
+            _cron_orphans=$(cron_orphan_scan "${FW_CRON_INSTALL_DIR:-/etc/cron.d}" "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || true)
+            if [ -n "$_cron_orphans" ]; then
+                local _orphan_count _of _or
+                _orphan_count=$(printf '%s\n' "$_cron_orphans" | wc -l | tr -d ' ')
+                echo -e "  ${YELLOW}WARN${NC}  Orphaned cron entries: $_orphan_count deployed job file(s) declare a PROJECT_ROOT that no longer exists"
+                while IFS=$'\t' read -r _of _or; do
+                    [ -n "$_of" ] || continue
+                    echo -e "        $_of → $_or (gone)"
+                    _orphan_files="$_orphan_files $_of"
+                done <<< "$_cron_orphans"
+                echo -e "        These re-resolve onto $FRAMEWORK_ROOT and compete for its .context/locks/audit.lock."
+                echo -e "        Remove: cd $PROJECT_ROOT && sudo rm -f$_orphan_files"
+                warnings=$((warnings + 1))
+            fi
+        fi
+    fi
+
     # T-2914: Autonomous Dispatch — single surface for "is anything dispatching
     # unattended right now" (covering the systemd path the cron-registry checks
     # above cannot see) plus any tasks the loop is currently refusing to

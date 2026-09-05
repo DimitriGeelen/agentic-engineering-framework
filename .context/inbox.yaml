@@ -4240,3 +4240,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-368
+  text: "fw doctor spends ~79s of every run on 'bats --count tests/unit/' (606 files, 5161 tests) to print a cosmetic count on the 'Test infrastructure' line (bin/fw:1931). doctor --quick does not skip it — check 9 has no _doctor_quick_skip guard. Measured 2026-09-05 during T-3281: 'fw doctor --quick' exceeded a 120s timeout having reached only check 8. doctor is invoked by hooks, cron and pre-push paths, so the cost is paid constantly and it makes doctor unusable inside test suites. Candidate fixes: guard check 9 with _doctor_quick_skip, cache the count, or replace with a cheap 'ls tests/unit/*.bats | wc -l' file count."
+  captured: 2026-09-05T11:34:28Z
+  context_task: T-3281
+  tags: []
+  status: pending
+  promoted_to: null

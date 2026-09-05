@@ -5044,3 +5044,53 @@ concerns:
   related:
   - T-3279
   - T-3280
+- id: G-103
+  type: gap
+  title: A deployed cron entry whose PROJECT_ROOT has vanished silently re-targets another
+    project instead of refusing -- and no drift class looks for entries with no registry behind
+    them
+  description: 'Origin incident (2026-09-05, T-3281): six /etc/cron.d/agentic-audit-proj-schedule-install*
+    entries, left behind by temp-dir test-fixture installs, each declare a PROJECT_ROOT under
+    /tmp that no longer exists. bin/fw _project_root_is_stale correctly rejects the vanished
+    root, re-resolves, finds no usable cwd (cron supplies none), and falls back to FRAMEWORK_ROOT
+    -- so all six audit /opt/999-Agentic-Engineering-Framework instead of erroring. Twelve extra
+    audit invocations per hour, landing on :00 and :30 WITHOUT the per-job /var/lock flock the
+    registry-generated entries carry (T-1331/T-1558), serialise on .context/locks/audit.lock and
+    hold it for minutes. Every pre-push audit gate then fails with "Another audit is already
+    running -- exiting (no verdict produced)". Handover commit 426e1524d was stranded unpushed
+    across a compaction boundary by exactly this, and three subsequent push attempts lost the
+    same race.
+
+    Two independent defects. (A) The silent re-target: falling back to FRAMEWORK_ROOT is right
+    for an interactive fw invoked from inside the framework repo, and wrong for a cron job that
+    NAMED a project explicitly -- an explicit PROJECT_ROOT that has vanished is a broken job,
+    not an unspecified one, and it should refuse rather than audit a different project. The
+    failure is silent in both directions: the dead project gets no audit, and the live one gets
+    load it never asked for. (B) The blind spot that let six accumulate: the framework tracks
+    three cron drift classes along registry -> generated -> deployed (T-1942, T-1771), and all
+    three compare a project''s own registry to its own deployed file. None can see a deployed
+    entry with NO registry behind it. `fw cron` has generate/install/status/list/pause/resume
+    and no removal verb, so there is also no sanctioned way to clear one once found.
+
+    T-3281 ships detection for (B) only -- a fw doctor WARN naming each orphan, its dead root,
+    and a copy-pasteable removal command (lib/cron-orphans.sh, tests/unit/t3281_cron_orphan_scan.bats).
+    (A) is deliberately NOT fixed there: PROJECT_ROOT resolution is the highest-blast-radius code
+    path in bin/fw, it is vendored to every consumer, and a second session was live in the
+    checkout. Detection makes the next instance visible in one command instead of manifesting as
+    unexplained push failures; it does not stop one being created.'
+  spec_reference: bin/fw _project_root_is_stale + PROJECT_ROOT fallback to FRAMEWORK_ROOT;
+    bin/fw doctor cron drift checks (T-1942/T-1771/T-1558); lib/cron-orphans.sh; CLAUDE.md
+    §Verification Gate (cron-touching tasks, three-transition chain)
+  severity: medium
+  status: open
+  detected_in: T-3281
+  observed: '2026-09-05'
+  blast_radius: 'Any host where a project directory is removed without first removing its cron
+    entry -- which includes every torn-down git worktree (one such entry, agentic-audit-agent-a1edeca4dc54e9ac7,
+    is live on the origin host pointing into .claude/worktrees/, i.e. the G-075/T-2825 worktree-durability
+    class arriving through cron), every temp-dir test install, and every decommissioned consumer.
+    The victim is always the framework repo, because that is what the fallback resolves to, and
+    the symptom (audit-lock starvation blocking pushes) does not name cron anywhere.'
+  related:
+  - T-3281
+  - G-075
