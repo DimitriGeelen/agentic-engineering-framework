@@ -129,15 +129,15 @@ The M2 continuous loop's cross-session continuation currently depends on live ke
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -197,7 +197,11 @@ Three continuation channels exist in arc-012 today; the proposed one is 80% buil
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Three continuation channels exist in arc-012 today; the proposed one is 80% built. The live-injection leg (continuous-driver.sh) fights an inherently hostile problem: G-097 (termlink inject silently no-ops into ink TUIs), busy-detection false positives (spinner frames read as work, fixed by animation-folding), and delivery confirmation (T-3275) - all defensive machinery against a wire that pushes keystrokes into a raw-mode TUI. The restart leg (claude-fw wrapper + .restart-requested + inject-next-directive.py + FW_NEXT_DIRECTIVE at SessionStart) already delivers a directive into a fresh session with NONE of those failure classes, because context injection is a first-party Claude Code channel, not keystroke emulation. The delta to build is small: a cron leg that watches the existing .next-directive.yaml flag and launches claude-fw when no session is running. Open questions are real but scoped: session-exit semantics (Stop hook yields to prompt, does not exit), coexistence with the live-injection leg for operator-attended sessions, and cron-granularity latency.
+
+**Date**: 2026-09-05T10:47:43Z
 
 ## Updates
 
@@ -206,3 +210,8 @@ Three continuation channels exist in arc-012 today; the proposed one is 80% buil
 
 ### 2026-09-05T10:42:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-05T10:47:43Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three continuation channels exist in arc-012 today; the proposed one is 80% built. The live-injection leg (continuous-driver.sh) fights an inherently hostile problem: G-097 (termlink inject silently no-ops into ink TUIs), busy-detection false positives (spinner frames read as work, fixed by animation-folding), and delivery confirmation (T-3275) - all defensive machinery against a wire that pushes keystrokes into a raw-mode TUI. The restart leg (claude-fw wrapper + .restart-requested + inject-next-directive.py + FW_NEXT_DIRECTIVE at SessionStart) already delivers a directive into a fresh session with NONE of those failure classes, because context injection is a first-party Claude Code channel, not keystroke emulation. The delta to build is small: a cron leg that watches the existing .next-directive.yaml flag and launches claude-fw when no session is running. Open questions are real but scoped: session-exit semantics (Stop hook yields to prompt, does not exit), coexistence with the live-injection leg for operator-attended sessions, and cron-granularity latency.
