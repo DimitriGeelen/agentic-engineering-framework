@@ -1,0 +1,194 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3257: Real-agent live-fire for continuous-driver — blocked on G-097 upstream termlink fix
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-05T14:45:30Z
+# ============================================================================
+
+task_id: T-3257
+task_name: "Real-agent live-fire for continuous-driver — blocked on G-097 upstream termlink fix"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-03T14:18:37Z
+completed: 2026-09-05T14:42:23Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-09-05T10:18:08+02:00
+last_commit: 2026-09-05T16:41:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  live-fire — the driver hands a real turn to a real agent, 5/5, twice. the backlog proof, on a substrate that can actually run it — 9/9 twice. move build-order predicate out of an inline python -c block
+
+# Key outcomes
+outcomes:
+  - 'G-097 is closed or a workaround is confirmed measured (not assumed) before'
+  - 'A real `claude` session is driven to all of: 3/3 backlog units complete,'
+  - 'The T-3254 refusal suite (tests/unit/t3254_driver_refusals.bats) still'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-05 — Port the proof to a drivable substrate rather than wait for G-097'
+    chose: 'keep T-3255''s design and move its substrate — agent runs directly in a tmux pane, driver invoked `--transport tmux --session <pane>`.'
+    rationale: 'T-3255''s harness cannot run *by construction*, not by defect. It spawns via `termlink spawn --shell`, and T-3277 measured that neither transport reaches a termlink-wrapped agent — `termlink inject` dies at the ink TUI (G-097), and `tmux send-keys` at the outer pane lands on `termlink register`''s stdin. Waiting for G-097 would have parked a proof that was already achievable on a different wire.'
+    alternatives_rejected: ['substituting a stub or a shell script for the agent — the task''s own description forbids it, and it is the exact gap T-3255 existed to close. - **Kept honest:** G-097 stays open. A termlink-wrapped agent remains undrivable, and that is a real limit on where the continuous driver can be deployed today.']
+  - decision: '2026-09-05 — Two failing assertions were harness artifacts, and both were fixed rather than relaxed'
+    alternatives_rejected: ['loosening either assertion to `>= 0`. Both were telling the truth about the harness; the assertions were the only reason either was visible.']
+  - decision: '2026-09-05 — The harness reimplements idle-detection instead of sharing the driver''s'
+    chose: '`wait_quiet()` in the harness duplicates the two-identical-captures idea the driver uses.'
+    rationale: 'the control must be able to tell "idle" from "idle" *independently of the code under test*. Sharing the helper would make the control agree with the driver by construction — which is precisely the T-3254 defect, where the test stub encoded the same assumption as the production bug and 21 green tests covered nothing.'
+  - decision: '2026-09-05 — Did not lift the cron pause'
+    chose: 'leave `continuous-driver-10m` paused; carry the re-arm to T-3283.'
+    rationale: 'the registry command passes no `--transport`, so it would run the G-097-blocked termlink leg and refuse every 10 minutes. And this session runs under `claude daemon run` (G-098) — neither tmux-paned nor TermLink-registered — so the driver can resolve no target at all. Re-arming buys noise, not autonomy.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-09-05.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/full-audit-timing.yaml'
+  - '.context/audits/reviewer/2026-09-05.yaml'
+  - '.context/episodic/T-3275.yaml'
+  - '.context/handovers/S-2026-0905-0045.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0905-1001.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/concerns.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/.edit-counter'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - 'docs/generated/components/agents-audit-active-task-scan.md'
+  - 'docs/generated/components/agents-audit-audit.md'
+  - 'docs/generated/components/agents-audit-completed-task-scan.md'
+  - 'docs/generated/components/agents-audit-orchestrator-mcp-scan.md'
+  - 'docs/generated/components/agents-context-check-tier0.md'
+  - 'docs/generated/components/agents-context-error-watchdog.md'
+  - 'docs/generated/components/agents-git-lib-large-file-scan.md'
+  - 'docs/generated/components/agents-git-lib-secret-scan.md'
+  - 'docs/generated/components/agents-mcp-manifest.md'
+  - 'docs/generated/components/agents-task-create-update-task.md'
+  - 'docs/generated/components/bin-fw.md'
+  - 'docs/generated/components/checkpoint.md'
+  - 'docs/generated/components/context-project-learnings.md'
+  - 'docs/generated/components/lib-bats_red_attribution.md'
+  - 'docs/generated/components/lib-branch-hygiene.md'
+  - 'docs/generated/components/lib-config.md'
+  - 'docs/generated/components/lib-continuous-mode.md'
+  - 'docs/generated/components/lib-cron_dry_run.md'
+  - 'docs/generated/components/lib-cron-registry.md'
+  - 'docs/generated/components/lib-gitignore-register.md'
+  - 'docs/generated/components/lib-hook-threshold.md'
+  - 'docs/generated/components/lib-inception_recommendation.md'
+  - 'docs/generated/components/lib-paths.md'
+  - 'docs/generated/components/lib-resolver.md'
+  - 'docs/generated/components/lib-reviewer-__init__.md'
+  - 'docs/generated/components/lib-traceability.md'
+  - 'docs/generated/components/lib-verify_queue.md'
+  - 'docs/generated/components/lib-watchtower.md'
+  - 'docs/generated/components/lib-workflow_coverage.md'
+  - 'docs/generated/components/tests-unit-test_reviewer_decaying_task_path_ref.md'
+  - 'docs/generated/components/tools-corpus_conformance.md'
+  - 'docs/generated/components/tools-corpus_lint.md'
+  - 'docs/generated/components/tools-t3250-transport-probe.md'
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'docs/reports/T-3257-livefire-evidence/run1-backlog-9of9.txt'
+  - 'docs/reports/T-3257-livefire-evidence/run2-backlog-9of9.txt'
+  - 'docs/reports/T-3257-livefire-evidence/t3254-refusal-suite-21of21.txt'
+  - '.fabric/components/agents-audit-active-task-scan.yaml'
+  - '.fabric/components/agents-audit-audit.yaml'
+  - '.fabric/components/agents-audit-completed-task-scan.yaml'
+  - '.fabric/components/agents-audit-orchestrator-mcp-scan.yaml'
+  - '.fabric/components/agents-context-check-tier0.yaml'
+  - '.fabric/components/agents-context-error-watchdog.yaml'
+  - '.fabric/components/agents-git-lib-large-file-scan.yaml'
+  - '.fabric/components/agents-git-lib-secret-scan.yaml'
+  - '.fabric/components/agents-mcp-manifest.yaml'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/checkpoint.yaml'
+  - '.fabric/components/context-project-learnings.yaml'
+  - '.fabric/components/lib-bats_red_attribution.yaml'
+  - '.fabric/components/lib-branch-hygiene.yaml'
+  - '.fabric/components/lib-config.yaml'
+  - '.fabric/components/lib-continuous-mode.yaml'
+  - '.fabric/components/lib-cron_dry_run.yaml'
+  - '.fabric/components/lib-cron-registry.yaml'
+  - '.fabric/components/lib-gitignore-register.yaml'
+  - '.fabric/components/lib-hook-threshold.yaml'
+  - '.fabric/components/lib-inception_recommendation.yaml'
+  - '.fabric/components/lib-paths.yaml'
+  - '.fabric/components/lib-resolver.yaml'
+  - '.fabric/components/lib-reviewer-__init__.yaml'
+  - '.fabric/components/lib-traceability.yaml'
+  - '.fabric/components/lib-verify_queue.yaml'
+  - '.fabric/components/lib-watchtower.yaml'
+  - '.fabric/components/lib-workflow_coverage.yaml'
+  - '.fabric/components/tests-unit-test_reviewer_decaying_task_path_ref.yaml'
+  - '.fabric/components/tools-corpus_conformance.yaml'
+  - '.fabric/components/tools-corpus_lint.yaml'
+  - '.fabric/components/tools-t3250-transport-probe.yaml'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3211-handover-suggested-first-action-truncate.md'
+  - '.tasks/active/T-3257-real-agent-live-fire-for-continuous-driv.md'
+  - '.tasks/active/T-3283-re-arm-continuous-driver-10m-cron-once-a.md'
+  - '.tasks/completed/T-3282-watchtower-serves-stale-code-for-days---.md'
+  - 'tools/t3257-build-order-gate.py'
+  - 'tools/t3257-livefire-backlog.sh'
+  - 'tools/t3257-livefire-driver.sh'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-05T10:18:08'
+    action: 'T-3257: live-fire — the driver hands a real turn to a real agent, 5/5, twice'
+  - time: '2026-09-05T16:38:01'
+    action: 'T-3257: the backlog proof, on a substrate that can actually run it — 9/9 twice'
+  - time: '2026-09-05T16:41:29'
+    action: 'T-3257: move build-order predicate out of an inline python -c block'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 2903 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2903
+  commits: 4
+  files_changed: 110
+  lines_added: 8798
+  lines_removed: 5747
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3257-real-agent-live-fire-for-continuous-driv.md
+generated_by: context-agent-hybrid

@@ -3747,3 +3747,66 @@ decisions:
     date: 2026-09-04
     task: T-3275
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-538
+    decision: "ship the `fw doctor` orphan check; leave `bin/fw`'s PROJECT_ROOT"
+    scope: project
+    date: 2026-09-05
+    task: T-3281
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-539
+    decision: "report only entries invoking this `FRAMEWORK_ROOT/bin/fw`."
+    scope: project
+    date: 2026-09-05
+    task: T-3281
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-540
+    decision: "skip them silently (pinned by C3)."
+    scope: project
+    date: 2026-09-05
+    task: T-3281
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-541
+    decision: "split `cron_orphan_report()` out of `bin/fw` into the lib, cover both"
+    scope: project
+    date: 2026-09-05
+    task: T-3281
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-542
+    decision: "fix both sides — canonicalise `fw_path` inside `cron_orphan_scan`, and"
+    scope: project
+    date: 2026-09-05
+    task: T-3281
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-543
+    decision: "`cron_orphan_scan /etc/cron.d \"$PWD/bin/fw\" >/dev/null` — exit code"
+    scope: project
+    date: 2026-09-05
+    task: T-3281
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-544
+    decision: "keep T-3255's design and move its substrate — agent runs directly in a"
+    scope: project
+    date: 2026-09-05
+    task: T-3257
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-545
+    decision: "`wait_quiet()` in the harness duplicates the two-identical-captures idea"
+    scope: project
+    date: 2026-09-05
+    task: T-3257
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-546
+    decision: "leave `continuous-driver-10m` paused; carry the re-arm to T-3283."
+    scope: project
+    date: 2026-09-05
+    task: T-3257
+    rationale: "Auto-captured from task file on completion"
