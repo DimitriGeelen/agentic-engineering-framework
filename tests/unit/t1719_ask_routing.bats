@@ -128,9 +128,20 @@ print('OK')
 @test "t1719-a3: a live ask writes an outcome row naming the route" {
     command -v ollama >/dev/null 2>&1 || skip "ollama not installed"
     [ -f "$OUTCOMES" ] || skip "no outcomes log yet"
+    # Self-contained by construction: this test runs its OWN ask and asserts only
+    # the rows THAT run appended. It previously scanned `tail -40` of the shared
+    # log, which made the verdict a property of ambient history rather than of
+    # this run — and it fails in BOTH directions. Measured 2026-09-05: red during
+    # a close-heavy hour (task-close evaluator rows flooded the window, pushing
+    # every route row past line 40) and then green on an unchanged re-run purely
+    # because an unrelated live ask had just landed. A test that a neighbouring
+    # task can turn green is not evidence about routing.
+    local before
+    before=$(wc -l < "$OUTCOMES")
+    run bash -c "cd '$FRAMEWORK_ROOT' && timeout 240 bin/fw ask --concise 'what is P-011' >/dev/null 2>&1"
     run bash -c "
       cd '$FRAMEWORK_ROOT'
-      tail -40 '$OUTCOMES' | python3 -c \"
+      tail -n +$((before + 1)) '$OUTCOMES' | python3 -c \"
 import sys, json
 found = False
 for line in sys.stdin:
