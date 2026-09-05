@@ -141,8 +141,9 @@ live in this checkout; a resolution change there is not a same-session edit.
 
 bash -n lib/cron-orphans.sh
 bash -n bin/fw
-# The doctor legs (C8/C9) each pay ~79s for `bats --count` inside fw doctor (OBS-368),
-# so this suite runs minutes, not seconds. The timeout is sized for that, not padding.
+# C1-C10 finish in ~2 min. C11 is one real `fw doctor` run, which pays ~79s for
+# `bats --count` inside doctor (OBS-368) plus the rest of the checks. The timeout is
+# sized for that, not padding. Cut from two doctor runs to one deliberately — see Decisions.
 timeout 900 bats tests/unit/t3281_cron_orphan_scan.bats > /tmp/.t3281-verify.out 2>&1 && ! grep -q "^not ok" /tmp/.t3281-verify.out
 test "$(grep -c '# skip' /tmp/.t3281-verify.out)" -eq 0
 # Runs against the REAL /etc/cron.d. Asserts the scan completes cleanly on host data —
@@ -376,6 +377,80 @@ surfacing as an unexplained push failure days later.
 -->
 
 ## Decisions
+
+### 2026-09-05 — Detection here, root cause registered rather than fixed
+
+- **Chose:** ship the `fw doctor` orphan check; leave `bin/fw`'s PROJECT_ROOT
+  fallback alone and register it as G-103 (defect A).
+- **Why:** PROJECT_ROOT resolution is the highest-blast-radius path in `bin/fw`,
+  it is vendored to every consumer, and a second session was live in this
+  checkout while this task ran. Changing what a stale root resolves to is not a
+  same-session edit made around someone else's work.
+- **Rejected:** fixing the fallback here (correct fix, wrong moment); adding
+  `fw cron uninstall` (a second deliverable — the doctor WARN already prints the
+  exact `rm` command, so the verb buys ergonomics, not capability).
+
+### 2026-09-05 — Filter orphans by the `bin/fw` they invoke
+
+- **Chose:** report only entries invoking this `FRAMEWORK_ROOT/bin/fw`.
+- **Why:** that is precisely the set that falls through onto this framework root
+  and competes for its audit lock. It also keeps the check quiet on hosts with
+  many projects — an unfiltered scan would repeat the same WARN from all 20+
+  projects on this host.
+- **Rejected:** reporting every orphan in `/etc/cron.d`. Verified this matters:
+  the unfiltered scan flags `agentic-audit-termlink`, whose `PROJECT_ROOT` is the
+  literal unexpanded string `$(pwd)`. That entry is genuinely broken, but it
+  invokes a different `bin/fw`, so its harm lands elsewhere and it is not this
+  project's finding to report.
+
+### 2026-09-05 — Entries declaring no PROJECT_ROOT are not orphans
+
+- **Chose:** skip them silently (pinned by C3).
+- **Why:** 14 of the 33 deployed entries on this host use the older format with
+  no `PROJECT_ROOT` line; they resolve by cwd. The variable's absence says
+  nothing about whether the project still exists, so flagging them would be a
+  guess presented as a finding — and 14 false WARNs would make the real 6
+  invisible, which is the failure mode this check exists to end.
+
+### 2026-09-05 — Rendering moved into the lib after the first C8 went red
+
+- **Chose:** split `cron_orphan_report()` out of `bin/fw` into the lib, cover both
+  rendering legs there, and keep exactly **one** real `fw doctor` test (C11).
+- **Why:** the first cut put the WARN block inline in `bin/fw` and tested it with
+  two full doctor runs. Each costs minutes on this host (OBS-368 — `bats --count`
+  over 606 files), which made the suite ~10 minutes and would have put that on
+  every close through `## Verification`. A renderer only reachable through a
+  command that slow is a renderer that stops being tested.
+- **Rejected:** dropping the real doctor test entirely. That would leave "doctor
+  calls the report, with the right arguments" unproven — the `mock-only-integration`
+  class the reviewer flags. One slow test buys exactly that, and nothing else.
+
+### 2026-09-05 — The first C8 failure was a real defect, not just a bad fixture
+
+- **What happened:** C8 asserted `fw doctor` emits the WARN and it did not. The
+  fixture wrote entries naming `…/tests/unit/../../bin/fw` (from `BATS_TEST_DIRNAME`),
+  while doctor greps for the canonical `$FRAMEWORK_ROOT/bin/fw`. Same binary,
+  different spelling, and `grep -qF` matches neither way.
+- **Chose:** fix both sides — canonicalise `fw_path` inside `cron_orphan_scan`, and
+  `pwd -P` the root in the test's `setup()`. Pinned by C8, which now asserts the
+  odd spelling matches.
+- **Why both:** the fixture was wrong, but a scan that silently reports *nothing*
+  when handed a valid-but-uncanonical path fails in the worst direction — it looks
+  exactly like a clean host. That is the same false-green shape as the T-3254 stub
+  and the T-3275 tty echo: the failure mode of a detector is silence, so silence
+  has to be the thing under test.
+- **Known limit, accepted:** a cron entry that spells the path differently from
+  `FRAMEWORK_ROOT` is still missed. `fw cron install` writes the canonical form, so
+  this does not affect real entries; it is why the scan takes `fw_path` as an
+  argument rather than assuming it.
+
+### 2026-09-05 — Verification asserts the scan runs, not that orphans exist
+
+- **Chose:** `cron_orphan_scan /etc/cron.d "$PWD/bin/fw" >/dev/null` — exit code
+  only.
+- **Why:** asserting non-empty output would pass today and go red the moment the
+  operator removes the six, i.e. exactly when the check starts working. A
+  verification line whose meaning inverts on success is worse than none.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

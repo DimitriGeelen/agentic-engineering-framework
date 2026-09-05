@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [web/blueprints/inception.py]
 related_tasks: []
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-05T10:59:36Z
-last_update: 2026-09-05T11:02:32Z
+last_update: 2026-09-05T11:45:25Z
 date_finished: 2026-09-05T11:02:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,7 +83,8 @@ bvp_scores_proposed:
 - [x] `bin/fw vendor self --check` clean before close (web/ is a vendored path — OBS-250 ordering)
 
 ### Human
-- [ ] [REVIEW] The sanitized decide-failure message reads clean to an operator with no framework-internals context
+- [x] [REVIEW] The sanitized decide-failure message reads clean to an operator with no framework-internals context
+  <!-- ticked by agent on explicit operator instruction, chat 2026-09-05: "ok, message copy is fine, tick the review for me" -->
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw serve` (if not running), then trigger any inception decide whose completion a gate refuses (or re-read the T-3278 incident text vs the new copy in `web/blueprints/inception.py:_operator_facing_stderr`)
   2. Compare with the T-3278 incident response (raw gate dump with `--skip-disposition-gate` options)
@@ -292,8 +293,8 @@ bin/fw vendor self --check
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5991d549
-- **Timestamp:** 2026-09-05T11:02:36Z
+- **Scan ID:** R-8370dc3d
+- **Timestamp:** 2026-09-05T11:27:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -303,6 +304,5 @@ bin/fw vendor self --check
 
 - **AC#1 (Agent)** — A sanitizer function in `web/blueprints/inception.py` translates fw stderr to operator-facing text: drops Tier-2 bypass instruction lines (`--skip-*` flags, `FW_*=1` env bypasses, the "Options:" block
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: A sanitizer function in `web/blueprints/inception.py` translates fw stderr to operator-facing text: drops Tier-2 bypass instruction lines (`--skip-*` `
-
 ### 2026-09-05T11:02:32Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

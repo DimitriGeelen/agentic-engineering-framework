@@ -1,10 +1,10 @@
-# Audit Results - 2026-09-05-1045
-timestamp: 2026-09-05T08:45:19Z
+# Audit Results - 2026-09-05-1321
+timestamp: 2026-09-05T11:21:34Z
 sections: "structure"
 summary:
-  pass: 31
-  warn: 5
-  fail: 0
+  pass: 28
+  warn: 7
+  fail: 2
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3264 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3268 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 30 project YAML file(s)"
   - level: PASS
@@ -37,21 +37,22 @@ findings:
   - level: INFO
     check: "free driver F2: retire_when text present, no recognition heuristic — manual review"
   - level: PASS
-    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 412 source file(s) under lib/ web/ agents/ bin/ tools/"
+    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881) — examined 414 source file(s) under lib/ web/ agents/ bin/ tools/"
   - level: PASS
     check: "No PROJECT_ROOT resolution of framework-owned assets (T-2648, OBS-097) — examined 139 Python file(s) under web/ + lib/"
   - level: PASS
-    check: "No stale-slice-references (L-417) — examined 271 file(s) under web/templates web/blueprints lib"
+    check: "No stale-slice-references (L-417) — examined 273 file(s) under web/templates web/blueprints lib"
   - level: WARN
-    check: "Found 183 GO-scope-not-propagated inception(s) of 356 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
+    check: "Found 184 GO-scope-not-propagated inception(s) of 358 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
     mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
   - level: PASS
     check: "Fabric: 1202 registered card(s)"
   - level: WARN
     check: "Fabric: 43/1118 cards have no edges"
     mitigation: "Run: fw fabric enrich"
-  - level: PASS
-    check: "Fabric drift: all watched files registered — examined 490 watched file(s)"
+  - level: WARN
+    check: "Fabric drift: 2 source file(s) have no fabric card"
+    mitigation: "Run: fw fabric scan"
   - level: WARN
     check: "Fabric: 712 card(s) point at files no watch pattern covers"
     mitigation: "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
@@ -62,10 +63,12 @@ findings:
     mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run bleeding-edge (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/bleeding-edge INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"
-  - level: PASS
-    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
-  - level: PASS
-    check: "Invariant suite green — examined 108 structural invariant(s) (tests/lint/)"
+  - level: FAIL
+    check: "Self-vendor drift: libs class — 1 file(s) out of sync (T-2244)"
+    mitigation: "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
+  - level: FAIL
+    check: "Invariant suite: 1 of 108 structural invariant(s) RED (T-2837)"
+    mitigation: "Run: fw test invariants"
   - level: PASS
     check: "Designer ghost registry: ghost↔task joins clean"
   - level: PASS
@@ -81,5 +84,8 @@ findings:
   - level: INFO
     check: "Stale draft(s), 30d+ untouched: draft-arc-lifecycle draft-exception-handling draft-knowledge-leveling draft-t2584-scratch draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"
   - level: WARN
-    check: "Continuous-run loop STOPPED: continuous-terminated"
-    mitigation: "Relaunch with: claude-fw"
+    check: "Continuous-run wrapper last recorded ARMED but the turn driver is not"
+    mitigation: "fw continuous arm --hours N --iterations N --directive '...' (T-3225). Same drift class as the 74-day and 8-day prior incidents (G-099)."
+  - level: WARN
+    check: "Continuous-run Stop hook is cycling on a stale terminate reason"
+    mitigation: "bin/fw continuous disarm --reason \"<why it's stale now>\" (or fw continuous arm to re-arm cleanly)"

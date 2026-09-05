@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3280: Watchtower decide flow renders agent-facing gate stderr - Tier-2 bypass flags and --skip-sovereignty warning shown to operator as the response
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-05T11:45:27Z
+# ============================================================================
+
+task_id: T-3280
+task_name: "Watchtower decide flow renders agent-facing gate stderr - Tier-2 bypass flags and --skip-sovereignty warning shown to operator as the response"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-05T10:59:36Z
+completed: 2026-09-05T11:02:32Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-05T13:01:46+02:00
+last_commit: 2026-09-05T13:03:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  operator-facing stderr sanitizer on Watchtower decide paths (G-102 defect B). partial-complete — sanitizer shipped, awaiting [REVIEW]
+
+# Key outcomes
+outcomes:
+  - 'A sanitizer function in `web/blueprints/inception.py` translates fw stderr to operator-facing text: drops Tier-2 bypass instruction lines (`--skip-*` flags, `FW_*=1` env bypasses, the "Options:" block), the internal `--skip-sovereignty` warning line, and `=== Task Update ===` header noise — keeping the substantive reason lines'
+  - 'Both operator-facing render paths in `record_decision` (side-effect warning AND decision-not-recorded failure) route their stderr through the sanitizer before display'
+  - 'The side-effect warning preamble says in operator language what happened and what happens next (decision saved; completion blocked by a gate; agent-side recovery exists) instead of the bare "side-effect warning:" label'
+  - 'Unit tests pin the sanitizer: bypass flags and sovereignty warnings are stripped, substantive reason text survives, empty input degrades safely; zero skips'
+  - '`bin/fw vendor self --check` clean before close (web/ is a vendored path — OBS-250 ordering)'
+  - '[REVIEW] The sanitized decide-failure message reads clean to an operator with no framework-internals context'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.context/episodic/T-3279.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.tasks/active/T-3280-watchtower-decide-flow-renders-agent-fac.md'
+  - '.tasks/completed/T-3279-inception-decide-half-transition---t-219.md'
+  - 'tests/unit/test_operator_facing_stderr.py'
+  - 'web/blueprints/inception.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-05T13:01:46'
+    action: 'T-3280: operator-facing stderr sanitizer on Watchtower decide paths (G-102 defect B)'
+  - time: '2026-09-05T13:03:07'
+    action: 'T-3280: partial-complete — sanitizer shipped, awaiting [REVIEW]'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 15
+  lines_added: 745
+  lines_removed: 82
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3280-watchtower-decide-flow-renders-agent-fac.md
+generated_by: context-agent-hybrid
