@@ -8,7 +8,11 @@
 # the failure mode this file exists to avoid.
 
 setup() {
-    FW_ROOT="${BATS_TEST_DIRNAME}/../.."
+    # pwd -P matters: the scan matches the fw path as a literal substring, and
+    # `fw cron install` writes the canonical form. An uncanonicalised
+    # `tests/unit/../../bin/fw` here would make every filtered test silently
+    # match nothing — which is how C8 first went red.
+    FW_ROOT="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd -P)"
     source "$FW_ROOT/lib/cron-orphans.sh"
 
     CRON_DIR="$BATS_TEST_TMPDIR/cron.d"
@@ -100,23 +104,49 @@ EOF
     [ -z "$output" ]
 }
 
-@test "C8: fw doctor surfaces the orphan and prints a removal command" {
+@test "C8: an odd-but-equivalent fw path still matches (canonicalisation)" {
+    # The real regression: the caller passes `.../tests/unit/../../bin/fw` while
+    # the cron entry names `.../bin/fw`. Same binary, different spelling.
+    _entry "agentic-audit-dead" "$DEAD_ROOT" "$FW_ROOT/bin/fw"
+
+    run cron_orphan_scan "$CRON_DIR" "$FW_ROOT/tests/unit/../../bin/fw"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"agentic-audit-dead"* ]]
+}
+
+@test "C9: the report renders a WARN naming each orphan and a removal command" {
     _entry "agentic-audit-dead" "$DEAD_ROOT"
 
-    # --quick to keep the suite fast. The orphan block sits OUTSIDE any
-    # _doctor_quick_skip guard, so quick mode exercises it in full; if that ever
-    # changes, this test goes red rather than quietly covering nothing.
+    run cron_orphan_report "$CRON_DIR" "$FW_BIN" "/some/project" "/some/framework"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Orphaned cron entries"* ]]
+    [[ "$output" == *"agentic-audit-dead"* ]]
+    [[ "$output" == *"$DEAD_ROOT"* ]]
+    [[ "$output" == *"/some/framework"* ]]
+    # §Copy-Pasteable Commands: single line, cd-prefixed, chained with &&.
+    printf '%s\n' "$output" | grep -q "^ *Remove: cd /some/project && sudo rm -f "
+}
+
+@test "C10 (control): the report prints nothing and returns 1 on a clean host" {
+    _entry "agentic-audit-live" "$LIVE_ROOT"
+
+    run cron_orphan_report "$CRON_DIR" "$FW_BIN" "/some/project" "/some/framework"
+    [ "$status" -eq 1 ]
+    [ -z "$output" ]
+}
+
+@test "C11: fw doctor is wired to the report (real end-to-end, slow)" {
+    # One real doctor run, not two: each costs minutes on this host because
+    # check 9 shells out to `bats --count` over 606 files (OBS-368). The
+    # rendering legs are covered cheaply by C9/C10 above; what only a real run
+    # can prove is that doctor calls the report at all, with the right arguments.
+    # The orphan block sits OUTSIDE any _doctor_quick_skip guard, so --quick
+    # exercises it in full; if that ever changes, this goes red rather than
+    # quietly covering nothing.
+    _entry "agentic-audit-dead" "$DEAD_ROOT"
+
     run env FW_CRON_INSTALL_DIR="$CRON_DIR" "$FW_BIN" doctor --quick
     [[ "$output" == *"Orphaned cron entries"* ]]
     [[ "$output" == *"agentic-audit-dead"* ]]
-    [[ "$output" == *"sudo rm -f"* ]]
-    # §Copy-Pasteable Commands: the removal line is cd-prefixed and single-line.
     printf '%s\n' "$output" | grep -q "^ *Remove: cd .* && sudo rm -f "
-}
-
-@test "C9 (control): fw doctor stays silent about orphans on a clean host" {
-    _entry "agentic-audit-live" "$LIVE_ROOT"
-
-    run env FW_CRON_INSTALL_DIR="$CRON_DIR" "$FW_BIN" doctor --quick
-    [[ "$output" != *"Orphaned cron entries"* ]]
 }

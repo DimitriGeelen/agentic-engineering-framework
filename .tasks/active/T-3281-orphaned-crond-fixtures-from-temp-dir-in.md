@@ -99,11 +99,11 @@ live in this checkout; a resolution change there is not a same-session edit.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw doctor` reports orphaned cron.d entries — deployed `/etc/cron.d/agentic-*` files whose declared `PROJECT_ROOT` does not exist on disk — as a WARN naming each file and its dead root
-- [ ] The check is silent (no WARN, no output noise) when every deployed entry's `PROJECT_ROOT` resolves, so a clean host stays clean
-- [ ] The WARN prints a copy-pasteable remediation command per CLAUDE.md §Copy-Pasteable Commands (single line, `cd`-prefixed)
+- [x] `fw doctor` reports orphaned cron.d entries — deployed `/etc/cron.d/agentic-*` files whose declared `PROJECT_ROOT` does not exist on disk — as a WARN naming each file and its dead root
+- [x] The check is silent (no WARN, no output noise) when every deployed entry's `PROJECT_ROOT` resolves, so a clean host stays clean
+- [x] The WARN prints a copy-pasteable remediation command per CLAUDE.md §Copy-Pasteable Commands (single line, `cd`-prefixed)
 - [x] The check reads a directory override (`FW_CRON_INSTALL_DIR`) so it is testable without touching the host's real `/etc/cron.d`
-- [ ] Bats coverage pins both legs — orphan present → WARN fires; all roots valid → silent — with no skipped tests (T-3217)
+- [x] Bats coverage pins both legs — orphan present → WARN fires; all roots valid → silent — with no skipped tests (T-3217)
 - [x] The six live orphans on this host are surfaced by the new check when run against the real `/etc/cron.d`
 
 ### Human

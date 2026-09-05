@@ -1,0 +1,43 @@
+# Agentic Engineering Framework — Scheduled Audits (T-184 + T-196 + T-602 + T-604)
+# Source of truth: /tmp/tmp.4xy62tWgm4/proj-schedule-install/.context/cron/agentic-audit.crontab (git-tracked)
+# Installed to: /etc/cron.d/agentic-audit-proj-schedule-install-4afedaec (copy — use 'fw audit schedule install' to sync)
+# Project: /tmp/tmp.4xy62tWgm4/proj-schedule-install
+# Two audit tracks: Structural (project well-formed) + OE (controls working)
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+
+# === STRUCTURAL AUDITS (project well-formed) ===
+
+# Task quality + structure integrity + discovery (every 30 min)
+*/30 * * * * root PROJECT_ROOT="/tmp/tmp.4xy62tWgm4/proj-schedule-install" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section structure,compliance,quality,discovery --cron 2>/dev/null
+
+# Git traceability + episodic completeness + trend discoveries (hourly)
+0 * * * * root PROJECT_ROOT="/tmp/tmp.4xy62tWgm4/proj-schedule-install" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section traceability,episodic,discovery-trends --cron 2>/dev/null
+
+# Observations + gaps (every 6 hours)
+0 */6 * * * root PROJECT_ROOT="/tmp/tmp.4xy62tWgm4/proj-schedule-install" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section observations,gaps --cron 2>/dev/null
+
+# === OE AUDITS (controls working — T-195/T-196) ===
+
+# Fast OE checks: CTL-001,003,004,018 + research CTL-014,021,022,023 (every 30 min)
+15,45 * * * * root PROJECT_ROOT="/tmp/tmp.4xy62tWgm4/proj-schedule-install" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-fast,oe-research --cron 2>/dev/null
+
+# Hourly OE checks: CTL-008,020 (hourly, offset from structural)
+30 * * * * root PROJECT_ROOT="/tmp/tmp.4xy62tWgm4/proj-schedule-install" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-hourly --cron 2>/dev/null
+
+# Daily OE checks: CTL-002,005,006,007,009,010,011,012,013,019,027 (daily at 7am)
+0 7 * * * root PROJECT_ROOT="/tmp/tmp.4xy62tWgm4/proj-schedule-install" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-daily --cron 2>/dev/null
+
+# Weekly OE checks: CTL-016 (Monday 9am)
+0 9 * * 1 root PROJECT_ROOT="/tmp/tmp.4xy62tWgm4/proj-schedule-install" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-weekly --cron 2>/dev/null
+
+# === FULL + MAINTENANCE ===
+
+# Full audit — all sections (daily at 8am)
+0 8 * * * root PROJECT_ROOT="/tmp/tmp.4xy62tWgm4/proj-schedule-install" "/opt/999-Agentic-Engineering-Framework/bin/fw" audit --cron 2>/dev/null
+
+# Regenerate component reference docs (daily at 8:15am — T-387)
+15 8 * * * root PROJECT_ROOT="/tmp/tmp.4xy62tWgm4/proj-schedule-install" "/opt/999-Agentic-Engineering-Framework/bin/fw" docs --all 2>/dev/null
+
+# Retention: prune cron audit files older than 7 days (daily at 9am)
+0 9 * * * root find "/tmp/tmp.4xy62tWgm4/proj-schedule-install/.context/audits/cron" -name "*.yaml" -mtime +7 -delete 2>/dev/null
