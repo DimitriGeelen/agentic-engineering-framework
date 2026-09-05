@@ -1,13 +1,22 @@
 ---
 id: T-3285
-name: "nested fw inherits outer PROJECT_ROOT across project boundaries and writes into the wrong repo (OBS-370)"
+name: "nested fw inherits outer PROJECT_ROOT across project boundaries and writes
+  into the wrong repo (OBS-370)"
 description: >
-  An outer fw process exports PROJECT_ROOT/TASKS_DIR/CONTEXT_DIR (lib/paths.sh:352); a nested invocation of a DIFFERENT project's bin/fw preserves the inherited PROJECT_ROOT (_fw_reexec_authority, bin/fw:361) instead of re-deriving from its own tree, so its writes land in the outer project. Demonstrated: T-3250's close gate ran a sandbox harness whose fw task create wrote 34 junk tasks into the live framework repo while the sandbox saw 0. Candidate fix: when inherited PROJECT_ROOT does not contain PWD (or PWD resolves to a different .framework.yaml/.tasks root), re-derive from PWD and drop the inherited value; pin with a two-project bats test run under exported outer env. See OBS-370, T-3250 Evolution rig-defect-5 entry.
+  An outer fw process exports PROJECT_ROOT/TASKS_DIR/CONTEXT_DIR (lib/paths.sh:352);
+  a nested invocation of a DIFFERENT project's bin/fw preserves the inherited PROJECT_ROOT
+  (_fw_reexec_authority, bin/fw:361) instead of re-deriving from its own tree, so
+  its writes land in the outer project. Demonstrated: T-3250's close gate ran a sandbox
+  harness whose fw task create wrote 34 junk tasks into the live framework repo while
+  the sandbox saw 0. Candidate fix: when inherited PROJECT_ROOT does not contain PWD
+  (or PWD resolves to a different .framework.yaml/.tasks root), re-derive from PWD
+  and drop the inherited value; pin with a two-project bats test run under exported
+  outer env. See OBS-370, T-3250 Evolution rig-defect-5 entry.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +31,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-05T18:19:14Z
-last_update: 2026-09-05T18:19:14Z
-date_finished: null
+last_update: 2026-09-05T19:37:38Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +43,66 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-05T18:30:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=258,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-05T18:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3285: nested fw inherits outer PROJECT_ROOT across project boundaries and writes into the wrong repo (OBS-370)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+An outer fw process exports `PROJECT_ROOT`/`TASKS_DIR`/`CONTEXT_DIR` (lib/paths.sh:352)
+plus the provenance sentinel `_FW_PATHS_DERIVED_BY` (lib/paths.sh:74). A nested fw
+invoked in a **different** project inherits all four; `_project_root_is_stale`
+(bin/fw:175) deliberately keeps any inherited root that is a real project
+("env wins", pinned by test_resolve_project_root_env_wins_unconditionally), so the
+nested fw acts on the OUTER project. Demonstrated live by T-3250's close gate: the
+E10 sandbox's `fw task create` wrote 34 junk tasks into this repo while the sandbox
+saw 0 (OBS-370, T-3250 Evolution rig-defect-5).
+
+The discriminator that makes this fixable without breaking env-wins: an
+operator-explicit `PROJECT_ROOT=/x fw …` carries **no** `_FW_PATHS_DERIVED_BY`
+(interactive shells never source lib/paths.sh; the sentinel only exists inside fw
+process trees). So: inherited PROJECT_ROOT whose value **equals** the inherited
+sentinel = fw-machinery leakage → when the cwd ancestry walk finds a *different*
+real (non-stale) project root, re-anchor to it and drop the sibling TASKS_DIR/
+CONTEXT_DIR so lib/paths.sh re-derives them. Sentinel absent or mismatched =
+ambiguous/explicit → env wins, unchanged. Same shape as the T-2446 fix for
+CLAUDE_PROJECT_DIR, one branch further down.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] bin/fw re-anchors an fw-derived inherited PROJECT_ROOT (sentinel == value) to the cwd's project root when they name different real projects — pinned by new `tests/unit/t3285_nested_fw_cross_project.bats` (t1 6/6 green; red-check: with the fix stashed, the same probe resolves the OUTER root)
+- [x] Operator-explicit env still wins unconditionally: no sentinel, or sentinel != PROJECT_ROOT, keeps the inherited root (t2/t3 green; t2446 t4 green; test_resolve_project_root_env_wins_unconditionally green)
+- [x] Write-leg proof: with the full T-3250 poisoned-env shape (PROJECT_ROOT+TASKS_DIR+CONTEXT_DIR+sentinel from the outer project), `fw task create` in the inner project writes to the INNER `.tasks/`, zero files in the outer (t6 green)
+- [x] All resolution-adjacent suites stay green: 34 bats tests across t2289/t2390/t2391/t2446/guard_project_root/resolve_framework/t3285 — 0 not-ok, 0 skips; t3111_worktree_reexec 16/16 incl. "PROJECT_ROOT does NOT move to the authority"; test_project_root_discovery.py 7/7
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,6 +136,13 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t3285_nested_fw_cross_project.bats > /tmp/.t3285-pin.tap 2>&1 && ! grep -q "^not ok" /tmp/.t3285-pin.tap
+test "$(grep -c '# skip' /tmp/.t3285-pin.tap)" -eq 0
+timeout 500 bats tests/unit/t2289_paths_env_leak.bats tests/unit/t2390_project_root_claude_dir.bats tests/unit/t2391_project_root_inherited_stale.bats tests/unit/t2446_project_root_cwd_consistency.bats tests/unit/guard_project_root.bats tests/unit/resolve_framework.bats tests/unit/t3111_worktree_reexec.bats > /tmp/.t3285-adj.tap 2>&1 && ! grep -q "^not ok" /tmp/.t3285-adj.tap
+test "$(grep -c '# skip' /tmp/.t3285-adj.tap)" -eq 0
+python3 -m pytest tests/unit/test_project_root_discovery.py -q > /tmp/.t3285-py.out 2>&1 && grep -q passed /tmp/.t3285-py.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -199,7 +261,35 @@ date_finished: null
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+**Symptom:** T-3250's P-011 close gate ran the E10 sandbox harness; the sandbox's
+`fw task create` wrote 34 junk tasks (`T-3285-e10-backlog-item-*`) into the LIVE
+framework repo's `.tasks/active/` while the sandbox's own tree stayed empty — the
+harness then failed its own "expected 16 backlog" assertion because the tasks
+never landed where it looked (OBS-370).
+
+**Root cause:** `update-task.sh` (like every fw process) carries
+`PROJECT_ROOT`/`TASKS_DIR`/`CONTEXT_DIR` exported by lib/paths.sh:352. The nested
+sandbox fw inherited them; bin/fw's staleness guard (`_project_root_is_stale`,
+T-2391) deliberately keeps any inherited root that IS a real project — the
+"env wins" contract for operator cross-dir targeting — so a *valid but wrong*
+root sailed through, and lib/paths.sh's T-2289 sentinel check (`_FW_PATHS_DERIVED_BY
+!= PROJECT_ROOT` → re-derive) never fired because BOTH were inherited from the
+same outer process and matched each other perfectly.
+
+**Why structurally allowed:** validity and provenance were conflated. Every
+existing guard asks "is this root a real project?" (T-2391) or "does the sentinel
+match the root?" (T-2289) — both answer YES for machinery leakage across a project
+boundary, because the leaked values are internally consistent. No guard asked
+"did an operator set this, or did another fw process?" — even though the sentinel's
+mere *presence* answers exactly that (interactive shells never source lib/paths.sh).
+
+**Prevention:** (1) the fix itself is a class guard, not a spot fix — any nested
+fw in any different project now re-anchors, which covers every future harness,
+dispatch worker, and consumer-project crossing, not just E10; (2)
+`tests/unit/t3285_nested_fw_cross_project.bats` pins all six contract cells
+(re-anchor, two env-wins controls, same-project no-op, non-project cwd, write-leg);
+(3) the T-3250 harness independently carries `ENV_CLEAN` (defence in depth — belt
+at the rig, braces in the resolver).
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
 
@@ -238,6 +328,13 @@ date_finished: null
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+**Rationale:** The cross-project write hazard OBS-370 documented is structurally closed at the resolver, with the env-wins contract for operator-explicit targeting proven intact. Red→green demonstrated: with the fix stashed, the poisoned probe resolves the outer root; with it applied, the standing tree wins and a real `fw task create` under the full T-3250 poison lands in the inner project with zero outer leakage.
+**Evidence:**
+- bin/fw T-3285 branch (36 lines incl. rationale comment) after the resolution block, before reexec
+- tests/unit/t3285_nested_fw_cross_project.bats — 6/6, incl. write-leg t6
+- Adjacent suites: 34 bats green (0 skips), t3111 16/16, pytest discovery 7/7
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -293,3 +390,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3285-nested-fw-inherits-outer-projectroot-acr.md
 - **Context:** Initial task creation
+
+### 2026-09-05T19:37:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

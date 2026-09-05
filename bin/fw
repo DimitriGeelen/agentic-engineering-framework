@@ -235,6 +235,42 @@ if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; the
     fi
 fi
 
+# T-3285 (OBS-370): a VALID inherited PROJECT_ROOT can still be the WRONG one.
+# An outer fw process exports PROJECT_ROOT + _FW_PATHS_DERIVED_BY (lib/paths.sh);
+# a nested fw invoked in a DIFFERENT project inherits both, the staleness guard
+# above keeps the root (it IS a real project — that's the "env wins" contract),
+# and every write lands in the outer project. Origin: T-3250's close gate ran a
+# sandbox harness whose `fw task create` wrote 34 junk tasks into the live repo.
+#
+# Discriminator — provenance, not validity: an operator-explicit
+# `PROJECT_ROOT=/x fw …` never carries _FW_PATHS_DERIVED_BY (the sentinel only
+# exists inside fw process trees; lib/paths.sh:74 exports it equal to the root
+# that derived the paths). So sentinel PRESENT and EQUAL to PROJECT_ROOT means
+# the value is fw-machinery leakage, and when the cwd ancestry walk finds a
+# different real (non-stale) project root, the tree we are standing in wins —
+# the same resolution T-2446 established for daemon-leaked CLAUDE_PROJECT_DIR.
+# Sentinel absent (explicit env, test fixtures) or mismatched (operator override
+# after derivation) → ambiguous provenance → env wins, unchanged. Non-project
+# cwd (dispatch workers in /tmp) → no re-anchor, inherited root kept.
+# TASKS_DIR/CONTEXT_DIR are dropped on re-anchor: they were derived from the
+# outer root and lib/paths.sh re-derives them from the new PROJECT_ROOT.
+if [ -n "${PROJECT_ROOT:-}" ] && [ -n "${_FW_PATHS_DERIVED_BY:-}" ]; then
+    _t3285_pr=$(cd "$PROJECT_ROOT" 2>/dev/null && pwd -P) || _t3285_pr="$PROJECT_ROOT"
+    _t3285_der=$(cd "$_FW_PATHS_DERIVED_BY" 2>/dev/null && pwd -P) || _t3285_der="$_FW_PATHS_DERIVED_BY"
+    if [ "$_t3285_pr" = "$_t3285_der" ]; then
+        _t3285_cwd_root=$(find_project_root) || _t3285_cwd_root=""
+        if [ -n "$_t3285_cwd_root" ] && ! _project_root_is_stale "$_t3285_cwd_root"; then
+            _t3285_cwd_canon=$(cd "$_t3285_cwd_root" 2>/dev/null && pwd -P) || _t3285_cwd_canon="$_t3285_cwd_root"
+            if [ "$_t3285_cwd_canon" != "$_t3285_pr" ]; then
+                PROJECT_ROOT="$_t3285_cwd_root"
+                unset TASKS_DIR CONTEXT_DIR _FW_PATHS_DERIVED_BY
+            fi
+        fi
+        unset _t3285_cwd_root _t3285_cwd_canon
+    fi
+    unset _t3285_pr _t3285_der
+fi
+
 # ─── R7 leg L2: run the AUTHORITY's fw, never the replica's (T-3111) ──────────
 #
 # The problem this closes, stated once: the framework's rules are enforced by
