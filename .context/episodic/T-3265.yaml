@@ -1,0 +1,330 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3265: 5-round audit and housekeeping remediation sweep
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-05T18:52:49Z
+# ============================================================================
+
+task_id: T-3265
+task_name: "5-round audit and housekeeping remediation sweep"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-03T19:43:38Z
+completed: 2026-09-05T18:52:14Z
+duration_days: 2
+updates_count: 12
+first_commit: 2026-09-03T21:50:26+02:00
+last_commit: 2026-09-05T20:52:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  housekeeping - commit T-3266 close artifacts (completed task file, episodic). round 1 — fabric drift/enrich, watch-pattern gaps, branch hygiene triage. log full-audit rounds 1-2 (768/118/5 -> 771/111/5), T-3269/T-3270/T-3271/T-3272/T-3273 remediation. round 3 — CTL-031 archive-eligible sweep (3), CTL-028 status backfill (14) + T-2494 misfile correction. log full-audit round 4 (773/94/3) — 4 of 5 cycles done, round 5 handed to next session. round 5 (final) — 767/94/3, decaying-verification class found and fixed. round 6 close-out — fabric drift to 0, G-099/GO-scope decisions recorded. sync vendored .agentic-framework/agents/context/continuous-driver.sh (self-vendor drift from unrelated prior commit). round 7 — fabric drift back to 0 (4 new cards, 19 enriched). document round 7 in Updates (fabric drift back to 0). round 8 — re-verify all ACs, no new remediation found. round 9 — scope the git-status verification line to this task's own paths
+
+# Key outcomes
+outcomes:
+  - 'AC1 — Fabric drift (unregistered source files) eliminated via `fw fabric scan`; audit''s "Fabric drift: N source file(s) have no fabric card" WARN count is 0 or explicitly justified per remaining file.'
+  - 'AC2 — Fabric orphan-edge count reduced via `fw fabric enrich`; before/after counts recorded in Updates.'
+  - 'AC3 — Branch hygiene findings reduced: merged branches deleted (`git branch -d`), the diverged fork reconciled or explicitly left with written rationale, stale remote refs pruned where safe. Before/after finding counts recorded.'
+  - 'AC4 — Continuous-run turn-driver WARN (G-099 check) resolved with a deliberate decision (re-arm, or leave disarmed with rationale tied to T-3263''s still-open Human AC) — not silently ignored.'
+  - 'AC5 — 5 audit rounds actually executed (not simulated), each round''s pass/warn/fail counts logged in `## Updates`, showing the WARN count trend across rounds.'
+  - 'AC6 — GO-scope-not-propagated (183/356) and watch-pattern-gap (767 cards) backlogs: explicitly triaged with a documented partial-progress count or a follow-on task filed for the remainder — not claimed fully remediated.'
+  - 'AC7 — Every round''s changes committed and pushed (commit cadence, P-009); no uncommitted remediation work left at task close.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'round 5 (final) — 767/94/3, decaying-verification class found and fixed'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - '.agentic-framework/agents/context/continuous-driver.sh'
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - '.agentic-framework/lib/context_tokens.py'
+  - '.agentic-framework/VERSION'
+  - '.context/audits/2026-09-03.yaml'
+  - '.context/audits/2026-09-04.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/full-audit-timing.yaml'
+  - '.context/audits/orchestrator-LATEST.yaml'
+  - '.context/episodic/T-100194.yaml'
+  - '.context/episodic/T-100195.yaml'
+  - '.context/episodic/T-1792.yaml'
+  - '.context/episodic/T-1794.yaml'
+  - '.context/episodic/T-1795.yaml'
+  - '.context/episodic/T-2411.yaml'
+  - '.context/episodic/T-2486.yaml'
+  - '.context/episodic/T-2487.yaml'
+  - '.context/episodic/T-2488.yaml'
+  - '.context/episodic/T-2491.yaml'
+  - '.context/episodic/T-2493.yaml'
+  - '.context/episodic/T-2495.yaml'
+  - '.context/episodic/T-2497.yaml'
+  - '.context/episodic/T-2498.yaml'
+  - '.context/episodic/T-2509.yaml'
+  - '.context/episodic/T-2853.yaml'
+  - '.context/episodic/T-3215.yaml'
+  - '.context/episodic/T-3266.yaml'
+  - '.context/episodic/T-3273.yaml'
+  - '.context/episodic/T-3274.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/.verify-queue-state.json'
+  - '.fabric/components/agents-antigravity-subagent_dispatch.yaml'
+  - '.fabric/components/agents-audit-active-task-scan.yaml'
+  - '.fabric/components/agents-audit-audit.yaml'
+  - '.fabric/components/agents-context-check-active-task.yaml'
+  - '.fabric/components/agents-context-check-heredoc-cmd-sub.yaml'
+  - '.fabric/components/agents-context-checkpoint.yaml'
+  - '.fabric/components/agents-context-check-worktree-governance-write.yaml'
+  - '.fabric/components/agents-context-consolidate.yaml'
+  - '.fabric/components/agents-context-continuous-driver.yaml'
+  - '.fabric/components/agents-context-inject-next-directive.yaml'
+  - '.fabric/components/agents-context-lib-episodic.yaml'
+  - '.fabric/components/agents-context-lib-learning.yaml'
+  - '.fabric/components/agents-context-lib-memory-recall.yaml'
+  - '.fabric/components/agents-context-lib-safe-commands.yaml'
+  - '.fabric/components/agents-context-stop-driver.yaml'
+  - '.fabric/components/agents-context-test-tier0-patterns.yaml'
+  - '.fabric/components/agents-docgen-test_docgen.yaml'
+  - '.fabric/components/agents-fabric-lib-enrich.yaml'
+  - '.fabric/components/agents-fabric-lib-expand_patterns.yaml'
+  - '.fabric/components/agents-git-git.yaml'
+  - '.fabric/components/agents-git-lib-hooks.yaml'
+  - '.fabric/components/agents-git-lib-worker-commits.yaml'
+  - '.fabric/components/agents-handover-handover.yaml'
+  - '.fabric/components/agents-task-create-create-task.yaml'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/agents-termlink-termlink.yaml'
+  - '.fabric/components/audit-yaml-validator.yaml'
+  - '.fabric/components/bin-claude-fw.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/bin-watchtower.yaml'
+  - '.fabric/components/budget-gate.yaml'
+  - '.fabric/components/context-dispatcher.yaml'
+  - '.fabric/components/context-project-concerns.yaml'
+  - '.fabric/components/hook-config.yaml'
+  - '.fabric/components/lib-antigravity_bridge.yaml'
+  - '.fabric/components/lib-antigravity_steps.yaml'
+  - '.fabric/components/lib-arc.yaml'
+  - '.fabric/components/lib-audit_timing.yaml'
+  - '.fabric/components/lib-bats_red_attribution.yaml'
+  - '.fabric/components/lib-branch-hygiene.yaml'
+  - '.fabric/components/lib-colors.yaml'
+  - '.fabric/components/lib-compat.yaml'
+  - '.fabric/components/lib-config.yaml'
+  - '.fabric/components/lib-context_tokens.yaml'
+  - '.fabric/components/lib-continuous-mode.yaml'
+  - '.fabric/components/lib-corpus-id.yaml'
+  - '.fabric/components/lib-cron-orphans.yaml'
+  - '.fabric/components/lib-decided_unclosed.yaml'
+  - '.fabric/components/lib-episodic_footprint.yaml'
+  - '.fabric/components/lib-git-identity.yaml'
+  - '.fabric/components/lib-hook_parity.yaml'
+  - '.fabric/components/lib-hook_portability.yaml'
+  - '.fabric/components/lib-inception-readiness.yaml'
+  - '.fabric/components/lib-inception.yaml'
+  - '.fabric/components/lib-init.yaml'
+  - '.fabric/components/lib-integrate.yaml'
+  - '.fabric/components/lib-paths.yaml'
+  - '.fabric/components/lib-push-state.yaml'
+  - '.fabric/components/lib-resolver.yaml'
+  - '.fabric/components/lib-review.yaml'
+  - '.fabric/components/lib-task_satisfaction.yaml'
+  - '.fabric/components/lib-tasks.yaml'
+  - '.fabric/components/lib-upgrade.yaml'
+  - '.fabric/components/lib-vendor-visibility.yaml'
+  - '.fabric/components/lib-verification-port.yaml'
+  - '.fabric/components/lib-verify_queue.yaml'
+  - '.fabric/components/lib-watchtower-staleness.yaml'
+  - '.fabric/components/lib-worker_identity.yaml'
+  - '.fabric/components/lib-worktree.yaml'
+  - '.fabric/components/tests-lint-bats-dead-negation.yaml'
+  - '.fabric/components/tests-lint-bats-silent-skip.yaml'
+  - '.fabric/components/tests-lint-no-project-markers-above-bats-tmpdir.yaml'
+  - '.fabric/components/tests-unit-check_active_task_switch_focus.yaml'
+  - '.fabric/components/tests-unit-context_learning.yaml'
+  - '.fabric/components/tests-unit-corpus_id_allocator.yaml'
+  - '.fabric/components/tests-unit-episodic_footprint_refresh.yaml'
+  - '.fabric/components/tests-unit-episodic_worktree_mining.yaml'
+  - '.fabric/components/tests-unit-git_worker_commits.yaml'
+  - '.fabric/components/tests-unit-learning_application_birth.yaml'
+  - '.fabric/components/tests-unit-stop_driver.yaml'
+  - '.fabric/components/tests-unit-t1719_post_write_index.yaml'
+  - '.fabric/components/tests-unit-t3112_worktree_hook_parity.yaml'
+  - '.fabric/components/tests-unit-t3113_upgrade_worktree_advisory.yaml'
+  - '.fabric/components/tests-unit-t3174_partial_complete_edit_matrix.yaml'
+  - '.fabric/components/tests-unit-t3179_partial_complete_commit.yaml'
+  - '.fabric/components/tests-unit-t3187_branch_identity_guard.yaml'
+  - '.fabric/components/tests-unit-t3213_start_event_confirmation.yaml'
+  - '.fabric/components/tests-unit-t3219_verification_count_reconciliation.yaml'
+  - '.fabric/components/tests-unit-t3220_verification_gate_exits.yaml'
+  - '.fabric/components/tests-unit-t3221_commit_exemption_clause.yaml'
+  - '.fabric/components/tests-unit-t3222_fetch_writes_file.yaml'
+  - '.fabric/components/tests-unit-t3231_help_exemption_scope.yaml'
+  - '.fabric/components/tests-unit-t3232_verification_extractor_failure.yaml'
+  - '.fabric/components/tests-unit-t3233_arm_bounds.yaml'
+  - '.fabric/components/tests-unit-t3235_archived_horizon_invariant.yaml'
+  - '.fabric/components/tests-unit-t3245_trailer_quote_strip.yaml'
+  - '.fabric/components/tests-unit-t3253_preflight_brake.yaml'
+  - '.fabric/components/tests-unit-t3254_driver_refusals.yaml'
+  - '.fabric/components/tests-unit-t3281_cron_orphan_scan.yaml'
+  - '.fabric/components/tests-unit-template_budget_parity.yaml'
+  - '.fabric/components/tests-unit-test_inception_close_card.yaml'
+  - '.fabric/components/tests-unit-test_reviewer_decaying_task_path_ref.yaml'
+  - '.fabric/components/tests-unit-upgrade_marked_region.yaml'
+  - '.fabric/components/tests-unit-vendor_visibility.yaml'
+  - '.fabric/components/tools-aef_meta_census.yaml'
+  - '.fabric/components/tools-bats-dead-negation-lint.yaml'
+  - '.fabric/components/tools-bats-dead-negation-mutants.yaml'
+  - '.fabric/components/tools-bats-silent-skip-lint.yaml'
+  - '.fabric/components/tools-bpmn_to_tasks.yaml'
+  - '.fabric/components/tools-corpus_conformance.yaml'
+  - '.fabric/components/tools-corpus_explain.yaml'
+  - '.fabric/components/tools-corpus_overlay.yaml'
+  - '.fabric/components/tools-ewcr-arc0-unknown-overlap.yaml'
+  - '.fabric/components/tools-gaps-render-agreement.yaml'
+  - '.fabric/components/tools-t1700-ollama-harness.yaml'
+  - '.fabric/components/tools-t1703-probe-matrix.yaml'
+  - '.fabric/components/tools-t1704-hermes3-probe.yaml'
+  - '.fabric/components/tools-t2176-corpus-rescan.yaml'
+  - '.fabric/components/tools-t3250-transport-probe.yaml'
+  - '.fabric/components/tools-t3254-livefire.yaml'
+  - '.fabric/components/tools-t3257-build-order-gate.yaml'
+  - '.fabric/components/tools-t3257-livefire-backlog.yaml'
+  - '.fabric/components/tools-t3257-livefire-driver.yaml'
+  - '.fabric/components/tools-t3277-livefire-tmux.yaml'
+  - '.fabric/components/web-app.yaml'
+  - '.fabric/components/web-ask.yaml'
+  - '.fabric/components/web-blueprints-approvals.yaml'
+  - '.fabric/components/web-blueprints-config.yaml'
+  - '.fabric/components/web-blueprints-docs.yaml'
+  - '.fabric/components/web-blueprints-inception.yaml'
+  - '.fabric/components/web-config.yaml'
+  - '.fabric/components/web-conftest.yaml'
+  - '.fabric/components/web-metrics_history.yaml'
+  - '.fabric/components/web-qa_feedback.yaml'
+  - '.fabric/components/web-secrets_store.yaml'
+  - '.fabric/components/web-shared.yaml'
+  - '.fabric/components/web-smoke_test.yaml'
+  - '.fabric/components/web-static-js-search-qa.yaml'
+  - '.fabric/components/web-templates-approvals.yaml'
+  - '.fabric/components/web-templates-_continuous_halt.yaml'
+  - '.fabric/components/web-templates-_error.yaml'
+  - '.fabric/components/web-templates-_partials-ask_answer_card.yaml'
+  - '.fabric/components/web-templates-_partials-inline_select.yaml'
+  - '.fabric/components/web-templates-_partials-search_input.yaml'
+  - '.fabric/components/web-templates-_partials-search_results.yaml'
+  - '.fabric/components/web-templates-_stale_tasks_items.yaml'
+  - '.fabric/components/web-templates-_work_queue_items.yaml'
+  - '.fabric/components/web-terminal-adapters-__init__.yaml'
+  - '.fabric/components/web-test_app.yaml'
+  - '.fabric/components/web-wsgi.yaml'
+  - '.fabric/watch-patterns.yaml'
+  - '.tasks/active/T-2494-rca-host-deploy-is-whack-a-mole--declare.md'
+  - '.tasks/active/T-2871-corpus-depends-91-on-non-frozen-aefmeta-.md'
+  - '.tasks/active/T-3241-budget-gauge-encodes-could-not-measure-a.md'
+  - '.tasks/active/T-3264-g-087-budget-gate-fabricates-ok0-cache-o.md'
+  - '.tasks/active/T-3265-5-round-audit-and-housekeeping-remediati.md'
+  - '.tasks/active/T-3267-branch-archaeology-recover-unlanded-t-23.md'
+  - '.tasks/completed/T-100194-rca-host-working-branch-forked-198287-co.md'
+  - '.tasks/completed/T-100195-guard-trunk-divergence-fw-doctor-warn-on.md'
+  - '.tasks/completed/T-1792-watchtower-orchestrator-add-dispatch-sub.md'
+  - '.tasks/completed/T-1794-watchtower-orchestrator-extend-dispatch-.md'
+  - '.tasks/completed/T-1795-watchtower-orchestrator-extend-dispatch-.md'
+  - '.tasks/completed/T-2411-claude-fw-startup-banner-show-project--b.md'
+  - '.tasks/completed/T-2486-fix-obs-087-exec-bit-fw-resolveroutcomep.md'
+  - '.tasks/completed/T-2487-stand-up-litellm-4000-proxy-local-model-.md'
+  - '.tasks/completed/T-2488-rca--fix-bare-dispatch-worker-hits-promp.md'
+  - '.tasks/completed/T-2491-wire-fw-resolver-pick-into-a-bounded-aut.md'
+  - '.tasks/completed/T-2492-dogfood-the-autonomous-pickerloop-live-p.md'
+  - '.tasks/completed/T-2493-land-orchestrator-autonomy-work-to-maste.md'
+  - '.tasks/completed/T-2495-ship-resolver-loop-systemd-timerservice-.md'
+  - '.tasks/completed/T-2497-wire-bvp-ranking-into-resolver-pickrankk.md'
+  - '.tasks/completed/T-2498-fix-integrate-go-livesh-missing-exec-bit.md'
+  - '.tasks/completed/T-2509-watchtower-decision-commit-blocked-by-ma.md'
+  - '.tasks/completed/T-2853-fw-update-misroutes-a-git-based-global-i.md'
+  - '.tasks/completed/T-3215-port-t-1032-next-hint-from-consumer-002-.md'
+  - '.tasks/completed/T-3250-arc-012-e10---press-the-brake-prove-the-.md'
+  - '.tasks/completed/T-3266-register-g-100-p-011-gitignored-artifact.md'
+  - '.tasks/completed/T-3274-verification-blocks-pin-tasksactivet-xxx.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-03T21:50:26'
+    action: 'T-3265: housekeeping - commit T-3266 close artifacts (completed task file, episodic)'
+  - time: '2026-09-03T22:27:25'
+    action: 'T-3265: round 1 — fabric drift/enrich, watch-pattern gaps, branch hygiene triage'
+  - time: '2026-09-04T01:18:04'
+    action: 'T-3265: log full-audit rounds 1-2 (768/118/5 -> 771/111/5), T-3269/T-3270/T-3271/T-3272/T-3273 remediation'
+  - time: '2026-09-04T02:11:03'
+    action: 'T-3265: round 3 — CTL-031 archive-eligible sweep (3), CTL-028 status backfill (14) + T-2494 misfile correction'
+  - time: '2026-09-04T02:51:33'
+    action: 'T-3265: log full-audit round 4 (773/94/3) — 4 of 5 cycles done, round 5 handed to next session'
+  - time: '2026-09-04T10:38:16'
+    action: 'T-3265: round 5 (final) — 767/94/3, decaying-verification class found and fixed'
+  - time: '2026-09-05T10:32:18'
+    action: 'T-3265: round 6 close-out — fabric drift to 0, G-099/GO-scope decisions recorded'
+  - time: '2026-09-05T10:33:32'
+    action: 'T-3265: sync vendored .agentic-framework/agents/context/continuous-driver.sh (self-vendor drift from unrelated prior commit)'
+  - time: '2026-09-05T19:24:46'
+    action: 'T-3265: round 7 — fabric drift back to 0 (4 new cards, 19 enriched)'
+  - time: '2026-09-05T19:51:59'
+    action: 'T-3265: document round 7 in Updates (fabric drift back to 0)'
+  - time: '2026-09-05T20:23:15'
+    action: 'T-3265: round 8 — re-verify all ACs, no new remediation found'
+  - time: '2026-09-05T20:52:10'
+    action: 'T-3265: round 9 — scope the git-status verification line to this task''s own paths'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 12 commit(s), 2828 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2828
+  commits: 13
+  files_changed: 227
+  lines_added: 6241
+  lines_removed: 3049
+  footprint_refreshed_at: '2026-09-05T18:54:08Z'
+  footprint_refreshed_by_commit: d2bdaa380
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3265-5-round-audit-and-housekeeping-remediati.md
+generated_by: context-agent-hybrid
