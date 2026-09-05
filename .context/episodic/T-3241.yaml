@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3241: budget gauge encodes 'could not measure' as level=ok, silently disarming the restart loop
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-05T08:51:07Z
+# ============================================================================
+
+task_id: T-3241
+task_name: "budget gauge encodes 'could not measure' as level=ok, silently disarming the restart loop"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T07:31:04Z
+completed: 2026-09-05T08:50:43Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-09-01T22:27:15+02:00
+last_commit: 2026-09-04T23:46:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the ambiguous budget encoding is every session's first reading. budget gauge writes an honest "unknown" instead of a fabricated ok/0
+
+# Key outcomes
+outcomes:
+  - '`budget-gate.sh` slow path writes `{"level":"unknown","tokens":null,...}` (not a fabricated `ok`/0) when `context_tokens.py` crashes or produces no parseable output (SCAN_OK=false), and a negative test proves it using a transcript with invalid UTF-8 bytes.'
+  - 'Control: a transcript with ≥2 dominant-model usage entries whose token totals are genuinely all zero (a confident measurement, not an under-fill) still writes a real `{"level":"ok","tokens":0}` — the fix does not turn every honest zero into a false alarm.'
+  - '`budget-gate.sh` slow path writes `{"level":"unknown",...}` (not `ok`) for T-3241''s original two trigger paths: fewer than 2 dominant-model usage entries since the last compact boundary, and zero usage entries found in the transcript at all.'
+  - 'Every branch that writes `.budget-status` (budget-gate.sh real-measurement branch, budget-gate.sh unknown branch, post-compact-resume.sh''s `{ok,0}` reset seed) stamps `session_id` read from `session.yaml`.'
+  - '`checkpoint.sh budget` reports `level: unknown` plus a `reason:` line when the cache is writer-marked unknown, older than `BUDGET_STATUS_MAX_AGE`, or written by a different `session_id` than the caller''s own.'
+  - 'Control: `checkpoint.sh budget` reports the real cached level cleanly (no false "unknown") for a fresh, valid, own-session cache.'
+  - '`budget-gate.sh`''s existing fast-path enforcement behavior is unchanged: no case arm added for `unknown`, so an `unknown`-level cache still falls through to the slow path / fails open exactly as the pre-existing no-transcript path does today. Existing `tests/e2e/tier-a/test-budget-gate.sh` still passes.'
+  - 'The four files this task touched (`lib/context_tokens.py`, `agents/context/budget-gate.sh`, `agents/context/checkpoint.sh`, `agents/context/post-compact-resume.sh`) are resynced to the vendored `.agentic-framework/` copy (`FW_VENDOR_ONLY="<paths>" bin/fw vendor self`), per CLAUDE.md §Vendored-path-touching tasks. (Whole-repo `bin/fw vendor self --check` may still report DRIFT from other in-flight, unrelated uncommitted files — not this task''s scope.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/budget-gate.sh'
+  - 'agents/context/checkpoint.sh'
+  - 'agents/context/post-compact-resume.sh'
+  - '.context/working/.hook-counter'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E9-loop-does-work.txt'
+  - 'lib/context_tokens.py'
+  - '.tasks/active/T-3241-budget-gauge-encodes-could-not-measure-a.md'
+  - 'tests/unit/t3241_budget_status_unknown_state.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-01T22:27:15'
+    action: 'T-3241: the ambiguous budget encoding is every session''s first reading'
+  - time: '2026-09-04T23:46:58'
+    action: 'T-3241: budget gauge writes an honest "unknown" instead of a fabricated ok/0'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5839 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run, bug, budget, false-green]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5839
+  commits: 2
+  files_changed: 8
+  lines_added: 420
+  lines_removed: 126
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3241-budget-gauge-encodes-could-not-measure-a.md
+generated_by: context-agent-hybrid

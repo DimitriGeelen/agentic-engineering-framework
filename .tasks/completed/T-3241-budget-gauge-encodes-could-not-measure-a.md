@@ -18,12 +18,12 @@ description: >
   distinct from 0, surfaced at every gauge that consumes it; blast radius is why this
   is its own task rather than an inline change.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run, bug, budget, false-green]
-components: []
+components: [C-007, C-008, agents/context/post-compact-resume.sh, lib/context_tokens.py, lib/continuous-mode.sh]
 related_tasks: [T-3239, T-2885, T-2403]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -36,8 +36,8 @@ related_tasks: [T-3239, T-2885, T-2403]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T07:31:04Z
-last_update: 2026-09-03T18:52:58Z
-date_finished:
+last_update: 2026-09-05T08:50:43Z
+date_finished: 2026-09-05T08:50:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -195,11 +195,11 @@ repo's code rather than applied verbatim):**
 - [x] `budget-gate.sh` slow path writes `{"level":"unknown","tokens":null,...}` (not a fabricated `ok`/0) when `context_tokens.py` crashes or produces no parseable output (SCAN_OK=false), and a negative test proves it using a transcript with invalid UTF-8 bytes.
 - [x] Control: a transcript with ≥2 dominant-model usage entries whose token totals are genuinely all zero (a confident measurement, not an under-fill) still writes a real `{"level":"ok","tokens":0}` — the fix does not turn every honest zero into a false alarm.
 - [x] `budget-gate.sh` slow path writes `{"level":"unknown",...}` (not `ok`) for T-3241's original two trigger paths: fewer than 2 dominant-model usage entries since the last compact boundary, and zero usage entries found in the transcript at all.
-- [ ] Every branch that writes `.budget-status` (budget-gate.sh real-measurement branch, budget-gate.sh unknown branch, post-compact-resume.sh's `{ok,0}` reset seed) stamps `session_id` read from `session.yaml`.
-- [ ] `checkpoint.sh budget` reports `level: unknown` plus a `reason:` line when the cache is writer-marked unknown, older than `BUDGET_STATUS_MAX_AGE`, or written by a different `session_id` than the caller's own.
-- [ ] Control: `checkpoint.sh budget` reports the real cached level cleanly (no false "unknown") for a fresh, valid, own-session cache.
-- [ ] `budget-gate.sh`'s existing fast-path enforcement behavior is unchanged: no case arm added for `unknown`, so an `unknown`-level cache still falls through to the slow path / fails open exactly as the pre-existing no-transcript path does today. Existing `tests/e2e/tier-a/test-budget-gate.sh` still passes.
-- [ ] The four files this task touched (`lib/context_tokens.py`, `agents/context/budget-gate.sh`, `agents/context/checkpoint.sh`, `agents/context/post-compact-resume.sh`) are resynced to the vendored `.agentic-framework/` copy (`FW_VENDOR_ONLY="<paths>" bin/fw vendor self`), per CLAUDE.md §Vendored-path-touching tasks. (Whole-repo `bin/fw vendor self --check` may still report DRIFT from other in-flight, unrelated uncommitted files — not this task's scope.)
+- [x] Every branch that writes `.budget-status` (budget-gate.sh real-measurement branch, budget-gate.sh unknown branch, post-compact-resume.sh's `{ok,0}` reset seed) stamps `session_id` read from `session.yaml`.
+- [x] `checkpoint.sh budget` reports `level: unknown` plus a `reason:` line when the cache is writer-marked unknown, older than `BUDGET_STATUS_MAX_AGE`, or written by a different `session_id` than the caller's own.
+- [x] Control: `checkpoint.sh budget` reports the real cached level cleanly (no false "unknown") for a fresh, valid, own-session cache.
+- [x] `budget-gate.sh`'s existing fast-path enforcement behavior is unchanged: no case arm added for `unknown`, so an `unknown`-level cache still falls through to the slow path / fails open exactly as the pre-existing no-transcript path does today. Existing `tests/e2e/tier-a/test-budget-gate.sh` still passes.
+- [x] The four files this task touched (`lib/context_tokens.py`, `agents/context/budget-gate.sh`, `agents/context/checkpoint.sh`, `agents/context/post-compact-resume.sh`) are resynced to the vendored `.agentic-framework/` copy (`FW_VENDOR_ONLY="<paths>" bin/fw vendor self`), per CLAUDE.md §Vendored-path-touching tasks. (Whole-repo `bin/fw vendor self --check` may still report DRIFT from other in-flight, unrelated uncommitted files — not this task's scope.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -504,3 +504,15 @@ test rather than shipping silently, the way this one did for the life of the fil
 
 ### 2026-09-03T18:52:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d2a787df
+- **Timestamp:** 2026-09-05T08:50:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-05T08:50:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
