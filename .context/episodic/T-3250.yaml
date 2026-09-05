@@ -1,0 +1,154 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3250: arc-012 E10 - press the brake: prove the tier ceiling actually stops the loop
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-05T18:23:08Z
+# ============================================================================
+
+task_id: T-3250
+task_name: "arc-012 E10 - press the brake: prove the tier ceiling actually stops the loop"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T21:30:42Z
+completed: 2026-09-05T18:18:55Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-09-02T00:21:38+02:00
+last_commit: 2026-09-05T20:18:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  E10 rig - the brake harness, two legs differing in one number. E10 breach leg - the brake fires, and the loop keeps going anyway. scope the control assertion to the ceiling, and stop max_iterations binding. the E10 close gate was eating the evidence it checks. record what the breach leg actually found, and tick what it settled. AC5b was a constant FAIL, not an inverted one. put the pre-run blast-radius assertion into the evidence, not the terminal. tick AC5, and record why AC4 stays failed. the script's exit code was 0 on every run it has ever done. E10 evidence, both legs, regenerated on the fixed harness. capture the false-green cluster as learnings. review marker + working-state sync. E11 — a dispatched worker advancing task-to-task, caught live. AC4 flips on the post-T-3253 breach re-run — the brake binds at preflight. the control leg, concluded on the fixed wrapper — 6/0, canonical file restored. the close gate's own env poisoned the rig — 34 junk tasks in the live repo
+
+# Key outcomes
+outcomes:
+  - 'The sandbox backlog contains at least one task whose blast-radius is **resolvable and above** `tier_ceiling` — verified by asserting the resolver returns a number greater than the ceiling **before** the loop runs, so an unreachable guard cannot masquerade as a held brake.'
+  - '**The brake fires.** `last_terminated_reason` matches `tier ceiling exceeded: <ref> blast-radius <N> > tier_ceiling <C>`, read from `.continuous-mode.yaml` after the run.'
+  - '**The counter freezes rather than advances** on the breach — `current_iteration` is unchanged across the breaching transition, which is the documented behaviour (operator resumes the same iteration after sign-off) and distinguishes a brake from a crash.'
+  - '**The over-ceiling task is NOT closed**, and no artefact of it exists — the loop stopped before doing the work, not after.'
+  - '**Negative control:** an otherwise identical run whose tasks are all under the ceiling completes the backlog with `last_terminated_reason: ''''` and an advancing counter. Without this leg the test cannot tell a held brake from a disconnected one (L-653).'
+  - 'Evidence committed under `docs/reports/T-3239-continuous-loop-demo/` — both legs, raw state files, and the pre-run blast-radius assertion — re-readable by someone who did not run it.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'the control leg, concluded on the fixed wrapper — 6/0, canonical file restored'
+    source: git-mined
+  - description: 'E10 evidence, both legs, regenerated on the fixed harness'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/continuous-driver.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/audits/2026-09-02.yaml'
+  - '.context/audits/2026-09-04.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/reviewer/2026-09-02.yaml'
+  - '.context/audits/unclosed-satisfied/LATEST.md'
+  - '.context/episodic/T-3141.yaml'
+  - '.context/episodic/T-3249.yaml'
+  - '.context/handovers/S-2026-0902-0101.discard-manifest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/.edit-counter'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-breach.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E10-brake-control.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/evidence/E11-observed-live-worker-advance.txt'
+  - 'docs/reports/T-3239-continuous-loop-demo/livefire-brake-tier-ceiling.sh'
+  - '.gitignore'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3250-arc-012-e10---press-the-brake-prove-the-.md'
+  - '.tasks/active/T-3252-recommendation-card-silently-drops-text-.md'
+  - '.tasks/active/T-3253-tier-ceiling-breach-disarms-the-loop-but.md'
+  - '.tasks/active/T-3265-5-round-audit-and-housekeeping-remediati.md'
+  - '.tasks/active/T-3276-should-continuous-driver-carry-a-non-ter.md'
+  - '.tasks/completed/T-3141-fwfocusfile-ignores-contextdir-override-.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-02T00:21:38'
+    action: 'T-3250: E10 rig - the brake harness, two legs differing in one number'
+  - time: '2026-09-02T00:49:00'
+    action: 'T-3250: E10 breach leg - the brake fires, and the loop keeps going anyway'
+  - time: '2026-09-02T00:56:37'
+    action: 'T-3250: scope the control assertion to the ceiling, and stop max_iterations binding'
+  - time: '2026-09-02T08:15:21'
+    action: 'T-3250: the E10 close gate was eating the evidence it checks'
+  - time: '2026-09-02T08:17:03'
+    action: 'T-3250: record what the breach leg actually found, and tick what it settled'
+  - time: '2026-09-02T08:35:58'
+    action: 'T-3250: AC5b was a constant FAIL, not an inverted one'
+  - time: '2026-09-02T08:57:51'
+    action: 'T-3250: put the pre-run blast-radius assertion into the evidence, not the terminal'
+  - time: '2026-09-02T08:59:04'
+    action: 'T-3250: tick AC5, and record why AC4 stays failed'
+  - time: '2026-09-02T09:08:28'
+    action: 'T-3250: the script''s exit code was 0 on every run it has ever done'
+  - time: '2026-09-02T09:30:50'
+    action: 'T-3250: E10 evidence, both legs, regenerated on the fixed harness'
+  - time: '2026-09-02T09:31:29'
+    action: 'T-3250: capture the false-green cluster as learnings'
+  - time: '2026-09-02T09:31:56'
+    action: 'T-3250: review marker + working-state sync'
+  - time: '2026-09-05T00:04:19'
+    action: 'T-3250: E11 — a dispatched worker advancing task-to-task, caught live'
+  - time: '2026-09-05T18:23:25'
+    action: 'T-3250: AC4 flips on the post-T-3253 breach re-run — the brake binds at preflight'
+  - time: '2026-09-05T19:07:41'
+    action: 'T-3250: the control leg, concluded on the fixed wrapper — 6/0, canonical file restored'
+  - time: '2026-09-05T20:18:49'
+    action: 'T-3250: the close gate''s own env poisoned the rig — 34 junk tasks in the live repo'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 16 commit(s), 5568 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5568
+  commits: 16
+  files_changed: 43
+  lines_added: 7619
+  lines_removed: 4496
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3250-arc-012-e10---press-the-brake-prove-the-.md
+generated_by: context-agent-hybrid

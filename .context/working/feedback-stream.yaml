@@ -39555,3 +39555,93 @@ scan_id: R-8370dc3d
 task_id: T-3280
 payload:
   task_file: .tasks/active/T-3280-watchtower-decide-flow-renders-agent-fac.md
+---
+kind: scan_emitted
+timestamp: '2026-09-05T11:51:22Z'
+scan_id: R-858a659e
+task_id: T-3281
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-05T11:51:22Z'
+scan_id: R-858a659e
+task_id: T-3281
+payload:
+  task_file: .tasks/active/T-3281-orphaned-crond-fixtures-from-temp-dir-in.md
+---
+kind: scan_emitted
+timestamp: '2026-09-05T14:36:57Z'
+scan_id: R-be49c2f4
+task_id: T-3282
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-05T14:36:57Z'
+scan_id: R-be49c2f4
+task_id: T-3282
+payload:
+  task_file: .tasks/active/T-3282-watchtower-serves-stale-code-for-days---.md
+---
+kind: scan_emitted
+timestamp: '2026-09-05T14:44:01Z'
+scan_id: R-945874c3
+task_id: T-3257
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-05T14:44:01Z'
+scan_id: R-945874c3
+task_id: T-3257
+payload:
+  task_file: .tasks/active/T-3257-real-agent-live-fire-for-continuous-driv.md
+---
+kind: scan_emitted
+timestamp: '2026-09-05T16:55:15Z'
+scan_id: R-07af9d6a
+task_id: T-3284
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-05T16:55:15Z'
+scan_id: R-07af9d6a
+task_id: T-3284
+payload:
+  task_file: .tasks/active/T-3284-stderr-sanitizer-parity---extract-operat.md
+---
+kind: scan_emitted
+timestamp: '2026-09-05T18:22:52Z'
+scan_id: R-62fc74e0
+task_id: T-3250
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-05T18:22:52Z'
+scan_id: R-62fc74e0
+task_id: T-3250
+payload:
+  task_file: .tasks/active/T-3250-arc-012-e10---press-the-brake-prove-the-.md
