@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3277: continuous-driver pluggable transport - tmux leg reaches TUI targets termlink inject cannot
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-05T19:22:38Z
+# ============================================================================
+
+task_id: T-3277
+task_name: "continuous-driver pluggable transport - tmux leg reaches TUI targets termlink inject cannot"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-04T22:28:37Z
+completed: 2026-09-05T19:21:45Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-09-05T00:44:52+02:00
+last_commit: 2026-09-05T00:44:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a second wire, and the busy check that was blocking every hop but the first
+
+# Key outcomes
+outcomes:
+  - '`continuous-driver.sh` accepts `--transport termlink|tmux` (and `FW_DRIVER_TRANSPORT`), rejecting any other value with exit 2 rather than silently falling back to a default'
+  - 'Default remains `termlink` — an invocation with no transport argument behaves exactly as before, so no existing deployment changes behaviour on upgrade'
+  - 'Snapshot, target-resolution and inject each dispatch on the selected transport; the tmux leg uses `tmux capture-pane` to snapshot and `send-keys -l` + `Enter` to inject'
+  - 'The tmux leg resolves its target as a tmux pane and refuses with a message naming that pane when it does not exist — it must NOT fall through to `termlink discover`'
+  - 'Both transports run through the SAME T-3275 delivery confirmation; a transport is not trusted merely for being new'
+  - '**Negative control:** a test proves the tmux leg REFUSES when the pane accepts `send-keys` but the text never arrives (the G-097 shape reproduced on the new wire)'
+  - '**Positive control:** a test proves the tmux leg CONFIRMS when the text does land, so the suite can distinguish "confirmation works" from "confirmation always refuses"'
+  - '`tests/unit/t3254_driver_refusals.bats` (21) and `tests/unit/t3275_delivery_confirmation.bats` (6) stay green with zero skips — the termlink leg is not regressed'
+  - '`bin/fw vendor self --check` is clean before close (`agents/` is a vendored path — OBS-250 ordering)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/continuous-driver.sh'
+  - '.tasks/active/T-3277-continuous-driver-pluggable-transport---.md'
+  - 'tests/unit/t3277_transport_leg.bats'
+  - 'tools/t3250-transport-probe.sh'
+  - 'tools/t3277-livefire-tmux.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-05T00:44:52'
+    action: 'T-3277: a second wire, and the busy check that was blocking every hop but the first'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1253 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1253
+  commits: 1
+  files_changed: 5
+  lines_added: 936
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3277-continuous-driver-pluggable-transport---.md
+generated_by: context-agent-hybrid

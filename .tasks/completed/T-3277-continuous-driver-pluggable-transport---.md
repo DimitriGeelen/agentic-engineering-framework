@@ -6,12 +6,12 @@ description: >
   continuous-driver pluggable transport - tmux leg reaches TUI targets termlink inject
   cannot
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/continuous-driver.sh, tools/t3250-transport-probe.sh, tools/t3257-livefire-backlog.sh, tools/t3257-livefire-driver.sh, tools/t3277-livefire-tmux.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-04T22:28:37Z
-last_update: '2026-09-04T22:30:23Z'
-date_finished:
+last_update: 2026-09-05T19:21:45Z
+date_finished: 2026-09-05T19:21:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -76,15 +76,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `continuous-driver.sh` accepts `--transport termlink|tmux` (and `FW_DRIVER_TRANSPORT`), rejecting any other value with exit 2 rather than silently falling back to a default
-- [ ] Default remains `termlink` — an invocation with no transport argument behaves exactly as before, so no existing deployment changes behaviour on upgrade
-- [ ] Snapshot, target-resolution and inject each dispatch on the selected transport; the tmux leg uses `tmux capture-pane` to snapshot and `send-keys -l` + `Enter` to inject
-- [ ] The tmux leg resolves its target as a tmux pane and refuses with a message naming that pane when it does not exist — it must NOT fall through to `termlink discover`
-- [ ] Both transports run through the SAME T-3275 delivery confirmation; a transport is not trusted merely for being new
-- [ ] **Negative control:** a test proves the tmux leg REFUSES when the pane accepts `send-keys` but the text never arrives (the G-097 shape reproduced on the new wire)
-- [ ] **Positive control:** a test proves the tmux leg CONFIRMS when the text does land, so the suite can distinguish "confirmation works" from "confirmation always refuses"
-- [ ] `tests/unit/t3254_driver_refusals.bats` (21) and `tests/unit/t3275_delivery_confirmation.bats` (6) stay green with zero skips — the termlink leg is not regressed
-- [ ] `bin/fw vendor self --check` is clean before close (`agents/` is a vendored path — OBS-250 ordering)
+- [x] `continuous-driver.sh` accepts `--transport termlink|tmux` (and `FW_DRIVER_TRANSPORT`), rejecting any other value with exit 2 rather than silently falling back to a default
+- [x] Default remains `termlink` — an invocation with no transport argument behaves exactly as before, so no existing deployment changes behaviour on upgrade
+- [x] Snapshot, target-resolution and inject each dispatch on the selected transport; the tmux leg uses `tmux capture-pane` to snapshot and `send-keys -l` + `Enter` to inject
+- [x] The tmux leg resolves its target as a tmux pane and refuses with a message naming that pane when it does not exist — it must NOT fall through to `termlink discover`
+- [x] Both transports run through the SAME T-3275 delivery confirmation; a transport is not trusted merely for being new
+- [x] **Negative control:** a test proves the tmux leg REFUSES when the pane accepts `send-keys` but the text never arrives (the G-097 shape reproduced on the new wire)
+- [x] **Positive control:** a test proves the tmux leg CONFIRMS when the text does land, so the suite can distinguish "confirmation works" from "confirmation always refuses"
+- [x] `tests/unit/t3254_driver_refusals.bats` (21) and `tests/unit/t3275_delivery_confirmation.bats` (6) stay green with zero skips — the termlink leg is not regressed
+- [x] `bin/fw vendor self --check` is clean before close (`agents/` is a vendored path — OBS-250 ordering)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -118,6 +118,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(timeout 300 bats tests/unit/t3254_driver_refusals.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && [ "$(echo "$out" | grep -c '# skip')" -eq 0 ]
+out=$(timeout 300 bats tests/unit/t3275_delivery_confirmation.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && [ "$(echo "$out" | grep -c '# skip')" -eq 0 ]
+out=$(timeout 300 bats tests/unit/t3277_transport_leg.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && [ "$(echo "$out" | grep -c '# skip')" -eq 0 ]
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -330,3 +335,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3277-continuous-driver-pluggable-transport---.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5e168b72
+- **Timestamp:** 2026-09-05T19:22:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-05T19:21:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
