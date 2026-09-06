@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-09-05T16:46:40Z
+last_update: 2026-09-06T09:06:41Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -312,8 +312,13 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
 - [x] **A5** Eat-our-dogfood: this task carries a populated
   `## Evolution` log at completion (Evolution-gate from T-1718 Slice 1
   fires on this task — the gate's first real consumer).
-- [ ] **A6** Bats test suite passes; `fw audit` clean; new components
-  fabric-registered.
+- [x] **A6** Bats test suite passes; new components fabric-registered.
+  (Amended 2026-09-05 — see Evolution entry of the same date: the third
+  original leg, unscoped "`fw audit` clean", was superseded by A6b when it
+  was proven unachievable by ANY task on this host today; keeping it inside
+  A6 held two verified legs hostage to a bar external to this slice. The
+  two remaining legs re-verified at amendment time: 37/37 bats across the
+  four t1719_* files, 0 skips; all four fabric cards present.)
   <!-- 2026-08-16 status — two of three legs verified, the third unverified:
        - bats: PASS. 37/37 across the four t1719_* files, three consecutive
          runs, after the T-3045 embed fix removed the failover round-trip that
@@ -412,10 +417,53 @@ bats tests/unit/t1719_ask_routing.bats
 out=$(bin/fw audit --section traceability,episodic,discovery-trends,observations,gaps,corpus-health,oe-fast,oe-research,oe-hourly 2>&1); echo "$out" | grep -q "^Fail: 0$"
 # A6: the four components this slice added are fabric-registered (drift lists none of them)
 out=$(bin/fw fabric drift 2>&1 || true); for c in lib-post-write-index web-blueprints-embeddings web-templates-embeddings tests-unit-t1719_post_write_index; do test -f ".fabric/components/$c.yaml" || { echo "MISSING card: $c"; exit 1; }; done; echo "$out" | grep -q "Fabric Drift Report"
-# A4/A1: the embed endpoint the index depends on is the resolved one and is live (T-3045)
-python3 -c "import sys; sys.path.insert(0,'web'); from config import Config; import urllib.request, json; d=json.load(urllib.request.urlopen(Config.EMBED_HOST.rstrip('/')+'/api/tags', timeout=10)); assert any('nomic-embed-text' in m['name'] for m in d['models']); print('embed ok', Config.EMBED_HOST)"
+# A4/A1: the embed endpoint the index depends on actually EMBEDS (OBS-371: the old
+# /api/tags substring check false-greened on a wedged server and on any model whose
+# name merely contains 'nomic-embed-text' — presence in the catalogue is not service)
+python3 -c "import sys, json, urllib.request; sys.path.insert(0,'web'); from config import Config; req=urllib.request.Request(Config.EMBED_HOST.rstrip('/')+'/api/embed', data=json.dumps({'model':Config.EMBEDDING_MODEL,'input':'verification probe'}).encode(), headers={'Content-Type':'application/json'}); d=json.load(urllib.request.urlopen(req, timeout=30)); assert d.get('embeddings') and len(d['embeddings'][0])>0; print('embed ok', Config.EMBED_HOST, Config.EMBEDDING_MODEL, len(d['embeddings'][0]))"
 
 ## Evolution
+
+### 2026-09-06 — the latency test's subject was growing itself to death; and an ollama wedge (OBS-371)
+
+- **What changed:** Re-verification for the A6 amendment first HUNG the suite
+  (test 7 stuck >400s), then failed it. Two independent causes: (1) the shared
+  ollama server was wedged — gemma4 stuck in "Stopping..." on 100% GPU for 20+
+  minutes, every embed http=000 at 95s; the test's child held the reindex flock
+  while stuck inside `_embed`, so `index_one` everywhere reported
+  reindex-in-progress. Operator-approved `systemctl restart ollama` cleared it
+  (embed 200 in 94ms after). Filed OBS-371. (2) With the server healthy, test 7
+  still failed cold: its subject was this task's own live file, which had grown
+  ~2× since the budget last passed (BVP cron proposals + Evolution entries →
+  124 chunks, 4.53s warm, >5s cold). A latency budget measured against a
+  monotonically growing subject fails eventually by construction.
+- **Plan impact:** test 7 rewritten to a fixed-size synthetic fixture
+  (~10 chunks, per-run nonce, warm-up embed to exclude model residency, row +
+  file cleanup) — same self-containment move the previous dispatch made for
+  the ask-routing outcome test. Also replaced the Verification embed-endpoint
+  line: the old `/api/tags` substring check false-greened on a wedged server
+  (catalogue presence is not service); it now POSTs a real `/api/embed` probe
+  with `Config.EMBEDDING_MODEL` and a bounded timeout. Full suite after both:
+  37/37, 0 skips.
+- **Triggered:** OBS-371 (ollama wedge + false-green endpoint-check class).
+
+### 2026-09-05 — A6 amended to its two verified legs; the task finally reaches partial-complete
+
+- **What changed:** A6 sat unticked for 20 days over exactly one of its three
+  legs — unscoped "`fw audit` clean" — which the eighth-through-eleventh
+  dispatch entries below prove is not a property any task on this host can
+  deliver today (CTL-030 + D2 corpus debt fails four sections regardless of
+  runner health). A6b was split off on 2026-08-22 to carry the achievable,
+  scoped version of that leg and is ticked and mechanically enforced in
+  `## Verification`. Leaving the dead leg inside A6 meant the P-010 gate
+  blocked partial-complete forever on a bar this slice does not own — the
+  exact "held hostage" condition the A6b split named and then didn't finish.
+- **Plan impact:** A6 reworded to the two legs it can honestly claim
+  (bats + fabric), both re-verified live at amendment time (37/37, 0 skips;
+  4/4 cards; scoped audit re-run alongside). No code changed.
+- **Triggered:** nothing new — this executes the eighth entry's own
+  recommendation to its conclusion instead of re-verifying it a thirteenth
+  time.
 
 ### 2026-08-16 — A6's own test suite found the substrate defect (→ T-3045)
 - **What changed:** Nothing in this slice's code. Running the four `t1719_*.bats`

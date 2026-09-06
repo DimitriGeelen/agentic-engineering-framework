@@ -102,28 +102,51 @@ print('ok')
 @test "t1719: indexing a document makes it retrievable and stays under the 5s budget" {
     # The AC's headline claim. Skipped (not failed) when no index is built —
     # a machine without the corpus is not a regression.
+    #
+    # 2026-09-06: the subject used to be this task's own LIVE file — which grew
+    # a little on every dispatch (BVP proposals, Evolution entries) until, at
+    # 124 chunks, a cold-model run blew the 5s budget the test exists to pin.
+    # A latency budget measured against a monotonically growing subject fails
+    # eventually by construction and says nothing when it does. The subject is
+    # now a FIXED-SIZE synthetic doc (~10 chunks, a representative task-file
+    # write), embedded with a per-run nonce so retrieval proves THIS write
+    # landed. One warm-up embed absorbs the model-load cost first: the budget
+    # is about index_one's own path, not about whether ollama had the model
+    # resident before the suite started. Rows and file are cleaned up after.
     run _py "
-import embeddings as e, time
+import embeddings as e, time, os, pathlib
 if not e.is_index_ready():
     print('SKIP-no-index')
     raise SystemExit(0)
-target = '.tasks/active/T-1719-embeddings-strategy-v1--slice-1-post-wri.md'
-import pathlib
-if not (pathlib.Path(e.PROJECT_ROOT) / target).is_file():
-    print('SKIP-no-target')
-    raise SystemExit(0)
-t = time.time()
-r = e.index_one(target)
-elapsed = time.time() - t
-if r.get('skipped') == 'reindex-in-progress':
-    print('SKIP-reindex-running')
-    raise SystemExit(0)
-assert r.get('indexed_chunks', 0) > 0, r
-assert elapsed < 5.0, ('latency budget exceeded', elapsed, r)
-hits = e.search('happiness signal retrieval routing loop', limit=5)
-paths = [h.get('path') for h in (hits.get('results') or [])]
-assert target in paths, ('written doc not retrievable', paths)
-print('ok', r['indexed_chunks'], int(elapsed*1000))
+nonce = 'latencyprobe' + os.urandom(4).hex()
+rel = '.context/working/.t1719-latency-probe.md'
+fx = pathlib.Path(e.PROJECT_ROOT) / rel
+para = ('The quick brown governance gate audits the embedding retrieval loop '
+        'for provenance, freshness and recall quality across the corpus. ') * 12
+fx.write_text('# Latency probe ' + nonce + '\n\n'
+              + '\n\n'.join(f'## Section {i} {nonce}\n\n{para}' for i in range(10)))
+try:
+    e._embed_single('warm-up ' + nonce)   # model residency is not under test
+    t = time.time()
+    r = e.index_one(rel)
+    elapsed = time.time() - t
+    if r.get('skipped') == 'reindex-in-progress':
+        print('SKIP-reindex-running')
+        raise SystemExit(0)
+    assert r.get('indexed_chunks', 0) > 0, r
+    assert elapsed < 5.0, ('latency budget exceeded', elapsed, r)
+    hits = e.search(nonce, limit=5)
+    paths = [h.get('path') for h in (hits.get('results') or [])]
+    assert rel in paths, ('written doc not retrievable', paths)
+    print('ok', r['indexed_chunks'], int(elapsed*1000))
+finally:
+    try:
+        db = e._get_db()
+        e._delete_path_rows(db, rel)
+        db.commit()
+    except Exception:
+        pass
+    fx.unlink(missing_ok=True)
 "
     [ "$status" -eq 0 ]
     [[ "$output" == *"ok"* || "$output" == *"SKIP-"* ]]
