@@ -288,6 +288,9 @@ Advisory teach alone is insufficient (L-300/L-405) — the durable fix is struct
 
 ## Recommendation
 
+**Recommendation:** GO
+**Rationale:** GO = ratify that T-3185's release-train model dissolves this task and close it. Do not adopt A, B, C or D — the superseded block below retains the full reasoning and landed evidence.
+
 **Recommendation (superseded 2026-08-27):** CLOSE AS DISSOLVED. Do not adopt A, B, C or D.
 
 The A/B/C/D options below were all answers to "how does the session reach `master`
