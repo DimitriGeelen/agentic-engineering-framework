@@ -302,6 +302,14 @@ git log --name-only --format= --grep="T-3147" > /tmp/.t3147-paths 2>&1 && ! grep
 
 ## Recommendation
 
+**Recommendation:** GO
+**Rationale:** The measurement is complete, reproducible, and decisive: falsifier 1 answers `fence-1 blocking (3 components in the write set)` — but the feared 512-component enrichment burden collapses to ~28 real items (3 CORE + 17 agents/ + 8 uncarded policy/ YAML), because 87% of Unknown-subsystem cards sit under tests/, which the runtime never writes. GO = accept the measurement and take the two operator rulings it feeds (D5 coverage threshold, D1 arc-start) with these numbers in hand. Note new risk R6 surfaced by the control script: policy/ has 0% Fabric coverage, which the falsifier as posed structurally cannot detect (no cards -> no Unknown hits).
+**Evidence:**
+- docs/research/executable-workflow/arc0-falsifier1-result.md — verdict line, component list
+- docs/research/executable-workflow/arc0-write-set.md — derived write set with dossier section refs
+- tools/ewcr-arc0-coverage-check.py — reproducible control; found the policy/ zero-coverage case
+- governance-cadence.md gate-state row updated with the measured figures
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
