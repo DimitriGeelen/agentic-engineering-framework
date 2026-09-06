@@ -1,14 +1,12 @@
 ---
-id: T-3289
-name: "Observation inbox triage sweep — 248 pending / 40 urgent, TermLink fan-out
-  analysis, serial integration"
+id: T-3300
+name: "tests/unit/ac_counter_sed_range_one_line_comment.bats:34 asserts an EXACT count — grep -c of the '>'-tolerant comment-strip regex in agents/task-create/update-task.sh must equal 2. There are now 3 (lines 138, 163, 1590), all correct uses of the tolerant form, so the suite is RED for adding a third correct site. Measured identical (3) at HEAD and in the working tree, so it predates T-3235's edit. The assertion is testing the wrong property: what T-2554 cares about is that NO occurrence uses the broken '<!--[^>]*-->' form and that the tolerant form is present — a floor, not an equality. An exact count turns every legitimate new call site into a false red, and a false red in a suite the daily audit does not run (audit covers tests/lint only, not tests/unit) is a red nobody sees. Fix shape: replace -eq 2 with -ge 2 and keep the existing zero-occurrences-of-the-broken-form assertion as the real invariant."
 description: >
-  Observation inbox triage sweep — 248 pending / 40 urgent, TermLink fan-out analysis,
-  serial integration
+  Promoted from observation OBS-359
 
-status: started-work
-workflow_type: build
-owner: agent
+status: captured
+workflow_type: test
+owner: human
 horizon: now
 tags: []
 components: []
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-06T18:01:19Z
-last_update: '2026-09-06T18:15:17Z'
-date_finished:
+created: 2026-09-06T18:15:47Z
+last_update: 2026-09-06T18:15:47Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,88 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-06T18:15:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=275,acs=5)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-06T18:15:17Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3289: Observation inbox triage sweep — 248 pending / 40 urgent, TermLink fan-out analysis, serial integration
+# T-3300: tests/unit/ac_counter_sed_range_one_line_comment.bats:34 asserts an EXACT count — grep -c of the '>'-tolerant comment-strip regex in agents/task-create/update-task.sh must equal 2. There are now 3 (lines 138, 163, 1590), all correct uses of the tolerant form, so the suite is RED for adding a third correct site. Measured identical (3) at HEAD and in the working tree, so it predates T-3235's edit. The assertion is testing the wrong property: what T-2554 cares about is that NO occurrence uses the broken '<!--[^>]*-->' form and that the tolerant form is present — a floor, not an equality. An exact count turns every legitimate new call site into a false red, and a false red in a suite the daily audit does not run (audit covers tests/lint only, not tests/unit) is a red nobody sees. Fix shape: replace -eq 2 with -ge 2 and keep the existing zero-occurrences-of-the-broken-form assertion as the real invariant.
 
 ## Context
 
-The observation inbox (`.context/inbox.yaml`) has accumulated 251 pending
-observations, 40 flagged urgent — flagged in every handover since at least
-S-2026-0906-1832. Triage per the CLAUDE.md §Execution Model worked example:
-observation analysis reads independently but converges on `inbox.yaml`,
-`concerns.yaml`, and `.tasks/`, so TermLink workers analyse batches and post
-recommendations via `fw bus`, and the parent session performs every inbox
-mutation (promote/dismiss) serially. Urgent class is the hard target; the
-non-urgent backlog is best-effort within this task's session budget.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Every urgent pending observation is dispositioned — promoted to a task,
-      dismissed with a reason, or explicitly deferred with a rationale recorded
-      in the task body. `bin/fw note count` reports 0 urgent.
-- [x] Fan-out ran via TermLink dispatch (≤5 workers): workers only analysed and
-      posted recommendations via `fw bus post --task T-3289`; bus manifest
-      carries ≥3 worker results; no worker wrote inbox.yaml/concerns.yaml/.tasks
-      directly.
-- [x] Serial integration: every promotion names a real task (id recorded), every
-      dismissal carries a `--reason`; disposition tally (promoted/dismissed/
-      deferred, with per-OBS ids) recorded in this task's body.
-
-## Disposition Tally
-
-40 urgent triaged: **17 promoted / 23 dismissed / 0 deferred.** Inbox
-251→212 pending, urgent 40→0. Workers: 4 TermLink dispatches (t3289-w1..w4),
-each analysed 10 observations read-only and posted via bus (R-001..R-004);
-full evidence in `docs/reports/T-3289-triage-w{1..4}.md`. All inbox
-mutations performed serially by the parent session.
-
-**Promoted** (OBS → task):
-203→T-3290 (budget-gate fast path attribution), 231→T-3291 (owner-at-rest
-rail), 234→T-3292 (orphaned hook scripts, decommission), 236→T-3293 (ugrep
-shim codification), 273→T-3294 (inception-schema hook validates disk not
-edit), 301→T-3295 (L-493 comment amendment, refactor), 303→T-3296 (TermLink
-outbound-queue silt doctor rail), 305→T-3297 (exit-75 truthful guidance +
-Tier-2 bypass), 308→T-3298 (audit lock unlink race → keylock), 353→T-3299
-(G-020 remedies allowlisted), 359→T-3300 (test), 360→T-3301, 361→T-3302,
-364→T-3303, 365→T-3304, 366→T-3305, 372→T-3306 (keylock reentry class
-guard).
-
-**Dismissed** (all with fixing-task/superseding evidence in the reason
-field): 201, 214, 235, 245, 246, 271, 272, 296, 297, 299, 300, 302, 304,
-306, 307, 315, 317, 355, 356, 358, 362, 363, 371.
-
-**Split out:** OBS-353's secondary finding (automated process created
-T-3215 with template ACs) filed as its own observation.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -267,10 +197,6 @@ T-3215 with template ACs) filed as its own observation.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# note count only prints an "(N urgent)" suffix when N>0 — zero urgent = no suffix.
-bin/fw note count > /tmp/.t3289-count 2>&1 && grep -q "pending" /tmp/.t3289-count && ! grep -q "urgent" /tmp/.t3289-count
-bin/fw bus manifest T-3289 > /tmp/.t3289-bus 2>&1 && test "$(grep -c 'R-0' /tmp/.t3289-bus)" -ge 3
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -363,7 +289,7 @@ bin/fw bus manifest T-3289 > /tmp/.t3289-bus 2>&1 && test "$(grep -c 'R-0' /tmp/
 
 ## Updates
 
-### 2026-09-06T18:01:19Z — task-created [task-create-agent]
+### 2026-09-06T18:15:47Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3289-observation-inbox-triage-sweep--248-pend.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3300-testsunitaccountersedrangeonelinecomment.md
 - **Context:** Initial task creation

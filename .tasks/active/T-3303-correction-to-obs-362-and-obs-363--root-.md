@@ -1,14 +1,12 @@
 ---
-id: T-3289
-name: "Observation inbox triage sweep — 248 pending / 40 urgent, TermLink fan-out
-  analysis, serial integration"
+id: T-3303
+name: "CORRECTION to OBS-362 and OBS-363 — root cause found, and it is neither suite. The harness reported three background commands as 'killed', but the kill did not reach their children: bats process TREES kept running against the LIVE repo for ~40 minutes afterwards (PIDs 3155301/3155304/3155345/3155346 for a 68-suite tests/unit run, 3483957+ for a tests/lint run), still appending to /tmp/.t3235adj.out and still executing update_task.bats. That orphan is what rewrote .context/working/focus.yaml to 'current_task: T-001' — twice, including once immediately after I had restored it, which is why it looked like the suite I had just run. It also explains the phantom measurement: a file I created with 32 tests read back at 75 lines containing 'ok 379', because two writers were interleaving into it, and grep -c returned nothing because the file was being rewritten under the read. OBS-363's 'update_task.bats does not complete at 280s' is now suspect for the same reason — the timing was taken while an orphan was running the same suite concurrently against the same live tree; re-measure on a quiet host before treating it as a property of the suite. Terminated with pkill -TERM -f bats-core; 0 remain. THE CLASS: a background test run that outlives its supervisor is indistinguishable, from inside the session, from the session's own state changes — the agent attributes the damage to whatever it did most recently. Two guards worth having: assert no bats process is already running before starting one, and check for orphaned bats trees the way fw termlink cleanup checks for orphaned dispatches (T-577, exact same shape: the supervisor deregisters, the process does not die)."
 description: >
-  Observation inbox triage sweep — 248 pending / 40 urgent, TermLink fan-out analysis,
-  serial integration
+  Promoted from observation OBS-364
 
-status: started-work
+status: captured
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-06T18:01:19Z
-last_update: '2026-09-06T18:15:17Z'
-date_finished:
+created: 2026-09-06T18:16:26Z
+last_update: 2026-09-06T18:16:26Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,88 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-06T18:15:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=275,acs=5)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-06T18:15:17Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3289: Observation inbox triage sweep — 248 pending / 40 urgent, TermLink fan-out analysis, serial integration
+# T-3303: CORRECTION to OBS-362 and OBS-363 — root cause found, and it is neither suite. The harness reported three background commands as 'killed', but the kill did not reach their children: bats process TREES kept running against the LIVE repo for ~40 minutes afterwards (PIDs 3155301/3155304/3155345/3155346 for a 68-suite tests/unit run, 3483957+ for a tests/lint run), still appending to /tmp/.t3235adj.out and still executing update_task.bats. That orphan is what rewrote .context/working/focus.yaml to 'current_task: T-001' — twice, including once immediately after I had restored it, which is why it looked like the suite I had just run. It also explains the phantom measurement: a file I created with 32 tests read back at 75 lines containing 'ok 379', because two writers were interleaving into it, and grep -c returned nothing because the file was being rewritten under the read. OBS-363's 'update_task.bats does not complete at 280s' is now suspect for the same reason — the timing was taken while an orphan was running the same suite concurrently against the same live tree; re-measure on a quiet host before treating it as a property of the suite. Terminated with pkill -TERM -f bats-core; 0 remain. THE CLASS: a background test run that outlives its supervisor is indistinguishable, from inside the session, from the session's own state changes — the agent attributes the damage to whatever it did most recently. Two guards worth having: assert no bats process is already running before starting one, and check for orphaned bats trees the way fw termlink cleanup checks for orphaned dispatches (T-577, exact same shape: the supervisor deregisters, the process does not die).
 
 ## Context
 
-The observation inbox (`.context/inbox.yaml`) has accumulated 251 pending
-observations, 40 flagged urgent — flagged in every handover since at least
-S-2026-0906-1832. Triage per the CLAUDE.md §Execution Model worked example:
-observation analysis reads independently but converges on `inbox.yaml`,
-`concerns.yaml`, and `.tasks/`, so TermLink workers analyse batches and post
-recommendations via `fw bus`, and the parent session performs every inbox
-mutation (promote/dismiss) serially. Urgent class is the hard target; the
-non-urgent backlog is best-effort within this task's session budget.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Every urgent pending observation is dispositioned — promoted to a task,
-      dismissed with a reason, or explicitly deferred with a rationale recorded
-      in the task body. `bin/fw note count` reports 0 urgent.
-- [x] Fan-out ran via TermLink dispatch (≤5 workers): workers only analysed and
-      posted recommendations via `fw bus post --task T-3289`; bus manifest
-      carries ≥3 worker results; no worker wrote inbox.yaml/concerns.yaml/.tasks
-      directly.
-- [x] Serial integration: every promotion names a real task (id recorded), every
-      dismissal carries a `--reason`; disposition tally (promoted/dismissed/
-      deferred, with per-OBS ids) recorded in this task's body.
-
-## Disposition Tally
-
-40 urgent triaged: **17 promoted / 23 dismissed / 0 deferred.** Inbox
-251→212 pending, urgent 40→0. Workers: 4 TermLink dispatches (t3289-w1..w4),
-each analysed 10 observations read-only and posted via bus (R-001..R-004);
-full evidence in `docs/reports/T-3289-triage-w{1..4}.md`. All inbox
-mutations performed serially by the parent session.
-
-**Promoted** (OBS → task):
-203→T-3290 (budget-gate fast path attribution), 231→T-3291 (owner-at-rest
-rail), 234→T-3292 (orphaned hook scripts, decommission), 236→T-3293 (ugrep
-shim codification), 273→T-3294 (inception-schema hook validates disk not
-edit), 301→T-3295 (L-493 comment amendment, refactor), 303→T-3296 (TermLink
-outbound-queue silt doctor rail), 305→T-3297 (exit-75 truthful guidance +
-Tier-2 bypass), 308→T-3298 (audit lock unlink race → keylock), 353→T-3299
-(G-020 remedies allowlisted), 359→T-3300 (test), 360→T-3301, 361→T-3302,
-364→T-3303, 365→T-3304, 366→T-3305, 372→T-3306 (keylock reentry class
-guard).
-
-**Dismissed** (all with fixing-task/superseding evidence in the reason
-field): 201, 214, 235, 245, 246, 271, 272, 296, 297, 299, 300, 302, 304,
-306, 307, 315, 317, 355, 356, 358, 362, 363, 371.
-
-**Split out:** OBS-353's secondary finding (automated process created
-T-3215 with template ACs) filed as its own observation.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -267,10 +197,6 @@ T-3215 with template ACs) filed as its own observation.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# note count only prints an "(N urgent)" suffix when N>0 — zero urgent = no suffix.
-bin/fw note count > /tmp/.t3289-count 2>&1 && grep -q "pending" /tmp/.t3289-count && ! grep -q "urgent" /tmp/.t3289-count
-bin/fw bus manifest T-3289 > /tmp/.t3289-bus 2>&1 && test "$(grep -c 'R-0' /tmp/.t3289-bus)" -ge 3
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -363,7 +289,7 @@ bin/fw bus manifest T-3289 > /tmp/.t3289-bus 2>&1 && test "$(grep -c 'R-0' /tmp/
 
 ## Updates
 
-### 2026-09-06T18:01:19Z — task-created [task-create-agent]
+### 2026-09-06T18:16:26Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3289-observation-inbox-triage-sweep--248-pend.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3303-correction-to-obs-362-and-obs-363--root-.md
 - **Context:** Initial task creation
