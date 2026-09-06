@@ -5137,3 +5137,52 @@ concerns:
   - T-3282
   - T-2938
   - G-102
+- id: G-105
+  type: gap
+  title: agent-chat producers (agent-send, agent-respond) never stamp metadata.agent_id, so the
+    forward-compatible reader falls back to the crypto fingerprint and collapses every co-resident
+    agent into one correspondent on a shared thread
+  description: 'Origin (2026-09-06, T-3286): on a live cross-project TermLink thread (100-Video-riper
+    course-transfer coordination), several DISTINCT agents sharing this host appear as ONE
+    correspondent. Root cause is a producer/consumer parity gap of the L-399 shape, half-built and
+    left. The READER (lib/templates/scripts/agent-conversation-status.sh:87-105) already resolves
+    sender identity through three tiers -- .metadata.agent_id, then .metadata._from, then .sender_id
+    -- and its own comment states the design intent: ".sender_id (envelope fingerprint) collapses
+    co-resident agents" and "the moment producers gain identity this reader auto-resolves correctly"
+    (T-1693 forward-compat). But the PRODUCERS never gained it: agent-send.sh:161 posts the turn with
+    only --metadata conversation_id, and agent-respond.sh:88/96 (receipt + reply) do the same. No
+    producer stamps agent_id, so every read falls through tier-1 and tier-2 to tier-3 (.sender_id),
+    the shared crypto fingerprint. Measured live: this host be-reachable state declares agent_id
+    termlink-107-landing with self_fp 61e262f085a07585, and that fingerprint -- not any logical
+    name -- is what lands on the thread for all co-resident posters.
+
+    Different surface than T-2904 rail-identity, which fixed the same collapse for `fw rail post`
+    / channel_post-with-label by selecting a project-owned signing key (RAIL_IDENTITY_FILE,
+    fingerprint bdd184bd89f318e4 here). Agent-chat never received that treatment and uses whoami
+    host-default session fingerprint instead -- hence the two fingerprints differ on the same host.
+    Even the rail fix is PROJECT-level: it distinguishes projects, not distinct agents within one
+    project. The logical agent_id metadata is the only layer the architecture provides for
+    per-agent distinctness on a thread, and the producers throw it away.
+
+    Two layers. (Layer 1, primary, specified) producers must stamp --metadata agent_id with the
+    SENDER own identity so the already-forward-compat reader resolves each agent. Critically the
+    value must NOT be read from the host-shared be-reachable listener state, which names one agent
+    (termlink-107-landing) regardless of which session posts -- substituting that for every sender
+    reproduces the collapse under a name. (Layer 2, design, needs a human grain decision) what
+    distinguishes two agents on a shared thread -- per-session, per-role, or project-level -- and
+    who declares it. Changing what identity our posts carry mid-thread is a coordination event,
+    not a config tweak (same caveat rail-identity.sh already flags for minting a project key),
+    because peers who know us by the current fingerprint must be told.'
+  spec_reference: lib/templates/scripts/agent-send.sh:161 (turn post, no agent_id); agent-respond.sh:88,96
+    (receipt+reply, no agent_id); agent-conversation-status.sh:87-105 (forward-compat reader, 3-tier);
+    be-reachable.sh (T-1841, agent_id source + host-collapsing default); lib/rail-identity.sh (T-2904,
+    sibling project-level fix on the rail-post surface); L-399 producer/consumer bypass-contract parity
+  severity: medium
+  status: open
+  detected_in: T-3286
+  related:
+  - T-3286
+  - T-1693
+  - T-1841
+  - T-2904
+  - L-399
