@@ -304,8 +304,59 @@ sees** (continuity; what you stamp so distinct agents read as distinct); **insta
 id = the actor the coordination layer sees** (the discriminator; can conflict; the
 thing that decides who owns a claim). One string for "who is this", one for "which
 live process". T-3286 stamps the first; the circuit/claim layer keys on the second.
-*Operator asked to reflect and agree — not yet ratified; this is the agent's
-proposed split of the operator's composite.*
+*Ratified in concrete form by D3 below — the split is realised as the presence or
+absence of the `session=` token in the V9 grammar.*
+
+**D3 (2026-09-07, RATIFIED) — the address grammar is V9.** After generating and
+scoring nine prefixing variants (catalogue below), the operator locked **V9**:
+a `aef::` scheme prefix, `label=value` binding, `::` as the segment terminator,
+IPv6 literals bracketed, and `@name` as the identity leaf. A space-separated,
+scheme-prefix-free **V4** form is the human-typed alias that resolves to the same
+tuple (two forms, one address — like DNS wire vs zone-file, or URL encoded vs
+display).
+
+```
+canonical (wire):
+  durable:  aef::host=<fqdn>::hub=<H-id>::project=<path>::@<agent>::
+  circuit:  aef::host=<fqdn>::hub=<H-id>::project=<path>::session=<S-id>::@<agent>::
+
+worked example (host107.ring20.lan / H-1 / /opt/999-Agentic-Engineering-Framework / S-8f3c / reviewer):
+  durable:  aef::host=host107.ring20.lan::hub=H-1::project=/opt/999-Agentic-Engineering-Framework::@reviewer::
+  circuit:  aef::host=host107.ring20.lan::hub=H-1::project=/opt/999-Agentic-Engineering-Framework::session=S-8f3c::@reviewer::
+  IPv6:     aef::host=[fe80::1]::hub=H-1::...
+  ladder:   aef::host=host107.ring20.lan::hub=H-1::            (climb = drop rightmost tokens)
+  query:    aef::hub=H-1::@reviewer::                          (self-typing → drop ANY token)
+
+human alias (V4, CLI-typed):
+  host=host107.ring20.lan hub=H-1 project=/opt/999-Agentic-Engineering-Framework session=S-8f3c @reviewer
+
+grammar:
+  address := "aef::" segment* leaf
+  segment := label "=" value "::"     label ∈ {host,hub,project,session}
+  leaf    := "@" agent-name "::"      value opaque; IPv6 bracketed [ … ]
+  correspondent (durable) = address WITHOUT session= ;  circuit id (actor) = WITH session=
+```
+
+Why V9 won, in one line each: **self-typing** (labels are words → no sigil scarcity,
+no `#`=channel collision); **path-safe** (`=`/`::` never clash with the `/` inside a
+project path); **ladder + query for free** (drop tokens; sparse stays unambiguous);
+**wire-safe** (no whitespace dependence); **extractable from free text** (the one
+`aef::` opener lets an address be regex'd out of a chat message — the exact context
+this work came from); **`@name` preserved** (F6 who-vs-where kept, unlike the uniform
+and start-marker variants).
+
+**Rejected variants (evaluated 2026-09-07, kept so the evaluation is not lost):**
+
+| V | Form (durable) | Rejected because |
+|---|----------------|------------------|
+| V1 | `host107.ring20.lan/opt/999-…/@reviewer` (pure path, `@`+`:`) | host↔project boundary invisible — path slashes merge with level separators; no clean hub slot |
+| V2 | `%host107… #H-1 /opt/999-… ~S-8f3c @reviewer` (cryptic sigil per level) | `#`=channel is an everyday collision here; `%`/`~` cryptic, need a legend; throws away hierarchy encoding |
+| V3 | `host::host107… hub::H-1 project::/opt/999-… @reviewer` (`::` binder, space sep) | `::` binder clashes with IPv6; separator left unspecified (space fragile in shell/JSON) |
+| V4 | `host=host107… hub=H-1 project=/opt/999-… @reviewer` (`=` binder, space sep) | best *human* form — KEPT as the alias, not the canonical; space separator not wire-safe |
+| V5 | `host::… hub::H-1 … agent::reviewer` (`::` uniform, agent labeled) | loses F6 who-vs-where — agent demoted from identity leaf to coordinate |
+| V6 | `aef:host107…:H-1:/opt/999-…:reviewer` (ARN-style positional colon) | positional, not self-typing; empty slot = `::` gap, ambiguous |
+| V7 | `host=…::hub=H-1::…::@reviewer::` (`=` bind, `::` terminate) | strong — but no opener, so not extractable from free text; V9 = V7 + the `aef::` prefix |
+| V8 | `@@host=…::@@hub=H-1::…::@@agent=reviewer::` (`@@` start per segment) | `::@@` double-marks every boundary (redundant); `@@` collides with the `@name` leaf, forcing uniform |
 
 **F6 (2026-09-07, verification finding — challenges operator's slash claim).**
 Operator claimed "all LLM harnesses use `/` for agents (Codex, OpenCode,
@@ -480,10 +531,30 @@ proceed with T-3286's *mechanism* (carry whatever id resolves), defer its
   separator), `@` (identity), `:` (session) each mean one thing. Awaiting operator
   decision.
 
-**Next in dialogue:** operator to (a) decide the agent leaf notation — `@name` per
-F6, or deliberate divergence; and (b) rule D1-open (profile-switch liveness). Then
-the still-open queue, one at a time: the **availability-vs-memory** state fork
-(where circuit/relationship memory lives — likely the passive project, per D2);
-Q-B completion; hub 1:1-with-host or not; auto-provision authority line (F4
-sovereignty gate); and the AEF-vs-termlink mutex enforcement for two instances
-sharing one @name (round-5 standing challenge).
+**2026-09-07 — round 7 (address-grammar bake-off → D3 locked).**
+
+- *Agent challenged* the operator's first notation instinct: F6 said `@` is for
+  agent *identity*, `/` for commands/paths — so `/agent-name` overloads slash.
+- *Operator iterated the grammar across several variants*, each time sharpening:
+  distinct-sigil-per-level → labeled `::` → labeled `=` → `=` with `::`
+  terminators (V7) → `@@` start-marker per segment (V8). *Agent grilled each*:
+  sigil scarcity + `#`=channel collision (killed V2); IPv6 clash on the `::` binder
+  (V3) and relocated-not-removed on the `::` terminator (V7); `@@` redundantly
+  double-marks boundaries AND collides with the `@name` leaf (V8).
+- *Agent's synthesis:* a start marker is worth it for ONE reason — addresses ride
+  inside chat messages, so being able to regex an address out of free text is a
+  real benefit here — but per-segment `@@` is the expensive way; **one `aef::`
+  scheme prefix** buys the same extractability without the redundancy or the `@`
+  collision. That is **V9**.
+- *Operator ruled (D3):* lock V9 as canonical, V4 as the human alias, record V1–V8
+  as rejected. Asked to see V9 rendered fully once before the lock (done in chat +
+  the D3 block above) and confirmed the earlier variants were chat-only and needed
+  writing into the artifact (this round does that).
+
+**Next in dialogue:** with the grammar locked, the still-open queue, one at a time:
+(a) D1-open — does a profile switch kill the level-5 agent-instance + its circuit?
+(b) the **availability-vs-memory** state fork — where circuit/relationship memory
+lives (likely the passive project, per D2); (c) Q-B completion ("termlink or
+termlink"); (d) hub 1:1-with-host or not; (e) auto-provision authority line (F4
+sovereignty gate); (f) AEF-vs-termlink mutex when two instances share one `@name`
+(round-5 standing challenge).
