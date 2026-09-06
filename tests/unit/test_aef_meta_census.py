@@ -45,27 +45,34 @@ import corpus_spec  # noqa: E402
 # ── 1. measurement reproduces the T-2870 report ──────────────────────────────
 
 def test_measurement_reproduces_T2870():
+    # Re-eyeballed 2026-09-06 (OBS-377 close-out sweep): corpus grew 56->74
+    # files since the August T-2870 measurement — benign designer growth, all
+    # of it on the NON-frozen side (frozen_attributes static at 53), so the
+    # exposure the task measured deepened from 92% to 94%. Two new non-frozen
+    # keys appeared: gatewayKind, seamPending.
     c = census_mod.census(REPO_ROOT)
-    assert c["files"] == 56
-    assert c["diagrams_with_meta"] == 45
-    assert c["elements"] == 501
-    assert c["attributes"] == 652
+    assert c["files"] == 74
+    assert c["diagrams_with_meta"] == 57
+    assert c["elements"] == 651
+    assert c["attributes"] == 901
     assert c["frozen_attributes"] == 53
-    assert c["non_frozen_attributes"] == 599
+    assert c["non_frozen_attributes"] == 848
 
     expected_key_counts = {
-        "note": 393,
-        "state": 102,
-        "terminalKind": 74,
+        "note": 535,
+        "state": 138,
+        "terminalKind": 97,
         "tier": 34,
-        "triggeredBy": 18,
+        "triggeredBy": 25,
+        "gatewayKind": 20,
+        "decisionOwner": 21,
         "workflowType": 10,
         "agentType": 8,
-        "decisionOwner": 6,
+        "gate": 6,
         "softFail": 2,
         "guard": 2,
         "horizon": 1,
-        "gate": 1,
+        "seamPending": 1,
         "exitCode": 1,
     }
     assert c["key_counts"] == expected_key_counts
@@ -80,7 +87,7 @@ def test_state_is_the_load_bearing_exposure():
     Every other non-frozen key (note, terminalKind, ...) is either display-only
     or has no live consumer at all."""
     c = census_mod.census(REPO_ROOT)
-    assert c["key_counts"]["state"] == 102
+    assert c["key_counts"]["state"] == 138  # re-eyeballed 2026-09-06, was 102
     assert "state" not in census_mod.FROZEN_KEYS
     assert "state" in census_mod.DEPENDED_ON_KEYS
     assert census_mod.DEPENDED_ON_KEYS["state"]["frozen"] is False
