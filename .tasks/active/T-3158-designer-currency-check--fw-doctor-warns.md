@@ -99,14 +99,14 @@ T-3147 coverage control — a fixture that cannot go red measured nothing.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The check resolves the newest `designer-v*` tag at `source_origin:` by **version tuple**, never string compare, and warns when it is ahead of `version:` in `policy/designer-pin.yaml`
-- [ ] **Advisory only** — WARNs and exits 0. It must not be able to fail a gate: an advisory that can block gets disabled the first time it is inconvenient, and then it protects nothing (001-CashWeb's rationale, adopted verbatim)
-- [ ] Wired into `bin/fw doctor` as a WARN line, and reachable standalone
-- [ ] **Control leg 1 — the discriminator:** with the pin forced to the newest published tag, the check produces **NO** warning. An always-warn bug passes "warns on a stale pin" identically to a correct check, so leg 2 alone proves nothing
-- [ ] Control leg 2: pin forced to an older tag → check warns
-- [ ] Control leg 3: origin unreachable → **SKIP with its own distinct line**, never crash and never silent-OK ("could-not-look gets its own failure line, never an absence of complaint" — 001-CashWeb offset 193, adopted by 832 in their T-574)
-- [ ] Control leg 4: asserts explicitly that version-max (`0.11.0`) != lexical-max (`0.9.0`), so the PL-021 trap re-fires if anyone ever "simplifies" the comparison back to strings
-- [ ] Provenance recorded: if 001-CashWeb's `scripts/check-designer-currency.py` is handed over, it is adopted with attribution rather than reimplemented (they offered it twice on the rail)
+- [x] The check resolves the newest `designer-v*` tag at `source_origin:` by **version tuple**, never string compare, and warns when it is ahead of `version:` in `policy/designer-pin.yaml`
+- [x] **Advisory only** — WARNs and exits 0. It must not be able to fail a gate: an advisory that can block gets disabled the first time it is inconvenient, and then it protects nothing (001-CashWeb's rationale, adopted verbatim)
+- [x] Wired into `bin/fw doctor` as a WARN line, and reachable standalone
+- [x] **Control leg 1 — the discriminator:** with the pin forced to the newest published tag, the check produces **NO** warning. An always-warn bug passes "warns on a stale pin" identically to a correct check, so leg 2 alone proves nothing
+- [x] Control leg 2: pin forced to an older tag → check warns
+- [x] Control leg 3: origin unreachable → **SKIP with its own distinct line**, never crash and never silent-OK ("could-not-look gets its own failure line, never an absence of complaint" — 001-CashWeb offset 193, adopted by 832 in their T-574)
+- [x] Control leg 4: asserts explicitly that version-max (`0.11.0`) != lexical-max (`0.9.0`), so the PL-021 trap re-fires if anyone ever "simplifies" the comparison back to strings
+- [x] Provenance recorded: if 001-CashWeb's `scripts/check-designer-currency.py` is handed over, it is adopted with attribution rather than reimplemented (they offered it twice on the rail)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,6 +140,9 @@ T-3147 coverage control — a fixture that cannot go red measured nothing.
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t3158_designer_currency_check.bats > /tmp/.t3158-bats 2>&1 && ! grep -q "^not ok" /tmp/.t3158-bats
+test "$(grep -c '# skip' /tmp/.t3158-bats)" -eq 0
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
