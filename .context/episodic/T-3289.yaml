@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3289: Observation inbox triage sweep — 248 pending / 40 urgent, TermLink fan-out analysis, serial integration
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-06T18:18:56Z
+# ============================================================================
+
+task_id: T-3289
+task_name: "Observation inbox triage sweep — 248 pending / 40 urgent, TermLink fan-out analysis, serial integration"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-06T18:01:19Z
+completed: 2026-09-06T18:18:41Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-06T20:04:28+02:00
+last_commit: 2026-09-06T20:18:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  open triage sweep — ACs set, 4 TermLink workers dispatched on the 40 urgent. 40 urgent observations triaged — 17 promoted (T-3290..T-3306), 23 dismissed with evidence
+
+# Key outcomes
+outcomes:
+  - 'Every urgent pending observation is dispositioned — promoted to a task,'
+  - 'Fan-out ran via TermLink dispatch (≤5 workers): workers only analysed and'
+  - 'Serial integration: every promotion names a real task (id recorded), every'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - 'docs/reports/T-3289-triage-w1.md'
+  - 'docs/reports/T-3289-triage-w2.md'
+  - 'docs/reports/T-3289-triage-w3.md'
+  - 'docs/reports/T-3289-triage-w4.md'
+  - '.tasks/active/T-3289-observation-inbox-triage-sweep--248-pend.md'
+  - '.tasks/active/T-3290---text-verified-was-suspicion-wrong-mech.md'
+  - '.tasks/active/T-3291---text-answer-to-832-d-owner-vocabulary-.md'
+  - '.tasks/active/T-3292---text-4-hook-shaped-scripts-in-agentsco.md'
+  - '.tasks/active/T-3293---text-agent-side-grep-is-a-claude-code-.md'
+  - '.tasks/active/T-3294-gate-catch-22-under-agent-control-t-2188.md'
+  - '.tasks/active/T-3295-the-l-493--t-100190--t-100191-atomic-wri.md'
+  - '.tasks/active/T-3296-root-cause-of-all-peer-message-loss-term.md'
+  - '.tasks/active/T-3297-pre-push-audit-gate-can-deadlock-against.md'
+  - '.tasks/active/T-3298-auditsh-unlinks-the-flockd-lock-file-in-.md'
+  - '.tasks/active/T-3299-g-020-scope-gate-blocks-both-escape-rout.md'
+  - '.tasks/active/T-3300-testsunitaccountersedrangeonelinecomment.md'
+  - '.tasks/active/T-3301-testsunitinceptiondecideemitreviewpostmo.md'
+  - '.tasks/active/T-3302-structural-nothing-runs-testsunit-on-a-s.md'
+  - '.tasks/active/T-3303-correction-to-obs-362-and-obs-363--root-.md'
+  - '.tasks/active/T-3304-obs-363-re-measured-on-a-quiet-host-all-.md'
+  - '.tasks/active/T-3305-t-3179s-partial-complete-commit-allowanc.md'
+  - '.tasks/active/T-3306-close-gate-self-reentry-deadlock-fw-task.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-06T20:04:28'
+    action: 'T-3289: open triage sweep — ACs set, 4 TermLink workers dispatched on the 40 urgent'
+  - time: '2026-09-06T20:18:09'
+    action: 'T-3289: 40 urgent observations triaged — 17 promoted (T-3290..T-3306), 23 dismissed with evidence'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 17
+  commits: 2
+  files_changed: 23
+  lines_added: 6273
+  lines_removed: 65
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3289-observation-inbox-triage-sweep--248-pend.md
+generated_by: context-agent-hybrid

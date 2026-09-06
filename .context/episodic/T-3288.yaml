@@ -74,10 +74,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 6
-  commits: 1
-  files_changed: 7
-  lines_added: 557
-  lines_removed: 44
+  commits: 2
+  files_changed: 20
+  lines_added: 796
+  lines_removed: 115
+  footprint_refreshed_at: '2026-09-06T18:00:38Z'
+  footprint_refreshed_by_commit: 3729a1a53
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3288-p-013-render-review-gate-blind-to-suffix.md
