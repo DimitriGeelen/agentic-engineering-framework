@@ -378,6 +378,44 @@ as V9-canonical vs V4-alias. Our own project (`/opt/999-Agentic-Engineering-Fram
 | V7 | `host=…::hub=H-1::…::@reviewer::` (`=` bind, `::` terminate) | strong — but no opener, so not extractable from free text; V9 = V7 + the `aef::` prefix |
 | V8 | `@@host=…::@@hub=H-1::…::@@agent=reviewer::` (`@@` start per segment) | `::@@` double-marks every boundary (redundant); `@@` collides with the `@name` leaf, forcing uniform |
 
+**D4 (2026-09-07, RATIFIED) — circuit lifecycle is THREE-state; memory is
+project-durable.** The reconnect model is not binary (live / dead-then-ladder).
+A retained circuit id is kept in memory as a cache and stays valid across a profile
+switch — invalidation requires *positive proof of death*, never a timeout-guess.
+
+Three states:
+1. **Live** — profile is current, circuit fully active.
+2. **Dormant** — session alive, `@name` not the current profile but re-instatable.
+   The retained circuit id is a **fast reactivation key**: reactivate the profile in
+   the already-known session, skipping discovery. **Bounded by the session's profile
+   registry (B):** rung 2 applies iff session-alive AND session-has-that-profile.
+3. **Dead** — proven only by a **resolve-walk DOWN the retained address (A)** —
+   host→hub→project→"is `session=S` alive?" — that fails to find the session (or the
+   session lacks the profile). *Then* climb the ladder → a NEW circuit under the
+   durable name. The address's own structure is the death test; the ladder is both
+   recovery path and death oracle.
+
+**Memory ruling (C).** On reactivation the agent resumes from **its OWN latest saved
+state** — **agent-owned** (the session decides what it presents, not the requester),
+and possibly **grown** since the switch (it may have had contact with others → new
+learnings). Not fresh, not a frozen replay of the requester's last exchange. The
+requester reconnects to the identity *as it now is*.
+
+Consequences:
+- **Antifragility (Directive 1):** an identity that returns from dormancy *richer*
+  is the system strengthening under use. A frozen-snapshot resume would have been the
+  *fragile* choice — it discards what the agent learned while away.
+- **Sovereignty (Authority Model):** the requester holds *initiative* to reach
+  `@name`, never *authority* over `@name`'s memory. The agent is sovereign curator —
+  it may surface or withhold (a confidential contact with a third party need not be
+  presented).
+- **Reconciles D1 + D2:** the actor is transient (D1); the memory is project-durable
+  (D2). See the closed fork below.
+- **Downstream (flagged, not solved):** two instances sharing one `@name` draw on and
+  write the *same* project fabric — a consistency benefit and a write-conflict/mutex
+  hazard. It is owned by the AEF layer precisely because the AEF layer owns the shared
+  memory (sharpens the round-5 "conflicts belong at the AEF level" ruling).
+
 **F6 (2026-09-07, verification finding — challenges operator's slash claim).**
 Operator claimed "all LLM harnesses use `/` for agents (Codex, OpenCode,
 Antigravity, Anthropic)" and asked to be challenged if wrong. Verified via web
@@ -407,17 +445,27 @@ opencode.ai/docs/commands · developers.openai.com/codex/guides/slash-commands �
 antigravity.google/docs/slash-commands. *Awaiting operator decision: align to `@`
 for the leaf, or deliberately diverge (Antigravity-style slash-for-workflow).*
 
-**Open — availability vs memory antifragility (surfaced round 5, unresolved).**
-D1's ladder guarantees *availability*: the re-provisioned instance wears the same
-durable name, so the correspondent is always reachable. But a re-provisioned
-instance has **amnesia** — durable NAME ≠ durable STATE. The ladder yields "a
-working equivalent, not the same B" (D1), and that equivalent does not remember
-the prior circuit's conversation, decisions, or relationship. **Where does
-circuit/relationship state live?** Options, unresolved: (a) nowhere — every
-re-establishment is a fresh relationship (pure availability, no memory); (b) in the
-project (passive, path-bound — survives instance death, the natural home given D2);
-(c) in a durable per-correspondent store keyed by durable name. This is the next
-real fork after the slash decision.
+**CLOSED (2026-09-07, by D4/C) — availability vs memory antifragility.** The fork
+was "where does circuit/relationship state live, given a re-provisioned instance has
+amnesia?" **Resolved: memory lives at LEVEL 3 — the passive, path-bound project
+(D2), not in the transient session.** Option (b) of the original three.
+
+The apparent amnesia was a false premise: it assumed state lived *in the session*,
+so a new session was a blank one. It does not — state is written to the project's
+context fabric (Working / Project / Episodic memory), which the durable name carries
+as `project=<path>` precisely so a reconnection re-resolves into the right memory.
+Therefore BOTH reconnect paths come up carrying accumulated state:
+- **Dormant reactivate (rung 2):** same session, same instance, memory continuous.
+- **Dead → ladder → new instance (rung 3):** old session's RAM is gone, but the
+  project fabric is not — the fresh `@name`-instance in project P reads P's fabric
+  and comes up carrying it. This is why "a working equivalent, not the same B" (D1)
+  still inherits the durable memory: the durable thing was always the *project*, not
+  the actor.
+
+Durable NAME ≠ durable STATE is true but not a problem: state is durable *at a
+different level than the actor*. The reconnection restores the address (cheap) and
+lands the caller back in a memory that is durable and **living** — it may have grown
+since (D4/C). That growth is antifragile, not a defect (Directive 1).
 
 ## Relationship to T-3286 (the narrow fix)
 
@@ -587,10 +635,31 @@ proceed with T-3286's *mechanism* (carry whatever id resolves), defer its
   **D3 RATIFIED** with the display-elision sub-rule. This is the operator's explicit
   go the earlier premature commit lacked.
 
-**Next in dialogue:** with the grammar locked, the still-open queue, one at a time:
-(a) D1-open — does a profile switch kill the level-5 agent-instance + its circuit?
-(b) the **availability-vs-memory** state fork — where circuit/relationship memory
-lives (likely the passive project, per D2); (c) Q-B completion ("termlink or
-termlink"); (d) hub 1:1-with-host or not; (e) auto-provision authority line (F4
-sovereignty gate); (f) AEF-vs-termlink mutex when two instances share one `@name`
-(round-5 standing challenge).
+**2026-09-07 — round 9 (profile-switch liveness → D4; availability-vs-memory fork CLOSED).**
+
+- *Agent posed D1-open as a binary:* profile switch = circuit death (keeps D1) vs
+  switch ≠ death (collapses L5 into L4). *Operator rejected the binary* — the circuit
+  is **kept in memory until proven dead**; a switch makes it *dormant*, not dead, and
+  the retained circuit id is a fast reactivation key (cheaper than re-running
+  discovery). This is the missing middle rung → **D4** (three-state lifecycle).
+- *Operator confirmed A* (death is proven by a resolve-walk down the address, not a
+  timeout) and *B* (dormant-reactivate is bounded by the session's profile registry).
+- *On C (memory),* operator ruled: reactivation resumes the agent's **own latest
+  saved state** — agent-owned, "the session decides, not the requester", and possibly
+  **grown** from contact with others in the interval. Asked the agent to reflect
+  against framework philosophy/structure.
+- *Agent reflected:* the ruling **closes the availability-vs-memory fork** — memory
+  lives at level 3 (passive project, D2), so both dormant-reactivate and dead-replace
+  come up carrying the project fabric; "amnesia" was a false premise that assumed
+  state lived in the session. Connected to Antifragility (return-richer = strengthen
+  under use), Sovereignty (requester has initiative not authority over `@name`'s
+  memory; agent is sovereign curator), and the existing three-tier memory
+  (Working/Project/Episodic). Flagged the shared-`@name` → shared-fabric write-conflict
+  as the downstream mutex question (AEF-owned because AEF owns the shared memory).
+- *Operator ruled:* write in D4 + close the fork. Done (D4 RATIFIED; fork CLOSED).
+
+**Next in dialogue:** the still-open queue, one at a time: (c) Q-B completion
+("termlink or termlink"); (d) hub 1:1-with-host or not (if 1:1, levels 1–2 collapse
+to a compound root); (e) auto-provision authority line (F4 sovereignty gate — where
+is the highest level an agent may provision without a human?); (f) AEF-vs-termlink
+mutex when two instances share one `@name` (round-5 + D4-downstream).
