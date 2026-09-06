@@ -196,7 +196,7 @@ These are agent-proposed refinements from reflecting on the model, NOT yet
 operator-ratified decisions. Marked so a later reader can tell proposal from
 ratification.
 
-**F1 — Level 5 (agent) is a PREDICATE over level 4, not an address.** An agent is
+**F1 — [OVERRIDDEN by D1, 2026-09-06] Level 5 (agent) is a PREDICATE over level 4, not an address.** An agent is
 a profile a session *wears*, and profiles switch within a session, so an agent has
 no independent existence to open a circuit to. The real endpoint is always the
 **session** (level 4, the stated minimum runnable unit). "Reach agent X" is not an
@@ -205,7 +205,7 @@ profile X." Two agents may be worn by one session over time; one profile may be
 worn by two sessions at once. So level-5 addressing is a filter over level-4
 endpoints, not a level of its own in the routing sense.
 
-**F2 — Circuit pins to level 4; the role label rides on each message (level 5).**
+**F2 — [OVERRIDDEN by D1, 2026-09-06] Circuit pins to level 4; the role label rides on each message (level 5).**
 Falls out of F1 and cleanly dissolves the profile-switching tension (open question
 #6): the circuit survives profile switches because the session is stable; the
 current role is carried per-message as a label. This ties back to T-3286: the fix
@@ -237,6 +237,33 @@ first-claim wins the mutex; the rest back off. Best-fit (capability bid + a shor
 auction window, parent picks) is a v2 option. First-claim is the likely v1 and is
 the exact mechanism that decides which AEF session owns the Video-riper transfer
 circuit instead of all-or-none answering.
+
+## Ratified decisions
+
+**D1 (2026-09-06) — Identity is INSTANCE-identity, not role-identity.** Operator
+ruling. A circuit is a specific established channel down to a specific
+agent-instance (level 5). The circuit ID is **transient** — it dies with the
+circuit; only the caller's retained reference to it persists, used to *attempt*
+the fast-path re-establishment. Reconnect is optimistic-then-degrading: try the
+circuit ID; if the endpoint is gone, climb the ladder (5→4→3→2→1) until an
+ancestor can re-provision, then establish a NEW circuit with a NEW id. The ladder
+does NOT preserve identity — it yields a working equivalent, not "the same B".
+
+Consequences:
+- Overrides F1/F2. Level 5 is a FIRST-CLASS endpoint with its own liveness, not a
+  predicate over level 4 — the tell is that the operator lists "agent gone" and
+  "session gone" as INDEPENDENT failure levels.
+- Settles the origin bug unconditionally: under instance-identity two distinct
+  agent-instances must NEVER collapse to one correspondent, so T-3286 (always
+  separate them) is correct in all cases. Role-identity would have made the
+  collapse sometimes-correct; it was ruled out.
+
+**D1-open (grill in flight) — profile-switch liveness.** For D1 to be internally
+consistent, a profile switch within a live session must KILL the level-5
+agent-instance and its circuit (agent-instance = (session, current-profile-epoch),
+independently mortal). If a switch does NOT kill the circuit, agent-liveness is
+not independent of session-liveness and level 5 collapses into level 4,
+contradicting D1. Awaiting operator ruling.
 
 ## Relationship to T-3286 (the narrow fix)
 
@@ -301,6 +328,24 @@ proceed with T-3286's *mechanism* (carry whatever id resolves), defer its
   Log); this round-2 update brings the file current with the chat, which was one
   exchange ahead.
 
-**Next in dialogue:** operator to answer the three questions above + the
-circuit-follows-session-vs-profile reaction; then the taxonomy + F1–F5 can move
-from proposed to ratified, and the design can name concrete slices.
+**2026-09-06 — round 3 (operator rules the instance-vs-role fork).**
+
+- *Agent grilled* the tension between "reconnect to the same circuit ID" (sounds
+  instance) and "climb the ladder to re-provision agent X" (sounds role), forcing
+  a single ruling via two concrete scenarios (profile switch; S1 dies, S2 rises).
+- *Operator ruled (D1):* instance-identity. Circuit = channel to a specific
+  agent-instance at level 5; circuit ID transient (caller-retained handle, not a
+  persistent address); reconnect = optimistic fast-path, else climb the ladder and
+  establish a NEW circuit. The ladder yields a working equivalent, not the same B.
+- *Agent retracted F1/F2* (its own proposals) as overridden by D1, and delivered
+  the payoff it had promised: D1 makes T-3286 correct unconditionally (distinct
+  instances must never collapse).
+- *Agent's follow-up grill (D1-open):* does a profile switch kill the level-5
+  agent-instance? D1 is only consistent if yes (agent-instance =
+  (session, profile-epoch), independently mortal). Awaiting ruling.
+
+**Next in dialogue:** operator to rule D1-open (profile-switch liveness). Then the
+still-open queue, one at a time: Q-B completion; hub 1:1-with-host or not;
+auto-provision authority line (F4 sovereignty gate); and — surfaced by D1 — is
+there ANY durable name for a role/slot, or is every connection instance-fresh with
+a full re-election each time (the "no address book" question).
