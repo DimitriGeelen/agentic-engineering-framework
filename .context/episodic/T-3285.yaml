@@ -75,10 +75,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 85
-  commits: 2
-  files_changed: 6
-  lines_added: 300
-  lines_removed: 14
+  commits: 4
+  files_changed: 14
+  lines_added: 444
+  lines_removed: 26
+  footprint_refreshed_at: '2026-09-05T19:46:36Z'
+  footprint_refreshed_by_commit: 4829719d2
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3285-nested-fw-inherits-outer-projectroot-acr.md

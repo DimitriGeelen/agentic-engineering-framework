@@ -144,10 +144,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 5568
-  commits: 16
-  files_changed: 43
-  lines_added: 7619
-  lines_removed: 4496
+  commits: 17
+  files_changed: 52
+  lines_added: 8417
+  lines_removed: 7624
+  footprint_refreshed_at: '2026-09-05T18:23:31Z'
+  footprint_refreshed_by_commit: 542a33373
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3250-arc-012-e10---press-the-brake-prove-the-.md

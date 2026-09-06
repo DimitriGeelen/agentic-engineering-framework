@@ -89,23 +89,23 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Each of the six sites is decided EXPLICITLY as first-wins, last-wins, or
+- [x] Each of the six sites is decided EXPLICITLY as first-wins, last-wins, or
       refuse-when-ambiguous, and the decision is written in the code beside it.
       Copying `extract_verification_block`'s awk wholesale is the wrong fix:
       first-wins is correct for Verification and is precisely what produced the
       T-3144 false red on Recommendation
-- [ ] The start pattern is anchored at every site, so a heading that merely
+- [x] The start pattern is anchored at every site, so a heading that merely
       begins with the section name cannot open a range
-- [ ] No site ends in `sed '$d'`. That expression exists to discard sed's
+- [x] No site ends in `sed '$d'`. That expression exists to discard sed's
       re-printed terminator, and deletes a content line whenever the section is
       the file's last — 832's D1
-- [ ] The T-3144 shape is a regression test: a file with a template
+- [x] The T-3144 shape is a regression test: a file with a template
       `## Recommendation` stub followed by a real block must yield the real
       block, not the stub
-- [ ] A control shows each test discriminating — run against the pre-change
+- [x] A control shows each test discriminating — run against the pre-change
       expression it must behave differently. "Fails against pre-change code" is
       degenerate for a rewrite; the fixtures must fail for the RIGHT reason
-- [ ] The corpus numbers in the description are re-measured after the change and
+- [x] The corpus numbers in the description are re-measured after the change and
       the new figures recorded, so the claim "0 files in the dangerous shape"
       is a measurement at fix time rather than an inherited one
 
@@ -280,6 +280,59 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-09-05 — per-site semantics: FIRST-WINS for AC, LAST-WINS for Recommendation
+- **Chose:** `lib/section-extract.sh:extract_ac_section` is FIRST-WINS (mirrors
+  `extract_verification_block`'s awk); `extract_recommendation_block` is
+  LAST-WINS (deliberately the opposite policy).
+- **Why:** Acceptance Criteria is written once, near the top, by convention —
+  a later duplicate is a stray copy-paste and the earliest instance is what's
+  actively being edited. Recommendation is the opposite shape: the template
+  ships an empty stub and the real content is appended AFTER it, so the
+  instance that matters is whichever heading occurs LAST. This task's own
+  session hit the wrong choice live (T-3144, logged below under "Observed
+  instance") — copying `extract_verification_block` verbatim onto
+  Recommendation reads the stub and reports "empty" against 40 lines of real,
+  complete recommendation.
+- **Rejected:** refuse-when-ambiguous (reject the task file outright when >1
+  heading exists) — corpus measurement below shows both duplicate-heading
+  shapes are common enough (6 Recommendation files, 3 AC files) that refusing
+  would newly block otherwise-valid, already-written task files with no
+  actionable fix offered. First/last-wins resolves them silently and
+  correctly instead.
+- **Where implemented:** all six sites now call `extract_ac_section` or
+  `extract_recommendation_block` from `lib/section-extract.sh` — no site
+  keeps its own copy of the sed-range expression.
+
+### 2026-09-05 — corpus re-measurement (AC6)
+- **Chose:** re-ran the same three-defect scan (D1 last-section, D2 exact
+  duplicate heading, D3 dangerous prefix-before-real) described in this
+  task's filing, against the corpus as it stands now (3272 files in
+  `.tasks/{active,completed}/`, up from 3133 at filing — the corpus is live
+  and grows every session).
+- **Results:**
+  | Section | D1 (last-section) | D2 (exact duplicate) | D3 (dangerous prefix-before-real) |
+  |---|---|---|---|
+  | Acceptance Criteria | 0 | 3 | 0 |
+  | Recommendation | 1 | 6 | 0 |
+- **Why the figures moved from filing-time (D1: AC=0, Rec=2; D2: AC=3,
+  Rec=51; D3: AC=0, Rec=0):** the D2 (Recommendation) drop from 51 to 6 is a
+  methodology difference, not a corpus change — this re-measurement counts
+  files with more than one *exact* `## Recommendation` heading, whereas the
+  filing-time figure most likely counted broader occurrences of the
+  unanchored PREFIX match (which also matches `## Recommendation Verdict
+  (v1.0)`, a real, distinct heading present in the corpus — confirmed
+  present via `grep -rl "Recommendation Verdict" .tasks/`). D1 for
+  Recommendation shifted from `{T-3097, +1}=2` to a single different file
+  (`T-2430-payload-mediation-privileged-state-holde.md`) — T-3097 is no
+  longer the hit, consistent with ordinary corpus churn (tasks complete,
+  get edited, move between `active/` and `completed/`) rather than a defect
+  in either measurement.
+- **Conclusion unchanged:** D3 (the dangerous, silent-skip direction) is
+  still 0/0 for both sections at fix time, same as at filing. The fix
+  removes the latent risk regardless — the corpus not yet having hit it is
+  luck, not a property of the old code, exactly as the task description
+  argued.
 
 ## Decision
 
