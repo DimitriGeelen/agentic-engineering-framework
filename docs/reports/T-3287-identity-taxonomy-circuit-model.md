@@ -190,6 +190,54 @@ composes them into "resolve `H.Hub.P.S.A`, and on miss climb to the parent."
 
 ---
 
+## Reflection findings — round 2 (2026-09-06)
+
+These are agent-proposed refinements from reflecting on the model, NOT yet
+operator-ratified decisions. Marked so a later reader can tell proposal from
+ratification.
+
+**F1 — Level 5 (agent) is a PREDICATE over level 4, not an address.** An agent is
+a profile a session *wears*, and profiles switch within a session, so an agent has
+no independent existence to open a circuit to. The real endpoint is always the
+**session** (level 4, the stated minimum runnable unit). "Reach agent X" is not an
+address lookup — it is a *query*: "route me to a session currently presenting
+profile X." Two agents may be worn by one session over time; one profile may be
+worn by two sessions at once. So level-5 addressing is a filter over level-4
+endpoints, not a level of its own in the routing sense.
+
+**F2 — Circuit pins to level 4; the role label rides on each message (level 5).**
+Falls out of F1 and cleanly dissolves the profile-switching tension (open question
+#6): the circuit survives profile switches because the session is stable; the
+current role is carried per-message as a label. This ties back to T-3286: the fix
+should stamp BOTH a stable session/circuit id AND the current agent/role label —
+the router uses the session, the thread transcript *shows* the role. Distinct
+agents read as distinct even when the underlying circuit is one session.
+
+**F3 — Circuit ID is DNS-shaped, not IP-shaped.** The circuit ID should name the
+*logical* endpoint (project + role) and re-resolve to the current concrete
+session on reconnect — like a hostname resolving to a changing IP. This is what
+makes the ladder work: reconnection does not require the old session to still
+exist; it re-resolves the stable name to whatever session satisfies it now.
+`conversation_id` today is per-conversation, not this stable per-endpoint handle —
+gap.
+
+**F4 — Split the ladder into RESOLVE vs PROVISION with a sovereignty gate.** The
+ladder as stated merges discovery ("find existing B") and provisioning ("ask a
+parent to create B") into one walk, and auto-provisions up to "host, stand up a
+hub" — which a typo'd address would also trigger. Proposed split:
+- **Resolve** (climb to find what exists): cheap, side-effect-free, always allowed.
+- **Provision** (materialise a missing child): consequential, authorized, rate-
+  gated; above some level it needs a human or a standing policy (Authority Model —
+  agents hold initiative, not authority to commit infrastructure). WHERE the gate
+  sits (session? project? hub?) is an operator decision, open.
+
+**F5 — Reuse `channel claim` for Q-A election, do not invent one.** v1 pattern:
+broadcast the request to the level-N topic; candidates race to `claim` it;
+first-claim wins the mutex; the rest back off. Best-fit (capability bid + a short
+auction window, parent picks) is a v2 option. First-claim is the likely v1 and is
+the exact mechanism that decides which AEF session owns the Video-riper transfer
+circuit instead of all-or-none answering.
+
 ## Relationship to T-3286 (the narrow fix)
 
 T-3286 (producers stamp `agent_id`) is the **level-5 leaf** of this taxonomy
@@ -228,6 +276,31 @@ proceed with T-3286's *mechanism* (carry whatever id resolves), defer its
   provisioning merge as the key tension; flagged identity-label vs authenticated-
   identity as an unresolved fork with large build implications.
 
-**Next in dialogue:** operator to (a) confirm/replace the taxonomy as stated,
-(b) complete Q-B, (c) weigh in on the discovery/provisioning boundary and whether
-`agent_id` is a label or an authenticated key.
+**2026-09-06 — round 2 (agent reflection + questions back).**
+
+- *Agent proposed F1–F5* (see Reflection findings above): the load-bearing one is
+  F1/F2 — level 5 is a predicate over level 4, so circuit=session and
+  role=per-message label. Named the model as actor-path + OTP-supervision +
+  connection-oriented-over-pubsub, i.e. borrow proven mechanics.
+- *Agent flagged the discovery/provisioning merge* as the tension to resolve first
+  (F4), framed as a sovereignty gate.
+- *Agent's three questions back to operator:*
+  1. Complete Q-B ("termlink or termlink").
+  2. Is a hub 1:1 with a host, or can a host run several? (If 1:1, levels 1–2
+     collapse to a compound root and the taxonomy is effectively 4 levels.)
+  3. Where is the highest level an agent may auto-provision without a human?
+     (Agent instinct: resolve freely everywhere; auto-provision sessions under
+     policy; require authority for hubs/projects.)
+- *Agent's open reaction:* does "circuit = session, label = role" (F2) match
+  operator intent, or is a circuit meant to follow an *agent profile across
+  sessions* — a stickier identity than the session it currently runs in? That one
+  choice ripples through the whole design.
+
+- *Operator asked* whether we should be capturing this so the dialogue/decisions
+  are not lost. → Confirmed already captured here (T-3287 artifact + Dialogue
+  Log); this round-2 update brings the file current with the chat, which was one
+  exchange ahead.
+
+**Next in dialogue:** operator to answer the three questions above + the
+circuit-follows-session-vs-profile reaction; then the taxonomy + F1–F5 can move
+from proposed to ratified, and the design can name concrete slices.
