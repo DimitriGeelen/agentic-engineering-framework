@@ -105,6 +105,38 @@ timeout error rather than an unbounded hang.
       (nested update on a DIFFERENT task during close is the fixture pattern
       it now uses) and t3288_human_heading_suffix.bats.
 
+## Session-End State (2026-09-06, budget cap — UNCOMMITTED work in tree)
+
+Implementation is DONE and 5/6 tests green; wrap-up gate fired before the
+last one-line fix. **All three source edits live UNCOMMITTED in the working
+tree** (`agents/task-create/update-task.sh`): (1) reentry refusal after the
+task-not-found check, (2) `export FW_TASK_UPDATE_IN_CLOSE="$TASK_ID"` around
+`run_verification_commands`, (3) `keylock_acquire "$TASK_ID" 120` bounded
+form with loud timeout error. New suite (untracked):
+`tests/unit/t3306_close_reentry_guard.bats`.
+
+Remaining, in order:
+1. Test 4 (control) fails ONLY because `_make_fixture`'s heredoc frontmatter
+   lacks a `tags:` line — the RCA gate's `grep '^tags:'` exits 1 under
+   `set -e`. Fix: add `tags: []` (and `components: []`, `related_tasks: []`)
+   to the heredoc. Root-caused via bash -x; NOT a source bug.
+2. Re-run suite → expect 6/6, 0 skips.
+3. Run no-widening: t1719_happiness_signal.bats + t3288_human_heading_suffix.bats.
+4. `bin/fw vendor self` (update-task.sh is vendored), commit source+test+
+   vendored together, then close this task.
+
+Deliberately NOT committed: committing source without the vendored copy would
+put HEAD into vendor drift and block the push; the wrap-up gate allows
+commit/push but not the cp/Write needed for the vendored sync. Working-tree
+state is fully described above for exact reconstruction if lost.
+
+## Verification
+
+timeout 400 bats tests/unit/t3306_close_reentry_guard.bats > /tmp/.t3306-bats 2>&1 && ! grep -q "^not ok" /tmp/.t3306-bats
+test "$(grep -c '# skip' /tmp/.t3306-bats)" -eq 0
+timeout 300 bats tests/unit/t1719_happiness_signal.bats > /tmp/.t3306-nw 2>&1 && ! grep -q "^not ok" /tmp/.t3306-nw
+bash -c 'cmp -s <(git show HEAD:agents/task-create/update-task.sh) .agentic-framework/agents/task-create/update-task.sh'
+
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
