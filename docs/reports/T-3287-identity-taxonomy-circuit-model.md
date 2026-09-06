@@ -265,6 +265,89 @@ independently mortal). If a switch does NOT kill the circuit, agent-liveness is
 not independent of session-liveness and level 5 collapses into level 4,
 contradicting D1. Awaiting operator ruling.
 
+**D2 (2026-09-06, operator-proposed → agent-refined into two clean strings) —
+every level has a DURABLE NAME; the circuit ID is durable-name + session.**
+Operator walked each level's durable name:
+
+| # | Level | Durable name | Nature |
+|---|-------|--------------|--------|
+| 1 | Host | **FQDN** (or IP) | active, DNS-static |
+| 2 | Hub | hub id — one termlink hub per host is the entry point ("I need to be a termlink hub") | active, singleton-by-type |
+| 3 | Project | the **root directory / path** it is bound to | **PASSIVE** — a location, not a process |
+| 4 | Session/instance | the **termlink-generated instance ID** (always unique) | active, transient |
+| 5 | Agent | the **@agent-name** (declared; a bootstrap act — create/collaborate-to-create — establishes it) | active, project-scoped durable name |
+
+The operator's **passive-project insight** is the structural payoff: level 3 is
+not an actor. "AEF is always bound to a root directory, which is its project
+directory — it's not allowed to go out there" (ties to T-559 project-boundary).
+A project cannot *do* anything, so its rung on the resolve/provision ladder is
+never "ask the project" — it is "ask the HUB to start an instance bound to
+project-path P." The project is uniquely *addressable* (by path) but never
+*callable*. This dissolves an apparent 5-actor ladder into 4 actors + 1 address.
+
+**Agent refinement — separate the two strings the operator briefly merged.** The
+operator's composite ("L1 FQDN / L2 hub / L3 path / L4 session / L5 @name") is
+correct but names *two different things* at once. Split cleanly:
+
+- **Durable name** = `FQDN / [hub] / <project-path> / @agent-name` — **no session
+  segment.** This is the CORRESPONDENT: the who-you-talk-to. It survives instance
+  death, it is what the ladder re-resolves to, it is DNS-static (an A-record that
+  keeps its name across IP changes). Stamped on the wire as the level-5 `agent_id`
+  (the T-3286 leaf).
+- **Circuit ID** = durable-name **+ session-id** — this live binding. It is the
+  ACTOR: the specific running instance, transient, needs live resolution (the
+  DNS *A-record lookup*, not the name). Dies with the session; the caller retains
+  it only to *attempt* the fast path (consistent with D1).
+
+So the two-layer identity, sharpened: **durable name = the correspondent the peer
+sees** (continuity; what you stamp so distinct agents read as distinct); **instance
+id = the actor the coordination layer sees** (the discriminator; can conflict; the
+thing that decides who owns a claim). One string for "who is this", one for "which
+live process". T-3286 stamps the first; the circuit/claim layer keys on the second.
+*Operator asked to reflect and agree — not yet ratified; this is the agent's
+proposed split of the operator's composite.*
+
+**F6 (2026-09-07, verification finding — challenges operator's slash claim).**
+Operator claimed "all LLM harnesses use `/` for agents (Codex, OpenCode,
+Antigravity, Anthropic)" and asked to be challenged if wrong. Verified via web
+search (Sept 2026): **the claim is nuanced and the load-bearing half is wrong.**
+Slash is near-universal — for **commands / workflows / session control**, NOT for
+agent *identity*:
+- Claude Code: `/` = commands; an agent is invoked by **@-mention** (`@code-reviewer`) or `--agent`.
+- OpenCode: `/<name>` = commands; subagents are **@-mentioned** (`@file-writer`); docs say the `@` prefix is *for* invocation.
+- Codex CLI: `/model`, `/agent`, `/status` are session **commands** — `/agent` manages threads, it is not an agent's name.
+- Antigravity: slash commands invoke agent **workflows** (`/goal`, `/boost`, `/agents`) — a partial point *for* the operator (it blurs command↔agent), but still names workflows, not a specific agent's identity.
+
+**Design consequence (why F6 matters, not trivia):** we are designing an
+*identity* (the "who"), which across the ecosystem is the **@-mention** role, not
+the `/command` role. And `/` is **already our path separator** (levels 1→5). Using
+`/agent-name` for the leaf overloads slash into three jobs (separator, command,
+identity) and reads as "a command" to anyone fluent in these tools. Proposal:
+**agent leaf = `@agent-name`** — ecosystem-aligned for "who", and it composes:
+`/` separates levels, `@` marks the identity leaf, `:` binds the transient session:
+
+```
+Durable name:  fqdn / <project-path> / @agent-name
+Circuit ID:    fqdn / <project-path> / @agent-name : <session-id>
+```
+
+Sources: code.claude.com/docs/en/agent-sdk/subagents · opencode.ai/docs/agents ·
+opencode.ai/docs/commands · developers.openai.com/codex/guides/slash-commands ·
+antigravity.google/docs/slash-commands. *Awaiting operator decision: align to `@`
+for the leaf, or deliberately diverge (Antigravity-style slash-for-workflow).*
+
+**Open — availability vs memory antifragility (surfaced round 5, unresolved).**
+D1's ladder guarantees *availability*: the re-provisioned instance wears the same
+durable name, so the correspondent is always reachable. But a re-provisioned
+instance has **amnesia** — durable NAME ≠ durable STATE. The ladder yields "a
+working equivalent, not the same B" (D1), and that equivalent does not remember
+the prior circuit's conversation, decisions, or relationship. **Where does
+circuit/relationship state live?** Options, unresolved: (a) nowhere — every
+re-establishment is a fresh relationship (pure availability, no memory); (b) in the
+project (passive, path-bound — survives instance death, the natural home given D2);
+(c) in a durable per-correspondent store keyed by durable name. This is the next
+real fork after the slash decision.
+
 ## Relationship to T-3286 (the narrow fix)
 
 T-3286 (producers stamp `agent_id`) is the **level-5 leaf** of this taxonomy
@@ -344,8 +427,63 @@ proceed with T-3286's *mechanism* (carry whatever id resolves), defer its
   agent-instance? D1 is only consistent if yes (agent-instance =
   (session, profile-epoch), independently mortal). Awaiting ruling.
 
-**Next in dialogue:** operator to rule D1-open (profile-switch liveness). Then the
-still-open queue, one at a time: Q-B completion; hub 1:1-with-host or not;
-auto-provision authority line (F4 sovereignty gate); and — surfaced by D1 — is
-there ANY durable name for a role/slot, or is every connection instance-fresh with
-a full re-election each time (the "no address book" question).
+**2026-09-06 — round 4 (operator gives every level a durable name).**
+
+- *Operator walked the durable name per level:* host = FQDN; hub = "I need to be a
+  termlink hub" (the entry point, singleton-by-type); project = its root directory;
+  instance = termlink's unique session id; agent = an @-name established by a
+  *bootstrap act* (creating/collaborating-to-create the agent gives it its durable
+  name). → captured as **D2**.
+- *Operator pinned a slip the agent had made:* "you said another instance for
+  another project — it's another instance for the SAME project." Multiple instances
+  can run for one project under one hub; each has its own distinct termlink id,
+  visible in `termlink list`. Absorbed.
+
+**2026-09-06 — round 5 (passive project; the composite; the two-layer synthesis).**
+
+- *Operator's structural insight:* the project (L3) is **not an active component** —
+  it is "something uniquely addressable in the sense it's addressable in the file
+  path it takes." AEF is bound to its root dir and not allowed out (T-559). → the
+  ladder rung for L3 is "ask the HUB", never "ask the project"; 4 actors + 1
+  address, not 5 actors.
+- *Operator proposed a composite circuit ID* (L1 FQDN / L2 hub / L3 path / L4
+  session / L5 @name) and claimed it is "easily derivable from static instance
+  information", asking to reflect and agree.
+- *Agent caught the merge:* the composite names TWO things — the durable name (the
+  correspondent, no session) and the circuit id (durable name + session, the
+  actor). Split them (see D2 refinement). Mapped to DNS: durable name = the
+  hostname/A-record NAME; circuit id = the resolved live binding. This also
+  sharpens the two-layer identity from earlier rounds: correspondent (continuity,
+  stamped) vs actor (discriminator, keys the claim).
+- *Agent forced the state question (open):* D1's ladder buys availability but the
+  re-provisioned instance has amnesia — durable name ≠ durable state. WHERE does
+  circuit/relationship memory live? Operator had earlier framed re-provisioning as
+  "that's anti-fragility, right?" — agreed it is (availability antifragility); the
+  agent's point is the *memory* half is a separate, unanswered question. Logged as
+  the "availability vs memory" open fork.
+- *On simultaneous instances wearing agent X* (I1 and I2 both present @X): operator
+  ruled the resulting task/conflict problems belong at the **AEF layer, not
+  termlink** — but asked the agent to challenge that. (Standing challenge, not yet
+  worked: instance-identity D1 says I1 and I2 are DISTINCT correspondents even
+  though they share a durable name @X, so the coordination layer must key on the
+  circuit-id/actor, not the durable name — which is exactly the discriminator role
+  the two-layer split assigns it. So D1 + D2 already contain the tools; the open
+  bit is whether AEF or termlink enforces the mutex. Consistent with reusing
+  `channel claim` at the actor layer — F5.)
+
+**2026-09-07 — round 6 (slash-vs-@ verification).**
+
+- *Operator claimed* all LLM harnesses use `/` for agents and asked to be
+  challenged / verified. *Agent verified (web search) and challenged:* slash is
+  universal for COMMANDS, not agent IDENTITY; identity is @-mention where it's
+  addressable. → **F6**. Proposed `@agent-name` as the leaf so `/` (level
+  separator), `@` (identity), `:` (session) each mean one thing. Awaiting operator
+  decision.
+
+**Next in dialogue:** operator to (a) decide the agent leaf notation — `@name` per
+F6, or deliberate divergence; and (b) rule D1-open (profile-switch liveness). Then
+the still-open queue, one at a time: the **availability-vs-memory** state fork
+(where circuit/relationship memory lives — likely the passive project, per D2);
+Q-B completion; hub 1:1-with-host or not; auto-provision authority line (F4
+sovereignty gate); and the AEF-vs-termlink mutex enforcement for two instances
+sharing one @name (round-5 standing challenge).
