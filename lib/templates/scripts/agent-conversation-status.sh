@@ -89,9 +89,9 @@ summary="$(printf '%s' "$raw" | jq -n -c \
     #   1. .metadata.agent_id  (explicit agent identity — /be-reachable convention)
     #   2. .metadata._from     (vendored-arc heartbeat convention, T-1438)
     #   3. .sender_id          (envelope fingerprint — collapses co-resident agents)
-    # T-1693 forward-compat: agent-send/respond do not write metadata.agent_id
-    # today (deferred to T-1693), so chain falls through to .sender_id; the
-    # moment producers gain identity this reader auto-resolves correctly.
+    # T-3286: agent-send/respond stamp metadata.agent_id (instance grain,
+    # T-3287 D1) via resolve_agent_id in agent-identity.sh, so tier 1 is the
+    # live path; .sender_id remains the fallback for pre-T-3286 envelopes.
     [inputs] as $all
     | ($all | map(select(.msg_type == "turn") | {
         offset,

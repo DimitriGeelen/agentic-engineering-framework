@@ -21,6 +21,17 @@ TERMLINK="${TERMLINK_BIN:-termlink}"
 
 die() { echo "agent-send: $*" >&2; exit 2; }
 
+# T-3286 — shared agent_id resolver (resolve_agent_id): the turn post stamps
+# metadata.agent_id with the SENDER'S OWN instance identity so co-resident
+# agents stop collapsing to one correspondent. Chain documented in the lib.
+IDENTITY_LIB="${AGENT_IDENTITY_LIB:-}"
+if [ -z "$IDENTITY_LIB" ]; then
+    IDENTITY_LIB="$(cd "$(dirname "$0")" && pwd)/agent-identity.sh"
+fi
+[ -f "$IDENTITY_LIB" ] || die "agent-identity lib not found: $IDENTITY_LIB (set AGENT_IDENTITY_LIB to override)"
+# shellcheck source=agent-identity.sh
+. "$IDENTITY_LIB"
+
 usage() {
     cat <<'EOF'
 Usage: agent-send.sh --to-session <name> (--topic <dm-topic> | --peer-fp <fp>)
@@ -157,9 +168,11 @@ fi
 
 [ -n "$cid" ] || cid="cid-$(date +%s)-${RANDOM}"
 
-# 1. Post the turn (mail) once.
+# 1. Post the turn (mail) once, stamped with the sender's own agent_id (T-3286).
+agent_id="$(resolve_agent_id)"
 post_json="$("$TERMLINK" channel post "$topic" --msg-type turn --payload "$message" \
-                --metadata conversation_id="$cid" --ensure-topic --json)" \
+                --metadata conversation_id="$cid" --metadata agent_id="$agent_id" \
+                --ensure-topic --json)" \
     || die "channel post failed for topic '$topic'"
 post_offset="$(printf '%s' "$post_json" | jq -r '.delivered.offset // empty')"
 [ -n "$post_offset" ] || die "post returned no offset: $post_json"

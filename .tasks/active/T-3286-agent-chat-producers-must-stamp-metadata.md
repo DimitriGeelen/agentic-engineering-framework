@@ -76,25 +76,25 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1** `agent-send.sh`'s turn post AND `agent-respond.sh`'s receipt post and
+- [x] **A1** `agent-send.sh`'s turn post AND `agent-respond.sh`'s receipt post and
   reply post each carry `--metadata agent_id=<resolved>` — the three producer
   sites that currently emit only `conversation_id` (agent-send.sh:161,
   agent-respond.sh:88, agent-respond.sh:96). Verified by a hermetic test that
   captures the emitted envelope metadata, not by reading a live thread.
-- [ ] **A2** The stamped value is the SENDER'S OWN identity, resolved by a single
+- [x] **A2** The stamped value is the SENDER'S OWN identity, resolved by a single
   shared function with a documented, ordered chain (most-specific first).
   It MUST NOT be read from a host-shared listener state that names a different
   agent — the failure this task exists to prevent is one correspondent standing
   in for many; substituting the host's one listener id for every sender is the
   same collapse wearing a name. The chain's primary source is set by the grain
   decision recorded in `## Decisions`.
-- [ ] **A3** Reader parity holds end-to-end: two envelopes posted with DISTINCT
+- [x] **A3** Reader parity holds end-to-end: two envelopes posted with DISTINCT
   `agent_id` values resolve to TWO distinct correspondents through
   `agent-conversation-status.sh`'s existing tier-1 (`.metadata.agent_id`) path,
   and two with the SAME `agent_id` resolve to one. A control leg asserts that
   with agent_id ABSENT the reader falls to `.sender_id` (documents the pre-fix
   collapse, so the test proves the fix is why they now separate).
-- [ ] **A4** Edited scripts pass `bash -n`, and the vendored copies under
+- [x] **A4** Edited scripts pass `bash -n`, and the vendored copies under
   `.agentic-framework/` are re-synced (`bin/fw vendor self --check` clean) BEFORE
   close, per OBS-250 — these are vendored template paths.
 
@@ -246,6 +246,11 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/unit/t3286_agent_id_stamp.bats > /tmp/.t3286.out 2>&1 && ! grep -q "^not ok" /tmp/.t3286.out
+test "$(grep -c '# skip' /tmp/.t3286.out)" -eq 0
+bash -n lib/templates/scripts/agent-send.sh && bash -n lib/templates/scripts/agent-respond.sh && bash -n lib/templates/scripts/agent-identity.sh
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -326,6 +331,22 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-09-06 — agent_id grain (settles A2's primary source)
+- **Chose:** INSTANCE-identity grain, per T-3287 D1 (operator-ratified
+  2026-09-06, docs/reports/T-3287-identity-taxonomy-circuit-model.md §Ratified
+  decisions). The stamped `agent_id` resolves to the sender's own
+  agent-instance, most-specific first: explicit per-process env override →
+  the sender's own TermLink session identity → a derived session-unique
+  fallback (project + session PID). The resolver is one shared function used
+  by all three producer sites.
+- **Why:** D1 rules that two distinct agent-instances must NEVER collapse to
+  one correspondent — "T-3286 (always separate them) is correct in all cases."
+  The profile-epoch refinement (D1-open) tightens the instance definition
+  later without changing this mechanism: carry whatever instance id resolves.
+- **Rejected:** role-identity (operator ruled out — would make the collapse
+  sometimes-correct); reading a host-shared listener state (the exact
+  one-stands-for-many collapse this task exists to prevent).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -342,3 +363,24 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3286-agent-chat-producers-must-stamp-metadata.md
 - **Context:** Initial task creation
+
+### 2026-09-06 — A1-A3 landed [termlink-worker]
+- **Action:** New shared resolver `lib/templates/scripts/agent-identity.sh`
+  (`resolve_agent_id`, instance grain per T-3287 D1): FW_AGENT_ID override →
+  own termlink session identity (`.session.display_name@.session.id` — NOT
+  `.session.identity_fingerprint`, which `termlink whoami` reports as shared
+  with 158 co-resident sessions on this host) → `<project>-pid<PPID>` derived
+  fallback. Never reads be-reachable/listener state. Sourced by both producers
+  (AGENT_IDENTITY_LIB override seam); all three post sites now stamp
+  `--metadata agent_id=`: agent-send.sh turn post, agent-respond.sh receipt
+  post + reply post.
+- **Tests:** `tests/unit/t3286_agent_id_stamp.bats` — 9/9 ok, 0 skips, hermetic
+  (termlink stubbed; posts captured to jsonl, subscribe replays ndjson). Covers
+  all three chain tiers, the listener-state negative, and the A3 control set:
+  distinct agent_id → 2 correspondents / same → 1 through
+  agent-conversation-status.sh tier-1, absent → collapses to sender_id
+  (pre-fix shape).
+- **Note for A4 (parent):** the stale forward-compat comment in
+  agent-conversation-status.sh:92-94 ("agent-send/respond do not write
+  metadata.agent_id today") is now outdated but was out of this worker's scope
+  list; vendor sync + close remain with the parent.
