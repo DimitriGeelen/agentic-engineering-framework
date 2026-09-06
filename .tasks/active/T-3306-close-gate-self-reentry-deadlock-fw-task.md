@@ -30,7 +30,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:17:05Z
-last_update: 2026-09-06T18:19:20Z
+last_update: '2026-09-06T18:30:10Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -60,6 +60,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-06T18:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=323,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3306: Close-gate self-reentry deadlock: 'fw task update T-1719 --status work-completed' hung 3h+ because its P-011 verification runs t1719_happiness_signal.bats, which itself invokes 'fw task update T-1719 --happiness N' on the SAME task mid-close. Direct suite run passes 37/37 in minutes; only under the close gate does it wedge (parent update-task.sh holds the task's close context). Sibling of OBS-363/365 (update_task bats hangs). Class fix candidates: verification runs with FW_TASK_UPDATE_NO_REENTRY guard, or bats that mutate the task-under-close use a fixture task id, or gate detects self-referential verification lines. Killed tree at 15:5xZ, exit 144, T-1719 still active/started-work, no corruption observed.
@@ -88,20 +98,20 @@ timeout error rather than an unbounded hang.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reentry guard: with `FW_TASK_UPDATE_IN_CLOSE=<id>` set (as the close now
+- [x] Reentry guard: with `FW_TASK_UPDATE_IN_CLOSE=<id>` set (as the close now
       sets around its verification run), a nested `fw task update <same-id>`
       exits non-zero fast (<5s) with an error naming the reentry and the
       fixture-task remedy; a nested update targeting a DIFFERENT id proceeds.
-- [ ] Keylock timeout backstop: update-task.sh's `keylock_acquire "$TASK_ID"`
+- [x] Keylock timeout backstop: update-task.sh's `keylock_acquire "$TASK_ID"`
       passes a bounded timeout; on expiry the command fails loudly naming the
       lock holder path instead of blocking forever.
-- [ ] End-to-end pin: a bats test builds a fixture task whose Verification
+- [x] End-to-end pin: a bats test builds a fixture task whose Verification
       invokes `fw task update <its own id> --happiness +1`, runs
       `--status work-completed` on it, and asserts the close FAILS FAST with
       the reentry error (bounded by timeout) rather than hanging — plus a
       control fixture whose verification touches a different task id and
       closes clean.
-- [ ] No-widening: existing suites keep passing — t1719_happiness_signal.bats
+- [x] No-widening: existing suites keep passing — t1719_happiness_signal.bats
       (nested update on a DIFFERENT task during close is the fixture pattern
       it now uses) and t3288_human_heading_suffix.bats.
 
@@ -300,6 +310,31 @@ bash -c 'cmp -s <(git show HEAD:agents/task-create/update-task.sh) .agentic-fram
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw task update T-1719 --status work-completed` hung silently for
+3h+ (killed, exit 144). Direct run of the same bats suite passes in minutes;
+only under the close gate does it wedge.
+
+**Root cause:** update-task.sh acquires the per-task keylock (T-587) in the
+no-timeout form, which blocks forever (lib/keylock.sh). T-1719's P-011
+verification ran t1719_happiness_signal.bats, which invoked `fw task update
+T-1719 --happiness N` — a nested update on the task whose lock the parent
+close already held. Classic self-reentry deadlock, and the no-timeout lock
+made it unbounded and silent.
+
+**Why structurally allowed:** nothing distinguished "verification subtree of
+T-X's close" from "any other caller" — the nested update had no way to know
+it was inside its own close, and the lock had no bound to convert the
+deadlock into an error. The gate runs arbitrary shell, so any verification
+line (or process it spawns) could reach the same lock.
+
+**Prevention:** (1) close exports `FW_TASK_UPDATE_IN_CLOSE=<id>` around
+run_verification_commands; a nested same-id update refuses fast with the
+fixture-task remedy named. (2) keylock_acquire bounded at 120s — unguarded
+paths (detached children the env doesn't reach) degrade to a loud timeout
+error, never an unbounded hang. (3) Pinned by
+tests/unit/t3306_close_reentry_guard.bats (6 tests incl. end-to-end
+deadlock-shape fixture + control close).
 
 ## Evolution
 
