@@ -6,12 +6,12 @@ description: >
   AC body parser drops Steps content the operator needs — approval pages render a
   decision with no command
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/tasks.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-30T17:51:15Z
-last_update: '2026-08-31T18:00:20Z'
-date_finished:
+last_update: 2026-09-06T17:46:13Z
+date_finished: 2026-09-06T17:46:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -359,7 +359,8 @@ curl -sf "$(bin/fw watchtower url)/review/T-100131" -o /tmp/.t3224-ctl && grep -
 # web/blueprints/tasks.py and re-running. Asserting 0 here would be a line that can
 # only ever be red, so the count is pinned (a 10th failure turns it red) AND no
 # failure may land in the parser's own surface.
-bin/fw test web > /tmp/.t3224-web 2>&1; n=$(grep -c '^FAILED' /tmp/.t3224-web); { [ "$n" -eq 8 ] || [ "$n" -eq 9 ]; } && ! grep -qE '^FAILED (web/blueprints|tests/web/test_(tasks|review|ac_))' /tmp/.t3224-web
+# ANSI-stripped first (2026-09-06): pytest colorizes FAILED lines even redirected, so a raw '^FAILED' grep counts 0 — a false RED that blocked this close once.
+bin/fw test web > /tmp/.t3224-web 2>&1; sed 's/\x1b\[[0-9;]*m//g' /tmp/.t3224-web > /tmp/.t3224-webc; n=$(grep -c '^FAILED' /tmp/.t3224-webc); { [ "$n" -eq 8 ] || [ "$n" -eq 9 ]; } && ! grep -qE '^FAILED (web/blueprints|tests/web/test_(tasks|review|ac_))' /tmp/.t3224-webc
 
 ## RCA
 
@@ -563,3 +564,15 @@ cannot judge (garbled text, route merging).
   failure in `web/blueprints` or `tests/web/test_(tasks|review|ac_)`) is
   unchanged and still asserted. Re-ran after the edit: `n=8`, clause passes,
   verdict PASS.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fc6ff017
+- **Timestamp:** 2026-09-06T17:52:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-06T17:46:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

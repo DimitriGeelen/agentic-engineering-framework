@@ -4287,3 +4287,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-374
+  text: "Verification-authoring footgun: pytest (via 'fw test web') colorizes output even when redirected to a file, so \"grep -c '^FAILED' capture-file\" counts 0 — a FALSE RED that blocked T-3224's close despite the failure count matching the allowed set. The L-387 capture-then-grep pattern is necessary but not sufficient: greps against captured pytest/toolchain output must strip ANSI first (sed 's/\\x1b\\[[0-9;]*m//g') or force --color=no. Candidate structural fixes: fw test passes --color=no when not a TTY; or P-011 doc gains an ANSI-strip idiom next to the capture-then-grep idiom."
+  captured: 2026-09-06T17:46:24Z
+  context_task: T-3224
+  tags: []
+  status: pending
+  promoted_to: null
