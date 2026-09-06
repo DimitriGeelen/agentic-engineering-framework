@@ -389,6 +389,20 @@ deadlock-shape fixture + control close).
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** All four Agent ACs shipped and verified. The deadlock class
+(OBS-372: nested `fw task update <same-id>` inside a close's P-011 verification
+blocking forever on the task's own keylock) now fails fast at two layers —
+guard env refusal (<5s, remedy named) and 120s bounded keylock for unguarded
+paths. End-to-end pinned with a deadlock-shape fixture AND a control close.
+No-widening confirmed. Vendored copy in sync at HEAD.
+**Evidence:**
+- tests/unit/t3306_close_reentry_guard.bats: 6/6 ok, 0 skips (incl. end-to-end fixture whose Verification updates its own id — close fails fast, task not archived; control fixture closes clean)
+- No-widening: t1719_happiness_signal.bats 8/8, t3288_human_heading_suffix.bats 7/7
+- Source: agents/task-create/update-task.sh @ 5c782f470 (reentry refusal + FW_TASK_UPDATE_IN_CLOSE export + keylock_acquire 120s bounded)
+- Vendored: `bin/fw vendor self --check` clean @ 40d6ab1e3
+- RCA section filled (symptom / root cause / structural allowance / prevention)
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
