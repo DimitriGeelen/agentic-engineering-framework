@@ -14,19 +14,19 @@ description: >
   of orchestrator substrate — closes G-064 partially. Eats Evolution-gate dogfood
   (T-1718 Slice 1) from filing.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [T-1717-implementation, G-064-closure-pilot, vertical-slice-1, 
       blocked-on-t-1717-go]
-components: []
+components: [agents/context/check-active-task.sh, agents/context/lib/episodic.sh, agents/context/lib/focus.sh, agents/context/lib/pattern.sh, agents/handover/handover.sh, agents/task-create/update-task.sh, agents/termlink/termlink.sh, bin/fw, lib/ask.py, lib/migrations/arc-id-migration.sh, lib/outcome.py, lib/paths.sh, lib/post-write-index.sh, lib/resolver.py, lib/workflow_lint.py, tests/playwright/test_embeddings_panel.py, tests/unit/t1719_ask_routing.bats, tests/unit/t1719_post_write_index.bats, tests/unit/t3038_session_scoped_focus.bats, web/blueprints/embeddings.py, web/blueprints/__init__.py, web/embeddings.py, web/shared.py, web/templates/embeddings.html]
 related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697, 
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-09-06T09:06:41Z
-date_finished:
+last_update: 2026-09-06T17:31:45Z
+date_finished: 2026-09-06T17:31:45Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -357,7 +357,7 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
   dispatch, alongside the other two legs (37/37 bats, 4/4 fabric cards +
   clean drift report).
 
-### Human (Slice 1)
+### Human
 - [ ] [REVIEW] Watch the headline mechanic fire end-to-end.
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw ask "what is the §ACD pattern"`
@@ -375,20 +375,6 @@ See research artifact: [`docs/reports/T-1717-embeddings-strategy-grill.md`](../.
   2. Confirm cost cap is configured + reasonable
   3. Tick this AC if approving
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
 
 ## Verification
 
@@ -1010,3 +996,20 @@ hands off.
 ### 2026-08-16T13:36:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6d079a3f
+- **Timestamp:** 2026-09-06T17:38:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/t1719_index_one_post_write.bats`
+
+### 2026-09-06T17:31:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

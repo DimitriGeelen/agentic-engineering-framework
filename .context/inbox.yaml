@@ -4264,3 +4264,26 @@ observations:
   dismissed_at: 2026-09-05T19:46:18Z
   promoted_to: null
   urgent: true
+- id: OBS-371
+  text: "Ollama embed outage 2026-09-05 ~21:5x: gemma4 stuck 'Stopping...' on 100% GPU wedged the server — /api/embed (nomic-embed-text-v2-moe) http=000 at 95s, T-1719 bats test 7 hung the whole suite holding the reindex flock (child stuck in _embed 120s timeout). Separate defect: T-1719's Verification embed-endpoint line asserts substring 'nomic-embed-text' in /api/tags — false-greens on v2-moe presence and asserts nothing about the server actually EMBEDDING; a wedged server passes it. Line should probe /api/embed with a real input + short timeout."
+  captured: 2026-09-05T20:01:16Z
+  context_task: T-1719
+  tags: [bug]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-372
+  text: "Close-gate self-reentry deadlock: 'fw task update T-1719 --status work-completed' hung 3h+ because its P-011 verification runs t1719_happiness_signal.bats, which itself invokes 'fw task update T-1719 --happiness N' on the SAME task mid-close. Direct suite run passes 37/37 in minutes; only under the close gate does it wedge (parent update-task.sh holds the task's close context). Sibling of OBS-363/365 (update_task bats hangs). Class fix candidates: verification runs with FW_TASK_UPDATE_NO_REENTRY guard, or bats that mutate the task-under-close use a fixture task id, or gate detects self-referential verification lines. Killed tree at 15:5xZ, exit 144, T-1719 still active/started-work, no corruption observed."
+  captured: 2026-09-06T15:49:58Z
+  context_task: T-1719
+  tags: [bug]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-373
+  text: "P-013 render-review gate regex '^### Human\\s*$' cannot see suffixed headings like '### Human (Slice 1)' — same heading-suffix parser class as T-3224 (AC body parser) but in a second parser (update-task.sh check_render_surface_human_ac, ~line 550). T-1719 close was blocked despite a valid [REVIEW] Human AC; unblocked by normalizing the heading. Fix candidates: tolerate '### Human\\b.*' suffixes, or centralize Human-block extraction in lib/section-extract.sh (T-3148 did this for AC section). One-bug-one-task: needs its own task."
+  captured: 2026-09-06T17:31:41Z
+  context_task: T-1719
+  tags: []
+  status: pending
+  promoted_to: null
