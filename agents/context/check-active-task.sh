@@ -30,6 +30,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
+# Anchored AC section extraction (T-3148, sibling to
+# lib/verification-port.sh:extract_verification_block, T-3134)
+source "$FRAMEWORK_ROOT/lib/section-extract.sh" 2>/dev/null || true
 fw_hook_crash_trap "check-active-task"
 
 # T-3038 (OBS-291): resolve focus through the shared helper so this gate reads
@@ -1048,7 +1051,13 @@ if [ -n "$ACTIVE_FILE" ]; then
     WORKFLOW_TYPE=$({ grep "^workflow_type:" "$ACTIVE_FILE" 2>/dev/null || true; } | head -1 | sed 's/workflow_type:[[:space:]]*//')
     case "$WORKFLOW_TYPE" in
         build|refactor|test|decommission)
-            AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## [^A]/p' "$ACTIVE_FILE" 2>/dev/null | sed '$d')
+            # T-3148: anchored, FIRST-WINS extraction (lib/section-extract.sh).
+            # Replaces the old `/^## [^A]/` terminator, which was even LOOSER
+            # than the sibling AC-gate sites — it failed to close the range on
+            # any subsequent heading beginning "## A" (e.g. a hypothetical
+            # "## Additional Notes"), which could silently fold that section's
+            # content into the AC count.
+            AC_SECTION=$(extract_ac_section "$ACTIVE_FILE")
             # T-2944: strip HTML comments before counting, exactly as the G-067
             # inception gate does at :700 in this same file. Without this, the two
             # illustrative `- [ ] [REVIEW]` / `- [ ] [REVIEWER]` examples inside the

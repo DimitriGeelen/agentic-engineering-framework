@@ -142,6 +142,10 @@ cost_estimate_proposed:
 
 ## Verification
 
+timeout 300 bats tests/unit/t3148_section_extract.bats > /tmp/.t3148-bats 2>&1 && ! grep -q "^not ok" /tmp/.t3148-bats
+test "$(grep -c '# skip' /tmp/.t3148-bats)" -eq 0
+bash -c 'source lib/section-extract.sh && type extract_ac_section >/dev/null && type extract_recommendation_block >/dev/null'
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
