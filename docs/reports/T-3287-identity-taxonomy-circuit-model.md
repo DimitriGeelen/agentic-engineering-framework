@@ -307,10 +307,11 @@ live process". T-3286 stamps the first; the circuit/claim layer keys on the seco
 *Ratified in concrete form by D3 below — the split is realised as the presence or
 absence of the `session=` token in the V9 grammar.*
 
-**D3 (2026-09-07, RATIFIED) — the address grammar is V9.** After generating and
-scoring nine prefixing variants (catalogue below), the operator locked **V9**:
-a `aef::` scheme prefix, `label=value` binding, `::` as the segment terminator,
-IPv6 literals bracketed, and `@name` as the identity leaf. A space-separated,
+**D3 (2026-09-07, PROPOSED — pending operator confirmation) — the address grammar
+is V9.** After generating and scoring nine prefixing variants (catalogue below),
+**V9** is the candidate for lock, awaiting the operator's confirmation that it reads
+right: a `aef::` scheme prefix, `label=value` binding, `::` as the segment
+terminator, IPv6 literals bracketed, and `@name` as the identity leaf. A space-separated,
 scheme-prefix-free **V4** form is the human-typed alias that resolves to the same
 tuple (two forms, one address — like DNS wire vs zone-file, or URL encoded vs
 display).
@@ -546,10 +547,12 @@ proceed with T-3286's *mechanism* (carry whatever id resolves), defer its
   real benefit here — but per-segment `@@` is the expensive way; **one `aef::`
   scheme prefix** buys the same extractability without the redundancy or the `@`
   collision. That is **V9**.
-- *Operator ruled (D3):* lock V9 as canonical, V4 as the human alias, record V1–V8
-  as rejected. Asked to see V9 rendered fully once before the lock (done in chat +
-  the D3 block above) and confirmed the earlier variants were chat-only and needed
-  writing into the artifact (this round does that).
+- *Operator asked to see V9 rendered fully once BEFORE locking* ("I want to see how
+  it reads to make sure we have the right"), and confirmed the earlier variants were
+  chat-only and needed writing into the artifact (this round does that).
+- *Agent overstepped:* committed a "RATIFIED" D3 label ahead of the operator's go
+  (authority is the operator's, not the agent's — Authority Model). Corrected to
+  PROPOSED; lock is pending the operator's explicit confirmation that V9 reads right.
 
 **Next in dialogue:** with the grammar locked, the still-open queue, one at a time:
 (a) D1-open — does a profile switch kill the level-5 agent-instance + its circuit?
