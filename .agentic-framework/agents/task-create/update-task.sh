@@ -28,6 +28,10 @@ source "$FRAMEWORK_ROOT/lib/keylock.sh" 2>/dev/null || true
 # Render-surface predicate (T-1766)
 source "$FRAMEWORK_ROOT/lib/render_surface.sh" 2>/dev/null || true
 
+# Anchored AC / Recommendation section extraction (T-3148, sibling to
+# lib/verification-port.sh:extract_verification_block, T-3134)
+source "$FRAMEWORK_ROOT/lib/section-extract.sh"
+
 # === Extracted gate functions (T-415) ===
 # Each function accesses outer-scope variables: TASK_FILE, TASK_ID, SKIP_*, colors
 
@@ -126,7 +130,9 @@ check_acceptance_criteria() {
     local agent_acs ac_total ac_checked ac_unchecked ac_label
     local human_acs placeholder_acs placeholder_count
 
-    ac_section=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
+    # T-3148: anchored, FIRST-WINS extraction (see lib/section-extract.sh header
+    # for why AC is first-wins while Recommendation, below, is last-wins).
+    ac_section=$(extract_ac_section "$TASK_FILE")
     # Strip HTML comments — template examples contain checkbox patterns that get miscounted.
     # T-1967 (L-414 root cause): sed range matching does NOT close on the same line where
     # it opens — `/<!--/,/-->/d` on a one-line `<!-- ... -->` enters delete-mode at that
@@ -218,7 +224,9 @@ check_acceptance_criteria() {
             # rather than re-doing the work. CLAUDE.md §Progressive AC ticking is
             # the procedural rule; this message surfaces it at the point of refusal.
             local _rec_block _rec_filled=false
-            _rec_block=$(sed -n '/^## Recommendation/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
+            # T-3148: anchored, LAST-WINS extraction — the template ships a
+            # stub here and real content is appended after it (T-3144).
+            _rec_block=$(extract_recommendation_block "$TASK_FILE")
             if [ -n "$_rec_block" ] && echo "$_rec_block" | grep -qE '^\*\*(Recommendation|Rationale|Evidence)(:\*\*|\*\*:)'; then
                 _rec_filled=true
             fi
@@ -1454,6 +1462,20 @@ if [ -z "$TASK_FILE" ] || [ ! -f "$TASK_FILE" ]; then
     exit 1
 fi
 
+# ── T-3306: close-gate reentry guard (OBS-372) ──────────────────────────────
+# A work-completed transition exports FW_TASK_UPDATE_IN_CLOSE=<id> around its
+# P-011 verification run. A nested `fw task update` on the SAME id from that
+# subtree would block forever on the per-task keylock the close already holds
+# (origin: T-1719's happiness suite — 3h+ silent hang). Fail fast, name the
+# remedy. A nested update on a DIFFERENT id is legitimate and proceeds.
+if [ -n "${FW_TASK_UPDATE_IN_CLOSE:-}" ] && [ "$FW_TASK_UPDATE_IN_CLOSE" = "$TASK_ID" ]; then
+    echo -e "${RED}ERROR: reentry — this 'fw task update $TASK_ID' was invoked from inside $TASK_ID's own close (P-011 verification subtree).${NC}" >&2
+    echo "The close holds $TASK_ID's keylock; proceeding would deadlock (OBS-372, T-3306)." >&2
+    echo "Fix: point the verification/test at a throwaway fixture task instead of the task under close" >&2
+    echo "(pattern: tests/unit/t1719_happiness_signal.bats setup/teardown fixture)." >&2
+    exit 1
+fi
+
 # ── T-1719 A2: retrieval-happiness signal ────────────────────────────────────
 # Validated BEFORE any mutation (L-286: body-mutation gates must validate before
 # mutating). A rejected rating must not leave a half-updated task behind.
@@ -1499,9 +1521,17 @@ print(json.dumps(row, sort_keys=True))
     echo -e "${GREEN}Happiness recorded:${NC} $_hv → .context/working/happiness.jsonl"
 fi
 
-# Acquire per-task lock to prevent concurrent modifications (T-587)
+# Acquire per-task lock to prevent concurrent modifications (T-587).
+# T-3306: bounded (120s) — an unguarded reentry path (a child process the
+# close-guard env didn't reach) must degrade to a loud timeout error, never
+# the unbounded silent hang OBS-372 measured at 3h+.
 if type keylock_acquire &>/dev/null; then
-    keylock_acquire "$TASK_ID"
+    if ! keylock_acquire "$TASK_ID" 120; then
+        echo -e "${RED}ERROR: could not acquire $TASK_ID's task lock within 120s.${NC}" >&2
+        echo "Another 'fw task update $TASK_ID' holds it — possibly this task's own" >&2
+        echo "in-flight close, if this command runs inside its verification (OBS-372, T-3306)." >&2
+        exit 1
+    fi
     trap 'keylock_release "$TASK_ID" 2>/dev/null' EXIT
 fi
 
@@ -1529,7 +1559,8 @@ if [ -n "$NEW_STATUS" ]; then
         if [ "$OLD_STATUS" = "work-completed" ] && [ "$(dirname "$TASK_FILE")" = "$TASKS_DIR/active" ]; then
             # T-193: Partial-complete re-run — check if human ACs now satisfied
             echo -e "${CYAN}Re-checking partial-complete status...${NC}"
-            AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
+            # T-3148: anchored, FIRST-WINS extraction (lib/section-extract.sh).
+            AC_SECTION=$(extract_ac_section "$TASK_FILE")
             # Strip HTML comments — template examples contain checkbox patterns.
             # T-1967: two-step strip (one-line first, then range) — see line ~87.
             AC_SECTION=$(echo "$AC_SECTION" | sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' | sed '/<!--/,/-->/d')
@@ -1824,7 +1855,11 @@ PY
 
         # === Verification Gate (P-011) ===
         if [ "$NEW_STATUS" = "work-completed" ]; then
+            # T-3306: mark the verification subtree so a nested `fw task update`
+            # on this same task fails fast instead of deadlocking on our keylock.
+            export FW_TASK_UPDATE_IN_CLOSE="$TASK_ID"
             run_verification_commands
+            unset FW_TASK_UPDATE_IN_CLOSE
         fi
 
         # === Recommendation Gate (T-679 / T-1529) ===

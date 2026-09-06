@@ -5,6 +5,10 @@
 # Ensure _fw_cmd/_emit_user_command are available (T-1143)
 [[ -z "${_FW_PATHS_LOADED:-}" ]] && source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/paths.sh" 2>/dev/null || true
 
+# Anchored AC / Recommendation section extraction (T-3148, sibling to
+# lib/verification-port.sh:extract_verification_block, T-3134)
+[[ -z "${_FW_SECTION_EXTRACT_LOADED:-}" ]] && source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/section-extract.sh" 2>/dev/null || true
+
 do_inception() {
     local subcmd="${1:-}"
     shift || true
@@ -579,7 +583,8 @@ do_inception_decide() {
         tick_inception_decide_acs "$task_file"
 
         local _ac_section _agent_acs _agent_total _agent_checked _agent_unchecked
-        _ac_section=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$task_file" 2>/dev/null | sed '$d' | sed '/<!--/,/-->/d')
+        # T-3148: anchored, FIRST-WINS extraction (lib/section-extract.sh).
+        _ac_section=$(extract_ac_section "$task_file" | sed '/<!--/,/-->/d')
         if echo "$_ac_section" | grep -q '^### Agent'; then
             _agent_acs=$(echo "$_ac_section" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
             _agent_total=$(echo "$_agent_acs" | grep -cE '^\s*-\s*\[[ x]\]' || true)
@@ -593,7 +598,9 @@ do_inception_decide() {
                 echo "" >&2
                 # T-1836 (T-1831 C-3): body-vs-checkbox drift hint at decide-preflight.
                 local _rec_block _rec_filled=false
-                _rec_block=$(sed -n '/^## Recommendation/,/^## /p' "$task_file" 2>/dev/null | sed '$d')
+                # T-3148: anchored, LAST-WINS extraction — the template ships
+                # a stub here and real content is appended after it (T-3144).
+                _rec_block=$(extract_recommendation_block "$task_file")
                 if [ -n "$_rec_block" ] && echo "$_rec_block" | grep -qE '^\*\*(Recommendation|Rationale|Evidence)(:\*\*|\*\*:)'; then
                     _rec_filled=true
                 fi
