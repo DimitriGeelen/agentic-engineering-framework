@@ -307,11 +307,11 @@ live process". T-3286 stamps the first; the circuit/claim layer keys on the seco
 *Ratified in concrete form by D3 below — the split is realised as the presence or
 absence of the `session=` token in the V9 grammar.*
 
-**D3 (2026-09-07, PROPOSED — pending operator confirmation) — the address grammar
-is V9.** After generating and scoring nine prefixing variants (catalogue below),
-**V9** is the candidate for lock, awaiting the operator's confirmation that it reads
-right: a `aef::` scheme prefix, `label=value` binding, `::` as the segment
-terminator, IPv6 literals bracketed, and `@name` as the identity leaf. A space-separated,
+**D3 (2026-09-07, RATIFIED) — the address grammar is V9, with display-only path
+elision.** After generating and scoring nine prefixing variants (catalogue below),
+the operator locked **V9**: a `aef::` scheme prefix, `label=value` binding, `::` as
+the segment terminator, IPv6 literals bracketed, and `@name` as the identity leaf.
+A space-separated,
 scheme-prefix-free **V4** form is the human-typed alias that resolves to the same
 tuple (two forms, one address — like DNS wire vs zone-file, or URL encoded vs
 display).
@@ -345,6 +345,25 @@ project path); **ladder + query for free** (drop tokens; sparse stays unambiguou
 `aef::` opener lets an address be regex'd out of a chat message — the exact context
 this work came from); **`@name` preserved** (F6 who-vs-where kept, unlike the uniform
 and start-marker variants).
+
+**D3 sub-rule — project path elision is DISPLAY-ONLY.** The `project=` value is a
+filesystem path and can be long. In human-facing contexts (chat messages,
+`termlink list`, logs) it renders elided: paths with >3 segments keep the **first**
+segment + the **last two**, with the middle replaced by an **ellipsis `…`** (NOT
+`..` — two dots collide with the parent-directory path operator):
+
+```
+wire / identity (unique, resolvable, stamped by T-3286, keyed by claims):
+  project=/mnt/storage/clients/acme/repos/frontend/042-Web-App
+display / human (length-reduced, NON-identity):
+  project=/mnt/…/frontend/042-Web-App
+```
+
+Elision is **lossy** (two deep paths can share first + last-two), so it must NEVER
+be the wire value — a collided display string would re-collapse two projects into
+one correspondent, the exact bug this task exists to kill. Same wire-vs-human split
+as V9-canonical vs V4-alias. Our own project (`/opt/999-Agentic-Engineering-Framework`,
+2 segments) is under the threshold and renders unchanged.
 
 **Rejected variants (evaluated 2026-09-07, kept so the evaluation is not lost):**
 
@@ -552,7 +571,21 @@ proceed with T-3286's *mechanism* (carry whatever id resolves), defer its
   chat-only and needed writing into the artifact (this round does that).
 - *Agent overstepped:* committed a "RATIFIED" D3 label ahead of the operator's go
   (authority is the operator's, not the agent's — Authority Model). Corrected to
-  PROPOSED; lock is pending the operator's explicit confirmation that V9 reads right.
+  PROPOSED; lock held pending the operator's explicit confirmation that V9 reads right.
+
+**2026-09-07 — round 8 (operator reviews the readout → ratifies D3).**
+
+- *Agent rendered V9 in situ* (bare, embedded-in-chat, wire-metadata, `termlink
+  list`, CLI alias, ladder/query) so the operator could judge readability, and
+  flagged the length of the full `project=<path>`.
+- *Operator introduced path elision* — keep first segment + last two, elide the
+  middle, "so we can find it back". *Agent grilled two issues:* (1) two-dot `..`
+  collides with the parent-directory path operator → use ellipsis `…`; (2) elision
+  is lossy → it must be DISPLAY-ONLY, full path stays the wire identity, else two
+  projects re-collapse (the origin bug).
+- *Operator ruled:* "display-only elision with `…` marker, then lock D3." →
+  **D3 RATIFIED** with the display-elision sub-rule. This is the operator's explicit
+  go the earlier premature commit lacked.
 
 **Next in dialogue:** with the grammar locked, the still-open queue, one at a time:
 (a) D1-open — does a profile switch kill the level-5 agent-instance + its circuit?
