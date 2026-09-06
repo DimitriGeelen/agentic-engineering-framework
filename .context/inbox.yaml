@@ -4294,3 +4294,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-375
+  text: "Follow-up to OBS-373/T-3288: Human-heading parsers remain divergent after the incident-site fix. Strict (suffix-blind) extractors still live at agents/audit/audit.sh:6283 ('^### Human\\s*$') and lib/verify-acs.sh:294+297 ('### Human' substring + '### Human\\s*\\n'); tolerant forms exist at audit.sh:5714 (T-100189) and audit.sh:5793. lib/review_link_validator.py:84 and lib/task_satisfaction.py:97 unverified. Candidate: centralize Human-block extraction in lib/section-extract.sh (T-3148 did this for the AC section; T-3288 extracted the render-gate classifier to lib/human_review_state.py — either absorb the others into it or into section-extract). L-317 cross-surface parity class."
+  captured: 2026-09-06T17:58:36Z
+  context_task: T-3288
+  tags: []
+  status: pending
+  promoted_to: null

@@ -527,29 +527,12 @@ check_render_surface_human_ac() {
         return 0
     fi
 
+    # T-1901: scan ALL `### Human` blocks (not just the first). T-3288 (OBS-373):
+    # tolerate heading suffixes — `### Human (Slice 1)` is a Human block; the
+    # prior exact-match regex saw only the empty template stub and false-blocked
+    # T-1719's close. Logic lives in lib/human_review_state.py so bats can pin it.
     local review_state
-    review_state=$(python3 - "$TASK_FILE" <<'PYREV' 2>/dev/null || echo "error"
-import sys, re
-try:
-    text = open(sys.argv[1]).read()
-except OSError:
-    print("error"); sys.exit(0)
-# T-1901: scan ALL `### Human` blocks (not just the first). When a task has
-# a template-comment Human block + a separate ACs Human block, the prior
-# `re.search` only saw the template block and returned "empty". `re.finditer`
-# captures every block; we union their content before scanning for [REVIEW].
-matches = list(re.finditer(r'^### Human\s*$(.*?)(?=^#{2,} |\Z)', text, re.MULTILINE | re.DOTALL))
-if not matches:
-    print("no_section"); sys.exit(0)
-human = "\n".join(m.group(1) for m in matches)
-human = re.sub(r'<!--.*?-->', '', human, flags=re.DOTALL)
-review_lines = [l for l in human.splitlines() if re.match(r'\s*-\s*\[[ x]\]\s*\[REVIEW\]', l)]
-if review_lines:
-    print("has_review"); sys.exit(0)
-ac_lines = [l for l in human.splitlines() if re.match(r'\s*-\s*\[[ x]\]', l)]
-print("only_other" if ac_lines else "empty")
-PYREV
-)
+    review_state=$(python3 "$FRAMEWORK_ROOT/lib/human_review_state.py" "$TASK_FILE" 2>/dev/null || echo "error")
 
     case "$review_state" in
         has_review)
