@@ -5,10 +5,10 @@ description: >
   Reuse termlink channel claim so a broadcast for a peer provisions exactly ONE instance,
   not N (D5 bound 1 / Q-A). Serves G4.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -24,7 +24,7 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T00:17:19Z
-last_update: '2026-09-07T00:30:18Z'
+last_update: 2026-09-07T07:11:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -327,3 +327,7 @@ Q-A). Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`. Serves
 
 ### 2026-09-07T00:19:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-09-07T07:11:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

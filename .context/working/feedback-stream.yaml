@@ -39977,3 +39977,39 @@ scan_id: R-22c8e172
 task_id: T-3308
 payload:
   task_file: .tasks/active/T-3308-arc-020-s2-circuit-registry--three-state.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T07:10:36Z'
+scan_id: R-a4ae9374
+task_id: T-3309
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T07:10:36Z'
+scan_id: R-a4ae9374
+task_id: T-3309
+payload:
+  task_file: .tasks/active/T-3309-arc-020-s3-resolution-and-provisioning-l.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T07:11:24Z'
+scan_id: R-d51bd3f0
+task_id: T-3248
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T07:11:24Z'
+scan_id: R-d51bd3f0
+task_id: T-3248
+payload:
+  task_file: .tasks/active/T-3248-nothing-measures-useful-headroom-window-.md

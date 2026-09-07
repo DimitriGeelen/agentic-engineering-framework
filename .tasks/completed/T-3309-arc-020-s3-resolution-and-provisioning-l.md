@@ -5,12 +5,12 @@ description: >
   Regressive resolution ladder (D1/D4/D5): climb 5→1 on a dead circuit; resolve rung
   ungated, provision rung Tier-3 pre-authorized through hub-standup. Serves G3/G4.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/aef_resolve.py]
 related_tasks: []
 arc_id: arc-020
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -24,8 +24,8 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T00:17:05Z
-last_update: 2026-09-07T06:59:59Z
-date_finished:
+last_update: 2026-09-07T07:10:31Z
+date_finished: 2026-09-07T07:10:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -357,3 +357,15 @@ bin/fw vendor self --check
 ### 2026-09-07T06:59:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a4ae9374
+- **Timestamp:** 2026-09-07T07:10:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-07T07:10:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

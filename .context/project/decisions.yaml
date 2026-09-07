@@ -3859,3 +3859,31 @@ decisions:
     date: 2026-09-07
     task: T-3308
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-554
+    decision: "`provisioners[level](intended: AEFAddress) -> AEFAddress | None` — the walk fills the intended child from the target's own token; the provisioner returns the materialized address (or None = accept intended). Session with `session=None` MUST return a minted binding."
+    scope: project
+    date: 2026-09-07
+    task: T-3309
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-555
+    decision: "acquire the D7 project write-claim (reused `lib/aef_circuit.WriteClaim`, not duplicated) immediately before the session provisioner runs; hold through the agent step; release in `finally`."
+    scope: project
+    date: 2026-09-07
+    task: T-3309
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-556
+    decision: "`resolve()`/`provision()` are pure functions over injectable callables; the only durable artifacts are the audit rows (S7 owns the JSONL) and whatever provisioners write."
+    scope: project
+    date: 2026-09-07
+    task: T-3309
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-557
+    decision: "BASELINE = the total (`input_tokens + cache_read_input_tokens + cache_creation_input_tokens`) of the EARLIEST usage entry of the dominant model since the last `compact_boundary`, filtered by `.session-start-ts` — i.e. the context the session already occupied at its first measured API call: system prompt, CLAUDE.md, hook set, injected handover, opening prompt. Same scoping rules as `lib/context_tokens.py` (which takes the LAST in-scope entry = current usage; baseline takes the FIRST = the floor), including the same ≥2-in-scope-entries trust guard (0 = \"not yet measurable\", never a guess). Cached per `(transcript, session-start-ts)` in `.context/working/.session-baseline`; the cache drops on `checkpoint.sh reset` and on detected compaction (the floor is re-paid then)."
+    scope: project
+    date: 2026-09-07
+    task: T-3248
+    rationale: "Auto-captured from task file on completion"
