@@ -6,9 +6,9 @@ description: >
   arc-020 headline demo G3 leg: dropped circuit self-heals, peer message still lands
   (re-provision under same durable name)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -25,8 +25,8 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T16:04:31Z
-last_update: '2026-09-07T16:15:16Z'
-date_finished:
+last_update: 2026-09-07T17:20:54Z
+date_finished: 2026-09-07T17:20:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -410,3 +410,15 @@ close needs.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3341-arc-020-headline-demo-g3-leg-dropped-cir.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-00d89d13
+- **Timestamp:** 2026-09-07T17:20:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-07T17:20:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
