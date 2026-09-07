@@ -383,7 +383,12 @@ no-orphan-sleep check after a normal exit.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-## Decisions
+**Recommendation:** GO
+**Rationale:** The mutual-exclusion defect is fixed at its root: audit.sh's EXIT trap no longer unlinks the flock'd lock path (flock binds to inode, not path), and the timeout watchdog kills its whole subtree so no orphaned `sleep` outlives the audit. The T-2930 contract (contention exits 75) is preserved and pinned as a control leg. All 4 Agent ACs ticked with integration evidence; every red seen during integration was diagnosed to a cause outside this change (self-vendor drift, CTL-030 data defects repaired under T-3314, test-11 latent defect fixed under T-3315).
+**Evidence:**
+- `tests/unit/t3298_audit_lock_integrity.bats` — green, 0 skips (double-hold impossible, contention-75 control, no orphaned watchdog sleep)
+- `bash -n agents/audit/audit.sh` clean; audit.bats 10/11 green with test-11 red pre-existing (T-3315, since fixed)
+- Verification re-run clean 2026-09-07 (V1/V2/V3 all pass)
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
