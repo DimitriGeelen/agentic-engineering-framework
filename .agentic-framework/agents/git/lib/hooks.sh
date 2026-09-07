@@ -688,10 +688,10 @@ HOOK_EOF
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125, T-3126)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125, T-3126, T-3297)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.7
+# VERSION=1.8
 
 # T-1603: VERSION monotonicity check.
 # Origin: T-1602 surfaced silent VERSION rollback in cc38e98f5 (1.5.463 → 1.5.19,
@@ -1108,16 +1108,90 @@ echo ""
 # the whole point of the exit-75 branch below is that the pipeline's exit code must
 # not be substituted for the audit's.
 _t3126_out=$(mktemp -t fw-prepush-audit-XXXXXX 2>/dev/null || echo "")
-if [ -n "$_t3126_out" ]; then
-    "$AUDIT_SCRIPT" --section structure 2>&1 | tee "$_t3126_out"
-    audit_exit=${PIPESTATUS[0]}
-else
-    # mktemp unavailable: run exactly as before. No capture means no scope line,
-    # and the gate below treats a missing scope line as "block" — degraded to the
-    # pre-T-3126 behaviour, never to something weaker.
-    "$AUDIT_SCRIPT" --section structure
-    audit_exit=$?
+
+# T-3297: one audit attempt — shared by the first run and the bounded-wait
+# retries below. Sets $audit_exit; captures to $_t3126_out when available.
+_t3297_run_audit() {
+    if [ -n "$_t3126_out" ]; then
+        "$AUDIT_SCRIPT" --section structure 2>&1 | tee "$_t3126_out"
+        audit_exit=${PIPESTATUS[0]}
+    else
+        # mktemp unavailable: run exactly as before. No capture means no scope line,
+        # and the gate below treats a missing scope line as "block" — degraded to the
+        # pre-T-3126 behaviour, never to something weaker.
+        "$AUDIT_SCRIPT" --section structure
+        audit_exit=$?
+    fi
+}
+_t3297_run_audit
+
+# T-3297 / OBS-305: bounded wait for the audit lock before giving up.
+# The exit-75 BLOCK below is correct (a gate that did not run is not a gate that
+# passed — T-2930), but its original premise ("the cron audit finishes within a
+# minute or two") decayed: structural-30m cron audits stack when a run overlaps
+# the next trigger, so the lock can stay held for many minutes and every push
+# contends (observed 2026-08-16: 3 concurrent framework audits + 2 from another
+# project). Waiting a bounded window converts most contention hits into a short
+# pause instead of a failed push, without weakening the no-false-pass rule:
+# window exhausted → the same BLOCK as before, verbatim in effect.
+_t3297_wait="${FW_PREPUSH_LOCK_WAIT:-90}"
+case "$_t3297_wait" in ''|*[!0-9]*) _t3297_wait=90 ;; esac
+_t3297_lock_file="$PROJECT_ROOT/.context/locks/audit.lock"
+# Probe mirrors audit.sh's own arm selection: flock when available, else the
+# fallback lock file's existence. The flock arm never unlinks the lock file
+# (T-3298: flock binds an inode, the path is a permanent rendezvous point), so a
+# transient `flock -n <file> -c true` is a safe held/free probe.
+_t3297_lock_free() {
+    if command -v flock >/dev/null 2>&1; then
+        [ -e "$_t3297_lock_file" ] || return 0
+        flock -n "$_t3297_lock_file" -c true 2>/dev/null
+    else
+        [ ! -f "$_t3297_lock_file" ]
+    fi
+}
+_t3297_waited=0
+if [ "$audit_exit" -eq 75 ] && [ "$_t3297_wait" -gt 0 ]; then
+    echo ""
+    echo "Audit lock held — waiting up to ${_t3297_wait}s for it to free (FW_PREPUSH_LOCK_WAIT=$_t3297_wait, 0 disables)..."
+    _t3297_start=$(date +%s)
+    _t3297_deadline=$(( _t3297_start + _t3297_wait ))
+    _t3297_blind=0
+    while [ "$audit_exit" -eq 75 ] && [ "$(date +%s)" -lt "$_t3297_deadline" ]; do
+        if _t3297_lock_free; then
+            # Lock looks free — retry now. The retry may still lose the
+            # re-acquire race and return 75 again; keep waiting if so.
+            _t3297_run_audit
+            if [ "$audit_exit" -eq 75 ]; then
+                _t3297_blind=$(( _t3297_blind + 1 ))
+                # Probe says free yet the audit still reports contention: the
+                # contended lock is not one this probe can observe (a vendored
+                # audit resolving a different CONTEXT_DIR, an exotic host).
+                # Waiting blind burns the window for nothing — give up after 2
+                # consecutive blind retries and fall through to the BLOCK.
+                [ "$_t3297_blind" -ge 2 ] && break
+            fi
+        else
+            _t3297_blind=0
+        fi
+        [ "$audit_exit" -eq 75 ] && sleep 1
+    done
+    _t3297_waited=$(( $(date +%s) - _t3297_start ))
 fi
+
+# T-3297: Tier-2 log writer for the contention-only bypass (same entry shape as
+# lib/review.sh:_log_empty_recommendation_bypass and the other gate writers).
+_t3297_log_bypass() {
+    _t3297_log_dir="$PROJECT_ROOT/.context/working"
+    mkdir -p "$_t3297_log_dir" 2>/dev/null || return 0
+    _t3297_task=$(sed -n 's/^current_task:[[:space:]]*//p' "$_t3297_log_dir/focus.yaml" 2>/dev/null | head -1)
+    {
+        echo "- timestamp: '$(date -u +'%Y-%m-%dT%H:%M:%SZ')'"
+        echo "  task: '${_t3297_task:-unknown}'"
+        echo "  flag: 'FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1'"
+        echo "  caller: 'pre-push audit gate (T-3297)'"
+        echo "  reason: 'audit lock contention (exit 75) — no verdict produced; contention-only Tier-2 skip after ${_t3297_waited:-0}s wait'"
+    } >> "$_t3297_log_dir/.gate-bypass-log.yaml" 2>/dev/null || true
+}
 
 # Parse the T-3126 partition. Absent line, unparseable count, or no capture at all
 # → _t3126_ref_fails stays empty → the FAILURES branch blocks, exactly as before.
@@ -1142,21 +1216,46 @@ if [ $audit_exit -eq 75 ]; then
     # contention costs seconds — wait for the other audit and push again — whereas a
     # push waved through on an unevaluated gate costs whatever the unaudited commit
     # does downstream, discovered later and attributed elsewhere.
-    echo ""
-    echo "ERROR: Push blocked - audit COULD NOT RUN (another audit holds the lock)"
-    echo ""
-    echo "This is not an audit failure. No verdict was produced, so the gate has"
-    echo "nothing to pass you on."
-    echo ""
-    echo "What to do: wait for the running audit to finish, then push again."
-    echo "  Usually the daily cron audit — it finishes within a minute or two."
-    echo "  Check: ls -l $PROJECT_ROOT/.context/locks/audit.lock"
-    echo ""
-    echo "Bypass: git push --no-verify"
-    echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
-    echo ""
-    [ -n "$_t3126_out" ] && rm -f "$_t3126_out"
-    exit 1
+    #
+    # T-3297: contention-only Tier-2 bypass. It is checked HERE, inside the
+    # exit-75 branch, and nowhere else — so a real FAIL (exit 2) still blocks
+    # with the env set. Skipping a gate that produced NO verdict is a logged
+    # Tier-2 call; skipping one that produced a FAIL verdict would be a false
+    # pass, and no env var buys that.
+    if [ "${FW_PUSH_SKIP_AUDIT_ON_CONTENTION:-0}" = "1" ]; then
+        _t3297_log_bypass
+        echo ""
+        echo "WARNING: audit COULD NOT RUN (lock contention) — push allowed by"
+        echo "  FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1 (Tier-2, logged to"
+        echo "  .context/working/.gate-bypass-log.yaml)."
+        echo "  No audit verdict exists for this push; run 'fw audit' once the lock frees."
+        echo ""
+    else
+        echo ""
+        echo "ERROR: Push blocked - audit COULD NOT RUN (another audit holds the lock)"
+        echo ""
+        echo "This is not an audit failure. No verdict was produced, so the gate has"
+        echo "nothing to pass you on."
+        echo ""
+        echo "The gate waited ${_t3297_waited:-0}s of its ${_t3297_wait:-0}s window (FW_PREPUSH_LOCK_WAIT)"
+        echo "for the lock to free. Cron audits can stack when a run overlaps the next"
+        echo "trigger, so the lock may stay held for many minutes (T-3297)."
+        echo "  Check: ls -l $PROJECT_ROOT/.context/locks/audit.lock; pgrep -af audit.sh"
+        echo ""
+        echo "What to do — each command works as-is from this blocked state:"
+        echo "  1. Wait for the running audit(s) to finish, then push again."
+        echo "  2. Wait longer in-gate:  FW_PREPUSH_LOCK_WAIT=300 git push"
+        echo "       (seconds to wait for the lock; 0 disables the wait)"
+        echo "  3. Tier-2 bypass, CONTENTION ONLY:  FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1 git push"
+        echo "       Applies only when the audit could not run (exit 75) — a real audit"
+        echo "       FAIL still blocks. Logged to .context/working/.gate-bypass-log.yaml."
+        echo ""
+        echo "Last resort: git push --no-verify"
+        echo "  (Tier 0 — prompts for human approval in agent context. Prefer 2 or 3.)"
+        echo ""
+        [ -n "$_t3126_out" ] && rm -f "$_t3126_out"
+        exit 1
+    fi
 elif [ $audit_exit -eq 2 ]; then
     # T-3126: block only on REF-scoped failures.
     #

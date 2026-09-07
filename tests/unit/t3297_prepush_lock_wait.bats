@@ -203,8 +203,10 @@ _run_push_hook() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"audit has FAILURES"* ]]
     # and no bypass entry was written for it
-    if [ -f "$TMP_REPO/.context/working/.gate-bypass-log.yaml" ]; then
-        ! grep -q "FW_PUSH_SKIP_AUDIT_ON_CONTENTION" "$TMP_REPO/.context/working/.gate-bypass-log.yaml"
+    local log="$TMP_REPO/.context/working/.gate-bypass-log.yaml"
+    if [ -f "$log" ] && grep -q "FW_PUSH_SKIP_AUDIT_ON_CONTENTION" "$log"; then
+        echo "bypass entry written for an exit-2 FAIL — contention-only contract broken" >&2
+        false
     fi
 }
 
