@@ -142,11 +142,11 @@ Open design questions for whoever picks this up:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `BASELINE` is derived from a real session's own transcript, not a constant — a session with a heavier CLAUDE.md or hook set reports a higher baseline than a lighter one, demonstrated with two measurements that differ.
-- [ ] The useful-headroom figure (`WINDOW - BASELINE`, and the ratio to `WINDOW`) is readable from at least one surface an operator or agent already looks at, without running a bespoke script.
-- [ ] The figure is present in `.context/working/.budget-status` alongside `level` and `tokens`, so it is machine-readable by the loop itself and not only by a human reading prose.
-- [ ] A negative control exists: a deliberately constrained configuration (small window) reports a visibly poor ratio, and the default configuration reports a healthy one — so the measurement is shown to move, not merely to render.
-- [ ] No threshold, gate, or WARN ships in this task. If one is warranted it is filed separately, with the observed distribution as its evidence.
+- [x] `BASELINE` is derived from a real session's own transcript, not a constant — a session with a heavier CLAUDE.md or hook set reports a higher baseline than a lighter one, demonstrated with two measurements that differ. (Fixtures: heavy=52600 vs light=12000 in `tests/unit/t3248_useful_headroom.bats`; live cross-check: parent session baselined 74,967, this worker session 85,964 — same host, different injected context, different floor.)
+- [x] The useful-headroom figure (`WINDOW - BASELINE`, and the ratio to `WINDOW`) is readable from at least one surface an operator or agent already looks at, without running a bespoke script. (`checkpoint.sh status` — the existing "where am I" surface — now prints `Useful headroom: N tokens (cap W - baseline B ...; ratio R)`; `checkpoint.sh budget` passes the fields through.)
+- [x] The figure is present in `.context/working/.budget-status` alongside `level` and `tokens`, so it is machine-readable by the loop itself and not only by a human reading prose. (budget-gate.sh rides `baseline_tokens`/`headroom_tokens`/`headroom_ratio` along in every cache write; nulls — never fabricated numbers — on the unknown branches.)
+- [x] A negative control exists: a deliberately constrained configuration (small window) reports a visibly poor ratio, and the default configuration reports a healthy one — so the measurement is shown to move, not merely to render. (Pinned hermetically: `FW_CONTEXT_WINDOW=58000` — the E9 dial — against the 52.6k-floor fixture yields ratio 0.09; default 300000 yields 0.82.)
+- [x] No threshold, gate, or WARN ships in this task. If one is warranted it is filed separately, with the observed distribution as its evidence. (Pinned by the `no gate ships` test: the poor-ratio run still exits 0 and emits no headroom-based stderr; no threshold constant added anywhere.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,6 +180,12 @@ Open design questions for whoever picks this up:
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t3248_useful_headroom.bats > /tmp/.t3248-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3248-bats.out
+test "$(grep -c '# skip' /tmp/.t3248-bats.out)" -eq 0
+bash -n agents/context/checkpoint.sh
+bash -n agents/context/budget-gate.sh
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -314,6 +320,12 @@ Open design questions for whoever picks this up:
 
 ## Evolution
 
+### 2026-09-07 — sibling-test assertion collision
+
+- **What changed:** `tests/unit/t2885_context_tokens_model_scope.bats`'s compact-boundary test asserted `output != *"290000"*` to forbid the pre-boundary TOKEN count leaking into `status`. The new Useful-headroom line legitimately prints 290000 there (cap 300000 − baseline 10000) — a textual collision with correct behavior, not a regression.
+- **Plan impact:** One surgical edit outside the planned write-set: the assertion is now scoped to the gauge line (`Context tokens: 290000`), with a comment naming T-3248. All 72 unit + 44 integration tests in the budget family pass, zero skips.
+- **Triggered:** Nothing filed — the over-broad assertion is the whole finding.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -366,6 +378,12 @@ Open design questions for whoever picks this up:
 -->
 
 ## Decisions
+
+### 2026-09-07 — BASELINE derivation rule
+
+- **Chose:** BASELINE = the total (`input_tokens + cache_read_input_tokens + cache_creation_input_tokens`) of the EARLIEST usage entry of the dominant model since the last `compact_boundary`, filtered by `.session-start-ts` — i.e. the context the session already occupied at its first measured API call: system prompt, CLAUDE.md, hook set, injected handover, opening prompt. Same scoping rules as `lib/context_tokens.py` (which takes the LAST in-scope entry = current usage; baseline takes the FIRST = the floor), including the same ≥2-in-scope-entries trust guard (0 = "not yet measurable", never a guess). Cached per `(transcript, session-start-ts)` in `.context/working/.session-baseline`; the cache drops on `checkpoint.sh reset` and on detected compaction (the floor is re-paid then).
+- **Why:** Per-session-measured by construction — a heavier CLAUDE.md or hook set inflates the first turn's snapshot and thus the baseline (verified live: parent session 74,967 vs this worker 85,964 on the same host). No new instrumentation: it is the same transcript JSONL the gauges already read. The full-file scan (no `tail -c`, unlike the current-usage read) is required because the first entry lives at the HEAD of the post-boundary region, which a tail window truncates on long transcripts — and it runs once per session thanks to the cache.
+- **Rejected:** (a) A constant (e.g. the E9 52.6k) — defeats the AC and goes stale the moment CLAUDE.md changes. (b) Sharing code by extending `lib/context_tokens.py` — the lib is outside this task's write-set; the scan is inlined in `checkpoint.sh` with an explicit keep-in-step comment instead (accepted duplication, flagged for a future refactor if the lib's scoping rules ever move). (c) Writing headroom fields from `checkpoint.sh` post-tool — budget-gate.sh is the sole writer of `.budget-status`, and a second writer would make the fields flap; instead budget-gate calls `checkpoint.sh baseline` (cache-served after first compute) and rides the fields along in its own write.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

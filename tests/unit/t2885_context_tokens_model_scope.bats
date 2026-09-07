@@ -147,6 +147,9 @@ EOF
     run env PROJECT_ROOT="$PROJECT_ROOT" CONTEXT_DIR="$CONTEXT_DIR" FW_TRANSCRIPT_PATH="$f" \
         bash "$FRAMEWORK_ROOT/agents/context/checkpoint.sh" status
     [ "$status" -eq 0 ]
-    [[ "$output" == *"15000"* ]]
-    [[ "$output" != *"290000"* ]]
+    [[ "$output" == *"Context tokens: 15000"* ]]
+    # Scoped to the gauge line (T-3248): status now also prints a Useful-headroom
+    # line, and cap 300000 - baseline 10000 legitimately equals the 290000 this
+    # bare-substring assertion was written to forbid as a TOKEN reading.
+    [[ "$output" != *"Context tokens: 290000"* ]]
 }

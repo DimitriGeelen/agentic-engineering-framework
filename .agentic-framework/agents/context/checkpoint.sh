@@ -12,7 +12,9 @@
 # Usage:
 #   checkpoint.sh post-tool   — Called by Claude Code PostToolUse hook
 #   checkpoint.sh reset       — Reset tool call counter (on commit)
-#   checkpoint.sh status      — Show current context usage
+#   checkpoint.sh status      — Show current context usage + useful headroom
+#   checkpoint.sh budget      — Safe reader for .budget-status (T-3241)
+#   checkpoint.sh baseline    — Session BASELINE tokens, bare integer (T-3248)
 #
 # Part of: Agentic Engineering Framework (P-009: Context Budget Awareness)
 
@@ -25,6 +27,7 @@ source "$FRAMEWORK_ROOT/lib/config.sh"
 fw_hook_crash_trap "checkpoint"
 COUNTER_FILE="$CONTEXT_DIR/working/.tool-counter"
 PREV_TOKENS_FILE="$CONTEXT_DIR/working/.prev-token-reading"
+BASELINE_FILE="$CONTEXT_DIR/working/.session-baseline"
 
 # CONFIGURED BUDGET CAP — not a measurement of the model's context window.
 # A deliberate quality-and-cost dial, override via FW_CONTEXT_WINDOW / fw config set
@@ -109,6 +112,103 @@ get_context_tokens() {
         session_start_ts=$(tr -d '[:space:]' < "$ts_file" 2>/dev/null) || session_start_ts=""
     fi
     tail -c 10000000 "$transcript" 2>/dev/null | python3 "$FRAMEWORK_ROOT/lib/context_tokens.py" "$session_start_ts" 2>/dev/null
+}
+
+# ── T-3248: useful-headroom BASELINE ─────────────────────────────────────────
+# BASELINE = the context this session had already paid for at its FIRST measured
+# turn — CLAUDE.md, the hook set, the injected handover, the opening prompt. It
+# is the total (input + cache_read + cache_creation) of the EARLIEST usage entry
+# of the dominant model since the last compact_boundary, filtered by
+# .session-start-ts. Same scoping rules as lib/context_tokens.py, which returns
+# the LAST in-scope entry (current usage); this takes the FIRST (the floor).
+# Inlined rather than shared because the lib is out of T-3248's write-set — if
+# the lib's scoping rules move, this scan must move with them.
+# Same trust guard as the lib: fewer than 2 in-scope entries → 0 (not yet
+# measurable), never a guess. Per-session-measured by construction: a heavier
+# CLAUDE.md/hook set inflates the first turn's snapshot and thus the baseline.
+# Reads the WHOLE transcript (no tail -c): the first entry lives at the HEAD of
+# the post-boundary region, which a tail window truncates on long transcripts.
+# Cached per (transcript, session-start-ts) in .session-baseline since the floor
+# is constant for the life of a session — the full scan runs once. The cache is
+# dropped on `reset` and on detected compaction (the floor is re-paid then).
+get_baseline_tokens() {
+    local transcript="$1"
+    local session_start_ts=""
+    local ts_file="$CONTEXT_DIR/working/.session-start-ts"
+    if [ -f "$ts_file" ]; then
+        session_start_ts=$(tr -d '[:space:]' < "$ts_file" 2>/dev/null) || session_start_ts=""
+    fi
+    T3248_TRANSCRIPT="$transcript" T3248_TS="$session_start_ts" T3248_CACHE="$BASELINE_FILE" \
+        python3 - <<'PYEOF' 2>/dev/null
+import json, os, time
+from collections import Counter
+
+transcript = os.environ["T3248_TRANSCRIPT"]
+ts_filter = os.environ.get("T3248_TS", "")
+cache_file = os.environ.get("T3248_CACHE", "")
+
+# Fast path: baseline is constant per (transcript, session start).
+if cache_file and os.path.exists(cache_file):
+    try:
+        with open(cache_file) as f:
+            c = json.load(f)
+        if (c.get("transcript") == transcript
+                and c.get("session_start_ts", "") == ts_filter
+                and isinstance(c.get("baseline_tokens"), int)
+                and c["baseline_tokens"] > 0):
+            print(c["baseline_tokens"])
+            raise SystemExit(0)
+    except SystemExit:
+        raise
+    except Exception:
+        pass
+
+entries = []  # (model, token_total) since the last compact_boundary, in order
+try:
+    with open(transcript, errors="replace") as f:
+        for line in f:
+            try:
+                e = json.loads(line)
+            except Exception:
+                continue
+            if e.get("type") == "system" and e.get("subtype") == "compact_boundary":
+                entries = []
+                continue
+            model = e.get("message", {}).get("model", "")
+            if model.startswith("<"):
+                continue
+            if ts_filter:
+                entry_ts = e.get("timestamp", "")
+                if entry_ts and entry_ts < ts_filter:
+                    continue
+            u = e.get("message", {}).get("usage")
+            if u and "input_tokens" in u:
+                entries.append((model, u["input_tokens"]
+                                + u.get("cache_read_input_tokens", 0)
+                                + u.get("cache_creation_input_tokens", 0)))
+except Exception:
+    print(0)
+    raise SystemExit(0)
+
+if not entries:
+    print(0)
+    raise SystemExit(0)
+dominant, _ = Counter(m for m, _ in entries).most_common(1)[0]
+in_scope = [t for m, t in entries if m == dominant]
+if len(in_scope) < 2:
+    print(0)
+    raise SystemExit(0)
+baseline = in_scope[0]
+if cache_file:
+    try:
+        with open(cache_file, "w") as f:
+            json.dump({"baseline_tokens": baseline, "transcript": transcript,
+                       "session_start_ts": ts_filter,
+                       "timestamp": int(time.time())}, f)
+    except Exception:
+        pass
+print(baseline)
+PYEOF
 }
 
 warn_by_tokens() {
@@ -239,6 +339,9 @@ detect_compaction() {
         local prev
         prev=$(tr -d '[:space:]' < "$PREV_TOKENS_FILE" 2>/dev/null) || prev=0
         if [ "${prev:-0}" -gt 100000 ] && [ "$tokens" -lt 10000 ]; then
+            # T-3248: the post-compact session re-pays the floor — drop the
+            # cached baseline so the next reading measures the new one.
+            rm -f "$BASELINE_FILE"
             echo "" >&2
             echo "===========================================" >&2
             echo "COMPACTION DETECTED: Tokens dropped ${prev} -> ${tokens}." >&2
@@ -436,6 +539,7 @@ except Exception: print('')
         ensure_counter
         echo "0" > "$COUNTER_FILE"
         rm -f "$PREV_TOKENS_FILE"
+        rm -f "$BASELINE_FILE"  # T-3248: baseline is per-session — re-measure next session
         rm -f "$CONTEXT_DIR/working/.restart-requested"  # T-186: clean up restart signal
         rm -f "$CONTEXT_DIR/working/.approval-notified"  # T-694: reset approval notification tracker
         echo "Counter reset."
@@ -463,9 +567,34 @@ except Exception: print('')
             else
                 echo "Context tokens: unavailable (no usage data)"
             fi
+            # T-3248: useful headroom — the work a session can actually do is
+            # WINDOW - BASELINE, not WINDOW; every restart re-pays the baseline
+            # in full (arc-012 E9: a 52.6k floor in a 58000 cap left ~4% to work
+            # in, invisibly). Measurement only: no threshold, nothing gates on it.
+            baseline=$(get_baseline_tokens "$transcript") || baseline=0
+            if [ "${baseline:-0}" -gt 0 ] 2>/dev/null; then
+                headroom=$((CONTEXT_WINDOW - baseline))
+                hr_ratio=$(awk -v h="$headroom" -v w="$CONTEXT_WINDOW" 'BEGIN{printf "%.2f", h/w}')
+                echo "Useful headroom: ${headroom} tokens (cap ${CONTEXT_WINDOW} - baseline ${baseline} paid before this session's first turn; ratio ${hr_ratio})"
+            else
+                echo "Useful headroom: unavailable (session baseline not yet measurable from transcript)"
+            fi
         else
             echo "Context tokens: unavailable (no transcript)"
+            echo "Useful headroom: unavailable (no transcript)"
         fi
+        ;;
+    baseline)
+        # T-3248: bare-integer BASELINE for machine callers (budget-gate.sh and
+        # tests); 0 = not yet measurable. Optional arg = explicit transcript
+        # path (budget-gate has already resolved one); FW_TRANSCRIPT_PATH and
+        # reconstruction are the fallbacks, same as `status`.
+        transcript=$(find_transcript "${2:-${FW_TRANSCRIPT_PATH:-}}" 2>/dev/null) || true
+        if [ -z "${transcript:-}" ]; then
+            echo "0"
+            exit 0
+        fi
+        get_baseline_tokens "$transcript" || echo "0"
         ;;
     budget)
         # T-3241 (folds in field report 001-CashWeb T-222/G-087): safe reader for
@@ -525,10 +654,17 @@ else:
     print(f'level: {level}')
     print(f'tokens: {tokens}')
     print(f'age_seconds: {age}')
+    # T-3248: pass the useful-headroom fields through when the writer measured
+    # them (budget-gate rides them along in the same cache write). Absent or
+    # null fields print nothing — measurement only, never a fabricated number.
+    if isinstance(s.get('baseline_tokens'), int):
+        print(f\"baseline_tokens: {s['baseline_tokens']}\")
+        print(f\"headroom_tokens: {s.get('headroom_tokens')}\")
+        print(f\"headroom_ratio: {s.get('headroom_ratio')}\")
 "
         ;;
     *)
-        echo "Usage: checkpoint.sh {post-tool|reset|status|budget}"
+        echo "Usage: checkpoint.sh {post-tool|reset|status|budget|baseline}"
         exit 1
         ;;
 esac

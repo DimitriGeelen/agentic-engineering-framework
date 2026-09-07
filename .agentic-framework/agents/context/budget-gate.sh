@@ -357,7 +357,7 @@ if [ -z "${TRANSCRIPT:-}" ]; then
     if [ -f "$CONTEXT_DIR/working/session.yaml" ]; then
         NT_SESSION_ID=$(grep "^session_id:" "$CONTEXT_DIR/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
     fi
-    printf '{"level": "unknown", "tokens": null, "timestamp": %d, "session_id": "%s", "source": "budget-gate", "note": "no transcript found"}' \
+    printf '{"level": "unknown", "tokens": null, "timestamp": %d, "session_id": "%s", "source": "budget-gate", "note": "no transcript found", "baseline_tokens": null, "headroom_tokens": null, "headroom_ratio": null}' \
         "$(date +%s)" "${NT_SESSION_ID:-unknown}" > "$STATUS_FILE" 2>/dev/null || true
     exit 0
 fi
@@ -411,9 +411,27 @@ if [ "$SCAN_OK" -eq 1 ]; then
     elif [ "$TOKENS" -ge "$TOKEN_WARN" ]; then
         LEVEL="warn"
     fi
+    # T-3248: useful-headroom fields ride along in the same cache write, so the
+    # loop can read WINDOW - BASELINE from the file it already reads. BASELINE
+    # is measured from this session's OWN transcript (first in-scope usage entry
+    # — checkpoint.sh get_baseline_tokens; full scan once, then served from the
+    # .session-baseline cache, so this subprocess is cheap on repeat calls).
+    # Measurement only: nothing below gates, warns, or blocks on these fields —
+    # if a threshold is ever warranted it is a separate task, argued from the
+    # observed distribution (T-3248 AC 5). Nulls when the baseline is not yet
+    # measurable — never a fabricated number (same honesty rule as T-3241).
+    BASELINE=$(bash "$SCRIPT_DIR/checkpoint.sh" baseline "$TRANSCRIPT" 2>/dev/null) || BASELINE=0
+    [[ "$BASELINE" =~ ^[0-9]+$ ]] || BASELINE=0
+    if [ "$BASELINE" -gt 0 ]; then
+        HEADROOM=$((CONTEXT_WINDOW - BASELINE))
+        HEADROOM_RATIO=$(awk -v h="$HEADROOM" -v w="$CONTEXT_WINDOW" 'BEGIN{printf "%.2f", h/w}')
+        HR_JSON=", \"baseline_tokens\": ${BASELINE}, \"headroom_tokens\": ${HEADROOM}, \"headroom_ratio\": ${HEADROOM_RATIO}"
+    else
+        HR_JSON=', "baseline_tokens": null, "headroom_tokens": null, "headroom_ratio": null'
+    fi
     # Write status file (fast-path cache for subsequent gate calls)
-    printf '{"level": "%s", "tokens": %d, "timestamp": %d, "session_id": "%s", "source": "budget-gate"}' \
-        "$LEVEL" "$TOKENS" "$(date +%s)" "${BG_SESSION_ID:-unknown}" > "$STATUS_FILE" 2>/dev/null || true
+    printf '{"level": "%s", "tokens": %d, "timestamp": %d, "session_id": "%s", "source": "budget-gate"%s}' \
+        "$LEVEL" "$TOKENS" "$(date +%s)" "${BG_SESSION_ID:-unknown}" "$HR_JSON" > "$STATUS_FILE" 2>/dev/null || true
 else
     # T-3241: scan failed (unreadable/unparseable transcript, or too few in-scope
     # entries to trust a scope decision — context_tokens.py's own "return 0 rather
@@ -422,7 +440,7 @@ else
     # pre-existing no-transcript path) — only the ON-DISK claim changes, not gate
     # enforcement.
     LEVEL="unknown"
-    printf '{"level": "unknown", "tokens": null, "timestamp": %d, "session_id": "%s", "source": "budget-gate", "note": "scan failed or produced no data"}' \
+    printf '{"level": "unknown", "tokens": null, "timestamp": %d, "session_id": "%s", "source": "budget-gate", "note": "scan failed or produced no data", "baseline_tokens": null, "headroom_tokens": null, "headroom_ratio": null}' \
         "$(date +%s)" "${BG_SESSION_ID:-unknown}" > "$STATUS_FILE" 2>/dev/null || true
 fi
 LEVEL=${LEVEL:-ok}
