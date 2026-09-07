@@ -1,8 +1,10 @@
 ---
 id: T-3343
-name: "T-2727 denominator pin red: re-anchor init_validation_ordering test 12 differentially + rule on the two conditional checks (OBS-380)"
+name: "T-2727 denominator pin red: re-anchor init_validation_ordering test 12 differentially
+  + rule on the two conditional checks (OBS-380)"
 description: >
-  T-2727 denominator pin red: re-anchor init_validation_ordering test 12 differentially + rule on the two conditional checks (OBS-380)
+  T-2727 denominator pin red: re-anchor init_validation_ordering test 12 differentially
+  + rule on the two conditional checks (OBS-380)
 
 status: started-work
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T19:50:51Z
-last_update: 2026-09-07T19:50:51Z
-date_finished: null
+last_update: '2026-09-07T20:00:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-07T20:00:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T20:00:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 5
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=5 (body:class-neutral); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3343: T-2727 denominator pin red: re-anchor init_validation_ordering test 12 differentially + rule on the two conditional checks (OBS-380)
@@ -50,10 +80,10 @@ the assertion measures corpus/host drift, not the invariant. Blocks T-2801.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 Ruling recorded:** determine and record (in ## RCA) whether the 43→42 drop is a genuinely lost check or legitimately conditional post-authoring checks (T-2805 vendor / T-2818 git-identity) not firing on a fresh non-git fixture — with the guard conditions cited from lib/validate-init.sh
-- [ ] **A2 Differential re-anchor:** test 12 asserts the T-2727 invariant corpus-independently — e.g. fresh-init total (func-tasks fires on 5 seeded tasks) exceeds the same tree's total with `.tasks/active/` emptied (guard off) by exactly 1, and the func-tasks row is present/absent accordingly; no absolute `>= N` total remains in the test
-- [ ] **A3 Green:** `bats tests/unit/init_validation_ordering.bats` fully green, 0 skips; `bats tests/unit/lib_init.bats` still green
-- [ ] **A4 Teeth kept:** the re-anchored assertion still fails if the func-tasks guard is moved back outside the `total++` (demonstrated by reasoning or a red-run against a simulated regression, recorded in Updates)
+- [x] **A1 Ruling recorded:** determine and record (in ## RCA) whether the 43→42 drop is a genuinely lost check or legitimately conditional post-authoring checks (T-2805 vendor / T-2818 git-identity) not firing on a fresh non-git fixture — with the guard conditions cited from lib/validate-init.sh
+- [x] **A2 Differential re-anchor:** test 12 asserts the T-2727 invariant corpus-independently — e.g. fresh-init total (func-tasks fires on 5 seeded tasks) exceeds the same tree's total with `.tasks/active/` emptied (guard off) by exactly 1, and the func-tasks row is present/absent accordingly; no absolute `>= N` total remains in the test
+- [x] **A3 Green:** `bats tests/unit/init_validation_ordering.bats` fully green, 0 skips; `bats tests/unit/lib_init.bats` still green
+- [x] **A4 Teeth kept:** the re-anchored assertion still fails if the func-tasks guard is moved back outside the `total++` (demonstrated by reasoning or a red-run against a simulated regression, recorded in Updates)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -214,7 +244,48 @@ the assertion measures corpus/host drift, not the invariant. Blocks T-2801.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 600 bats tests/unit/init_validation_ordering.bats > /tmp/t3343-v1.out 2>&1 && ! grep -q "^not ok" /tmp/t3343-v1.out
+test "$(grep -c '# skip' /tmp/t3343-v1.out)" -eq 0
+timeout 600 bats tests/unit/lib_init.bats > /tmp/t3343-v2.out 2>&1 && ! grep -q "^not ok" /tmp/t3343-v2.out
+test "$(grep -c '# skip' /tmp/t3343-v2.out)" -eq 0
+# A2: no absolute total anchor may remain in the re-anchored test
+! grep -qE 'total.* -ge [0-9]' tests/unit/init_validation_ordering.bats
+
 ## RCA
+
+**Symptom:** `init_validation_ordering.bats` test "the onboarding-task check is
+counted in init's own denominator" was RED: it asserted fresh-init total `>= 43`,
+the probe reported 42 (41 passed + 1 provider-skip).
+
+**Root cause (A1 ruling): NO check was lost.** `diff` of authoring-era
+`69ec73d2a:lib/validate-init.sh` vs current is 69 lines with exactly three
+changes: (1) T-3129 `-d`→`-e` on the `.git` probe, (2) **+func-vendor** (T-2805,
+`lib/validate-init.sh:443`, guarded `[ -d "$target_dir/.agentic-framework" ]` —
+FIRES on a fresh init), (3) **+func-identity** (T-2818, `:540`, unconditional
+`total++` — FIRES always). No removal. The arithmetic closes through the THIRD,
+overlooked conditional block: **func-hook ×3** (`:381-397`, guarded
+`[ "$is_git" = true ]`, one `total++` per git hook commit-msg/post-commit/pre-push).
+At authoring, `fw init` git-inited the fixture (lib/init.sh:186-189), so
+`is_git=true` and the denominator was 40 base + 3 func-hook = **43**. Since
+2026-09-06 this host has a stray `/.git` (with a stale index.lock); init's guard
+`git -C "$target_dir" rev-parse --is-inside-work-tree` walks UP to that ancestor
+repo, so `git init` is silently skipped, the fixture ends non-git,
+`is_git=false`, and func-hook ×3 leave the count: 40 base − 0 + 2 new checks =
+**42**. 43→42 = −3 (func-hook, host-conditional) + 2 (T-2805/T-2818). Both new
+checks were verified firing (rows 63 and 66 of the probe); the T-2805/T-2818
+hypothesis in OBS-380 was wrong — they are not the conditional ones, func-hook is.
+
+**Why structurally allowed:** the test pinned the invariant ("func-tasks INSIDE
+the denominator") via an absolute host-dependent count — T-3326 mutable-corpus
+class. The denominator legitimately moves with validate-init's evolution AND
+with host git state, so the anchor measured the host, not the code.
+
+**Prevention:** the re-anchored test (A2) is differential — guard-on vs guard-off
+totals on the same tree must differ by exactly 1 — immune to both drift axes.
+Side findings filed, not fixed here (one bug one task): OBS-382 (init's
+ancestor-walking git-init skip + bootstrap commit failing against `/.git`),
+OBS-383 (standalone `bin/fw validate-init` dies silently at Tier 3a under
+`set -euo pipefail`, lib/validate-init.sh:564).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -283,6 +354,15 @@ the assertion measures corpus/host drift, not the invariant. Blocks T-2801.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The A1 ruling closes the arithmetic exactly (43 = 40 + 3 git-guarded func-hook then; 42 = 40 + 2 new checks now, func-hook off because a stray `/.git` makes init skip `git init`), no check was lost from validate-init.sh, and the re-anchored differential test pins the T-2727 invariant independent of both drift axes. Both suites green, 0 skips; teeth demonstrated by a red-run against a simulated counted-outside regression.
+**Evidence:**
+- `diff 69ec73d2a:lib/validate-init.sh` vs current = 69 lines, zero removals; func-vendor (:443) and func-identity (:540) both verified firing on a fresh fixture.
+- func-hook ×3 (:381, `is_git`-guarded) verified NOT firing: probe tree has no `.git`; `git -C /tmp rev-parse --git-dir` → `/.git` (stray, created 2026-09-06).
+- Re-anchored test 2: init total t1=42 with `✓ func-tasks` row vs same-tree emptied-tasks total t2=41 without the row; asserts `t1 == t2+1` — passed.
+- A4 red-run: with `total++` removed from the func-tasks block in a scratch copy, both legs report total 41 (t1==t2), so the differential assertion fails while row-presence alone would still pass.
+- OBS-382 / OBS-383 filed for the two side-bugs (init ancestor-walk git-init skip; standalone validate-init errexit death) — not fixed here per one-bug-one-task.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -310,3 +390,8 @@ the assertion measures corpus/host drift, not the invariant. Blocks T-2801.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3343-t-2727-denominator-pin-red-re-anchor-ini.md
 - **Context:** Initial task creation
+
+### 2026-09-07T22:05:00Z — A4 teeth demonstration [worker]
+- **Action:** Simulated the counted-outside regression: copied lib/validate-init.sh to a scratch path and replaced the func-tasks block's `total=$((total + 1))` with a no-op (check still runs and prints). Ran both differential legs against the regressed copy on a fresh fixture.
+- **Output:** with-tasks leg: `✓ func-tasks` row present, `Validation passed: 41/41`; emptied leg: `Validation passed: 40/41`. Totals EQUAL (t1=41, t2=41), so the re-anchored assertion `[ "$t1" -eq $((t2 + 1)) ]` goes red — while the old row-presence check (test 1) would still pass. The ordering-reverted regression (validation before seeding) is also caught: func-tasks row would vanish from the init output AND t1 would equal t2, failing two assertions.
+- **Context:** A4 — the differential pin discriminates on counting, not on printing.
