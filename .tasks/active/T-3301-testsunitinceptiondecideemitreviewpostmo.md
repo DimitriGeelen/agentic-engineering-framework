@@ -1,10 +1,15 @@
 ---
 id: T-3301
-name: "tests/unit/inception_decide_emit_review_post_move.bats:107 'post-move: do_inception_decide exits 0 when emit_review sees stale task_file' is RED, and was already red at HEAD — verified by checking out HEAD's agents/task-create/update-task.sh, re-running the suite (still 1 of 3 red), and restoring. Found while running the update-task.sh-driving suites for T-3235; unrelated to that change. Needs its own diagnosis: either do_inception_decide stopped exiting 0 on the stale-task_file path, or the fixture drifted."
+name: "tests/unit/inception_decide_emit_review_post_move.bats:107 'post-move: do_inception_decide
+  exits 0 when emit_review sees stale task_file' is RED, and was already red at HEAD
+  — verified by checking out HEAD's agents/task-create/update-task.sh, re-running
+  the suite (still 1 of 3 red), and restoring. Found while running the update-task.sh-driving
+  suites for T-3235; unrelated to that change. Needs its own diagnosis: either do_inception_decide
+  stopped exiting 0 on the stale-task_file path, or the fixture drifted."
 description: >
   Promoted from observation OBS-360
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -22,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:16:00Z
-last_update: 2026-09-06T18:16:00Z
-date_finished: null
+last_update: 2026-09-07T01:10:29Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +39,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-06T18:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=258,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-06T18:30:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3301: tests/unit/inception_decide_emit_review_post_move.bats:107 'post-move: do_inception_decide exits 0 when emit_review sees stale task_file' is RED, and was already red at HEAD — verified by checking out HEAD's agents/task-create/update-task.sh, re-running the suite (still 1 of 3 red), and restoring. Found while running the update-task.sh-driving suites for T-3235; unrelated to that change. Needs its own diagnosis: either do_inception_decide stopped exiting 0 on the stale-task_file path, or the fixture drifted.
@@ -46,8 +79,21 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1 Root cause diagnosed and recorded:** the red test is neither a
+      do_inception_decide regression nor fixture drift — `check_rca_for_bugfix`
+      in `agents/task-create/update-task.sh` does
+      `task_tags=$(grep '^tags:' … | head | sed)` under `set -euo pipefail`;
+      the test fixture's frontmatter has no `tags:` line, grep exits 1,
+      pipefail propagates through the substitution, set -e kills the close
+      mid-flight (traced: death immediately after the Human-AC count print,
+      EXIT trap keylock_release as last frame). Recorded in `## RCA`.
+- [x] **A2 Fix:** the three unguarded frontmatter greps in
+      `check_rca_for_bugfix` (task_title/task_type/task_tags) tolerate a
+      missing key (`|| true`), so a task file without optional frontmatter
+      no longer kills the close under pipefail.
+- [x] **A3 Suite green:** `tests/unit/inception_decide_emit_review_post_move.bats`
+      3/3 green with the fixture UNCHANGED (the tags-less fixture now pins the
+      robustness), and `bash -n agents/task-create/update-task.sh` clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,6 +127,10 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/inception_decide_emit_review_post_move.bats > /tmp/.t3301-bats.out 2>&1 && grep -q '^1\.\.3' /tmp/.t3301-bats.out && ! grep -q '^not ok' /tmp/.t3301-bats.out
+test "$(grep -c '# skip' /tmp/.t3301-bats.out)" -eq 0
+bash -n agents/task-create/update-task.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -199,6 +249,14 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** `inception_decide_emit_review_post_move.bats` test 1 red — `do_inception_decide` exits 1 on a clean GO path; output dies immediately after the "Human: 1/1 checked" print.
+
+**Root cause:** `check_rca_for_bugfix` (update-task.sh:426-428) reads frontmatter via `task_tags=$(grep '^tags:' … | head -1 | sed …)`. The test fixture (deliberately minimal frontmatter) has no `tags:` line; grep exits 1; `set -o pipefail` makes the pipeline — and the command substitution — exit 1; `set -e` kills the whole close. The EXIT trap (keylock_release) is the last traced frame, which made it look like a lock problem.
+
+**Why structurally allowed:** the T-1900 fix one screen down (line 558) repaired the *identical* class (`head` SIGPIPE under pipefail) in a different function, but no sweep was done for sibling unguarded frontmatter greps. Real task files from the template always carry `tags:`, so the live path never hit it — only the minimal fixture did, and the suite that would have caught it is in tests/unit, which the daily audit does not run (same visibility gap as OBS-359/T-3300).
+
+**Prevention:** `|| true` on the three greps in check_rca_for_bugfix; the tags-less fixture stays unchanged and now pins robustness against missing optional frontmatter.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -293,3 +351,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3301-testsunitinceptiondecideemitreviewpostmo.md
 - **Context:** Initial task creation
+
+### 2026-09-07T01:10:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

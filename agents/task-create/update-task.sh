@@ -423,9 +423,12 @@ check_rca_for_bugfix() {
     [ "$NEW_STATUS" = "work-completed" ] || return 0
 
     local task_title task_type task_tags is_bug
-    task_title=$(grep '^name:' "$TASK_FILE" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
-    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    task_tags=$(grep '^tags:' "$TASK_FILE" | head -1 | sed 's/tags:[[:space:]]*//')
+    # T-3301: '|| true' on each — a missing frontmatter key makes grep exit 1,
+    # and under set -euo pipefail that killed the whole close mid-flight
+    # (observed: tags-less task file died right after the AC-count print).
+    task_title=$(grep '^name:' "$TASK_FILE" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"' || true)
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'" || true)
+    task_tags=$(grep '^tags:' "$TASK_FILE" | head -1 | sed 's/tags:[[:space:]]*//' || true)
 
     # Non-bug workflow types never gate on RCA, regardless of title keywords
     # (T-2132: "fix request" / "feature request" tasks are not bug fixes).
