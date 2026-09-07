@@ -582,6 +582,13 @@ luck.
 | S7 — provision audit trail (JSONL) | **G4** | D5 bound 4 |
 | (G5 is a *property*, not a build) — guaranteed by memory-at-project (D2) + S2 reconnecting into the fabric; verified, not separately built | **G5** | D4/C |
 
+**Created task IDs (2026-09-07):** S1 = T-3307 (now) · S2 = T-3308 (next) ·
+S3 = T-3309 (next) · S4 = T-3310 (later) · S5 = T-3311 (later) · S6 = T-3312 (later) ·
+S7 = T-3313 (later). All tagged `arc_id: arc-020` with real ACs. **T-3286** (the G1
+producer leg — stamp `agent_id` on the wire) is **already work-completed**, so
+arc-020's first observable (distinct co-resident agents = distinct correspondents)
+is partly live; the remaining slices build the durable-address + self-heal machinery.
+
 **Gating decisions (rulings, not builds — must close before the slices they gate):**
 - **(d) hub-cardinality** → shapes G2's address in **S1** (is `hub=` mandatory or
   derivable?). Close before S1 finalizes the grammar.
