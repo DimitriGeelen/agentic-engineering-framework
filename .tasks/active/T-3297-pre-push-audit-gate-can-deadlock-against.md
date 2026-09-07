@@ -21,7 +21,7 @@ name: "PRE-PUSH AUDIT GATE CAN DEADLOCK AGAINST CRON AUDIT PILEUP, WITH NO TIER-
 description: >
   Promoted from observation OBS-305
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:14:43Z
-last_update: '2026-09-06T18:15:17Z'
+last_update: 2026-09-07T02:30:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,16 +83,51 @@ bvp_scores_proposed:
 
 # T-3297: PRE-PUSH AUDIT GATE CAN DEADLOCK AGAINST CRON AUDIT PILEUP, WITH NO TIER-2 ESCAPE. The gate (T-2930/OBS-221, agents/git/lib/hooks.sh:915) correctly BLOCKS on exit 75 (lock contention) rather than false-passing — that reasoning is sound and should stay. What has gone stale is its premise: the block message says 'usually the daily cron audit — it finishes within a minute or two'. Observed 2026-08-16: THREE concurrent 999-framework audits (PIDs 250439, 251163, 365610) all running 'audit.sh --section structure,compliance,quality,discovery --cron', ages 3:45/3:45/2:47, plus 2 more from 050-email-archive — 5-7 audit.sh across the host. structural-30m fires every 30 min; if a run exceeds that, runs stack and the lock is effectively never free. The pre-push gate runs '--section structure', the SAME section the cron holds, so it contends every time. Net effect: 5 commits could not be pushed for 15+ min, and the ONLY documented escape is Tier 0 'git push --no-verify'. A gate whose wait-it-out advice no longer holds and whose only bypass is Tier 0 pushes agents toward Tier 0 for a routine push. Sibling to OBS-304 (full audit >10 min, no partial output) — same root (audit runtime), different consequence (there: unusable as an AC; here: push path unreliable). Candidate fixes: cron overlap guard (skip if lock held), a Tier-2 env bypass for contention-only exit 75 distinct from the Tier-0 --no-verify, or bounded lock wait in the gate itself.
 
+## Finish list (S-2026-0907 budget cap — do these FIRST next session)
+
+Worker t3297-prepush-wait landed the implementation; parent verified 11/11
+suite green + bash -n clean, then hit the 285K budget gate mid-integration.
+Committed WITHOUT vendor sync — two known push blockers until finished:
+
+1. `python3 tools/bats-dead-negation-lint.py tests/unit/t3297_prepush_lock_wait.bats`
+   reports **1 dead negation** (a mid-test `!` assertion). Fix with the
+   explicit if/fail form (see t3298 suite line ~153 for the pattern, fixed
+   under 75db61cf1) — until then the T-3138 invariant is RED (structure
+   audit FAIL, blocks push).
+2. `bin/fw vendor self` + commit (hooks.sh is vendored agents/ class —
+   HEAD-level self-vendor drift also FAILs the pre-push structure audit).
+3. Re-run lint + `bin/fw vendor self --check`, push, then `fw task review
+   T-3297` (owner: human).
+
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Promoted from OBS-305; premise decay re-confirmed live 2026-09-07 (~02:00 push
+blocked against a cron pileup). The T-2930 exit-75 BLOCK is correct and stays;
+this task makes the push path reliable around it: a bounded lock wait in the
+gate (`FW_PREPUSH_LOCK_WAIT`, default 90s) plus a contention-only Tier-2 env
+bypass (`FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1`) that can never wave through a
+real FAIL (exit 2). All changes in `agents/git/lib/hooks.sh` pre-push heredoc.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1 Bounded lock wait:** the pre-push audit gate
+      (`agents/git/lib/hooks.sh` ~:915) waits a bounded window
+      (`FW_PREPUSH_LOCK_WAIT`, default ~90s, 0 = today's behavior) for the
+      audit lock to free before giving up; lock frees in-window → gate audit
+      runs as today; window exhausted → existing BLOCK, unchanged.
+- [x] **A2 Contention-only Tier-2 bypass:** a documented env bypass applies
+      ONLY when the gate's audit exited 75 — an exit-2 (real FAILs) still
+      BLOCKS with the env set. Bypass writes a Tier-2 entry to
+      `.gate-bypass-log.yaml`; the BLOCK message names both mechanisms and
+      each remedy is executable from the blocked state (T-3299 rail).
+- [x] **A3 Pinned:** new hermetic bats `tests/unit/t3297_prepush_lock_wait.bats`
+      covers: in-window acquire proceeds; exhaustion blocks (control);
+      75+env → allowed+logged; 2+env → still blocked (critical control).
+      Scratch lock path + stubbed audit; never the live lock.
+- [x] **A4 No-widening:** `bash -n agents/git/lib/hooks.sh` clean; existing
+      hook/prepush/t2930 suites keep passing.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -126,6 +161,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t3297_prepush_lock_wait.bats > /tmp/.t3297-verif.out 2>&1 && ! grep -q "^not ok" /tmp/.t3297-verif.out
+test "$(grep -c '# skip' /tmp/.t3297-verif.out)" -eq 0
+bash -n agents/git/lib/hooks.sh
+timeout 300 bats tests/unit/t2930_audit_contention_exit_code.bats tests/unit/t3126_prepush_audit_gate_scope.bats > /tmp/.t3297-verif-siblings.out 2>&1 && ! grep -q "^not ok" /tmp/.t3297-verif-siblings.out
+test "$(grep -c '# skip' /tmp/.t3297-verif-siblings.out)" -eq 0
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -258,6 +299,39 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** Routine `git push` blocked for 15+ minutes by the pre-push audit
+gate's exit-75 branch ("audit COULD NOT RUN"), with the block message advising
+a wait ("finishes within a minute or two") that never resolved, and the only
+documented escape being Tier 0 `git push --no-verify`. Re-confirmed live
+2026-09-07 ~02:00.
+
+**Root cause:** The gate's premise decayed. When T-2930 shipped the (correct)
+no-false-pass BLOCK, contention meant "the single daily cron audit is running".
+Since then the structural-30m cron fires every 30 minutes and full-audit
+runtime grew past the interval, so runs stack (observed 2026-08-16: 3
+concurrent framework audits + 2 from 050-email-archive) and the lock is
+effectively never free. The gate runs `--section structure` — the same section
+the cron holds — so every push contends, and the gate had no wait, no
+retry, and no Tier-2 escape: only the Tier-0 one.
+
+**Why structurally allowed:** The block message's remedy ("wait a minute or
+two") was prose, not a mechanism — nothing measured whether the advice still
+held as audit runtime and cron frequency drifted (same class as L-621: a gate
+premise with no rail on it). The bypass ladder also had a gap: every gate
+class in the framework carries a logged Tier-2 escape except this one, which
+jumped straight from "wait" to Tier 0.
+
+**Prevention:** (1) The wait is now a mechanism, not advice — the gate itself
+polls the lock for a bounded `FW_PREPUSH_LOCK_WAIT` window (default 90s), so
+premise drift shows up as "waited 90s of its 90s window" in the block message
+instead of silently-wrong prose. (2) A contention-only Tier-2 bypass
+(`FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1`, logged to `.gate-bypass-log.yaml`)
+closes the ladder gap; test (f) pins that exit 2 still blocks with the env
+set, and test (j) pins that the check lives inside the exit-75 branch only.
+(3) `tests/unit/t3297_prepush_lock_wait.bats` (11 tests) pins both mechanisms
+and their controls hermetically. The cron-side overlap guard is deliberately
+NOT part of this fix — see ## Decisions.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -322,6 +396,27 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-09-07 — cron overlap guard deferred as follow-up
+- **Chose:** Do NOT implement the cron-side overlap guard (skip a cron audit
+  run when the lock is already held) in this task; record it as follow-up work.
+- **Why:** Different write-set (`agents/audit/audit.sh` / cron generator vs
+  this task's `agents/git/lib/hooks.sh`), and it treats the pileup's supply
+  side while this task fixes the push path's demand side — one deliverable per
+  task. Sibling context: OBS-304 (audit runtime) owns the deeper cause.
+- **Rejected:** Bundling it here — converging write-set with audit/cron tasks
+  and it would compound two independent fixes into one ticket.
+
+### 2026-09-07 — blind-retry bailout in the wait loop
+- **Chose:** When the gate's lock probe says free but the audit still exits 75,
+  give up after 2 consecutive blind retries instead of burning the full window.
+- **Why:** A 75 the probe cannot observe (vendored audit resolving a different
+  CONTEXT_DIR, exotic host) means waiting on OUR lock file is blind; it also
+  keeps the pre-existing t3126 exit-75 legs (stub 75s with no held lock) from
+  stalling ~90s each under the new default.
+- **Rejected:** Always waiting the full window on any 75 (burns 90s when the
+  observable lock was never held); keying the wait on lock-file existence alone
+  (the flock-arm rendezvous file always exists — existence is not heldness).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -338,3 +433,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3297-pre-push-audit-gate-can-deadlock-against.md
 - **Context:** Initial task creation
+
+### 2026-09-07T02:29:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
