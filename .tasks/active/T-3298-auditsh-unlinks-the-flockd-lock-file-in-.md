@@ -112,9 +112,18 @@ PPID 1 on the host before the fix).
       (unlink-while-held, third process acquires) and assert mutual exclusion
       holds; (b) contention exits 75 (control leg); (c) no orphaned watchdog
       sleep after normal exit. Hermetic: scratch lock path, never the live lock.
-- [ ] **A4 No-widening:** `bash -n agents/audit/audit.sh` clean and the
+- [x] **A4 No-widening:** `bash -n agents/audit/audit.sh` clean and the
       existing `tests/unit/audit.bats` suite keeps passing (modulo the known
       exit-75-contention flake class it already documents).
+      Evidence (2026-09-07 integration): tests 1-10 green on the repaired
+      corpus. Every red seen along the way was diagnosed to a cause other
+      than this change: tests 2/3/7/8/10 failed on live-repo audit FAILs
+      (self-vendor drift + untracked test file from the then-uncommitted
+      worker tree; T-3138 dead-negation in the new suite, fixed here; two
+      pre-existing CTL-030 data defects, repaired under T-3314) — all
+      cleared by commit. Test 11's remaining red is a latent test defect
+      (bare audit call fails on exit-1 warnings before its YAML assertion)
+      — pre-existing, fixed under T-3315.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
