@@ -71,10 +71,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 425
-  commits: 1
-  files_changed: 6
-  lines_added: 607
-  lines_removed: 6
+  commits: 2
+  files_changed: 47
+  lines_added: 1822
+  lines_removed: 133
+  footprint_refreshed_at: '2026-09-07T07:25:35Z'
+  footprint_refreshed_by_commit: b25c7843b
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3313-arc-020-s7-provision-audit-trail.md

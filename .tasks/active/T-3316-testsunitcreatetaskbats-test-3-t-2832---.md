@@ -79,8 +79,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1 Root cause named:** the RCA section states why test 3 failed at filing time AND why its failure path wrote the LIVE `.context/working/focus*.yaml` instead of the sandbox copy (root: `fw_focus_file` re-derived its path from PROJECT_ROOT, ignoring CONTEXT_DIR — fixed by T-3141)
+- [x] **A2 Sandbox sealed:** verified 2026-09-07 — full suite run with live focus.yaml snapshotted before/after: `focus INTACT` (content identical)
+- [x] **A3 Test green:** `ok 3 T-2832: --start writes focus inside the sandbox, not the live .context` at HEAD
+- [x] **A4 No-widening:** full `create_task.bats` suite exit 0, zero `# skip` markers
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -114,6 +116,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/create_task.bats > /tmp/.t3316-ct.out 2>&1 && ! grep -q "^not ok" /tmp/.t3316-ct.out
+test "$(grep -c '# skip' /tmp/.t3316-ct.out)" -eq 0
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -232,6 +237,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** create_task.bats test 3 red at HEAD (2026-09-06), and its failure path wrote the LIVE `.context/working/focus*.yaml`, tripping the T-560 stale-focus gate on a live TermLink worker (T-3104).
+
+**Root cause:** `fw_focus_file` re-derived its path from PROJECT_ROOT instead of honouring CONTEXT_DIR, so a sandboxed run whose CONTEXT_DIR pointed at the test tmpdir still resolved the live focus file. The test's sandbox was correct; the library escaped it.
+
+**Why structurally allowed:** path derivation was duplicated (PROJECT_ROOT-based) rather than routed through the one CONTEXT_DIR-aware resolver — the same re-derivation class as G-079.
+
+**Prevention:** T-3141 centralised the derivation (`fw_focus_file` honours CONTEXT_DIR); test 3 itself is the regression pin — it now runs green and a suite run leaves the live focus byte-identical (verified 2026-09-07 under this task).
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -298,6 +311,13 @@ bvp_scores_proposed:
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** Close as already-fixed. The defect OBS-335 measured (test 3 red at HEAD + live focus.yaml clobbered on failure) was resolved by T-3141 (`fw_focus_file` honours CONTEXT_DIR instead of re-deriving from PROJECT_ROOT), which landed between the observation (2026-09-06) and this task's pickup (2026-09-07). Re-measured at current HEAD: suite exit 0, test 3 explicitly `ok`, zero skips, and the live focus file is byte-identical across a full suite run. No code change was needed under this task; the evidence run is the deliverable.
+**Evidence:**
+- `ok 3 T-2832: --start writes focus inside the sandbox, not the live .context` — full suite exit 0, 0 skips (2026-09-07)
+- Live `.context/working/focus.yaml` snapshot before/after suite run: identical (`focus INTACT`)
+- Fix commit: e90812bf6 T-3141
 
 ## Decisions
 
