@@ -6,16 +6,16 @@ description: >
   Inception: cross-agent identity taxonomy and circuit-establishment model (host/hub/project/session/agent
   + regressive resolution ladder)
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-09-06T15:45:55Z
-last_update: 2026-09-07T05:56:43Z
-date_finished: 2026-09-07T05:56:43Z
+last_update: '2026-09-06T16:00:10Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -101,15 +101,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -177,20 +177,7 @@ dialogue and the arc charter.
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: The exploration is complete and the design is internally consistent end to end. Root
-cause identified (no identity model → distinct co-resident agents collapse into one
-crypto fingerprint), and the fix is scoped, testable, and reversible: a durable-address
-grammar + a three-state self-healing circuit + a bounded provisioning ladder. Seven
-decisions are ratified (D1 instance-identity, D2 durable names, D3 V9 grammar, D4
-three-state lifecycle, D5 provisioning authority, D6 hub-cardinality, D7 shared-@name
-mutex), the availability-vs-memory fork was closed (memory lives at the passive
-project), and the work is decomposed into 7 build slices with real ACs. This is an
-evidence-backed GO, not a confidence hedge — the artifact carries the full 11-round
-dialogue and the arc charter.
-
-**Date**: 2026-09-07T05:56:42Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -199,44 +186,3 @@ dialogue and the arc charter.
 
 ### 2026-09-06T15:48:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-09-07T05:56:42Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** The exploration is complete and the design is internally consistent end to end. Root
-cause identified (no identity model → distinct co-resident agents collapse into one
-crypto fingerprint), and the fix is scoped, testable, and reversible: a durable-address
-grammar + a three-state self-healing circuit + a bounded provisioning ladder. Seven
-decisions are ratified (D1 instance-identity, D2 durable names, D3 V9 grammar, D4
-three-state lifecycle, D5 provisioning authority, D6 hub-cardinality, D7 shared-@name
-mutex), the availability-vs-memory fork was closed (memory lives at the passive
-project), and the work is decomposed into 7 build slices with real ACs. This is an
-evidence-backed GO, not a confidence hedge — the artifact carries the full 11-round
-dialogue and the arc charter.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-f7322914
-- **Timestamp:** 2026-09-07T05:56:44Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-4d07648a
-- **Timestamp:** 2026-09-07T05:56:44Z
-- **Overall:** CONFIRMED
-- **Claims:** 4
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `docs/reports/T-3287-identity-taxonomy-circuit-model.md` | file | ✓ pass |
-| `T-3307` | task | ✓ pass |
-| `T-3313` | task | ✓ pass |
-| `T-3286` | task | ✓ pass |
-
-### 2026-09-07T05:56:43Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO
