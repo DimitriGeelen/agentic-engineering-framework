@@ -39,13 +39,43 @@ _init_out() {
 }
 
 @test "T-2727: the onboarding-task check is counted in init's own denominator" {
-    local out; out=$(_init_out "$TEST_TEMP_DIR/count")
-    local total
-    total=$(printf '%s\n' "$out" | grep -E "Validation" | head -1 \
-            | sed -n 's/.*[^0-9]\([0-9][0-9]*\) checks.*/\1/p')
-    echo "total=$total"
-    # 42 was the pre-fix denominator; the check must be inside it, not beside it.
-    [ -n "$total" ] && [ "$total" -ge 43 ]
+    # Differential pin (T-3343, OBS-380). The original absolute anchor
+    # (`total >= 43`) measured the host, not the invariant: the denominator
+    # moves with validate-init's own evolution (T-2805/T-2818 added checks)
+    # and with host state (the 3 func-hook checks are git-guarded, and a
+    # stray ancestor .git makes `fw init` skip `git init`, so they leave the
+    # count) — T-3326 mutable-corpus class. The T-2727 invariant is only
+    # that func-tasks sits INSIDE init's own denominator, so pin exactly
+    # that: same tree with the guard on vs off must differ by exactly 1,
+    # and the row must appear/disappear with it.
+    local proj="$TEST_TEMP_DIR/count"
+    local out1; out1=$(_init_out "$proj")
+    local t1
+    t1=$(printf '%s\n' "$out1" | grep -E "Validation" | head -1 \
+         | sed -n 's/.*[^0-9]\([0-9][0-9]*\) checks.*/\1/p')
+
+    # Guard off: empty the seeded tasks and re-validate the SAME tree.
+    # Sourced call rather than `bin/fw validate-init`: standalone routing dies
+    # under bin/fw's `set -euo pipefail` in Tier 3a before printing a summary
+    # (OBS filed under T-3343); init itself calls the function inside an `if`
+    # (lib/init.sh:736), which suppresses errexit — sourcing in a plain
+    # `bash -c` reproduces exactly those init-path semantics.
+    rm -f "$proj/.tasks/active/"*.md
+    local out2
+    out2=$(FRAMEWORK_ROOT="$FRAMEWORK_ROOT" bash -c \
+        'source "$FRAMEWORK_ROOT/lib/validate-init.sh"; do_validate_init "$1"' _ "$proj" 2>&1 \
+        | sed 's/\x1b\[[0-9;]*m//g')
+    local t2
+    t2=$(printf '%s\n' "$out2" | grep -E "Validation" | head -1 \
+         | sed -n 's/.*[^0-9]\([0-9][0-9]*\) checks.*/\1/p')
+
+    echo "t1=$t1 t2=$t2"
+    [ -n "$t1" ] && [ -n "$t2" ]
+    # The row rides the guard: present with 5 seeded tasks, absent when empty.
+    [[ "$out1" == *"✓ func-tasks"* ]]
+    [[ "$out2" != *"func-tasks"* ]]
+    # And the denominator rides it too — inside the count, not beside it.
+    [ "$t1" -eq $((t2 + 1)) ]
 }
 
 @test "T-2727: validation runs AFTER the onboarding tasks are seeded" {

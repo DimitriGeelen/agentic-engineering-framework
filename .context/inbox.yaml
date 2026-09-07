@@ -4412,3 +4412,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-381
+  text: "Shared-index race between parent session and TermLink workers in the same checkout (2026-09-07, commit 5bb7a7bde): parent ran git add <own-paths> && git commit while worker t3237-8-safelist had its T-3238 active->completed rename already staged; git commit commits the WHOLE index, so the worker's staged rename was swept into the parent's T-3242 commit under the wrong task ID. Harmless here (pure rename), but the same race can commit a worker's half-staged CODE under an unrelated task, breaking P-002 traceability. Candidate fixes: parents and workers commit with explicit pathspec (git commit -m msg -- <paths>), or a pre-commit guard that warns when staged files outside the named task's plausible write-set are present."
+  captured: 2026-09-07T19:55:32Z
+  context_task: T-3242
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-382
+  text: "fw init's git-init guard (lib/init.sh:186, 'git -C target rev-parse --is-inside-work-tree') walks up to ANY ancestor repo — on this host a stray /.git (created 2026-09-06, holds a stale index.lock) makes every /tmp fixture 'inside a work tree', so git init is silently skipped, the project gets no repo of its own, func-hook x3 leave the validation denominator, and the T-2827 bootstrap commit fails against /.git ('Unable to create /.git/index.lock'). Intentional for monorepo subdirs, pathological at fs root; consider guarding on $target_dir/.git specifically or refusing loudly. Found during T-3343 A1 ruling (explains the 43-then vs 42-now delta together with T-2805/T-2818 +2)."
+  captured: 2026-09-07T20:00:47Z
+  context_task: T-3343
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-383
+  text: "Standalone 'bin/fw validate-init <dir>' dies silently (exit 1, no summary line) at Tier 3a: bin/fw runs 'set -euo pipefail' and lib/validate-init.sh:564 'unsubstituted=$(grep -rl __PROJECT_NAME__ ... | wc -l)' has pipeline rc=1 on a HEALTHY tree (grep no-match under pipefail), killing the run before sem-* checks and the Validation summary. The init path is immune only because lib/init.sh:736 calls do_validate_init inside an 'if' (errexit suppressed). Verified 2026-09-07 on a fresh fixture during T-3343; the re-anchored test sources the lib in a plain bash -c to reproduce init-path semantics as a workaround."
+  captured: 2026-09-07T20:00:54Z
+  context_task: T-3343
+  tags: [bug]
+  status: pending
+  promoted_to: null

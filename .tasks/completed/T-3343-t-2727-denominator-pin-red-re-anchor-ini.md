@@ -6,10 +6,10 @@ description: >
   T-2727 denominator pin red: re-anchor init_validation_ordering test 12 differentially
   + rule on the two conditional checks (OBS-380)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T19:50:51Z
-last_update: '2026-09-07T20:00:24Z'
-date_finished:
+last_update: 2026-09-07T20:02:10Z
+date_finished: 2026-09-07T20:02:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -395,3 +395,15 @@ OBS-383 (standalone `bin/fw validate-init` dies silently at Tier 3a under
 - **Action:** Simulated the counted-outside regression: copied lib/validate-init.sh to a scratch path and replaced the func-tasks block's `total=$((total + 1))` with a no-op (check still runs and prints). Ran both differential legs against the regressed copy on a fresh fixture.
 - **Output:** with-tasks leg: `✓ func-tasks` row present, `Validation passed: 41/41`; emptied leg: `Validation passed: 40/41`. Totals EQUAL (t1=41, t2=41), so the re-anchored assertion `[ "$t1" -eq $((t2 + 1)) ]` goes red — while the old row-presence check (test 1) would still pass. The ordering-reverted regression (validation before seeding) is also caught: func-tasks row would vanish from the init output AND t1 would equal t2, failing two assertions.
 - **Context:** A4 — the differential pin discriminates on counting, not on printing.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1aeb1bb2
+- **Timestamp:** 2026-09-07T20:02:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-07T20:02:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

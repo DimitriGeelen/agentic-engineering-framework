@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3343: T-2727 denominator pin red: re-anchor init_validation_ordering test 12 differentially + rule on the two conditional checks (OBS-380)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T20:02:53Z
+# ============================================================================
+
+task_id: T-3343
+task_name: "T-2727 denominator pin red: re-anchor init_validation_ordering test 12 differentially + rule on the two conditional checks (OBS-380)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-07T19:50:51Z
+completed: 2026-09-07T20:02:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-07T21:53:28+02:00
+last_commit: 2026-09-07T21:53:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file + author ACs for T-2727 denominator-pin red (OBS-380, T-3326 class) — dispatched to worker; blocks T-2801 close. Also OBS-379 (read-only allowlist gaps)
+
+# Key outcomes
+outcomes:
+  - '**A1 Ruling recorded:** determine and record (in ## RCA) whether the 43→42 drop is a genuinely lost check or legitimately conditional post-authoring checks (T-2805 vendor / T-2818 git-identity) not firing on a fresh non-git fixture — with the guard conditions cited from lib/validate-init.sh'
+  - '**A2 Differential re-anchor:** test 12 asserts the T-2727 invariant corpus-independently — e.g. fresh-init total (func-tasks fires on 5 seeded tasks) exceeds the same tree''s total with `.tasks/active/` emptied (guard off) by exactly 1, and the func-tasks row is present/absent accordingly; no absolute `>= N` total remains in the test'
+  - '**A3 Green:** `bats tests/unit/init_validation_ordering.bats` fully green, 0 skips; `bats tests/unit/lib_init.bats` still green'
+  - '**A4 Teeth kept:** the re-anchored assertion still fails if the func-tasks guard is moved back outside the `total++` (demonstrated by reasoning or a red-run against a simulated regression, recorded in Updates)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.context/working/focus.yaml'
+  - '.tasks/active/T-3343-t-2727-denominator-pin-red-re-anchor-ini.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T21:53:28'
+    action: 'T-3343: file + author ACs for T-2727 denominator-pin red (OBS-380, T-3326 class) — dispatched to worker; blocks T-2801 close. Also OBS-379 (read-only allowlist gaps)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 3
+  lines_added: 327
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3343-t-2727-denominator-pin-red-re-anchor-ini.md
+generated_by: context-agent-hybrid
