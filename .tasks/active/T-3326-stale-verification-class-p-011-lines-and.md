@@ -17,10 +17,10 @@ name: "Stale-verification class: P-011 lines and unit tests anchored to MUTABLE 
 description: >
   Promoted from observation OBS-377
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -35,7 +35,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:05:24Z
-last_update: '2026-09-07T07:45:16Z'
+last_update: 2026-09-07T19:36:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -81,14 +81,24 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Two measured instances of P-011/unit-test checks anchored to MUTABLE corpus state
+(2026-09-06 close-out sweep): (1) T-2969 verification line 3 greps live
+`fw audit --section structure` output for a specific arc's constituent-count line —
+the arc moved draft→in-progress, the line legitimately vanished, close blocked;
+(2) T-2871's `tests/unit/test_aef_meta_census.py` pins exact live census counts
+(56 carriers / 102 state hits at August measurement; corpus is now 74/138) — red
+for corpus growth, not method breakage. Fix shape: anchor to committed FIXTURE
+corpora (hermetic) or pin the invariant/property, never the live count; P-011
+lines must not grep live-audit output for specific corpus entities.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 Census test re-anchored:** `tests/unit/test_aef_meta_census.py` no longer asserts exact live-corpus counts; it pins the measurement METHOD (invariants/properties — e.g. counts are non-decreasing vs a committed baseline, parser finds >0 carriers, categories sum to total) and/or runs against a committed fixture corpus; suite green on the current corpus AND the assertions would survive corpus growth by construction
+- [ ] **A2 T-2969 verification unblocked:** T-2969's stale verification line (grep of live `fw audit` output for a specific arc's constituent-count line) is replaced in the T-2969 task file with a check of the CODE under test that does not depend on live corpus state; the replacement line passes
+- [ ] **A3 Class codified at author-time:** the task template's `## Verification` comment block (`.tasks/templates/zzz-default.md`) gains a short "mutable-corpus anchor" warning naming the class (pin the invariant or a fixture, never the live count / live-audit line), and a learning is captured via `fw context add-learning` referencing T-3326
+- [ ] **A4 No-widening:** `python3 -m pytest tests/unit/test_aef_meta_census.py -q` green; no other suite newly red (`bash -n` on any touched shell files)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -337,3 +347,7 @@ bvp_scores_proposed:
 
 ### 2026-09-07T07:09:24Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-09-07T19:35:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
