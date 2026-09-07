@@ -6,10 +6,10 @@ description: >
   before it may run; if unfindable, cannot start → inform the operator (D5 bound 3).
   Serves G4.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -25,7 +25,7 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T00:17:46Z
-last_update: '2026-09-07T00:30:19Z'
+last_update: 2026-09-07T07:17:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -77,9 +77,9 @@ Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`. Serves **G4*
 ## Acceptance Criteria
 
 ### Agent
-- [ ] When a project path is absent, the ladder queries KNOWN fleet peers for the repo location (never arbitrary network) (D5 bound 3)
-- [ ] A sourced repo is sha256/signature-verified before it may run; verification failure aborts without executing
-- [ ] If the repo is unfindable, provisioning halts and the operator is informed (surfaced, never silent)
+- [x] When a project path is absent, the ladder queries KNOWN fleet peers for the repo location (never arbitrary network) (D5 bound 3)
+- [x] A sourced repo is sha256/signature-verified before it may run; verification failure aborts without executing
+- [x] If the repo is unfindable, provisioning halts and the operator is informed (surfaced, never silent)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,6 +113,8 @@ Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`. Serves **G4*
 -->
 
 ## Verification
+
+timeout 120 python3 -m pytest tests/unit/test_aef_repo_source.py -q > /tmp/.s6-repo.out 2>&1 && grep -q passed /tmp/.s6-repo.out && ! grep -q failed /tmp/.s6-repo.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -269,6 +271,21 @@ Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`. Serves **G4*
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-07 — S6 landed as the halt's handoff, not a new entry point
+- **What changed:** No spec divergence. Two shapes crystallised at build time:
+  (1) a MISSING digest is a verification failure, not a pass — an unverifiable
+  artifact may not run (the AC says "verified before it may run"; silence is not
+  verification); (2) a trusted-manifest digest (`expected_sha256`) takes
+  precedence over the peer's claimed digest, so a lying peer cannot self-attest.
+- **Plan impact:** None. Transport (termlink/ssh peer query, real clone/copy
+  materialization) stayed injectable seams per the dispatch scope — the
+  `stub_query_peer` protocol stub documents the contract for the later wiring
+  task. Push-notification wiring for the operator notice deliberately NOT
+  invented (default sink = stderr + in-process ledger).
+- **Triggered:** Nothing filed; `provision_with_sourcing` re-runs the same
+  S3 walk after sourcing rather than patching ladder internals, so S3 stayed
+  untouched.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -328,3 +345,7 @@ Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`. Serves **G4*
 
 ### 2026-09-07T00:19:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-09-07T07:17:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
