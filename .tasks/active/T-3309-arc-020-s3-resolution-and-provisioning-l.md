@@ -5,10 +5,10 @@ description: >
   Regressive resolution ladder (D1/D4/D5): climb 5→1 on a dead circuit; resolve rung
   ungated, provision rung Tier-3 pre-authorized through hub-standup. Serves G3/G4.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -24,7 +24,7 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T00:17:05Z
-last_update: '2026-09-07T00:30:18Z'
+last_update: 2026-09-07T06:59:59Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,10 +76,10 @@ The regressive resolution/provisioning ladder (D1/D4/D5). Design in
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Resolve walk climbs 5→1 to locate an existing endpoint; side-effect-free and ungated (D5)
-- [ ] Provision walk materializes a missing child, Tier-3 pre-authorized through hub-standup (D5); resolve and provision share one walk
-- [ ] Provisioning a session acquires the project write-claim before any fabric mutation (D7); a missing project path halts provisioning (hands to S6)
-- [ ] Each provision decision passes the admission check (S5) and emits an audit row (S7)
+- [x] Resolve walk climbs 5→1 to locate an existing endpoint; side-effect-free and ungated (D5)
+- [x] Provision walk materializes a missing child, Tier-3 pre-authorized through hub-standup (D5); resolve and provision share one walk
+- [x] Provisioning a session acquires the project write-claim before any fabric mutation (D7); a missing project path halts provisioning (hands to S6)
+- [x] Each provision decision passes the admission check (S5) and emits an audit row (S7)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,6 +113,10 @@ The regressive resolution/provisioning ladder (D1/D4/D5). Design in
 -->
 
 ## Verification
+
+timeout 120 python3 -m pytest tests/unit/test_aef_resolve.py -q > /tmp/.s3-resolve.out 2>&1 && grep -q passed /tmp/.s3-resolve.out && ! grep -q failed /tmp/.s3-resolve.out
+timeout 180 python3 -m pytest tests/unit/test_aef_address.py tests/unit/test_aef_circuit.py -q > /tmp/.s3-regress.out 2>&1 && grep -q passed /tmp/.s3-regress.out && ! grep -q failed /tmp/.s3-regress.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -247,7 +251,15 @@ The regressive resolution/provisioning ladder (D1/D4/D5). Design in
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
+### 2026-09-07 — implied session rung under a durable target
+- **What changed:** the spec's ladder (line ~88) says the project rung answers "can you start a session (that can host X)?" — but a DURABLE target (the address the ladder re-resolves after death, per D1) carries no `session=` token, so `AEFAddress.ladder()` yields no session rung to materialize. The provision plan therefore INFERS the session level whenever the target names an agent (level 4 is the minimum runnable unit); the session provisioner receives `session=None` and mints a fresh id — which is exactly D1 ("a working equivalent under a NEW id, never a resurrection") falling out of the grammar rather than fighting it. Pinned by `test_provision_mints_fresh_session_for_durable_target`.
+- **Plan impact:** none for S3's scope; S4 (claim-based election) should note that the fresh-session mint is the natural place for its exactly-one claim.
+- **Triggered:** nothing new — S4 (T-3310) already owns the election.
+
+### 2026-09-07 — S2 tri-state handoff honored in the return TYPE
+- **What changed:** per T-3308's Evolution note, the walk distinguishes "walked and not found" (definitive) from "could not walk" (indeterminate) in `ResolveResult.outcome` (found / not-found / indeterminate), not prose. A raising probe is captured, never propagated — and `death_test_walk()` adapts back to `CircuitRegistry.death_test`'s bool-or-raise contract (indeterminate → `ResolveIndeterminate`). Provision refuses to act on an indeterminate resolve: acting on unproven absence would smuggle timeout-death back in through the provisioning side.
+- **Plan impact:** none — this was the handoff's explicit ask.
+- **Triggered:** nothing. Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
      or new sub-tasks. Mandatory at slice boundaries (when applicable) and
@@ -300,7 +312,20 @@ The regressive resolution/provisioning ladder (D1/D4/D5). Design in
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
+### 2026-09-07 — provisioner contract: intended-child in, materialized address out
+- **Chose:** `provisioners[level](intended: AEFAddress) -> AEFAddress | None` — the walk fills the intended child from the target's own token; the provisioner returns the materialized address (or None = accept intended). Session with `session=None` MUST return a minted binding.
+- **Why:** keeps the walk the single owner of descent order/plan while letting each level's materialization enrich the address (hub id from standup, fresh session id per D1) — the enriched address feeds the next step down.
+- **Rejected:** `(parent, target)` two-arg form (pushes plan knowledge into every provisioner); side-effect-only `-> None` form (cannot mint a session id, forcing the walk to invent one — wrong owner).
+
+### 2026-09-07 — write-claim scope: from the session step to end of descent
+- **Chose:** acquire the D7 project write-claim (reused `lib/aef_circuit.WriteClaim`, not duplicated) immediately before the session provisioner runs; hold through the agent step; release in `finally`.
+- **Why:** D7 names the session as the fabric-mutating provision; the agent instatement inside that fresh session is part of the same mutation burst, so holding through it costs nothing and closes a gap. `finally` guarantees release even on a crashing provisioner (pinned by test).
+- **Rejected:** claim around the whole walk (would gate the ungated resolve and the passive project registration); per-step acquire/release (release-reacquire window between session and agent invites interleaving).
+
+### 2026-09-07 — no persistence in S3
+- **Chose:** `resolve()`/`provision()` are pure functions over injectable callables; the only durable artifacts are the audit rows (S7 owns the JSONL) and whatever provisioners write.
+- **Why:** resolve is side-effect-free by ruling (D5); provision's state lives in the world it materializes, not in a shadow registry — the circuit that results is recorded by S2's `CircuitRegistry.establish`, which already exists.
+- **Rejected:** a resolve-cache file (a cache that can go stale is a second death-oracle, contradicting D4-A).
      Skip for tasks with no meaningful choices.
      Format:
      ### [date] — [topic]
@@ -328,3 +353,7 @@ The regressive resolution/provisioning ladder (D1/D4/D5). Design in
 
 ### 2026-09-07T00:19:13Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-09-07T06:59:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
