@@ -18,7 +18,7 @@ name: "STRUCTURAL: nothing runs tests/unit on a schedule, so reds there are invi
 description: >
   Promoted from observation OBS-361
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -36,7 +36,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:16:13Z
-last_update: '2026-09-06T18:30:19Z'
+last_update: 2026-09-07T06:49:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,20 +76,48 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-07T06:49:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3302: STRUCTURAL: nothing runs tests/unit on a schedule, so reds there are invisible until someone happens to run an adjacent suite. Measured today while landing T-3235: TWO independent pre-existing failures surfaced by accident — ac_counter_sed_range_one_line_comment (OBS-359, brittle exact-count assertion) and inception_decide_emit_review_post_move (separate note). Both predate today's edits; neither was reported by anything. The daily audit's 'Invariant suite green' line covers tests/lint ONLY (104 invariants, agents/audit + bin/fw glob tests/lint/*.bats), and its green reads to an agent like the test corpus is green. Same family as T-2697 (tests/lint itself was globbed by no runner for months while 'fw test lint' ran shellcheck and reassured) and as peer 832's T-654 BUG 2 (a detector with no delivery) and their OBS-333 (a 13-minute bridge suite nothing schedules). The failure mode is not 'tests fail' — it is 'a green line that answers a narrower question than the one the reader is asking'. Candidate fix: a scheduled tests/unit run whose result is surfaced the way the invariant suite is, plus an audit line that states WHICH corpus it examined rather than the bare word 'suite'.
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+tests/unit holds 615 bats files + 191 pytest files; nothing schedules them. The
+daily audit's "Invariant suite green" line covers tests/lint ONLY, so tests/unit
+reds sit invisible until an adjacent run trips over them (2 found by accident on
+2026-09-06: OBS-359/OBS-360 → T-3300/T-3301). Fix: a scheduled unit-corpus run
+surfaced the way the invariant suite is, plus audit lines that name WHICH corpus
+they examined. Runtime caution: tests/unit contains suites that spawn
+`audit.sh --section structure` (observed live 2026-09-07 — a full run contends
+the audit lock), so the runner must be nightly, self-locked against overlap, and
+must NOT hold the audit lock itself.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 Nightly runner:** a new cron job (registry id e.g. `unit-suite-nightly`) runs the full tests/unit corpus (both bats and pytest legs) once nightly via a dedicated runner script; the runner takes its own overlap lock (skip-if-held, logged), never the audit lock, and bounds total runtime with a generous timeout
+- [ ] **A2 Report artifact:** each run writes a machine-readable report to `.context/audits/unit-suite/LATEST.yaml` (+ dated sibling) recording: started/finished timestamps, per-leg file/test counts, failed test names (bats `not ok` lines and pytest failures), skip count, and runner exit status
+- [ ] **A3 Audit surfacing:** `fw audit` gains a line that reads the latest report and emits FAIL when the report lists failures, WARN when the report is missing or older than 48h, PASS otherwise — and the line text names the corpus explicitly ("unit suite (tests/unit)"), not the bare word "suite"
+- [ ] **A4 Corpus-naming parity:** the existing invariant-suite audit line is reworded to name its corpus ("invariant suite (tests/lint)") so neither green line answers a broader question than it examined
+- [ ] **A5 Registry chain clean:** cron registry edited → `fw cron generate` → `fw cron install` all run; `fw doctor` shows "Cron registry in sync" with no "edited but not generated" WARN
+- [ ] **A6 Pinned:** a bats suite pins: runner skips when its overlap lock is held (logged, exit 0); report schema fields present after a stub run; audit FAIL/WARN/PASS branches against fixture reports (hermetic — never runs the real corpus)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -123,6 +151,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t3302_unit_suite_schedule.bats > /tmp/.t3302-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3302-bats.out
+test "$(grep -c '# skip' /tmp/.t3302-bats.out)" -eq 0
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -335,3 +367,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3302-structural-nothing-runs-testsunit-on-a-s.md
 - **Context:** Initial task creation
+
+### 2026-09-07T06:49:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
