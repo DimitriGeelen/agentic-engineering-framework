@@ -92,12 +92,18 @@ AUDIT="$FRAMEWORK_ROOT/agents/audit/audit.sh"
 @test "audit YAML report is valid" {
     local tmpdir
     tmpdir=$(mktemp -d)
-    "$AUDIT" --section structure --output "$tmpdir" 2>/dev/null
+    # T-3315: run + -le 1 — a bare call made the audit's legitimate exit 1
+    # (warnings on a live repo) fail the test before its actual subject, the
+    # YAML assertion, ever ran.
+    run "$AUDIT" --section structure --output "$tmpdir"
+    [ "$status" -eq 75 ] && skip "audit lock contention (T-2930/T-3297) — no verdict, not a failure"
+    [ "$status" -le 1 ]
     local yaml_file
     yaml_file=$(ls "$tmpdir"/*.yaml 2>/dev/null | head -1)
-    if [ -n "$yaml_file" ]; then
-        run python3 -c "import yaml; yaml.safe_load(open('$yaml_file'))"
-        [ "$status" -eq 0 ]
-    fi
+    # T-3315: assert the report exists — the old `if -n` guard turned a
+    # missing report into a silent pass.
+    [ -n "$yaml_file" ]
+    run python3 -c "import yaml; yaml.safe_load(open('$yaml_file'))"
+    [ "$status" -eq 0 ]
     rm -rf "$tmpdir"
 }
