@@ -4906,3 +4906,9 @@ X'` returning empty group."
   task: T-3285
   date: 2026-09-05
   context: Added via context agent
+- id: L-662
+  learning: "Before staging files by path for a commit, check 'git status --short' for pre-existing dirt — swept files commit under your task id and pollute causality (origin OBS-357)"
+  source: OBS-357
+  task: T-3090
+  date: 2026-09-07
+  context: Added via context agent

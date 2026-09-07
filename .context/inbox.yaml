@@ -4029,133 +4029,151 @@ observations:
   captured: 2026-08-20T09:32:57Z
   context_task: T-3101
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "MERGE into T-3100 (error-register aggregation) \u2014 obs explicitly sharpens that inception; attach as evidence"
+  dismissed_at: 2026-09-07T07:00:55Z
   promoted_to: null
 - id: OBS-335
   text: "tests/unit/create_task.bats test 3 ('T-2832: --start writes focus inside the sandbox, not the live .context') FAILS at HEAD and, in failing, clobbers the LIVE .context/working/focus*.yaml — verified pre-existing by restoring both T-3104 files from git show HEAD and re-running. It blocked a TermLink worker mid-task (T-3104) by tripping the T-560 stale-focus gate. A sandbox-isolation test that escapes its own sandbox is the sharpest possible instance of the class."
   captured: 2026-08-20T14:41:06Z
   context_task: T-3105
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-336
   text: "A worker's rewrite of agents/audit/audit.sh dropped the executable bit (git index 100755, on-disk 664). 'bin/fw audit' then died with exit 126 'Permission denied' — the ENTIRE audit rail silently disabled by a mode change no gate watches. Nothing in doctor, audit, or the pre-push hooks compares on-disk mode against the git index. One-line detector: git ls-files -s -- '*.sh' | awk '$1==\"100755\"{print $4}' | while read f; do [ -x \"$f\" ] || echo \"$f\"; done. Note this is exactly the T-3105 class one level up: the audit that reports on everything else has no check that it can itself run."
   captured: 2026-08-20T14:41:12Z
   context_task: T-3105
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-337
   text: "fw mirror status reports 'github: in sync' while github/master was 404 commits behind origin/master. It compares origin's HEAD (which points at the checked-out branch, t2539-staging) against github's same-named branch and says NOTHING about master — then renders a green line. 'fw mirror sync' has the same scope: it synced t2539-staging only and reported 'synced 9cf2eb6f4 -> 398bf5385' as success. Exactly the T-3105 class: a check that does not state the ref set it compared, so 'in sync' and 'looked at one branch' render identically. Fix shape: name the refs compared and their count, per the R5 rule in docs/design/task-corpus-concurrency-model.md."
   captured: 2026-08-20T17:30:45Z
   context_task: T-3107
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-338
   text: "fw bvp --include-proposed --quadrant hv-lc returns a degenerate ranking: the top 10 tasks all score BVP=108, NORM=0.40, COST=3.6 — identical to three significant figures. A ranking whose entries are indistinguishable cannot order work, which is its only purpose. Two compounding causes: (1) 120/147 tasks (82%) have no measurable cost because components: is unresolved (T-3068), so quadrant thresholds are computed over 27 tasks and applied to 147; (2) the v1 heuristic estimator appears to assign the same driver scores to any build task with similar AC/line counts, so proposed scores carry almost no per-task information. Same family as the T-3105 false-green class: the output looks like signal and is not. Relevant now that the standing directive is to prioritise HV/LC and HV/HC from this ranking."
   captured: 2026-08-20T17:45:20Z
   context_task: T-3109
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-339
   text: "Live measurement of OBS-280's blast radius. T-1719 was re-dispatched by resolver-loop.service five times exactly 30 minutes apart (13:00/13:30/14:00/14:30/15:00Z, 2026-08-22), matching the timer's OnUnitActiveSec precisely, all outcome=success, with zero AC advancement after the ninth of eleven total dispatches on the same already-resolved AC (A6b). `diff /etc/systemd/system/resolver-loop.service deploy/resolver-loop.service` confirms the installed unit still runs `--cooldown-min 30` (pre-T-2914) while the repo template has carried `--stall-after 5` since T-2914/T-2915/T-2916 landed — a fix chain that is fully built and fully inert on this host because the unit file was never redeployed. `--stall-after 5` would have excluded T-1719 after its 5th non-advancing dispatch; it reached at least its 11th. Filed T-3116 (real ACs, diff+systemctl verification) to close the deploy gap; held for human confirmation before touching live systemd config since it's shared autonomous-dispatch infra outside T-1719's own scope."
   captured: 2026-08-22T17:45:00Z
   context_task: T-1719
   tags: [resolver-loop, deploy-drift]
-  status: pending
+  status: dismissed
+  dismissed_reason: "LINK: T-3116 already filed with real ACs from this obs (resolver-loop redeploy); held for human (live systemd infra)"
+  dismissed_at: 2026-09-07T07:00:55Z
   promoted_to: T-3116
 - id: OBS-340
   text: "fw tier0 status reports 'Pending block: A command is waiting for approval' from .context/working/.tier0-approval.pending, a record 32.6h old (hash 32c7f5d5, ts 1787520419). /approvals reads .context/approvals/pending-*.yaml instead and correctly shows nothing. Two surfaces for one concept disagree. Per lib/config.sh:278 TIER0_APPROVAL_TTL is explicitly NOT the pending-request staleness window, so a pending request has no expiry by design and reports as live indefinitely. Low severity (operator-facing queue is the clean one) but it trains distrust of the CLI status line."
   captured: 2026-08-25T06:03:56Z
   context_task: T-3129
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-341
   text: "tests/unit/audit.bats asserts [ \"$status\" -le 1 ] on audit.sh runs. That conflates exit 2 (audit ran, found FAILs) with exit 75 (audit COULD NOT RUN - another audit holds the lock, T-2930). Under any concurrency - the unit suite's own audit tests, a concurrent push's pre-push gate, the daily cron - 9 tests in that file go RED for a reason unrelated to the code under test. Observed live 2026-08-25 during T-3129: 9/14 unit-suite failures were this, while a direct probe of 'audit.sh --section structure' with no lock held exited 1 (pass). This is the false-RED mirror of the false-GREEN family (T-1828/T-3125/T-3126/T-3129): the assertion cannot distinguish 'looked and found a problem' from 'could not look'. Consequence is broader than the 9 tests - it makes every AC6-style 'no new failures in fw test unit' claim non-deterministic, so agents learn to discount suite RED. Suggested fix: assert exit != 75 explicitly and skip/retry rather than fail, so contention reports as contention."
   captured: 2026-08-25T06:44:33Z
   context_task: T-3129
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-342
   text: "T-3126 shipped but was never DEPLOYED. The pre-push hook installed at .git/hooks/pre-push was VERSION=1.6 while agents/git/lib/hooks.sh source was 1.7 — the PL-078 marker bump was done correctly, but nothing ran 'fw git install-hooks', so the ref-vs-worktree scope fix was not live for ~2 days. Detected 2026-08-25 when a push blocked on 'AUDIT-SCOPE: fails=1 ref=0 worktree=1' — precisely the case T-3126 makes non-blocking. The audit.sh half of T-3126 WAS live (the AUDIT-SCOPE lines print, because audit.sh is invoked fresh each run), so the feature looked deployed from its most visible surface while the enforcing half was stale. Same class as L-364 (cron: registry->generated->deployed are three states); hooks have the same chain source->installed and no gate covers it. Suggested: doctor WARN when .git/hooks/<hook> VERSION differs from the source marker."
   captured: 2026-08-25T07:23:42Z
   context_task: T-3129
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-343
   text: "P-011 extract_verification_block uses a repeating, prefix-unanchored sed range: sed -n '/^## Verification/,/^## /p'. Any SECOND heading beginning '## Verification' (e.g. '## Verification Provenance') opens a second range running to the next '## ' or EOF, injecting that section's PROSE into the block the gate executes. Hit live on T-3132; the T-2991 parseable-check blocked it (gate working) but prose that happens to parse as shell would be executed silently — T-2990 class. lib/reviewer/static_scan.py:extract_section does NOT have this bug (it anchors with \\s*\\n after the name), so the two extractors have diverged. Fix: anchor the range start, or take only the first range."
   captured: 2026-08-25T07:56:55Z
   context_task: T-3132
   tags: [verification]
-  status: pending
+  status: dismissed
+  dismissed_reason: "Fixed by T-3134: lib/verification-port.sh:202 anchored first-range-only awk extractor replaced the unanchored sed range"
+  dismissed_at: 2026-09-07T07:00:44Z
   promoted_to: null
 - id: OBS-344
   text: "fw gaps lists ONLY status: watching. The register also carries status: open (7 entries), partial-mitigation (2), accepted-risk (1), partially-resolved (1) and 2 with no status — none of which appear in the primary CLI surface, and the header 'N watching, M resolved' does not account for them either, so the omission is invisible. Hit live on T-3133: G-085 was filed 'open' (a vocabulary 7 existing entries use) and simply did not render; it took a grep of the parsed YAML to notice. Same false-zero shape as the rest of this session — the surface that reports 'here are the gaps' cannot see a third of the register and says nothing about it. Fix: either render every non-terminal status, or refuse an unrecognised status at write time."
   captured: 2026-08-25T08:09:50Z
   context_task: T-3133
   tags: [false-green]
-  status: pending
+  status: dismissed
+  dismissed_reason: "LINK: T-3140 is this observation verbatim (fw gaps renders only status:watching)"
+  dismissed_at: 2026-09-07T07:00:56Z
   promoted_to: null
 - id: OBS-345
   text: "Running the bats suite against the live repo rewrites .context/working/focus.yaml (observed: reset to T-001 repeatedly during a 62-file run), which makes the focus-drift gate block every write in the parent session until the run ends. Test harness mutating the framework state the session depends on — hermeticity gap, sibling to L-606. Candidate fix: tests that call fw work-on/context focus must set CONTEXT_DIR or PROJECT_ROOT to their sandbox; a lint could assert no test touches the live focus file. Found during T-3138."
   captured: 2026-08-25T20:38:53Z
   context_task: T-3138
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-346
   text: "Cross-project task IDs in commit prose trigger local episodic re-mining. agents/git/lib/hooks.sh:676 refreshes .context/episodic/T-NNNN.yaml for EVERY T-NNNN matched anywhere in the commit message, including prose references to another project's tasks. Observed on commit 5cdb36e3a, which named the peer's T-037 and re-mined our own T-037 (fw doctor health check). No corruption occurred: mine() greps --grep='T-037:' so it recomputes from colon-prefixed commits only, and our T-037's footprint was an absent measurement it left alone. The forward risk is real though: the T-3145 ingestion initiative names peer task IDs throughout, and a commit written 'T-037: ...' for the PEER's task inside this repo would silently join our T-037's footprint. Same low-ID cross-project collision class as the port-3000 false green (T-1376)."
   captured: 2026-08-25T22:06:09Z
   context_task: T-3145
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-347
   text: "An autonomous sweep mutated a LIVE task mid-work. T-3146 was created at 22:07:26 and set started-work/horizon:now by this session; by 22:12:28 its frontmatter read status: issues, horizon: later, tags: [refused-for-this-dispatch] — none of which this session wrote. The tag string appears in NO source file in the repo (grep -rl over lib/ agents/ bin/ tools/ policy/ returns only the task file itself), so it was authored as free text by an LLM worker, not emitted by framework code. Two dispatch envelopes for T-3146 exist in .context/dispatches.jsonl (0f3860cd, af529fe5) at 22:07:49 and 22:08:07, both origin: unknown. Attribution NOT established: envelopes also appear for T-3145 at the moment 'fw work-on' ran, so they may be telemetry rather than workers, and no bvp cost_estimate_proposed was written to T-3146 which weakens the bvp-estimator-sweep-15m hypothesis. What IS established: something outside this session rewrote status, horizon and tags on a task under active edit, and the framework surfaced no notice. Sovereignty concern regardless of which sweep did it — status/horizon are the operator's and the owning session's scheduling fields."
   captured: 2026-08-25T22:13:28Z
   context_task: T-3146
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "Promoted to T-3331 (inception, DEFER rec \u2014 attribution first)"
+  dismissed_at: 2026-09-07T07:08:55Z
   promoted_to: null
 - id: OBS-348
   text: "Pre-push audit lock routinely blocks pushes, and callers mask it. Four blocked pushes across two sessions today: the S-2026-0827-0859 handover push, the v1.6.768 release tag push (which then created a GitHub Release for a tag origin lacked - T-3193), and two T-3188 closure pushes. The gate is correct to refuse when no verdict was produced, but the cron audit holds .context/locks/audit.lock often enough that 'push, get blocked, hand-retry' is the normal path rather than the exception. Compounding it: every caller that pipes the push (git push ... | tail, fw release ... | tail) reads the pipeline's 0 and reports success. Candidates: have the pre-push hook WAIT briefly on the lock instead of failing immediately; or have it distinguish 'audit could not run' from 'audit failed' at the exit-code level so callers can retry automatically."
   captured: 2026-08-27T08:07:21Z
   context_task: T-3181
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "MERGE into T-3297 \u2014 bounded lock wait + contention-only Tier-2 bypass implements exactly this obs's two candidates (landed 2026-09-07)"
+  dismissed_at: 2026-09-07T07:00:56Z
   promoted_to: null
 - id: OBS-349
   text: "Watchtower serves the Python it loaded at start, so a change to web/blueprints/*.py is invisible to curl until 'fw watchtower restart'. Hit today: after adding DEV_BRANCH and RELEASE_BRANCH to the config registry, /config showed neither while its sibling keys rendered fine — the code was correct, the process was 13h stale. Cuts both ways and the second way is worse: a P-011 Verification line that curls a page can PASS against pre-change code and report green for a render that was never served. Candidate: fw doctor WARN when the running Watchtower's start time predates the newest mtime under web/."
   captured: 2026-08-27T09:30:20Z
   context_task: null
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "MERGE into T-3282 \u2014 G-104 stale-Watchtower detector (fw watchtower current + doctor WARN) is exactly this obs's candidate fix; third measured instance"
+  dismissed_at: 2026-09-07T07:01:06Z
   promoted_to: null
 - id: OBS-350
   text: "status"
   captured: 2026-08-27T21:12:59Z
   context_task: T-3202
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "Content-free entry (single word 'status') \u2014 accidental capture, nothing to act on"
+  dismissed_at: 2026-09-07T07:00:45Z
   promoted_to: null
 - id: OBS-351
   text: "Cron audit runs are stacking: three concurrent agents/audit/audit.sh --section traceability,episodic,discovery-trends --cron processes observed at 15:07, elapsed 04:04 / 04:04 / 00:06. The cron interval is shorter than the run takes on the current corpus, so instances pile up and audit.lock is held continuously. Downstream effect measured this session: the pre-push gate refuses every push while the lock is held (correctly - no verdict was produced), so pushes are blocked not by a failing audit but by audit throughput. Blocked two pushes ~15 minutes apart today, and the same shape blocked the S-2026-0828-1405 handover push earlier. Adjacent to T-3127 (no check asserts the full-audit timeout budget still fits the corpus) and T-3202 (timing record cannot distinguish external kill from exhaustion), but distinct: this is arrival rate vs service time, not a single run's duration. Suggested check before filing: compare the cron schedule interval against the p95 full-audit duration in .context/audits/. Not investigated - observed at 87 percent of the budget cap, past the stop line."
   captured: 2026-08-28T13:04:25Z
   context_task: T-3203
   tags: [cron]
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-352
   text: "A test leaked a consumer fixture CLAUDE.md to filesystem root: /CLAUDE.md, 470 bytes, contains PROJECT_HEADER_MARKER_LINE and 'fixture-consumer'. Any claude session started anywhere on this host inherits it via the upward CLAUDE.md walk. Found while building a deliberately-cold worker for T-3181 IW-4. Also: a full 119KB copy of the project CLAUDE.md sits in the session scratchpad from 2026-08-25, which would have silently invalidated the cold-session experiment."
   captured: 2026-08-28T15:32:00Z
   context_task: T-3181
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "MERGE into T-2787 (fixture-leak class); the live /CLAUDE.md instance removed 2026-09-07 by parent session"
+  dismissed_at: 2026-09-07T07:01:07Z
   promoted_to: null
 - id: OBS-353
   text: "G-020 scope gate blocks BOTH escape routes its own block message prescribes — an agent focused on a placeholder-AC build task can be wedged. Measured 2026-08-29 (T-3216 run, focus landed on auto-created T-3215/T-3216). The message names: (1) 'Edit the task file: replace [First criterion] with real ACs'; (2) 'bin/fw task update T-XXX --type inception'. Route (2) is refused by check-active-task itself — not on the read-only allowlist (agents/context/lib/safe-commands.sh), so the gate quotes the remedy back verbatim while refusing it. Route (1) is refused for every SHELL form (heredoc, sed -i, any redirect all match the write-pattern regex); it survives only via a Write/Edit TOOL call, which is not routed through the same regex. So an agent whose only write surface is bash has no legal move at all. I escaped only by using the Edit tool. Also blocked in the same state: 'fw task update --horizon later', 'fw push', and plain reads that merely contain sed/awk/2>/dev/null — the write-pattern regex is matching read commands (sibling of T-2410, already filed, but the deadlock is distinct from the false-positive class). Fix direction, cheapest first: allowlist the gate's own two prescribed remedies in safe-commands.sh so the block message is reachable from the blocked state. Structural lesson worth a rail: a block message is an executable contract — for every gate that prints a remedy, run that remedy verbatim WHILE the gate is firing, not from a clean shell. Ours was written by someone who was not blocked at the time. Sibling to L-399/T-1890 producer-consumer parity, one notch worse: there the bypass existed and was rejected downstream; here the gate rejects it itself. Second trigger in the same run: an automated process created T-3215 in started-work with template ACs and TOOK FOCUS from the session twice, which is how the session entered the wedged state at all — that focus-stealing is worth its own look."
@@ -4170,7 +4188,9 @@ observations:
   captured: 2026-08-29T15:15:53Z
   context_task: T-3181
   tags: [governance]
-  status: pending
+  status: dismissed
+  dismissed_reason: "Promoted to T-3332 (inception, DEFER rec)"
+  dismissed_at: 2026-09-07T07:08:55Z
   promoted_to: null
 - id: OBS-355
   text: "Third instance in one session of: a character-level scan standing in for structure, so a MENTION of a thing is treated as the thing. (1) tools/bats-silent-skip-lint.py went silently blind when '<<TAG' appeared in a comment or a quoted string — heredoc opened, never closed, rest of file unscanned, reported clean. (2) A section-replacing edit matched '## Verification' inside an AC's prose instead of the heading and deleted the '### Human' section, so T-3217 closed fully complete when it owed a human review. (3) The framework's own check-active-task gate refuses a read-only 'awk/sed -n' inspection because the raw command string mentions a write verb. Peer 832-Workflow-designer named the class at chat-arc @804 and shipped a quote-stripping fix on their side; we reproduced it twice within the hour of reading it. The generalisable ask: for any scan over command or document text, the question is not 'is the pattern right' but 'is it reading an argument or an action'."
@@ -4197,7 +4217,9 @@ observations:
   captured: 2026-08-30T19:11:14Z
   context_task: T-3226
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "Work correct and committed (ba4de211a); residue captured as learning: check git status for pre-existing dirt before staging by path"
+  dismissed_at: 2026-09-07T07:00:45Z
   promoted_to: null
 - id: OBS-358
   text: "A full 'fw init' ran with cwd=/tmp on this host at 2026-08-31T13:04:49Z, creating /tmp/.framework.yaml, /tmp/.tasks (6 seed tasks), /tmp/.context, /tmp/.agentic-framework (VERSION 1.6.354 — not this repo's 1.6.138) and /tmp/.claude/settings.json with hooks pointing at /tmp/.agentic-framework/bin/fw. A 'git init' by user dimitri-mint-dev followed at 15:05 (/tmp/.git, zero commits). BLAST RADIUS, measured: lib/paths.sh:fw_reanchor_from_cwd walks up for .framework.yaml/.tasks and stops before '/', so until today /tmp was correctly 'outside any project'. It no longer is — every BATS_TEST_TMPDIR under /tmp now re-anchors to /tmp, and the check-active-task hook reads /tmp/.context/working/focus.yaml (null) instead of the intended root. This turned tests/unit/check_active_task_cwd_resolution.bats:118 'T-2463: cwd outside any project' RED, which blocked an unrelated task close (T-3222) at the P-011 gate. The test is not wrong — it detected a real environment change — but its premise ('/tmp is not a project') is host-state-dependent and unasserted, so the failure reads as a code regression. Note / itself also carries /.framework.yaml (Aug 26) and /.tasks (Jun 27); those are invisible only because the walk stops before '/'."
@@ -4282,21 +4304,25 @@ observations:
   captured: 2026-09-05T10:57:57Z
   context_task: T-3279
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "MERGE into T-3301 \u2014 same emit_review code path; diagnose-first directive already in that task body"
+  dismissed_at: 2026-09-07T07:01:07Z
   promoted_to: null
 - id: OBS-368
   text: "fw doctor spends ~79s of every run on 'bats --count tests/unit/' (606 files, 5161 tests) to print a cosmetic count on the 'Test infrastructure' line (bin/fw:1931). doctor --quick does not skip it — check 9 has no _doctor_quick_skip guard. Measured 2026-09-05 during T-3281: 'fw doctor --quick' exceeded a 120s timeout having reached only check 8. doctor is invoked by hooks, cron and pre-push paths, so the cost is paid constantly and it makes doctor unusable inside test suites. Candidate fixes: guard check 9 with _doctor_quick_skip, cache the count, or replace with a cheap 'ls tests/unit/*.bats | wc -l' file count."
   captured: 2026-09-05T11:34:28Z
   context_task: T-3281
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-369
   text: "Focus stomped twice in one hour by a stale-session writer: focus.yaml rewritten to current_task T-1719 with focus_session S-2026-0813-2305 (an Aug-13 session id, same id as the stale .budget-status cache) while the live session worked T-3284. Measured 2026-09-05 ~16:50 and ~16:56 — the T-1730 drift gate caught both. G-083 class (single-slot focus, shared tree); the fingerprint narrows it to machinery replaying S-2026-0813-2305 state, not a concurrent live session."
   captured: 2026-09-05T16:56:12Z
   context_task: T-1719
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "Promoted to T-3333 (inception, DEFER rec \u2014 attribution first; pair with T-3331)"
+  dismissed_at: 2026-09-07T07:08:55Z
   promoted_to: null
 - id: OBS-370
   text: "Nested fw crosses project boundaries: with PROJECT_ROOT/TASKS_DIR/CONTEXT_DIR exported by an outer fw process (lib/paths.sh:352), a DIFFERENT project's vendored bin/fw inherits them (_fw_reexec_authority preserves inherited PROJECT_ROOT, bin/fw:361) and writes into the OUTER project. Demonstrated 2026-09-05: T-3250's P-011 close gate ran its livefire sandbox harness; the sandbox's fw task create wrote 34 junk tasks (T-3285..) into the LIVE /opt/999-AEF .tasks/active/ while the sandbox saw 0 and FATALed. Works-by-hand/fails-under-gate; the write lands in a different tree than the error points at. Harness now env-cleans (rig-level); the framework-level fix — re-derive root when inherited PROJECT_ROOT does not contain PWD's project tree — filed as a task. G-063-adjacent, distinct class."
@@ -4331,40 +4357,44 @@ observations:
   captured: 2026-09-06T17:31:41Z
   context_task: T-1719
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "LINK: T-3288 promoted from this obs; incident-site fix landed, residual divergence tracked by OBS-375 promote"
+  dismissed_at: 2026-09-07T07:01:07Z
   promoted_to: null
 - id: OBS-374
   text: "Verification-authoring footgun: pytest (via 'fw test web') colorizes output even when redirected to a file, so \"grep -c '^FAILED' capture-file\" counts 0 — a FALSE RED that blocked T-3224's close despite the failure count matching the allowed set. The L-387 capture-then-grep pattern is necessary but not sufficient: greps against captured pytest/toolchain output must strip ANSI first (sed 's/\\x1b\\[[0-9;]*m//g') or force --color=no. Candidate structural fixes: fw test passes --color=no when not a TTY; or P-011 doc gains an ANSI-strip idiom next to the capture-then-grep idiom."
   captured: 2026-09-06T17:46:24Z
   context_task: T-3224
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-375
   text: "Follow-up to OBS-373/T-3288: Human-heading parsers remain divergent after the incident-site fix. Strict (suffix-blind) extractors still live at agents/audit/audit.sh:6283 ('^### Human\\s*$') and lib/verify-acs.sh:294+297 ('### Human' substring + '### Human\\s*\\n'); tolerant forms exist at audit.sh:5714 (T-100189) and audit.sh:5793. lib/review_link_validator.py:84 and lib/task_satisfaction.py:97 unverified. Candidate: centralize Human-block extraction in lib/section-extract.sh (T-3148 did this for the AC section; T-3288 extracted the render-gate classifier to lib/human_review_state.py — either absorb the others into it or into section-extract). L-317 cross-surface parity class."
   captured: 2026-09-06T17:58:36Z
   context_task: T-3288
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-376
   text: "Split from OBS-353 secondary finding (w3 triage, T-3289): an automated process created T-3215 in started-work with template ACs and took focus twice — the G-020 gate did not prevent an automated task-creation path from producing exactly the placeholder-AC state it exists to block. Needs its own investigation: which process created T-3215, and should task-creation surfaces refuse started-work with template ACs."
   captured: 2026-09-06T18:15:24Z
   context_task: T-3289
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "Promoted to T-3334 (inception, DEFER rec)"
+  dismissed_at: 2026-09-07T07:08:55Z
   promoted_to: null
 - id: OBS-377
   text: "Stale-verification class: P-011 lines and unit tests anchored to MUTABLE CORPUS STATE rot as the corpus moves, blocking closes for reasons unrelated to the code under test. Two instances measured in one close-out sweep (2026-09-06): (1) T-2969 verification line 3 greps 'fw audit --section structure' for \"'readme-first-run' is draft with all 2 constituent\" — that arc moved draft->in-progress since authoring, so the warning legitimately vanished and the close is blocked by corpus drift; (2) T-2871's tests/unit/test_aef_meta_census.py pins exact census counts (56 carriers, 102 state hits) from the August measurement — corpus grew to 74/138, tests red, close blocked; the assertion cannot distinguish 'measurement method broke' from 'corpus changed'. Fix shape per instance: anchor tests to committed FIXTURE corpora (hermetic), or pin the invariant/property rather than the live count; verification lines should not grep live-audit output for specific corpus entities. Sibling of the false-green/false-red family (T-1828, T-3105): a check whose subject can drift under it measures the drift, not the code."
   captured: 2026-09-06T19:59:15Z
   context_task: T-2871
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-378
   text: "Observed live during T-3298 integration: SIGKILL'ing an audit leaves its SECTION CHILDREN (e.g. the invariant/lint bats subtree it spawned) holding flock fd 200 — they inherit the lock fd and extend mutual exclusion arbitrarily past the audit's death, so a later audit exits 75 with no audit.sh process visible. T-1464/T-1772 close fds only in the WATCHDOG subshell, not in section children. Residual of the same fd-inheritance class; T-3298's no-unlink fix is unaffected (inode stability is correct), but lock-holder diagnosis needs fuser on the lock, not pgrep audit.sh. Candidate fix: close fd 200 (or set FD_CLOEXEC) before spawning section commands."
   captured: 2026-09-07T00:48:05Z
   context_task: T-3298
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
