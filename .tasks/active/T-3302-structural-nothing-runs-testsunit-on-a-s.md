@@ -348,6 +348,13 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! ec
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The invisibility gap is closed end to end: a nightly `unit-suite-nightly` cron (03:03) runs both tests/unit legs through a dedicated runner that can never contend the audit lock (own flock, skip-if-held logged), writes a schema'd report, and `fw audit` now reads that report with FAIL/WARN/PASS semantics whose line text names the corpus ("Unit suite (tests/unit)"). The invariant-suite lines were re-worded to name their corpus too ("Invariant suite (tests/lint)"), killing the green-line-answers-narrower-question class at both surfaces. Parent verification caught and fixed one real environment hazard post-worker: under FORCE_COLOR the pytest leg wrote ANSI into the redirected report parse (OBS-374 class) — hardened with `--color=no` + env scrub, reproduced and re-verified.
+**Evidence:**
+- `tests/unit/t3302_unit_suite_schedule.bats` — 11/11 green, 0 skips, hermetic (verified twice: worker env and parent env with FORCE_COLOR=3)
+- `fw doctor`: "Cron registry in sync", no "edited but not generated" WARN (registry→generated→deployed chain complete)
+- audit FAILs on listed failures AND on runner_exit≠0; WARNs on missing/stale (>48h) report; real corpus never started by tests
+
 ## Decisions
 
 ### 2026-09-07 — runner location and shape
