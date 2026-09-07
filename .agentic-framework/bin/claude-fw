@@ -96,6 +96,22 @@ termlink_inject() {
     termlink pty inject "$TERMLINK_SESSION" "$cmd" --enter >/dev/null 2>&1
 }
 
+# T-3346: parse the explicit exit marker the injected command line prints when
+# claude actually terminates. Prompt-glyph detection is unusable here: `❯` is
+# Claude Code's own TUI input caret, on screen the entire time claude is RUNNING,
+# so the old regex reported "shell prompt returned" ~1 min into every launch and
+# the wrapper's cleanup then injected `exit` into its own live session. The
+# injected line ends with `printf '__CLAUDE_FW_EXIT_%s__\n' "$?"` — its PTY echo
+# carries the literal `%s`, only the real printf output carries digits, so the
+# echo of the injection can never match. Prints claude's exit code and returns 0
+# when the marker is present; returns 1 while claude is still running.
+_tl_claude_exit_code() {
+    local text="$1" m
+    m=$(printf '%s\n' "$text" | grep -oE '__CLAUDE_FW_EXIT_[0-9]+__' | tail -1)
+    [ -n "$m" ] || return 1
+    printf '%s\n' "$m" | sed -E 's/__CLAUDE_FW_EXIT_([0-9]+)__/\1/'
+}
+
 termlink_cleanup() {
     if [ -n "$TERMLINK_SESSION" ]; then
         termlink pty inject "$TERMLINK_SESSION" "exit" --enter >/dev/null 2>&1 || true
@@ -512,8 +528,10 @@ while true; do
     # Run claude with user's arguments
     set +e
     if [ "$TERMLINK_ENABLED" = "1" ] && [ -n "$TERMLINK_SESSION" ]; then
-        # Inject claude command into TermLink PTY session
-        termlink_inject "claude ${CLAUDE_ARGS[*]}"
+        # Inject claude command into TermLink PTY session. T-3346: the trailing
+        # printf is the exit signal — see _tl_claude_exit_code. $? and quotes are
+        # escaped so they reach the PTY shell literally.
+        termlink_inject "claude ${CLAUDE_ARGS[*]}; printf '__CLAUDE_FW_EXIT_%s__\n' \"\$?\""
         # Wait for claude to exit by polling the PTY for shell prompt
         # We check if claude process is still running inside the session
         while true; do
@@ -539,11 +557,13 @@ while true; do
                 exit_code=1
                 break
             fi
-            # Check if claude process has exited (shell prompt returned)
-            # Use a marker file approach: claude sets exit code on completion
-            local_output=$(termlink pty output "$TERMLINK_SESSION" --lines 3 --strip-ansi 2>/dev/null) || true
-            if echo "$local_output" | grep -qE '^\$|^❯|^➜|claude-fw:|^user@'; then
-                exit_code=0
+            # T-3346: claude has exited only when the injected command line's
+            # explicit marker appears — never inferred from prompt glyphs (the
+            # old `^❯` match was Claude's own TUI caret and fired while claude
+            # was alive, so the wrapper tore down its own live session).
+            local_output=$(termlink pty output "$TERMLINK_SESSION" --lines 10 --strip-ansi 2>/dev/null) || true
+            if marker_code=$(_tl_claude_exit_code "$local_output"); then
+                exit_code=$marker_code
                 break
             fi
         done
