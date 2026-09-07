@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3336: arc-020 S8c: live notice-sink seam wired to termlink channel
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T10:27:52Z
+# ============================================================================
+
+task_id: T-3336
+task_name: "arc-020 S8c: live notice-sink seam wired to termlink channel"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-07T10:24:43Z
+completed: 2026-09-07T10:27:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-07T12:26:50+02:00
+last_commit: 2026-09-07T12:27:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  wire live termlink notice-sink (arc-020 S8 inform-operator seam). add Evolution entry (durable channel over DM; best-effort post)
+
+# Key outcomes
+outcomes:
+  - '`termlink_notice_sink(channel, invoke=None, *, also_default=True)` in `lib/aef_repo_source.py` returns a `Callable[[OperatorNotice], None]` usable directly as `source_repo(..., notice_sink=)` — it posts the notice to a durable termlink channel via `channel post`.'
+  - 'Antifragile invariant: local delivery (OPERATOR_NOTICES ledger + stderr) fires unconditionally when `also_default`; the termlink post is additional and best-effort — a termlink failure (hub down / binary missing) is logged and **never raises or suppresses the notice**.'
+  - 'The `invoke` seam is injectable (default subprocess over `termlink`); tests inject a fake so every path verifies with no live hub.'
+  - '`tests/unit/test_aef_repo_source_termlink.py` covers post / ledger-composition / failure-tolerance / custom-channel / also_default=False; existing `tests/unit/test_aef_repo_source.py` stays green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/aef_repo_source.py'
+  - 'lib/aef_repo_source.py'
+  - '.tasks/active/T-3336-arc-020-s8c-live-notice-sink-seam-wired-.md'
+  - 'tests/unit/test_aef_repo_source_termlink.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T12:26:50'
+    action: 'T-3336: wire live termlink notice-sink (arc-020 S8 inform-operator seam)'
+  - time: '2026-09-07T12:27:35'
+    action: 'T-3336: add Evolution entry (durable channel over DM; best-effort post)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 3
+  files_changed: 5
+  lines_added: 521
+  lines_removed: 0
+  footprint_refreshed_at: '2026-09-07T10:39:00Z'
+  footprint_refreshed_by_commit: 8b12bec8b
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3336-arc-020-s8c-live-notice-sink-seam-wired-.md
+generated_by: context-agent-hybrid
