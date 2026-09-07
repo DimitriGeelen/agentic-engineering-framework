@@ -39,6 +39,8 @@ import calendar
 import hashlib
 import json
 import os
+import shutil
+import subprocess
 import threading
 import time
 from dataclasses import dataclass, replace as _dc_replace
@@ -214,40 +216,212 @@ class LocalClaimBackend:
         ).current()
 
 
-# ── termlink adapter: SHAPE ONLY (scoping call recorded in T-3310) ───────
+# ── termlink adapter: LIVE wiring (T-3335 / arc-020 S8) ──────────────────
+
+DEFAULT_ELECTION_TTL_MS = 60_000
+DEFAULT_ELECTION_SENTINEL = "aef-election-token"
+
+
+def default_termlink_invoke(args: list[str], *, timeout: float = 20.0) -> dict:
+    """Run ``termlink <args>`` and normalise the result.
+
+    Returns ``{ok, code, data, stdout, stderr}`` where ``data`` is the parsed
+    JSON body when stdout is JSON, else ``{}``. Never raises on a non-zero
+    exit (a lost claim is a normal outcome, not an error) — only on a missing
+    binary, which is a genuine environment fault the caller must see.
+    """
+    binary = shutil.which("termlink") or "termlink"
+    try:
+        proc = subprocess.run(
+            [binary, *args], capture_output=True, text=True, timeout=timeout
+        )
+    except FileNotFoundError as exc:  # pragma: no cover — env fault
+        raise ElectionError(f"termlink binary not found: {exc}") from exc
+    out = (proc.stdout or "").strip()
+    data: object = {}
+    if out:
+        try:
+            data = json.loads(out)
+        except json.JSONDecodeError:
+            data = {}
+    return {
+        "ok": proc.returncode == 0,
+        "code": proc.returncode,
+        "data": data,
+        "stdout": out,
+        "stderr": (proc.stderr or "").strip(),
+    }
+
+
+def election_topic(channel: str, target_wire: str) -> str:
+    """Per-target claim topic: a stable, collision-resistant name under the
+    election ``channel`` namespace. Same address → same topic, always."""
+    digest = hashlib.sha256(target_wire.encode()).hexdigest()[:16]
+    return f"{channel}-{digest}"
+
+
+class TermlinkClaimTicket:
+    """Winner's handle over a held ``channel claim`` lease. Idempotent, and
+    tolerant of a lapsed lease (a TTL-expired claim is already 'released')."""
+
+    def __init__(
+        self,
+        invoke: Callable[..., dict],
+        topic: str,
+        offset: int,
+        claim_id: str,
+        claimer: str,
+    ):
+        self._invoke = invoke
+        self.topic = topic
+        self.offset = offset
+        self.claim_id = claim_id
+        self.claimer = claimer
+        self.released = False
+
+    def release(self) -> None:
+        if self.released:
+            return
+        # Mutex reopen: NO --ack (we are not consuming posted work, we are
+        # returning the election slot to the electable state). Best-effort:
+        # a hub CLAIM_EXPIRED means the lease already lapsed → already reopen.
+        self._invoke(
+            [
+                "channel",
+                "release",
+                "--claim-id",
+                self.claim_id,
+                "--claimer",
+                self.claimer,
+                "--json",
+            ]
+        )
+        self.released = True
 
 
 class TermlinkChannelClaimBackend:
-    """Adapter shape for the `termlink channel claim` family (F5).
+    """Live ``ClaimBackend`` over the ``termlink channel claim`` family (F5).
 
-    The eventual substrate maps 1:1 onto the ClaimBackend protocol:
+    The election target (a serialized V9 address) is the mutex key. termlink's
+    claim primitive is an *offset lease within a topic* (T-2032 work-queue
+    semantics), not a free-form named mutex — so a target maps onto a
+    ``(topic, offset)`` coordinate:
 
-      try_claim → `termlink channel claim <channel> <key>`   (mutex take)
-      release   → `termlink channel release <channel> <key>`
-      holder    → `termlink channel claims <channel>`        (read)
+      - topic  = ``election_topic(channel, target_wire)`` — one topic per target
+      - offset = 0 — the single mutex slot, seeded with one sentinel message
+                 (an offset cannot be claimed at/beyond the frontier, so the
+                 slot must exist before it can be raced for — hub code -32022)
 
-    with ``key`` = the serialized target address and TTL served by the
-    channel's claim expiry. Real wiring is deferred (T-3310 scoping —
-    see the task's ## Decisions): this class pins the shape so callers
-    and later slices can depend on it, but claiming raises until the
-    wiring lands. Inject LocalClaimBackend (or a test double) today.
+    Mapping onto the protocol:
+
+      try_claim → seed(topic) then ``channel claim --claimer <id> <topic> 0``
+      release   → ``channel release --claim-id <id> --claimer <id>``  (no --ack)
+      holder    → ``channel claims <topic>``  (read the live lease on offset 0)
+
+    The claim is a renew-or-lapse *lease* (``ttl_ms``, default 60s, hub-clamped
+    to 1h): a crashed winner's slot reopens on TTL expiry (matching the S2
+    stale-pid semantics), but a winner whose provision outlives ``ttl_ms`` must
+    renew — see the task ## Decisions (T-3335). Inject ``invoke`` in tests to
+    exercise every path with no live hub.
     """
 
-    def __init__(self, channel: str, invoke: Callable[..., object] | None = None):
+    def __init__(
+        self,
+        channel: str,
+        invoke: Callable[..., dict] | None = None,
+        *,
+        ttl_ms: int = DEFAULT_ELECTION_TTL_MS,
+        sentinel: str = DEFAULT_ELECTION_SENTINEL,
+    ):
         self.channel = channel
-        self._invoke = invoke
+        self._invoke = invoke or default_termlink_invoke
+        self.ttl_ms = ttl_ms
+        self.sentinel = sentinel
 
-    def try_claim(self, target_wire: str, candidate_id: str):
-        raise NotImplementedError(
-            "termlink channel-claim wiring is deferred (T-3310 scoping) — "
-            "shape only; inject LocalClaimBackend or a test double"
+    # -- helpers ----------------------------------------------------------
+
+    def _topic(self, target_wire: str) -> str:
+        return election_topic(self.channel, target_wire)
+
+    def _ensure_seeded(self, topic: str) -> None:
+        """Idempotently ensure the topic exists and offset 0 is postable.
+
+        A concurrent first-post can seat two sentinels (offsets 0 and 1); that
+        is harmless — every candidate still races offset 0, so exactly one wins.
+        """
+        self._invoke(["channel", "create", topic])  # idempotent; ignore result
+        info = self._invoke(["channel", "info", topic, "--json"])
+        count = 0
+        data = info.get("data")
+        if info.get("ok") and isinstance(data, dict):
+            count = data.get("count") or 0
+        if not count:
+            self._invoke(["channel", "post", topic, self.sentinel, "--json"])
+
+    # -- ClaimBackend protocol -------------------------------------------
+
+    def try_claim(
+        self, target_wire: str, candidate_id: str
+    ) -> "TermlinkClaimTicket | None":
+        topic = self._topic(target_wire)
+        self._ensure_seeded(topic)
+        res = self._invoke(
+            [
+                "channel",
+                "claim",
+                "--claimer",
+                candidate_id,
+                "--ttl-ms",
+                str(self.ttl_ms),
+                "--json",
+                topic,
+                "0",
+            ]
+        )
+        data = res.get("data")
+        if (
+            res.get("ok")
+            and isinstance(data, dict)
+            and data.get("ok")
+            and data.get("claim_id")
+        ):
+            return TermlinkClaimTicket(
+                self._invoke, topic, 0, data["claim_id"], candidate_id
+            )
+        # Not won. LOST if someone else already holds the slot; a genuine
+        # error (hub down, topic fault) if nobody holds it and we still failed.
+        held = self.holder(target_wire)
+        if held is not None:
+            if held.get("holder") == candidate_id:
+                # We already hold it (idempotent re-claim / renew race).
+                return TermlinkClaimTicket(
+                    self._invoke, topic, 0, held.get("claim_id"), candidate_id
+                )
+            return None  # a rival holds it → role=LOST
+        raise ElectionError(
+            f"channel-claim failed on {topic!r}: "
+            f"{res.get('stderr') or res.get('stdout') or 'exit ' + str(res.get('code'))}"
         )
 
-    def holder(self, target_wire: str):
-        raise NotImplementedError(
-            "termlink channel-claim wiring is deferred (T-3310 scoping) — "
-            "shape only; inject LocalClaimBackend or a test double"
-        )
+    def holder(self, target_wire: str) -> dict | None:
+        topic = self._topic(target_wire)
+        res = self._invoke(["channel", "claims", "--json", topic])
+        data = res.get("data")
+        if not isinstance(data, dict):
+            return None
+        for row in data.get("claims") or []:
+            try:
+                if int(row.get("offset", -1)) == 0:
+                    return {
+                        "holder": row.get("claimer"),
+                        "claim_id": row.get("claim_id"),
+                        "claimed_until": row.get("claimed_until"),
+                        "topic": topic,
+                        "offset": 0,
+                    }
+            except (TypeError, ValueError):
+                continue
+        return None
 
 
 # ── the election ─────────────────────────────────────────────────────────

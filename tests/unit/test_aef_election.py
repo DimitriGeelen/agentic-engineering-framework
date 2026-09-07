@@ -208,14 +208,34 @@ def test_local_backend_satisfies_claim_backend_protocol(tmp_path):
     ticket.release()
 
 
-def test_termlink_backend_is_shape_only(tmp_path):
-    """The termlink adapter pins the protocol shape; wiring is deferred."""
-    backend = TermlinkChannelClaimBackend(channel="aef-elections")
+def test_termlink_backend_is_live_not_shape_only(tmp_path):
+    """T-3335 (S8): the termlink adapter is now WIRED, not a raising stub.
+
+    It conforms to the protocol and its calls route through the injectable
+    ``invoke`` seam (no NotImplementedError). Full win/lose/holder/release
+    coverage lives in tests/unit/test_aef_election_termlink.py against a
+    stateful fake hub; here we only pin that the deferred-stub is gone."""
+    seen: list[list[str]] = []
+
+    def fake_invoke(args, *, timeout=20.0):
+        seen.append(list(args))
+        # minimal: report empty topic (count 0) and no live claims
+        if len(args) > 1 and args[1] == "info":
+            return {"ok": True, "code": 0, "data": {"count": 0}, "stdout": "", "stderr": ""}
+        if len(args) > 1 and args[1] == "claims":
+            return {"ok": True, "code": 0, "data": {"claims": []}, "stdout": "", "stderr": ""}
+        if len(args) > 1 and args[1] == "claim":
+            return {"ok": True, "code": 0,
+                    "data": {"ok": True, "claim_id": "clm-x", "claimer": "cand-a", "offset": 0},
+                    "stdout": "", "stderr": ""}
+        return {"ok": True, "code": 0, "data": {}, "stdout": "", "stderr": ""}
+
+    backend = TermlinkChannelClaimBackend(channel="aef-elections", invoke=fake_invoke)
     assert isinstance(backend, ClaimBackend)
-    with pytest.raises(NotImplementedError):
-        backend.try_claim("aef::host=h::@x::", "cand-a")
-    with pytest.raises(NotImplementedError):
-        backend.holder("aef::host=h::@x::")
+    ticket = backend.try_claim("aef::host=h::@x::", "cand-a")  # must not raise
+    assert isinstance(ticket, ClaimTicket)
+    assert backend.holder("aef::host=h::@x::") is None
+    assert any(c[1] == "claim" for c in seen if len(c) > 1)
 
 
 def test_custom_backend_is_honored(tmp_path):

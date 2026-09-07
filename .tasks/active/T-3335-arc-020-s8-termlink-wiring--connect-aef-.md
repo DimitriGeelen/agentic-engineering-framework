@@ -10,10 +10,10 @@ description: >
   demonstrable once those seams bind to live termlink. Wire-level demo artifact is
   the arc close gate (§ACD).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:29:59Z
-last_update: '2026-09-07T07:45:16Z'
+last_update: 2026-09-07T10:09:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,47 +74,55 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+arc-020 S1–S7 landed the identity substrate as libs with injectable seams (design:
+`docs/reports/T-3287-identity-taxonomy-circuit-model.md`). This task wires the **claim
+backend** seam (`lib/aef_election.py` `TermlinkChannelClaimBackend`, until now a
+`NotImplementedError` shape-only stub) to the live `termlink channel claim|claims|release`
+verbs — operationalizing D5 bound 1 / F5 (exactly-one provisioning, first-claim-wins),
+which serves **G4** and is the mutex the origin-bug fix (G1: distinct co-resident agents =
+distinct correspondents) rests on.
+
+**Integration reality surfaced while wiring (the reason this is a real adapter, not a
+rename):** the election.py docstring assumed `termlink channel claim <channel> <key>` with
+`key` = the target address. The *actual* verb is `channel claim --claimer <ID> <TOPIC>
+<OFFSET>` — an offset-lease within a topic (30s TTL, hub-clamped 1h, returns `claim_id`).
+So an AEF election target maps onto a `(topic, offset)` coordinate, and the claim is a
+renew-or-lapse *lease*, not a permanent mutex. Both facts are captured in ## Decisions.
+
+**Remaining S8 scope (NOT in this task — file as follow-ons after this lands):**
+- probe seam (5-rung dispatcher: host→ping, hub→hub_probe, session→list_sessions) + provisioners (spawn / hub_start) → live wiring.
+- peer-query + materialize (`termlink discover` / `file_receive`) for fleet repo-sourcing.
+- notice-sink → `termlink agent post` / operator DM.
+- The full headline-mechanic demo: two live co-resident agents stay distinct correspondents (G1) AND a dropped circuit self-heals with the message still landing (G3) — the wire-level artifact that is the arc-close gate (§ACD). This task delivers the claim-mutex foundation that demo stands on (see the [REVIEW] Human AC).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+<!-- Scope note (task-sizing, one-deliverable): S8-as-filed bundled five seam wirings
+     (probe, claim, peer-query, provisioners, notice-sink) + a live demo — too big for
+     one task. This task delivers the CLAIM-BACKEND seam (the only hard NotImplementedError
+     stub in the arc substrate, and the seam that operationalizes G4 exactly-once). The
+     other four seams + the full G1+G3 co-resident/self-heal demo are the remaining S8
+     scope, tracked in ## Context. -->
+- [x] `TermlinkChannelClaimBackend.try_claim` / `holder` and its ticket's `release` implement the `ClaimBackend`/`ClaimTicket` protocols against the live `termlink channel claim|claims|release` verbs — no `NotImplementedError` / "wiring is deferred" stub remains in `lib/aef_election.py`.
+- [x] Each AEF election target (a serialized V9 address) maps deterministically to a `(topic, offset)` termlink claim coordinate; the mapping is stable (same address → same coordinate) and collision-resistant (sha256-derived).
+- [x] The `invoke` seam is injectable — default is a subprocess invoker over the `termlink` binary; tests inject a fake so won / lost / holder / release / release-idempotent paths verify with **no live hub required**.
+- [x] A contested claim returns `None` (not an exception) so `elect()` yields role=LOST naming the holder; `release` reopens the coordinate for the next claimant and is idempotent.
+- [x] `tests/unit/test_aef_election_termlink.py` covers those paths with a fake invoke, and the existing `tests/unit/test_aef_election.py` stays green.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [ ] [REVIEW] Live wire-level smoke of the claim mutex (the arc-close demo's foundation). Against a running local hub, two distinct `candidate_id`s race one AEF target: exactly one gets role=WON, the other gets role=LOST naming the holder, and the winner's `release` returns the target to electable. This proves the F5 first-claim-wins mutex fires on real termlink — the substrate the full G1 (distinct co-resident correspondents) + G3 (self-heal, message still lands) demo builds on.
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && termlink hub status 2>&1 | head` — confirm a hub is running (if not: `termlink hub start`).
+  2. `cd /opt/999-Agentic-Engineering-Framework && python3 tests/manual/s8_claim_smoke.py` (the smoke script committed with this task).
+  **Expected:** Output shows one `WON` and one `LOST` for the same target, the LOST row names the winner as holder, and a final `released → re-electable` line.
+  **If not:** Capture the script output + `termlink channel claims <topic> --json` for the target's topic; the offset-lease TTL (30s default) may have lapsed mid-run — re-run, or note the hub error code.
 
 ## Verification
+
+timeout 120 python3 -m pytest tests/unit/test_aef_election_termlink.py tests/unit/test_aef_election.py -q > /tmp/.s8-claim.out 2>&1 && grep -q passed /tmp/.s8-claim.out && ! grep -q failed /tmp/.s8-claim.out
+! grep -q "channel-claim wiring is deferred" lib/aef_election.py
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -311,6 +319,33 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-09-07 — termlink claim is a work-queue offset lease, not a named mutex
+- **Chose:** Map each AEF election target to a `(topic, offset=0)` coordinate — one
+  topic per target (`election_topic(channel, target_wire)` = channel + sha256[:16]),
+  offset 0 as the single mutex slot, seeded with one sentinel message.
+- **Why:** The `lib/aef_election.py` docstring assumed `termlink channel claim <channel>
+  <key>` — a named mutex keyed on the address. The real verb (verified live, T-3335 probe)
+  is `channel claim --claimer <id> <topic> <offset>`: an **offset lease within a topic**
+  (T-2032 work-queue semantics), 30s default TTL, hub-clamped 1h, returns `claim_id`.
+  A target has no natural offset, so it maps onto a dedicated topic and a fixed offset.
+- **Rejected:** (a) single shared topic + `offset = hash(target) mod N` — collision risk
+  and semantic abuse of the offset space. (b) KV compare-and-set as the mutex — would
+  abandon the F5 `channel claim` substrate the design explicitly chose, and lose the
+  TTL-lease crash-recovery that matches S2 stale-pid semantics for free.
+
+### 2026-09-07 — an offset cannot be claimed at/beyond the frontier (seed a sentinel)
+- **Chose:** `_ensure_seeded()` posts exactly one sentinel message when `channel info`
+  reports `count == 0`, so offset 0 exists before any candidate races it.
+- **Why:** The hub rejects claiming an unposted offset (`code=-32022: offset 0 ... is
+  at/beyond the frontier 0 (cannot claim unposted work)`). The mutex slot must be a real
+  message position. A concurrent first-post can seat two sentinels (offsets 0 and 1);
+  that is **harmless** — every candidate still races offset 0, so exactly-one-wins holds.
+- **Consequence (renew-or-lapse):** the claim is a *lease*, not a permanent mutex. A
+  crashed winner's slot reopens on TTL expiry (good — matches S2 crash recovery), but a
+  winner whose provision outlives `ttl_ms` (default 60s) MUST renew (`channel renew`) or
+  lose the slot mid-provision. Renewal is out of scope for this seam and belongs with the
+  provisioner-wiring follow-on; noted here so the next slice inherits the constraint.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -327,3 +362,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3335-arc-020-s8-termlink-wiring--connect-aef-.md
 - **Context:** Initial task creation
+
+### 2026-09-07T10:09:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
