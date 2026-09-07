@@ -13,10 +13,10 @@ description: >
   Same shape as T-3222 (curl/wget) and T-2889 (git stash): a base command classified
   by its usual use rather than by the clause actually being run.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run, bug, hook, safe-list]
 components: []
 related_tasks: [T-3227, T-3222, T-2889]
@@ -31,8 +31,8 @@ related_tasks: [T-3227, T-3222, T-2889]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T05:22:55Z
-last_update: 2026-09-07T19:38:10Z
-date_finished:
+last_update: 2026-09-07T19:53:25Z
+date_finished: 2026-09-07T19:53:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -77,16 +77,21 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`find` sat in the Category 3 (Searching) arm as unconditionally safe; its action
+predicates (`-delete`, `-exec` family, `-fprint` family) mutate or write with no
+shell redirect, so nothing downstream caught them. Fix gives find its own arm
+with a clause-scoped predicate scan (`_fw_find_has_action_predicate`) on
+quote-stripped text — the whole command is classified, not its first word
+(L-547), and a quoted predicate stays a mention, not an action.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 Action predicates closed:** `find` is no longer unconditionally safe — a find invocation containing an action/mutation predicate (`-delete`, `-exec`, `-execdir`, `-ok`, `-okdir`, `-fprint`, `-fprintf`, `-fprint0`, `-fls`) classifies NOT-SAFE via `is_bash_safe_command`
-- [ ] **A2 Search forms stay safe:** pure-search find (`find . -name '*.py'`, `-type f`, `-mtime`, `-print`, `-print0` class) still classifies SAFE — the gate must not start blocking the dominant legitimate use
-- [ ] **A3 Pinned:** the safe-commands suite gains the live-reproduced cases: `find . -delete` NOT-SAFE, `find . -exec rm {} \;` NOT-SAFE, `find . -name '*.py'` SAFE (control) — red-before/green-after demonstrated in the task
-- [ ] **A4 No-widening:** full safe-commands test suite green; `bash -n agents/context/lib/safe-commands.sh` clean
+- [x] **A1 Action predicates closed:** `find` is no longer unconditionally safe — a find invocation containing an action/mutation predicate (`-delete`, `-exec`, `-execdir`, `-ok`, `-okdir`, `-fprint`, `-fprintf`, `-fprint0`, `-fls`) classifies NOT-SAFE via `is_bash_safe_command`
+- [x] **A2 Search forms stay safe:** pure-search find (`find . -name '*.py'`, `-type f`, `-mtime`, `-print`, `-print0` class) still classifies SAFE — the gate must not start blocking the dominant legitimate use
+- [x] **A3 Pinned:** the safe-commands suite gains the live-reproduced cases: `find . -delete` NOT-SAFE, `find . -exec rm {} \;` NOT-SAFE, `find . -name '*.py'` SAFE (control) — red-before/green-after demonstrated in the task
+- [x] **A4 No-widening:** full safe-commands test suite green; `bash -n agents/context/lib/safe-commands.sh` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -236,6 +241,16 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/context/lib/safe-commands.sh
+# A1/A2: action predicates NOT-SAFE, pure-search SAFE
+bash -c 'source agents/context/lib/safe-commands.sh; is_bash_safe_command "find . -delete"; echo "delete-rc=$?"; is_bash_safe_command "find . -exec rm {} \;"; echo "exec-rc=$?"; is_bash_safe_command "find . -name \"*.py\""; echo "name-rc=$?"' > /tmp/.t3238-cls.out 2>&1 && grep -q "delete-rc=1" /tmp/.t3238-cls.out && grep -q "exec-rc=1" /tmp/.t3238-cls.out && grep -q "name-rc=0" /tmp/.t3238-cls.out
+# A3: certifying suite green, nothing skipped
+timeout 300 bats tests/unit/t3238_find_action_predicates.bats > /tmp/.t3238-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3238-bats.out
+test "$(grep -c '# skip' /tmp/.t3238-bats.out)" -eq 0
+# A4: full safe-commands suite set green
+timeout 300 bats tests/unit/t3222_fetch_writes_file.bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/test_safe_commands_git_commit.bats tests/unit/drift_gate_not_shadowed_by_safelist.bats > /tmp/.t3238-fullv.out 2>&1 && ! grep -q "^not ok" /tmp/.t3238-fullv.out
+test "$(grep -c '# skip' /tmp/.t3238-fullv.out)" -eq 0
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -251,6 +266,30 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `find . -delete` and `find . -exec … {} \;` classified SAFE by
+`is_bash_safe_command` and skipped the Bash task gate with no active task.
+Reproduced live pre-fix: `-delete`, `-exec`, `-execdir`, `-fprintf` forms all
+SAFE.
+
+**Root cause:** `find` was listed in the Category 3 (Searching) arm as an
+unconditionally-safe base — classified by its usual use, not by the clause
+actually being run (L-547 class, same shape as T-3222 curl/wget and T-2889
+git stash). find's action predicates mutate (`-delete`) or execute (`-exec`
+family) or write files with no shell redirect (`-fprint` family), so
+`has_bash_write_pattern` — which looks for redirects — never saw them either.
+
+**Why structurally allowed:** the safe-list's admission rule ("only verbs that
+cannot write a file WITHOUT a shell redirect") was applied to the verb, and
+find-the-verb looks like a pure search. No test in the suite ever asked about
+an action-predicate form, so the unconditional arm certified itself.
+
+**Prevention:** distinct from the fix — the new certifying suite
+(tests/unit/t3238_find_action_predicates.bats) pins all nine action predicates
+NOT-SAFE, five pure-search controls SAFE, quoted-predicate mention legs,
+live-hook block legs, a mutation leg that restores the unconditional arm and
+asserts the hole re-opens, and a no-widening corpus. Reverting the fix reddens
+six tests (measured against the stashed pre-fix lib).
 
 ## Evolution
 
@@ -275,6 +314,20 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-07 — the mention/action boundary is the hard part, not the list
+
+- **What changed:** the predicate list itself was fixed at filing; building it
+  showed the real design decision is WHERE the scan runs. A whole-raw-string
+  scan would gate `grep -r delete .` and `find . -name "-delete"` — mentions
+  treated as actions, the OBS-356 class. Clause-scoped on quote-stripped text
+  (the T-3222 `_fw_fetch_writes_file` pattern) gets both directions right.
+- **Plan impact:** none removed; the fix moved find out of the shared
+  Category 3 arm into its own arm rather than adding a pattern to
+  `has_bash_write_pattern`, for the reason the T-3222 header comment documents.
+- **Triggered:** nothing new — this closes the second of the two W2 findings
+  from the T-3227 arc-012 review dispatched to this worker (T-3237 was the
+  first).
 
 ## Recommendation
 
@@ -305,6 +358,17 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** find's mutation grammar is closed at the predicate level with the
+whole clause classified (L-547), pure-search forms — the dominant legitimate
+use — stay admitted, quoted predicates stay mentions, and the full
+safe-commands suite set shows no widening. Every failure direction in the new
+scan (unbalanced quote, unrecognised shape) is toward blocking.
+**Evidence:**
+- Pre-fix live repro: all nine action-predicate forms → SAFE; post-fix → NOT-SAFE; `find . -name "*.py"` / `-type f -mtime -1 -print` / `-print0` stay SAFE; `find . -name "-delete"` (quoted mention) stays SAFE (agents/context/lib/safe-commands.sh:_fw_find_has_action_predicate).
+- New suite red on pre-fix lib (6 of 11 tests fail via `git stash` rehearsal: 1, 4, 5, 6, 8, 10), 11/11 green on fixed lib, 0 skips (tests/unit/t3238_find_action_predicates.bats).
+- Full safe-commands suite set incl. T-3222/T-3237 suite: 149/149 ok, 0 `not ok`, 0 `# skip`.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -333,5 +397,32 @@ bvp_scores_proposed:
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3238-find-is-unconditionally-safe-listed-so--.md
 - **Context:** Initial task creation
 
+### 2026-09-07 — find action predicates closed, red-before/green-after [worker]
+- **Red-before (measured):** with the pre-fix lib (stashed), the new suite fails
+  6 of 11 legs — test 1 (all nine action predicates MISSED as safe), test 4
+  (helper absent), tests 5/6 (`find . -delete`, `find /tmp -execdir touch {} \;`
+  ADMITTED through the live hook, focus null), test 8 (commit chained to a
+  find-action rides through), test 10 (mutation grep finds no fix line). Live
+  predicate repro: `find . -delete` → SAFE, `find . -exec rm {} \;` → SAFE,
+  `find . -name "*.py"` → SAFE (control).
+- **Fix:** find moved out of the unconditional Category 3 arm into its own arm;
+  `_fw_find_has_action_predicate` scans the quote-stripped clause for the nine
+  action/mutation predicates and errs toward blocking on unparseable input.
+- **Green-after (measured):** 11/11 ok, 0 skips on the new suite; 149/149 ok,
+  0 skips across the seven safe-commands suites (incl. the extended T-3222
+  suite from T-3237, same worker).
+
 ### 2026-09-07T19:38:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-237d03b2
+- **Timestamp:** 2026-09-07T19:54:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-07T19:53:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

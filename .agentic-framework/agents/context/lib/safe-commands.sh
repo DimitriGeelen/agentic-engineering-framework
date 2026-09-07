@@ -368,7 +368,20 @@ _fw_single_command_is_safe() {
             ;;
 
         # Category 3: Searching
-        grep|rg|find|which|where|type|command)
+        grep|rg|which|where|type|command)
+            return 0
+            ;;
+
+        # T-3238: find is a search tool with a MUTATION grammar bolted on.
+        # `-delete` removes what it matches, `-exec`/`-execdir`/`-ok`/`-okdir`
+        # run an arbitrary command per match, and `-fprint`/`-fprintf`/
+        # `-fprint0`/`-fls` write files with no shell redirect — so the
+        # unconditional arm above admitted `find . -delete` with no active
+        # task. Same L-547 class as T-3237's bare wget one arm up: the verdict
+        # was keyed on the first word, not the whole command. Pure-search
+        # forms (-name/-type/-mtime/-print/-print0) stay safe.
+        find)
+            _fw_find_has_action_predicate "$cmd" && return 1
             return 0
             ;;
 
@@ -952,6 +965,33 @@ _fw_fetch_writes_file() {
     if [ "$base" = wget ] && [ "$wget_stdout" -eq 0 ] && [ "$wget_nofetch" -eq 0 ]; then
         return 0
     fi
+    return 1
+}
+
+# T-3238: does this SINGLE find clause carry an action/mutation predicate?
+#
+# Clause-scoped on quote-stripped text, for the same reason _fw_fetch_writes_file
+# above is: a whole-string scan would turn a MENTION into an action —
+# `grep -q '\-delete' file` or `find . -name "-delete"` must not gate. After
+# _fw_strip_quoted, quoted arguments are gone, so only a bare predicate token in
+# argv position can match. Backslash-escaped chars are dropped by the stripper
+# too (`\;` after -exec), which costs nothing: the `-exec` itself is the signal.
+#
+# Failure direction is toward BLOCKING: an unparseable clause (unbalanced quote)
+# reads as carrying an action, which sends the command to the task gate rather
+# than past it — the same asymmetry argument as the compound-command judge.
+_fw_find_has_action_predicate() {
+    local stripped tok
+    stripped="$(_fw_strip_quoted "$1")" || return 0
+    # shellcheck disable=SC2086  # deliberate word-splitting: tokenising argv
+    set -- $stripped
+    while [ $# -gt 0 ]; do
+        tok="$1"; shift
+        case "$tok" in
+            -delete|-exec|-execdir|-ok|-okdir|-fprint|-fprintf|-fprint0|-fls)
+                return 0 ;;
+        esac
+    done
     return 1
 }
 

@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3238: find is unconditionally safe-listed, so -delete and -exec pass the Bash task gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T19:54:55Z
+# ============================================================================
+
+task_id: T-3238
+task_name: "find is unconditionally safe-listed, so -delete and -exec pass the Bash task gate"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T05:22:55Z
+completed: 2026-09-07T19:53:25Z
+duration_days: 6
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  agents/context/lib/safe-commands.sh:371 lists find alongside grep/rg/which/type as an unconditionally-safe base command, on the premise that find is a search tool. find's action predicates make that false: -delete removes files and -exec runs an arbitrary command, and neither is a has_bash_write_pattern match, so nothing downstream catches them. Reproduced live: is_bash_safe_command 'find . -delete' -> SAFE and 'find . -exec rm {} ;' -> SAFE, against the control 'find . -name *.py' -> SAFE (correctly). Found as W2-F6 in the T-3227 arc-012 review and reproduced by the orchestrator. Same shape as T-3222 (curl/wget) and T-2889 (git stash): a base command classified by its usual use rather than by the clause actually being run.
+
+# Key outcomes
+outcomes:
+  - '**A1 Action predicates closed:** `find` is no longer unconditionally safe — a find invocation containing an action/mutation predicate (`-delete`, `-exec`, `-execdir`, `-ok`, `-okdir`, `-fprint`, `-fprintf`, `-fprint0`, `-fls`) classifies NOT-SAFE via `is_bash_safe_command`'
+  - '**A2 Search forms stay safe:** pure-search find (`find . -name ''*.py''`, `-type f`, `-mtime`, `-print`, `-print0` class) still classifies SAFE — the gate must not start blocking the dominant legitimate use'
+  - '**A3 Pinned:** the safe-commands suite gains the live-reproduced cases: `find . -delete` NOT-SAFE, `find . -exec rm {} \;` NOT-SAFE, `find . -name ''*.py''` SAFE (control) — red-before/green-after demonstrated in the task'
+  - '**A4 No-widening:** full safe-commands test suite green; `bash -n agents/context/lib/safe-commands.sh` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 9510 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run, bug, hook, safe-list]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9510
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3238-find-is-unconditionally-safe-listed-so--.md
+generated_by: context-agent-hybrid
