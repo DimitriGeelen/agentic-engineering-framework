@@ -1,16 +1,17 @@
 ---
-id: T-3028
-name: "T-3025 GO: handover digest-plus-reference for the three dump sections"
+id: T-3339
+name: "arc-020 S8: wire fleet peer-query/materialize seam to live termlink discover+file_receive
+  (G3 re-provision)"
 description: >
-  T-3025 GO: handover digest-plus-reference for the three dump sections
+  arc-020 S8: wire fleet peer-query/materialize seam to live termlink discover+file_receive
+  (G3 re-provision)
 
-status: work-completed
+status: captured
 workflow_type: build
-owner: human
-horizon:
+owner: agent
+horizon: later
 tags: []
-components: [agents/handover/handover.sh, lib/config.sh, 
-      tests/unit/handover_digest.bats, web/blueprints/config.py]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,9 +23,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-16T07:56:57Z
-last_update: 2026-09-07T13:04:36Z
-date_finished: 2026-08-16T08:38:36Z
+created: 2026-09-07T15:53:41Z
+last_update: '2026-09-07T16:00:23Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,131 +37,49 @@ date_finished: 2026-08-16T08:38:36Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-16T08:00:08Z'
+  - ts: '2026-09-07T16:00:11Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
-      blast_radius: 0
+      blast_radius:
       tier: 2
       effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=262,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-16T08:00:16Z'
+  - ts: '2026-09-07T16:00:23Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 0
       D3: 3
-      D4: 3
+      D4: 2
       F-RECALL: 2
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=3 (body:portability-abstraction); 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-08-16T22:24:15Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 3
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 1
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=3 (body:portability-abstraction); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3028: T-3025 GO: handover digest-plus-reference for the three dump sections
+# T-3339: arc-020 S8: wire fleet peer-query/materialize seam to live termlink discover+file_receive (G3 re-provision)
 
 ## Context
 
-Implements the T-3025 GO: **option (3), digest-plus-reference, scoped to the three
-dump sections only.** Decision recorded by the operator via Watchtower (`5148d07f6`).
-
-The measured case (T-3022 §Spike 9-10, T-3025 §Spike 11-12): `.context/handovers` is
-68% of the indexed corpus and 79% of the last month's growth. Section accounting of a
-265,888-byte handover shows **state dumps are 97.3%** of it — Observation Inbox
-137,505 B, Work in Progress 69,568 B, Awaiting Your Action 48,355 B — against ~2 KB of
-session narrative. Consecutive handovers are byte-identical across those three
-sections. The prototype at `docs/reports/T-3025-digest-spike.py` reduced a real
-handover 273,761 → 18,762 B (14.6×) with **all 14 narrative sections byte-identical
-by md5**.
-
-The GO's reasoning, which sets the scope: narrative is what a cold reader needs and it
-is preserved in full; what gets referenced is enumerated live state — a queue snapshot
-that is stale the moment it is written and that every consumer re-derives anyway.
-Referencing the part that goes stale and embedding the part that does not is the split,
-not a compromise.
-
-**GO condition 2 is already satisfied** by T-3027: `tasks_active:` now means active, so
-frontmatter carries correct identity + state for every in-flight task. That is what
-makes eliding the WIP dump safe — the T-3025 IW-2 probe's digest arm failed precisely
-because the surviving carrier asserted a false status, and it no longer does. Condition 1
-(digest must carry per-task Status) is subsumed, but the retained top-N entries carry
-Status anyway.
-
-**Reversibility is a requirement, not a nicety.** The whole chain (E′ → F → A) was
-ordered to put subtraction before construction. `FW_HANDOVER_DIGEST=0` must restore the
-full dumps with no other change.
-
-Not in scope: candidate A (binary quantization), and any change to the 14 narrative
-sections.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] All three dump sections digest to `count + regenerating command + top-N entries`: Observation Inbox (`fw note triage`), Work in Progress (`fw task list --status started-work`), Awaiting Your Action (`fw review-queue`)
-- [x] The partial-complete footer inside Work in Progress — which re-lists the same set as Awaiting Your Action — is digested too, since leaving it whole would keep ~40% of the savings on the table
-- [x] Every digested section states its own total, so a reader can tell a truncated list from a complete one; a section listing fewer than it claims says so (preserving the T-2927 mismatch line, which is the control that made the last silent-truncation bug visible)
-- [x] `FW_HANDOVER_DIGEST=0` restores byte-identical full dumps — verified by generating both ways and diffing, not by reading the code
-- [x] `FW_HANDOVER_DIGEST` and `FW_HANDOVER_DIGEST_TOP_N` are registered in **both** `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` (the two are pinned equal by `config registry key count matches across sources`; a one-sided registration fails the pre-push audit — T-3024 origin)
-- [x] All 14 narrative sections are byte-identical between digested and undigested output, checked by md5 per section rather than by eyeball
-- [x] A real generated handover is ≥5× smaller than the same handover undigested, measured on this repo's live corpus
-- [x] `tests/unit/handover_digest.bats` pins: digest on/off parity for narrative, count-vs-listed honesty, top-N respected, and that an empty section digests to nothing rather than to a "0 items" stub
-
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
-
-- [ ] [REVIEW] The digested handover still gives you what you open a handover for
-
-  This is the one thing no measurement settles, and it is the open half of the
-  T-3025 GO. Byte counts and md5 parity say the narrative survived; they cannot say
-  whether a session start reads *well*. You are also the party IW-1 was left to —
-  whether the handover's primary consumer is a cold reader (narrative) or a live
-  session (enumerations). If the enumerations turn out to be what you actually
-  reach for, this is the wrong trade and `HANDOVER_DIGEST=0` is the answer, not a
-  tweak.
-
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw handover`
-  2. Open the newest file in `.context/handovers/` and read it as if you had been
-     away a week.
-  3. For contrast, generate the old shape and open it too:
-     `cd /opt/999-Agentic-Engineering-Framework && FW_HANDOVER_DIGEST=0 bin/fw handover`
-
-  **Expected:** the digested one answers "where am I, what must I not do, what next"
-  without your needing the full dumps; where it truncates, it says so and names the
-  command that gives you the rest.
-
-  **If not:** say which section you missed and whether you wanted *more entries*
-  (raise `HANDOVER_DIGEST_TOP_N`) or *the whole dump back* (set `HANDOVER_DIGEST=0`
-  — that path is tested and restores the previous output unchanged). Either is one
-  `bin/fw config set` away; nothing needs rebuilding.
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -191,29 +110,6 @@ sections.
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-## Measured Result
-
-Generated both ways against this repo's live corpus, same session, minutes apart:
-
-| | full (`FW_HANDOVER_DIGEST=0`) | digested | ratio |
-|---|---|---|---|
-| **whole file** | 270,039 B | 17,643 B | **15.3×** |
-| `## Observation Inbox` | 141,774 B | 1,504 B | 94× |
-| `## Work in Progress` | 69,198 B | 5,279 B | 13× |
-| `## Awaiting Your Action (Human)` | 48,566 B | 1,635 B | 30× |
-| 14 narrative sections | — | — | **byte-identical (md5)** |
-
-Close to the prototype's prediction (273,761 → 18,762 B, 14.6×), which is the
-useful part: the spike measured a post-processed handover, this is the generator
-producing it directly, and they agree.
-
-**Reversibility proven against the pre-change script, not against the code.**
-Generated a handover with `git show HEAD:agents/handover/handover.sh` and compared
-section-by-section with `FW_HANDOVER_DIGEST=0` output: **16 of 17 sections
-md5-identical, section sets equal.** The one difference is `## Token Usage`, which
-carries live session metrics (turn counts moved 5827 → 5823 between the two runs) —
-not a structural difference.
-
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -233,8 +129,8 @@ not a structural difference.
 # Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
 # the verdict. Reach for this first; the alternative below is the special case.
 #
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
+# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line with PIPEFAIL LIVE
+# (errexit is not — see below). When grep matches it exits and closes stdin while cmd is still
 # writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
 # the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
 #
@@ -263,10 +159,66 @@ not a structural difference.
 #     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
 #
+# ── A SKIPPED BATS TEST REPORTS `ok` (T-3217) ─────────────────────────────────
+#
+# `! grep -q "^not ok"` does NOT mean the suite ran. Bats emits a skip as
+#     ok 6 <name> # skip <reason>
+# which is not a `not ok`, so the gate passes and the report says ok while the
+# thing the test covers was measured NOWHERE. Origin: T-3213 guarded a test with
+# `[ "$(id -u)" -eq 0 ] && skip` — the suite runs as root here and in CI, so it
+# skipped on every run that mattered, for as long as it existed.
+#
+# Add a skip clause to any bats verification line. `# skip` is the marker bats
+# writes; counting it is the whole check:
+#     timeout 300 bats <file> > /tmp/.out 2>&1 && ! grep -q "^not ok" /tmp/.out
+#     test "$(grep -c '# skip' /tmp/.out)" -eq 0
+# Two lines, because they answer different questions — "did anything fail" and
+# "did everything run". If some skips are legitimate on your host (an optional
+# dependency is genuinely absent), assert the COUNT you expect rather than zero,
+# and say in the task why that number is right.
+#
+# Corpus-wide, the same check runs from `bin/fw test lint`
+# (tools/bats-silent-skip-lint.py): static mode flags guards that are fixed for
+# a deployment rather than probing an optional dependency, and `--tap FILE`
+# reports the skips a real run actually fired.
+#
 # REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
+# shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
+# the same directory, the same second. To rehearse for real:
+#     bash -c 'set -o pipefail; <your verification line>'
+#
+# NOTE THE MISSING `-e` — it is not a typo (T-3203). This file used to prescribe
+# `set -eo pipefail` here, which is NOT the gate: it adds errexit the gate does
+# not have, so it FAILS lines the gate PASSES. Measured, 10 lines, 3 diverged:
+#     line                            gate    set -eo (old)   set -o (this)
+#     false; true                     PASS    FAIL  wrong     PASS  ok
+#     cd /nonexistent; echo ok        PASS    FAIL  wrong     PASS  ok
+#     grep -q MISS file; true         PASS    FAIL  wrong     PASS  ok
+# The divergence is one-directional and that is the trap: the old rehearsal only
+# ever fails lines the gate accepts, so it produces false REDS, and an author
+# who "fixes" a line to satisfy it is fixing something that was never broken —
+# while the line that actually is broken (`cmd1; cmd2` where cmd1 fails) passes
+# both. Re-derive rather than trust this table — it is pinned, not asserted:
+#     bats tests/unit/t3203_p011_gate_semantics.bats
+#
+# ── `cmd1; cmd2` IS JUDGED ONLY ON cmd2 (T-3203) ──────────────────────────────
+#
+# The gate runs each line as the CONDITION of an `if` (update-task.sh:1215), and
+# POSIX suppresses errexit for a compound command in an `if` condition — through
+# the subshell. So pipefail applies and `set -e` does not, and in a sequence only
+# the LAST command's status reaches the verdict. `cd /nonexistent; echo ok` passes.
+# 2,644 of 10,997 verification lines in this corpus contain `;` (re-derive with
+# the query in docs/reports/T-3203-p011-gate-semantics.md).
+#
+# SAFE SHAPES — both verified biting, each against a passing control:
+#   A. one command whose own status is the verdict (prefer this):
+#        out=$(cmd 2>&1); echo "$out" | grep -q PAT && ! echo "$out" | grep -q BAD
+#      the leading assignments are setup; the trailing `&&` chain is the verdict.
+#   B. an explicit sub-shell, whose errexit the outer `if` cannot reach into:
+#        bash -c 'set -eo pipefail; cmd1; cmd2'
+#      use when you genuinely need every command in the sequence to count.
+#
+# The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
@@ -274,19 +226,6 @@ not a structural difference.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-bash -n agents/handover/handover.sh
-out=$(bats tests/unit/handover_digest.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# T-3027's classifier must keep passing — this task changed the same generator.
-out=$(bats tests/unit/handover_task_classification.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# Both config keys registered on BOTH sides. A one-sided registration is green
-# locally and red only at the pre-push audit's cross-source parity invariant,
-# where it reads as a hung push rather than a config error (T-3024 origin).
-[ "$(grep -c '"HANDOVER_DIGEST|' lib/config.sh)" -eq 1 ]
-[ "$(grep -c '"HANDOVER_DIGEST_TOP_N|' lib/config.sh)" -eq 1 ]
-[ "$(grep -c '("HANDOVER_DIGEST",' web/blueprints/config.py)" -eq 1 ]
-[ "$(grep -c '("HANDOVER_DIGEST_TOP_N",' web/blueprints/config.py)" -eq 1 ]
-bash -c 'source lib/config.sh; [ "$(fw_config HANDOVER_DIGEST)" = "1" ] && [ "$(fw_config HANDOVER_DIGEST_TOP_N)" = "5" ]'
 
 ## RCA
 
@@ -357,47 +296,6 @@ bash -c 'source lib/config.sh; [ "$(fw_config HANDOVER_DIGEST)" = "1" ] && [ "$(
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO — keep the digest on, at `HANDOVER_DIGEST_TOP_N=5`.
-
-**Rationale:**
-
-Your GO on T-3025 authorised this shape and this scope, and the build came in where
-the spike said it would: 15.3× on the whole file, all 14 narrative sections
-byte-identical. The spike measured a post-processed handover; this is the generator
-emitting it directly, and the two agree — which is the part worth trusting, not the
-ratio itself.
-
-The reason I am comfortable recommending GO rather than asking you to pilot it is
-that the failure mode has a proven exit. `HANDOVER_DIGEST=0` was tested against the
-*pre-change script*, not against my reading of the code: 16 of 17 sections
-md5-identical, section sets equal, the one difference being live session metrics that
-moved between two runs seconds apart. If the digest turns out to be wrong for how you
-work, one `bin/fw config set` puts the old handover back exactly.
-
-The one thing I cannot settle is IW-1, and it is genuinely yours: whether the
-handover's primary consumer is a cold reader (narrative — in which case this trade is
-right) or a live session (the enumerations — in which case it is wrong and the growth
-should be attacked elsewhere). The cold-reader probe supports the first reading, but
-it probed an agent, not you. That is what the Human AC asks.
-
-**What I am not claiming:** that this closes the corpus-growth problem. It removes the
-largest term — handovers were 68% of the indexed corpus and 79% of its growth — but
-candidate A (binary quantization, ~10× on recall latency) remains unstarted and
-unauthorised, and E′'s inclusion-set work is T-3024, still with you for review.
-
-**Evidence:**
-
-- Whole file 270,039 → 17,643 B (15.3×); per-section 141,774 → 1,504, 69,198 → 5,279,
-  48,566 → 1,635. Generated both ways against this repo's live corpus, minutes apart.
-- 14/14 narrative sections byte-identical by md5; section sets equal.
-- Reversibility proven against `git show HEAD:agents/handover/handover.sh`, not
-  asserted from the diff.
-- 10 bats tests in `tests/unit/handover_digest.bats` run the real generator against a
-  synthetic corpus; totals are derived from disk so they stay independent oracles.
-- T-3027 landed first and is the precondition: `tasks_active:` now means active, so
-  eliding the WIP dump no longer leaves a false status as the sole carrier.
-- Both config keys registered on both sides; `fw_config` resolves 1 and 5.
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -421,26 +319,11 @@ unauthorised, and E′'s inclusion-set work is T-3024, still with you for review
 
 ## Updates
 
-### 2026-08-16T07:56:57Z — task-created [task-create-agent]
+### 2026-09-07T15:53:41Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3339-arc-020-s8-wire-fleet-peer-querymaterial.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-0ed71de8
-- **Timestamp:** 2026-08-16T08:39:20Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 1
-
-**Per-AC findings:**
-
-- **AC#1 (Human)** — [REVIEW] The digested handover still gives you what you open a handover for
-  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='names the\n  c' in Expected: the digested one answers "where am I, what must I not do, what next"   without your needing the full dumps; where it truncates, it says so a`
-### 2026-08-16T08:22:55Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-
-### 2026-08-16T08:38:36Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
+### 2026-09-07T15:55:41Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

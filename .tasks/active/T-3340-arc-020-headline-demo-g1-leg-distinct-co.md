@@ -1,17 +1,18 @@
 ---
-id: T-3338
-name: "arc-020 S8: wire aef_resolve endpoint-probe seam to live termlink probes (G3
-  self-heal)"
+id: T-3340
+name: "arc-020 headline demo G1 leg: distinct co-resident agents stay distinct correspondents
+  (kills G-105 fingerprint collapse)"
 description: >
-  arc-020 S8: wire aef_resolve endpoint-probe seam to live termlink probes (G3 self-heal)
+  arc-020 headline demo G1 leg: distinct co-resident agents stay distinct correspondents
+  (kills G-105 fingerprint collapse)
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: [arc:arc-020]
-components: [lib/aef_resolve.py]
-related_tasks: [T-3335, T-3336]
+components: []
+related_tasks: [T-3287, T-3335, T-3338]
 arc_id: arc-020
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,9 +24,9 @@ arc_id: arc-020
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-07T15:36:38Z
-last_update: 2026-09-07T15:45:47Z
-date_finished: 2026-09-07T15:45:47Z
+created: 2026-09-07T15:55:54Z
+last_update: '2026-09-07T16:00:23Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -37,73 +38,71 @@ date_finished: 2026-09-07T15:45:47Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-07T15:45:09Z'
+  - ts: '2026-09-07T16:00:11Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=318,acs=8)
+      (workflow:build); effort=8 (lines=289,acs=8)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-07T15:45:16Z'
+  - ts: '2026-09-07T16:00:23Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       identity-fidelity: 0
       provisioning-safety: 0
       D1: 4
-      D2: 0
+      D2: 2
       D3: 3
-      D4: 4
+      D4: 2
       F-RECALL: 2
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
     rationale: identity-fidelity=0 (no-signal); provisioning-safety=0 
-      (no-signal); D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=4 (body:cross-machine); F-RECALL=2 
-      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
+      (no-signal); D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3338: arc-020 S8: wire aef_resolve endpoint-probe seam to live termlink probes (G3 self-heal)
+# T-3340: arc-020 headline demo G1 leg: distinct co-resident agents stay distinct correspondents (kills G-105 fingerprint collapse)
 
 ## Context
 
-arc-020 S3 (`lib/aef_resolve.py`) climbs the 5-rung address ladder (agent→session→
-project→hub→host) calling an injectable `probe(addr) -> bool` per rung — True = rung
-exists, False = definitively absent, **RAISE = world unknowable (INDETERMINATE)**. The
-raise/return-False distinction is the D4-A death-test: an unreachable world must never be
-reported as a not-found, or provisioning would smuggle timeout-death back in. Until now
-the only probe wired is `_default_path_exists` (project rung, filesystem). This task adds a
-**live termlink-backed probe** — the endpoint-probe seam — that dispatches per deepest-
-present rung to the real termlink binary, serving **G3** (a dropped circuit is *detected*
-so it can self-heal). Design: `docs/reports/T-3287-identity-taxonomy-circuit-model.md`.
+The **G1 leg of arc-020's headline mechanic** — the origin-bug kill. G-105/T-3286: two
+co-resident agents on one host **collapse into a single correspondent** because termlink
+has no `agent_id`, so the reader falls back to the shared crypto fingerprint
+(`identity_fingerprint` in session metadata). Design doc lines 16–18, 565:
+`docs/reports/T-3287-identity-taxonomy-circuit-model.md`.
 
-**Verb shapes localised against the live binary (the claim-backend grammar-surprise lesson
-— T-3335 Decisions):**
-- session rung → `termlink ping <session> --json` (liveness; `--timeout` guards).
-- hub rung, local → `termlink hub status --json` → `{"ok":true,"status":"running",...}`.
-- hub rung, remote host → `termlink hub probe <host>` (TLS handshake, leaf-cert sha256).
-- host rung → reachability via `hub probe` / net-test (host is the one rung provisioning
-  may only ask, never invent — D5).
-- project rung stays on the existing `path_exists` seam (out of endpoint-probe scope).
+The AEF fix (D1/D2): the **durable name** (a V9 address WITHOUT `session=`) IS the
+correspondent — the who-you-talk-to that survives instance death. Two co-resident
+instances with distinct durable names are distinct correspondents **regardless of whether
+their crypto fingerprints collide**. This demo proves that on the live substrate, using
+only shipped slices: `aef_address` (V9 names), `aef_election.TermlinkChannelClaimBackend`
+(T-3335 — distinct names elect distinct claim coordinates on the live hub), `aef_resolve`
+(T-3338 — name→circuit).
 
-Same adapter shape as the T-3335 claim-backend: an injectable `invoke` (default = subprocess
-over `termlink`, reusing `default_termlink_invoke`), fake-invoke unit tests (no live hub),
-one live smoke `[REVIEW]`.
+**What this leg does and does NOT cover:** G1 only (distinct correspondents). The full
+headline mechanic also needs G3 (a dropped circuit self-heals, message still lands) — a
+separate leg that depends on the shelved fleet-source seam (T-3339). This leg is the
+arc's core observable and the most important single piece of demo_evidence; it is NOT the
+arc close (which is the operator's, §ACD, and needs the G3 leg too).
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `lib/aef_resolve.py` exposes a `termlink_probe(invoke=None, *, timeout=...)` factory returning a `probe: Callable[[AEFAddress], bool]` that dispatches per deepest-present rung field (session→ping, hub→hub status/probe, host→reachability) to live termlink verbs via the injectable `invoke` (default subprocess invoker, same pattern as `aef_election.default_termlink_invoke`).
-- [x] The probe returns `True` for a present rung and `False` for a definitively-absent one, and **RAISES `ResolveIndeterminate`** (never returns False) when `invoke` errors/times out — so `resolve()` yields INDETERMINATE, not NOT_FOUND, on an unreachable world (D4-A death-test preserved).
-- [x] The rung→verb dispatch is deterministic and total over the rung kinds it owns (session, hub, host); an unhandled/empty rung raises rather than silently returning False.
-- [x] `tests/unit/test_aef_resolve_termlink.py` covers exists / absent / indeterminate for each owned rung kind via a fake invoke (no live hub), and the existing `tests/unit/test_aef_resolve*.py` stay green.
-- [x] `bin/fw vendor self --check` clean (lib/ is vendored).
+- [x] `tests/manual/arc020_g1_demo.py` runs against the live hub and demonstrates two co-resident agents (same `host+hub+project`, distinct `agent=` durable names) as DISTINCT correspondents: their serialized durable names differ, and each name elects its OWN distinct claim coordinate (distinct `election_topic` sha256 + distinct live claim holder) via the T-3335 claim backend. — *ran green: alpha→topic `…3610…` holder cand-alpha, beta→topic `…d857…` holder cand-beta, both role=won.*
+- [x] The demo makes the collapse-vs-distinct contrast explicit: it shows that a shared/colliding crypto `identity_fingerprint` (the G-105 fallback key) does NOT distinguish the two, while the AEF durable name DOES — printing both keys side by side so the fix is legible, not asserted. — *live baseline: 177/179 sessions share fingerprint `d1993c2c3ec44c94`; contrast table renders both keys.*
+- [x] The demo captures wire-level evidence to a file traceable to arc-020 (`docs/reports/T-3340-g1-demo-evidence.md` or a `.jsonl` under the arc) — the two addresses, the two distinct claim topics/holders read back from the live hub, and the resolution of each durable name to its own circuit — a candidate `demo_evidence:` artifact for the eventual arc close.
+- [x] The demo cleans up after itself (releases both claims, no leaked election topics left claimed on the hub) and is re-runnable (idempotent seed, exit 0 on success). — *finally-block releases both winners; re-run seeds idempotently.*
+- [x] `bin/fw vendor self --check` clean (only tests/manual + docs added; no vendored-path source change expected, but verified).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -135,17 +134,18 @@ one live smoke `[REVIEW]`.
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] [REVIEW] Live wire-level smoke of the endpoint-probe against a running local hub — the G3 self-heal foundation. A durable session that IS running probes True; a bogus session id probes False; with the hub stopped (or an unreachable remote host), the probe RAISES indeterminate rather than reporting False. This proves the probe distinguishes "gone" from "unreachable" on real termlink — the distinction the self-heal (reconnect vs. give-up) rests on.
+- [ ] [REVIEW] The G1 headline mechanic reads as *demonstrated*, not asserted — and is this the demo_evidence the arc should close on (for its G1 leg)? Judgment the operator owns because arc close is theirs (§ACD): does the captured evidence actually show two co-resident agents staying distinct correspondents where termlink's fingerprint would collapse them, at a level you'd sign the arc's G1 observable against?
   **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && termlink hub status --json 2>&1 | head` — confirm a hub is running (if not: `termlink hub start`).
-  2. `cd /opt/999-Agentic-Engineering-Framework && python3 tests/manual/s8_probe_smoke.py` (the smoke script committed with this task).
-  **Expected:** Output shows a live session → `exists`, a bogus session → `absent`, and a hub-down/unreachable path → `INDETERMINATE (raised)`.
-  **If not:** Capture the script output + `termlink list --json`; note whether the miss was a real absence or a reachability error the probe mis-reported as absence (that inversion is the D4-A bug the AC guards).
+  1. `cd /opt/999-Agentic-Engineering-Framework && termlink hub status --json | head` — confirm a hub is running (else `termlink hub start`).
+  2. `cd /opt/999-Agentic-Engineering-Framework && python3 tests/manual/arc020_g1_demo.py` — run the demo.
+  3. Read the captured evidence: `cd /opt/999-Agentic-Engineering-Framework && cat docs/reports/T-3340-g1-demo-evidence.md`.
+  **Expected:** Two distinct durable names, each electing its own distinct live claim topic/holder; the shared/colliding crypto fingerprint shown NOT distinguishing them while the AEF name does; a clean release at the end.
+  **If not:** Note which leg is unconvincing (the collapse baseline, the distinct-claim proof, or the resolution) — that is the part of the mechanic still to sharpen before it can back an arc close.
 
 ## Verification
 
-python3 -c "import ast; ast.parse(open('lib/aef_resolve.py').read())"
-out=$(timeout 120 python3 -m pytest tests/unit/test_aef_resolve_termlink.py tests/unit/test_aef_resolve.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+python3 -c "import ast; ast.parse(open('tests/manual/arc020_g1_demo.py').read())"
+test -f docs/reports/T-3340-g1-demo-evidence.md
 bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -303,13 +303,37 @@ bin/fw vendor self --check
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-09-07 — verb shapes differed from the S3 design's assumed grammar (again)
-- **What changed:** The T-3287 seam map named the probe rungs "host→ping, hub→hub_probe, session→list_sessions". Localising against the live binary showed all three were off: `ping` is *session* liveness (not host), `list-sessions` is `list`, and `hub probe` is a *remote* TLS handshake while local-hub existence is `hub status`. Same class as the T-3335 claim-backend grammar surprise — the design's verb names were plausible but not the real CLI.
-- **Plan impact:** The dispatch table is by *rung kind → real verb*, not the design's guessed pairs: session→`ping`, project→`path_exists` (filesystem, delegated), local-hub→`hub status`, remote-hub/host→`hub probe`. The agent rung is probed via its carrying session (circuit = session token, `is_circuit`); a bare agent rung with no session raises rather than guess — agent-level presence is a documented v2 deferral, not a silent gap.
-- **What sharpened:** the D4-A death-test became concrete per verb — a hub that *answers* `ok:false / "not found"` is a definitive False, but no-structured-verdict (socket down, non-JSON) and every *remote* miss raise INDETERMINATE. The reachable-vs-absent line is the crux the 18 unit tests and the live smoke pin.
-- **Triggered:** no new sub-task. Remaining S8 follow-ons unchanged (peer-query/materialize fleet-source; the full G1+G3 arc-close demo, which now has both its foundations — the T-3335 claim mutex and this probe).
+### 2026-09-07 — the origin bug is worse (and more demonstrable) than the charter assumed
+- **What changed:** The charter described the collapse as "co-resident agents on one host share the fingerprint". Reading the live hub found it is broader: **177 of 179 sessions share ONE fingerprint `d1993c2c3ec44c94`, across DIFFERENT projects** (050-email-archive, 0501-opencode-playground, this repo). The fallback key doesn't just collapse co-resident agents — it collapses nearly the entire fleet on this host into one correspondent. Only 3 distinct fingerprints for 179 sessions.
+- **Plan impact:** The demo's baseline needed no synthetic construction — real production data carries the collapse in the open. The `worst_n < 2` fallback branch (construct a shared key) is dead code on this host but kept for portability to a hub without the collision.
+- **What sharpened:** G1's value proposition is stronger stated against this number: the AEF durable name is the ONLY thing separating 177 otherwise-identical correspondents. The contrast table (fingerprint identical → collapses; durable name distinct → distinguishes) is the whole arc in four cells.
+- **Triggered:** no new sub-task. The G3 leg (self-heal) remains blocked on the shelved fleet-source seam (T-3339); the full headline mechanic (and arc close) needs both legs. This leg is the G1 half.
 
 ## Recommendation
+
+**Recommendation:** GO (G1 leg — distinct co-resident correspondents demonstrated)
+
+**Rationale:** The arc's core observable — two co-resident agents stay distinct
+correspondents where termlink's fingerprint collapses them — is demonstrated on the LIVE
+hub with real production data, using only shipped substrate (aef_address S1 + the T-3335
+live claim backend). The baseline collapse is not asserted but read from the hub (177/179
+sessions → one fingerprint); the fix is shown wire-level (two distinct durable names →
+two distinct sha256 election topics → two distinct live claim holders, both role=won,
+then released clean). The one `[REVIEW]` Human AC is the operator's arc-relevant judgment
+(is this the demo_evidence to sign G1 against?) — it already ran green in-session.
+
+**Evidence:**
+- `tests/manual/arc020_g1_demo.py` — runs green on the live hub (exit 0, RESULT PASS).
+- `docs/reports/T-3340-g1-demo-evidence.md` — captured wire-level evidence, a candidate `demo_evidence:` for arc-020's G1 leg.
+- Live baseline: 177/179 sessions share fingerprint `d1993c2c3ec44c94` — the G-105 collapse in production.
+- alpha→topic `aef-g1-demo-3610…`/holder cand-alpha; beta→topic `aef-g1-demo-d857…`/holder cand-beta — distinct correspondents.
+- `bin/fw vendor self --check` clean (no vendored-path change).
+
+**Scope note:** G1 leg only. The full headline mechanic (arc close, §ACD — operator's) also
+requires the G3 self-heal leg, which depends on the shelved fleet-source seam (T-3339). This
+is the most important single piece of demo_evidence; it is not, by itself, the arc close.
+
+## Decisions
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -338,27 +362,6 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO (endpoint-probe seam)
-
-**Rationale:** The endpoint-probe seam — the live probe `resolve()` climbs the ladder with,
-and the G3 self-heal detection foundation — is wired to real termlink and verified three
-ways: 18 unit tests through an injectable fake invoke (exists/absent/indeterminate per rung
-kind, no hub needed), the existing resolve suite still green (34 passed total), and a **live
-smoke on the real hub passing** (live session→exists, bogus→absent, unreachable→INDETERMINATE
-raised). The one `[REVIEW]` Human AC is that live smoke, which already ran green in-session —
-the human need only re-run `python3 tests/manual/s8_probe_smoke.py` on their hub.
-
-**Evidence:**
-- `lib/aef_resolve.py` — `termlink_probe()` factory (session→ping, project→path_exists, local-hub→hub status, remote→hub probe); D4-A raise-vs-False contract enforced per verb.
-- `tests/unit/test_aef_resolve_termlink.py` — 18 tests; existing `test_aef_resolve.py` green (34 total).
-- `tests/manual/s8_probe_smoke.py` — live smoke, exit 0 on hub PID 1026708.
-- `## Evolution` — the verb-grammar divergence from the S3 design captured (sibling to T-3335).
-- `bin/fw vendor self --check` clean.
-
-**Scope note:** one deliverable — the probe seam. Remaining S8 (peer-query/materialize
-fleet-source; the full G1+G3 arc-close demo) tracked in `## Context`. This plus the T-3335
-claim mutex are the two foundations that demo stands on.
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -382,24 +385,7 @@ claim mutex are the two foundations that demo stands on.
 
 ## Updates
 
-### 2026-09-07T15:36:38Z — task-created [task-create-agent]
+### 2026-09-07T15:55:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3338-arc-020-s8-wire-aefresolve-endpoint-prob.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3340-arc-020-headline-demo-g1-leg-distinct-co.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-80f540c7
-- **Timestamp:** 2026-09-07T15:45:52Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 1
-
-**Per-AC findings:**
-
-- **AC#3 (Human)** — [REVIEW] Live wire-level smoke of the endpoint-probe against a running local hub — the G3 self-heal foundation. A durable session that IS running probes True; a bogus session id probes False; with the
-  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows a' in Expected: Output shows a live session → `exists`, a bogus session → `absent`, and a hub-down/unreachable path → `INDETERMINATE (raised)`.`
-
-### 2026-09-07T15:45:47Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
