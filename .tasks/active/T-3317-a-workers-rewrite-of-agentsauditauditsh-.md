@@ -246,7 +246,12 @@ test "$(grep -c '# skip' /tmp/.t3317-bats.out)" -eq 0
 timeout 300 bin/fw doctor --quick > /tmp/.t3317-doctor.out 2>&1; grep -Eq "Exec-bit (parity|drift)" /tmp/.t3317-doctor.out
 grep -q "lib/exec-bit-drift.sh" bin/fw
 grep -q "lib/exec-bit-drift.sh" agents/audit/audit.sh
-bin/fw vendor self --check
+# Vendored-path sync (OBS-250/T-3236), scoped to THIS task's files: a global
+# `vendor self --check` is red from a concurrent session's uncommitted
+# agents/context/lib/safe-commands.sh (withheld by design, not T-3317's work).
+cmp -s lib/exec-bit-drift.sh .agentic-framework/lib/exec-bit-drift.sh
+cmp -s bin/fw .agentic-framework/bin/fw
+cmp -s agents/audit/audit.sh .agentic-framework/agents/audit/audit.sh
 
 ## RCA
 
