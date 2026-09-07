@@ -136,8 +136,8 @@ EOF
 }
 
 @test "C11: fw doctor is wired to the report (real end-to-end, slow)" {
-    # One real doctor run, not two: each costs minutes on this host because
-    # check 9 shells out to `bats --count` over 606 files (OBS-368). The
+    # One real doctor run, not two: a full run still costs real time on this
+    # host (check 9's ~79s `bats --count` was removed by T-3324/OBS-368). The
     # rendering legs are covered cheaply by C9/C10 above; what only a real run
     # can prove is that doctor calls the report at all, with the right arguments.
     # The orphan block sits OUTSIDE any _doctor_quick_skip guard, so --quick
