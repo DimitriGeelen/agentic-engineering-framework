@@ -6,10 +6,10 @@ description: >
   when host headroom is low (loadavg/headroom threshold v1). Full mem/disk/cpu/net
   governor is a follow-on. Serves G4. Retrofits the load-62 incident.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -25,7 +25,7 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T00:17:32Z
-last_update: '2026-09-07T00:30:19Z'
+last_update: 2026-09-07T07:13:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,12 +75,31 @@ Load-adaptive provisioning admission, v1 (D5 bound 2). Retrofits the load-62 inc
 (T-3287 session). Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`.
 Serves **G4**.
 
+**Shipped shape (v1):** `lib/aef_governor.py` — `admission_check(decision_context)`
+returns allow/defer/deny from per-core normalized 1-minute loadavg vs a threshold
+(`FW_PROVISION_LOAD_MAX`, default 0.8, registered in `lib/config.sh`
+FW_CONFIG_REGISTRY). Bands: under threshold → allow; at/over → defer (backpressure);
+at/over 2× → deny (drowning; the load-62 host at ~3.9/core lands here). Defer/deny
+are logged (stderr or injected log sink), never silent (D5 bound 4). `as_admission()`
+adapts the governor to `lib/aef_resolve.provision()`'s boolean admission seam
+without modifying `aef_resolve.py` — defer and deny both block the step there;
+the log line carries the distinction.
+
+## Follow-on: S5b (separate slice)
+
+v1 is deliberately loadavg-only. The **full environmental governor — adaptive
+admission over memory / disk / CPU / network headroom** (D5 bound 2's complete
+form, "admission is load-adaptive, never a static cap") is a **separate build
+slice (S5b)**, not part of this task. The allow/defer/deny vocabulary, the
+`FW_PROVISION_LOAD_MAX`-style config surface, and the `as_admission()` seam
+adapter shipped here are the stable contract S5b grows into.
+
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Provisioning admission consults host headroom (loadavg-based v1) and defers/denies when below threshold (D5 bound 2)
-- [ ] The threshold is configurable (an `FW_*` key) and the deny path is logged, not silent
-- [ ] Body documents the follow-on: full mem/disk/cpu/net adaptive governor is a separate slice (S5b)
+- [x] Provisioning admission consults host headroom (loadavg-based v1) and defers/denies when below threshold (D5 bound 2)
+- [x] The threshold is configurable (an `FW_*` key) and the deny path is logged, not silent
+- [x] Body documents the follow-on: full mem/disk/cpu/net adaptive governor is a separate slice (S5b)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -114,6 +133,9 @@ Serves **G4**.
 -->
 
 ## Verification
+
+timeout 120 python3 -m pytest tests/unit/test_aef_governor.py -q > /tmp/.s5-gov.out 2>&1 && grep -q passed /tmp/.s5-gov.out && ! grep -q failed /tmp/.s5-gov.out
+bash -n lib/config.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -270,6 +292,20 @@ Serves **G4**.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-07 — governor decision vocabulary vs the boolean seam
+- **What changed:** the spec's governor speaks allow/defer/deny, but the S3
+  admission seam (`aef_resolve.provision`, landed before this slice) is
+  `Callable[[level, intended], bool]`. Rather than widening the seam (out of
+  scope — aef_resolve.py is frozen for this slice), the governor keeps its
+  tri-state API (`admission_check`) and ships an `as_admission()` adapter:
+  only allow maps to True; defer and deny both block, and the mandatory log
+  line carries which of the two it was.
+- **Plan impact:** none removed; S5b inherits the tri-state vocabulary and may
+  widen the seam itself if defer-with-retry semantics ever need to reach the
+  ladder (e.g. retry-after backoff instead of a hard DENIED outcome).
+- **Triggered:** no new task — the defer-vs-deny distinction at the seam is
+  noted here as S5b design input.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -329,3 +365,7 @@ Serves **G4**.
 
 ### 2026-09-07T00:19:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-09-07T07:13:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

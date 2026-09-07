@@ -294,6 +294,11 @@ FW_CONFIG_REGISTRY=(
     # chosen so the WARN fires with real runway left to raise the ceiling or
     # investigate, rather than at the T-3070 measurement itself (0.58).
     "AUDIT_TIMEOUT_WARN_FRACTION|0.70|Fraction of AUDIT_TIMEOUT (or FW_AUDIT_FULL_TIMEOUT) at which fw doctor WARNs that the last recorded full-audit run is eating into its timeout headroom (agents/audit/audit.sh, bin/fw do_doctor). T-3127."
+    # arc-020 S5 (D5 bound 2). Per-core normalized 1-min loadavg ceiling for
+    # provisioning admission: under it allow, at/over it defer, at/over 2x it
+    # deny — deny/defer always logged. Retrofits the load-62 incident. The
+    # full mem/disk/cpu/net adaptive governor is slice S5b.
+    "PROVISION_LOAD_MAX|0.8|Per-core normalized 1-minute loadavg threshold for the environmental governor's provisioning admission (lib/aef_governor.py). Under = allow, at/over = defer, at/over 2x = deny; bad values fall back to 0.8, logged. T-3311."
 )
 
 # fw_config_registry — Print all known settings with current values
