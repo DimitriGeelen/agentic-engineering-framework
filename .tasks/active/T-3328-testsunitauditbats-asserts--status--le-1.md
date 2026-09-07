@@ -46,8 +46,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 Contention distinguished:** every `[ "$status" -le 1 ]`-style assertion on audit.sh runs in tests/unit/audit.bats is replaced with a form that treats exit 75 (lock contention) as SKIP-with-reason (bats `skip "audit lock contention"`), never as pass or fail — contention reports as contention
+- [ ] **A2 Real verdicts kept:** exit 2 (audit ran, found FAILs) still FAILS the tests that assert a clean audit; exit 0/1 still passes them — the fix must not widen what counts as green
+- [ ] **A3 Pinned:** a control leg proves the discrimination: a stubbed audit exiting 75 yields skip; exiting 2 yields fail; exiting 1 yields pass
+- [ ] **A4 No-widening:** full audit.bats suite green on an uncontended run (skips only on genuine contention); the T-3315 test-11 shape unchanged
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

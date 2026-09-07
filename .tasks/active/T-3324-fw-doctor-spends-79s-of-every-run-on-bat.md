@@ -81,8 +81,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 Quick guard:** doctor check 9 ("Test infrastructure", bin/fw ~:1931) is guarded with `_doctor_quick_skip` so `fw doctor --quick` skips it entirely
+- [ ] **A2 Full-run cheap:** the full (non-quick) run no longer invokes `bats --count` over tests/unit; the line uses a cheap file count (`ls`/`find` class, <1s) with wording that says what it counted (files, not tests)
+- [ ] **A3 Measured:** before/after timing of the check is recorded in the task (was ~79s); after is <1s in full mode and skipped in --quick
+- [ ] **A4 Pinned + no-widening:** existing doctor suites still green; `bash -n bin/fw` clean; a test or assertion pins that --quick does not invoke bats
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

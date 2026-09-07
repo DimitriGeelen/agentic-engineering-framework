@@ -46,8 +46,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 Detector shipped:** `fw doctor` gains an exec-bit drift check comparing git index mode 100755 against on-disk executability for tracked `*.sh` (and `bin/fw`); WARN naming each drifted file with the one-line `chmod +x` remedy; cheap (no test-suite invocation — ls-files + stat class only)
+- [ ] **A2 Audit parity:** the same check runs as an audit line (FAIL, since a drifted audit.sh means the rail itself may be dead) — shared helper, not a re-derived copy (G-079)
+- [ ] **A3 Pinned:** hermetic bats suite: drifted-file fires WARN/FAIL naming the file; clean tree passes; a non-executable file whose index mode is 100644 does NOT fire (control)
+- [ ] **A4 No-widening:** `bash -n` clean on every edited shell file; existing doctor/audit suites still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
