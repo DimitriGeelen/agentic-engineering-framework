@@ -4398,3 +4398,17 @@ observations:
   tags: []
   status: promoted
   promoted_to: task
+- id: OBS-379
+  text: "Read-only allowlist gaps hit 3x in one session (2026-09-07): 'agents/context/checkpoint.sh budget' (the G-087-safe budget read /resume prescribes), 'termlink pty output <session> --strip-ansi' (worker observability), and 'bin/fw bvp' (read-only ranking) are all missing from agents/context/lib/safe-commands.sh, so the task gate blocks them whenever focus sits on a completed task — exactly the moment /resume and worker-monitoring run them. Each block message itself says 'that is a gap in the allowlist worth filing'. Candidate: add these three read-only invocations to the allowlist."
+  captured: 2026-09-07T19:44:02Z
+  context_task: T-3328
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-380
+  text: "init_validation_ordering.bats test 12 (T-2727 denominator pin, asserts total>=43) is RED: current fresh-init probe reports 41/42. Localised 2026-09-07: lib/init.sh #@init annotations UNCHANGED since authoring commit 69ec73d2a (keys diff empty); lib/validate-init.sh gained TWO counted checks since (T-2805 vendor comment says 42/43, T-2818 git-identity comment says 43/44) yet the probe counts 42 — so ~2 counted checks do not fire on a fresh non-git fixture (both additions look host/git-conditional). Two distinct issues: (a) determine whether a check was genuinely lost from the denominator or the additions are legitimately conditional; (b) test 12's >=43 anchor is the T-3326 mutable-denominator class — the T-2727 invariant (func-tasks INSIDE the count) should be pinned differentially (init-with-tasks vs empty-tasks totals differ by exactly 1), not by absolute count. Blocks T-2801 close (its verification bundles this suite)."
+  captured: 2026-09-07T19:50:47Z
+  context_task: T-2801
+  tags: []
+  status: pending
+  promoted_to: null
