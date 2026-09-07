@@ -150,7 +150,10 @@ _run_audit() {
     # The flock-arm trap must only reap the watchdog. The fallback (no-flock)
     # arm legitimately unlinks: there, the file's existence IS the lock.
     grep -q 'trap "kill \$AUDIT_TIMEOUT_PID 2>/dev/null" EXIT' "$AUDIT"
-    ! grep -q 'trap "kill \$AUDIT_TIMEOUT_PID 2>/dev/null; rm -f' "$AUDIT"
+    if grep -q 'trap "kill \$AUDIT_TIMEOUT_PID 2>/dev/null; rm -f' "$AUDIT"; then
+        echo "FAIL: flock arm's EXIT trap still unlinks the lock file" >&2
+        return 1
+    fi
     grep -q "trap \"rm -f '\\\$AUDIT_LOCK_FILE'\" EXIT" "$AUDIT"
     # The mtime stale sweep exists exactly once, inside the fallback arm
     # (after the flock-availability split), not shared before it.
