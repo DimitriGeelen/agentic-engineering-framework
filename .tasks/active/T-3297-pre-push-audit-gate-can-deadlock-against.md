@@ -385,7 +385,13 @@ NOT part of this fix — see ## Decisions.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-## Decisions
+**Recommendation:** GO
+**Rationale:** Both mechanisms shipped and pinned: the bounded lock wait (`FW_PREPUSH_LOCK_WAIT`, default 90s) turns the gate's stale "wait a minute or two" prose into a measured mechanism, and the contention-only Tier-2 bypass (`FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1`) closes the ladder gap that pushed agents toward Tier-0 `--no-verify` for a routine push. The critical control — exit 2 (real FAILs) still blocks with the env set — is pinned by test (f). All 4 Agent ACs ticked; 11/11 hermetic bats green with zero skips; dead-negation lint clean; vendor self-sync clean; sibling suites (t2930, t3126) still green; pushed on bleeding-edge (4750f5623).
+**Evidence:**
+- `tests/unit/t3297_prepush_lock_wait.bats` — 11/11 ok, 0 skips, 0 dead negations
+- `bash -n agents/git/lib/hooks.sh` clean; t2930 + t3126 sibling suites green, 0 skips
+- Bypass writes Tier-2 entry to `.gate-bypass-log.yaml` (test e); exit-2 still blocks with env set (test f); bypass opt-in only (test g)
+- `bin/fw vendor self --check` in sync; real push through the gate succeeded post-change
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
