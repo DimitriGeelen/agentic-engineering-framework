@@ -1,6 +1,6 @@
 ---
 id: T-3325
-name: "Verification-authoring footgun: pytest (via 'fw test web') colorizes output even when redirected to a file, so \\"grep -c '^FAILED' capture-file\\" counts 0 — a FALSE RED that blocked T-3224's close despite the failure count matching the allowed set. The L-387 capture-then-grep pattern is necessary but not sufficient: greps against captured pytest/toolchain output must strip ANSI first (sed 's/\\x1b\\[[0-9;]*m//g') or force --color=no. Candidate structural fixes: fw test passes --color=no when not a TTY; or P-011 doc gains an ANSI-strip idiom next to the capture-then-grep idiom."
+name: "Verification-authoring footgun: pytest (via 'fw test web') colorizes output even when redirected to a file, so a grep -c '^FAILED' over the capture-file counts 0 — a FALSE RED that blocked T-3224's close despite the failure count matching the allowed set. The L-387 capture-then-grep pattern is necessary but not sufficient: greps against captured pytest/toolchain output must strip ANSI first (sed 's/\\x1b\\[[0-9;]*m//g') or force --color=no. Candidate structural fixes: fw test passes --color=no when not a TTY; or P-011 doc gains an ANSI-strip idiom next to the capture-then-grep idiom."
 description: >
   Promoted from observation OBS-374
 

@@ -1,10 +1,10 @@
 ---
 id: T-3328
-name: "tests/unit/audit.bats asserts [ \\"$status\\" -le 1 ] on audit.sh runs. That conflates exit 2 (audit ran, found FAILs) with exit 75 (audit COULD NOT RUN - another audit holds the lock, T-2930). Under any concurrency - the unit suite's own audit tests, a concurrent push's pre-push gate, the daily cron - 9 tests in that file go RED for a reason unrelated to the code under test. Observed live 2026-08-25 during T-3129: 9/14 unit-suite failures were this, while a direct probe of 'audit.sh --section structure' with no lock held exited 1 (pass). This is the false-RED mirror of the false-GREEN family (T-1828/T-3125/T-3126/T-3129): the assertion cannot distinguish 'looked and found a problem' from 'could not look'. Consequence is broader than the 9 tests - it makes every AC6-style 'no new failures in fw test unit' claim non-deterministic, so agents learn to discount suite RED. Suggested fix: assert exit != 75 explicitly and skip/retry rather than fail, so contention reports as contention."
+name: "tests/unit/audit.bats asserts status -le 1 on audit.sh runs. That conflates exit 2 (audit ran, found FAILs) with exit 75 (audit COULD NOT RUN - another audit holds the lock, T-2930). Under any concurrency - the unit suite's own audit tests, a concurrent push's pre-push gate, the daily cron - 9 tests in that file go RED for a reason unrelated to the code under test. Observed live 2026-08-25 during T-3129: 9/14 unit-suite failures were this, while a direct probe of 'audit.sh --section structure' with no lock held exited 1 (pass). This is the false-RED mirror of the false-GREEN family (T-1828/T-3125/T-3126/T-3129): the assertion cannot distinguish 'looked and found a problem' from 'could not look'. Consequence is broader than the 9 tests - it makes every AC6-style 'no new failures in fw test unit' claim non-deterministic, so agents learn to discount suite RED. Suggested fix: assert exit != 75 explicitly and skip/retry rather than fail, so contention reports as contention."
 description: >
   Promoted from observation OBS-341
 
-status: captured
+status: started-work
 workflow_type: test
 owner: human
 horizon: now
@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:06:08Z
-last_update: 2026-09-07T07:09:40Z
+last_update: 2026-09-07T07:29:41Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,15 +40,15 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+tests/unit/audit.bats asserted `[ "$status" -le 1 ]` on 9 real-audit tests, conflating exit 2 (ran, found FAILs) with exit 75 (could not run — lock held, T-2930). Fixed by a shared `_assert_audit_ran` helper: 75 → skip-with-reason, ≤1 → pass, otherwise → fail with captured output. Test 11 keeps its T-3315 shape. Four hermetic stub-based control tests pin the discrimination.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 Contention distinguished:** every `[ "$status" -le 1 ]`-style assertion on audit.sh runs in tests/unit/audit.bats is replaced with a form that treats exit 75 (lock contention) as SKIP-with-reason (bats `skip "audit lock contention"`), never as pass or fail — contention reports as contention
-- [ ] **A2 Real verdicts kept:** exit 2 (audit ran, found FAILs) still FAILS the tests that assert a clean audit; exit 0/1 still passes them — the fix must not widen what counts as green
-- [ ] **A3 Pinned:** a control leg proves the discrimination: a stubbed audit exiting 75 yields skip; exiting 2 yields fail; exiting 1 yields pass
+- [x] **A1 Contention distinguished:** every `[ "$status" -le 1 ]`-style assertion on audit.sh runs in tests/unit/audit.bats is replaced with a form that treats exit 75 (lock contention) as SKIP-with-reason (bats `skip "audit lock contention"`), never as pass or fail — contention reports as contention
+- [x] **A2 Real verdicts kept:** exit 2 (audit ran, found FAILs) still FAILS the tests that assert a clean audit; exit 0/1 still passes them — the fix must not widen what counts as green
+- [x] **A3 Pinned:** a control leg proves the discrimination: a stubbed audit exiting 75 yields skip; exiting 2 yields fail; exiting 1 yields pass
 - [ ] **A4 No-widening:** full audit.bats suite green on an uncontended run (skips only on genuine contention); the T-3315 test-11 shape unchanged
 
 ### Human
@@ -83,6 +83,15 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 600 bats tests/unit/audit.bats > /tmp/.t3328-v.out 2>&1 && ! grep -q "^not ok" /tmp/.t3328-v.out
+grep -q "^1\.\." /tmp/.t3328-v.out
+
+# No zero-skip assertion on purpose (T-3217 exception clause): skips are now the
+# legitimate contention report — under a held audit lock the 9 real-audit tests
+# skip with reason instead of false-RED. The second line asserts the run actually
+# happened (bats plan line present), which is the "did everything run" question
+# the skip-count check normally answers.
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -215,6 +224,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** Under any audit-lock contention (concurrent cron audit, pre-push gate, the suite's own earlier tests), 9 of audit.bats's tests went RED for a reason unrelated to the code under test. Observed live 2026-08-25 (T-3129): 9/14 unit-suite failures were this class — and reproduced live during this fix (baseline run 2026-09-07: same 9 tests `not ok` while three concurrent `audit.sh --section structure` processes held the lock, T-3323 pileup).
+
+**Root cause:** `[ "$status" -le 1 ]` collapses three distinct answers into one boolean: exit 0/1 (ran, green), exit 2 (ran, found FAILs — real red), and exit 75 (COULD NOT run — lock held, T-2930). "Looked and found a problem" and "could not look" both landed in the fail branch, so contention masqueraded as a code defect. This is the false-RED mirror of the false-GREEN family (T-1828/T-3125/T-3126/T-3129).
+
+**Why structurally allowed:** The `-le 1` assertions predate the T-2930 lock (which introduced exit 75); nothing re-audits existing test assertions when a script under test grows a new exit code. Repeated false-REDs also trained agents to discount suite RED, so the signal that should have surfaced the bug instead eroded trust in the suite ("AC6-style 'no new failures' claims became non-deterministic").
+
+**Prevention:** (1) `_assert_audit_ran` centralises the exit-code discrimination — a future new audit exit code has one place to be classified, not nine. (2) Four hermetic stub control tests (75→skip, 2→fail, 1→pass, 0→pass) pin the discrimination so it cannot silently regress. (3) Contention now reports as `# skip audit lock contention (exit 75)` — visible in TAP output as contention, so lock pileups (T-3323) surface as themselves instead of as fake code failures.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -298,3 +315,6 @@ date_finished: null
 
 ### 2026-09-07T07:09:40Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
+
+### 2026-09-07T07:29:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

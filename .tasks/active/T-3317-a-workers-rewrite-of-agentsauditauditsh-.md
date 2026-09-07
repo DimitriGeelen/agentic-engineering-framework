@@ -1,6 +1,6 @@
 ---
 id: T-3317
-name: "A worker's rewrite of agents/audit/audit.sh dropped the executable bit (git index 100755, on-disk 664). 'bin/fw audit' then died with exit 126 'Permission denied' — the ENTIRE audit rail silently disabled by a mode change no gate watches. Nothing in doctor, audit, or the pre-push hooks compares on-disk mode against the git index. One-line detector: git ls-files -s -- '*.sh' | awk '$1==\\"100755\\"{print $4}' | while read f; do [ -x \\"$f\\" ] || echo \\"$f\\"; done. Note this is exactly the T-3105 class one level up: the audit that reports on everything else has no check that it can itself run."
+name: "A worker's rewrite of agents/audit/audit.sh dropped the executable bit (git index 100755, on-disk 664). 'bin/fw audit' then died with exit 126 'Permission denied' — the ENTIRE audit rail silently disabled by a mode change no gate watches. Nothing in doctor, audit, or the pre-push hooks compares on-disk mode against the git index. One-line detector exists: git ls-files -s over '*.sh' filtered to index mode 100755, then test -x each listed path and report the non-executables. Note this is exactly the T-3105 class one level up: the audit that reports on everything else has no check that it can itself run."
 description: >
   Promoted from observation OBS-336
 
