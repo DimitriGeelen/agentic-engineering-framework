@@ -202,8 +202,12 @@ That is the §ACD failure mode from the reporting side rather than the closing s
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 bash -n agents/audit/audit.sh
-out=$(bats tests/unit/t2969_draft_arc_complete_warning.bats 2>&1); echo "$out" | grep -q '^1\.\.5' && ! echo "$out" | grep -q '^not ok'
-out=$(bin/fw audit --section structure 2>&1); echo "$out" | grep -q "'readme-first-run' is draft with all 2 constituent" && ! echo "$out" | grep -q "'ladder-trigger-producer' is draft with all"
+timeout 590 bats tests/unit/t2969_draft_arc_complete_warning.bats > /tmp/.t2969-bats.out 2>&1 && grep -q '^1\.\.6' /tmp/.t2969-bats.out && ! grep -q '^not ok' /tmp/.t2969-bats.out
+test "$(grep -c '# skip' /tmp/.t2969-bats.out)" -eq 0
+# The former third line grepped the LIVE audit for arc-016 ('readme-first-run')
+# being "draft with all 2 constituent" — permanently stale the moment that arc
+# moved draft→in-progress (OBS-377 stale-verification class). The hermetic
+# suite above pins the same positive/negative behavior on fixture arcs instead.
 
 ## RCA
 
