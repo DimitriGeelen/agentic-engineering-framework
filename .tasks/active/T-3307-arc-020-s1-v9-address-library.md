@@ -2,9 +2,11 @@
 id: T-3307
 name: "arc-020 S1: V9 address library"
 description: >
-  Parse/serialize the aef:: V9 address grammar: durable name vs circuit id (session= token), IPv6 bracketing, display-only path elision, V4 human alias, sparse/ladder token-drop. Keystone for arc-020 (D3/D6).
+  Parse/serialize the aef:: V9 address grammar: durable name vs circuit id (session=
+  token), IPv6 bracketing, display-only path elision, V4 human alias, sparse/ladder
+  token-drop. Keystone for arc-020 (D3/D6).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -23,8 +25,8 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T00:15:06Z
-last_update: 2026-09-07T00:15:06Z
-date_finished: null
+last_update: 2026-09-07T06:30:48Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +37,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-07T00:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=264,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T00:30:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3307: arc-020 S1: V9 address library
@@ -48,11 +78,11 @@ addresses through this library. Serves goal **G2** (durable address).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/aef_address.py` parses a V9 wire address (`aef::…::@name::`) into structured fields (host, hub?, project, session?, agent), and `serialize(parse(x)) == x` round-trips
-- [ ] Correspondent/actor split: dropping the `session=` token yields the durable name, adding it yields the circuit id (D2/D3); `hub=` is optional and resolves to the host default when absent (D6)
-- [ ] Display-only path elision: paths >3 segments render `first/…/last-two` with the `…` marker; the wire serializer NEVER emits the elided form (full path only) — asserted directly
-- [ ] IPv6 host literals bracketed on serialize / unbracketed on parse; the V4 space-separated human alias parses to the same tuple as the V9 form
-- [ ] `tests/unit/test_aef_address.py` covers: round-trip, correspondent↔actor, display-only elision, optional `hub=`, IPv6, alias parity, and sparse/ladder token-drop
+- [x] `lib/aef_address.py` parses a V9 wire address (`aef::…::@name::`) into structured fields (host, hub?, project, session?, agent), and `serialize(parse(x)) == x` round-trips
+- [x] Correspondent/actor split: dropping the `session=` token yields the durable name, adding it yields the circuit id (D2/D3); `hub=` is optional and resolves to the host default when absent (D6)
+- [x] Display-only path elision: paths >3 segments render `first/…/last-two` with the `…` marker; the wire serializer NEVER emits the elided form (full path only) — asserted directly
+- [x] IPv6 host literals bracketed on serialize / unbracketed on parse; the V4 space-separated human alias parses to the same tuple as the V9 form
+- [x] `tests/unit/test_aef_address.py` covers: round-trip, correspondent↔actor, display-only elision, optional `hub=`, IPv6, alias parity, and sparse/ladder token-drop
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -244,6 +274,11 @@ timeout 120 python3 -m pytest tests/unit/test_aef_address.py -q > /tmp/.s1-aef.o
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-07 — sparse climb can strand an unaddressable rung
+- **What changed:** The charter defines climb as "drop the rightmost token" against the full 5-level address; on a SPARSE address (query form, e.g. `aef::hub=H-1::@reviewer::` — no host) a literal reading lets the last present token be dropped, yielding an empty `aef::` address that is unaddressable. The filing didn't anticipate the sparse×ladder interaction.
+- **Plan impact:** None to the grammar itself; `climb()` gained a floor — it returns None rather than ever yielding an empty address (host-only was already the documented last rung; the empty-address guard generalizes that to hostless sparse forms). Caught by the sparse/ladder test before first commit.
+- **Triggered:** No new sub-task; handled in-slice.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -284,6 +319,16 @@ timeout 120 python3 -m pytest tests/unit/test_aef_address.py -q > /tmp/.s1-aef.o
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-09-07 — serialize refuses elided project values
+- **Chose:** `serialize()` raises `AddressError` when the project value contains the `…` elision marker, in addition to never producing the elided form itself.
+- **Why:** Elision is lossy (D3 sub-rule) — a display string re-entering the wire would re-collapse two projects into one correspondent, the exact bug arc-020 exists to kill. Refusing at the serializer makes the display/wire boundary structural, not conventional.
+- **Rejected:** Passing the value through opaquely (grammar says "value opaque") — a real path containing `…` is pathological, and the false-negative risk (silent identity collapse) outweighs the false-positive one.
+
+### 2026-09-07 — segment order: parse any, serialize canonical
+- **Chose:** `parse()` accepts label=value segments in any order (labels are self-typing); `serialize()` always emits canonical order (host, hub, project, session, @agent). Round-trip is exact for canonical wire strings — all charter examples are canonical.
+- **Why:** D3's `segment*` grammar doesn't mandate order, and sparse/query forms rely on self-typing labels; a single canonical emission keeps wire strings comparable as identity keys.
+- **Rejected:** Preserving input order through round-trip — would make two token-orderings of the same tuple serialize to different strings, breaking address-as-identity-key comparison.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -300,3 +345,6 @@ timeout 120 python3 -m pytest tests/unit/test_aef_address.py -q > /tmp/.s1-aef.o
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3307-arc-020-s1-v9-address-library.md
 - **Context:** Initial task creation
+
+### 2026-09-07T06:30:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
