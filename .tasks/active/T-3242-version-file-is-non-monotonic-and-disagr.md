@@ -104,7 +104,8 @@ red before this task (1.6.448 vs 1.6.460); it needs re-anchoring to
 - [x] **A2 Doctor parity check:** `fw doctor` gains a cheap check comparing VERSION against the latest reachable release tag — FAIL when VERSION < tag's version or when they name different lines of history per the reconciliation rule; PASS otherwise; silent/skip when no tags are reachable (fresh clone/consumer)
 - [x] **A3 Release guard:** `fw release tag-and-release --dry-run` reports the VERSION reconciliation it would perform; a release that would write a DECREASED version refuses (same refuse-family as the T-3190 fast-forward gate)
 - [x] **A4 Pinned:** hermetic bats suite covers: monotonic release passes; decreasing-VERSION release refuses; doctor FAILs on a fixture repo with VERSION < tag; doctor silent with no tags; `bash -n` clean on edited files
-- [ ] **A5 No-widening:** existing release/version/doctor suites green; `bin/fw vendor self --check` clean for the files this task touched
+- [x] **A5 No-widening:** existing release/version/doctor suites green; `bin/fw vendor self --check` clean for the files this task touched
+  *Evidence note:* the 8 hermetic release/version suites are green (96 tests, see Verification). Two tests that assert LIVE-repo health are red for environmental reasons, not this task's widening: `self_vendor_version.bats:7` (full `vendor self --check` — another worker's uncommitted `agents/context/lib/safe-commands.sh` drifts; this task's three files are byte-identical to their vendored copies, pinned by the `cmp` Verification lines) and `t2452_doctor_quick.bats:5` (live `fw doctor --quick` exit≠2 — the mid-flight session's repo state carries other FAILs; this task's Check 1c prints `OK VERSION matches latest release tag (v1.6.768)` in that same live run, so the exit 2 is not from this check).
 
 ### Human
 - [ ] [REVIEW] Tag-as-canonical is the right ruling for the release train
