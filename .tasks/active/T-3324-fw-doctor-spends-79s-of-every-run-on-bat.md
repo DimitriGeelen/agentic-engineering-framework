@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:04:41Z
-last_update: 2026-09-07T07:29:29Z
+last_update: 2026-09-07T19:27:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -363,6 +363,13 @@ follow-up, not claimed here.
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** Check 9 no longer runs `bats --count` at all: full mode uses a <1s file count with wording that says it counts files, and `--quick` skips the check entirely via `_doctor_quick_skip`. Measured on this host: 77.0s → 0.010s in full mode. The class is pinned so the check cannot silently regrow: the suite asserts no non-comment `bats --count` in bin/fw, the guard's presence, and the file-count wording. Remaining `--quick` slowness (~123s) is from OTHER checks and is named as out of scope, not hidden.
+**Evidence:**
+- All 5 Verification lines pass (bash -n, doctor --quick shows the SKIP line, zero `bats --count` in bin/fw, t3324_doctor_check9_fast.bats 3/3 green, 0 skips) — re-run 2026-09-07 by the parent session
+- Timing table in ## Context: check-9 body 77.0s → 0.010s (full), skipped under --quick
+- RCA names the structural gap (no per-check timing budget) and leaves it as an honest follow-up candidate rather than claiming it
 
 ## Decisions
 
