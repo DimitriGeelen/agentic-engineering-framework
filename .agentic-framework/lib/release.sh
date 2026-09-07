@@ -63,6 +63,78 @@ release_bump_version() {
 }
 
 # ---------------------------------------------------------------------------
+# release_version_lt <A> <B>  — numeric semver compare; true (0) when A < B
+#   Component-wise, NOT lexical: 1.6.72 < 1.6.176 (a lexical/sort compare gets
+#   this wrong, and 72-vs-176 is the exact pair the origin incident produced).
+#   Pre-release suffixes are stripped; non-numeric input is "not less" (rc 1).
+# ---------------------------------------------------------------------------
+release_version_lt() {
+    local a="${1%%-*}" b="${2%%-*}"
+    case "$a$b" in ''|*[!0-9.]*) return 1 ;; esac
+    [ "$a" = "$b" ] && return 1
+    local a1 a2 a3 b1 b2 b3
+    IFS=. read -r a1 a2 a3 <<< "$a"
+    IFS=. read -r b1 b2 b3 <<< "$b"
+    a1=${a1:-0}; a2=${a2:-0}; a3=${a3:-0}
+    b1=${b1:-0}; b2=${b2:-0}; b3=${b3:-0}
+    if [ "$a1" -ne "$b1" ]; then [ "$a1" -lt "$b1" ]; return $?; fi
+    if [ "$a2" -ne "$b2" ]; then [ "$a2" -lt "$b2" ]; return $?; fi
+    [ "$a3" -lt "$b3" ]
+}
+
+# ---------------------------------------------------------------------------
+# release_version_tag_parity <root>  — T-3242 doctor predicate
+#   Echoes exactly one of:
+#     no-git             — root has no .git (vendored consumer copy)
+#     no-tags            — no v* tag reachable from HEAD (fresh clone)
+#     no-version         — no VERSION file to disagree with anything
+#     ok <ver> <tagver>      — VERSION equals the newest reachable tag
+#     ahead <ver> <tagver>   — VERSION above the tag (pre-release bump; allowed)
+#     behind <ver> <tagver>  — VERSION BELOW the tag: the non-monotonic state
+#   The tag is canonical (T-3242 ruling); only `behind` is a failure.
+#   Read-only, one `git describe` — cheap enough for every doctor run.
+# ---------------------------------------------------------------------------
+release_version_tag_parity() {
+    local root="${1:-${PROJECT_ROOT:-$(pwd)}}"
+    if [ ! -d "$root/.git" ] && [ ! -f "$root/.git" ]; then
+        echo "no-git"; return 0
+    fi
+    local tag
+    tag="$(release_latest_tag "$root")"
+    if [ -z "$tag" ]; then echo "no-tags"; return 0; fi
+    if [ ! -f "$root/VERSION" ]; then echo "no-version"; return 0; fi
+    local ver tagver="${tag#v}"
+    ver="$(tr -d '[:space:]' < "$root/VERSION")"
+    if [ "$ver" = "$tagver" ]; then
+        echo "ok $ver $tagver"
+    elif release_version_lt "$ver" "$tagver"; then
+        echo "behind $ver $tagver"
+    else
+        echo "ahead $ver $tagver"
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# release_reconcile_version <root> <next_tag>  — T-3242 tag-as-canonical write
+#   Writes ${next#v} into VERSION (and the vendored copy when present) and
+#   commits ONLY those paths, so the commit the tag lands on carries the
+#   version the tag names. Caller has already refused the decreasing case.
+# ---------------------------------------------------------------------------
+release_reconcile_version() {
+    local root="$1" next="$2"
+    local want="${next#v}"
+    local paths=("VERSION")
+    echo "$want" > "$root/VERSION" || return 1
+    if [ -f "$root/.agentic-framework/VERSION" ]; then
+        echo "$want" > "$root/.agentic-framework/VERSION"
+        paths+=(".agentic-framework/VERSION")
+    fi
+    git -C "$root" add -- "${paths[@]}" || return 1
+    # Pathspec commit: other staged/unstaged work in the tree stays out of it.
+    git -C "$root" commit -q -m "$next: reconcile VERSION to $want (tag-as-canonical, T-3242)" -- "${paths[@]}"
+}
+
+# ---------------------------------------------------------------------------
 # release_ff_state <root> <release_branch>
 #   Can <release_branch> fast-forward to HEAD? Echoes exactly one of:
 #     missing      — no such local branch (consumer repo, fresh clone)
@@ -140,6 +212,27 @@ release_tag_and_release() {
     local next
     next="$(release_bump_version "$latest" "$bump")"
 
+    # ── VERSION reconciliation leg (T-3242, tag-as-canonical) ────────────
+    # VERSION was derived from a resetting commit counter and DECREASED across
+    # consecutive releases (1.6.176 → 1.6.72 between v1.6.767 and v1.6.768).
+    # The ruling: the tag is canonical, VERSION mirrors it. A release that
+    # would write a DECREASED version refuses — same refuse-family as the
+    # T-3190 fast-forward gate: better no release than one that tells
+    # consumers they downgraded. Repos without a VERSION file have no second
+    # answer to reconcile and are left alone (keeps consumer repos untouched).
+    local want_ver="${next#v}" ver_file="$root/VERSION" cur_file_ver=""
+    if [ -f "$ver_file" ]; then
+        cur_file_ver="$(tr -d '[:space:]' < "$ver_file")"
+        if [ -n "$cur_file_ver" ] && release_version_lt "$want_ver" "$cur_file_ver"; then
+            echo -e "${RED}REFUSING to release:${NC} tag $next would DECREASE VERSION ($cur_file_ver → $want_ver)." >&2
+            echo "  VERSION is ahead of the tag line — a consumer reading VERSION would" >&2
+            echo "  conclude it downgraded. The tag is canonical (T-3242); reconcile" >&2
+            echo "  VERSION or bump past it (--bump minor|major), then retry." >&2
+            echo "  No tag was created." >&2
+            return 1
+        fi
+    fi
+
     # ── Release-train leg (G-096, T-3190) ────────────────────────────────
     # Under T-3185 a release IS the fast-forward of the install surface; the
     # tag merely names it. So the advance is decided FIRST, before a tag
@@ -177,12 +270,38 @@ release_tag_and_release() {
 
     if $dry_run; then
         echo -e "${CYAN}would tag $next${NC} ($commits commits since $latest, bump=$bump)"
+        if [ -f "$ver_file" ]; then
+            if [ "$cur_file_ver" != "$want_ver" ]; then
+                echo -e "${CYAN}would reconcile VERSION${NC} $cur_file_ver → $want_ver (tag-as-canonical, T-3242)"
+            else
+                echo "VERSION already $want_ver — no reconciliation needed"
+            fi
+        fi
         case "$ff_state" in
             clean)    echo -e "${CYAN}would fast-forward $release_branch${NC} by $ff_count commit(s) to $next" ;;
             uptodate) echo "$release_branch is already at HEAD — no fast-forward needed" ;;
             missing)  echo -e "${YELLOW}no local '$release_branch'${NC} — would skip the fast-forward" ;;
         esac
         return 0
+    fi
+
+    # Reconcile VERSION to the tag BEFORE the tag exists, so the tagged commit
+    # carries the version the tag names (T-3242). HEAD moves by one commit, so
+    # the fast-forward leg is recomputed — the refuse cases (branch-ahead /
+    # diverged) already fired above and cannot newly appear from advancing HEAD.
+    if [ -f "$ver_file" ] && [ "$cur_file_ver" != "$want_ver" ]; then
+        echo -e "${CYAN}Reconciling VERSION $cur_file_ver → $want_ver (tag-as-canonical)...${NC}"
+        if ! release_reconcile_version "$root" "$next"; then
+            echo -e "${RED}REFUSING to release:${NC} VERSION reconciliation commit failed." >&2
+            echo "  No tag was created. Check the working tree state of VERSION and retry." >&2
+            return 1
+        fi
+        ff_state="$(release_ff_state "$root" "$release_branch")"
+        ff_count=0
+        if [ "$ff_state" = "clean" ]; then
+            ff_count="$(git -C "$root" rev-list --count "refs/heads/${release_branch}..HEAD" 2>/dev/null || echo 0)"
+        fi
+        commits="$(release_commits_since "$latest" "$root")"
     fi
 
     # Create annotated tag
