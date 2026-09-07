@@ -1524,6 +1524,37 @@ do_doctor() {
             ;;
     esac
 
+    # Check 1c (T-3242): VERSION vs latest release tag parity — tag-as-canonical.
+    # VERSION was synced from a resetting commit counter and DECREASED across
+    # consecutive releases (1.6.176 → 1.6.72 between v1.6.767 and v1.6.768); a
+    # consumer reading VERSION concluded it downgraded. The release path now
+    # reconciles VERSION to the tag (lib/release.sh); this check catches any
+    # write that regresses it. Silent when no tags are reachable (fresh clone)
+    # or the root has no .git (vendored consumer copy) — those states have no
+    # second answer to disagree with. One `git describe`, cheap on every run.
+    if [ -f "$FRAMEWORK_ROOT/lib/release.sh" ]; then
+        source "$FRAMEWORK_ROOT/lib/release.sh"
+        local _vtp _vtp_state _vtp_ver _vtp_tagver
+        _vtp="$(release_version_tag_parity "$FRAMEWORK_ROOT")"
+        read -r _vtp_state _vtp_ver _vtp_tagver <<< "$_vtp"
+        case "$_vtp_state" in
+            behind)
+                echo -e "  ${RED}FAIL${NC}  VERSION ($_vtp_ver) is BELOW the latest release tag (v$_vtp_tagver) — tag is canonical (T-3242)"
+                echo -e "         Fix: echo $_vtp_tagver > $FRAMEWORK_ROOT/VERSION   (or cut a release: bin/fw release tag-and-release)"
+                issues=$((issues + 1))
+                ;;
+            ok)
+                echo -e "  ${GREEN}OK${NC}  VERSION matches latest release tag (v$_vtp_tagver)"
+                ;;
+            ahead)
+                echo -e "  ${GREEN}OK${NC}  VERSION ($_vtp_ver) ahead of latest tag (v$_vtp_tagver) — pre-release bump, allowed"
+                ;;
+            *)
+                : # no-git / no-tags / no-version — nothing to compare, stay silent
+                ;;
+        esac
+    fi
+
     # Check 2: .framework.yaml (only relevant if PROJECT_ROOT != FRAMEWORK_ROOT)
     if [ "$PROJECT_ROOT" != "$FRAMEWORK_ROOT" ]; then
         if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then

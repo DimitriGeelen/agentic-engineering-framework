@@ -283,6 +283,25 @@ do_version_sync() {
     local fw_version
     fw_version=$(_read_fw_version)
 
+    # T-3242 tag-as-canonical guard: FW_VERSION is a resetting commit counter
+    # (major.minor.<commits-since-newest-tag>, bin/fw _derive_version), so
+    # syncing it into VERSION right after a release writes a DECREASED version
+    # — exactly the non-monotonic state the origin incident measured (VERSION
+    # 1.6.176 → 1.6.72 across v1.6.767 → v1.6.768). The release tag is
+    # canonical; refuse to sync the VERSION files down below it. Repos with no
+    # reachable tag keep the old behavior unchanged.
+    local tag_floor=""
+    if [ -d "$FRAMEWORK_ROOT/.git" ] || [ -f "$FRAMEWORK_ROOT/.git" ]; then
+        tag_floor="$(git -C "$FRAMEWORK_ROOT" describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null | sed 's/^v//')"
+    fi
+    if [ -n "$tag_floor" ] && _version_lt "$fw_version" "$tag_floor"; then
+        echo -e "${YELLOW}REFUSING to sync VERSION files down to $fw_version:${NC} below the latest release tag v$tag_floor (tag-as-canonical, T-3242)" >&2
+        echo "  FW_VERSION is a resetting commit counter, not the canonical version." >&2
+        echo "  The VERSION files follow the tag; cut a release to advance them:" >&2
+        echo "  bin/fw release tag-and-release" >&2
+        return 1
+    fi
+
     echo -e "${BOLD}Syncing all version sources to $fw_version${NC}"
     echo ""
 
@@ -353,6 +372,23 @@ do_version_sync() {
 }
 
 # --- Internal helpers ---
+
+# T-3242: numeric semver less-than (1.6.72 < 1.6.176 — component-wise, not
+# lexical). Self-contained duplicate of lib/release.sh:release_version_lt so
+# version.sh keeps standing alone in vendored copies. Non-numeric → "not less".
+_version_lt() {
+    local a="${1%%-*}" b="${2%%-*}"
+    case "$a$b" in ''|*[!0-9.]*) return 1 ;; esac
+    [ "$a" = "$b" ] && return 1
+    local a1 a2 a3 b1 b2 b3
+    IFS=. read -r a1 a2 a3 <<< "$a"
+    IFS=. read -r b1 b2 b3 <<< "$b"
+    a1=${a1:-0}; a2=${a2:-0}; a3=${a3:-0}
+    b1=${b1:-0}; b2=${b2:-0}; b3=${b3:-0}
+    if [ "$a1" -ne "$b1" ]; then [ "$a1" -lt "$b1" ]; return $?; fi
+    if [ "$a2" -ne "$b2" ]; then [ "$a2" -lt "$b2" ]; return $?; fi
+    [ "$a3" -lt "$b3" ]
+}
 
 _read_fw_version() {
     # T-690: Since T-648, FW_VERSION is dynamic ($(_derive_version)), not a literal.

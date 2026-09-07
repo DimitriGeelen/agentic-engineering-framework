@@ -79,17 +79,41 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+VERSION was synced from `_derive_version`'s resetting commit counter
+(`major.minor.<commits-since-newest-tag>`, bin/fw:16), so at consecutive release
+tags it read 1.6.176 then 1.6.72 while the tags climbed v1.6.767 → v1.6.768.
+Ruling shipped here: **the release tag is canonical; VERSION mirrors it.**
+Mechanism: `lib/release.sh` reconciles VERSION to the new tag in a pathspec
+commit BEFORE tagging (so the tagged commit carries the version the tag names),
+refuses a release that would decrease VERSION, `fw doctor` Check 1c FAILs on
+VERSION-below-tag, and `fw version sync` refuses to write the resetting counter
+below the tag floor. Suite: `tests/unit/t3242_version_tag_reconcile.bats` (25 tests).
+
+Known residual (out of this task's file constraints, flag for triage): 
+`agents/audit/self-audit.sh` §5.1 still FAILs on `VERSION != FW_VERSION` — under
+tag-as-canonical that comparison is the wrong axis (FW_VERSION is the resetting
+counter and legitimately differs from VERSION between releases). It was already
+red before this task (1.6.448 vs 1.6.460); it needs re-anchoring to
+`release_version_tag_parity` in a follow-up.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 Single source of truth implemented:** the release tag is canonical; at release time (`fw release tag-and-release` / `lib/release.sh`) VERSION is derived from / reconciled with the new tag so a tagged commit can never carry a VERSION below the previous tag's. The mechanism and the rejected alternative (VERSION-as-canonical) are recorded in ## Decisions
-- [ ] **A2 Doctor parity check:** `fw doctor` gains a cheap check comparing VERSION against the latest reachable release tag — FAIL when VERSION < tag's version or when they name different lines of history per the reconciliation rule; PASS otherwise; silent/skip when no tags are reachable (fresh clone/consumer)
-- [ ] **A3 Release guard:** `fw release tag-and-release --dry-run` reports the VERSION reconciliation it would perform; a release that would write a DECREASED version refuses (same refuse-family as the T-3190 fast-forward gate)
-- [ ] **A4 Pinned:** hermetic bats suite covers: monotonic release passes; decreasing-VERSION release refuses; doctor FAILs on a fixture repo with VERSION < tag; doctor silent with no tags; `bash -n` clean on edited files
+- [x] **A1 Single source of truth implemented:** the release tag is canonical; at release time (`fw release tag-and-release` / `lib/release.sh`) VERSION is derived from / reconciled with the new tag so a tagged commit can never carry a VERSION below the previous tag's. The mechanism and the rejected alternative (VERSION-as-canonical) are recorded in ## Decisions
+- [x] **A2 Doctor parity check:** `fw doctor` gains a cheap check comparing VERSION against the latest reachable release tag — FAIL when VERSION < tag's version or when they name different lines of history per the reconciliation rule; PASS otherwise; silent/skip when no tags are reachable (fresh clone/consumer)
+- [x] **A3 Release guard:** `fw release tag-and-release --dry-run` reports the VERSION reconciliation it would perform; a release that would write a DECREASED version refuses (same refuse-family as the T-3190 fast-forward gate)
+- [x] **A4 Pinned:** hermetic bats suite covers: monotonic release passes; decreasing-VERSION release refuses; doctor FAILs on a fixture repo with VERSION < tag; doctor silent with no tags; `bash -n` clean on edited files
 - [ ] **A5 No-widening:** existing release/version/doctor suites green; `bin/fw vendor self --check` clean for the files this task touched
+
+### Human
+- [ ] [REVIEW] Tag-as-canonical is the right ruling for the release train
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && git show v1.6.768:VERSION; cat VERSION` — the tag line vs the reconciled file (now both 1.6.768-anchored)
+  2. Read `## Decisions` below: tag-as-canonical was chosen over VERSION-as-canonical; consumers read VERSION (vendored copies have no `.git`, so `_derive_version` falls back to the VERSION file — it is their only identity)
+  3. `cd /opt/999-Agentic-Engineering-Framework && bin/fw release tag-and-release --dry-run` — confirm the reported reconciliation ("would reconcile VERSION ... → ...") matches your intent for what a release does to VERSION
+  **Expected:** you agree the tag is the single source of truth and VERSION follows it at release time; a decreasing VERSION is a refused release, not a synced file
+  **If not:** the inverse ruling (VERSION-as-canonical, tags derived from VERSION) is recorded as the rejected alternative in ## Decisions — reopen this task and say which ruling should stand; the mechanism inverts cleanly (tag from VERSION instead of VERSION from tag)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -239,6 +263,25 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/unit/t3242_version_tag_reconcile.bats > /tmp/t3242-suite.out 2>&1 && ! grep -q "^not ok" /tmp/t3242-suite.out
+test "$(grep -c '# skip' /tmp/t3242-suite.out)" -eq 0
+# A5: existing release/version suites. self_vendor_version.bats is excluded from this
+# line ON PURPOSE: its test 7 runs a FULL `fw vendor self --check` against the live
+# repo, and other workers hold uncommitted vendored files (agents/context/lib/
+# safe-commands.sh) that legitimately drift — environmental, not this task's widening.
+timeout 600 bats tests/unit/lib_release.bats tests/unit/lib_version.bats tests/unit/t3190_release_master_ff.bats tests/unit/t3193_release_tag_push_failure.bats tests/unit/version_relation.bats tests/unit/pre_push_version_monotonicity.bats tests/unit/fw_version_output.bats tests/unit/fw_derive_version_symlink.bats > /tmp/t3242-a5.out 2>&1 && ! grep -q "^not ok" /tmp/t3242-a5.out
+test "$(grep -c '# skip' /tmp/t3242-a5.out)" -eq 0
+bash -n lib/release.sh && bash -n lib/version.sh && bash -n bin/fw
+# Scoped vendor check (see comment above on why not the full --check): this task's
+# three edited files must be byte-identical to their vendored copies.
+cmp -s lib/release.sh .agentic-framework/lib/release.sh
+cmp -s lib/version.sh .agentic-framework/lib/version.sh
+cmp -s bin/fw .agentic-framework/bin/fw
+# The live repo itself is reconciled: VERSION equals the newest reachable tag.
+bash -c 'source lib/release.sh; out=$(release_version_tag_parity "$PWD"); case "$out" in ok\ *) exit 0;; *) echo "$out"; exit 1;; esac'
+# Release guard live (read-only): dry-run reports, and reports no reconciliation needed post-reconcile.
+bin/fw release tag-and-release --dry-run > /tmp/t3242-dry.out 2>&1 && grep -qE "would reconcile VERSION|no reconciliation needed" /tmp/t3242-dry.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -254,6 +297,31 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** VERSION at the last five release tags read 1.6.121, 1.6.499, 1.6.430,
+1.6.176, 1.6.72 while the tags climbed v1.6.764..v1.6.768 — VERSION DECREASED
+across consecutive releases. The operator compared a stable VERSION against a
+bleeding-edge VERSION and misread a 152-commit relationship as a 77-version gap.
+
+**Root cause:** two version authorities with no reconciliation point. `_derive_version`
+(bin/fw:16) computes `major.minor.<commits-since-newest-tag>` — a counter that RESETS
+to ~0 at every tag — and `fw version sync` copied that counter into VERSION. Which
+number VERSION carried depended on when sync last ran relative to tagging and on which
+line of history the tagged commit sat, so tagged commits carried incomparable counters.
+
+**Why structurally allowed:** the release path (`lib/release.sh`) never touched VERSION
+at all — it tagged HEAD with whatever VERSION happened to be there. No gate compared
+VERSION to the tag; the pre-push monotonicity gate was deliberately relaxed (T-1829)
+to ALLOW forward-in-time decreases precisely because the resetting counter made them
+routine — the accommodation of the symptom entrenched the disease. The T-2796
+`fw version` comment documented the counter's incomparability but only annotated it.
+
+**Prevention (distinct from the fix):** (1) `fw doctor` Check 1c FAILs whenever
+VERSION < newest reachable tag — the state can no longer sit silent; (2) the release
+refuses to write a decreasing VERSION (T-3190 refuse-family); (3) `fw version sync`
+refuses to sync the counter below the tag floor — the writer that caused the decreases
+is now gated at its own hand; (4) all three pinned in
+tests/unit/t3242_version_tag_reconcile.bats (25 tests, hermetic fixtures).
 
 ## Evolution
 
@@ -308,16 +376,36 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** Tag-as-canonical is the only ruling consistent with the release-train
+model just adopted (T-3185/T-3190): tags already climb monotonically by construction
+(`release_bump_version` on the previous tag), while VERSION was a derived resetting
+counter with no independent authority. All four rails shipped and are pinned green;
+the live repo is reconciled (VERSION = 1.6.768 = newest tag). The one Human AC asks
+the operator to confirm the ruling because consumers read VERSION as their only
+identity (vendored copies have no .git) — consumer blast radius warrants the check.
+**Evidence:**
+- tests/unit/t3242_version_tag_reconcile.bats: 25/25 ok, 0 skips (hermetic fixtures)
+- Existing suites: lib_release, lib_version, t3190, t3193, version_relation, pre_push_version_monotonicity, fw_version_output, fw_derive_version_symlink — green (self_vendor_version test 7 red from ANOTHER worker's uncommitted safe-commands.sh drift, pre-existing/environmental)
+- Live doctor Check 1c: "OK VERSION matches latest release tag (v1.6.768)"
+- `git show v1.6.768:VERSION` still shows the old counter (history is immutable); from the NEXT release onward the tagged commit carries the tag's own version (pinned by suite test 7)
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-07 — Which of the two answers is canonical
+- **Chose:** the release tag. At release time `lib/release.sh` writes `${tag#v}` into VERSION (+ vendored copy) in a pathspec commit BEFORE tagging, so the tagged commit carries the version the tag names; a release that would decrease VERSION refuses.
+- **Why:** under the release train the tag IS the release (T-3190: the fast-forward is the release, the tag names it), and tags are monotonic by construction. VERSION had no independent authority — it was a copy of a resetting commit counter.
+- **Rejected:** VERSION-as-canonical (derive tags from VERSION). Would require making every VERSION write monotonic first — but the main writer (`fw version sync`) copies `_derive_version`'s counter, which resets at each tag; fixing that means redefining `_derive_version`, which every install's `fw --version`, version-relation logic (T-2713/L-536), and consumer-fleet checks depend on. Far larger blast radius for the same invariant.
+
+### 2026-09-07 — Reconcile only when a VERSION file exists
+- **Chose:** repos without a root VERSION file release without reconciling (no file created).
+- **Why:** no file = no second answer to disagree with; and it keeps the t3190/t3193 fixtures (and consumer-shaped repos) byte-for-byte untouched by this change — A5 no-widening.
+- **Rejected:** creating VERSION at release time — surprising write in repos that never carried one.
+
+### 2026-09-07 — Guard `fw version sync` rather than redefine it
+- **Chose:** `do_version_sync` refuses (exit 1, actionable stderr) when FW_VERSION < newest reachable tag; unchanged when no tags reachable.
+- **Why:** sync was the writer that produced every measured decrease; gating it at the tag floor closes the regression vector without touching `_derive_version`. `_version_lt` is duplicated into version.sh (not sourced from release.sh) because version.sh must stand alone in vendored copies.
+- **Rejected:** re-anchoring `do_version_check`/`do_version_audit` to the tag in the same pass — `agents/audit/self-audit.sh` §5.1 (out of this task's file constraints, another worker's territory) does its own independent FW_VERSION-vs-VERSION compare; re-anchoring one side only would make the two audits disagree. Flagged in ## Context as the follow-up.
 
 ## Decision
 
