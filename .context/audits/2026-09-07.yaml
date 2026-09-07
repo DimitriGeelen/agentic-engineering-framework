@@ -1,9 +1,9 @@
-# Audit Results - 2026-09-07-0925
-timestamp: 2026-09-07T07:25:44Z
+# Audit Results - 2026-09-07-1006
+timestamp: 2026-09-07T08:06:40Z
 sections: "structure"
 summary:
   pass: 30
-  warn: 9
+  warn: 8
   fail: 1
 findings:
   - level: PASS
@@ -17,12 +17,9 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3321 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3322 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 31 project YAML file(s)"
-  - level: WARN
-    check: "Task frontmatter: 4 task(s) have unparseable YAML"
-    mitigation: "T-2067 class (mangled components: list — wrapped flow-style left orphan continuation)."
   - level: PASS
     check: "All arc anchor_task references resolve to existing tasks — examined 19 arc anchor_task reference(s)"
   - level: PASS
@@ -71,7 +68,7 @@ findings:
   - level: PASS
     check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
   - level: FAIL
-    check: "Invariant suite (tests/lint): 2 of 108 structural invariant(s) RED (T-2837)"
+    check: "Invariant suite (tests/lint): 3 of 108 structural invariant(s) RED (T-2837)"
     mitigation: "Run: fw test invariants"
   - level: WARN
     check: "Unit suite (tests/unit) NOT CHECKED — no report at .context/audits/unit-suite/LATEST.yaml (T-3302)"
@@ -91,8 +88,8 @@ findings:
   - level: INFO
     check: "Stale draft(s), 30d+ untouched: draft-arc-lifecycle draft-exception-handling draft-inception-readiness draft-knowledge-leveling draft-t2584-scratch draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"
   - level: WARN
-    check: "Continuous-run wrapper last recorded ARMED but the turn driver is not"
-    mitigation: "fw continuous arm --hours N --iterations N --directive '...' (T-3225). Same drift class as the 74-day and 8-day prior incidents (G-099)."
+    check: "Continuous-run loop STOPPED: continuous-terminated"
+    mitigation: "Relaunch with: claude-fw"
   - level: WARN
     check: "Continuous-run Stop hook is cycling on a stale terminate reason"
     mitigation: "bin/fw continuous disarm --reason \"<why it's stale now>\" (or fw continuous arm to re-arm cleanly)"

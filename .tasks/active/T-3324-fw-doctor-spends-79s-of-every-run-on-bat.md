@@ -11,7 +11,7 @@ name: "fw doctor spends ~79s of every run on 'bats --count tests/unit/' (606 fil
 description: >
   Promoted from observation OBS-368
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:04:41Z
-last_update: '2026-09-07T07:15:17Z'
+last_update: 2026-09-07T07:29:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,16 +75,35 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Doctor check 9 ("Test infrastructure") ran `bats --count tests/unit/` on every
+invocation — ~79s to print a cosmetic test total, with no `--quick` guard.
+Fixed by guarding the check with `_doctor_quick_skip` (skipped under `--quick`)
+and replacing the count with `ls tests/unit/*.bats | wc -l` in full mode, with
+the line reworded to say it counts FILES. Pinned by
+`tests/unit/t3324_doctor_check9_fast.bats` (3 source-level tests).
+
+### Timing evidence (A3), measured 2026-09-07 on this host
+
+| Command | Before | After |
+|---|---|---|
+| check-9 body, full mode | `bats --count tests/unit/` → **77.0s** (1m17.043s real, 5269 tests) | `ls tests/unit/*.bats \| wc -l` → **0.010s** (617 files) |
+| check 9 under `--quick` | ran in full (~77s) — no guard | **skipped** — emits `SKIP Test infrastructure (bats file count) (--quick)` |
+
+Note: `fw doctor --quick` end-to-end still takes ~123s on this host — the
+remaining cost is in OTHER checks (out of scope here; check 9 no longer
+contributes). It also exits rc=2 from a pre-existing, unrelated host finding
+("Last full audit was KILLED FROM OUTSIDE mid-section 'oe-daily'"), which is
+why t2452_doctor_quick.bats test 5 (`status -ne 2`) is red — environmental,
+red before this change, not caused by it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 Quick guard:** doctor check 9 ("Test infrastructure", bin/fw ~:1931) is guarded with `_doctor_quick_skip` so `fw doctor --quick` skips it entirely
-- [ ] **A2 Full-run cheap:** the full (non-quick) run no longer invokes `bats --count` over tests/unit; the line uses a cheap file count (`ls`/`find` class, <1s) with wording that says what it counted (files, not tests)
-- [ ] **A3 Measured:** before/after timing of the check is recorded in the task (was ~79s); after is <1s in full mode and skipped in --quick
-- [ ] **A4 Pinned + no-widening:** existing doctor suites still green; `bash -n bin/fw` clean; a test or assertion pins that --quick does not invoke bats
+- [x] **A1 Quick guard:** doctor check 9 ("Test infrastructure", bin/fw ~:1931) is guarded with `_doctor_quick_skip` so `fw doctor --quick` skips it entirely
+- [x] **A2 Full-run cheap:** the full (non-quick) run no longer invokes `bats --count` over tests/unit; the line uses a cheap file count (`ls`/`find` class, <1s) with wording that says what it counted (files, not tests)
+- [x] **A3 Measured:** before/after timing of the check is recorded in the task (was ~79s); after is <1s in full mode and skipped in --quick
+- [x] **A4 Pinned + no-widening:** existing doctor suites still green; `bash -n bin/fw` clean; a test or assertion pins that --quick does not invoke bats
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -118,6 +137,20 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n bin/fw
+timeout 300 bin/fw doctor --quick > /tmp/.t3324-doctor.out 2>&1; grep -q "Test infrastructure (bats file count) (--quick)" /tmp/.t3324-doctor.out
+grep -cE '^[^#]*bats --count' bin/fw > /tmp/.t3324-grep.out 2>&1; grep -qx "0" /tmp/.t3324-grep.out
+timeout 300 bats tests/unit/t3324_doctor_check9_fast.bats > /tmp/.t3324-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3324-bats.out
+test "$(grep -c '# skip' /tmp/.t3324-bats.out)" -eq 0
+
+# Note: the dispatch-suggested line `out=$(timeout 120 bin/fw doctor --quick ...)`
+# was replaced: --quick takes ~123s end-to-end on this host (other checks, out of
+# scope), so a 120s timeout would yield empty output and `grep -vq "bats --count"`
+# passes trivially on ANY input — it asserted nothing. The lines above assert the
+# actual behaviour: the SKIP marker renders, and no non-comment `bats --count`
+# invocation exists in bin/fw. Doctor's own exit code is deliberately not the
+# verdict (rc=2 from a pre-existing unrelated host FAIL — see Context).
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -250,6 +283,34 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** Every `fw doctor` run — including `--quick`, and doctor sits on
+hook, cron and pre-push paths — spent ~79s inside check 9 running
+`bats --count tests/unit/` (5269 tests across 617 files) to print a cosmetic
+count. During T-3281 a `fw doctor --quick` exceeded a 120s timeout having
+reached only check 8, making doctor unusable inside test suites.
+
+**Root cause:** the check's purpose is "is bats installed and are there unit
+tests" — a presence check — but the implementation measured an exact test
+count, which requires bats to parse all 600+ files. The cost grew linearly
+with the test corpus (fine at tens of files when written, pathological at
+617) and check 9 predates `_doctor_quick_skip` (T-2452), so the guard sweep
+that introduced `--quick` never revisited it: it was classified as a cheap
+project check, not a slow probe, because its cost was corpus-dependent
+rather than network-dependent.
+
+**Why structurally allowed:** nothing budgets or times individual doctor
+checks — a check that silently grows from 1s to 79s produces no signal until
+a caller's timeout fires. The `--quick` contract ("skip the slow probes") is
+enforced per-check by hand-placed guards, so a check that BECOMES slow after
+the guard sweep stays unguarded indefinitely.
+
+**Prevention:** `tests/unit/t3324_doctor_check9_fast.bats` pins (1) no
+non-comment `bats --count` invocation in bin/fw, (2) check 9 carries a
+`_doctor_quick_skip` guard, (3) the OK line words the count as files. A
+per-check timing budget for doctor is the structural fix for the class
+(observed: --quick still ~123s from other checks) — left as a candidate
+follow-up, not claimed here.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -333,3 +394,6 @@ bvp_scores_proposed:
 
 ### 2026-09-07T07:09:39Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
+
+### 2026-09-07T07:29:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

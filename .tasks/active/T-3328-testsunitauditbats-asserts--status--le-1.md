@@ -1,6 +1,17 @@
 ---
 id: T-3328
-name: "tests/unit/audit.bats asserts status -le 1 on audit.sh runs. That conflates exit 2 (audit ran, found FAILs) with exit 75 (audit COULD NOT RUN - another audit holds the lock, T-2930). Under any concurrency - the unit suite's own audit tests, a concurrent push's pre-push gate, the daily cron - 9 tests in that file go RED for a reason unrelated to the code under test. Observed live 2026-08-25 during T-3129: 9/14 unit-suite failures were this, while a direct probe of 'audit.sh --section structure' with no lock held exited 1 (pass). This is the false-RED mirror of the false-GREEN family (T-1828/T-3125/T-3126/T-3129): the assertion cannot distinguish 'looked and found a problem' from 'could not look'. Consequence is broader than the 9 tests - it makes every AC6-style 'no new failures in fw test unit' claim non-deterministic, so agents learn to discount suite RED. Suggested fix: assert exit != 75 explicitly and skip/retry rather than fail, so contention reports as contention."
+name: "tests/unit/audit.bats asserts status -le 1 on audit.sh runs. That conflates
+  exit 2 (audit ran, found FAILs) with exit 75 (audit COULD NOT RUN - another audit
+  holds the lock, T-2930). Under any concurrency - the unit suite's own audit tests,
+  a concurrent push's pre-push gate, the daily cron - 9 tests in that file go RED
+  for a reason unrelated to the code under test. Observed live 2026-08-25 during T-3129:
+  9/14 unit-suite failures were this, while a direct probe of 'audit.sh --section
+  structure' with no lock held exited 1 (pass). This is the false-RED mirror of the
+  false-GREEN family (T-1828/T-3125/T-3126/T-3129): the assertion cannot distinguish
+  'looked and found a problem' from 'could not look'. Consequence is broader than
+  the 9 tests - it makes every AC6-style 'no new failures in fw test unit' claim non-deterministic,
+  so agents learn to discount suite RED. Suggested fix: assert exit != 75 explicitly
+  and skip/retry rather than fail, so contention reports as contention."
 description: >
   Promoted from observation OBS-341
 
@@ -22,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:06:08Z
-last_update: 2026-09-07T07:29:41Z
-date_finished: null
+last_update: '2026-09-07T08:00:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +45,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-07T08:00:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=283,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T08:00:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3328: tests/unit/audit.bats asserts [ \"$status\" -le 1 ] on audit.sh runs. That conflates exit 2 (audit ran, found FAILs) with exit 75 (audit COULD NOT RUN - another audit holds the lock, T-2930). Under any concurrency - the unit suite's own audit tests, a concurrent push's pre-push gate, the daily cron - 9 tests in that file go RED for a reason unrelated to the code under test. Observed live 2026-08-25 during T-3129: 9/14 unit-suite failures were this, while a direct probe of 'audit.sh --section structure' with no lock held exited 1 (pass). This is the false-RED mirror of the false-GREEN family (T-1828/T-3125/T-3126/T-3129): the assertion cannot distinguish 'looked and found a problem' from 'could not look'. Consequence is broader than the 9 tests - it makes every AC6-style 'no new failures in fw test unit' claim non-deterministic, so agents learn to discount suite RED. Suggested fix: assert exit != 75 explicitly and skip/retry rather than fail, so contention reports as contention.
