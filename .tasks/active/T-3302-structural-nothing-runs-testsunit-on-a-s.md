@@ -116,7 +116,7 @@ must NOT hold the audit lock itself.
 - [x] **A2 Report artifact:** each run writes a machine-readable report to `.context/audits/unit-suite/LATEST.yaml` (+ dated sibling) recording: started/finished timestamps, per-leg file/test counts, failed test names (bats `not ok` lines and pytest failures), skip count, and runner exit status
 - [x] **A3 Audit surfacing:** `fw audit` gains a line that reads the latest report and emits FAIL when the report lists failures, WARN when the report is missing or older than 48h, PASS otherwise — and the line text names the corpus explicitly ("unit suite (tests/unit)"), not the bare word "suite"
 - [x] **A4 Corpus-naming parity:** the existing invariant-suite audit line is reworded to name its corpus ("invariant suite (tests/lint)") so neither green line answers a broader question than it examined
-- [ ] **A5 Registry chain clean:** cron registry edited → `fw cron generate` → `fw cron install` all run; `fw doctor` shows "Cron registry in sync" with no "edited but not generated" WARN
+- [x] **A5 Registry chain clean:** cron registry edited → `fw cron generate` → `fw cron install` all run; `fw doctor` shows "Cron registry in sync" with no "edited but not generated" WARN
 - [x] **A6 Pinned:** a bats suite pins: runner skips when its overlap lock is held (logged, exit 0); report schema fields present after a stub run; audit FAIL/WARN/PASS branches against fixture reports (hermetic — never runs the real corpus)
 
 ### Human

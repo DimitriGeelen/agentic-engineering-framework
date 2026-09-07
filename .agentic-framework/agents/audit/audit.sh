@@ -2785,7 +2785,7 @@ check_invariant_suite() {
     ls "$_dir"/*.bats >/dev/null 2>&1 || return 0
 
     if ! command -v bats >/dev/null 2>&1; then
-        warn "Invariant suite NOT CHECKED — bats is not installed (T-2837)" \
+        warn "Invariant suite (tests/lint) NOT CHECKED — bats is not installed (T-2837)" \
              "tests/lint/ holds the structural invariants (router↔help parity, config-registry parity, single-vendor-writer); none were evaluated this run" \
              "Install bats, or run the suite where bats exists: fw test invariants"
         return 0
@@ -2801,7 +2801,9 @@ check_invariant_suite() {
         # onto the shared verb so there is one definition of the rule. The
         # bespoke evidence and mitigation are preserved verbatim — a harness that
         # emits no TAP at all is a more specific diagnosis than "set empty".
-        pass_over "$_total" "structural invariant(s) (tests/lint/)" "Invariant suite green" \
+        # T-3302 (A4): the message names its corpus — "Invariant suite green"
+        # read like the whole test corpus was green while only tests/lint ran.
+        pass_over "$_total" "structural invariant(s) (tests/lint/)" "Invariant suite (tests/lint) green" \
              "bats ran but emitted neither 'ok' nor 'not ok' — a harness error, not a green suite (T-2837)" \
              "Run manually and read the output: fw test invariants"
         return 0
@@ -2869,12 +2871,102 @@ check_invariant_suite() {
         _inv_reason="git HEAD unreadable — scope undecidable, defaulting to ref"
     fi
 
-    fail "Invariant suite: $_red of $_total structural invariant(s) RED (T-2837)" \
+    fail "Invariant suite (tests/lint): $_red of $_total structural invariant(s) RED (T-2837)" \
          "$(printf '%s\n' "$_out" | grep '^not ok' | head -3 | sed 's/^not ok [0-9]* //' | tr '\n' ';')" \
          "Run: fw test invariants" \
          "$_inv_scope" "$_inv_reason"
 }
 check_invariant_suite
+
+# T-3302: surface the nightly tests/unit corpus run (agents/audit/unit-suite.sh,
+# cron job unit-suite-nightly).
+#
+# tests/unit holds 615 bats + 191 pytest files and nothing scheduled them; reds
+# there were invisible until an adjacent run tripped over them (two found by
+# accident on 2026-09-06, OBS-359/OBS-360 → T-3300/T-3301). The corpus is too
+# heavy to run from this audit (and its suites themselves spawn
+# `audit.sh --section structure`, contending this very lock), so the run is
+# nightly and this check only READS the report it leaves behind:
+#   FAIL — report lists failures or the runner exited non-zero
+#   WARN — report missing, unparsable, or finished >48h ago (two nightlies)
+#   PASS — fresh clean report, named over the set it examined
+# The line text names its corpus ("unit suite (tests/unit)") — the whole point
+# of OBS-361 is that a green line must not answer a broader question than the
+# one it examined (same family as the invariant-suite rewording above).
+check_unit_suite_report() {
+    local _report="${FW_UNIT_SUITE_REPORT:-$CONTEXT_DIR/audits/unit-suite/LATEST.yaml}"
+    if [ ! -f "$_report" ]; then
+        warn "Unit suite (tests/unit) NOT CHECKED — no report at .context/audits/unit-suite/LATEST.yaml (T-3302)" \
+             "The nightly unit-suite runner has not produced a report; tests/unit reds are invisible until it does" \
+             "Run once by hand: agents/audit/unit-suite.sh — or wait for the nightly cron (unit-suite-nightly)"
+        return 0
+    fi
+
+    local _parsed
+    _parsed=$(python3 - "$_report" <<'PYEOF' 2>/dev/null
+import sys, yaml, datetime
+try:
+    d = yaml.safe_load(open(sys.argv[1])) or {}
+    legs = d.get("legs") or {}
+    total = failed = 0
+    names = []
+    for leg in ("bats", "pytest"):
+        l = legs.get(leg) or {}
+        total += int(l.get("tests") or 0)
+        failed += int(l.get("failed_count") or 0)
+        names += ["%s: %s" % (leg, n) for n in (l.get("failed") or [])]
+        if l.get("error"):
+            names.append("%s: %s" % (leg, l["error"]))
+    rc = d.get("runner_exit")
+    rc = 1 if rc is None else int(rc)
+    age_h = -1
+    fin = d.get("finished")
+    if fin:
+        try:
+            t = datetime.datetime.strptime(str(fin), "%Y-%m-%dT%H:%M:%SZ") \
+                .replace(tzinfo=datetime.timezone.utc)
+            age_h = int((datetime.datetime.now(datetime.timezone.utc) - t)
+                        .total_seconds() // 3600)
+        except Exception:
+            pass
+    print("%d|%d|%d|%d|%s" % (total, failed, rc, age_h,
+                              ";".join(names[:3]).replace("|", "/")))
+except Exception:
+    pass
+PYEOF
+)
+    if [ -z "$_parsed" ]; then
+        warn_unenumerable ".context/audits/unit-suite/LATEST.yaml" \
+             "Unit suite (tests/unit) green" \
+             "The report exists but could not be parsed — 'could not read' must not render as green (T-3302)" \
+             "Inspect the report, then re-run: agents/audit/unit-suite.sh"
+        return 0
+    fi
+
+    local _us_total _us_failed _us_rc _us_age _us_names
+    IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_names <<< "$_parsed"
+
+    if [ "$_us_failed" -gt 0 ] || [ "$_us_rc" -ne 0 ]; then
+        fail "Unit suite (tests/unit): $_us_failed of $_us_total unit test(s) RED (T-3302)" \
+             "runner_exit=$_us_rc; first failures: ${_us_names:-none listed}" \
+             "Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
+        return 0
+    fi
+
+    # A report older than two nightly slots means the schedule itself broke —
+    # "checked two days ago" must not keep rendering as "checked".
+    if [ "$_us_age" -lt 0 ] || [ "$_us_age" -ge 48 ]; then
+        warn "Unit suite (tests/unit) report STALE — last run ${_us_age}h ago, threshold 48h (T-3302)" \
+             "The nightly unit-suite cron (unit-suite-nightly) has not produced a fresh report; reds since then are invisible" \
+             "Check the schedule (fw cron status, grep 'agentic-cron' syslog) or run by hand: agents/audit/unit-suite.sh"
+        return 0
+    fi
+
+    pass_over "$_us_total" "unit test(s) (tests/unit)" "Unit suite (tests/unit) green" \
+         "report parsed but recorded zero tests across both legs — a harness error, not a green corpus (T-3302)" \
+         "Run manually and read the output: agents/audit/unit-suite.sh"
+}
+check_unit_suite_report
 
 # T-2577 (T-2571 S4): designer ghost↔task drift sweep, both directions.
 # The save-time mint is non-fatal by contract (a failed mint must never break

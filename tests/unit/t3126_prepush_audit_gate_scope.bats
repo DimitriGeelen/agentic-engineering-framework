@@ -7,7 +7,7 @@
 # session's in-flight work held the push —
 #   'Self-vendor drift: libs class — 3 file(s) out of sync' (uncommitted bin/fw
 #    and agents/audit/audit.sh)
-#   'Invariant suite: 1 of 74 RED' (two UNTRACKED tests/lint/*.bats a runner
+#   'Invariant suite (tests/lint): 1 of 74 RED' (two UNTRACKED tests/lint/*.bats a runner
 #    collects)
 # — neither of which existed in the commit being pushed.
 #
@@ -124,7 +124,7 @@ _run_push_hook() {
 
 @test "t3126 (a) worktree-only FAIL → push ALLOWED with WARN" {
     T3126_EXIT=2 T3126_REF=0 T3126_WT=1 \
-        T3126_WT_TITLES="Invariant suite: 1 of 74 structural invariant(s) RED (T-2837)" \
+        T3126_WT_TITLES="Invariant suite (tests/lint): 1 of 74 structural invariant(s) RED (T-2837)" \
         _run_push_hook
     [ "$status" -eq 0 ]
     [[ "$output" != *"Push blocked"* ]]
@@ -133,7 +133,7 @@ _run_push_hook() {
 
 @test "t3126 (a2) the WARN states all three things plainly" {
     T3126_EXIT=2 T3126_REF=0 T3126_WT=1 \
-        T3126_WT_TITLES="Invariant suite: 1 of 74 structural invariant(s) RED (T-2837)" \
+        T3126_WT_TITLES="Invariant suite (tests/lint): 1 of 74 structural invariant(s) RED (T-2837)" \
         _run_push_hook
     [ "$status" -eq 0 ]
     # 1. the finding is in the working tree
@@ -143,7 +143,7 @@ _run_push_hook() {
     # 3. it is therefore not blocking this push
     [[ "$output" == *"NOT BLOCKING THIS PUSH"* ]]
     # and it names the finding rather than hiding it
-    [[ "$output" == *"Invariant suite: 1 of 74"* ]]
+    [[ "$output" == *"Invariant suite (tests/lint): 1 of 74"* ]]
 }
 
 # ── (b) ref FAIL → BLOCKED ──────────────────────────────────────────────────
@@ -189,12 +189,12 @@ _run_push_hook() {
 @test "t3126 (e) the 2026-08-23 shape (self-vendor libs + invariant RED, both worktree) pushes cleanly" {
     T3126_EXIT=2 T3126_REF=0 T3126_WT=2 \
         T3126_WT_TITLES="Self-vendor drift: libs class — 3 file(s) out of sync (T-2244)
-Invariant suite: 1 of 74 structural invariant(s) RED (T-2837)" \
+Invariant suite (tests/lint): 1 of 74 structural invariant(s) RED (T-2837)" \
         _run_push_hook
     [ "$status" -eq 0 ]
     [[ "$output" != *"Push blocked"* ]]
     [[ "$output" == *"Self-vendor drift: libs class"* ]]
-    [[ "$output" == *"Invariant suite: 1 of 74"* ]]
+    [[ "$output" == *"Invariant suite (tests/lint): 1 of 74"* ]]
     [[ "$output" == *"NOT BLOCKING THIS PUSH"* ]]
 }
 
