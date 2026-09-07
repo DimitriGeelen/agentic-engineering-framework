@@ -3901,3 +3901,10 @@ decisions:
     date: 2026-09-07
     task: T-3310
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-560
+    decision: "create the task, leave `arc_id:` unset, and report the blocker."
+    scope: project
+    date: 2026-09-07
+    task: T-3147
+    rationale: "Auto-captured from task file on completion"

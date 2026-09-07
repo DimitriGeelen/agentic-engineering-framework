@@ -10,12 +10,12 @@ description: >
   and feeds human decision D5 (Q-03 coverage threshold). No runtime code, no schema
   freeze, no implementation.
 
-status: started-work
+status: work-completed
 workflow_type: design
-owner: agent
+owner: human
 horizon: now
 tags: [ewcr-v1, ewcr-v1-aef-arc0, evidence-baseline, measurement, arc:ewcr-arc0-contract-evidence]
-components: []
+components: [tools/ewcr-arc0-coverage-check.py, tools/ewcr-arc0-unknown-overlap.py]
 related_tasks: [T-3145]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -28,8 +28,8 @@ related_tasks: [T-3145]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-25T22:12:39Z
-last_update: 2026-08-26T11:08:38Z
-date_finished:
+last_update: 2026-09-07T19:42:24Z
+date_finished: 2026-09-07T19:42:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -391,3 +391,15 @@ git log --name-only --format= --grep="T-3147" > /tmp/.t3147-paths 2>&1 && ! grep
 
 ### 2026-08-26T11:08:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b44144b7
+- **Timestamp:** 2026-09-07T19:42:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-07T19:42:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

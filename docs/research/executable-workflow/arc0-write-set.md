@@ -60,3 +60,18 @@ indistinguishable, in the overlap number alone, from a surface that is fully
 classified. That is why `tools/ewcr-arc0-coverage-check.py` exists as a control and
 why its output is reported alongside the overlap — see the result document. The
 control found exactly this case in `policy/`.
+
+## Machine-readable summary
+
+Re-derived 2026-09-07 by re-running `tools/ewcr-arc0-unknown-overlap.py` at the
+commit named below (the corpus moves; earlier figures at `ce2987fd` were 519/3 —
+the intersection is stable while Unknown grows). `write_set_component_count` is
+the number of Fabric cards whose location falls under the CORE prefixes above;
+`intersection_count` is the CORE-set overlap the falsifier verdict is based on.
+
+```
+unknown_subsystem_count: 555
+write_set_component_count: 22
+intersection_count: 3
+measured_at_commit: 42cd97a2af98f188075aceb16f8531df0e64d7a6
+```

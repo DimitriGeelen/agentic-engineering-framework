@@ -4912,3 +4912,9 @@ X'` returning empty group."
   task: T-3090
   date: 2026-09-07
   context: Added via context agent
+- id: L-663
+  learning: "termlink 'channel claim' is a work-queue OFFSET-LEASE primitive (claim --claimer <id> <topic> <offset>, TTL default 30s), NOT a named mutex: an offset cannot be claimed at/beyond the topic frontier (hub code -32022), so to use it as an election mutex you must seed a sentinel message then claim offset 0, and treat the claim as renew-or-lapse. AEF election target -> (topic=channel+sha256[:16], offset=0)."
+  source: P-001
+  task: T-3335
+  date: 2026-09-07
+  context: Added via context agent
