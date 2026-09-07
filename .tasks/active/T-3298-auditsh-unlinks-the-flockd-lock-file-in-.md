@@ -1,23 +1,6 @@
 ---
 id: T-3298
-name: "AUDIT.SH UNLINKS THE FLOCK'D LOCK FILE IN ITS EXIT TRAP, BREAKING THE MUTUAL
-  EXCLUSION IT THINKS IT HAS. agents/audit/audit.sh:352 does exec 200>\"$AUDIT_LOCK_FILE\"\
-  \ then flock -n 200 (line 353); line 377 sets trap 'kill $AUDIT_TIMEOUT_PID; rm
-  -f $AUDIT_LOCK_FILE' EXIT. Unlinking a flock'd path does not release the lock and
-  does not stop a later process from creating a NEW inode at the same path and flocking
-  that immediately — so two audits can hold 'the' lock at once. The framework already
-  documents this exact invariant in the file written to fix the sibling problem: lib/keylock.py's
-  module docstring says 'flock binds to an open file description, i.e. to an inode
-  — not to a path', which is why keylock never unlinks. audit.sh predates it and was
-  not migrated. Second defect in the same block: line 374 runs the watchdog as ( ...;
-  sleep $AUDIT_TIMEOUT && kill -TERM $$ ) & and the trap kills only $AUDIT_TIMEOUT_PID,
-  the SUBSHELL — killing a subshell does not kill its sleep child, which reparents
-  to init and lives AUDIT_TIMEOUT (default 600s). Directly observed as audit.sh(251163)---sleep(251165).
-  T-1464/T-1772 mitigated the fd-inheritance half of this (walk /proc/self/fd, close
-  >2) but not the orphan itself. Suggested fix: migrate audit.sh to lib/keylock.sh
-  exclusive() and delete the rm -f entirely; kill the whole process group for the
-  watchdog. Needs its own task (one bug = one task) — this is the root under OBS-304/305/306/307,
-  all of which describe symptoms of it."
+name: "audit.sh unlinks the flock'd lock file in its exit trap, breaking mutual exclusion"
 description: >
   Promoted from observation OBS-308
 
