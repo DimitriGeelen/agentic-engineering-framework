@@ -141,17 +141,28 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — decompose into build slices under arc-020
 
 **Rationale:**
 
-Exploration opening: operator is presenting a 5-level identity hierarchy and a circuit/fallback model to reflect on together; no evidence gathered yet, so DEFER is the honest filing state until the taxonomy and primitives are worked through.
+The exploration is complete and the design is internally consistent end to end. Root
+cause identified (no identity model → distinct co-resident agents collapse into one
+crypto fingerprint), and the fix is scoped, testable, and reversible: a durable-address
+grammar + a three-state self-healing circuit + a bounded provisioning ladder. Seven
+decisions are ratified (D1 instance-identity, D2 durable names, D3 V9 grammar, D4
+three-state lifecycle, D5 provisioning authority, D6 hub-cardinality, D7 shared-@name
+mutex), the availability-vs-memory fork was closed (memory lives at the passive
+project), and the work is decomposed into 7 build slices with real ACs. This is an
+evidence-backed GO, not a confidence hedge — the artifact carries the full 11-round
+dialogue and the arc charter.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- Design artifact: `docs/reports/T-3287-identity-taxonomy-circuit-model.md` (D1–D7, charter, dialogue rounds 1–11)
+- arc-020 created (in-progress) with objective + goals G1–G5 + slice→goal traceability
+- Build slices T-3307–T-3313 filed with real ACs, `arc_id: arc-020`, horizons set to the dependency spine
+- T-3286 (G1 producer leg — stamp `agent_id` on the wire) already work-completed; first observable partly live
+- V9 grammar locked with worked examples; V1–V8 rejected variants recorded
 
 ## Decisions
 
