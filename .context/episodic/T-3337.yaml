@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3337: mirror FW_PROVISION_LOAD_MAX into web config SETTINGS (config-registry parity)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T15:35:04Z
+# ============================================================================
+
+task_id: T-3337
+task_name: "mirror FW_PROVISION_LOAD_MAX into web config SETTINGS (config-registry parity)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-07T15:09:32Z
+completed: 2026-09-07T15:34:48Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-07T17:12:05+02:00
+last_commit: 2026-09-07T17:12:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  mirror FW_PROVISION_LOAD_MAX into web config SETTINGS (config-registry parity)
+
+# Key outcomes
+outcomes:
+  - '`web/blueprints/config.py` SETTINGS contains a `PROVISION_LOAD_MAX` row with default `"0.8"`, description mirroring `lib/config.sh:301`'
+  - 'Both previously-RED parity invariants pass (`config-registry-parity.bats` clean — no `not ok`)'
+  - 'Vendored copy in sync (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.context/working/PUSH-UNBLOCK-config-parity.md'
+  - '.tasks/active/T-3337-mirror-fwprovisionloadmax-into-web-confi.md'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T17:12:05'
+    action: 'T-3337: mirror FW_PROVISION_LOAD_MAX into web config SETTINGS (config-registry parity)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25
+  commits: 1
+  files_changed: 4
+  lines_added: 358
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3337-mirror-fwprovisionloadmax-into-web-confi.md
+generated_by: context-agent-hybrid

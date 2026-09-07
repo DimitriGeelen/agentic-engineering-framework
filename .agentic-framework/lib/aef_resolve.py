@@ -388,3 +388,155 @@ def provision(
     finally:
         if claim is not None:
             claim.release()
+
+
+# ── S8: live termlink endpoint-probe (T-3338, arc-020) ───────────────────
+#
+# The resolve ladder (above) is deliberately probe-agnostic: it climbs the
+# rungs and asks an injectable `probe(addr) -> bool` whether each exists.
+# Slices S1–S7 shipped the ladder and its default filesystem probe; this
+# builds the LIVE probe — the one that dispatches each rung to the real
+# `termlink` binary — serving G3 (a dropped circuit is *detected* so it can
+# self-heal). It stays additive: the pure-stdlib core above never imports
+# subprocess; the invoke seam is pulled in lazily, and every test injects a
+# fake so the unit suite needs no hub.
+#
+# THE CONTRACT THAT MATTERS (D4-A death-test, sharpened in S3 Evolution):
+#   True   — the rung exists (the hub answered, affirmatively).
+#   False  — the rung is DEFINITIVELY absent: the hub was reachable and
+#            ANSWERED "not there". Only a hub verdict earns a False.
+#   raise  — the world is UNKNOWABLE: the invoke failed, timed out, or the
+#            hub could not be reached / returned no structured verdict. A
+#            remote miss defaults here, never to False — calling an
+#            unreachable endpoint "absent" is exactly how timeout-death
+#            smuggles itself back into provisioning.
+
+DEFAULT_PROBE_TIMEOUT = 8.0
+_LOCAL_HOSTS = frozenset({"", "localhost", "127.0.0.1", "::1"})
+
+
+def _resolve_invoke(invoke):
+    """Return the invoke seam: the caller's, or the shared subprocess one."""
+    if invoke is not None:
+        return invoke
+    try:  # same default invoker the claim-backend uses (T-3335)
+        from .aef_election import default_termlink_invoke
+    except ImportError:  # pragma: no cover — lib/ directly on sys.path
+        from aef_election import default_termlink_invoke
+    return default_termlink_invoke
+
+
+def _host_is_local(host: str | None) -> bool:
+    if host is None or host.lower() in _LOCAL_HOSTS:
+        return True
+    try:
+        import socket
+
+        return host.lower() == socket.gethostname().lower()
+    except Exception:  # pragma: no cover — hostname lookup is best-effort
+        return False
+
+
+def termlink_probe(
+    invoke: Callable[..., dict] | None = None,
+    *,
+    path_exists: Callable[[str], bool] | None = None,
+    timeout: float = DEFAULT_PROBE_TIMEOUT,
+) -> Callable[[AEFAddress], bool]:
+    """Build a live endpoint-probe usable directly as resolve()'s ``probe``.
+
+    Dispatches on the rung's DEEPEST present token (the field that makes it
+    the rung it is), in climb order — agent, session, project, hub, host:
+
+      session (or agent-on-session) -> ``termlink ping <session> --json``
+          The circuit id IS the session token (aef_address.is_circuit), so
+          G3 self-heal operates here; an agent rung is probed by the
+          liveness of its carrying session (agent-level presence within a
+          live session is a v2 concern, documented not silent).
+      project -> ``path_exists(project)``  (filesystem; the ladder never
+          creates paths — D5 bound 3 — it only asks whether one is there).
+      hub, local host -> ``termlink hub status --json`` (the local daemon;
+          "no daemon" is a DEFINITIVE local absence).
+      hub / host, remote -> ``termlink hub probe <host>`` (TLS handshake
+          reachability; a remote miss is INDETERMINATE, never False).
+
+    ``invoke`` is the single seam over the binary (default: the shared
+    subprocess invoker from aef_election); inject a fake to test every path
+    with no live hub.
+    """
+    _invoke = _resolve_invoke(invoke)
+    _path_exists = path_exists or _default_path_exists
+
+    def _call(args: list[str]) -> dict:
+        try:
+            return _invoke(args, timeout=timeout)
+        except Exception as exc:  # the invoke itself blew up -> unknowable
+            raise ResolveIndeterminate(
+                f"probe invoke failed for {args!r}: {exc}"
+            ) from exc
+
+    def _probe_session(session: str) -> bool:
+        res = _call(["ping", session, "--json", "--timeout", str(int(timeout))])
+        data = res.get("data") if isinstance(res, Mapping) else None
+        if not isinstance(data, Mapping) or "ok" not in data:
+            # the hub returned no structured verdict -> unreachable, not absent
+            raise ResolveIndeterminate(
+                f"ping returned no hub verdict for session {session!r}: "
+                f"{(res.get('stderr') or res.get('stdout')) if isinstance(res, Mapping) else res!r}"
+            )
+        if data.get("ok") is True:
+            return True
+        err = str(data.get("error", ""))
+        if "not found" in err.lower():
+            return False  # hub answered: definitively absent
+        raise ResolveIndeterminate(
+            f"ping ok:false with non-absence error for {session!r}: {err!r}"
+        )
+
+    def _probe_local_hub() -> bool:
+        res = _call(["hub", "status", "--json"])
+        data = res.get("data") if isinstance(res, Mapping) else None
+        if not isinstance(data, Mapping):
+            raise ResolveIndeterminate(
+                f"hub status returned no structured verdict: "
+                f"{(res.get('stderr') or res.get('stdout')) if isinstance(res, Mapping) else res!r}"
+            )
+        # local daemon: a well-formed answer is authoritative either way.
+        return data.get("ok") is True and data.get("status") == "running"
+
+    def _probe_remote_host(host: str) -> bool:
+        res = _call(["hub", "probe", host])
+        # reachable + handshake completes -> exists. Anything else over a
+        # network is UNKNOWABLE, never a definitive absence (D4-A).
+        if isinstance(res, Mapping) and res.get("ok") is True:
+            return True
+        detail = (
+            (res.get("stderr") or res.get("stdout")) if isinstance(res, Mapping) else res
+        )
+        raise ResolveIndeterminate(
+            f"hub probe {host!r} did not complete a handshake: {detail!r}"
+        )
+
+    def probe(addr: AEFAddress) -> bool:
+        # deepest present token decides the rung kind (climb order).
+        if addr.session is not None:
+            return _probe_session(addr.session)
+        if addr.agent is not None:
+            # agent present but no session: no live circuit to ping. The
+            # ladder should have dropped to a session rung first; a bare
+            # agent rung is not something the wire can answer in v1.
+            raise ResolveError(
+                f"agent rung {serialize(addr)!r} has no session= to probe; "
+                "agent-level presence is deferred to v2 (probe the circuit)"
+            )
+        if addr.project is not None:
+            return bool(_path_exists(addr.project))
+        if addr.hub is not None or addr.host is not None:
+            if _host_is_local(addr.host):
+                return _probe_local_hub()
+            return _probe_remote_host(addr.host)
+        # no token at all: serialize() would itself raise on the empty
+        # address, so render it safely.
+        raise ResolveError(f"empty rung {addr!r} is not probeable")
+
+    return probe
