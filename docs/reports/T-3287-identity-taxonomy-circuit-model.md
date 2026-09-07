@@ -416,6 +416,49 @@ Consequences:
   hazard. It is owned by the AEF layer precisely because the AEF layer owns the shared
   memory (sharpens the round-5 "conflicts belong at the AEF level" ruling).
 
+**D5 (2026-09-07, RATIFIED) — provisioning authority: pre-authorized self-heal,
+structurally bounded.** The regressive ladder (D1/D4) re-provisions on a dead
+circuit. Its authority model:
+
+- **RESOLVE** (find what exists) — ungated, every rung, side-effect-free.
+- **PROVISION** (materialize a missing child) — **Tier-3 pre-authorized** through
+  hub-standup. This is human sovereignty exercised *once, in advance, as standing
+  policy* — NOT a per-action approval, and NOT a Tier-0 bypass. Justified because
+  provisioning is **additive/reversible** (not the destructive class Tier 0 guards —
+  force-push, rm -rf, DROP TABLE) and because unattended self-heal is **Directive 1
+  (antifragility)**. Resolve and provision are deliberately the *same* ladder walk
+  (the F4 discovery/provision merge is accepted, bounded structurally instead of by a
+  human gate).
+
+The four bounds that replace the human backstop (self-heal ≡ runaway/typo on the
+same code path, so the bounds are load-bearing):
+
+1. **Idempotency** — ensure-exists via `channel claim`, first-claim-wins. A broadcast
+   storm for `@X` provisions ONE, not N (Q-A election doing double duty).
+2. **Load-adaptive admission** — an **environmental governor** samples the host's own
+   utilization (memory / disk / CPU / network) and adapts the provisioning ceiling to
+   real headroom (backpressure under stress) — NOT a static per-host cap. Antifragile
+   self-protection (Directive 1). *Retrofits the load-62 incident of this very session*
+   — no host-resource-awareness existed, so every verification timed out and work
+   piled onto an already-drowning host; this governor would have deferred provisioning
+   and flagged the overload instead. **Staging:** the *principle* ("admission is
+   load-adaptive, never a static cap") is ratified now; a crude v1 (loadavg/headroom
+   threshold) ships first; the full governor is its own build slice.
+3. **Path-existence → fleet-source → inform-operator.** A session cannot be
+   provisioned for a project whose files are not on disk — and because the project is
+   passive and path-bound (D2), **the filesystem itself gates project-level
+   provisioning for free, killing the typo'd-address blast radius.** Before giving up,
+   attempt to source the repo from **KNOWN FLEET PEERS** (hubs/sessions that have it) —
+   never arbitrary network — and **integrity-verify** it (signed / sha256 manifest —
+   the `.107` course-transfer pattern from this session's origin) before it may run.
+   If genuinely unfindable → cannot start → **surface to the operator, informed,
+   never silent.**
+4. **Full traceability** — every auto-provision logged, unconditionally.
+
+**Follow-on build slices (post-GO):** (a) the environmental governor (bound 2 full);
+(b) fleet repo-sourcing + integrity verification (bound 3). Both are additive
+capabilities the identity design depends on but does not itself build.
+
 **F6 (2026-09-07, verification finding — challenges operator's slash claim).**
 Operator claimed "all LLM harnesses use `/` for agents (Codex, OpenCode,
 Antigravity, Anthropic)" and asked to be challenged if wrong. Verified via web
@@ -658,8 +701,28 @@ proceed with T-3286's *mechanism* (carry whatever id resolves), defer its
   as the downstream mutex question (AEF-owned because AEF owns the shared memory).
 - *Operator ruled:* write in D4 + close the fork. Done (D4 RATIFIED; fork CLOSED).
 
+**2026-09-07 — round 10 (provisioning authority → D5).**
+
+- *Agent posed (e)* as a ladder of provision actions (reactivate / start-session /
+  start-hub) with the two open cells being "can an agent start a session / a hub
+  without a human?", and named the typo'd-address blast-radius as the risk that the
+  human backstop had covered.
+- *Operator ruled:* yes to both — agent may auto-start a session AND a hub;
+  **pre-authorized, standing policy; auto self-heal is the goal.**
+- *Agent reframed* it correctly as **Tier 3** (pre-approved category, sovereignty
+  exercised once as policy) rather than a Tier-0 bypass, and grilled the bounds that
+  must replace the human.
+- *Operator refined the bounds:* (1) idempotency yes; (2) **NOT a static per-host cap
+  — a load-adaptive environmental governor** watching mem/disk/cpu/net; (3)
+  path-existence, and if the repo isn't on disk, **try to source it from known fleet
+  peers, else inform the operator** (never silent); (4) full traceability always.
+- *Agent grilled two:* bound 2 is a subsystem (staged: principle now, crude v1,
+  full governor as a build slice) and anchors to the load-62 pain; bound 3's
+  network-sourcing crosses a trust boundary → **known-fleet-only + integrity-verified**
+  (sha256 manifest, the `.107` pattern). *Operator confirmed both* → **D5 RATIFIED.**
+
 **Next in dialogue:** the still-open queue, one at a time: (c) Q-B completion
 ("termlink or termlink"); (d) hub 1:1-with-host or not (if 1:1, levels 1–2 collapse
-to a compound root); (e) auto-provision authority line (F4 sovereignty gate — where
-is the highest level an agent may provision without a human?); (f) AEF-vs-termlink
-mutex when two instances share one `@name` (round-5 + D4-downstream).
+to a compound root); (f) AEF-vs-termlink mutex when two instances share one `@name`
+(round-5 + D4-downstream). Then: is the design landable — a GO that spawns build
+slices (T-3286 + the D5 follow-ons), or more exploration?
