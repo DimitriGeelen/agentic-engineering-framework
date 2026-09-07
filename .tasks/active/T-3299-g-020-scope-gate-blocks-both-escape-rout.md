@@ -349,6 +349,13 @@ gates can copy the extraction harness.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** Both escape routes the G-020 block message prescribes are now actually executable from the blocked state: the `fw task update --type` remedy is on the safe-commands allowlist, and the placeholder-AC edit path is reachable. The wedge state (agent with bash-only write surface and no legal move) is closed and pinned by a dedicated hermetic suite.
+**Evidence:**
+- `tests/unit/t3299_gate_remedy_reachable.bats` — green, 0 skips
+- `bash -n` clean on both `agents/context/check-active-task.sh` and `agents/context/lib/safe-commands.sh`
+- All Agent ACs ticked; verification re-run clean 2026-09-07
+
 ## Decisions
 
 ### 2026-09-07 — Route 1: shell-based AC editing stays blocked; the block message now says so

@@ -324,6 +324,12 @@ bash -n agents/task-create/update-task.sh
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The red test (post-move: do_inception_decide exits 0 when emit_review sees stale task_file) was diagnosed and fixed in `agents/task-create/update-task.sh` (grep guards), vendor self-synced. The full 3-test suite is green with no skips.
+**Evidence:**
+- `tests/unit/inception_decide_emit_review_post_move.bats` — 3/3 green, 0 skips
+- `bash -n agents/task-create/update-task.sh` clean; vendor self-sync done (see Updates)
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.

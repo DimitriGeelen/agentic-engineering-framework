@@ -313,6 +313,12 @@ test "$(grep -c '# skip' /tmp/.t3300-bats.out)" -eq 0
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The exact-count assertion (`-eq 2`) tested the wrong property — every legitimate new call site of the tolerant comment-strip regex turned the suite red. Replaced with the floor the T-2554 contract actually cares about (`-ge 2`, plus the broken `<!--[^>]*-->` form still asserted absent), so the suite is green at the current 3 correct sites and stays green as correct sites are added.
+**Evidence:**
+- `tests/unit/ac_counter_sed_range_one_line_comment.bats` — 10/10 green, 0 skips
+- Suite was red at HEAD before the fix (false red measured identical at HEAD and working tree)
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
