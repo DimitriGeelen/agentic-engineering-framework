@@ -40085,3 +40085,129 @@ scan_id: R-38000472
 task_id: T-3312
 payload:
   task_file: .tasks/active/T-3312-arc-020-s6-fleet-repo-source--integrity-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T10:27:39Z'
+scan_id: R-49a6385e
+task_id: T-3336
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T10:27:39Z'
+scan_id: R-49a6385e
+task_id: T-3336
+payload:
+  task_file: .tasks/active/T-3336-arc-020-s8c-live-notice-sink-seam-wired-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T15:34:52Z'
+scan_id: R-6a4f04e5
+task_id: T-3337
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T15:34:52Z'
+scan_id: R-6a4f04e5
+task_id: T-3337
+payload:
+  task_file: .tasks/active/T-3337-mirror-fwprovisionloadmax-into-web-confi.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T15:45:52Z'
+scan_id: R-80f540c7
+task_id: T-3338
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T15:45:52Z'
+scan_id: R-80f540c7
+task_id: T-3338
+payload:
+  task_file: .tasks/active/T-3338-arc-020-s8-wire-aefresolve-endpoint-prob.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T16:01:33Z'
+scan_id: R-a528cdfe
+task_id: T-3340
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T16:01:33Z'
+scan_id: R-a528cdfe
+task_id: T-3340
+payload:
+  task_file: .tasks/active/T-3340-arc-020-headline-demo-g1-leg-distinct-co.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T17:20:58Z'
+scan_id: R-00d89d13
+task_id: T-3341
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T17:20:58Z'
+scan_id: R-00d89d13
+task_id: T-3341
+payload:
+  task_file: .tasks/active/T-3341-arc-020-headline-demo-g3-leg-dropped-cir.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T17:35:44Z'
+scan_id: R-8299196f
+task_id: T-3342
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T17:35:44Z'
+scan_id: R-8299196f
+task_id: T-3342
+payload:
+  task_file: .tasks/active/T-3342-capture-arc-020-g1g3-demo-evidence-into-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T19:42:25Z'
+scan_id: R-b44144b7
+task_id: T-3147
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T19:42:25Z'
+scan_id: R-b44144b7
+task_id: T-3147
+payload:
+  task_file: .tasks/active/T-3147-ewcr-arc-0-evidence-baseline-measure-fab.md

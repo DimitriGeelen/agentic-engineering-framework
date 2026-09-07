@@ -8233,3 +8233,41 @@ Co-Autho'
   caller: 'check-active-task focus-drift'
   target: 'T-3090'
   command: 'git add .context/handovers/S-2026-0907-0930.md .context/ .tasks/ && FW_SWITCH_FOCUS=1 git commit -m "T-3090: handover gotchas — push-blocker fix recipe, in-flight workers, dispatch-ready T-3317, not'
+- timestamp: '2026-09-07T10:38:49Z'
+  task: 'T-3335'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3336'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3336: complete — move to completed/ + episodic (notice-sink seam done)
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthr'
+- timestamp: '2026-09-07T10:38:59Z'
+  task: 'T-3335'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3336'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .tasks/active/T-3336-arc-020-s8c-live-notice-sink-seam-wired-.md .tasks/completed/T-3336-arc-020-s8c-live-notice-sink-seam-wired-.md'
+- timestamp: '2026-09-07T10:39:15Z'
+  task: 'T-3335'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3336'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git add .context/episodic/T-3336.yaml .tasks/completed/T-3336-arc-020-s8c-live-notice-sink-seam-wired-.md
+FW_SWITCH_FOCUS=1 git commit -q -m'
+- timestamp: '2026-09-07T12:41:52Z'
+  task: 'T-3335'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3298'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -q -m "T-3298: repair mangled name: frontmatter (promote-quoting YAML break, T-2069 class)
+
+The whole RCA was crammed into name: '
+- timestamp: '2026-09-07T15:34:51Z'
+  task: 'T-3337'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: mechanical config data-mirror: one SETTINGS row identical in shape to 39 siblings, no layout/typography/spacing change; objective correctness is the config-registry-parity invariant (green)'
+  reason: ''
