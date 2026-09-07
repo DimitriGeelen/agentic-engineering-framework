@@ -12,11 +12,15 @@ Their §2 note is deliberate and correct. The gap this closes is that we built
 on the unfrozen half of the schema without ever recording that we had.
 
 Three things, in order:
-  1. test_measurement_reproduces_T2870 — the exact table from the report,
-     reproduced from tools/aef_meta_census.py rather than living only in
-     docs/reports/T-2870-mapping-v1-rulings.md. Exact-count: expected to need
-     updating if the corpus grows — that's a feature, not brittleness, since
-     "the numbers moved" is itself the thing worth eyeballing on next touch.
+  1. test_census_method_* — the measurement METHOD, pinned two ways (T-3326
+     re-anchor). Exact counts run against a committed inline fixture corpus
+     (hermetic — red only if the parser/classifier breaks); the live corpus
+     gets structural invariants (categories sum, >0 carriers, the T-2870
+     exposure property non_frozen > frozen) that survive corpus growth by
+     construction. This file USED to pin exact live counts (56 carriers /
+     102 state, later re-eyeballed to 74/138) — that anchored the test to
+     mutable corpus state and it rotted with every designer session, blocking
+     closes for reasons unrelated to the code under test (OBS-377).
   2. test_depended_on_keys_* — DEPENDED_ON_KEYS is the actual guard: a small,
      evidence-based set (state, workflowType) with live corpus occurrences,
      as opposed to the ~13 keys that merely appear. Robust to corpus growth
@@ -42,40 +46,108 @@ import corpus_conformance  # noqa: E402
 import corpus_spec  # noqa: E402
 
 
-# ── 1. measurement reproduces the T-2870 report ──────────────────────────────
+# ── 1. the measurement METHOD, pinned (T-3326 re-anchor) ─────────────────────
+# Exact counts belong to a COMMITTED fixture corpus, not the live one: the live
+# corpus is mutable state (designer sessions grow it), so exact live counts
+# measure the drift, not the code (OBS-377 / T-3326 — sibling of T-1828/T-3105).
+# The fixture is inline rather than on-disk under tests/fixtures/ because
+# corpus_files() scans tests/fixtures/**/*.bpmn — an on-disk fixture would
+# perturb the very live census this module measures.
 
-def test_measurement_reproduces_T2870():
-    # Re-eyeballed 2026-09-06 (OBS-377 close-out sweep): corpus grew 56->74
-    # files since the August T-2870 measurement — benign designer growth, all
-    # of it on the NON-frozen side (frozen_attributes static at 53), so the
-    # exposure the task measured deepened from 92% to 94%. Two new non-frozen
-    # keys appeared: gatewayKind, seamPending.
-    c = census_mod.census(REPO_ROOT)
-    assert c["files"] == 74
-    assert c["diagrams_with_meta"] == 57
-    assert c["elements"] == 651
-    assert c["attributes"] == 901
-    assert c["frozen_attributes"] == 53
-    assert c["non_frozen_attributes"] == 848
+_FIXTURE_NS1 = "http://anchorpoint.framework/aef/extensions"
+_FIXTURE_NS2 = "urn:aef:workflow-designer"
 
-    expected_key_counts = {
-        "note": 535,
-        "state": 138,
-        "terminalKind": 97,
-        "tier": 34,
-        "triggeredBy": 25,
-        "gatewayKind": 20,
-        "decisionOwner": 21,
-        "workflowType": 10,
-        "agentType": 8,
-        "gate": 6,
-        "softFail": 2,
-        "guard": 2,
+# Two aef namespace URIs on purpose: pins the local-name (namespace-agnostic)
+# matching that the tool's docstring records as a real undercount bug
+# (498/649 vs the true 501/652 under exact-URI findall).
+_FIXTURE_FILES = {
+    ".context/designer/projects/sample-a/v1.bpmn": f"""<?xml version="1.0"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="{_FIXTURE_NS1}">
+  <bpmn:process id="p1">
+    <bpmn:task id="t1">
+      <bpmn:extensionElements>
+        <aef:meta state="captured" workflowType="build" note="n"/>
+      </bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:task id="t2">
+      <bpmn:extensionElements>
+        <aef:meta horizon="now" tier="1"/>
+      </bpmn:extensionElements>
+    </bpmn:task>
+  </bpmn:process>
+</bpmn:definitions>
+""",
+    # namespaced attribute (aef:state) — attrib key arrives as {uri}state;
+    # pins the _local() handling on the attribute axis too
+    ".context/designer/projects/sample-b/v1.bpmn": f"""<?xml version="1.0"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="{_FIXTURE_NS2}">
+  <bpmn:process id="p2">
+    <bpmn:task id="t3">
+      <bpmn:extensionElements>
+        <aef:meta aef:state="done" agentType="coder"/>
+      </bpmn:extensionElements>
+    </bpmn:task>
+  </bpmn:process>
+</bpmn:definitions>
+""",
+    # a diagram with NO aef:meta — pins diagrams_with_meta < files
+    ".context/designer/projects/sample-c/v1.bpmn": """<?xml version="1.0"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
+  <bpmn:process id="p3"><bpmn:task id="t4"/></bpmn:process>
+</bpmn:definitions>
+""",
+}
+
+
+def _write_fixture_corpus(root: Path) -> Path:
+    for rel, text in _FIXTURE_FILES.items():
+        p = root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text)
+    return root
+
+
+def test_census_method_exact_counts_on_fixture_corpus(tmp_path):
+    """Exact-count pin of the measurement method against a committed fixture.
+    Red only when census() itself breaks (parser misses a namespace, category
+    sums drift, a key is dropped) — never when the live corpus grows."""
+    c = census_mod.census(_write_fixture_corpus(tmp_path))
+    assert c["files"] == 3
+    assert c["diagrams_with_meta"] == 2
+    assert c["elements"] == 3
+    assert c["attributes"] == 7
+    assert c["frozen_attributes"] == 4  # workflowType, horizon, tier, agentType
+    assert c["non_frozen_attributes"] == 3  # state x2, note x1
+    assert c["key_counts"] == {
+        "state": 2,
+        "workflowType": 1,
+        "note": 1,
         "horizon": 1,
-        "seamPending": 1,
-        "exitCode": 1,
+        "tier": 1,
+        "agentType": 1,
     }
-    assert c["key_counts"] == expected_key_counts
+
+
+def test_census_live_corpus_invariants():
+    """Structural invariants on the LIVE corpus — properties that survive
+    corpus growth by construction but still fail if the measurement breaks
+    (parser returns nothing, categories stop summing)."""
+    c = census_mod.census(REPO_ROOT)
+    assert c["files"] > 0, "corpus glob found no .bpmn files — method broke"
+    assert c["elements"] > 0, "parser found zero <aef:meta> elements"
+    assert 0 < c["diagrams_with_meta"] <= c["files"]
+    assert c["attributes"] == sum(c["key_counts"].values())
+    assert c["frozen_attributes"] + c["non_frozen_attributes"] == c["attributes"]
+    assert c["frozen_attributes"] == sum(
+        v for k, v in c["key_counts"].items() if k in census_mod.FROZEN_KEYS
+    )
+    # The T-2870 finding itself, as a property: the corpus is built
+    # overwhelmingly on the NON-frozen side (was 92%, then 94%). Pinned as an
+    # inequality, not a percentage — deepening exposure keeps it green,
+    # a broken classifier (both zero) goes red.
+    assert c["non_frozen_attributes"] > c["frozen_attributes"]
 
 
 def test_state_is_the_load_bearing_exposure():
@@ -87,7 +159,9 @@ def test_state_is_the_load_bearing_exposure():
     Every other non-frozen key (note, terminalKind, ...) is either display-only
     or has no live consumer at all."""
     c = census_mod.census(REPO_ROOT)
-    assert c["key_counts"]["state"] == 138  # re-eyeballed 2026-09-06, was 102
+    # >0, not an exact count (T-3326): the live count is mutable corpus state
+    # (102 in August, 138 by September); the exposure claim only needs "live".
+    assert c["key_counts"].get("state", 0) > 0
     assert "state" not in census_mod.FROZEN_KEYS
     assert "state" in census_mod.DEPENDED_ON_KEYS
     assert census_mod.DEPENDED_ON_KEYS["state"]["frozen"] is False

@@ -4918,3 +4918,9 @@ X'` returning empty group."
   task: T-3335
   date: 2026-09-07
   context: Added via context agent
+- id: L-664
+  learning: "P-011 lines and unit tests anchored to mutable corpus state rot as the corpus moves — pin the invariant or a committed fixture, never the live count"
+  source: unknown
+  task: T-3326
+  date: 2026-09-07
+  context: Added via context agent

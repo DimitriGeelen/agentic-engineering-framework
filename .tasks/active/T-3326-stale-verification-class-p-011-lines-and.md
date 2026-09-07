@@ -95,10 +95,10 @@ lines must not grep live-audit output for specific corpus entities.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 Census test re-anchored:** `tests/unit/test_aef_meta_census.py` no longer asserts exact live-corpus counts; it pins the measurement METHOD (invariants/properties — e.g. counts are non-decreasing vs a committed baseline, parser finds >0 carriers, categories sum to total) and/or runs against a committed fixture corpus; suite green on the current corpus AND the assertions would survive corpus growth by construction
-- [ ] **A2 T-2969 verification unblocked:** T-2969's stale verification line (grep of live `fw audit` output for a specific arc's constituent-count line) is replaced in the T-2969 task file with a check of the CODE under test that does not depend on live corpus state; the replacement line passes
-- [ ] **A3 Class codified at author-time:** the task template's `## Verification` comment block (`.tasks/templates/zzz-default.md`) gains a short "mutable-corpus anchor" warning naming the class (pin the invariant or a fixture, never the live count / live-audit line), and a learning is captured via `fw context add-learning` referencing T-3326
-- [ ] **A4 No-widening:** `python3 -m pytest tests/unit/test_aef_meta_census.py -q` green; no other suite newly red (`bash -n` on any touched shell files)
+- [x] **A1 Census test re-anchored:** `tests/unit/test_aef_meta_census.py` no longer asserts exact live-corpus counts; it pins the measurement METHOD (invariants/properties — e.g. counts are non-decreasing vs a committed baseline, parser finds >0 carriers, categories sum to total) and/or runs against a committed fixture corpus; suite green on the current corpus AND the assertions would survive corpus growth by construction
+- [x] **A2 T-2969 verification unblocked:** T-2969's stale verification line (grep of live `fw audit` output for a specific arc's constituent-count line) is replaced in the T-2969 task file with a check of the CODE under test that does not depend on live corpus state; the replacement line passes
+- [x] **A3 Class codified at author-time:** the task template's `## Verification` comment block (`.tasks/templates/zzz-default.md`) gains a short "mutable-corpus anchor" warning naming the class (pin the invariant or a fixture, never the live count / live-audit line), and a learning is captured via `fw context add-learning` referencing T-3326
+- [x] **A4 No-widening:** `python3 -m pytest tests/unit/test_aef_meta_census.py -q` green; no other suite newly red (`bash -n` on any touched shell files)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,6 +248,15 @@ lines must not grep live-audit output for specific corpus entities.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_aef_meta_census.py -q > /tmp/.t3326-census.out 2>&1 && grep -q passed /tmp/.t3326-census.out && ! grep -q failed /tmp/.t3326-census.out
+grep -q "test_census_method_exact_counts_on_fixture_corpus" tests/unit/test_aef_meta_census.py && ! grep -q 'c\["files"\] == 74' tests/unit/test_aef_meta_census.py
+grep -q "Re-anchored under T-3326" .tasks/completed/T-2969-draft-arc-with-all-constituents-complete.md
+grep -q "Mutable-corpus anchor (T-3326)" .tasks/templates/default.md
+grep -q "pin the invariant or a committed fixture, never the live count" .context/project/learnings.yaml
+# Scoped to this task's vendored file (T-3326): full `vendor self --check` is held
+# red by another worker's uncommitted agents/context/lib/safe-commands.sh drift.
+diff -q .tasks/templates/default.md .agentic-framework/.tasks/templates/default.md
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -263,6 +272,14 @@ lines must not grep live-audit output for specific corpus entities.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Two task closes blocked in the 2026-09-06 sweep by checks that went red/pattern-missing for reasons unrelated to the code under test: T-2969's P-011 line grepped live `fw audit --section structure` for arc-016's draft-constituent WARN (the arc legitimately moved draft→in-progress, the line vanished), and T-2871's `test_aef_meta_census.py` pinned exact live census counts (56 carriers/102 state at authoring; corpus grew to 74/138, suite red).
+
+**Root cause:** The checks anchored their subject to MUTABLE corpus state — a specific live-audit output line and exact live counts — so they measured corpus drift, not the code. Neither could distinguish "measurement method broke" from "corpus changed".
+
+**Why structurally allowed:** P-011 runs whatever the author writes with no notion of whether a line checks code or live state; the census test even documented its exact-count brittleness as "a feature" ("the numbers moved is worth eyeballing"), which normalised the anchor. No author-time warning named the class (sibling of T-1828/T-3105 false-green/false-red family).
+
+**Prevention (distinct from the fix):** Author-time warning "Mutable-corpus anchor (T-3326)" added to the template's `## Verification` comment block; learning L-664 captured ("pin the invariant or a committed fixture, never the live count"). The fix itself re-anchors both instances: exact counts now run against a committed inline fixture corpus (hermetic), live corpus gets structural invariants that survive growth by construction; T-2969's line was replaced by the hermetic bats suite `t2969_draft_arc_complete_warning.bats`.
 
 ## Evolution
 
@@ -316,6 +333,14 @@ lines must not grep live-audit output for specific corpus entities.
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** All four Agent ACs shipped and verified. The census test is re-anchored by construction (exact counts moved to a committed inline fixture corpus that only census() method breakage can redden; the live corpus is checked by invariants — sums, >0 carriers, the non-frozen>frozen exposure property). T-2969's stale live-audit grep is gone, replaced by the hermetic bats suite, with a T-3326 re-anchor note; verified passing on this host. The class is codified at author-time (template warning + L-664).
+**Evidence:**
+- `python3 -m pytest tests/unit/test_aef_meta_census.py -q` → 7 passed (was 6; fixture test added, exact live-count test removed)
+- T-2969 replacement lines re-run: bash -n + `bats tests/unit/t2969_draft_arc_complete_warning.bats` → 1..6, 0 not-ok, 0 skips
+- `.tasks/templates/default.md` gains "Mutable-corpus anchor (T-3326)" block in the `## Verification` comments
+- Learning L-664 captured referencing T-3326
 
 ## Decisions
 

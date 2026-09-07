@@ -90,6 +90,17 @@ date_finished: null
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 #
+# ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
+# Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
+# state — an exact live count, or a grep of live `fw audit`/`fw doctor` output
+# for a specific corpus entity (a named arc, a task count, a census number).
+# The corpus moves under the check, and the line rots: it goes red (or vanishes
+# its pattern) for reasons unrelated to the code under test, blocking closes.
+# Pin the INVARIANT (categories sum, count > 0, property holds) or run the code
+# against a COMMITTED FIXTURE — never the live count or a live-audit line.
+# Origin: T-2969 line grepping live audit for one arc's status; T-2871's census
+# test pinning exact live counts (56→74 files) — both blocked closes (OBS-377).
+#
 # ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
 #
 # THE DEFAULT — redirect to a file, then grep the file:

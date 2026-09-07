@@ -204,10 +204,12 @@ That is the §ACD failure mode from the reporting side rather than the closing s
 bash -n agents/audit/audit.sh
 timeout 590 bats tests/unit/t2969_draft_arc_complete_warning.bats > /tmp/.t2969-bats.out 2>&1 && grep -q '^1\.\.6' /tmp/.t2969-bats.out && ! grep -q '^not ok' /tmp/.t2969-bats.out
 test "$(grep -c '# skip' /tmp/.t2969-bats.out)" -eq 0
-# The former third line grepped the LIVE audit for arc-016 ('readme-first-run')
-# being "draft with all 2 constituent" — permanently stale the moment that arc
-# moved draft→in-progress (OBS-377 stale-verification class). The hermetic
-# suite above pins the same positive/negative behavior on fixture arcs instead.
+# Re-anchored under T-3326: the former third line grepped the LIVE audit for
+# arc-016 ('readme-first-run') being "draft with all 2 constituent" — permanently
+# stale the moment that arc moved draft→in-progress (OBS-377 stale-verification
+# class). The hermetic suite above pins the same positive/negative behavior on
+# fixture arcs instead — a deterministic check of the code under test that does
+# not depend on live corpus state.
 
 ## RCA
 
