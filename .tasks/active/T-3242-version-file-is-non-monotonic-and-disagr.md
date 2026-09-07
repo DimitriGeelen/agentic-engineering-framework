@@ -15,7 +15,7 @@ description: >
   must be the single source of truth, and fw doctor should FAIL when they disagree
   on the same commit.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -33,7 +33,7 @@ related_tasks: [T-3185, T-3190]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T07:34:38Z
-last_update: '2026-09-01T07:45:17Z'
+last_update: 2026-09-07T19:54:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,8 +85,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 Single source of truth implemented:** the release tag is canonical; at release time (`fw release tag-and-release` / `lib/release.sh`) VERSION is derived from / reconciled with the new tag so a tagged commit can never carry a VERSION below the previous tag's. The mechanism and the rejected alternative (VERSION-as-canonical) are recorded in ## Decisions
+- [ ] **A2 Doctor parity check:** `fw doctor` gains a cheap check comparing VERSION against the latest reachable release tag — FAIL when VERSION < tag's version or when they name different lines of history per the reconciliation rule; PASS otherwise; silent/skip when no tags are reachable (fresh clone/consumer)
+- [ ] **A3 Release guard:** `fw release tag-and-release --dry-run` reports the VERSION reconciliation it would perform; a release that would write a DECREASED version refuses (same refuse-family as the T-3190 fast-forward gate)
+- [ ] **A4 Pinned:** hermetic bats suite covers: monotonic release passes; decreasing-VERSION release refuses; doctor FAILs on a fixture repo with VERSION < tag; doctor silent with no tags; `bash -n` clean on edited files
+- [ ] **A5 No-widening:** existing release/version/doctor suites green; `bin/fw vendor self --check` clean for the files this task touched
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -332,3 +335,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3242-version-file-is-non-monotonic-and-disagr.md
 - **Context:** Initial task creation
+
+### 2026-09-07T19:54:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
