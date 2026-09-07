@@ -1302,6 +1302,7 @@ show_help() {
     echo -e "  ${GREEN}ux-review${NC} <url>       Browser-driving UX review of an interactive render surface"
     echo -e "  ${GREEN}gpu${NC} <cmd>             GPU coordination (recover)"
     echo -e "  ${GREEN}gaps${NC}                 Show spec-reality gaps being watched"
+    echo -e "  ${GREEN}provisions${NC} ${CYAN}[--tail N]${NC} Show the auto-provision audit trail (arc-020 S7)"
     echo -e "  ${GREEN}traceability${NC} baseline Set traceability baseline (imported projects)"
     echo -e "  ${GREEN}preflight${NC}            Check OS dependencies (interactive install)"
     echo -e "  ${GREEN}validate-init${NC}        Verify fw init output is correct and complete"
@@ -8163,6 +8164,11 @@ with open('$BYPASS_LOG', 'w') as f:
                 exit 1
                 ;;
         esac
+        ;;
+    provisions)
+        # T-3313 (arc-020 S7): read-only view of the auto-provision audit trail
+        # (.context/provisions.jsonl, written via lib/aef_provision_log.py).
+        PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/aef_provision_log.py" "$@"
         ;;
     gaps)
         # T-397: Register renamed gaps.yaml → concerns.yaml; fall back to old name.

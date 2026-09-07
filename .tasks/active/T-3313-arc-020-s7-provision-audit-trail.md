@@ -5,10 +5,10 @@ description: >
   Log every auto-provision event to JSONL for full traceability (D5 bound 4). Serves
   G4.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -24,7 +24,7 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T00:17:59Z
-last_update: '2026-09-07T00:30:19Z'
+last_update: 2026-09-07T07:13:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,9 +76,9 @@ Full traceability of auto-provision events (D5 bound 4). Design in
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Every auto-provision event appends a JSONL row (timestamp, address, rung, outcome) to a provision audit log (D5 bound 4)
-- [ ] The log is readable via a `fw` verb or a documented path
-- [ ] Provisions denied by admission (S5) or halted by missing-path (S6) are logged too
+- [x] Every auto-provision event appends a JSONL row (timestamp, address, rung, outcome) to a provision audit log (D5 bound 4)
+- [x] The log is readable via a `fw` verb or a documented path
+- [x] Provisions denied by admission (S5) or halted by missing-path (S6) are logged too
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,6 +112,9 @@ Full traceability of auto-provision events (D5 bound 4). Design in
 -->
 
 ## Verification
+
+timeout 120 python3 -m pytest tests/unit/test_aef_provision_log.py -q > /tmp/.s7-audit.out 2>&1 && grep -q passed /tmp/.s7-audit.out && ! grep -q failed /tmp/.s7-audit.out
+bash -n bin/fw
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -268,6 +271,19 @@ Full traceability of auto-provision events (D5 bound 4). Design in
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-07 — outcome vocabulary recorded verbatim, not remapped
+- **What changed:** The dispatch spec sketched the row's outcome field as
+  `allow|deny|halt|provisioned|failed`, but the S3 resolver seam emits
+  `allow|deny|halted|refused` per decision (and never emits a per-row
+  "provisioned" — that is the walk-level ProvisionResult outcome, not a
+  step decision). The sink records the resolver's decision string verbatim
+  instead of remapping: a traceability log that renames what the emitter
+  said is worse evidence than one that quotes it.
+- **Plan impact:** None structural — schema keeps the six fields
+  (ts/address/level/outcome/actor/detail); `provisioned`/`failed` remain
+  valid values for richer future callers (documented in the module docstring).
+- **Triggered:** Nothing filed; tests pin the verbatim values (deny, halted).
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -327,3 +343,7 @@ Full traceability of auto-provision events (D5 bound 4). Design in
 
 ### 2026-09-07T00:19:15Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-09-07T07:13:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
