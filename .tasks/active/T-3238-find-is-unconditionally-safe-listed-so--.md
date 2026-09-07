@@ -13,7 +13,7 @@ description: >
   Same shape as T-3222 (curl/wget) and T-2889 (git stash): a base command classified
   by its usual use rather than by the clause actually being run.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -31,7 +31,7 @@ related_tasks: [T-3227, T-3222, T-2889]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T05:22:55Z
-last_update: '2026-09-01T05:30:21Z'
+last_update: 2026-09-07T19:38:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,8 +83,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 Action predicates closed:** `find` is no longer unconditionally safe — a find invocation containing an action/mutation predicate (`-delete`, `-exec`, `-execdir`, `-ok`, `-okdir`, `-fprint`, `-fprintf`, `-fprint0`, `-fls`) classifies NOT-SAFE via `is_bash_safe_command`
+- [ ] **A2 Search forms stay safe:** pure-search find (`find . -name '*.py'`, `-type f`, `-mtime`, `-print`, `-print0` class) still classifies SAFE — the gate must not start blocking the dominant legitimate use
+- [ ] **A3 Pinned:** the safe-commands suite gains the live-reproduced cases: `find . -delete` NOT-SAFE, `find . -exec rm {} \;` NOT-SAFE, `find . -name '*.py'` SAFE (control) — red-before/green-after demonstrated in the task
+- [ ] **A4 No-widening:** full safe-commands test suite green; `bash -n agents/context/lib/safe-commands.sh` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -330,3 +332,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3238-find-is-unconditionally-safe-listed-so--.md
 - **Context:** Initial task creation
+
+### 2026-09-07T19:38:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

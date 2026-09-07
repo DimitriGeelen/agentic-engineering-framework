@@ -12,7 +12,7 @@ description: >
   test never asks about the bare form. curl differs and is genuinely safe bare: without
   -o/-O it writes to stdout.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,7 +30,7 @@ related_tasks: [T-3227, T-3222, T-2876]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T05:22:33Z
-last_update: '2026-09-01T05:30:20Z'
+last_update: 2026-09-07T19:37:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,8 +82,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **A1 Bare wget closed:** `is_bash_safe_command 'wget https://x/y'` → NOT-SAFE (wget's no-flag default writes the remote filename into cwd); explicit-destination forms stay NOT-SAFE as per T-3222
+- [ ] **A2 Stdout forms stay usable:** `wget -O- URL` / `wget -qO- URL` (write to stdout, no file) classify SAFE; bare `curl URL` (stdout by default) stays SAFE — the control that separates by-actual-behaviour from by-reputation classification
+- [ ] **A3 Pinned:** the certifying suite (the T-3222 safe-commands tests) gains cases for the bare wget form, the -O-/-qO- stdout forms, and the bare-curl control — red-before/green-after demonstrated in the task
+- [ ] **A4 No-widening:** full safe-commands test suite green; `bash -n agents/context/lib/safe-commands.sh` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -329,3 +331,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3237-bare-wget-url-is-safe-listed--wget-write.md
 - **Context:** Initial task creation
+
+### 2026-09-07T19:37:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
