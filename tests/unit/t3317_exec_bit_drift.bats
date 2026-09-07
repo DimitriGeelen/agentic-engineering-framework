@@ -122,7 +122,7 @@ teardown() {
     grep -q 'lib/exec-bit-drift.sh' "$FRAMEWORK_ROOT/bin/fw"
     grep -q 'Exec-bit drift' "$FRAMEWORK_ROOT/bin/fw"
     # Cheap check: must run under --quick — no _doctor_quick_skip guard on it.
-    ! grep -E '_doctor_quick_skip.*[Ee]xec-bit' "$FRAMEWORK_ROOT/bin/fw"
+    ! grep -E '_doctor_quick_skip.*[Ee]xec-bit' "$FRAMEWORK_ROOT/bin/fw" || return 1
     # WARN surface names the one-line remedy.
     grep -q 'chmod +x \$_xbit_join' "$FRAMEWORK_ROOT/bin/fw"
 }
@@ -132,6 +132,6 @@ teardown() {
     grep -A6 'if _xbit_list=\$(exec_bit_drifted_files' "$FRAMEWORK_ROOT/agents/audit/audit.sh" | grep -q 'fail "Exec-bit drift'
     # G-079: exactly one implementation of the predicate — callers must not
     # carry their own ls-files/awk mode filter.
-    ! grep -E '^[^#]*ls-files -s' "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+    ! grep -E '^[^#]*ls-files -s' "$FRAMEWORK_ROOT/agents/audit/audit.sh" || return 1
     ! grep -E 'ls-files -s.*100755' "$FRAMEWORK_ROOT/bin/fw"
 }
