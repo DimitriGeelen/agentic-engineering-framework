@@ -2475,6 +2475,34 @@ if ! fw_is_linked_worktree "$PROJECT_ROOT" && [ -f "$_wt_cur_pid_f" ] \
     fi
 fi
 
+# T-3317 (OBS-336): exec-bit drift — tracked *.sh / bin/fw whose git index mode
+# is 100755 but whose on-disk copy is not executable. Origin: a worker rewrite
+# of agents/audit/audit.sh dropped the x-bit and `fw audit` died exit 126 —
+# THIS rail, silently disabled by a mode change nothing watched (the T-3105
+# class one level up: the audit had no check that it can itself run). FAIL,
+# not WARN: a drifted audit.sh means the verdicts this file emits may simply
+# stop being emitted. Shared predicate lib/exec-bit-drift.sh (G-079) — same
+# helper `fw doctor` WARNs on; never re-derive the ls-files/awk line here.
+# Scope worktree: the drift is on-disk mode only; committed content is intact.
+if [ -f "$FRAMEWORK_ROOT/lib/exec-bit-drift.sh" ]; then
+    # shellcheck source=/dev/null
+    . "$FRAMEWORK_ROOT/lib/exec-bit-drift.sh"
+    _xbit_repo="${FW_EXEC_BIT_REPO:-$PROJECT_ROOT}"
+    if _xbit_list=$(exec_bit_drifted_files "$_xbit_repo"); then
+        _xbit_n=$(printf '%s\n' "$_xbit_list" | grep -c .)
+        _xbit_sample=$(printf '%s\n' "$_xbit_list" | head -3 | tr '\n' ' ')
+        _xbit_join=$(printf '%s\n' "$_xbit_list" | tr '\n' ' ')
+        fail "Exec-bit drift: $_xbit_n tracked file(s) indexed 100755 but not executable on disk" \
+             "${_xbit_sample}— a drifted script dies exit 126 at exec time; a drifted audit.sh disables this audit rail itself (OBS-336)" \
+             "Run: cd $_xbit_repo && chmod +x $_xbit_join" \
+             worktree "on-disk mode drift; committed content still 100755"
+    else
+        _xbit_cand=$(exec_bit_candidates "$_xbit_repo" | grep -c .)
+        pass_over "$_xbit_cand" "indexed-100755 script(s) (*.sh + bin/fw)" \
+                  "Exec-bit parity: every 100755-indexed script is executable on disk"
+    fi
+fi
+
 # T-1722: cron-misload lint — detect dormant USER-field crontab files.
 # PL-173 case (2): a source-of-truth crontab at .context/cron/*.crontab uses
 # /etc/cron.d/ USER-field syntax ('m h dom mon dow USER cmd') but no matching

@@ -1674,6 +1674,30 @@ do_doctor() {
         warnings=$((warnings + 1))
     fi
 
+    # T-3317 (OBS-336): exec-bit drift — tracked *.sh / bin/fw whose git index
+    # mode is 100755 but whose on-disk copy is not executable. A worker rewrite
+    # of agents/audit/audit.sh dropped the x-bit and `fw audit` died exit 126:
+    # the whole audit rail silently dead, because no gate compared disk mode
+    # against the index. Cheap (ls-files + test -x), so it deliberately runs
+    # under --quick too. Shared predicate: lib/exec-bit-drift.sh (audit FAILs
+    # on the same helper — G-079).
+    source "$FRAMEWORK_ROOT/lib/exec-bit-drift.sh"
+    local _xbit_repo _xbit_list _xbit_n _xbit_join _xbit_cand
+    _xbit_repo="${FW_EXEC_BIT_REPO:-$PROJECT_ROOT}"
+    if _xbit_list=$(exec_bit_drifted_files "$_xbit_repo"); then
+        _xbit_n=$(printf '%s\n' "$_xbit_list" | grep -c .)
+        _xbit_join=$(printf '%s\n' "$_xbit_list" | tr '\n' ' ')
+        echo -e "  ${YELLOW}WARN${NC}  Exec-bit drift: $_xbit_n tracked file(s) indexed 100755 but not executable on disk"
+        printf '%s\n' "$_xbit_list" | head -5 | sed 's|^|         - |'
+        echo -e "         A drifted script dies exit 126 at exec time; a drifted audit.sh kills the audit rail (OBS-336)."
+        echo -e "         Fix: cd $_xbit_repo && chmod +x $_xbit_join"
+        warnings=$((warnings + 1))
+    elif _xbit_cand=$(exec_bit_candidates "$_xbit_repo" | grep -c .); [ "$_xbit_cand" -gt 0 ] 2>/dev/null; then
+        echo -e "  ${GREEN}OK${NC}  Exec-bit parity: all $_xbit_cand indexed-100755 script(s) executable on disk"
+    else
+        echo -e "  ${CYAN}SKIP${NC}  Exec-bit parity (no 100755-indexed *.sh/bin/fw enumerable in $_xbit_repo)"
+    fi
+
     # T-1845: Large-file gate — surface tracked-file bloat. The pre-commit
     # gate blocks new instances; this audit catches anything that slipped past
     # (legacy state, --no-verify bypasses, or files committed before the gate
@@ -1962,17 +1986,24 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
     # Check 9: Test infrastructure
     # T-574: Skip framework-development checks on consumer projects
     if [ "$FRAMEWORK_ROOT" = "$PROJECT_ROOT" ]; then
-        if command -v bats >/dev/null 2>&1; then
-            if [ -d "$FRAMEWORK_ROOT/tests/unit" ] && ls "$FRAMEWORK_ROOT/tests/unit/"*.bats >/dev/null 2>&1; then
-                local test_count
-                test_count=$(bats --count "$FRAMEWORK_ROOT/tests/unit/" 2>/dev/null || echo "0")
-                echo -e "  ${GREEN}OK${NC}  Test infrastructure (bats installed, $test_count unit tests)"
+        # T-3324/OBS-368: this used to run `bats --count tests/unit/` (~79s over
+        # 600+ files) to print a cosmetic test total, with no --quick guard —
+        # doctor sits on hook/cron/pre-push paths, so the cost was paid on every
+        # run. Full mode now counts FILES (<1s) and the wording says so; --quick
+        # skips the check entirely.
+        if _doctor_quick_skip "Test infrastructure (bats file count)"; then :; else
+            if command -v bats >/dev/null 2>&1; then
+                if [ -d "$FRAMEWORK_ROOT/tests/unit" ] && ls "$FRAMEWORK_ROOT/tests/unit/"*.bats >/dev/null 2>&1; then
+                    local test_file_count
+                    test_file_count=$(ls "$FRAMEWORK_ROOT/tests/unit/"*.bats 2>/dev/null | wc -l | tr -d '[:space:]')
+                    echo -e "  ${GREEN}OK${NC}  Test infrastructure (bats installed, $test_file_count unit test files)"
+                else
+                    echo -e "  ${YELLOW}WARN${NC}  bats installed but no unit tests found in tests/unit/"
+                    warnings=$((warnings + 1))
+                fi
             else
-                echo -e "  ${YELLOW}WARN${NC}  bats installed but no unit tests found in tests/unit/"
-                warnings=$((warnings + 1))
+                _doctor_warn_host "bats not installed (run: git clone https://github.com/bats-core/bats-core && ./install.sh /usr/local)"
             fi
-        else
-            _doctor_warn_host "bats not installed (run: git clone https://github.com/bats-core/bats-core && ./install.sh /usr/local)"
         fi
 
         if command -v shellcheck >/dev/null 2>&1; then
