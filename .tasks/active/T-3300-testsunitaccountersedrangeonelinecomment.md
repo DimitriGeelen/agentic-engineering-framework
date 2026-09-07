@@ -1,10 +1,21 @@
 ---
 id: T-3300
-name: "tests/unit/ac_counter_sed_range_one_line_comment.bats:34 asserts an EXACT count — grep -c of the '>'-tolerant comment-strip regex in agents/task-create/update-task.sh must equal 2. There are now 3 (lines 138, 163, 1590), all correct uses of the tolerant form, so the suite is RED for adding a third correct site. Measured identical (3) at HEAD and in the working tree, so it predates T-3235's edit. The assertion is testing the wrong property: what T-2554 cares about is that NO occurrence uses the broken '<!--[^>]*-->' form and that the tolerant form is present — a floor, not an equality. An exact count turns every legitimate new call site into a false red, and a false red in a suite the daily audit does not run (audit covers tests/lint only, not tests/unit) is a red nobody sees. Fix shape: replace -eq 2 with -ge 2 and keep the existing zero-occurrences-of-the-broken-form assertion as the real invariant."
+name: "tests/unit/ac_counter_sed_range_one_line_comment.bats:34 asserts an EXACT count
+  — grep -c of the '>'-tolerant comment-strip regex in agents/task-create/update-task.sh
+  must equal 2. There are now 3 (lines 138, 163, 1590), all correct uses of the tolerant
+  form, so the suite is RED for adding a third correct site. Measured identical (3)
+  at HEAD and in the working tree, so it predates T-3235's edit. The assertion is
+  testing the wrong property: what T-2554 cares about is that NO occurrence uses the
+  broken '<!--[^>]*-->' form and that the tolerant form is present — a floor, not
+  an equality. An exact count turns every legitimate new call site into a false red,
+  and a false red in a suite the daily audit does not run (audit covers tests/lint
+  only, not tests/unit) is a red nobody sees. Fix shape: replace -eq 2 with -ge 2
+  and keep the existing zero-occurrences-of-the-broken-form assertion as the real
+  invariant."
 description: >
   Promoted from observation OBS-359
 
-status: captured
+status: started-work
 workflow_type: test
 owner: human
 horizon: now
@@ -22,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:15:47Z
-last_update: 2026-09-06T18:15:47Z
-date_finished: null
+last_update: 2026-09-07T01:07:06Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +45,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-06T18:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=258,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-06T18:30:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3300: tests/unit/ac_counter_sed_range_one_line_comment.bats:34 asserts an EXACT count — grep -c of the '>'-tolerant comment-strip regex in agents/task-create/update-task.sh must equal 2. There are now 3 (lines 138, 163, 1590), all correct uses of the tolerant form, so the suite is RED for adding a third correct site. Measured identical (3) at HEAD and in the working tree, so it predates T-3235's edit. The assertion is testing the wrong property: what T-2554 cares about is that NO occurrence uses the broken '<!--[^>]*-->' form and that the tolerant form is present — a floor, not an equality. An exact count turns every legitimate new call site into a false red, and a false red in a suite the daily audit does not run (audit covers tests/lint only, not tests/unit) is a red nobody sees. Fix shape: replace -eq 2 with -ge 2 and keep the existing zero-occurrences-of-the-broken-form assertion as the real invariant.
@@ -46,8 +85,13 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1:** `tests/unit/ac_counter_sed_range_one_line_comment.bats` no longer
+      asserts an EXACT site count of the '>'-tolerant comment-strip regex in
+      `agents/task-create/update-task.sh` — the `-eq 2` becomes `-ge 2` (a new
+      correct-form site must never turn the suite red; only regressions to the
+      broken form may).
+- [x] **A2:** The suite passes green against the current tree (which carries 3
+      correct-form sites since the T-3148 extraction work landed).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,6 +125,9 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/ac_counter_sed_range_one_line_comment.bats > /tmp/.t3300-bats.out 2>&1 && grep -q '^1\.\.10' /tmp/.t3300-bats.out && ! grep -q '^not ok' /tmp/.t3300-bats.out
+test "$(grep -c '# skip' /tmp/.t3300-bats.out)" -eq 0
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -293,3 +340,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3300-testsunitaccountersedrangeonelinecomment.md
 - **Context:** Initial task creation
+
+### 2026-09-07T01:07:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

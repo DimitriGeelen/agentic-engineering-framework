@@ -30,8 +30,12 @@ load ../test_helper
 
 @test "update-task.sh strips one-line comments before range strip (T-1967/T-2554)" {
     grep -q "T-1967" "$FRAMEWORK_ROOT/agents/task-create/update-task.sh"
-    # New '>'-tolerant regex present at both sites; old broken regex gone
-    [ "$(grep -c "s/<!--(\[\^-\]|-\[\^-\]|--\[\^>\])\*-->//g" "$FRAMEWORK_ROOT/agents/task-create/update-task.sh")" -eq 2 ]
+    # New '>'-tolerant regex present at every site; old broken regex gone.
+    # T-3300: -ge, not -eq — the T-3148 section-extract work added a third
+    # correct-form site, and an exact count turns the suite red on every NEW
+    # correct site while pinning nothing extra (the broken-form absence check
+    # below is the real regression guard).
+    [ "$(grep -c "s/<!--(\[\^-\]|-\[\^-\]|--\[\^>\])\*-->//g" "$FRAMEWORK_ROOT/agents/task-create/update-task.sh")" -ge 2 ]
     ! grep -q "s/<!--\[\^>\]\*-->//g" "$FRAMEWORK_ROOT/agents/task-create/update-task.sh"
 }
 
