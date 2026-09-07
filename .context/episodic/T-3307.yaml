@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3307: arc-020 S1: V9 address library
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T06:38:31Z
+# ============================================================================
+
+task_id: T-3307
+task_name: "arc-020 S1: V9 address library"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-07T00:15:06Z
+completed: 2026-09-07T06:38:13Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-07T08:35:33+02:00
+last_commit: 2026-09-07T08:35:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  V9 address library — parse/serialize, elision, V4 alias, ladder token-drop
+
+# Key outcomes
+outcomes:
+  - '`lib/aef_address.py` parses a V9 wire address (`aef::…::@name::`) into structured fields (host, hub?, project, session?, agent), and `serialize(parse(x)) == x` round-trips'
+  - 'Correspondent/actor split: dropping the `session=` token yields the durable name, adding it yields the circuit id (D2/D3); `hub=` is optional and resolves to the host default when absent (D6)'
+  - 'Display-only path elision: paths >3 segments render `first/…/last-two` with the `…` marker; the wire serializer NEVER emits the elided form (full path only) — asserted directly'
+  - 'IPv6 host literals bracketed on serialize / unbracketed on parse; the V4 space-separated human alias parses to the same tuple as the V9 form'
+  - '`tests/unit/test_aef_address.py` covers: round-trip, correspondent↔actor, display-only elision, optional `hub=`, IPv6, alias parity, and sparse/ladder token-drop'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-07 — serialize refuses elided project values'
+    chose: '`serialize()` raises `AddressError` when the project value contains the `…` elision marker, in addition to never producing the elided form itself.'
+    rationale: 'Elision is lossy (D3 sub-rule) — a display string re-entering the wire would re-collapse two projects into one correspondent, the exact bug arc-020 exists to kill. Refusing at the serializer makes the display/wire boundary structural, not conventional.'
+    alternatives_rejected: ['Passing the value through opaquely (grammar says "value opaque") — a real path containing `…` is pathological, and the false-negative risk (silent identity collapse) outweighs the false-positive one.']
+  - decision: '2026-09-07 — segment order: parse any, serialize canonical'
+    chose: '`parse()` accepts label=value segments in any order (labels are self-typing); `serialize()` always emits canonical order (host, hub, project, session, @agent). Round-trip is exact for canonical wire strings — all charter examples are canonical.'
+    rationale: 'D3''s `segment*` grammar doesn''t mandate order, and sparse/query forms rely on self-typing labels; a single canonical emission keeps wire strings comparable as identity keys.'
+    alternatives_rejected: ['Preserving input order through round-trip — would make two token-orderings of the same tuple serialize to different strings, breaking address-as-identity-key comparison.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/aef_address.py'
+  - '.tasks/active/T-3307-arc-020-s1-v9-address-library.md'
+  - 'tests/unit/test_aef_address.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T08:35:33'
+    action: 'T-3307: V9 address library — parse/serialize, elision, V4 alias, ladder token-drop'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 383 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 383
+  commits: 1
+  files_changed: 3
+  lines_added: 629
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3307-arc-020-s1-v9-address-library.md
+generated_by: context-agent-hybrid

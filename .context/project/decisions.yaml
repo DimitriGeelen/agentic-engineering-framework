@@ -3810,3 +3810,38 @@ decisions:
     date: 2026-09-05
     task: T-3257
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-547
+    decision: "`lib/section-extract.sh:extract_ac_section` is FIRST-WINS (mirrors"
+    scope: project
+    date: 2026-09-06
+    task: T-3148
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-548
+    decision: "re-ran the same three-defect scan (D1 last-section, D2 exact"
+    scope: project
+    date: 2026-09-06
+    task: T-3148
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-549
+    decision: "INSTANCE-identity grain, per T-3287 D1 (operator-ratified"
+    scope: project
+    date: 2026-09-06
+    task: T-3286
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-550
+    decision: "`serialize()` raises `AddressError` when the project value contains the `…` elision marker, in addition to never producing the elided form itself."
+    scope: project
+    date: 2026-09-07
+    task: T-3307
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-551
+    decision: "`parse()` accepts label=value segments in any order (labels are self-typing); `serialize()` always emits canonical order (host, hub, project, session, @agent). Round-trip is exact for canonical wire strings — all charter examples are canonical."
+    scope: project
+    date: 2026-09-07
+    task: T-3307
+    rationale: "Auto-captured from task file on completion"

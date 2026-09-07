@@ -6,12 +6,12 @@ description: >
   Designer currency check — fw doctor warns when a newer designer-v* tag exists than
   the pin
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [vendor/designer/aef-workflow-designer-0.11.0.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T11:57:11Z
-last_update: '2026-08-26T12:00:19Z'
-date_finished:
+last_update: 2026-09-06T19:31:34Z
+date_finished: 2026-09-06T19:31:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -299,3 +299,22 @@ test "$(grep -c '# skip' /tmp/.t3158-bats)" -eq 0
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3158-designer-currency-check--fw-doctor-warns.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7efcfab6
+- **Timestamp:** 2026-09-06T19:35:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — The check resolves the newest `designer-v*` tag at `source_origin:` by **version tuple**, never string compare, and warns when it is ahead of `version:` in `policy/designer-pin.yaml`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: The check resolves the newest `designer-v*` tag at `source_origin:` by **version tuple**, never string compare, and warns when it is ahead of `version`
+- **AC#8 (Agent)** — Provenance recorded: if 001-CashWeb's `scripts/check-designer-currency.py` is handed over, it is adopted with attribution rather than reimplemented (they offered it twice on the rail)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=scripts/check-designer-currency.py in: Provenance recorded: if 001-CashWeb's `scripts/check-designer-currency.py` is handed over, it is adopted with attribution rather than reimplemented (t`
+
+### 2026-09-06T19:31:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

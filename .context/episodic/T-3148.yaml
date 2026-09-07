@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3148: Six section extractors still carry the pre-T-3134 sed-range shape; four feed gates
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-06T19:19:24Z
+# ============================================================================
+
+task_id: T-3148
+task_name: "Six section extractors still carry the pre-T-3134 sed-range shape; four feed gates"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-25T22:15:31Z
+completed: 2026-09-06T19:19:07Z
+duration_days: 12
+updates_count: 2
+first_commit: 2026-08-26T00:30:08+02:00
+last_commit: 2026-09-06T21:17:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the Recommendation leg is not latent — it fired on T-3144 within the hour. capture two false-green rules from 010-termlink's three-for-three. anchored section extractors — lib/section-extract.sh + 3 gate sites migrated
+
+# Key outcomes
+outcomes:
+  - 'Each of the six sites is decided EXPLICITLY as first-wins, last-wins, or'
+  - 'The start pattern is anchored at every site, so a heading that merely'
+  - 'No site ends in `sed ''$d''`. That expression exists to discard sed''s'
+  - 'The T-3144 shape is a regression test: a file with a template'
+  - 'A control shows each test discriminating — run against the pre-change'
+  - 'The corpus numbers in the description are re-measured after the change and'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-05 — per-site semantics: FIRST-WINS for AC, LAST-WINS for Recommendation'
+    chose: '`lib/section-extract.sh:extract_ac_section` is FIRST-WINS (mirrors `extract_verification_block`''s awk); `extract_recommendation_block` is LAST-WINS (deliberately the opposite policy).'
+    rationale: 'Acceptance Criteria is written once, near the top, by convention — a later duplicate is a stray copy-paste and the earliest instance is what''s actively being edited. Recommendation is the opposite shape: the template ships an empty stub and the real content is appended AFTER it, so the instance that matters is whichever heading occurs LAST. This task''s own session hit the wrong choice live (T-3144, logged below under "Observed instance") — copying `extract_verification_block` verbatim onto Recommendation reads the stub and reports "empty" against 40 lines of real, complete recommendation.'
+    alternatives_rejected: ['refuse-when-ambiguous (reject the task file outright when >1 heading exists) — corpus measurement below shows both duplicate-heading shapes are common enough (6 Recommendation files, 3 AC files) that refusing would newly block otherwise-valid, already-written task files with no actionable fix offered. First/last-wins resolves them silently and correctly instead. - **Where implemented:** all six sites now call `extract_ac_section` or `extract_recommendation_block` from `lib/section-extract.sh` — no site keeps its own copy of the sed-range expression.']
+  - decision: '2026-09-05 — corpus re-measurement (AC6)'
+    chose: 're-ran the same three-defect scan (D1 last-section, D2 exact duplicate heading, D3 dangerous prefix-before-real) described in this task''s filing, against the corpus as it stands now (3272 files in `.tasks/{active,completed}/`, up from 3133 at filing — the corpus is live and grows every session).'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-active-task.sh'
+  - '.context/project/learnings.yaml'
+  - 'lib/inception.sh'
+  - 'lib/section-extract.sh'
+  - '.tasks/active/T-3144-fw-vendor-ships-executable-code-into-con.md'
+  - '.tasks/active/T-3148-six-section-extractors-still-carry-the-p.md'
+  - 'tests/unit/t3148_section_extract.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-26T00:30:08'
+    action: 'T-3148: the Recommendation leg is not latent — it fired on T-3144 within the hour'
+  - time: '2026-08-26T11:39:15'
+    action: 'T-3148: capture two false-green rules from 010-termlink''s three-for-three'
+  - time: '2026-09-06T21:17:15'
+    action: 'T-3148: anchored section extractors — lib/section-extract.sh + 3 gate sites migrated'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 17103 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 17103
+  commits: 3
+  files_changed: 7
+  lines_added: 511
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3148-six-section-extractors-still-carry-the-p.md
+generated_by: context-agent-hybrid

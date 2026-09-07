@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3286: agent-chat producers must stamp metadata.agent_id so co-resident agents stop collapsing to one correspondent
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-06T19:30:17Z
+# ============================================================================
+
+task_id: T-3286
+task_name: "agent-chat producers must stamp metadata.agent_id so co-resident agents stop collapsing to one correspondent"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-06T08:52:00Z
+completed: 2026-09-06T19:29:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-06T10:55:25+02:00
+last_commit: 2026-09-06T21:29:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  localise the cohort-fingerprint collapse; register G-105, write ACs. producers stamp metadata.agent_id — instance grain (T-3287 D1), shared resolver
+
+# Key outcomes
+outcomes:
+  - '**A1** `agent-send.sh`''s turn post AND `agent-respond.sh`''s receipt post and'
+  - '**A2** The stamped value is the SENDER''S OWN identity, resolved by a single'
+  - '**A3** Reader parity holds end-to-end: two envelopes posted with DISTINCT'
+  - '**A4** Edited scripts pass `bash -n`, and the vendored copies under'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-06 — agent_id grain (settles A2''s primary source)'
+    chose: 'INSTANCE-identity grain, per T-3287 D1 (operator-ratified 2026-09-06, docs/reports/T-3287-identity-taxonomy-circuit-model.md §Ratified decisions). The stamped `agent_id` resolves to the sender''s own agent-instance, most-specific first: explicit per-process env override → the sender''s own TermLink session identity → a derived session-unique fallback (project + session PID). The resolver is one shared function used by all three producer sites.'
+    rationale: 'D1 rules that two distinct agent-instances must NEVER collapse to one correspondent — "T-3286 (always separate them) is correct in all cases." The profile-epoch refinement (D1-open) tightens the instance definition later without changing this mechanism: carry whatever instance id resolves.'
+    alternatives_rejected: ['role-identity (operator ruled out — would make the collapse sometimes-correct); reading a host-shared listener state (the exact one-stands-for-many collapse this task exists to prevent).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/templates/scripts/agent-conversation-status.sh'
+  - '.agentic-framework/lib/templates/scripts/agent-identity.sh'
+  - '.agentic-framework/lib/templates/scripts/agent-respond.sh'
+  - '.agentic-framework/lib/templates/scripts/agent-send.sh'
+  - '.context/project/concerns.yaml'
+  - 'lib/templates/scripts/agent-conversation-status.sh'
+  - 'lib/templates/scripts/agent-identity.sh'
+  - 'lib/templates/scripts/agent-respond.sh'
+  - 'lib/templates/scripts/agent-send.sh'
+  - '.tasks/active/T-3286-agent-chat-producers-must-stamp-metadata.md'
+  - 'tests/unit/t3286_agent_id_stamp.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-06T10:55:25'
+    action: 'T-3286: localise the cohort-fingerprint collapse; register G-105, write ACs'
+  - time: '2026-09-06T21:29:22'
+    action: 'T-3286: producers stamp metadata.agent_id — instance grain (T-3287 D1), shared resolver'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 637 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 637
+  commits: 2
+  files_changed: 11
+  lines_added: 825
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3286-agent-chat-producers-must-stamp-metadata.md
+generated_by: context-agent-hybrid

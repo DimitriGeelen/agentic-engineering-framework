@@ -4,10 +4,10 @@ name: "CTL-030 repair: completed T-2876/T-3278 carry stored horizon=now — clea
 description: >
   CTL-030 repair: completed T-2876/T-3278 carry stored horizon=now — clear to null so compliance audit exits clean
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T01:35:02Z
-last_update: 2026-09-07T01:35:02Z
-date_finished: null
+last_update: 2026-09-07T01:40:04Z
+date_finished: 2026-09-07T01:40:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -298,3 +298,15 @@ bash agents/audit/audit.sh --section compliance > /tmp/.t3314-audit.out 2>&1 || 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3314-ctl-030-repair-completed-t-2876t-3278-ca.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4803aa0b
+- **Timestamp:** 2026-09-07T01:40:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-07T01:40:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

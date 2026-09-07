@@ -26,7 +26,7 @@ alone (CLAUDE.md Human Task Completion Rule).
 Rows with an empty `## Verification` block need that scrutiny most —
 nothing mechanical would gate their close.
 
-## Qualifying tasks (14)
+## Qualifying tasks (17)
 
 | Task | Status | Workflow | Name | Agent ACs | Verification cmds? |
 |------|--------|----------|------|----------:|--------------------|
@@ -38,9 +38,12 @@ nothing mechanical would gate their close.
 | T-2410 | started-work | build | check-active-task hook: false positives block legiti... | 4 | yes |
 | T-2801 | started-work | build | fw init is not atomic and its debris is not fw-recov... | 5 | yes |
 | T-2802 | started-work | build | fw watchtower url returns http://localhost:3000 from... | 6 | yes |
-| T-2871 | started-work | build | corpus depends 91% on non-frozen aef:meta keys — no ... | 6 | yes |
-| T-2969 | started-work | build | draft arc with all constituents complete is reported... | 5 | yes |
-| T-3265 | started-work | build | 5-round audit and housekeeping remediation sweep | 7 | yes |
+| T-3297 | started-work | build | PRE-PUSH AUDIT GATE CAN DEADLOCK AGAINST CRON AUDIT ... | 4 | yes |
+| T-3298 | started-work | build | AUDIT.SH UNLINKS THE FLOCK'D LOCK FILE IN ITS EXIT T... | 4 | yes |
+| T-3299 | started-work | build | G-020 scope gate blocks BOTH escape routes its own b... | 5 | yes |
+| T-3300 | started-work | test | tests/unit/ac_counter_sed_range_one_line_comment.bat... | 2 | yes |
+| T-3301 | started-work | build | tests/unit/inception_decide_emit_review_post_move.ba... | 3 | yes |
+| T-3306 | started-work | build | Close-gate self-reentry deadlock: 'fw task update T-... | 4 | yes |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |

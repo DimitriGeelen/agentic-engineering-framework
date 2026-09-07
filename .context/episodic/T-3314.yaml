@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3314: CTL-030 repair: completed T-2876/T-3278 carry stored horizon=now — clear to null so compliance audit exits clean
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T01:40:25Z
+# ============================================================================
+
+task_id: T-3314
+task_name: "CTL-030 repair: completed T-2876/T-3278 carry stored horizon=now — clear to null so compliance audit exits clean"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-07T01:35:02Z
+completed: 2026-09-07T01:40:04Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-07T03:40:03+02:00
+last_commit: 2026-09-07T03:40:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  clear stored horizon on completed T-2876/T-3278 (CTL-030)
+
+# Key outcomes
+outcomes:
+  - '**A1:** `horizon: now` cleared (set to null) in `.tasks/completed/T-2876-*.md`'
+  - '**A2:** `bin/fw audit --section compliance` reports zero CTL-030 FAILs.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3314-ctl-030-repair-completed-t-2876t-3278-ca.md'
+  - '.tasks/completed/T-2876-interpreter-mediated-writes-bypass-the-b.md'
+  - '.tasks/completed/T-3278-restart-based-m2-transport---cron-watche.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T03:40:03'
+    action: 'T-3314: clear stored horizon on completed T-2876/T-3278 (CTL-030)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 3
+  lines_added: 302
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3314-ctl-030-repair-completed-t-2876t-3278-ca.md
+generated_by: context-agent-hybrid

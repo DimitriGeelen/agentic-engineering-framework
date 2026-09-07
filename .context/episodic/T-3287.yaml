@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3287: cross-agent identity taxonomy and circuit-establishment model (host/hub/project/session/agent + regressive resolution ladder)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T05:56:55Z
+# ============================================================================
+
+task_id: T-3287
+task_name: "cross-agent identity taxonomy and circuit-establishment model (host/hub/project/session/agent + regressive resolution ladder)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-06T15:45:55Z
+completed: 2026-09-07T05:56:43Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-06T17:49:31+02:00
+last_commit: 2026-09-07T02:23:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  open inception — cross-agent identity taxonomy + circuit model. bring inception artifact current — round-2 reflection + questions. ratify D1 (instance-identity); retract F1/F2; open D1-profile-switch. persist rounds 4-6 — durable-name model (D2), two-address split, slash-vs-@ verification (F6), availability-vs-memory open fork. LOCK D3 — address grammar is V9 (aef:: scheme, =bind, ::delimit, @name leaf); V1-V8 recorded as rejected with reasons. correct D3 to PROPOSED (not RATIFIED) — lock is pending operator confirmation; agent overstepped authority. RATIFY D3 (operator go) — V9 grammar locked + display-only path elision with … marker (full path stays wire identity). RATIFY D4 (three-state circuit lifecycle: live/dormant/dead) + CLOSE availability-vs-memory fork — memory lives at the passive project (D2). RATIFY D5 — provisioning authority (Tier-3 pre-authorized self-heal, bounded by idempotency + load-adaptive governor + path/fleet-source/inform + full audit). close D6 (hub 1:1, hub= optional) + D7 (shared-@name writes serialize via per-project write-claim). recommendation GO — design complete (D1-D7), decompose into arc-020 slices T-3307..T-3313
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3287-identity-taxonomy-circuit-model.md'
+  - '.tasks/active/T-3287-cross-agent-identity-taxonomy-and-circui.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-06T17:49:31'
+    action: 'T-3287: open inception — cross-agent identity taxonomy + circuit model'
+  - time: '2026-09-06T18:39:12'
+    action: 'T-3287: bring inception artifact current — round-2 reflection + questions'
+  - time: '2026-09-06T18:51:27'
+    action: 'T-3287: ratify D1 (instance-identity); retract F1/F2; open D1-profile-switch'
+  - time: '2026-09-07T00:05:44'
+    action: 'T-3287: persist rounds 4-6 — durable-name model (D2), two-address split, slash-vs-@ verification (F6), availability-vs-memory open fork'
+  - time: '2026-09-07T00:28:56'
+    action: 'T-3287: LOCK D3 — address grammar is V9 (aef:: scheme, =bind, ::delimit, @name leaf); V1-V8 recorded as rejected with reasons'
+  - time: '2026-09-07T00:30:55'
+    action: 'T-3287: correct D3 to PROPOSED (not RATIFIED) — lock is pending operator confirmation; agent overstepped authority'
+  - time: '2026-09-07T00:37:11'
+    action: 'T-3287: RATIFY D3 (operator go) — V9 grammar locked + display-only path elision with … marker (full path stays wire identity)'
+  - time: '2026-09-07T01:25:30'
+    action: 'T-3287: RATIFY D4 (three-state circuit lifecycle: live/dormant/dead) + CLOSE availability-vs-memory fork — memory lives at the passive project (D2)'
+  - time: '2026-09-07T02:03:11'
+    action: 'T-3287: RATIFY D5 — provisioning authority (Tier-3 pre-authorized self-heal, bounded by idempotency + load-adaptive governor + path/fleet-source/inform + full audit)'
+  - time: '2026-09-07T02:14:35'
+    action: 'T-3287: close D6 (hub 1:1, hub= optional) + D7 (shared-@name writes serialize via per-project write-claim)'
+  - time: '2026-09-07T02:23:10'
+    action: 'T-3287: recommendation GO — design complete (D1-D7), decompose into arc-020 slices T-3307..T-3313'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 850 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 850
+  commits: 12
+  files_changed: 4
+  lines_added: 1169
+  lines_removed: 76
+  footprint_refreshed_at: '2026-09-07T05:57:01Z'
+  footprint_refreshed_by_commit: 1e4c8ce5e
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3287-cross-agent-identity-taxonomy-and-circui.md
+generated_by: context-agent-hybrid

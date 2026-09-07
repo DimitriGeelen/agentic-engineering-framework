@@ -4354,3 +4354,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-377
+  text: "Stale-verification class: P-011 lines and unit tests anchored to MUTABLE CORPUS STATE rot as the corpus moves, blocking closes for reasons unrelated to the code under test. Two instances measured in one close-out sweep (2026-09-06): (1) T-2969 verification line 3 greps 'fw audit --section structure' for \"'readme-first-run' is draft with all 2 constituent\" — that arc moved draft->in-progress since authoring, so the warning legitimately vanished and the close is blocked by corpus drift; (2) T-2871's tests/unit/test_aef_meta_census.py pins exact census counts (56 carriers, 102 state hits) from the August measurement — corpus grew to 74/138, tests red, close blocked; the assertion cannot distinguish 'measurement method broke' from 'corpus changed'. Fix shape per instance: anchor tests to committed FIXTURE corpora (hermetic), or pin the invariant/property rather than the live count; verification lines should not grep live-audit output for specific corpus entities. Sibling of the false-green/false-red family (T-1828, T-3105): a check whose subject can drift under it measures the drift, not the code."
+  captured: 2026-09-06T19:59:15Z
+  context_task: T-2871
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-378
+  text: "Observed live during T-3298 integration: SIGKILL'ing an audit leaves its SECTION CHILDREN (e.g. the invariant/lint bats subtree it spawned) holding flock fd 200 — they inherit the lock fd and extend mutual exclusion arbitrarily past the audit's death, so a later audit exits 75 with no audit.sh process visible. T-1464/T-1772 close fds only in the WATCHDOG subshell, not in section children. Residual of the same fd-inheritance class; T-3298's no-unlink fix is unaffected (inode stability is correct), but lock-holder diagnosis needs fuser on the lock, not pgrep audit.sh. Candidate fix: close fd 200 (or set FD_CLOEXEC) before spawning section commands."
+  captured: 2026-09-07T00:48:05Z
+  context_task: T-3298
+  tags: []
+  status: pending
+  promoted_to: null

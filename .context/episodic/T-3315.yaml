@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3315: audit.bats test 11 calls the audit bare — exit 1 (warnings) fails the test before the YAML assertion runs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T02:29:01Z
+# ============================================================================
+
+task_id: T-3315
+task_name: "audit.bats test 11 calls the audit bare — exit 1 (warnings) fails the test before the YAML assertion runs"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-07T02:16:18Z
+completed: 2026-09-07T02:24:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-07T04:24:47+02:00
+last_commit: 2026-09-07T04:24:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit.bats test 11 — run-wrap the audit call, assert the report exists, skip on lock contention
+
+# Key outcomes
+outcomes:
+  - '**A1:** `tests/unit/audit.bats` test 11 wraps the audit call in `run` and'
+  - '**A2:** Test 11 passes on the live repo; the YAML file is actually'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3315-auditbats-test-11-calls-the-audit-bare--.md'
+  - 'tests/unit/audit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T04:24:47'
+    action: 'T-3315: audit.bats test 11 — run-wrap the audit call, assert the report exists, skip on lock contention'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 2
+  lines_added: 312
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3315-auditbats-test-11-calls-the-audit-bare--.md
+generated_by: context-agent-hybrid

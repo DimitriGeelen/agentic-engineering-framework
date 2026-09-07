@@ -1,6 +1,26 @@
 ---
 id: T-3303
-name: "CORRECTION to OBS-362 and OBS-363 — root cause found, and it is neither suite. The harness reported three background commands as 'killed', but the kill did not reach their children: bats process TREES kept running against the LIVE repo for ~40 minutes afterwards (PIDs 3155301/3155304/3155345/3155346 for a 68-suite tests/unit run, 3483957+ for a tests/lint run), still appending to /tmp/.t3235adj.out and still executing update_task.bats. That orphan is what rewrote .context/working/focus.yaml to 'current_task: T-001' — twice, including once immediately after I had restored it, which is why it looked like the suite I had just run. It also explains the phantom measurement: a file I created with 32 tests read back at 75 lines containing 'ok 379', because two writers were interleaving into it, and grep -c returned nothing because the file was being rewritten under the read. OBS-363's 'update_task.bats does not complete at 280s' is now suspect for the same reason — the timing was taken while an orphan was running the same suite concurrently against the same live tree; re-measure on a quiet host before treating it as a property of the suite. Terminated with pkill -TERM -f bats-core; 0 remain. THE CLASS: a background test run that outlives its supervisor is indistinguishable, from inside the session, from the session's own state changes — the agent attributes the damage to whatever it did most recently. Two guards worth having: assert no bats process is already running before starting one, and check for orphaned bats trees the way fw termlink cleanup checks for orphaned dispatches (T-577, exact same shape: the supervisor deregisters, the process does not die)."
+name: "CORRECTION to OBS-362 and OBS-363 — root cause found, and it is neither suite.
+  The harness reported three background commands as 'killed', but the kill did not
+  reach their children: bats process TREES kept running against the LIVE repo for
+  ~40 minutes afterwards (PIDs 3155301/3155304/3155345/3155346 for a 68-suite tests/unit
+  run, 3483957+ for a tests/lint run), still appending to /tmp/.t3235adj.out and still
+  executing update_task.bats. That orphan is what rewrote .context/working/focus.yaml
+  to 'current_task: T-001' — twice, including once immediately after I had restored
+  it, which is why it looked like the suite I had just run. It also explains the phantom
+  measurement: a file I created with 32 tests read back at 75 lines containing 'ok
+  379', because two writers were interleaving into it, and grep -c returned nothing
+  because the file was being rewritten under the read. OBS-363's 'update_task.bats
+  does not complete at 280s' is now suspect for the same reason — the timing was taken
+  while an orphan was running the same suite concurrently against the same live tree;
+  re-measure on a quiet host before treating it as a property of the suite. Terminated
+  with pkill -TERM -f bats-core; 0 remain. THE CLASS: a background test run that outlives
+  its supervisor is indistinguishable, from inside the session, from the session's
+  own state changes — the agent attributes the damage to whatever it did most recently.
+  Two guards worth having: assert no bats process is already running before starting
+  one, and check for orphaned bats trees the way fw termlink cleanup checks for orphaned
+  dispatches (T-577, exact same shape: the supervisor deregisters, the process does
+  not die)."
 description: >
   Promoted from observation OBS-364
 
@@ -22,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:16:26Z
-last_update: 2026-09-06T18:16:26Z
-date_finished: null
+last_update: '2026-09-06T18:30:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-06T18:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=258,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-06T18:30:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3303: CORRECTION to OBS-362 and OBS-363 — root cause found, and it is neither suite. The harness reported three background commands as 'killed', but the kill did not reach their children: bats process TREES kept running against the LIVE repo for ~40 minutes afterwards (PIDs 3155301/3155304/3155345/3155346 for a 68-suite tests/unit run, 3483957+ for a tests/lint run), still appending to /tmp/.t3235adj.out and still executing update_task.bats. That orphan is what rewrote .context/working/focus.yaml to 'current_task: T-001' — twice, including once immediately after I had restored it, which is why it looked like the suite I had just run. It also explains the phantom measurement: a file I created with 32 tests read back at 75 lines containing 'ok 379', because two writers were interleaving into it, and grep -c returned nothing because the file was being rewritten under the read. OBS-363's 'update_task.bats does not complete at 280s' is now suspect for the same reason — the timing was taken while an orphan was running the same suite concurrently against the same live tree; re-measure on a quiet host before treating it as a property of the suite. Terminated with pkill -TERM -f bats-core; 0 remain. THE CLASS: a background test run that outlives its supervisor is indistinguishable, from inside the session, from the session's own state changes — the agent attributes the damage to whatever it did most recently. Two guards worth having: assert no bats process is already running before starting one, and check for orphaned bats trees the way fw termlink cleanup checks for orphaned dispatches (T-577, exact same shape: the supervisor deregisters, the process does not die).

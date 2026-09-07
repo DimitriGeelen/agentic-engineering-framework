@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3158: Designer currency check — fw doctor warns when a newer designer-v* tag exists than the pin
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-06T19:36:11Z
+# ============================================================================
+
+task_id: T-3158
+task_name: "Designer currency check — fw doctor warns when a newer designer-v* tag exists than the pin"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T11:57:11Z
+completed: 2026-09-06T19:31:34Z
+duration_days: 11
+updates_count: 1
+first_commit: 2026-09-06T21:31:33+02:00
+last_commit: 2026-09-06T21:31:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ACs verified against in-tree implementation (landed via ba4de211a) — verification pinned
+
+# Key outcomes
+outcomes:
+  - 'The check resolves the newest `designer-v*` tag at `source_origin:` by **version tuple**, never string compare, and warns when it is ahead of `version:` in `policy/designer-pin.yaml`'
+  - '**Advisory only** — WARNs and exits 0. It must not be able to fail a gate: an advisory that can block gets disabled the first time it is inconvenient, and then it protects nothing (001-CashWeb''s rationale, adopted verbatim)'
+  - 'Wired into `bin/fw doctor` as a WARN line, and reachable standalone'
+  - '**Control leg 1 — the discriminator:** with the pin forced to the newest published tag, the check produces **NO** warning. An always-warn bug passes "warns on a stale pin" identically to a correct check, so leg 2 alone proves nothing'
+  - 'Control leg 2: pin forced to an older tag → check warns'
+  - 'Control leg 3: origin unreachable → **SKIP with its own distinct line**, never crash and never silent-OK ("could-not-look gets its own failure line, never an absence of complaint" — 001-CashWeb offset 193, adopted by 832 in their T-574)'
+  - 'Control leg 4: asserts explicitly that version-max (`0.11.0`) != lexical-max (`0.9.0`), so the PL-021 trap re-fires if anyone ever "simplifies" the comparison back to strings'
+  - 'Provenance recorded: if 001-CashWeb''s `scripts/check-designer-currency.py` is handed over, it is adopted with attribution rather than reimplemented (they offered it twice on the rail)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3158-designer-currency-check--fw-doctor-warns.md'
+  - '.tasks/completed/T-3286-agent-chat-producers-must-stamp-metadata.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-06T21:31:33'
+    action: 'T-3158: ACs verified against in-tree implementation (landed via ba4de211a) — verification pinned'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 16294 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16294
+  commits: 1
+  files_changed: 2
+  lines_added: 11
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3158-designer-currency-check--fw-doctor-warns.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2871: corpus depends 91% on non-frozen aef:meta keys — no guard fires if 832 renames one
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-06T20:00:17Z
+# ============================================================================
+
+task_id: T-2871
+task_name: "corpus depends 91% on non-frozen aef:meta keys — no guard fires if 832 renames one"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-08T14:36:28Z
+completed: 2026-09-06T19:59:57Z
+duration_days: 29
+updates_count: 2
+first_commit: 2026-08-08T20:03:21+02:00
+last_commit: 2026-09-06T21:59:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pin the 2 aef:meta keys our corpus actually depends on, not the 13 that merely appear. census re-eyeballed per the test's own drift contract — 74 files, exposure deepened to 94% (OBS-377)
+
+# Key outcomes
+outcomes:
+  - 'A test enumerates the `aef:meta` keys our corpus actually **depends on** — not every'
+  - 'The test goes **red when a depended-on key disappears from the corpus**, which is the'
+  - 'ANTI-VACUITY: the red is **demonstrated**, not asserted — rename a depended-on key in a'
+  - 'The measurement in this task''s description reproduces from a checked-in script/test'
+  - '`state=` is called out explicitly as the load-bearing exposure, with the reason: the'
+  - 'The task records what it does **not** do: it does not ask 832 to freeze more keys.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2871-corpus-depends-91-on-non-frozen-aefmeta-.md'
+  - 'tests/unit/test_aef_meta_census.py'
+  - 'tools/aef_meta_census.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-08T20:03:21'
+    action: 'T-2871: pin the 2 aef:meta keys our corpus actually depends on, not the 13 that merely appear'
+  - time: '2026-09-06T21:59:50'
+    action: 'T-2871: census re-eyeballed per the test''s own drift contract — 74 files, exposure deepened to 94% (OBS-377)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 42083 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 42083
+  commits: 2
+  files_changed: 3
+  lines_added: 400
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2871-corpus-depends-91-on-non-frozen-aefmeta-.md
+generated_by: context-agent-hybrid

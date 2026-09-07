@@ -1,6 +1,20 @@
 ---
 id: T-3302
-name: "STRUCTURAL: nothing runs tests/unit on a schedule, so reds there are invisible until someone happens to run an adjacent suite. Measured today while landing T-3235: TWO independent pre-existing failures surfaced by accident — ac_counter_sed_range_one_line_comment (OBS-359, brittle exact-count assertion) and inception_decide_emit_review_post_move (separate note). Both predate today's edits; neither was reported by anything. The daily audit's 'Invariant suite green' line covers tests/lint ONLY (104 invariants, agents/audit + bin/fw glob tests/lint/*.bats), and its green reads to an agent like the test corpus is green. Same family as T-2697 (tests/lint itself was globbed by no runner for months while 'fw test lint' ran shellcheck and reassured) and as peer 832's T-654 BUG 2 (a detector with no delivery) and their OBS-333 (a 13-minute bridge suite nothing schedules). The failure mode is not 'tests fail' — it is 'a green line that answers a narrower question than the one the reader is asking'. Candidate fix: a scheduled tests/unit run whose result is surfaced the way the invariant suite is, plus an audit line that states WHICH corpus it examined rather than the bare word 'suite'."
+name: "STRUCTURAL: nothing runs tests/unit on a schedule, so reds there are invisible
+  until someone happens to run an adjacent suite. Measured today while landing T-3235:
+  TWO independent pre-existing failures surfaced by accident — ac_counter_sed_range_one_line_comment
+  (OBS-359, brittle exact-count assertion) and inception_decide_emit_review_post_move
+  (separate note). Both predate today's edits; neither was reported by anything. The
+  daily audit's 'Invariant suite green' line covers tests/lint ONLY (104 invariants,
+  agents/audit + bin/fw glob tests/lint/*.bats), and its green reads to an agent like
+  the test corpus is green. Same family as T-2697 (tests/lint itself was globbed by
+  no runner for months while 'fw test lint' ran shellcheck and reassured) and as peer
+  832's T-654 BUG 2 (a detector with no delivery) and their OBS-333 (a 13-minute bridge
+  suite nothing schedules). The failure mode is not 'tests fail' — it is 'a green
+  line that answers a narrower question than the one the reader is asking'. Candidate
+  fix: a scheduled tests/unit run whose result is surfaced the way the invariant suite
+  is, plus an audit line that states WHICH corpus it examined rather than the bare
+  word 'suite'."
 description: >
   Promoted from observation OBS-361
 
@@ -22,8 +36,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:16:13Z
-last_update: 2026-09-06T18:16:13Z
-date_finished: null
+last_update: '2026-09-06T18:30:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +48,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-06T18:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=258,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-06T18:30:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3302: STRUCTURAL: nothing runs tests/unit on a schedule, so reds there are invisible until someone happens to run an adjacent suite. Measured today while landing T-3235: TWO independent pre-existing failures surfaced by accident — ac_counter_sed_range_one_line_comment (OBS-359, brittle exact-count assertion) and inception_decide_emit_review_post_move (separate note). Both predate today's edits; neither was reported by anything. The daily audit's 'Invariant suite green' line covers tests/lint ONLY (104 invariants, agents/audit + bin/fw glob tests/lint/*.bats), and its green reads to an agent like the test corpus is green. Same family as T-2697 (tests/lint itself was globbed by no runner for months while 'fw test lint' ran shellcheck and reassured) and as peer 832's T-654 BUG 2 (a detector with no delivery) and their OBS-333 (a 13-minute bridge suite nothing schedules). The failure mode is not 'tests fail' — it is 'a green line that answers a narrower question than the one the reader is asking'. Candidate fix: a scheduled tests/unit run whose result is surfaced the way the invariant suite is, plus an audit line that states WHICH corpus it examined rather than the bare word 'suite'.
