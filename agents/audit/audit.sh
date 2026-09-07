@@ -444,15 +444,17 @@ _audit_write_timing_yaml() {
     } > "$AUDIT_TIMING_FILE.tmp" && mv "$AUDIT_TIMING_FILE.tmp" "$AUDIT_TIMING_FILE"
 }
 
-# Clean up stale lock files (older than timeout + 60s buffer)
-if [ -f "$AUDIT_LOCK_FILE" ]; then
-    lock_age=$(( $(date +%s) - $(stat -c %Y "$AUDIT_LOCK_FILE" 2>/dev/null || echo 0) ))
-    if [ "$lock_age" -gt $(( AUDIT_TIMEOUT + 60 )) ]; then
-        rm -f "$AUDIT_LOCK_FILE"
-    fi
-fi
-
 # Use flock if available, otherwise simple lock file
+#
+# T-3298 / OBS-308: the flock arm must NEVER unlink $AUDIT_LOCK_FILE. flock
+# binds to an open file description — an inode, not a path (lib/keylock.py
+# docstring). Unlinking a held lock's path lets the next process create a NEW
+# inode at the same path and flock it immediately, so two audits hold "the"
+# lock at once. The lock file is a permanent rendezvous point: staleness needs
+# no mtime heuristic here because the kernel releases the flock when its
+# holder dies, whatever the file's age. The mtime-based stale sweep and the
+# rm-on-exit both live only in the fallback arm below, where unlink IS the
+# release mechanism.
 if command -v flock >/dev/null 2>&1; then
     exec 200>"$AUDIT_LOCK_FILE"
     if ! flock -n 200; then
@@ -472,14 +474,25 @@ if command -v flock >/dev/null 2>&1; then
     # (b) any pipe fds from a parent shell pipeline (e.g. bats's per-test pipe
     # at FD 3, which makes the bats orchestrator hang waiting for EOF). Walk
     # /proc/self/fd and close everything > 2 that we don't already redirect.
+    # T-3298: the subshell traps TERM and kills its own sleep child. Killing
+    # only $AUDIT_TIMEOUT_PID reaps the subshell but not the sleep, which
+    # reparents to init and lives up to AUDIT_TIMEOUT (600s scoped / 3000s
+    # full) after a normal exit — observed live as audit.sh(251163)
+    # orphaning sleep(251165). A process-group kill is not available here:
+    # without job control the subshell shares the script's group, so
+    # `kill -- -$AUDIT_TIMEOUT_PID` would TERM the audit itself. `wait` is
+    # the one builtin a trap interrupts, so the TERM lands promptly.
     ( for _fd in /proc/self/fd/*; do
           _n="${_fd##*/}"
           case "$_n" in 0|1|2) ;; *) eval "exec $_n>&-" 2>/dev/null ;; esac
       done
-      sleep "$AUDIT_TIMEOUT" && kill -TERM $$ 2>/dev/null
+      trap 'kill "${_watchdog_sleep_pid:-}" 2>/dev/null; exit 0' TERM
+      sleep "$AUDIT_TIMEOUT" &
+      _watchdog_sleep_pid=$!
+      wait "$_watchdog_sleep_pid" && kill -TERM $$ 2>/dev/null
     ) </dev/null >/dev/null 2>&1 &
     AUDIT_TIMEOUT_PID=$!
-    trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null; rm -f '$AUDIT_LOCK_FILE'" EXIT
+    trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null" EXIT
     # T-3127/AC4: the watchdog above kills via SIGTERM. Without this trap, a
     # timeout kill leaves NO trace of which section died — which is precisely
     # how T-3070's mid-EPISODIC-MEMORY kill was misread as lock contention for
@@ -497,6 +510,17 @@ else
     # the arm the developer's host happens to take leaves the other silently on the
     # old contract, and flock's presence varies by platform (it is the arm a mac or
     # a slim container is most likely to miss).
+    #
+    # Stale sweep (older than timeout + 60s buffer) belongs to THIS arm only:
+    # a crashed holder's pid file would otherwise block every later audit
+    # forever. The flock arm needs no sweep — the kernel drops the lock when
+    # its holder dies (T-3298).
+    if [ -f "$AUDIT_LOCK_FILE" ]; then
+        lock_age=$(( $(date +%s) - $(stat -c %Y "$AUDIT_LOCK_FILE" 2>/dev/null || echo 0) ))
+        if [ "$lock_age" -gt $(( AUDIT_TIMEOUT + 60 )) ]; then
+            rm -f "$AUDIT_LOCK_FILE"
+        fi
+    fi
     if [ -f "$AUDIT_LOCK_FILE" ]; then
         if [ "$QUIET" != true ]; then
             echo "Another audit is already running — exiting (no verdict produced)" >&2

@@ -1,10 +1,27 @@
 ---
 id: T-3298
-name: "AUDIT.SH UNLINKS THE FLOCK'D LOCK FILE IN ITS EXIT TRAP, BREAKING THE MUTUAL EXCLUSION IT THINKS IT HAS. agents/audit/audit.sh:352 does exec 200>\\"$AUDIT_LOCK_FILE\\" then flock -n 200 (line 353); line 377 sets trap 'kill $AUDIT_TIMEOUT_PID; rm -f $AUDIT_LOCK_FILE' EXIT. Unlinking a flock'd path does not release the lock and does not stop a later process from creating a NEW inode at the same path and flocking that immediately — so two audits can hold 'the' lock at once. The framework already documents this exact invariant in the file written to fix the sibling problem: lib/keylock.py's module docstring says 'flock binds to an open file description, i.e. to an inode — not to a path', which is why keylock never unlinks. audit.sh predates it and was not migrated. Second defect in the same block: line 374 runs the watchdog as ( ...; sleep $AUDIT_TIMEOUT && kill -TERM $$ ) & and the trap kills only $AUDIT_TIMEOUT_PID, the SUBSHELL — killing a subshell does not kill its sleep child, which reparents to init and lives AUDIT_TIMEOUT (default 600s). Directly observed as audit.sh(251163)---sleep(251165). T-1464/T-1772 mitigated the fd-inheritance half of this (walk /proc/self/fd, close >2) but not the orphan itself. Suggested fix: migrate audit.sh to lib/keylock.sh exclusive() and delete the rm -f entirely; kill the whole process group for the watchdog. Needs its own task (one bug = one task) — this is the root under OBS-304/305/306/307, all of which describe symptoms of it."
+name: "AUDIT.SH UNLINKS THE FLOCK'D LOCK FILE IN ITS EXIT TRAP, BREAKING THE MUTUAL
+  EXCLUSION IT THINKS IT HAS. agents/audit/audit.sh:352 does exec 200>\"$AUDIT_LOCK_FILE\"\
+  \ then flock -n 200 (line 353); line 377 sets trap 'kill $AUDIT_TIMEOUT_PID; rm
+  -f $AUDIT_LOCK_FILE' EXIT. Unlinking a flock'd path does not release the lock and
+  does not stop a later process from creating a NEW inode at the same path and flocking
+  that immediately — so two audits can hold 'the' lock at once. The framework already
+  documents this exact invariant in the file written to fix the sibling problem: lib/keylock.py's
+  module docstring says 'flock binds to an open file description, i.e. to an inode
+  — not to a path', which is why keylock never unlinks. audit.sh predates it and was
+  not migrated. Second defect in the same block: line 374 runs the watchdog as ( ...;
+  sleep $AUDIT_TIMEOUT && kill -TERM $$ ) & and the trap kills only $AUDIT_TIMEOUT_PID,
+  the SUBSHELL — killing a subshell does not kill its sleep child, which reparents
+  to init and lives AUDIT_TIMEOUT (default 600s). Directly observed as audit.sh(251163)---sleep(251165).
+  T-1464/T-1772 mitigated the fd-inheritance half of this (walk /proc/self/fd, close
+  >2) but not the orphan itself. Suggested fix: migrate audit.sh to lib/keylock.sh
+  exclusive() and delete the rm -f entirely; kill the whole process group for the
+  watchdog. Needs its own task (one bug = one task) — this is the root under OBS-304/305/306/307,
+  all of which describe symptoms of it."
 description: >
   Promoted from observation OBS-308
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -22,8 +39,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:14:56Z
-last_update: 2026-09-06T18:14:56Z
-date_finished: null
+last_update: '2026-09-07T00:45:16Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +51,70 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-07T00:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=355,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T00:45:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3298: AUDIT.SH UNLINKS THE FLOCK'D LOCK FILE IN ITS EXIT TRAP, BREAKING THE MUTUAL EXCLUSION IT THINKS IT HAS. agents/audit/audit.sh:352 does exec 200>\"$AUDIT_LOCK_FILE\" then flock -n 200 (line 353); line 377 sets trap 'kill $AUDIT_TIMEOUT_PID; rm -f $AUDIT_LOCK_FILE' EXIT. Unlinking a flock'd path does not release the lock and does not stop a later process from creating a NEW inode at the same path and flocking that immediately — so two audits can hold 'the' lock at once. The framework already documents this exact invariant in the file written to fix the sibling problem: lib/keylock.py's module docstring says 'flock binds to an open file description, i.e. to an inode — not to a path', which is why keylock never unlinks. audit.sh predates it and was not migrated. Second defect in the same block: line 374 runs the watchdog as ( ...; sleep $AUDIT_TIMEOUT && kill -TERM $$ ) & and the trap kills only $AUDIT_TIMEOUT_PID, the SUBSHELL — killing a subshell does not kill its sleep child, which reparents to init and lives AUDIT_TIMEOUT (default 600s). Directly observed as audit.sh(251163)---sleep(251165). T-1464/T-1772 mitigated the fd-inheritance half of this (walk /proc/self/fd, close >2) but not the orphan itself. Suggested fix: migrate audit.sh to lib/keylock.sh exclusive() and delete the rm -f entirely; kill the whole process group for the watchdog. Needs its own task (one bug = one task) — this is the root under OBS-304/305/306/307, all of which describe symptoms of it.
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Fixes the root defect under OBS-304/305/306/307: `agents/audit/audit.sh`'s
+flock arm unlinked the lock path in its EXIT trap (and its shared pre-acquire
+stale sweep could unlink a HELD lock), breaking mutual exclusion — flock binds
+to an inode, not a path (lib/keylock.py invariant). Second defect in the same
+block: the timeout watchdog's `sleep` child orphaned to init for up to
+AUDIT_TIMEOUT after every normal exit (observed live: audit.sh(251163) →
+sleep(251165); this session found live `sleep 600`/`sleep 3000` orphans with
+PPID 1 on the host before the fix).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1 Lock integrity:** audit.sh's mutual exclusion no longer unlinks the
+      flock'd lock path (flock binds to inode, not path — lib/keylock.py
+      invariant). Either migrated to the framework keylock or the `rm -f` is
+      removed from the EXIT trap; the choice and why recorded in `## Decisions`.
+      The T-2930 contract is preserved: contention still exits 75.
+- [x] **A2 Watchdog orphan:** the timeout watchdog's `sleep` no longer outlives
+      the audit — killing the watchdog kills its whole subtree (process-group
+      kill or explicit child kill), so no `sleep` child reparents to init for
+      up to AUDIT_TIMEOUT seconds after a normal exit.
+- [x] **A3 Pinned:** new bats suite `tests/unit/t3298_audit_lock_integrity.bats`
+      covers: (a) double-hold impossible — simulate the old bug's shape
+      (unlink-while-held, third process acquires) and assert mutual exclusion
+      holds; (b) contention exits 75 (control leg); (c) no orphaned watchdog
+      sleep after normal exit. Hermetic: scratch lock path, never the live lock.
+- [ ] **A4 No-widening:** `bash -n agents/audit/audit.sh` clean and the
+      existing `tests/unit/audit.bats` suite keeps passing (modulo the known
+      exit-75-contention flake class it already documents).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -197,6 +264,10 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/unit/t3298_audit_lock_integrity.bats > /tmp/.t3298-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3298-bats.out
+test "$(grep -c '# skip' /tmp/.t3298-bats.out)" -eq 0
+bash -n agents/audit/audit.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -212,6 +283,43 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Concurrent audits could both hold "the" audit lock (double-hold:
+a run proceeding while another was mid-flight — the root under OBS-304/305/
+306/307), and after every normally-exiting audit an orphaned
+`sleep $AUDIT_TIMEOUT` (600s scoped / 3000s full) sat reparented to init.
+Both were directly observed live (audit.sh(251163) → sleep(251165); this
+session found `sleep 600` and `sleep 3000` PPID-1 orphans on the host).
+
+**Root cause:** Two defects in the same lock/watchdog block of
+`agents/audit/audit.sh`. (1) The flock arm's EXIT trap ran
+`rm -f "$AUDIT_LOCK_FILE"`, and the shared pre-acquire stale sweep could
+`rm -f` a lock another audit was actively holding (a section-scoped run's
+660s threshold vs a full run's 3000s budget). flock binds to an open file
+description — an inode, not a path — so unlinking a held lock's path lets the
+next process create a NEW inode at the same path and flock it immediately:
+mutual exclusion silently gone. (2) The timeout watchdog was
+`( sleep N && kill -TERM $$ ) &` with a trap killing only the subshell PID;
+killing a subshell does not kill its `sleep` child, which reparents to init.
+
+**Why structurally allowed:** The inode-not-path invariant was already
+documented in-repo (lib/keylock.py's docstring, written for the sibling T-3042
+fix) but audit.sh predates it and was never migrated — knowledge landed in a
+library, not in the older call sites. No test held the lock across an audit's
+full exit path (T-2930's tests pin the contention exit code, not lock-file
+survival), and the double-hold failure mode is a false green: the second audit
+RUNS and exits 0, indistinguishable from a healthy run. The watchdog half
+looked fixed twice (T-1464/T-1772 closed the fd-inheritance leak in the same
+subshell) — the orphan itself was masked by those fixes making it harmless
+enough (fds closed) that nothing looked again.
+
+**Prevention:** `tests/unit/t3298_audit_lock_integrity.bats` (10 tests) pins:
+lock file + inode survival across the full acquire/release cycle, the exact
+old-bug shape (stale-mtime lock held by a live process → contender must exit
+75, not acquire), the T-2930 contention contract in both arms, the relocated
+fallback-arm sweep in both directions (sweeps stale, refuses fresh), a source
+pin that the flock arm's EXIT trap contains no `rm`, and a ps-scoped
+no-orphan-sleep check after a normal exit.
 
 ## Evolution
 
@@ -277,6 +385,37 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-09-06 — Lock fix shape: no-unlink in place, not keylock.sh migration
+- **Chose:** Keep audit.sh's own `exec 200>` + `flock -n` block and remove
+  every unlink route from the flock arm (the EXIT trap's `rm -f`, and the
+  shared pre-acquire mtime stale sweep, which moved into the no-flock fallback
+  arm where unlink IS the release mechanism). The lock file becomes a
+  permanent rendezvous point, exactly as lib/keylock.py prescribes.
+- **Why:** The defect is the unlink, not the primitive. The flock arm needs no
+  staleness heuristic at all — the kernel drops the lock when its holder dies.
+  Contention semantics (`flock -n` → exit 75, T-2930) stay byte-identical.
+- **Rejected:** Migration to `lib/keylock.sh` — it would have REINTRODUCED the
+  same bug class: `keylock_acquire` runs `_keylock_clean_stale`, which
+  `rm -f`s any lock file older than KEYLOCK_TIMEOUT (default 300s) even while
+  held — a full audit (3000s budget) would have its lock unlinked out from
+  under it by any contender after 5 minutes. keylock is also blocking-by-
+  default (audit needs try-lock → 75), and its lock path is not overridable
+  for hermetic tests. Migrating safely would mean fixing keylock.sh first —
+  a separate task (one bug = one task).
+
+### 2026-09-06 — Watchdog fix shape: TERM trap in the subshell, not process-group kill
+- **Chose:** The watchdog subshell traps TERM, kills its own `sleep` child
+  (spawned as a background job so its PID is known), and `wait`s on it —
+  `wait` being the one builtin a trap interrupts promptly.
+- **Why:** A process-group kill (`kill -- -$AUDIT_TIMEOUT_PID`) is not safe
+  here: without job control a background subshell shares the script's process
+  group, so the group kill would TERM the audit itself. `setsid` would give
+  the watchdog its own group but adds a dependency and changes `$$`
+  semantics inside the watchdog for no gain over the explicit child kill.
+- **Rejected:** `setsid` + group kill (above); leaving the orphan and
+  documenting it (it holds no fds since T-1772, but a 3000s stray sleep per
+  audit run is exactly the OBS-304..307 noise this task exists to end).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -293,3 +432,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3298-auditsh-unlinks-the-flockd-lock-file-in-.md
 - **Context:** Initial task creation
+
+### 2026-09-06T20:02:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

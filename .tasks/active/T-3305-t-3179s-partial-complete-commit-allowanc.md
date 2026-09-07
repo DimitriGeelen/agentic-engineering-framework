@@ -1,6 +1,22 @@
 ---
 id: T-3305
-name: "T-3179's partial-complete commit allowance does not recognise 'bin/fw git commit' - only bare 'git commit'. Measured on T-3251: with the task at work-completed and focus on it, 'bin/fw git commit -m ...' was blocked three times (multi-line message, single-line message, with and without an env prefix), each time with a block message whose own second line says: \\"Note: 'git commit' IS allowed here (T-3179) - a partial-complete task may always checkpoint its own verified work under its own ID.\\" Bare 'git commit -m ...' succeeded immediately with the same staged content. The allowance exists and works; it just does not cover the framework's own canonical commit verb, which CLAUDE.md's Quick Reference lists first ('fw git commit -m T-XXX: ...'). In this state the block message is actively misleading: it names the allowance, says to run the commit bare, and the agent re-runs the fw-prefixed form because that IS the bare form of the documented verb. Cost: three blocked attempts and a workaround that bypasses the fw wrapper's own pre-commit path. Fix shape: add the 'bin/fw git commit' / 'fw git commit' prefixes to the same allowance in agents/context/lib/safe-commands.sh (or wherever the T-3179 exemption matches), pinned by a test exercising BOTH spellings under a work-completed focus - the single-spelling test is what let this ship."
+name: 'T-3179''s partial-complete commit allowance does not recognise ''bin/fw git
+  commit'' - only bare ''git commit''. Measured on T-3251: with the task at work-completed
+  and focus on it, ''bin/fw git commit -m ...'' was blocked three times (multi-line
+  message, single-line message, with and without an env prefix), each time with a
+  block message whose own second line says: "Note: ''git commit'' IS allowed here
+  (T-3179) - a partial-complete task may always checkpoint its own verified work under
+  its own ID." Bare ''git commit -m ...'' succeeded immediately with the same staged
+  content. The allowance exists and works; it just does not cover the framework''s
+  own canonical commit verb, which CLAUDE.md''s Quick Reference lists first (''fw
+  git commit -m T-XXX: ...''). In this state the block message is actively misleading:
+  it names the allowance, says to run the commit bare, and the agent re-runs the fw-prefixed
+  form because that IS the bare form of the documented verb. Cost: three blocked attempts
+  and a workaround that bypasses the fw wrapper''s own pre-commit path. Fix shape:
+  add the ''bin/fw git commit'' / ''fw git commit'' prefixes to the same allowance
+  in agents/context/lib/safe-commands.sh (or wherever the T-3179 exemption matches),
+  pinned by a test exercising BOTH spellings under a work-completed focus - the single-spelling
+  test is what let this ship.'
 description: >
   Promoted from observation OBS-366
 
@@ -22,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:16:52Z
-last_update: 2026-09-06T18:16:52Z
-date_finished: null
+last_update: '2026-09-07T00:45:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +50,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-07T00:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=258,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T00:45:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3305: T-3179's partial-complete commit allowance does not recognise 'bin/fw git commit' - only bare 'git commit'. Measured on T-3251: with the task at work-completed and focus on it, 'bin/fw git commit -m ...' was blocked three times (multi-line message, single-line message, with and without an env prefix), each time with a block message whose own second line says: \"Note: 'git commit' IS allowed here (T-3179) - a partial-complete task may always checkpoint its own verified work under its own ID.\" Bare 'git commit -m ...' succeeded immediately with the same staged content. The allowance exists and works; it just does not cover the framework's own canonical commit verb, which CLAUDE.md's Quick Reference lists first ('fw git commit -m T-XXX: ...'). In this state the block message is actively misleading: it names the allowance, says to run the commit bare, and the agent re-runs the fw-prefixed form because that IS the bare form of the documented verb. Cost: three blocked attempts and a workaround that bypasses the fw wrapper's own pre-commit path. Fix shape: add the 'bin/fw git commit' / 'fw git commit' prefixes to the same allowance in agents/context/lib/safe-commands.sh (or wherever the T-3179 exemption matches), pinned by a test exercising BOTH spellings under a work-completed focus - the single-spelling test is what let this ship.
