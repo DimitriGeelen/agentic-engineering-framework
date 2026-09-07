@@ -522,6 +522,53 @@ proceed with T-3286's *mechanism* (carry whatever id resolves), defer its
 
 ---
 
+## Arc-020 — charter and build decomposition
+
+**Objective (the north star).** The framework has no explicit model of *who* an
+agent is talking to, or *how to reach them again*. Identity is an emergent accident
+of whatever crypto fingerprint termlink resolves — so distinct co-resident agents
+collapse into one correspondent, and a connection that drops has no defined way to
+recover. **arc-020 gives every agent a durable, addressable identity and gives the
+connection between two agents the ability to heal itself** — so "who is this" is
+unambiguous and "reach them again" is a designed, recoverable operation rather than
+luck.
+
+**Goals (concrete, testable).**
+
+| Goal | Outcome |
+|------|---------|
+| **G1** | **Distinct agents are distinct correspondents** — two co-resident instances never collapse into one identity on a thread. (The origin bug, killed.) |
+| **G2** | **Every agent has a durable address** — a stable `aef::…@name` that survives instance death and re-resolves to a live instance. The address book the framework lacks today. |
+| **G3** | **A dropped connection recovers itself** — a dormant circuit reactivates cheaply (no rediscovery); a dead one climbs the ladder to an equivalent under the same durable name, and the message still lands. |
+| **G4** | **Recovery is safe and bounded** — self-heal provisions unattended (antifragile) but cannot run away or provision garbage: idempotent, load-adaptive, path/fleet-gated, fully audited. |
+| **G5** | **Reconnection restores living memory** — a reconnected agent resumes its own accumulated, project-durable state, possibly richer. Availability AND memory, agent-sovereign. |
+
+**Slice → goal traceability** (every slice serves a goal; every goal has a slice):
+
+| Slice | Serves | Implements |
+|-------|--------|-----------|
+| T-3286 (filed) — producers stamp `agent_id` = durable name | **G1**, G2 | D1/D2 leaf on the wire |
+| S1 — V9 address library (parse/serialize, elision, alias, token-drop) | **G2** | D3 grammar |
+| S2 — circuit registry + three-state lifecycle | **G3** | D1/D4 |
+| S3 — resolution/provisioning ladder (resolve ungated, provision Tier-3) | **G3**, G4 | D5 |
+| S4 — claim-based election (exactly-one provisioning) | **G4** | D5 bound 1 / Q-A |
+| S5a — governor v1 (loadavg threshold) · S5b — governor full (mem/disk/cpu/net) | **G4** | D5 bound 2 |
+| S6 — fleet repo-source + sha256 verify → else inform operator | **G4** | D5 bound 3 |
+| S7 — provision audit trail (JSONL) | **G4** | D5 bound 4 |
+| (G5 is a *property*, not a build) — guaranteed by memory-at-project (D2) + S2 reconnecting into the fabric; verified, not separately built | **G5** | D4/C |
+
+**Gating decisions (rulings, not builds — must close before the slices they gate):**
+- **(d) hub-cardinality** → shapes G2's address in **S1** (is `hub=` mandatory or
+  derivable?). Close before S1 finalizes the grammar.
+- **(f) shared-`@name` mutex** → a G4/G5 safety concern (two instances writing one
+  project fabric). Needs a design call before S2/S3.
+
+**Dependency spine:** `(d) → S1 → S2 → S3 → {S4, S5a→S5b, S6, S7}`. T-3286 lands
+first as the narrow parity fix and adopts S1's format when it exists. S4–S7 are
+independent once S3 exists (parallelisable). `(f)` feeds S2/S3.
+
+---
+
 ## Dialogue Log (C-001 extension — the WHY behind the model)
 
 **2026-09-06 — opening.**
