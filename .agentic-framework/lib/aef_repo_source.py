@@ -167,6 +167,63 @@ def default_notice_sink(notice: OperatorNotice) -> None:
     print(f"[aef-repo-source] OPERATOR NOTICE: {notice.message}", file=sys.stderr)
 
 
+DEFAULT_NOTICE_CHANNEL = "aef-operator-notices"
+
+
+def _format_notice(notice: OperatorNotice) -> str:
+    peers = ", ".join(notice.peers_tried) or "none"
+    return (
+        f"[AEF self-heal] cannot source repo for {notice.project!r}: "
+        f"{notice.message} (peers tried: {peers})"
+    )
+
+
+def termlink_notice_sink(
+    channel: str = DEFAULT_NOTICE_CHANNEL,
+    invoke: Callable[..., dict] | None = None,
+    *,
+    also_default: bool = True,
+) -> Callable[[OperatorNotice], None]:
+    """T-3335 (arc-020 S8): wire the D5-bound-3 'inform operator' seam to a
+    live termlink channel.
+
+    Returns a ``notice_sink`` that posts the operator notice to a durable
+    termlink channel (``aef-operator-notices`` by default) so the halt is
+    visible fleet-wide, not only in one process's stderr.
+
+    **Antifragile by construction:** the local delivery (``default_notice_sink``
+    — the OPERATOR_NOTICES ledger + stderr) fires FIRST and unconditionally
+    when ``also_default`` is set; the termlink post is strictly ADDITIONAL and
+    best-effort. A termlink failure (hub down, binary missing) is itself logged
+    to stderr and never suppresses the operator notice — a self-heal that
+    cannot start must never fail silently because its *notification* channel
+    was also down.
+
+    Inject ``invoke`` in tests to exercise the post path with no live hub.
+    """
+    if invoke is None:
+        try:  # lazy: keep this module loadable even if aef_election is not
+            from .aef_election import default_termlink_invoke as _inv
+        except ImportError:  # pragma: no cover — lib/ directly on sys.path
+            from aef_election import default_termlink_invoke as _inv
+        invoke = _inv
+
+    def _sink(notice: OperatorNotice) -> None:
+        if also_default:
+            default_notice_sink(notice)
+        body = _format_notice(notice)
+        try:
+            invoke(["channel", "create", channel])  # idempotent
+            invoke(["channel", "post", channel, body, "--json"])
+        except Exception as exc:  # best-effort — never mask the notice
+            print(
+                f"[aef-repo-source] termlink notice post failed: {exc}",
+                file=sys.stderr,
+            )
+
+    return _sink
+
+
 # ── the sourcing run: query -> fetch -> verify -> materialize ────────────
 
 
