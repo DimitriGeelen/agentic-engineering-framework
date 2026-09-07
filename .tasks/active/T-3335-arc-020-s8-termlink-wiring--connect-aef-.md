@@ -118,6 +118,30 @@ renew-or-lapse *lease*, not a permanent mutex. Both facts are captured in ## Dec
   **Expected:** Output shows one `WON` and one `LOST` for the same target, the LOST row names the winner as holder, and a final `released → re-electable` line.
   **If not:** Capture the script output + `termlink channel claims <topic> --json` for the target's topic; the offset-lease TTL (30s default) may have lapsed mid-run — re-run, or note the hub error code.
 
+## Recommendation
+
+**Recommendation:** GO (claim-backend seam)
+
+**Rationale:** The claim-backend seam — the only hard `NotImplementedError` stub in the
+arc-020 substrate and the mutex the origin-bug fix (G1) rests on — is now wired to live
+termlink and verified three ways: 12 unit tests via an injectable fake invoke (no hub
+needed), the existing election suite still green (27 passed total), and a **live smoke on
+the real hub passing** (1 WON / 1 LOST naming the holder / release reopens / re-elect
+wins). The `[REVIEW]` Human AC is the live smoke, which already ran green in-session — the
+human need only re-run `python3 tests/manual/s8_claim_smoke.py` to confirm on their hub.
+
+**Evidence:**
+- `lib/aef_election.py` — `TermlinkChannelClaimBackend` live (`default_termlink_invoke`, `election_topic`, `TermlinkClaimTicket`); deferred-stub string gone (Verification cmd 2 green).
+- `tests/unit/test_aef_election_termlink.py` — 12 tests (won/lost/holder/release/idempotent/seed-once/elect-integration), all green.
+- `tests/manual/s8_claim_smoke.py` — live smoke, exit 0 on hub PID 1026708.
+- `## Decisions` — the two integration findings (offset-lease-not-mutex; seed-a-sentinel) captured; learning registered (P-001).
+- `bin/fw vendor self --check` clean.
+
+**Scope note:** this task delivers the claim seam only (one deliverable). The remaining S8
+seams (probe/provisioner dispatcher, peer-query/materialize, notice-sink) and the full
+G1+G3 co-resident/self-heal demo are separate follow-on tasks — the arc does not close on
+this task alone.
+
 ## Verification
 
 timeout 120 python3 -m pytest tests/unit/test_aef_election_termlink.py tests/unit/test_aef_election.py -q > /tmp/.s8-claim.out 2>&1 && grep -q passed /tmp/.s8-claim.out && ! grep -q failed /tmp/.s8-claim.out
