@@ -228,6 +228,11 @@ bin/fw vendor self --check
 
 ## Evolution
 
+### 2026-09-07 — chose a durable operator channel over a DM, and made the post best-effort
+- **What changed:** The seam map listed `notice_sink → termlink agent post / broadcast / operator DM` as candidates. A DM needs a resolved operator session id the substrate does not yet carry (durable-address resolution is the not-yet-built probe seam), so a DM would couple this seam to unfinished work. A durable named channel (`aef-operator-notices`) needs no operator identity to exist and is fleet-visible.
+- **Plan impact:** Notice delivery is decoupled from address resolution — this seam ships now instead of blocking on the probe/durable-address seam. The termlink post became strictly *additional* to the local ledger, not a replacement, so a hub outage cannot swallow a "self-heal cannot start" signal (the exact failure the D5-bound-3 notice exists to prevent).
+- **Triggered:** No new sub-task. Reinforced the S8 decomposition: each seam wires independently and degrades to its local default; the remaining probe/provisioner and peer-query/materialize seams are separate follow-ons (see T-3335 Context).
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
