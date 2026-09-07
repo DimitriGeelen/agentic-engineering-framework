@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3308: arc-020 S2: circuit registry + three-state lifecycle
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T06:58:40Z
+# ============================================================================
+
+task_id: T-3308
+task_name: "arc-020 S2: circuit registry + three-state lifecycle"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-07T00:16:52Z
+completed: 2026-09-07T06:58:24Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-07T08:53:19+02:00
+last_commit: 2026-09-07T08:53:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S2 circuit registry + three-state lifecycle (D1/D4/D7)
+
+# Key outcomes
+outcomes:
+  - 'Circuit registry records established circuits keyed by circuit id (durable name + `session=`), each in state ∈ {live, dormant, dead}'
+  - 'Dormant→reactivate fast path: a retained circuit id reactivates a dormant profile in a live session without rediscovery, bounded by the session''s profile registry (D4-B)'
+  - 'Death test: a circuit is declared dead only by a resolve-walk down its address failing to find the session (D4-A), never by timeout alone'
+  - 'Reconnection re-plugs into the project context fabric so resumed state is the agent''s own latest, project-durable (D4-C)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-07 — Persistence format: append-only JSONL, last-write-wins replay'
+    chose: '`.context/circuits/registry.jsonl` — one JSON record per mutation; current state = last record per circuit id on replay.'
+    rationale: 'pure stdlib (no yaml dependency under the "stdlib only" constraint), crash-safe appends, and the file retains transition history for free (aligned with D5 bound 4 traceability, ahead of S7''s dedicated audit trail).'
+    alternatives_rejected: ['YAML snapshot map (needs PyYAML, rewrite-in-place loses history); JSON snapshot with atomic replace (loses history, no better than JSONL here).']
+  - decision: '2026-09-07 — D7 write-claim v1: advisory O_CREAT|O_EXCL claim file'
+    chose: '`WriteClaim` — advisory claim file `.context/circuits/.write-claim` created with `O_CREAT|O_EXCL`, carrying `{holder, pid, ts}`; stale claims (recorded pid no longer alive) are broken. Every registry mutation acquires it; reads never touch it.'
+    rationale: 'v1-simple per the D7 ruling ("a simple advisory claim is acceptable"); O_EXCL is atomic on POSIX local filesystems; pid-liveness gives crash recovery without a daemon. The eventual fleet-grade mechanism is `termlink channel claim` on the project address (D7 text) — this local claim is its single-host stand-in with the same acquire/release contract.'
+    alternatives_rejected: ['fcntl.flock (held-by-fd semantics are invisible to other processes for inspection, and no holder metadata); termlink channel claim now (couples S2 to a running hub; S3+ concern). Skip for tasks with no meaningful choices. Format:']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not] -->']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/aef_circuit.py'
+  - '.tasks/active/T-3308-arc-020-s2-circuit-registry--three-state.md'
+  - 'tests/unit/test_aef_circuit.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T08:53:19'
+    action: 'T-3308: S2 circuit registry + three-state lifecycle (D1/D4/D7)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 401 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 401
+  commits: 1
+  files_changed: 3
+  lines_added: 834
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3308-arc-020-s2-circuit-registry--three-state.md
+generated_by: context-agent-hybrid

@@ -8147,3 +8147,17 @@ git add .tasks/active/T-3287-*.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-3287:
   flag: '--skip-sovereignty'
   caller: 'check_human_sovereignty'
   reason: 'Inception decision: GO'
+- timestamp: '2026-09-07T06:49:15Z'
+  task: 'T-3308'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3302'
+  command: 'git add .tasks/active/T-3302-*.md && FW_SWITCH_FOCUS=1 git commit -m "T-3302: author real ACs A1-A6 + P-011 verification (dispatch prep)" 2>&1 | tail -1; echo "=== push output:"; cat /tmp/claude-0/-op'
+- timestamp: '2026-09-07T06:55:39Z'
+  task: 'T-3308'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3090'
+  command: 'FW_SWITCH_FOCUS=1 git add docs/reports/T-3090-obs-triage-2026-09-07.md && FW_SWITCH_FOCUS=1 git commit -m "T-3090: obs triage 2026-09-07 — 30 triaged (19 promote, 5 merge, 3 link, 3 close)
+
+Co-Autho'

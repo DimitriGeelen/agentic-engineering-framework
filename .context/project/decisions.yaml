@@ -3845,3 +3845,17 @@ decisions:
     date: 2026-09-07
     task: T-3307
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-552
+    decision: "`.context/circuits/registry.jsonl` — one JSON record per mutation; current state = last record per circuit id on replay."
+    scope: project
+    date: 2026-09-07
+    task: T-3308
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-553
+    decision: "`WriteClaim` — advisory claim file `.context/circuits/.write-claim` created with `O_CREAT|O_EXCL`, carrying `{holder, pid, ts}`; stale claims (recorded pid no longer alive) are broken. Every registry mutation acquires it; reads never touch it."
+    scope: project
+    date: 2026-09-07
+    task: T-3308
+    rationale: "Auto-captured from task file on completion"

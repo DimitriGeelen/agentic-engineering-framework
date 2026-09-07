@@ -342,3 +342,22 @@ jobs:
     \ so provenance is never null (mirrors the systemd unit's Environment= line in\
     \ deploy/resolver-loop.service, the currently-live path \u2014 this cron entry\
     \ is the documented alternative for hosts without systemd)."
+- id: unit-suite-nightly
+  name: Unit-suite corpus run (tests/unit, nightly)
+  schedule: 3 3 * * *
+  command: /opt/999-Agentic-Engineering-Framework/agents/audit/unit-suite.sh
+  source_file: agentic-audit.crontab
+  origin_task: T-3302
+  status: active
+  description: "T-3302 (OBS-361) — runs the full tests/unit corpus (615 bats +
+    191 pytest files) once nightly via agents/audit/unit-suite.sh and writes a
+    machine-readable report to .context/audits/unit-suite/LATEST.yaml (+ dated
+    sibling) that fw audit surfaces as 'Unit suite (tests/unit)' (FAIL on red,
+    WARN missing/>48h). Before this, nothing scheduled tests/unit: the daily
+    audit's invariant-suite line covers tests/lint ONLY, so unit reds sat
+    invisible until an adjacent run tripped over them (two found by accident
+    2026-09-06 — OBS-359/OBS-360). Nightly + off-peak (03:03) because the
+    corpus is heavy AND its suites spawn 'audit.sh --section structure', which
+    contends the shared audit lock (T-3070 collision class) — the runner takes
+    its OWN overlap lock (.context/locks/unit-suite.lock, skip-if-held logged
+    exit 0) and never holds the audit lock itself."

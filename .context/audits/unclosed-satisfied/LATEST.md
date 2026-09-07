@@ -26,7 +26,7 @@ alone (CLAUDE.md Human Task Completion Rule).
 Rows with an empty `## Verification` block need that scrutiny most —
 nothing mechanical would gate their close.
 
-## Qualifying tasks (17)
+## Qualifying tasks (18)
 
 | Task | Status | Workflow | Name | Agent ACs | Verification cmds? |
 |------|--------|----------|------|----------:|--------------------|
@@ -44,6 +44,7 @@ nothing mechanical would gate their close.
 | T-3300 | started-work | test | tests/unit/ac_counter_sed_range_one_line_comment.bat... | 2 | yes |
 | T-3301 | started-work | build | tests/unit/inception_decide_emit_review_post_move.ba... | 3 | yes |
 | T-3306 | started-work | build | Close-gate self-reentry deadlock: 'fw task update T-... | 4 | yes |
+| T-3307 | started-work | build | arc-020 S1: V9 address library | 5 | yes |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |
