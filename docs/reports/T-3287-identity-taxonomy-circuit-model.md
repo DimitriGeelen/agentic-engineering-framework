@@ -459,6 +459,31 @@ same code path, so the bounds are load-bearing):
 (b) fleet repo-sourcing + integrity verification (bound 3). Both are additive
 capabilities the identity design depends on but does not itself build.
 
+**D6 (2026-09-07, RATIFIED) — hub is 1:1 with host by default; `hub=` is optional
+in the address.** A hub is the host's single entry broker ("I need to be a termlink
+hub — that is the entry", round 4). So host and hub are co-determined in the common
+case and `hub=` carries no addressing distinction — it is **derivable and optional**:
+omitted → the host's default/only hub. The field is **retained** in the grammar for
+the rare multi-hub host (e.g. prod/test split), so the design is forward-compatible.
+Canonical common-case address drops it:
+`aef::host=host107.ring20.lan::project=/opt/999-Agentic-Engineering-Framework::@reviewer::`
+Consequence for S1: `hub=` parses as optional; a bare address resolves the hub via
+the host default. Effectively 4 addressing levels in the common case, 5 when a host
+runs more than one hub.
+
+**D7 (2026-09-07, RATIFIED) — shared-`@name` writes serialize through a per-project
+write-claim (existing doctrine, not new invention).** Two instances wearing one
+`@name` in one project converge on that project's `.context/` fabric (the D4
+downstream). Resolution reuses the framework's own §Execution Model rule — *"fan out
+on reads, fan in serially on writes"* — plus the claim primitive: the project's
+shared fabric has a **single-writer claim**; writes serialize through a per-project
+write-claim (`channel claim` on the project address), reads fan out freely. This is
+the **AEF layer**, per the operator's round-5 ruling (conflicts belong at the AEF
+level *because* the AEF layer owns the shared memory — D4). No CRDT/merge needed —
+serialise the write leg. Consequence for S2/S3: acquire the project write-claim
+before mutating fabric; a second same-`@name` instance reads freely and waits/queues
+on writes.
+
 **F6 (2026-09-07, verification finding — challenges operator's slash claim).**
 Operator claimed "all LLM harnesses use `/` for agents (Codex, OpenCode,
 Antigravity, Anthropic)" and asked to be challenged if wrong. Verified via web
@@ -768,8 +793,18 @@ independent once S3 exists (parallelisable). `(f)` feeds S2/S3.
   network-sourcing crosses a trust boundary → **known-fleet-only + integrity-verified**
   (sha256 manifest, the `.107` pattern). *Operator confirmed both* → **D5 RATIFIED.**
 
-**Next in dialogue:** the still-open queue, one at a time: (c) Q-B completion
-("termlink or termlink"); (d) hub 1:1-with-host or not (if 1:1, levels 1–2 collapse
-to a compound root); (f) AEF-vs-termlink mutex when two instances share one `@name`
-(round-5 + D4-downstream). Then: is the design landable — a GO that spawns build
-slices (T-3286 + the D5 follow-ons), or more exploration?
+**2026-09-07 — round 11 (arc-020 created; d + f closed; tasks created).**
+
+- *Operator directed:* put the design in an arc, work out build tasks. Agent created
+  **arc-020** (anchor T-3287, user-observable headline mechanic) and a charter:
+  objective + goals G1–G5 + slice→goal traceability.
+- *Operator asked for the arc objective/goals and the slice linkage* — written into
+  the arc description (objective-first) and the charter section above.
+- *Operator directed:* close (d) and (f), then create the tasks. Agent closed both on
+  delegated authority: **D6** (hub 1:1, `hub=` optional) and **D7** (shared-`@name`
+  writes serialise through a per-project write-claim — existing doctrine). Then
+  created the arc-020 build tasks (S1–S7) with real ACs.
+
+**Next in dialogue:** (c) Q-B completion (operator's to finish — "termlink or
+termlink") remains the one open item. The design is landable: a **GO on T-3287**
+authorises executing the arc-020 slices. Surfaced via `fw task review T-3287`.
