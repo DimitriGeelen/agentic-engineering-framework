@@ -1,8 +1,11 @@
 ---
 id: T-3331
-name: "External writer mutated an active task status mid-session with no notice — attribute the sweep, decide whether non-owner task-file mutations must surface"
+name: "External writer mutated an active task status mid-session with no notice —
+  attribute the sweep, decide whether non-owner task-file mutations must surface"
 description: >
-  Promoted from OBS-347. Fingerprint: status/horizon/tags flipped by machinery, envelopes ambiguous. Sovereignty pair with OBS-369 — one attribution investigation likely closes both.
+  Promoted from OBS-347. Fingerprint: status/horizon/tags flipped by machinery, envelopes
+  ambiguous. Sovereignty pair with OBS-369 — one attribution investigation likely
+  closes both.
 
 status: captured
 workflow_type: inception
@@ -12,8 +15,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-09-07T07:07:43Z
-last_update: 2026-09-07T07:09:25Z
-date_finished: null
+last_update: '2026-09-07T07:15:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +25,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-09-07T07:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=115,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T07:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3331: External writer mutated an active task status mid-session with no notice — attribute the sweep, decide whether non-owner task-file mutations must surface

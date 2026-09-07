@@ -1,6 +1,15 @@
 ---
 id: T-3322
-name: "Cross-project task IDs in commit prose trigger local episodic re-mining. agents/git/lib/hooks.sh:676 refreshes .context/episodic/T-NNNN.yaml for EVERY T-NNNN matched anywhere in the commit message, including prose references to another project's tasks. Observed on commit 5cdb36e3a, which named the peer's T-037 and re-mined our own T-037 (fw doctor health check). No corruption occurred: mine() greps --grep='T-037:' so it recomputes from colon-prefixed commits only, and our T-037's footprint was an absent measurement it left alone. The forward risk is real though: the T-3145 ingestion initiative names peer task IDs throughout, and a commit written 'T-037: ...' for the PEER's task inside this repo would silently join our T-037's footprint. Same low-ID cross-project collision class as the port-3000 false green (T-1376)."
+name: "Cross-project task IDs in commit prose trigger local episodic re-mining. agents/git/lib/hooks.sh:676
+  refreshes .context/episodic/T-NNNN.yaml for EVERY T-NNNN matched anywhere in the
+  commit message, including prose references to another project's tasks. Observed
+  on commit 5cdb36e3a, which named the peer's T-037 and re-mined our own T-037 (fw
+  doctor health check). No corruption occurred: mine() greps --grep='T-037:' so it
+  recomputes from colon-prefixed commits only, and our T-037's footprint was an absent
+  measurement it left alone. The forward risk is real though: the T-3145 ingestion
+  initiative names peer task IDs throughout, and a commit written 'T-037: ...' for
+  the PEER's task inside this repo would silently join our T-037's footprint. Same
+  low-ID cross-project collision class as the port-3000 false green (T-1376)."
 description: >
   Promoted from observation OBS-346
 
@@ -22,8 +31,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:03:50Z
-last_update: 2026-09-07T07:09:23Z
-date_finished: null
+last_update: '2026-09-07T07:15:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +43,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-07T07:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=261,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T07:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 4
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=4 (body:cross-machine); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3322: Cross-project task IDs in commit prose trigger local episodic re-mining. agents/git/lib/hooks.sh:676 refreshes .context/episodic/T-NNNN.yaml for EVERY T-NNNN matched anywhere in the commit message, including prose references to another project's tasks. Observed on commit 5cdb36e3a, which named the peer's T-037 and re-mined our own T-037 (fw doctor health check). No corruption occurred: mine() greps --grep='T-037:' so it recomputes from colon-prefixed commits only, and our T-037's footprint was an absent measurement it left alone. The forward risk is real though: the T-3145 ingestion initiative names peer task IDs throughout, and a commit written 'T-037: ...' for the PEER's task inside this repo would silently join our T-037's footprint. Same low-ID cross-project collision class as the port-3000 false green (T-1376).

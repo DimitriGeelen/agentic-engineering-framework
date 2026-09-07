@@ -1,6 +1,19 @@
 ---
 id: T-3323
-name: "Cron audit runs are stacking: three concurrent agents/audit/audit.sh --section traceability,episodic,discovery-trends --cron processes observed at 15:07, elapsed 04:04 / 04:04 / 00:06. The cron interval is shorter than the run takes on the current corpus, so instances pile up and audit.lock is held continuously. Downstream effect measured this session: the pre-push gate refuses every push while the lock is held (correctly - no verdict was produced), so pushes are blocked not by a failing audit but by audit throughput. Blocked two pushes ~15 minutes apart today, and the same shape blocked the S-2026-0828-1405 handover push earlier. Adjacent to T-3127 (no check asserts the full-audit timeout budget still fits the corpus) and T-3202 (timing record cannot distinguish external kill from exhaustion), but distinct: this is arrival rate vs service time, not a single run's duration. Suggested check before filing: compare the cron schedule interval against the p95 full-audit duration in .context/audits/. Not investigated - observed at 87 percent of the budget cap, past the stop line."
+name: "Cron audit runs are stacking: three concurrent agents/audit/audit.sh --section
+  traceability,episodic,discovery-trends --cron processes observed at 15:07, elapsed
+  04:04 / 04:04 / 00:06. The cron interval is shorter than the run takes on the current
+  corpus, so instances pile up and audit.lock is held continuously. Downstream effect
+  measured this session: the pre-push gate refuses every push while the lock is held
+  (correctly - no verdict was produced), so pushes are blocked not by a failing audit
+  but by audit throughput. Blocked two pushes ~15 minutes apart today, and the same
+  shape blocked the S-2026-0828-1405 handover push earlier. Adjacent to T-3127 (no
+  check asserts the full-audit timeout budget still fits the corpus) and T-3202 (timing
+  record cannot distinguish external kill from exhaustion), but distinct: this is
+  arrival rate vs service time, not a single run's duration. Suggested check before
+  filing: compare the cron schedule interval against the p95 full-audit duration in
+  .context/audits/. Not investigated - observed at 87 percent of the budget cap, past
+  the stop line."
 description: >
   Promoted from observation OBS-351
 
@@ -22,8 +35,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:04:14Z
-last_update: 2026-09-07T07:09:23Z
-date_finished: null
+last_update: '2026-09-07T07:15:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +47,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-07T07:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=261,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T07:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3323: Cron audit runs are stacking: three concurrent agents/audit/audit.sh --section traceability,episodic,discovery-trends --cron processes observed at 15:07, elapsed 04:04 / 04:04 / 00:06. The cron interval is shorter than the run takes on the current corpus, so instances pile up and audit.lock is held continuously. Downstream effect measured this session: the pre-push gate refuses every push while the lock is held (correctly - no verdict was produced), so pushes are blocked not by a failing audit but by audit throughput. Blocked two pushes ~15 minutes apart today, and the same shape blocked the S-2026-0828-1405 handover push earlier. Adjacent to T-3127 (no check asserts the full-audit timeout budget still fits the corpus) and T-3202 (timing record cannot distinguish external kill from exhaustion), but distinct: this is arrival rate vs service time, not a single run's duration. Suggested check before filing: compare the cron schedule interval against the p95 full-audit duration in .context/audits/. Not investigated - observed at 87 percent of the budget cap, past the stop line.

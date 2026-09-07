@@ -1,16 +1,16 @@
 ---
-id: T-3310
-name: "arc-020 S4: claim-based election for exactly-one provisioning"
+id: T-3313
+name: "arc-020 S7: provision audit trail"
 description: >
-  Reuse termlink channel claim so a broadcast for a peer provisions exactly ONE instance,
-  not N (D5 bound 1 / Q-A). Serves G4.
+  Log every auto-provision event to JSONL for full traceability (D5 bound 4). Serves
+  G4.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/aef_provision_log.py]
 related_tasks: []
 arc_id: arc-020
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,9 +23,9 @@ arc_id: arc-020
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-07T00:17:19Z
-last_update: 2026-09-07T07:13:02Z
-date_finished:
+created: 2026-09-07T00:17:59Z
+last_update: 2026-09-07T07:23:03Z
+date_finished: 2026-09-07T07:23:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -47,7 +47,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=262,acs=5)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-07T00:30:18Z'
+  - ts: '2026-09-07T00:30:19Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -66,19 +66,19 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3310: arc-020 S4: claim-based election for exactly-one provisioning
+# T-3313: arc-020 S7: provision audit trail
 
 ## Context
 
-Exactly-one provisioning via the existing `channel claim` primitive (D5 bound 1 /
-Q-A). Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`. Serves **G4**.
+Full traceability of auto-provision events (D5 bound 4). Design in
+`docs/reports/T-3287-identity-taxonomy-circuit-model.md`. Serves **G4**.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] A broadcast for a peer routes through `termlink channel claim`; exactly one candidate wins and provisions, the rest back off (D5 bound 1 / Q-A) — `lib/aef_election.py` elect()/elect_and_provision(); claim backend injectable, termlink-channel-claim adapter SHAPE pinned (see ## Decisions — real termlink wiring deferred by dispatch scoping); race test `test_race_broadcast_storm_provisions_one_not_n` proves exactly one PROVISIONED, losers never enter the walk
-- [x] Concurrent claims for the same target are mutually exclusive (first-claim-wins), verified by a race test — `test_exactly_one_wins_under_thread_race` (8 barrier-released threads, one target) + `test_first_claim_wins_mutual_exclusion`; stable over 30 repeated runs
-- [x] Claim release/expiry returns the target to electable state — `test_release_returns_target_electable`, `test_stale_dead_pid_claim_is_broken` (crashed winner), `test_ttl_expiry_breaks_hung_live_pid_claim` (hung live-pid winner), crash-release leg in `test_winner_releases_on_completion_by_default`
+- [x] Every auto-provision event appends a JSONL row (timestamp, address, rung, outcome) to a provision audit log (D5 bound 4)
+- [x] The log is readable via a `fw` verb or a documented path
+- [x] Provisions denied by admission (S5) or halted by missing-path (S6) are logged too
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,9 +113,8 @@ Q-A). Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`. Serves
 
 ## Verification
 
-timeout 120 python3 -m pytest tests/unit/test_aef_election.py -q > /tmp/.s4-elect.out 2>&1 && grep -q passed /tmp/.s4-elect.out && ! grep -q failed /tmp/.s4-elect.out
-timeout 300 python3 -m pytest tests/unit/test_aef_address.py tests/unit/test_aef_circuit.py tests/unit/test_aef_resolve.py -q > /tmp/.s4-nowiden.out 2>&1 && grep -q "89 passed" /tmp/.s4-nowiden.out
-bin/fw vendor self --check
+timeout 120 python3 -m pytest tests/unit/test_aef_provision_log.py -q > /tmp/.s7-audit.out 2>&1 && grep -q passed /tmp/.s7-audit.out && ! grep -q failed /tmp/.s7-audit.out
+bash -n bin/fw
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -272,15 +271,18 @@ bin/fw vendor self --check
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-09-07 — S4 landed on the injectable seam, not on live termlink
-- **What changed:** The task title/AC said "routes through `termlink channel claim`"; what shipped is the election protocol with an injectable backend — local S2-style claim file as v1 default, termlink adapter as a pinned shape (see ## Decisions). The exactly-one property, backoff, and release/expiry are fully implemented and race-tested; only the substrate swap remains.
-- **Plan impact:** Later arc-020 wiring work implements `TermlinkChannelClaimBackend` against a live hub; nothing in elect()/elect_and_provision() changes when it does — the protocol boundary was the point.
-- **Triggered:** No new task filed here; the wiring is already part of the arc's later slices (parent orchestrator's call in the dispatch prompt).
-
-### 2026-09-07 — S2 claim mechanics have a payload-visibility window
-- **What changed:** Not known at filing: `WriteClaim._try_take` creates the claim file before writing its JSON, so a concurrent reader can observe an empty claim. Harmless for the S2 registry (its readers don't inspect the claim mid-write) but observable in elections, where losers read the holder while the winner is taking. Caught by the 8-thread race test (~2/15 flake), fixed S4-side with an atomic link-based take.
-- **Plan impact:** None for S4. If a future slice ever makes S2 registry contenders read `WriteClaim.current()` mid-race, the atomic take should be lifted into `lib/aef_circuit.py` then.
-- **Triggered:** Nothing filed — the S4-layer fix closes the exposure that exists today; the note above is the marker for when it would matter.
+### 2026-09-07 — outcome vocabulary recorded verbatim, not remapped
+- **What changed:** The dispatch spec sketched the row's outcome field as
+  `allow|deny|halt|provisioned|failed`, but the S3 resolver seam emits
+  `allow|deny|halted|refused` per decision (and never emits a per-row
+  "provisioned" — that is the walk-level ProvisionResult outcome, not a
+  step decision). The sink records the resolver's decision string verbatim
+  instead of remapping: a traceability log that renames what the emitter
+  said is worse evidence than one that quotes it.
+- **Plan impact:** None structural — schema keeps the six fields
+  (ts/address/level/outcome/actor/detail); `provisioned`/`failed` remain
+  valid values for richer future callers (documented in the module docstring).
+- **Triggered:** Nothing filed; tests pin the verbatim values (deny, halted).
 
 ## Recommendation
 
@@ -313,15 +315,14 @@ bin/fw vendor self --check
 
 ## Decisions
 
-### 2026-09-07 — Termlink claim backend: shape only, wiring deferred
-- **Chose:** The claim backend is injectable behind a `ClaimBackend` protocol. Default = the S2-style local claim file (subclass of `lib.aef_circuit.WriteClaim` — mechanics reused, not duplicated). `TermlinkChannelClaimBackend` is defined as a SHAPE-ONLY stub pinning the 1:1 verb mapping (`try_claim`→`channel claim`, `release`→`channel release`, `holder`→`channel claims`); its methods raise NotImplementedError until real termlink wiring lands in later arc-020 wiring work.
-- **Why:** Dispatch-level scoping call (parent orchestrator, T-3310 dispatch prompt): the election *semantics* (exactly-one-wins, backoff, release/expiry) are testable and reusable now; live termlink integration needs a running hub and belongs with the later wiring slices. Pinning the adapter shape keeps F5 ("reuse `channel claim`, do not invent an election") the committed substrate without blocking S4 on infrastructure.
-- **Rejected:** (a) wiring termlink now — untestable in a unit suite, couples S4 to hub availability; (b) local-file-only with no adapter shape — would leave F5's substrate choice unexpressed in code and invite a divergent invention later.
-
-### 2026-09-07 — Election claim take made atomic with its payload
-- **Chose:** `_ElectionClaim._try_take` overrides S2's take: payload is written to a temp file and hard-linked into place (link fails like O_EXCL when the claim exists), instead of S2's open-O_EXCL-then-write.
-- **Why:** The race test caught a real window in the inherited mechanics: between S2's file creation and its JSON write, a losing contender reading `holder()` sees an empty file → None. Flaked ~2/15 runs at 8 threads. Elections read the holder mid-race by design (losers report who won), so the payload must be atomic with the take.
-- **Rejected:** (a) modifying `lib/aef_circuit.py` — out of scope (S1–S3 frozen for this dispatch; the S2 registry serializes writes differently and doesn't read holder mid-race, so the window is benign there); (b) weakening the test to tolerate `holder=None` — would paper over a genuine observable race.
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
 
 ## Decision
 
@@ -335,14 +336,26 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-09-07T00:17:19Z — task-created [task-create-agent]
+### 2026-09-07T00:17:59Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3310-arc-020-s4-claim-based-election-for-exac.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3313-arc-020-s7-provision-audit-trail.md
 - **Context:** Initial task creation
 
-### 2026-09-07T00:19:14Z — status-update [task-update-agent]
+### 2026-09-07T00:19:15Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 
-### 2026-09-07T07:11:57Z — status-update [task-update-agent]
+### 2026-09-07T07:13:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0ec8f2fe
+- **Timestamp:** 2026-09-07T07:23:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-07T07:23:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

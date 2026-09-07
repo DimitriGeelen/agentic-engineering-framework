@@ -1,16 +1,17 @@
 ---
-id: T-3313
-name: "arc-020 S7: provision audit trail"
+id: T-3311
+name: "arc-020 S5: environmental governor v1 (load-adaptive admission)"
 description: >
-  Log every auto-provision event to JSONL for full traceability (D5 bound 4). Serves
-  G4.
+  Crude load-adaptive provisioning admission control (D5 bound 2): defer/deny provisioning
+  when host headroom is low (loadavg/headroom threshold v1). Full mem/disk/cpu/net
+  governor is a follow-on. Serves G4. Retrofits the load-62 incident.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/config.sh]
 related_tasks: []
 arc_id: arc-020
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,9 +24,9 @@ arc_id: arc-020
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-07T00:17:59Z
-last_update: 2026-09-07T07:13:29Z
-date_finished:
+created: 2026-09-07T00:17:32Z
+last_update: 2026-09-07T07:22:43Z
+date_finished: 2026-09-07T07:22:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -44,7 +45,7 @@ cost_estimate_proposed:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=262,acs=5)
+      (workflow:build); effort=8 (lines=263,acs=5)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-09-07T00:30:19Z'
@@ -66,19 +67,39 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3313: arc-020 S7: provision audit trail
+# T-3311: arc-020 S5: environmental governor v1 (load-adaptive admission)
 
 ## Context
 
-Full traceability of auto-provision events (D5 bound 4). Design in
-`docs/reports/T-3287-identity-taxonomy-circuit-model.md`. Serves **G4**.
+Load-adaptive provisioning admission, v1 (D5 bound 2). Retrofits the load-62 incident
+(T-3287 session). Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`.
+Serves **G4**.
+
+**Shipped shape (v1):** `lib/aef_governor.py` — `admission_check(decision_context)`
+returns allow/defer/deny from per-core normalized 1-minute loadavg vs a threshold
+(`FW_PROVISION_LOAD_MAX`, default 0.8, registered in `lib/config.sh`
+FW_CONFIG_REGISTRY). Bands: under threshold → allow; at/over → defer (backpressure);
+at/over 2× → deny (drowning; the load-62 host at ~3.9/core lands here). Defer/deny
+are logged (stderr or injected log sink), never silent (D5 bound 4). `as_admission()`
+adapts the governor to `lib/aef_resolve.provision()`'s boolean admission seam
+without modifying `aef_resolve.py` — defer and deny both block the step there;
+the log line carries the distinction.
+
+## Follow-on: S5b (separate slice)
+
+v1 is deliberately loadavg-only. The **full environmental governor — adaptive
+admission over memory / disk / CPU / network headroom** (D5 bound 2's complete
+form, "admission is load-adaptive, never a static cap") is a **separate build
+slice (S5b)**, not part of this task. The allow/defer/deny vocabulary, the
+`FW_PROVISION_LOAD_MAX`-style config surface, and the `as_admission()` seam
+adapter shipped here are the stable contract S5b grows into.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Every auto-provision event appends a JSONL row (timestamp, address, rung, outcome) to a provision audit log (D5 bound 4)
-- [x] The log is readable via a `fw` verb or a documented path
-- [x] Provisions denied by admission (S5) or halted by missing-path (S6) are logged too
+- [x] Provisioning admission consults host headroom (loadavg-based v1) and defers/denies when below threshold (D5 bound 2)
+- [x] The threshold is configurable (an `FW_*` key) and the deny path is logged, not silent
+- [x] Body documents the follow-on: full mem/disk/cpu/net adaptive governor is a separate slice (S5b)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,8 +134,8 @@ Full traceability of auto-provision events (D5 bound 4). Design in
 
 ## Verification
 
-timeout 120 python3 -m pytest tests/unit/test_aef_provision_log.py -q > /tmp/.s7-audit.out 2>&1 && grep -q passed /tmp/.s7-audit.out && ! grep -q failed /tmp/.s7-audit.out
-bash -n bin/fw
+timeout 120 python3 -m pytest tests/unit/test_aef_governor.py -q > /tmp/.s5-gov.out 2>&1 && grep -q passed /tmp/.s5-gov.out && ! grep -q failed /tmp/.s5-gov.out
+bash -n lib/config.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -271,18 +292,19 @@ bash -n bin/fw
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-09-07 — outcome vocabulary recorded verbatim, not remapped
-- **What changed:** The dispatch spec sketched the row's outcome field as
-  `allow|deny|halt|provisioned|failed`, but the S3 resolver seam emits
-  `allow|deny|halted|refused` per decision (and never emits a per-row
-  "provisioned" — that is the walk-level ProvisionResult outcome, not a
-  step decision). The sink records the resolver's decision string verbatim
-  instead of remapping: a traceability log that renames what the emitter
-  said is worse evidence than one that quotes it.
-- **Plan impact:** None structural — schema keeps the six fields
-  (ts/address/level/outcome/actor/detail); `provisioned`/`failed` remain
-  valid values for richer future callers (documented in the module docstring).
-- **Triggered:** Nothing filed; tests pin the verbatim values (deny, halted).
+### 2026-09-07 — governor decision vocabulary vs the boolean seam
+- **What changed:** the spec's governor speaks allow/defer/deny, but the S3
+  admission seam (`aef_resolve.provision`, landed before this slice) is
+  `Callable[[level, intended], bool]`. Rather than widening the seam (out of
+  scope — aef_resolve.py is frozen for this slice), the governor keeps its
+  tri-state API (`admission_check`) and ships an `as_admission()` adapter:
+  only allow maps to True; defer and deny both block, and the mandatory log
+  line carries which of the two it was.
+- **Plan impact:** none removed; S5b inherits the tri-state vocabulary and may
+  widen the seam itself if defer-with-retry semantics ever need to reach the
+  ladder (e.g. retry-after backoff instead of a hard DENIED outcome).
+- **Triggered:** no new task — the defer-vs-deny distinction at the seam is
+  noted here as S5b design input.
 
 ## Recommendation
 
@@ -336,14 +358,26 @@ bash -n bin/fw
 
 ## Updates
 
-### 2026-09-07T00:17:59Z — task-created [task-create-agent]
+### 2026-09-07T00:17:32Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3313-arc-020-s7-provision-audit-trail.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3311-arc-020-s5-environmental-governor-v1-loa.md
 - **Context:** Initial task creation
 
-### 2026-09-07T00:19:15Z — status-update [task-update-agent]
+### 2026-09-07T00:19:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 
-### 2026-09-07T07:13:29Z — status-update [task-update-agent]
+### 2026-09-07T07:13:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ab38972a
+- **Timestamp:** 2026-09-07T07:22:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-07T07:22:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

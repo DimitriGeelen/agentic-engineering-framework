@@ -1,8 +1,10 @@
 ---
 id: T-3332
-name: "Filing a task is indistinguishable from starting it — sanction a file-only route (commit a captured task without the started-work round-trip)"
+name: "Filing a task is indistinguishable from starting it — sanction a file-only
+  route (commit a captured task without the started-work round-trip)"
 description: >
-  Promoted from OBS-354. Governance/workflow-model question: T-3299 covers the gate-wedge sibling (OBS-353) but not this filing-friction leg.
+  Promoted from OBS-354. Governance/workflow-model question: T-3299 covers the gate-wedge
+  sibling (OBS-353) but not this filing-friction leg.
 
 status: captured
 workflow_type: inception
@@ -12,8 +14,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-09-07T07:08:09Z
-last_update: 2026-09-07T07:09:25Z
-date_finished: null
+last_update: '2026-09-07T07:15:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +24,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-09-07T07:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=115,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T07:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3332: Filing a task is indistinguishable from starting it — sanction a file-only route (commit a captured task without the started-work round-trip)

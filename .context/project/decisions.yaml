@@ -3887,3 +3887,17 @@ decisions:
     date: 2026-09-07
     task: T-3248
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-558
+    decision: "The claim backend is injectable behind a `ClaimBackend` protocol. Default = the S2-style local claim file (subclass of `lib.aef_circuit.WriteClaim` — mechanics reused, not duplicated). `TermlinkChannelClaimBackend` is defined as a SHAPE-ONLY stub pinning the 1:1 verb mapping (`try_claim`→`channel claim`, `release`→`channel release`, `holder`→`channel claims`); its methods raise NotImplementedError until real termlink wiring lands in later arc-020 wiring work."
+    scope: project
+    date: 2026-09-07
+    task: T-3310
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-559
+    decision: "`_ElectionClaim._try_take` overrides S2's take: payload is written to a temp file and hard-linked into place (link fails like O_EXCL when the claim exists), instead of S2's open-O_EXCL-then-write."
+    scope: project
+    date: 2026-09-07
+    task: T-3310
+    rationale: "Auto-captured from task file on completion"

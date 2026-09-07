@@ -1,6 +1,15 @@
 ---
 id: T-3319
-name: "fw bvp --include-proposed --quadrant hv-lc returns a degenerate ranking: the top 10 tasks all score BVP=108, NORM=0.40, COST=3.6 — identical to three significant figures. A ranking whose entries are indistinguishable cannot order work, which is its only purpose. Two compounding causes: (1) 120/147 tasks (82%) have no measurable cost because components: is unresolved (T-3068), so quadrant thresholds are computed over 27 tasks and applied to 147; (2) the v1 heuristic estimator appears to assign the same driver scores to any build task with similar AC/line counts, so proposed scores carry almost no per-task information. Same family as the T-3105 false-green class: the output looks like signal and is not. Relevant now that the standing directive is to prioritise HV/LC and HV/HC from this ranking."
+name: "fw bvp --include-proposed --quadrant hv-lc returns a degenerate ranking: the
+  top 10 tasks all score BVP=108, NORM=0.40, COST=3.6 — identical to three significant
+  figures. A ranking whose entries are indistinguishable cannot order work, which
+  is its only purpose. Two compounding causes: (1) 120/147 tasks (82%) have no measurable
+  cost because components: is unresolved (T-3068), so quadrant thresholds are computed
+  over 27 tasks and applied to 147; (2) the v1 heuristic estimator appears to assign
+  the same driver scores to any build task with similar AC/line counts, so proposed
+  scores carry almost no per-task information. Same family as the T-3105 false-green
+  class: the output looks like signal and is not. Relevant now that the standing directive
+  is to prioritise HV/LC and HV/HC from this ranking."
 description: >
   Promoted from observation OBS-338
 
@@ -22,8 +31,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:02:33Z
-last_update: 2026-09-07T07:09:22Z
-date_finished: null
+last_update: '2026-09-07T07:15:16Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +43,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-07T07:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=261,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T07:15:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3319: fw bvp --include-proposed --quadrant hv-lc returns a degenerate ranking: the top 10 tasks all score BVP=108, NORM=0.40, COST=3.6 — identical to three significant figures. A ranking whose entries are indistinguishable cannot order work, which is its only purpose. Two compounding causes: (1) 120/147 tasks (82%) have no measurable cost because components: is unresolved (T-3068), so quadrant thresholds are computed over 27 tasks and applied to 147; (2) the v1 heuristic estimator appears to assign the same driver scores to any build task with similar AC/line counts, so proposed scores carry almost no per-task information. Same family as the T-3105 false-green class: the output looks like signal and is not. Relevant now that the standing directive is to prioritise HV/LC and HV/HC from this ranking.

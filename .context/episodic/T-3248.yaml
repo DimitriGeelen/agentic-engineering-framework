@@ -85,10 +85,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 7846
-  commits: 3
-  files_changed: 11
-  lines_added: 912
-  lines_removed: 30
+  commits: 4
+  files_changed: 31
+  lines_added: 1333
+  lines_removed: 112
+  footprint_refreshed_at: '2026-09-07T07:12:19Z'
+  footprint_refreshed_by_commit: 13f84698d
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3248-nothing-measures-useful-headroom-window-.md

@@ -1,6 +1,14 @@
 ---
 id: T-3330
-name: "Follow-up to OBS-373/T-3288: Human-heading parsers remain divergent after the incident-site fix. Strict (suffix-blind) extractors still live at agents/audit/audit.sh:6283 ('^### Human\\s*$') and lib/verify-acs.sh:294+297 ('### Human' substring + '### Human\\s*\\n'); tolerant forms exist at audit.sh:5714 (T-100189) and audit.sh:5793. lib/review_link_validator.py:84 and lib/task_satisfaction.py:97 unverified. Candidate: centralize Human-block extraction in lib/section-extract.sh (T-3148 did this for the AC section; T-3288 extracted the render-gate classifier to lib/human_review_state.py — either absorb the others into it or into section-extract). L-317 cross-surface parity class."
+name: "Follow-up to OBS-373/T-3288: Human-heading parsers remain divergent after the
+  incident-site fix. Strict (suffix-blind) extractors still live at agents/audit/audit.sh:6283
+  ('^### Human\\s*$') and lib/verify-acs.sh:294+297 ('### Human' substring + '###
+  Human\\s*\\n'); tolerant forms exist at audit.sh:5714 (T-100189) and audit.sh:5793.
+  lib/review_link_validator.py:84 and lib/task_satisfaction.py:97 unverified. Candidate:
+  centralize Human-block extraction in lib/section-extract.sh (T-3148 did this for
+  the AC section; T-3288 extracted the render-gate classifier to lib/human_review_state.py
+  — either absorb the others into it or into section-extract). L-317 cross-surface
+  parity class."
 description: >
   Promoted from observation OBS-375
 
@@ -22,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:06:50Z
-last_update: 2026-09-07T07:09:25Z
-date_finished: null
+last_update: '2026-09-07T07:15:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +42,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-07T07:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:refactor); effort=8 (lines=261,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T07:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3330: Follow-up to OBS-373/T-3288: Human-heading parsers remain divergent after the incident-site fix. Strict (suffix-blind) extractors still live at agents/audit/audit.sh:6283 ('^### Human\\s*$') and lib/verify-acs.sh:294+297 ('### Human' substring + '### Human\\s*\\n'); tolerant forms exist at audit.sh:5714 (T-100189) and audit.sh:5793. lib/review_link_validator.py:84 and lib/task_satisfaction.py:97 unverified. Candidate: centralize Human-block extraction in lib/section-extract.sh (T-3148 did this for the AC section; T-3288 extracted the render-gate classifier to lib/human_review_state.py — either absorb the others into it or into section-extract). L-317 cross-surface parity class.

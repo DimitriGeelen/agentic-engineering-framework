@@ -40013,3 +40013,75 @@ scan_id: R-d51bd3f0
 task_id: T-3248
 payload:
   task_file: .tasks/active/T-3248-nothing-measures-useful-headroom-window-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T07:22:12Z'
+scan_id: R-ab38972a
+task_id: T-3311
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T07:22:12Z'
+scan_id: R-ab38972a
+task_id: T-3311
+payload:
+  task_file: .tasks/active/T-3311-arc-020-s5-environmental-governor-v1-loa.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T07:23:06Z'
+scan_id: R-0ec8f2fe
+task_id: T-3313
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T07:23:06Z'
+scan_id: R-0ec8f2fe
+task_id: T-3313
+payload:
+  task_file: .tasks/active/T-3313-arc-020-s7-provision-audit-trail.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T07:24:11Z'
+scan_id: R-9ba17a3f
+task_id: T-3310
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T07:24:11Z'
+scan_id: R-9ba17a3f
+task_id: T-3310
+payload:
+  task_file: .tasks/active/T-3310-arc-020-s4-claim-based-election-for-exac.md
+---
+kind: scan_emitted
+timestamp: '2026-09-07T07:24:46Z'
+scan_id: R-38000472
+task_id: T-3312
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-07T07:24:46Z'
+scan_id: R-38000472
+task_id: T-3312
+payload:
+  task_file: .tasks/active/T-3312-arc-020-s6-fleet-repo-source--integrity-.md

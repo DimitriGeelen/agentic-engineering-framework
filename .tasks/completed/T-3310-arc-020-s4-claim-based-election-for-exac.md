@@ -1,17 +1,16 @@
 ---
-id: T-3311
-name: "arc-020 S5: environmental governor v1 (load-adaptive admission)"
+id: T-3310
+name: "arc-020 S4: claim-based election for exactly-one provisioning"
 description: >
-  Crude load-adaptive provisioning admission control (D5 bound 2): defer/deny provisioning
-  when host headroom is low (loadavg/headroom threshold v1). Full mem/disk/cpu/net
-  governor is a follow-on. Serves G4. Retrofits the load-62 incident.
+  Reuse termlink channel claim so a broadcast for a peer provisions exactly ONE instance,
+  not N (D5 bound 1 / Q-A). Serves G4.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/aef_election.py]
 related_tasks: []
 arc_id: arc-020
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -24,9 +23,9 @@ arc_id: arc-020
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-07T00:17:32Z
-last_update: 2026-09-07T07:13:18Z
-date_finished:
+created: 2026-09-07T00:17:19Z
+last_update: 2026-09-07T07:24:06Z
+date_finished: 2026-09-07T07:24:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -45,10 +44,10 @@ cost_estimate_proposed:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=263,acs=5)
+      (workflow:build); effort=8 (lines=262,acs=5)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-07T00:30:19Z'
+  - ts: '2026-09-07T00:30:18Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -67,39 +66,19 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3311: arc-020 S5: environmental governor v1 (load-adaptive admission)
+# T-3310: arc-020 S4: claim-based election for exactly-one provisioning
 
 ## Context
 
-Load-adaptive provisioning admission, v1 (D5 bound 2). Retrofits the load-62 incident
-(T-3287 session). Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`.
-Serves **G4**.
-
-**Shipped shape (v1):** `lib/aef_governor.py` — `admission_check(decision_context)`
-returns allow/defer/deny from per-core normalized 1-minute loadavg vs a threshold
-(`FW_PROVISION_LOAD_MAX`, default 0.8, registered in `lib/config.sh`
-FW_CONFIG_REGISTRY). Bands: under threshold → allow; at/over → defer (backpressure);
-at/over 2× → deny (drowning; the load-62 host at ~3.9/core lands here). Defer/deny
-are logged (stderr or injected log sink), never silent (D5 bound 4). `as_admission()`
-adapts the governor to `lib/aef_resolve.provision()`'s boolean admission seam
-without modifying `aef_resolve.py` — defer and deny both block the step there;
-the log line carries the distinction.
-
-## Follow-on: S5b (separate slice)
-
-v1 is deliberately loadavg-only. The **full environmental governor — adaptive
-admission over memory / disk / CPU / network headroom** (D5 bound 2's complete
-form, "admission is load-adaptive, never a static cap") is a **separate build
-slice (S5b)**, not part of this task. The allow/defer/deny vocabulary, the
-`FW_PROVISION_LOAD_MAX`-style config surface, and the `as_admission()` seam
-adapter shipped here are the stable contract S5b grows into.
+Exactly-one provisioning via the existing `channel claim` primitive (D5 bound 1 /
+Q-A). Design in `docs/reports/T-3287-identity-taxonomy-circuit-model.md`. Serves **G4**.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Provisioning admission consults host headroom (loadavg-based v1) and defers/denies when below threshold (D5 bound 2)
-- [x] The threshold is configurable (an `FW_*` key) and the deny path is logged, not silent
-- [x] Body documents the follow-on: full mem/disk/cpu/net adaptive governor is a separate slice (S5b)
+- [x] A broadcast for a peer routes through `termlink channel claim`; exactly one candidate wins and provisions, the rest back off (D5 bound 1 / Q-A) — `lib/aef_election.py` elect()/elect_and_provision(); claim backend injectable, termlink-channel-claim adapter SHAPE pinned (see ## Decisions — real termlink wiring deferred by dispatch scoping); race test `test_race_broadcast_storm_provisions_one_not_n` proves exactly one PROVISIONED, losers never enter the walk
+- [x] Concurrent claims for the same target are mutually exclusive (first-claim-wins), verified by a race test — `test_exactly_one_wins_under_thread_race` (8 barrier-released threads, one target) + `test_first_claim_wins_mutual_exclusion`; stable over 30 repeated runs
+- [x] Claim release/expiry returns the target to electable state — `test_release_returns_target_electable`, `test_stale_dead_pid_claim_is_broken` (crashed winner), `test_ttl_expiry_breaks_hung_live_pid_claim` (hung live-pid winner), crash-release leg in `test_winner_releases_on_completion_by_default`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -134,8 +113,9 @@ adapter shipped here are the stable contract S5b grows into.
 
 ## Verification
 
-timeout 120 python3 -m pytest tests/unit/test_aef_governor.py -q > /tmp/.s5-gov.out 2>&1 && grep -q passed /tmp/.s5-gov.out && ! grep -q failed /tmp/.s5-gov.out
-bash -n lib/config.sh
+timeout 120 python3 -m pytest tests/unit/test_aef_election.py -q > /tmp/.s4-elect.out 2>&1 && grep -q passed /tmp/.s4-elect.out && ! grep -q failed /tmp/.s4-elect.out
+timeout 300 python3 -m pytest tests/unit/test_aef_address.py tests/unit/test_aef_circuit.py tests/unit/test_aef_resolve.py -q > /tmp/.s4-nowiden.out 2>&1 && grep -q "89 passed" /tmp/.s4-nowiden.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -292,19 +272,15 @@ bash -n lib/config.sh
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-09-07 — governor decision vocabulary vs the boolean seam
-- **What changed:** the spec's governor speaks allow/defer/deny, but the S3
-  admission seam (`aef_resolve.provision`, landed before this slice) is
-  `Callable[[level, intended], bool]`. Rather than widening the seam (out of
-  scope — aef_resolve.py is frozen for this slice), the governor keeps its
-  tri-state API (`admission_check`) and ships an `as_admission()` adapter:
-  only allow maps to True; defer and deny both block, and the mandatory log
-  line carries which of the two it was.
-- **Plan impact:** none removed; S5b inherits the tri-state vocabulary and may
-  widen the seam itself if defer-with-retry semantics ever need to reach the
-  ladder (e.g. retry-after backoff instead of a hard DENIED outcome).
-- **Triggered:** no new task — the defer-vs-deny distinction at the seam is
-  noted here as S5b design input.
+### 2026-09-07 — S4 landed on the injectable seam, not on live termlink
+- **What changed:** The task title/AC said "routes through `termlink channel claim`"; what shipped is the election protocol with an injectable backend — local S2-style claim file as v1 default, termlink adapter as a pinned shape (see ## Decisions). The exactly-one property, backoff, and release/expiry are fully implemented and race-tested; only the substrate swap remains.
+- **Plan impact:** Later arc-020 wiring work implements `TermlinkChannelClaimBackend` against a live hub; nothing in elect()/elect_and_provision() changes when it does — the protocol boundary was the point.
+- **Triggered:** No new task filed here; the wiring is already part of the arc's later slices (parent orchestrator's call in the dispatch prompt).
+
+### 2026-09-07 — S2 claim mechanics have a payload-visibility window
+- **What changed:** Not known at filing: `WriteClaim._try_take` creates the claim file before writing its JSON, so a concurrent reader can observe an empty claim. Harmless for the S2 registry (its readers don't inspect the claim mid-write) but observable in elections, where losers read the holder while the winner is taking. Caught by the 8-thread race test (~2/15 flake), fixed S4-side with an atomic link-based take.
+- **Plan impact:** None for S4. If a future slice ever makes S2 registry contenders read `WriteClaim.current()` mid-race, the atomic take should be lifted into `lib/aef_circuit.py` then.
+- **Triggered:** Nothing filed — the S4-layer fix closes the exposure that exists today; the note above is the marker for when it would matter.
 
 ## Recommendation
 
@@ -337,14 +313,15 @@ bash -n lib/config.sh
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-07 — Termlink claim backend: shape only, wiring deferred
+- **Chose:** The claim backend is injectable behind a `ClaimBackend` protocol. Default = the S2-style local claim file (subclass of `lib.aef_circuit.WriteClaim` — mechanics reused, not duplicated). `TermlinkChannelClaimBackend` is defined as a SHAPE-ONLY stub pinning the 1:1 verb mapping (`try_claim`→`channel claim`, `release`→`channel release`, `holder`→`channel claims`); its methods raise NotImplementedError until real termlink wiring lands in later arc-020 wiring work.
+- **Why:** Dispatch-level scoping call (parent orchestrator, T-3310 dispatch prompt): the election *semantics* (exactly-one-wins, backoff, release/expiry) are testable and reusable now; live termlink integration needs a running hub and belongs with the later wiring slices. Pinning the adapter shape keeps F5 ("reuse `channel claim`, do not invent an election") the committed substrate without blocking S4 on infrastructure.
+- **Rejected:** (a) wiring termlink now — untestable in a unit suite, couples S4 to hub availability; (b) local-file-only with no adapter shape — would leave F5's substrate choice unexpressed in code and invite a divergent invention later.
+
+### 2026-09-07 — Election claim take made atomic with its payload
+- **Chose:** `_ElectionClaim._try_take` overrides S2's take: payload is written to a temp file and hard-linked into place (link fails like O_EXCL when the claim exists), instead of S2's open-O_EXCL-then-write.
+- **Why:** The race test caught a real window in the inherited mechanics: between S2's file creation and its JSON write, a losing contender reading `holder()` sees an empty file → None. Flaked ~2/15 runs at 8 threads. Elections read the holder mid-race by design (losers report who won), so the payload must be atomic with the take.
+- **Rejected:** (a) modifying `lib/aef_circuit.py` — out of scope (S1–S3 frozen for this dispatch; the S2 registry serializes writes differently and doesn't read holder mid-race, so the window is benign there); (b) weakening the test to tolerate `holder=None` — would paper over a genuine observable race.
 
 ## Decision
 
@@ -358,14 +335,30 @@ bash -n lib/config.sh
 
 ## Updates
 
-### 2026-09-07T00:17:32Z — task-created [task-create-agent]
+### 2026-09-07T00:17:19Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3311-arc-020-s5-environmental-governor-v1-loa.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3310-arc-020-s4-claim-based-election-for-exac.md
 - **Context:** Initial task creation
 
 ### 2026-09-07T00:19:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 
-### 2026-09-07T07:13:18Z — status-update [task-update-agent]
+### 2026-09-07T07:11:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9ba17a3f
+- **Timestamp:** 2026-09-07T07:24:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **external-publish** (high) — External publish or release
+     - matched: `broadcast`
+
+### 2026-09-07T07:24:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

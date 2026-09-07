@@ -1,6 +1,12 @@
 ---
 id: T-3329
-name: "Running the bats suite against the live repo rewrites .context/working/focus.yaml (observed: reset to T-001 repeatedly during a 62-file run), which makes the focus-drift gate block every write in the parent session until the run ends. Test harness mutating the framework state the session depends on — hermeticity gap, sibling to L-606. Candidate fix: tests that call fw work-on/context focus must set CONTEXT_DIR or PROJECT_ROOT to their sandbox; a lint could assert no test touches the live focus file. Found during T-3138."
+name: "Running the bats suite against the live repo rewrites .context/working/focus.yaml
+  (observed: reset to T-001 repeatedly during a 62-file run), which makes the focus-drift
+  gate block every write in the parent session until the run ends. Test harness mutating
+  the framework state the session depends on — hermeticity gap, sibling to L-606.
+  Candidate fix: tests that call fw work-on/context focus must set CONTEXT_DIR or
+  PROJECT_ROOT to their sandbox; a lint could assert no test touches the live focus
+  file. Found during T-3138."
 description: >
   Promoted from observation OBS-345
 
@@ -22,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:06:29Z
-last_update: 2026-09-07T07:09:24Z
-date_finished: null
+last_update: '2026-09-07T07:15:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +40,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-07T07:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=261,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-07T07:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3329: Running the bats suite against the live repo rewrites .context/working/focus.yaml (observed: reset to T-001 repeatedly during a 62-file run), which makes the focus-drift gate block every write in the parent session until the run ends. Test harness mutating the framework state the session depends on — hermeticity gap, sibling to L-606. Candidate fix: tests that call fw work-on/context focus must set CONTEXT_DIR or PROJECT_ROOT to their sandbox; a lint could assert no test touches the live focus file. Found during T-3138.

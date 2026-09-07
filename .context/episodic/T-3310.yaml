@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3310: arc-020 S4: claim-based election for exactly-one provisioning
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T07:24:23Z
+# ============================================================================
+
+task_id: T-3310
+task_name: "arc-020 S4: claim-based election for exactly-one provisioning"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-07T00:17:19Z
+completed: 2026-09-07T07:24:06Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-07T09:22:02+02:00
+last_commit: 2026-09-07T09:22:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claim-based election for exactly-one provisioning (arc-020 S4)
+
+# Key outcomes
+outcomes:
+  - 'A broadcast for a peer routes through `termlink channel claim`; exactly one candidate wins and provisions, the rest back off (D5 bound 1 / Q-A) — `lib/aef_election.py` elect()/elect_and_provision(); claim backend injectable, termlink-channel-claim adapter SHAPE pinned (see ## Decisions — real termlink wiring deferred by dispatch scoping); race test `test_race_broadcast_storm_provisions_one_not_n` proves exactly one PROVISIONED, losers never enter the walk'
+  - 'Concurrent claims for the same target are mutually exclusive (first-claim-wins), verified by a race test — `test_exactly_one_wins_under_thread_race` (8 barrier-released threads, one target) + `test_first_claim_wins_mutual_exclusion`; stable over 30 repeated runs'
+  - 'Claim release/expiry returns the target to electable state — `test_release_returns_target_electable`, `test_stale_dead_pid_claim_is_broken` (crashed winner), `test_ttl_expiry_breaks_hung_live_pid_claim` (hung live-pid winner), crash-release leg in `test_winner_releases_on_completion_by_default`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-07 — Termlink claim backend: shape only, wiring deferred'
+    chose: 'The claim backend is injectable behind a `ClaimBackend` protocol. Default = the S2-style local claim file (subclass of `lib.aef_circuit.WriteClaim` — mechanics reused, not duplicated). `TermlinkChannelClaimBackend` is defined as a SHAPE-ONLY stub pinning the 1:1 verb mapping (`try_claim`→`channel claim`, `release`→`channel release`, `holder`→`channel claims`); its methods raise NotImplementedError until real termlink wiring lands in later arc-020 wiring work.'
+    rationale: 'Dispatch-level scoping call (parent orchestrator, T-3310 dispatch prompt): the election *semantics* (exactly-one-wins, backoff, release/expiry) are testable and reusable now; live termlink integration needs a running hub and belongs with the later wiring slices. Pinning the adapter shape keeps F5 ("reuse `channel claim`, do not invent an election") the committed substrate without blocking S4 on infrastructure.'
+    alternatives_rejected: ['(a) wiring termlink now — untestable in a unit suite, couples S4 to hub availability; (b) local-file-only with no adapter shape — would leave F5''s substrate choice unexpressed in code and invite a divergent invention later.']
+  - decision: '2026-09-07 — Election claim take made atomic with its payload'
+    chose: '`_ElectionClaim._try_take` overrides S2''s take: payload is written to a temp file and hard-linked into place (link fails like O_EXCL when the claim exists), instead of S2''s open-O_EXCL-then-write.'
+    rationale: 'The race test caught a real window in the inherited mechanics: between S2''s file creation and its JSON write, a losing contender reading `holder()` sees an empty file → None. Flaked ~2/15 runs at 8 threads. Elections read the holder mid-race by design (losers report who won), so the payload must be atomic with the take.'
+    alternatives_rejected: ['(a) modifying `lib/aef_circuit.py` — out of scope (S1–S3 frozen for this dispatch; the S2 registry serializes writes differently and doesn''t read holder mid-race, so the window is benign there); (b) weakening the test to tolerate `holder=None` — would paper over a genuine observable race.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/aef_election.py'
+  - 'lib/aef_election.py'
+  - '.tasks/active/T-3310-arc-020-s4-claim-based-election-for-exac.md'
+  - 'tests/unit/test_aef_election.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T09:22:02'
+    action: 'T-3310: claim-based election for exactly-one provisioning (arc-020 S4)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 426 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 426
+  commits: 1
+  files_changed: 4
+  lines_added: 1090
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3310-arc-020-s4-claim-based-election-for-exac.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3313: arc-020 S7: provision audit trail
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T07:23:18Z
+# ============================================================================
+
+task_id: T-3313
+task_name: "arc-020 S7: provision audit trail"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-07T00:17:59Z
+completed: 2026-09-07T07:23:03Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-07T09:17:40+02:00
+last_commit: 2026-09-07T09:17:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S7 provision audit trail — JSONL sink (lib/aef_provision_log.py) for the S3 audit-sink seam, fw provisions verb, 11 tests (deny+halt logged, append-only, malformed-tolerant read)
+
+# Key outcomes
+outcomes:
+  - 'Every auto-provision event appends a JSONL row (timestamp, address, rung, outcome) to a provision audit log (D5 bound 4)'
+  - 'The log is readable via a `fw` verb or a documented path'
+  - 'Provisions denied by admission (S5) or halted by missing-path (S6) are logged too'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/aef_provision_log.py'
+  - 'bin/fw'
+  - 'lib/aef_provision_log.py'
+  - '.tasks/active/T-3313-arc-020-s7-provision-audit-trail.md'
+  - 'tests/unit/test_aef_provision_log.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T09:17:40'
+    action: 'T-3313: S7 provision audit trail — JSONL sink (lib/aef_provision_log.py) for the S3 audit-sink seam, fw provisions verb, 11 tests (deny+halt logged, append-only, malformed-tolerant read)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 425 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 425
+  commits: 1
+  files_changed: 6
+  lines_added: 607
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3313-arc-020-s7-provision-audit-trail.md
+generated_by: context-agent-hybrid
