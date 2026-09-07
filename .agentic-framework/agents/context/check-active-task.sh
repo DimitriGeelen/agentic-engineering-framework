@@ -1081,6 +1081,32 @@ if [ -n "$ACTIVE_FILE" ]; then
             HAS_PLACEHOLDER=$(echo "$AC_SECTION" | grep -ciE '\[(First|Second|Third|Fourth|Fifth) criterion\]' 2>/dev/null || true)
             REAL_AC_COUNT=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' 2>/dev/null || true)
             if [ "${HAS_PLACEHOLDER:-0}" -gt 0 ] || [ "${REAL_AC_COUNT:-0}" -eq 0 ]; then
+                # T-3299 (OBS-353): the remedies this block prints must be
+                # executable FROM the blocked state. They were not — remedy 2
+                # (`fw task update … --type inception`) fell through to this
+                # very branch, because `update` is not a safe-listed task
+                # sub-verb and nothing upstream admits it. The gate quoted its
+                # own escape route back verbatim while refusing it, and an
+                # agent whose only write surface was Bash had no legal move.
+                #
+                # Allow the metadata-only shapes here — and ONLY here, per the
+                # single-consumption-point argument at :269 (a predicate one
+                # site honours fails toward blocking if the site is missed).
+                # The predicate is narrow by construction (see safe-commands.sh
+                # is_task_metadata_update_command): one task id, only
+                # type/horizon/status/reason flags, no write patterns, no
+                # substitution, every chained clause independently safe. The
+                # drift gate (T-1730) already ran above, so a metadata update
+                # naming a task other than the focus never reaches this allow.
+                # Downstream, update-task.sh accepts every admitted flag —
+                # gate-allows/parser-rejects is the L-399 break this closes.
+                if [ "$TOOL_NAME" = "Bash" ] && [ -n "${BASH_CMD:-}" ] && \
+                   type is_task_metadata_update_command &>/dev/null && \
+                   is_task_metadata_update_command "$BASH_CMD"; then
+                    echo "NOTE: $CURRENT_TASK has placeholder/missing ACs (G-020) — allowing metadata-only 'fw task update' so the gate's own remedy is executable from the blocked state (T-3299)." >&2
+                    exit 0
+                fi
+
                 echo "" >&2
                 echo "BLOCKED: Task $CURRENT_TASK is a $WORKFLOW_TYPE task with placeholder/missing ACs." >&2
                 echo "" >&2
@@ -1088,9 +1114,15 @@ if [ -n "$ACTIVE_FILE" ]; then
                 echo "This prevents unscoped building. (G-020: Scope-Aware Task Gate)" >&2
                 echo "" >&2
                 echo "To unblock:" >&2
-                echo "  1. Edit the task file: replace [First criterion] with real ACs" >&2
-                echo "  2. Or change to inception:" >&2
+                echo "  1. Edit the task file with the Write/Edit TOOL: replace the placeholder" >&2
+                echo "     ACs with real ones. The task file (under .tasks/) is exempt for the" >&2
+                echo "     Write/Edit tools. SHELL writes to it (sed -i, redirects, heredocs)" >&2
+                echo "     stay blocked by design — the write scanner cannot prove a shell" >&2
+                echo "     write's sole target is the task file (T-3299)." >&2
+                echo "  2. Or change to inception (allowed from this blocked state):" >&2
                 echo "     $(_fw_cmd) task update $CURRENT_TASK --type inception" >&2
+                echo "  3. Or shelve it (also allowed from here):" >&2
+                echo "     $(_fw_cmd) task update $CURRENT_TASK --horizon later" >&2
                 _bootstrap_shape_hint "${BASH_CMD:-}"
                 echo "" >&2
                 echo "$(_blocked_subject)" >&2
