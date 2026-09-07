@@ -6,10 +6,10 @@ description: >
   a circuit, mint+retain the transient circuit id, fast-path reactivate a dormant
   profile, and the resolve-walk death test. Serves goal G3.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -25,7 +25,7 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T00:16:52Z
-last_update: '2026-09-07T00:30:18Z'
+last_update: 2026-09-07T06:47:59Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -78,10 +78,10 @@ The circuit half of arc-020 (D1/D4). Design in
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Circuit registry records established circuits keyed by circuit id (durable name + `session=`), each in state ∈ {live, dormant, dead}
-- [ ] Dormant→reactivate fast path: a retained circuit id reactivates a dormant profile in a live session without rediscovery, bounded by the session's profile registry (D4-B)
-- [ ] Death test: a circuit is declared dead only by a resolve-walk down its address failing to find the session (D4-A), never by timeout alone
-- [ ] Reconnection re-plugs into the project context fabric so resumed state is the agent's own latest, project-durable (D4-C)
+- [x] Circuit registry records established circuits keyed by circuit id (durable name + `session=`), each in state ∈ {live, dormant, dead}
+- [x] Dormant→reactivate fast path: a retained circuit id reactivates a dormant profile in a live session without rediscovery, bounded by the session's profile registry (D4-B)
+- [x] Death test: a circuit is declared dead only by a resolve-walk down its address failing to find the session (D4-A), never by timeout alone
+- [x] Reconnection re-plugs into the project context fabric so resumed state is the agent's own latest, project-durable (D4-C)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -115,6 +115,8 @@ The circuit half of arc-020 (D1/D4). Design in
 -->
 
 ## Verification
+
+timeout 120 python3 -m pytest tests/unit/test_aef_circuit.py -q > /tmp/.s2-circuit.out 2>&1 && grep -q passed /tmp/.s2-circuit.out && ! grep -q failed /tmp/.s2-circuit.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -249,6 +251,11 @@ The circuit half of arc-020 (D1/D4). Design in
 
 ## Evolution
 
+### 2026-09-07 — inconclusive-walk semantics sharpened during build
+- **What changed:** D4-A says death needs a resolve-walk that *fails to find* the session — but building the injectable resolver interface surfaced a third outcome the charter doesn't name: a walk that cannot COMPLETE (times out, host unreachable). Treating that as "not found" would smuggle timeout-death back in through the resolver. Implemented as: only a completed walk returning False kills; a raising walk propagates and the state is untouched (pinned by `test_walk_that_raises_is_inconclusive`).
+- **Plan impact:** none for S2; S3's real ladder walk must distinguish "walked down and the session is not there" from "could not walk" in its return contract, not just in prose.
+- **Triggered:** no new task — S3 (T-3309) already owns the ladder; the resolver contract note above is the handoff.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -302,7 +309,15 @@ The circuit half of arc-020 (D1/D4). Design in
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
+### 2026-09-07 — Persistence format: append-only JSONL, last-write-wins replay
+- **Chose:** `.context/circuits/registry.jsonl` — one JSON record per mutation; current state = last record per circuit id on replay.
+- **Why:** pure stdlib (no yaml dependency under the "stdlib only" constraint), crash-safe appends, and the file retains transition history for free (aligned with D5 bound 4 traceability, ahead of S7's dedicated audit trail).
+- **Rejected:** YAML snapshot map (needs PyYAML, rewrite-in-place loses history); JSON snapshot with atomic replace (loses history, no better than JSONL here).
+
+### 2026-09-07 — D7 write-claim v1: advisory O_CREAT|O_EXCL claim file
+- **Chose:** `WriteClaim` — advisory claim file `.context/circuits/.write-claim` created with `O_CREAT|O_EXCL`, carrying `{holder, pid, ts}`; stale claims (recorded pid no longer alive) are broken. Every registry mutation acquires it; reads never touch it.
+- **Why:** v1-simple per the D7 ruling ("a simple advisory claim is acceptable"); O_EXCL is atomic on POSIX local filesystems; pid-liveness gives crash recovery without a daemon. The eventual fleet-grade mechanism is `termlink channel claim` on the project address (D7 text) — this local claim is its single-host stand-in with the same acquire/release contract.
+- **Rejected:** fcntl.flock (held-by-fd semantics are invisible to other processes for inspection, and no holder metadata); termlink channel claim now (couples S2 to a running hub; S3+ concern).
      Skip for tasks with no meaningful choices.
      Format:
      ### [date] — [topic]
@@ -330,3 +345,7 @@ The circuit half of arc-020 (D1/D4). Design in
 
 ### 2026-09-07T00:19:13Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-09-07T06:39:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
