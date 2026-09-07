@@ -76,8 +76,12 @@ if [ "$PY_FILES" -eq 0 ]; then
 elif ! python3 -c 'import pytest' >/dev/null 2>&1; then
     PY_ERROR="pytest not installed"
 else
+    # --color=no + env scrub: FORCE_COLOR/PY_COLORS make pytest write ANSI into
+    # the redirected file, and the ^FAILED name-parse below finds nothing
+    # (OBS-374 class — reproduced live under FORCE_COLOR=3, T-3302).
     ( cd "$FRAMEWORK_ROOT" && timeout "$(_remaining)" \
-        python3 -m pytest "$SUITE_DIR" -q -rf -p no:cacheprovider ) \
+        env -u FORCE_COLOR PY_COLORS=0 NO_COLOR=1 \
+        python3 -m pytest "$SUITE_DIR" -q -rf -p no:cacheprovider --color=no ) \
         > "$PY_OUT" 2>&1 || PY_RC=$?
 fi
 
