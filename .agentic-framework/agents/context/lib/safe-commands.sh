@@ -695,7 +695,10 @@ _fw_single_command_is_safe() {
         # finding on their T-638; confirmed here against the live hook.
         #
         # The destination is the hazard, not the flag: `curl -o -` and
-        # `wget -O -` write to stdout and stay safe.
+        # `wget -O -` write to stdout and stay safe. T-3237 closed the bare
+        # form too: `wget URL` with no flag writes the remote filename into
+        # cwd (wget's default), so wget is safe only with an explicit stdout
+        # destination; bare `curl URL` (stdout default) stays safe.
         curl|wget)
             _fw_fetch_writes_file "$cmd" && return 1
             return 0
@@ -871,6 +874,14 @@ has_bash_write_pattern() {
 # whenever a task is active; admitting it skips every gate there is.
 _fw_fetch_writes_file() {
     local cmd="$1" stripped base tok rest
+    # T-3237: the two tools invert their DEFAULTS, and the pre-fix version only
+    # judged flags — so bare `wget URL`, which writes the remote filename into
+    # cwd with no flag at all, classified safe on the strength of having typed
+    # nothing. curl bare writes to stdout and genuinely is safe. So for wget the
+    # burden of proof flips: it is a write UNLESS an explicit stdout destination
+    # (`-O-`, `-O -`, `--output-document=-`) or a no-download mode (`--spider`,
+    # `--help`, `--version`) is present. The two trackers below carry that.
+    local wget_stdout=0 wget_nofetch=0
     stripped="$(_fw_strip_quoted "$cmd")" || return 0
 
     # shellcheck disable=SC2086  # deliberate word-splitting: tokenising argv
@@ -883,15 +894,21 @@ _fw_fetch_writes_file() {
         tok="$1"; shift
         case "$tok" in
             # Long forms, both spellings, for both tools.
-            --output=-|--output-document=-)   continue ;;
+            --output=-|--output-document=-)   wget_stdout=1; continue ;;
             --output=*|--output-document=*)   return 0 ;;
             --output|--output-document|--output-file)
                 [ "${1:-}" = "-" ] || return 0
+                wget_stdout=1
                 continue ;;
             --remote-name|--remote-header-name|--output-dir|--create-dirs)
                 return 0 ;;
+            --spider|--help|--version)
+                # No-download modes: nothing is fetched, so nothing lands in cwd.
+                wget_nofetch=1; continue ;;
             --*) continue ;;
             -) continue ;;
+            -h|-V)
+                wget_nofetch=1; continue ;;
             -*)
                 # Short-flag cluster. curl allows bundling (`-sO`, `-so FILE`),
                 # so test the letters rather than the whole token.
@@ -904,8 +921,9 @@ _fw_fetch_writes_file() {
                             # wget -O takes a value: attached (`-O-`, `-Ofile`)
                             # or the next token.
                             case "$rest" in
-                                *O)   [ "${1:-}" = "-" ] || return 0 ;;
-                                *O-)  ;;
+                                *O)   [ "${1:-}" = "-" ] || return 0
+                                      wget_stdout=1 ;;
+                                *O-)  wget_stdout=1 ;;
                                 *)    return 0 ;;
                             esac
                         else
@@ -929,6 +947,11 @@ _fw_fetch_writes_file() {
             *) continue ;;
         esac
     done
+    # T-3237: wget with no explicit stdout destination and no no-download mode
+    # is running its DEFAULT, and the default writes the remote filename to cwd.
+    if [ "$base" = wget ] && [ "$wget_stdout" -eq 0 ] && [ "$wget_nofetch" -eq 0 ]; then
+        return 0
+    fi
     return 1
 }
 

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3237: bare 'wget URL' is safe-listed — wget writes to cwd by default, no flag required
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T19:46:55Z
+# ============================================================================
+
+task_id: T-3237
+task_name: "bare 'wget URL' is safe-listed — wget writes to cwd by default, no flag required"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T05:22:33Z
+completed: 2026-09-07T19:45:42Z
+duration_days: 6
+updates_count: 3
+first_commit: 2026-09-07T21:39:53+02:00
+last_commit: 2026-09-07T21:39:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  author real ACs for T-3237+T-3238 (safe-list wget/find hardening) — dispatched as one sequential TermLink worker (converging write-set on safe-commands.sh)
+
+# Key outcomes
+outcomes:
+  - '**A1 Bare wget closed:** `is_bash_safe_command ''wget https://x/y''` → NOT-SAFE (wget''s no-flag default writes the remote filename into cwd); explicit-destination forms stay NOT-SAFE as per T-3222'
+  - '**A2 Stdout forms stay usable:** `wget -O- URL` / `wget -qO- URL` (write to stdout, no file) classify SAFE; bare `curl URL` (stdout by default) stays SAFE — the control that separates by-actual-behaviour from by-reputation classification'
+  - '**A3 Pinned:** the certifying suite (the T-3222 safe-commands tests) gains cases for the bare wget form, the -O-/-qO- stdout forms, and the bare-curl control — red-before/green-after demonstrated in the task'
+  - '**A4 No-widening:** full safe-commands test suite green; `bash -n agents/context/lib/safe-commands.sh` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/focus.yaml'
+  - '.tasks/active/T-3237-bare-wget-url-is-safe-listed--wget-write.md'
+  - '.tasks/active/T-3238-find-is-unconditionally-safe-listed-so--.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T21:39:53'
+    action: 'T-3237: author real ACs for T-3237+T-3238 (safe-list wget/find hardening) — dispatched as one sequential TermLink worker (converging write-set on safe-commands.sh)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9503 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run, bug, hook, safe-list]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9503
+  commits: 1
+  files_changed: 3
+  lines_added: 19
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3237-bare-wget-url-is-safe-listed--wget-write.md
+generated_by: context-agent-hybrid

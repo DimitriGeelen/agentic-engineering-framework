@@ -12,10 +12,10 @@ description: >
   test never asks about the bare form. curl differs and is genuinely safe bare: without
   -o/-O it writes to stdout.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run, bug, hook, safe-list]
 components: []
 related_tasks: [T-3227, T-3222, T-2876]
@@ -30,8 +30,8 @@ related_tasks: [T-3227, T-3222, T-2876]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-01T05:22:33Z
-last_update: 2026-09-07T19:39:56Z
-date_finished:
+last_update: 2026-09-07T19:45:42Z
+date_finished: 2026-09-07T19:45:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -76,16 +76,21 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-3222 made `_fw_fetch_writes_file` judge curl/wget destination flags, but only
+flags: bare `wget URL` — whose no-flag DEFAULT writes the remote filename into
+cwd — classified SAFE. Fix inverts the burden of proof for wget: it is a write
+unless an explicit stdout destination (`-O-`, `-O -`, `--output-document=-`) or
+a no-download mode (`--spider`, `--help`, `--version`) is present. Bare curl
+(stdout default) stays SAFE.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 Bare wget closed:** `is_bash_safe_command 'wget https://x/y'` → NOT-SAFE (wget's no-flag default writes the remote filename into cwd); explicit-destination forms stay NOT-SAFE as per T-3222
-- [ ] **A2 Stdout forms stay usable:** `wget -O- URL` / `wget -qO- URL` (write to stdout, no file) classify SAFE; bare `curl URL` (stdout by default) stays SAFE — the control that separates by-actual-behaviour from by-reputation classification
-- [ ] **A3 Pinned:** the certifying suite (the T-3222 safe-commands tests) gains cases for the bare wget form, the -O-/-qO- stdout forms, and the bare-curl control — red-before/green-after demonstrated in the task
-- [ ] **A4 No-widening:** full safe-commands test suite green; `bash -n agents/context/lib/safe-commands.sh` clean
+- [x] **A1 Bare wget closed:** `is_bash_safe_command 'wget https://x/y'` → NOT-SAFE (wget's no-flag default writes the remote filename into cwd); explicit-destination forms stay NOT-SAFE as per T-3222
+- [x] **A2 Stdout forms stay usable:** `wget -O- URL` / `wget -qO- URL` (write to stdout, no file) classify SAFE; bare `curl URL` (stdout by default) stays SAFE — the control that separates by-actual-behaviour from by-reputation classification
+- [x] **A3 Pinned:** the certifying suite (the T-3222 safe-commands tests) gains cases for the bare wget form, the -O-/-qO- stdout forms, and the bare-curl control — red-before/green-after demonstrated in the task
+- [x] **A4 No-widening:** full safe-commands test suite green; `bash -n agents/context/lib/safe-commands.sh` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -235,6 +240,16 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/context/lib/safe-commands.sh
+# A1: bare wget must classify NOT-SAFE; A2: -qO- and bare curl stay SAFE
+bash -c 'source agents/context/lib/safe-commands.sh; is_bash_safe_command "wget https://x/y"; echo "bare-wget-rc=$?"; is_bash_safe_command "wget -qO- https://x/y"; echo "qO-rc=$?"; is_bash_safe_command "curl https://x/y"; echo "curl-rc=$?"' > /tmp/.t3237-cls.out 2>&1 && grep -q "bare-wget-rc=1" /tmp/.t3237-cls.out && grep -q "qO-rc=0" /tmp/.t3237-cls.out && grep -q "curl-rc=0" /tmp/.t3237-cls.out
+# A3/A4: certifying suite green, nothing skipped
+timeout 300 bats tests/unit/t3222_fetch_writes_file.bats > /tmp/.t3237-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3237-bats.out
+test "$(grep -c '# skip' /tmp/.t3237-bats.out)" -eq 0
+# A4: full safe-commands suite set green
+timeout 300 bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/test_safe_commands_git_commit.bats tests/unit/drift_gate_not_shadowed_by_safelist.bats > /tmp/.t3237-full.out 2>&1 && ! grep -q "^not ok" /tmp/.t3237-full.out
+test "$(grep -c '# skip' /tmp/.t3237-full.out)" -eq 0
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -250,6 +265,29 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `wget https://host/payload.sh` classified SAFE by
+`is_bash_safe_command` and skipped the Bash task gate entirely, while creating a
+file (`payload.sh`) in cwd. Reproduced live before the fix: bare wget → SAFE,
+`wget -O out URL` → NOT-SAFE.
+
+**Root cause:** T-3222's `_fw_fetch_writes_file` judged only destination
+*flags*. wget's file write is its *default* — the write needs no flag at all, so
+a flag-only scan had nothing to match and fell through to "not a write". curl
+and wget invert their defaults (curl→stdout, wget→file), and the predicate
+encoded curl's default for both.
+
+**Why structurally allowed:** the T-3222 certifying suite never asked about the
+bare form — every wget case in it carried a flag (found independently from the
+code side, W2-F4, and the test side, W4-F3, in the T-3227 arc-012 review). A
+suite that only probes flagged forms certifies a flag scanner as complete.
+
+**Prevention:** distinct from the fix — the suite now pins the bare form (write
+list), the `-O-`/`-qO-`/`--output-document=-` stdout forms and the bare-curl
+control (safe list), a live-hook block leg for bare wget, and a mutation leg
+that deletes the wget-default block and asserts the hole re-opens. Reverting the
+fix reddens three tests (measured: tests 1, 6, 14 failed against the stashed
+pre-fix lib).
 
 ## Evolution
 
@@ -274,6 +312,20 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-07 — defaults are part of the command's behaviour surface
+
+- **What changed:** the filing framed this as "one more flag form to catch";
+  building it showed the real class is *defaults*: a destination-flag scanner
+  can be complete over flags and still miss the tool whose write is flagless.
+  Also learned wget has no-download modes (`--spider`, `--help`, `--version`)
+  that must stay admitted or the fix would gate pure network probes.
+- **Plan impact:** the fix could not be another token case-arm; it needed a
+  burden-of-proof inversion per tool (wget: write unless stdout proven), which
+  is why two trackers (`wget_stdout`, `wget_nofetch`) were added rather than
+  patterns.
+- **Triggered:** nothing new filed — sibling default-vs-flag audit for `find`
+  is already filed as T-3238 (next task in this pair).
 
 ## Recommendation
 
@@ -303,6 +355,17 @@ bvp_scores_proposed:
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** The bare-wget hole is closed at the predicate that admitted it,
+the fix errs toward blocking on every unrecognised shape, and the certifying
+suite now asks the question it never asked — with red-before/green-after
+measured, a mutation leg proving the new block is load-bearing, and the full
+safe-commands suite set (133 tests, 0 skips) green showing no widening.
+**Evidence:**
+- Pre-fix live repro: `wget https://x/y` → SAFE; post-fix → NOT-SAFE; `wget -qO-`/`wget -O -`/`--output-document=-`/`--spider` and bare `curl` stay SAFE (agents/context/lib/safe-commands.sh:_fw_fetch_writes_file).
+- Extended suite red on pre-fix lib (tests 1, 6, 14 fail via `git stash` rehearsal), 16/16 green on fixed lib, 0 skips (tests/unit/t3222_fetch_writes_file.bats).
+- Full safe-commands suite set: 133/133 ok, 0 `not ok`, 0 `# skip`.
 
 ## Decisions
 
@@ -334,3 +397,30 @@ bvp_scores_proposed:
 
 ### 2026-09-07T19:37:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-07 — bare-wget default closed, red-before/green-after [worker]
+- **Red-before (measured):** with the pre-fix lib (stashed), the extended suite
+  fails exactly the three T-3237 legs — test 1 "every fetch-to-file spelling
+  reads as a write" (`MISSED: wget https://e/payload.sh`), test 6 "bare wget URL
+  is blocked with no active task" (ADMITTED through the live hook, focus null),
+  test 14 mutation-control (grep finds no wget-default block). Live predicate
+  repro: `wget https://x/y` → SAFE, `wget -O out URL` → NOT-SAFE.
+- **Fix:** `_fw_fetch_writes_file` now tracks `wget_stdout`/`wget_nofetch` and
+  treats wget with neither proven as running its default — a write to cwd.
+  Stdout forms (`-O-`, `-O -`, `-qO-`, `--output-document=-`) and no-download
+  modes (`--spider`, `--help`, `--version`) stay admitted; curl untouched.
+- **Green-after (measured):** 16/16 ok, 0 skips on the extended suite; 133/133
+  ok, 0 skips across the six safe-commands suites (chain, env-prefix, wrappers,
+  git-commit, drift-gate, context).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d10c341d
+- **Timestamp:** 2026-09-07T19:46:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-07T19:45:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

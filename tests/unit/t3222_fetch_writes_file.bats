@@ -75,6 +75,14 @@ _verdict() {
         'wget -O/tmp/x https://e/'
         'wget --output-document /tmp/x https://e/'
         'wget -o /tmp/log https://e/'
+        # T-3237: the BARE form. wget's no-flag default writes the remote
+        # filename into cwd — the write needs no flag at all, which is why
+        # a flag-only scan never saw it. The suite never asked about this
+        # form before (the T-3227 arc-012 review found the gap from both
+        # the code side, W2-F4, and the test side, W4-F3).
+        'wget https://e/payload.sh'
+        'wget -q https://e/payload.sh'
+        'wget --no-check-certificate https://e/f'
     )
     for c in "${writes[@]}"; do
         if ! _fw_fetch_writes_file "$c"; then
@@ -100,7 +108,14 @@ _verdict() {
         'curl --output=- https://e/'
         'wget -O - https://e/'
         'wget -O- https://e/'
+        'wget -qO- https://e/'
+        'wget --output-document=- https://e/'
         'wget --spider https://e/'
+        'wget --version'
+        # T-3237 control: bare curl is genuinely safe BARE — its no-flag
+        # default is stdout. Separating this from bare wget is what makes
+        # the classification by-actual-behaviour, not by-reputation.
+        'curl https://e/'
         'curl -sf "$(bin/fw watchtower url)/page"'
     )
     for c in "${safe[@]}"; do
@@ -124,6 +139,20 @@ _verdict() {
 
 @test "wget -O FILE is blocked with no active task" {
     [ "$(_verdict "$(_mkroot)" "$HOOK" 'wget -O /tmp/zzz https://e/')" = blocked ]
+}
+
+@test "bare wget URL is blocked with no active task (T-3237)" {
+    # No flag required: wget's default writes the remote filename into cwd.
+    [ "$(_verdict "$(_mkroot)" "$HOOK" 'wget https://e/payload.sh')" = blocked ]
+}
+
+@test "wget -qO- URL is still admitted with no active task (T-3237)" {
+    # Explicit stdout destination — no file lands anywhere.
+    [ "$(_verdict "$(_mkroot)" "$HOOK" 'wget -qO- https://e/')" = ADMITTED ]
+}
+
+@test "bare curl URL is still admitted with no active task (T-3237 control)" {
+    [ "$(_verdict "$(_mkroot)" "$HOOK" 'curl https://e/')" = ADMITTED ]
 }
 
 @test "curl -sf URL is still admitted with no active task" {
@@ -168,6 +197,26 @@ _verdict() {
     # the removed line and not a broken mutant
     [ "$(_verdict "$m" "$m/agents/context/check-active-task.sh" 'curl -sf https://e/')" = ADMITTED ]
     [ "$(_verdict "$m" "$m/agents/context/check-active-task.sh" 'rm -rf /tmp/zzz')" = blocked ]
+}
+
+@test "removing the wget-default block re-opens the bare hole (T-3237)" {
+    # The T-3237 fix is the trailing default-check, distinct from the
+    # T-3222 call site the mutant above removes. Mutate it out and the bare
+    # form must read as admitted again — proving the block is what closed it.
+    local m="$BATS_TEST_TMPDIR/root-mutant3"
+    cp -r "$(_mkroot)" "$m"
+    local lib="$m/agents/context/lib/safe-commands.sh"
+    local n
+    n="$(grep -c 'wget_stdout" -eq 0 ] && \[ "\$wget_nofetch" -eq 0' "$lib")"
+    [ "$n" -eq 1 ]
+    sed -i 's|\[ "\$base" = wget \] \&\& \[ "\$wget_stdout" -eq 0 \] \&\& \[ "\$wget_nofetch" -eq 0 \]|false|' "$lib"
+    bash -n "$lib"
+
+    [ "$(_verdict "$m" "$m/agents/context/check-active-task.sh" 'wget https://e/payload.sh')" = ADMITTED ]
+    # controls: the mutant is otherwise functional — flagged forms still gate
+    # and stdout forms still pass, so the leg above measures the removed block.
+    [ "$(_verdict "$m" "$m/agents/context/check-active-task.sh" 'wget -O /tmp/zzz https://e/')" = blocked ]
+    [ "$(_verdict "$m" "$m/agents/context/check-active-task.sh" 'wget -qO- https://e/')" = ADMITTED ]
 }
 
 # ── NO WIDENING ──────────────────────────────────────────────────────────────
