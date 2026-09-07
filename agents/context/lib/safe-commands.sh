@@ -296,6 +296,27 @@ _fw_single_command_is_safe() {
         done
     done
 
+    # T-3344: strip trailing NON-WRITING redirection tokens — fd-dups (`2>&1`,
+    # `1>&2`) and /dev/null sinks (`2>/dev/null`, `>/dev/null`, `&>/dev/null`).
+    # Fourth recorded instance of the positional-token-reader class (T-1908
+    # env prefixes, T-2988 grouping, T-3096 wrappers): `fw bvp 2>&1` extracted
+    # `2>&1` as the sub-verb, matched no arm, and a command this file already
+    # allowlists read back as unsafe. Only fd-dups and /dev/null are stripped —
+    # a redirect to any real file never matches, and has_bash_write_pattern
+    # judges the ORIGINAL unstripped line separately, so this cannot widen
+    # what writes are admitted.
+    local _rprev=""
+    while [ "$cmd" != "$_rprev" ]; do
+        _rprev="$cmd"
+        case "$cmd" in
+            *[[:space:]][0-9]'>&'[0-9]) cmd="${cmd%[[:space:]][0-9]>&[0-9]}" ;;
+            *[[:space:]]'2>/dev/null'|*[[:space:]]'2> /dev/null') cmd="${cmd%2>*/dev/null}"; cmd="${cmd%2>/dev/null}" ;;
+            *[[:space:]]'>/dev/null'|*[[:space:]]'> /dev/null') cmd="${cmd%>*/dev/null}"; cmd="${cmd%>/dev/null}" ;;
+            *[[:space:]]'&>/dev/null') cmd="${cmd%&>/dev/null}" ;;
+        esac
+        cmd="${cmd%"${cmd##*[![:space:]]}"}"
+    done
+
     # Extract the base command (first word, strip path).
     # Callers must pass a SINGLE command — is_bash_safe_command splits compound
     # commands into segments before reaching here (T-2834). The previous version
@@ -370,6 +391,23 @@ _fw_single_command_is_safe() {
         # Category 3: Searching
         grep|rg|which|where|type|command)
             return 0
+            ;;
+
+        # T-3344: the G-087-safe budget reader. /resume prescribes
+        # `checkpoint.sh budget` as THE way to read the budget cache, and the
+        # gate blocked it whenever focus sat on a completed task — exactly the
+        # moment /resume runs it. `budget` and `status` are pure reads
+        # (verified against the case arms at checkpoint.sh:547/:599 — echo,
+        # cat, python-print only). `post-tool`, `reset`, and `baseline` write
+        # counters/caches and are deliberately absent.
+        checkpoint.sh)
+            local cp_sub
+            cp_sub=$(echo "$cmd" | awk '{print $2}')
+            case "$cp_sub" in
+                budget|status)
+                    return 0
+                    ;;
+            esac
             ;;
 
         # T-3238: find is a search tool with a MUTATION grammar bolted on.
@@ -459,6 +497,17 @@ _fw_single_command_is_safe() {
                     case "$tl_sub2" in
                         list|info|members|search|thread|threads|unread|state|pinned|\
                         digest|snippet|receipts|describe|claims)
+                            return 0
+                            ;;
+                    esac
+                    ;;
+                pty)
+                    # T-3344: `pty output <session>` reads a session's recent
+                    # output — the worker-observability read /resume-era
+                    # monitoring uses. `pty inject` and `pty mode` write into
+                    # the session and are deliberately absent.
+                    case "$tl_sub2" in
+                        output)
                             return 0
                             ;;
                     esac

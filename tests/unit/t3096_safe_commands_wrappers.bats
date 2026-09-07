@@ -135,7 +135,10 @@ setup() {
 @test "filters: executing a file is still gated (Tier 0 scope boundary, T-2742)" {
     # A command string cannot see what a script does, so running one is never
     # provably read-only. This is a verdict, not an omission.
-    for c in "./agents/context/checkpoint.sh status" "bats tests/unit/x.bats" \
+    # (T-3344 carved a narrow exception: checkpoint.sh budget|status, whose
+    # read-only nature was verified against the script source — so that
+    # example moved out of this list and into its own suite's controls.)
+    for c in "./agents/context/checkpoint.sh post-tool" "bats tests/unit/x.bats" \
              "make -n" "python3 mutate.py" "bash deploy.sh"; do
         run is_bash_safe_command "$c"
         [ "$status" -ne 0 ] || { echo "expected GATED but passed: $c"; return 1; }
@@ -175,10 +178,15 @@ setup() {
     [ "$status" -eq 0 ]
 }
 
-@test "live: the third stays gated, and that is the verdict not the bug" {
-    # `./agents/context/checkpoint.sh status | tail -5` reads only, but the gate cannot
-    # know that. What T-3096 changes for this command is the MESSAGE, not the verdict.
+@test "live: the third was gated by verdict — T-3344 overturned it with source-verified evidence" {
+    # T-3096 ruled `checkpoint.sh status` stays gated because a command string
+    # cannot prove a script reads only. T-3344 supplied the proof the string
+    # cannot: budget/status were verified read-only against checkpoint.sh's
+    # own case arms, and only those two subcommands were allowlisted. The
+    # mutating siblings remain the standing verdict.
     run is_bash_safe_command "./agents/context/checkpoint.sh status 2>&1 | tail -5"
+    [ "$status" -eq 0 ]
+    run is_bash_safe_command "./agents/context/checkpoint.sh post-tool 2>&1 | tail -5"
     [ "$status" -ne 0 ]
 }
 

@@ -1,8 +1,8 @@
 ---
-id: T-3342
-name: "capture arc-020 G1+G3 demo evidence into arc record"
+id: T-3344
+name: "read-only allowlist gaps: checkpoint.sh budget, termlink pty output, fw bvp (OBS-379)"
 description: >
-  capture arc-020 G1+G3 demo evidence into arc record
+  read-only allowlist gaps: checkpoint.sh budget, termlink pty output, fw bvp (OBS-379)
 
 status: work-completed
 workflow_type: build
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-07T17:31:51Z
-last_update: 2026-09-07T17:35:42Z
-date_finished: 2026-09-07T17:35:42Z
+created: 2026-09-07T20:02:22Z
+last_update: 2026-09-07T20:09:45Z
+date_finished: 2026-09-07T20:09:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,20 +36,25 @@ date_finished: 2026-09-07T17:35:42Z
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-3342: capture arc-020 G1+G3 demo evidence into arc record
+# T-3344: read-only allowlist gaps: checkpoint.sh budget, termlink pty output, fw bvp (OBS-379)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+OBS-379: three read-only invocations are missing from the safe-commands allowlist,
+so the task gate blocks them exactly when /resume and worker-monitoring need them
+(focus on a completed task): `agents/context/checkpoint.sh budget` (the G-087-safe
+budget read /resume prescribes), `termlink pty output <session> --strip-ansi`
+(worker observability), `bin/fw bvp` (read-only ranking). Each block message
+itself said "that is a gap in the allowlist worth filing".
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `docs/reports/arc-020-headline-demo.md` exists and consolidates BOTH clauses of the arc-020 headline mechanic (distinct correspondents = G1/T-3340; self-heal = G3/T-3341) into one artifact suitable to pass as `fw arc close --demo <path>`.
-- [x] The report references each leg's demo script and wire-evidence file (`tests/manual/arc020_g1_demo.py` + `docs/reports/T-3340-g1-demo-evidence.md`; `tests/manual/arc020_g3_demo.py` + `docs/reports/T-3341-g3-demo-evidence.md`) and states what each demonstrated.
-- [x] The report does NOT close the arc, does NOT set `demo_evidence:`, and explicitly names arc close as the operator's §ACD decision (advisory-only, sovereignty-respecting).
-- [x] The report parses as Markdown and every referenced artifact/script path exists on disk.
+- [x] **A1 Read-only nature verified first:** before allow-listing, each candidate is checked for write behavior in its source (checkpoint.sh `budget` subcommand must not write the cache; `termlink pty output` is read-only; `fw bvp` bare/`--include-proposed` reads only) — findings recorded in ## Decisions; any candidate that DOES write is excluded and noted
+- [x] **A2 Allowlist entries added:** `is_bash_safe_command` accepts the verified read-only forms (scoped tightly — e.g. `checkpoint.sh budget` exactly, not all checkpoint.sh subcommands; `termlink pty output` not `termlink pty inject`; `fw bvp` without mutating verbs like `confirm`)
+- [x] **A3 Pinned:** safe-commands suite gains cases: each allowed form SAFE; near-miss mutating siblings (`checkpoint.sh` bare, `termlink pty inject`, `fw bvp confirm`) NOT-SAFE (controls)
+- [x] **A4 No-widening:** full safe-commands suites green (includes the fresh T-3237/T-3238 cases); `bash -n agents/context/lib/safe-commands.sh` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -84,6 +89,13 @@ date_finished: 2026-09-07T17:35:42Z
 
 ## Verification
 
+bash -n agents/context/lib/safe-commands.sh
+timeout 300 bats tests/unit/t3344_readonly_allowlist_gaps.bats > /tmp/.t3344-v.out 2>&1 && ! grep -q "^not ok" /tmp/.t3344-v.out
+test "$(grep -c '# skip' /tmp/.t3344-v.out)" -eq 0
+timeout 600 bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t3222_fetch_writes_file.bats tests/unit/t3238_find_action_predicates.bats > /tmp/.t3344-r.out 2>&1 && ! grep -q "^not ok" /tmp/.t3344-r.out
+test "$(grep -c '# skip' /tmp/.t3344-r.out)" -eq 0
+bin/fw vendor self --check
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -92,6 +104,17 @@ date_finished: 2026-09-07T17:35:42Z
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+#
+# ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
+# Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
+# state — an exact live count, or a grep of live `fw audit`/`fw doctor` output
+# for a specific corpus entity (a named arc, a task count, a census number).
+# The corpus moves under the check, and the line rots: it goes red (or vanishes
+# its pattern) for reasons unrelated to the code under test, blocking closes.
+# Pin the INVARIANT (categories sum, count > 0, property holds) or run the code
+# against a COMMITTED FIXTURE — never the live count or a live-audit line.
+# Origin: T-2969 line grepping live audit for one arc's status; T-2871's census
+# test pinning exact live counts (56→74 files) — both blocked closes (OBS-377).
 #
 # ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
 #
@@ -198,11 +221,6 @@ date_finished: 2026-09-07T17:35:42Z
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-test -s docs/reports/arc-020-headline-demo.md
-test -f tests/manual/arc020_g1_demo.py && test -f tests/manual/arc020_g3_demo.py
-test -f docs/reports/T-3340-g1-demo-evidence.md && test -f docs/reports/T-3341-g3-demo-evidence.md
-grep -q "Leg G1" docs/reports/arc-020-headline-demo.md && grep -q "Leg G3" docs/reports/arc-020-headline-demo.md
-grep -q "operator's §ACD decision" docs/reports/arc-020-headline-demo.md && ! grep -qE "^demo_evidence:" docs/reports/arc-020-headline-demo.md
 
 ## RCA
 
@@ -273,6 +291,13 @@ grep -q "operator's §ACD decision" docs/reports/arc-020-headline-demo.md && ! g
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** All three OBS-379 blocks are closed at the right layer each. `checkpoint.sh budget|status` got a narrow, source-verified allowlist arm (the T-3096 "never provably read-only" verdict is overturned only for the two subcommands whose case arms were read and found write-free; `post-tool`/`reset`/`baseline` stay gated). `termlink pty output` got a verb-scoped arm (`inject`/`mode` stay gated). `fw bvp` needed no arm at all — it was already allowlisted and blocked only because a trailing `2>&1` corrupted the positional sub-verb read; the fix is a trailing-redirect stripper for fd-dups and /dev/null sinks only, the 4th instance of the affix class the file itself documents (T-1908/T-2988/T-3096), fixed as a stripper rather than a 4th symptom patch.
+**Evidence:**
+- `tests/unit/t3344_readonly_allowlist_gaps.bats` 14/14, 0 skips (SAFE forms + mutating-sibling controls + real-file-redirect control + rm-with-redirect control)
+- Full safe-commands regression 151/151, 0 skips across 7 suites (includes fresh T-3237/T-3238 cases)
+- Two outdated T-3096 pins updated with the overturn documented in-test; `bash -n` clean
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -283,6 +308,16 @@ grep -q "operator's §ACD decision" docs/reports/arc-020-headline-demo.md && ! g
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-09-07 — A1 read-only verification findings
+- **Chose:** allowlist `checkpoint.sh budget` and `checkpoint.sh status` (both verified pure reads against checkpoint.sh:547/:599 — echo/cat/python-print only); `termlink pty output` (session output read); nothing for `fw bvp` (already listed at safe-commands.sh `bvp)` arm).
+- **Why:** A1 requires source verification before any entry; `post-tool` (writes counters), `reset`, `baseline` (write caches) and `pty inject|mode` (write into sessions) are excluded.
+- **Rejected:** a blanket `checkpoint.sh` or `pty` arm (over-wide); patching `fw bvp`'s arm to accept `2>&1` as a sub-verb (symptom patch — the affix belongs in a stripper, per the file's own three prior incidents).
+
+### 2026-09-07 — trailing-redirect stripper scope
+- **Chose:** strip only trailing fd-dups (`N>&M`) and /dev/null sinks (`2>/dev/null`, `>/dev/null`, `&>/dev/null`) before positional token reads.
+- **Why:** these forms write nothing; a redirect to a real file never matches the patterns, and `has_bash_write_pattern` still judges the ORIGINAL unstripped line upstream — the stripper cannot widen write admission (pinned by the real-file control test).
+- **Rejected:** stripping all redirects (would hide `> file` from the sub-verb read — even though the write-pattern check catches it upstream, defense in depth says don't).
 
 ## Decision
 
@@ -296,19 +331,19 @@ grep -q "operator's §ACD decision" docs/reports/arc-020-headline-demo.md && ! g
 
 ## Updates
 
-### 2026-09-07T17:31:51Z — task-created [task-create-agent]
+### 2026-09-07T20:02:22Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3342-capture-arc-020-g1g3-demo-evidence-into-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3344-read-only-allowlist-gaps-checkpointsh-bu.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8299196f
-- **Timestamp:** 2026-09-07T17:35:44Z
+- **Scan ID:** R-c7866ee9
+- **Timestamp:** 2026-09-07T20:10:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 
-### 2026-09-07T17:35:42Z — status-update [task-update-agent]
+### 2026-09-07T20:09:45Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
