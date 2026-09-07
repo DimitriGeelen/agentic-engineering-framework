@@ -1,10 +1,33 @@
 ---
 id: T-3299
-name: "G-020 scope gate blocks BOTH escape routes its own block message prescribes — an agent focused on a placeholder-AC build task can be wedged. Measured 2026-08-29 (T-3216 run, focus landed on auto-created T-3215/T-3216). The message names: (1) 'Edit the task file: replace [First criterion] with real ACs'; (2) 'bin/fw task update T-XXX --type inception'. Route (2) is refused by check-active-task itself — not on the read-only allowlist (agents/context/lib/safe-commands.sh), so the gate quotes the remedy back verbatim while refusing it. Route (1) is refused for every SHELL form (heredoc, sed -i, any redirect all match the write-pattern regex); it survives only via a Write/Edit TOOL call, which is not routed through the same regex. So an agent whose only write surface is bash has no legal move at all. I escaped only by using the Edit tool. Also blocked in the same state: 'fw task update --horizon later', 'fw push', and plain reads that merely contain sed/awk/2>/dev/null — the write-pattern regex is matching read commands (sibling of T-2410, already filed, but the deadlock is distinct from the false-positive class). Fix direction, cheapest first: allowlist the gate's own two prescribed remedies in safe-commands.sh so the block message is reachable from the blocked state. Structural lesson worth a rail: a block message is an executable contract — for every gate that prints a remedy, run that remedy verbatim WHILE the gate is firing, not from a clean shell. Ours was written by someone who was not blocked at the time. Sibling to L-399/T-1890 producer-consumer parity, one notch worse: there the bypass existed and was rejected downstream; here the gate rejects it itself. Second trigger in the same run: an automated process created T-3215 in started-work with template ACs and TOOK FOCUS from the session twice, which is how the session entered the wedged state at all — that focus-stealing is worth its own look."
+name: "G-020 scope gate blocks BOTH escape routes its own block message prescribes
+  — an agent focused on a placeholder-AC build task can be wedged. Measured 2026-08-29
+  (T-3216 run, focus landed on auto-created T-3215/T-3216). The message names: (1)
+  'Edit the task file: replace [First criterion] with real ACs'; (2) 'bin/fw task
+  update T-XXX --type inception'. Route (2) is refused by check-active-task itself
+  — not on the read-only allowlist (agents/context/lib/safe-commands.sh), so the gate
+  quotes the remedy back verbatim while refusing it. Route (1) is refused for every
+  SHELL form (heredoc, sed -i, any redirect all match the write-pattern regex); it
+  survives only via a Write/Edit TOOL call, which is not routed through the same regex.
+  So an agent whose only write surface is bash has no legal move at all. I escaped
+  only by using the Edit tool. Also blocked in the same state: 'fw task update --horizon
+  later', 'fw push', and plain reads that merely contain sed/awk/2>/dev/null — the
+  write-pattern regex is matching read commands (sibling of T-2410, already filed,
+  but the deadlock is distinct from the false-positive class). Fix direction, cheapest
+  first: allowlist the gate's own two prescribed remedies in safe-commands.sh so the
+  block message is reachable from the blocked state. Structural lesson worth a rail:
+  a block message is an executable contract — for every gate that prints a remedy,
+  run that remedy verbatim WHILE the gate is firing, not from a clean shell. Ours
+  was written by someone who was not blocked at the time. Sibling to L-399/T-1890
+  producer-consumer parity, one notch worse: there the bypass existed and was rejected
+  downstream; here the gate rejects it itself. Second trigger in the same run: an
+  automated process created T-3215 in started-work with template ACs and TOOK FOCUS
+  from the session twice, which is how the session entered the wedged state at all
+  — that focus-stealing is worth its own look."
 description: >
   Promoted from observation OBS-353
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -22,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:15:10Z
-last_update: 2026-09-06T18:15:10Z
-date_finished: null
+last_update: 2026-09-07T01:20:19Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +57,60 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-06T18:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=258,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-06T18:30:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3299: G-020 scope gate blocks BOTH escape routes its own block message prescribes — an agent focused on a placeholder-AC build task can be wedged. Measured 2026-08-29 (T-3216 run, focus landed on auto-created T-3215/T-3216). The message names: (1) 'Edit the task file: replace [First criterion] with real ACs'; (2) 'bin/fw task update T-XXX --type inception'. Route (2) is refused by check-active-task itself — not on the read-only allowlist (agents/context/lib/safe-commands.sh), so the gate quotes the remedy back verbatim while refusing it. Route (1) is refused for every SHELL form (heredoc, sed -i, any redirect all match the write-pattern regex); it survives only via a Write/Edit TOOL call, which is not routed through the same regex. So an agent whose only write surface is bash has no legal move at all. I escaped only by using the Edit tool. Also blocked in the same state: 'fw task update --horizon later', 'fw push', and plain reads that merely contain sed/awk/2>/dev/null — the write-pattern regex is matching read commands (sibling of T-2410, already filed, but the deadlock is distinct from the false-positive class). Fix direction, cheapest first: allowlist the gate's own two prescribed remedies in safe-commands.sh so the block message is reachable from the blocked state. Structural lesson worth a rail: a block message is an executable contract — for every gate that prints a remedy, run that remedy verbatim WHILE the gate is firing, not from a clean shell. Ours was written by someone who was not blocked at the time. Sibling to L-399/T-1890 producer-consumer parity, one notch worse: there the bypass existed and was rejected downstream; here the gate rejects it itself. Second trigger in the same run: an automated process created T-3215 in started-work with template ACs and TOOK FOCUS from the session twice, which is how the session entered the wedged state at all — that focus-stealing is worth its own look.
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The G-020 build-readiness gate (`agents/context/check-active-task.sh` ~:1045)
+blocks all non-safe Bash and all non-exempt Write/Edit when the focused
+build/refactor/test task has placeholder ACs. Its block message prescribes two
+remedies, and both were refused by the gate itself when executed from inside
+the blocked state (measured 2026-08-29, T-3216 run): (1) shell edits of the
+task file all match the write-pattern regex; (2) `fw task update T-XXX --type
+inception` is not on the read-only allowlist and `update` is not a
+safe-listed task sub-verb, so it falls through the chain and G-020 refuses it.
+Fix: make the block message an executable contract — allowlist metadata-only
+`fw task update` at the G-020 checkpoint, and make the message say explicitly
+that shell writes to the task file stay blocked (the Edit tool is the route).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Metadata-only `fw task update` (only `--type/-t`, `--horizon`, `--status/-s`, `--reason/-r`, `--switch-focus`, one T-id; no write patterns, no command substitution, no `=`-attached values the downstream parser rejects) is allowed by the hook while the G-020 gate is firing — new predicate `is_task_metadata_update_command` in `agents/context/lib/safe-commands.sh`, consumed at exactly one checkpoint (the G-020 block branch).
+- [x] The G-020 block message states the real route-1 contract: task-file AC edits go through the Write/Edit TOOL (`.tasks/*` exempt); shell writes to the task file stay blocked by design. It also names the `--horizon later` shelving form as an allowed remedy.
+- [x] New bats suite `tests/unit/t3299_gate_remedy_reachable.bats` executes every remedy the block message prints, verbatim from the gate-firing state (fixture build task with template placeholder ACs + focus set), and asserts none is blocked — including extracting the remedy command lines from the captured block output itself, and an Edit-tool call on the task file.
+- [x] Control legs stay red: unrelated source write (Bash and Write tool) still blocked with the G-020 message; shell write to the task file still blocked; `fw task update` with a non-metadata flag (`--add-tag`), with a redirect, chained with `rm`, or targeting a different task (drift) all still blocked.
+- [x] Existing gate suites still green (check_active_task*, safe_commands*, t3179, t3221, t3096, focus_drift_gate, drift_gate_not_shadowed_by_safelist) — 219/219 ok, 0 skips, plus tests/lint/prescribed-commands-are-allowed.bats 3/3.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -197,21 +260,41 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/unit/t3299_gate_remedy_reachable.bats > /tmp/.t3299-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3299-bats.out
+test "$(grep -c '# skip' /tmp/.t3299-bats.out)" -eq 0
+bash -n agents/context/check-active-task.sh && bash -n agents/context/lib/safe-commands.sh
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** An agent whose focus landed on a placeholder-AC build task
+(auto-created T-3215/T-3216 stole focus) had no legal Bash move at all: the
+G-020 block message's remedy (1) — edit the task file's ACs — was refused in
+every shell form (heredoc, `sed -i`, any redirect all match
+`has_bash_write_pattern`), and remedy (2) — `fw task update T-XXX --type
+inception` — was refused by the same gate that printed it, because `task
+update` is not on the read-only allowlist and no other checkpoint admits it
+before the G-020 branch exits 2. Escape required the Write/Edit tool, which
+the message never mentioned.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** The block message was authored from an unblocked shell — its
+remedies were never executed from inside the blocked state, so nothing ever
+checked that the gate's own escape routes pass the gate. Producer/consumer
+parity failure one notch worse than L-399/T-1890: there the bypass existed
+and was rejected downstream; here the gate rejects its own prescription
+before any downstream parser sees it.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** No rail requires a gate's printed remedy to be
+executable while the gate fires. Every existing gate test constructs the
+blocked state and asserts blocking, or constructs the clean state and asserts
+passing — none runs the remedy text from within the blocked state. The
+remedies also live in echo lines, invisible to any allowlist audit.
+
+**Prevention:** `tests/unit/t3299_gate_remedy_reachable.bats` extracts the
+remedy command lines from the captured G-020 block output itself and executes
+them through the hook in the gate-firing fixture state — so if the message
+and the allowlist ever drift apart again, the suite goes red. The "block
+message is an executable contract" pattern is the reusable lesson; sibling
+gates can copy the extraction harness.
 
 ## Evolution
 
@@ -268,14 +351,47 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-07 — Route 1: shell-based AC editing stays blocked; the block message now says so
+
+- **Chose:** Do NOT allowlist shell writes to the focused task's own file.
+  Instead the G-020 block message states explicitly that AC edits go through
+  the Write/Edit tool (`.tasks/*` is exempt for those tools) and that shell
+  writes to the task file stay blocked by design. The contract test pins the
+  Edit-tool route (hook exit 0 on an Edit call targeting the task file) and
+  pins the shell form staying blocked.
+- **Why:** Proving that a shell command's *sole* write target is the focused
+  task file requires parsing arbitrary shell — redirect targets can be
+  variables or command substitutions, `sed -i` takes multiple files, `tee`
+  appends targets mid-pipeline, heredocs hide the target in the payload. Every
+  incident in this file's history (L-547, T-2834, T-3221, T-3245) came from a
+  string-scan standing in for shell structure; adding another target-path
+  scanner would mint the next one. The Edit tool already provides a safe,
+  exempt, structurally-verified route — the defect was only that the message
+  never named it.
+- **Rejected:** (a) Allowlisting `sed -i <focused-task-file>` shapes — target
+  extraction is regex-on-shell, the exact class this cluster exists to remove;
+  (b) exempting all Bash whose stripped text contains only the task path —
+  trivially smuggled via chained clauses.
+
+### 2026-09-07 — Route 2: predicate composition, single consumption point
+
+- **Chose:** New `is_task_metadata_update_command` in safe-commands.sh,
+  mirroring `is_commit_checkpoint_command` (reject substitution, judge
+  quote-stripped view via `has_bash_write_pattern`, chain-split, require every
+  non-update clause independently safe). Flag set matches update-task.sh's
+  parser exactly: `--type/-t --horizon --status/-s --reason/-r` with
+  space-separated values, bare `--switch-focus`, one `T-\d+` anywhere. No
+  `=`-attached forms — update-task.sh rejects them, and a gate that admits
+  what the downstream parser refuses is the L-399 parity break in the other
+  direction. Consumed at exactly one checkpoint: the G-020 block branch.
+- **Why:** Single consumption fails toward blocking if ever missed (the
+  file's own SAFE_ALLOWED argument at :269). Placing it in
+  `is_bash_safe_command` instead would not have unblocked the wedge (the
+  safe verdict is only consumed at the null-focus checkpoint) and would have
+  widened the no-task surface for no gain.
+- **Rejected:** Allowing it hook-wide before the status checks — would also
+  bypass the T-3174/T-3179 partial-complete discipline, which has its own
+  logged Tier-2 mechanism.
 
 ## Decision
 
@@ -293,3 +409,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3299-g-020-scope-gate-blocks-both-escape-rout.md
 - **Context:** Initial task creation
+
+### 2026-09-07T01:20:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

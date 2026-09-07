@@ -963,6 +963,109 @@ _fw_strip_quoted() {
     printf '%s' "$out"
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# T-3299: is this command a METADATA-ONLY `fw task update` — the shape the
+# G-020 block message itself prescribes as the escape route?
+#
+# G-020 (check-active-task.sh, build-readiness gate) blocks everything that
+# falls through to it while the focused build task has placeholder ACs — and
+# its own printed remedy, `fw task update T-XXX --type inception`, fell
+# through with everything else: `update` is not a safe-listed task sub-verb,
+# and no earlier checkpoint admits it. The gate quoted the remedy back
+# verbatim while refusing it (OBS-353, measured 2026-08-29). Sibling of
+# L-399/T-1890, one notch worse: there the bypass was rejected downstream;
+# here the gate rejects its own prescription before anything downstream runs.
+#
+# NARROW BY CONSTRUCTION. A clause qualifies only when its argv is exactly
+# `fw task update`, ONE task id, and flags drawn from the metadata set the
+# gate's remedies need: --type/-t, --horizon, --status/-s, --reason/-r (each
+# consuming the next token as its value) and bare --switch-focus (the T-1890
+# sentinel update-task.sh consumes silently). Anything else — --add-tag,
+# --owner, --skip-*, a second task id, an unrecognised token — disqualifies
+# the clause and the command falls through to the gate as before.
+#
+# NO `=`-ATTACHED FORMS (`--type=inception`). update-task.sh's parser takes
+# values as the NEXT argv token only; admitting a form the downstream parser
+# rejects with "Unknown option" would be the exact T-1890 parity break this
+# fix exists to close, from the other direction.
+#
+# Values must be UNQUOTED single tokens. _fw_strip_quoted deletes quoted
+# content, so a double-quoted value leaves a valueless flag and the clause is
+# refused — toward blocking, which every failure direction here is: command
+# substitution, an unbalanced quote, a write pattern on the stripped view, an
+# unrecognised flag, and a missing value all return 1, sending the command to
+# the gate rather than past it.
+#
+# Same composition as is_commit_checkpoint_command below, for the same reason:
+# chained clauses (`cd … && bin/fw task update …`) are admitted only when every
+# other clause is independently safe via the SHARED allowlist, so this cannot
+# drift from it.
+#
+# CONSUMED AT EXACTLY ONE CHECKPOINT — the G-020 block branch in
+# check-active-task.sh — per that file's SAFE_ALLOWED argument (:269): a
+# predicate honoured at one site fails toward blocking if the site is ever
+# lost; one honoured at many fails toward permitting when one forgets. The
+# drift gate (T-1730) runs BEFORE that branch, so a metadata update naming a
+# task other than the focus is still blocked (or Tier-2 logged) upstream.
+_fw_is_task_metadata_update_clause() {
+    local seg tok
+    seg="$(_fw_strip_quoted "$1")" || return 1
+    seg="${seg#"${seg%%[![:space:]]*}"}"
+    # T-1908/T-1890: tolerate env-var prefixes (FW_SWITCH_FOCUS=1 fw task update …)
+    while [[ "$seg" =~ ^[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]+[[:space:]]+(.*)$ ]]; do
+        seg="${BASH_REMATCH[1]}"
+    done
+    # shellcheck disable=SC2086  # deliberate word-splitting: tokenising argv
+    set -- $seg
+    [ $# -ge 4 ] || return 1
+    [ "${1##*/}" = "fw" ] || return 1
+    [ "$2" = "task" ] && [ "$3" = "update" ] || return 1
+    shift 3
+    local task_seen=0
+    while [ $# -gt 0 ]; do
+        tok="$1"; shift
+        case "$tok" in
+            T-[0-9]*)
+                [[ "$tok" =~ ^T-[0-9]+$ ]] || return 1
+                [ "$task_seen" -eq 1 ] && return 1
+                task_seen=1 ;;
+            --type|-t|--horizon|--status|-s|--reason|-r)
+                [ $# -ge 1 ] || return 1
+                case "$1" in -*|T-[0-9]*) return 1 ;; esac
+                shift ;;
+            --switch-focus) ;;
+            *) return 1 ;;
+        esac
+    done
+    [ "$task_seen" -eq 1 ]
+}
+
+# TRUE only for a command whose every clause is either the metadata-only task
+# update itself or independently admissible via the shared allowlist.
+is_task_metadata_update_command() {
+    local cmd="$1" seg found=0
+    local -a segs=()
+
+    case "$cmd" in *'$('*|*'`'*) return 1 ;; esac
+
+    local cmd_view
+    cmd_view="$(_fw_strip_quoted "$cmd")" || return 1
+    has_bash_write_pattern "$cmd_view" && return 1
+
+    while IFS= read -r -d '' seg; do
+        segs+=("$seg")
+    done < <(_fw_chain_split "$cmd")
+    for seg in "${segs[@]}"; do
+        [[ "$seg" =~ ^[[:space:]]*$ ]] && continue
+        if _fw_is_task_metadata_update_clause "$seg"; then
+            found=1
+            continue
+        fi
+        _fw_single_command_is_safe "$seg" || return 1
+    done
+    [ "$found" -eq 1 ]
+}
+
 # TRUE only for a command that IS a commit checkpoint: at least one clause is a
 # real `git commit`, and every other clause is independently admissible.
 is_commit_checkpoint_command() {
