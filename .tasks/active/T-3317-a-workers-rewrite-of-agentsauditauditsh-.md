@@ -11,7 +11,7 @@ name: "A worker's rewrite of agents/audit/audit.sh dropped the executable bit (g
 description: >
   Promoted from observation OBS-336
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:01:44Z
-last_update: '2026-09-07T08:00:20Z'
+last_update: 2026-09-07T19:25:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -81,10 +81,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **A1 Detector shipped:** `fw doctor` gains an exec-bit drift check comparing git index mode 100755 against on-disk executability for tracked `*.sh` (and `bin/fw`); WARN naming each drifted file with the one-line `chmod +x` remedy; cheap (no test-suite invocation — ls-files + stat class only)
-- [ ] **A2 Audit parity:** the same check runs as an audit line (FAIL, since a drifted audit.sh means the rail itself may be dead) — shared helper, not a re-derived copy (G-079)
-- [ ] **A3 Pinned:** hermetic bats suite: drifted-file fires WARN/FAIL naming the file; clean tree passes; a non-executable file whose index mode is 100644 does NOT fire (control)
-- [ ] **A4 No-widening:** `bash -n` clean on every edited shell file; existing doctor/audit suites still green
+- [x] **A1 Detector shipped:** `fw doctor` gains an exec-bit drift check comparing git index mode 100755 against on-disk executability for tracked `*.sh` (and `bin/fw`); WARN naming each drifted file with the one-line `chmod +x` remedy; cheap (no test-suite invocation — ls-files + stat class only)
+- [x] **A2 Audit parity:** the same check runs as an audit line (FAIL, since a drifted audit.sh means the rail itself may be dead) — shared helper, not a re-derived copy (G-079)
+- [x] **A3 Pinned:** hermetic bats suite: drifted-file fires WARN/FAIL naming the file; clean tree passes; a non-executable file whose index mode is 100644 does NOT fire (control)
+- [x] **A4 No-widening:** `bash -n` clean on every edited shell file; existing doctor/audit suites still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -234,6 +234,20 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n lib/exec-bit-drift.sh
+bash -n agents/audit/audit.sh
+bash -n bin/fw
+timeout 300 bats tests/unit/t3317_exec_bit_drift.bats > /tmp/.t3317-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3317-bats.out
+test "$(grep -c '# skip' /tmp/.t3317-bats.out)" -eq 0
+# Doctor rc is NOT the verdict here — a preexisting env FAIL ("Last full audit
+# KILLED FROM OUTSIDE") exits doctor 2 on this host, before and after this task
+# (baseline /tmp/t3317-doctor-base.out). The assertion is that the new check
+# line renders under --quick (cheap check, deliberately not quick-skipped).
+timeout 300 bin/fw doctor --quick > /tmp/.t3317-doctor.out 2>&1; grep -Eq "Exec-bit (parity|drift)" /tmp/.t3317-doctor.out
+grep -q "lib/exec-bit-drift.sh" bin/fw
+grep -q "lib/exec-bit-drift.sh" agents/audit/audit.sh
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -249,6 +263,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `bin/fw audit` died with exit 126 "Permission denied" — a worker's rewrite of `agents/audit/audit.sh` wrote the file fresh without the executable bit (git index still 100755, on-disk 664). The entire audit rail (cron + pre-push) was silently disabled.
+
+**Root cause:** File-content edits via Write-style tools recreate the file with default umask permissions; git preserves the index mode independently, so the tree looked clean to `git status` (mode changes on files git already tracks as 100755 show as mode diffs only when `core.fileMode` catches them — and a fresh write that loses the bit IS such a diff, but nothing routinely read it). Exec-ability is a property no existing gate measured.
+
+**Why structurally allowed:** Nothing in doctor, audit, or the pre-push hooks compared on-disk mode against the git index. This is the T-3105 class one level up: the audit that reports on everything else had no check that it can itself run — and its failure mode (exit 126 at spawn) happens before any of its own verdict machinery loads, so it cannot report its own death.
+
+**Prevention (distinct from fix):** Shared detector `lib/exec-bit-drift.sh` (index-100755 vs `test -x`, tracked `*.sh` + `bin/fw`) now runs as a `fw doctor` WARN (cheap — runs even under `--quick`, so it sits on the onboarding/hook loop) and as an `agents/audit/audit.sh` FAIL (a drifted audit.sh means the rail is dead — but doctor's independent WARN leg still catches exactly that case). Pinned by 12-test hermetic suite `tests/unit/t3317_exec_bit_drift.bats` incl. the 100644 control and the G-079 no-re-derivation pin.
 
 ## Evolution
 
@@ -303,6 +325,15 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The detector class that let the audit rail die silently is now closed at both surfaces from one shared predicate. It fires end-to-end in the real `fw doctor --quick` against a drifted fixture (WARN names the file + one-line `chmod +x` remedy) and reports scoped parity ("all 60 indexed-100755 script(s)") on the clean tree. The audit leg FAILs on the same helper — no re-derived copy (G-079), pinned by test.
+**Evidence:**
+- `lib/exec-bit-drift.sh` — shared helper; repo overridable via arg / `FW_EXEC_BIT_REPO` for hermetic tests; deleted files excluded (chmod is the wrong remedy there); unenumerable ≠ empty set (T-3105).
+- `bin/fw` doctor check after the git-hooks checks — cheap, deliberately NOT `_doctor_quick_skip`-guarded; verified live: WARN leg (`/tmp/t3317-doctor-warn.out`) and OK leg (`/tmp/t3317-doctor-ok.out`).
+- `agents/audit/audit.sh` FAIL leg (scope worktree — on-disk mode drift, committed content intact), `pass_over` with candidate count on the clean path.
+- `tests/unit/t3317_exec_bit_drift.bats` — 12/12 green, 0 skips: drift fires named, clean passes, 100644 control silent, bin/fw + space-path + env-override + non-git-unenumerable cases, source-level wiring pins.
+- Neighboring suite t3324 green; t2452 test 8 fails PREEXISTING (doctor exits 2 from an unrelated env FAIL "Last full audit KILLED FROM OUTSIDE", present in the pre-change baseline run).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -333,3 +364,6 @@ bvp_scores_proposed:
 
 ### 2026-09-07T07:09:39Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
+
+### 2026-09-07T19:25:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
