@@ -2,10 +2,10 @@ id: agents/metrics/api-usage.sh
 name: api-usage
 type: script
 standalone: true
-subsystem: unknown
+subsystem: termlink-integration
 location: agents/metrics/api-usage.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "fw metrics api-usage: tallies per-method TermLink RPC counts from rpc-audit.jsonl and reports the legacy-primitive share used as the T-1166 retirement entry gate (T-1304/T-1308)."
 depends_on: []
 depended_by:
 - target: bin/fw

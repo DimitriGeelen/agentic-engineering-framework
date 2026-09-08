@@ -1,10 +1,10 @@
 id: agents/designer/designer.sh
 name: designer
 type: script
-subsystem: unknown
+subsystem: watchtower
 location: agents/designer/designer.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "fw designer: vendors and serves a pinned Workflow Designer release build via the Watchtower /designer blueprint (832-Workflow-designer is source of truth; T-2521)."
 depends_on:
 - target: bin/fw
   type: calls

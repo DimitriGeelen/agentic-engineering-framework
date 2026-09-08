@@ -1,10 +1,10 @@
 id: agents/mcp/framework_mcp_server.py
 name: framework_mcp_server
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: agents/mcp/framework_mcp_server.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Framework MCP server (arc-010 Slice 2, T-2265): reads policy/capability-overlay/tool-set.yaml at startup, emits framework-mcp-manifest.json, and registers an MCP tool per read_only and agent_authority entry."
 depends_on:
 - target: bin/fw
   type: calls

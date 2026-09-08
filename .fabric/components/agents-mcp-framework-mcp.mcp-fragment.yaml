@@ -1,10 +1,10 @@
 id: agents/mcp/framework-mcp.mcp-fragment.json
 name: framework-mcp.mcp-fragment
 type: config
-subsystem: unknown
+subsystem: framework-core
 location: agents/mcp/framework-mcp.mcp-fragment.json
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: ".mcp.json fragment registering the framework MCP server for consumer projects (arc-010 Slice 2)."
 depends_on: []
 depended_by: []
 last_verified: 2026-06-08

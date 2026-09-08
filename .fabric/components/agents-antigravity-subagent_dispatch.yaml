@@ -1,12 +1,11 @@
 id: agents/antigravity/subagent_dispatch.py
 name: subagent_dispatch
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: agents/antigravity/subagent_dispatch.py
 tags: []
 
-purpose: "TODO: describe what this component does"
-
+purpose: "AEF subagent governance and dispatch helper for the Antigravity provider: prepares, scopes, and reconciles subagents under P-002 task-locking with TermLink tracking."
 depends_on:
   # Format: - target: <relative-path>
   #          type: calls|reads|writes|triggers|renders

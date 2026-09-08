@@ -9,7 +9,7 @@ description: >
   real subsystem so fence-1's Unknown-count clause can reach 0. Framework Fabric hygiene
   — needs no D1 ruling. Evidence: docs/research/executable-workflow/arc0-falsifier1-result.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-08T19:56:50Z
-last_update: '2026-09-08T20:00:28Z'
+last_update: 2026-09-08T20:08:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -67,22 +67,40 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-08T20:08:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3351: EWCR fence-1: resolve Unknown subsystem on the 3 CORE + 17 agents/ write-set Fabric cards
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+EWCR fence-1 hygiene (from T-3147 measurement, evidence: docs/research/executable-workflow/arc0-falsifier1-result.md): classify the Unknown-subsystem Fabric cards that intersect the runtime write set so the fence's Unknown-count clause can reach 0. Live re-derivation found 23 cards in scope: 3 CORE (2× agents/dispatch + the policy/standards BPMN mapping doc), 1 BROAD-only (agents/designer/designer.sh), and 19 further agents/-rooted Unknown cards (the T-3147 "17 agents/ (BROAD)" cohort, grown to 22 total agents/-rooted by measurement drift). All 23 re-classified into existing taxonomy values (framework-core, governance, watchtower, audit, testing, termlink-integration) with real purposes replacing the TODO placeholders.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The 3 CORE write-set cards (agents/dispatch/single-host-parallel-demo.sh, agents/dispatch/yield-point.sh, policy/standards/aef-bpmn-mapping-v1-partI.md) carry a real (non-Unknown) subsystem chosen from the existing subsystem taxonomy in `bin/fw fabric overview`
-- [ ] Every agents/-rooted Fabric card that `python3 tools/ewcr-arc0-unknown-overlap.py` counted as Unknown in the BROAD write set is re-classified to a real subsystem (17 cards at T-3147 measurement time; re-derive the live list, do not trust the count)
-- [ ] Re-running `python3 tools/ewcr-arc0-unknown-overlap.py` reports intersection 0 for both CORE and BROAD write sets, and the run's summary is recorded in the task Updates or a docs/research/executable-workflow/ artefact (never editing prior blocks)
-- [ ] Only .fabric/components/ card YAMLs and documentation are modified — no file under lib/, bin/, agents/, web/ or tests/ changes
+- [x] The 3 CORE write-set cards (agents/dispatch/single-host-parallel-demo.sh, agents/dispatch/yield-point.sh, policy/standards/aef-bpmn-mapping-v1-partI.md) carry a real (non-Unknown) subsystem chosen from the existing subsystem taxonomy in `bin/fw fabric overview`
+- [x] Every agents/-rooted Fabric card that `python3 tools/ewcr-arc0-unknown-overlap.py` counted as Unknown in the BROAD write set is re-classified to a real subsystem (17 cards at T-3147 measurement time; re-derive the live list, do not trust the count)
+- [x] Re-running `python3 tools/ewcr-arc0-unknown-overlap.py` reports intersection 0 for both CORE and BROAD write sets, and the run's summary is recorded in the task Updates or a docs/research/executable-workflow/ artefact (never editing prior blocks)
+- [x] Only .fabric/components/ card YAMLs and documentation are modified — no file under lib/, bin/, agents/, web/ or tests/ changes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -243,6 +261,18 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Invariant: overlap tool reports intersection 0 for both write sets (redirect-then-grep; pins the 0 target, not a live Unknown count)
+python3 tools/ewcr-arc0-unknown-overlap.py > /tmp/.t3351-overlap.out 2>&1 && grep -qE "Intersection with CORE write set *: 0 " /tmp/.t3351-overlap.out && grep -qE "Intersection with BROAD write set *: 0 " /tmp/.t3351-overlap.out
+
+# Invariant: none of the 3 CORE write-set cards carries subsystem unknown
+! grep -q "^subsystem: unknown" .fabric/components/agents-dispatch-single-host-parallel-demo.yaml .fabric/components/agents-dispatch-yield-point.yaml .fabric/components/policy-standards-aef-bpmn-mapping-v1-partI.yaml
+
+# Invariant: zero agents/-rooted Fabric cards remain Unknown (property holds, no live count pinned); also re-parses every card YAML
+python3 -c "import glob,yaml,sys; bad=[f for f in glob.glob('.fabric/components/*.yaml') if (lambda d: isinstance(d,dict) and str(d.get('subsystem') or 'unknown').strip().lower()=='unknown' and str(d.get('location') or '').lstrip('./').startswith('agents/'))(yaml.safe_load(open(f)))]; sys.exit(1 if bad else 0)"
+
+# Invariant: every reclassified card carries a real purpose (no TODO placeholder left in the 23-card scope)
+! grep -l "TODO: describe what this component does" .fabric/components/agents-antigravity-subagent_dispatch.yaml .fabric/components/agents-bpmn-bpmn.yaml .fabric/components/agents-designer-designer.yaml .fabric/components/agents-dispatch-single-host-parallel-demo.yaml .fabric/components/agents-dispatch-yield-point.yaml .fabric/components/policy-standards-aef-bpmn-mapping-v1-partI.yaml
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -282,6 +312,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-08 — live scope diverged from the filed counts, in both directions
+- **What changed:** The filed scope said "3 CORE + 17 agents/ BROAD". Live re-derivation (per the AC's own instruction) found: (a) the tool's literal BROAD intersection is only 4 cards (3 CORE + agents/designer/designer.sh) because the tool's BROAD prefixes cover just 5 agents/ subtrees; (b) the T-3147 evidence table's "17 agents/ (BROAD)" row actually meant *all* agents/-rooted Unknown cards from the coverage script, and that cohort had grown to 22 by today. Also, no "dispatch" subsystem exists in the live taxonomy — dispatch-substrate lib files (lib/resolver.py, lib/dispatch.sh, lib/write_set.py …) are uniformly `framework-core`, so the agents/dispatch/ and agents/orchestrator/ cards were classified there for cluster coherence rather than into a new value.
+- **Plan impact:** Scope widened from ~20 to 23 cards (all 22 agents/-rooted Unknowns + the policy/standards CORE doc) so both readings of the AC are satisfied and the fence result is robust to either interpretation. No new subsystem value was invented.
+- **Triggered:** Nothing filed — widening stayed inside this task's fence (card YAMLs only).
 
 ## Recommendation
 
@@ -345,3 +380,11 @@ bvp_scores_proposed:
 
 ### 2026-09-08T19:57:25Z — status-update [task-update-agent]
 - **Change:** tags: +ewcr-v1
+
+### 2026-09-08T20:08:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-09-08 — fence-1 reclassification complete [T-3351 worker]
+- **Action:** Re-classified 23 Unknown Fabric cards (22 agents/-rooted + policy/standards/aef-bpmn-mapping-v1-partI.md) into existing taxonomy values and replaced TODO purposes with real one-liners. Assignments: framework-core ×15 (dispatch/orchestrator/mcp/sessions/bvp-estimator/antigravity/gpu-recover clusters — matching lib/resolver.py, lib/dispatch.sh etc.), governance ×2 (bpmn.sh + the BPMN mapping doc, joining its .provenance sibling), watchtower ×2 (designer.sh, ux-review.py), audit ×2 (agents/monitor/*), termlink-integration ×2 (termlink.sh, api-usage.sh), testing ×1 (docgen test). Three .md cards' `type: script` corrected to `document`, docgen test to `test`.
+- **Output:** `python3 tools/ewcr-arc0-unknown-overlap.py` post-run summary: cards enumerated 1231; Unknown 556 → 533; **Intersection with CORE write set: 0 (was 3); Intersection with BROAD write set: 0 (was 4)**; all §5.1 row breakdowns 0; `agents` no longer appears in the Unknown-roots table. Machine-readable result at .context/audits/ewcr-arc0-unknown-overlap.json.
+- **Context:** Only .fabric/components/*.yaml files modified (plus this task file and the tool's own audit JSON output) — nothing under lib/, bin/, agents/, web/, tests/.

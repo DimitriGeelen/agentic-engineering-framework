@@ -1,7 +1,7 @@
 id: agents/termlink/termlink.sh
 name: termlink
 type: script
-subsystem: unknown
+subsystem: termlink-integration
 location: agents/termlink/termlink.sh
 tags: []
 purpose: 'TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around

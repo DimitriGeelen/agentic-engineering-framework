@@ -1,10 +1,10 @@
 id: agents/monitor/liveness-check.sh
 name: liveness-check
 type: script
-subsystem: unknown
+subsystem: audit
 location: agents/monitor/liveness-check.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Cron liveness monitor (every 1 min, T-1269/T-1273): checks TermLink hub, framework agent, Claude instance and Watchtower; appends .context/monitors/liveness.jsonl and writes liveness-latest.yaml."
 depends_on:
 - target: lib/config.sh
   type: calls

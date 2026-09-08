@@ -2,12 +2,11 @@ id: agents/monitor/watchtower-rss-sample.sh
 name: watchtower-rss-sample
 type: script
 standalone: true  # T-1754 — by-design orphan, no framework imports
-subsystem: unknown
+subsystem: audit
 location: agents/monitor/watchtower-rss-sample.sh
 tags: []
 
-purpose: "TODO: describe what this component does"
-
+purpose: "Cron RSS/CPU sampler (every 5 min, T-1615) of the Watchtower process: distinguishes memory-leak re-saturation from request-rate queueing; outputs .context/monitors/watchtower-rss.jsonl."
 depends_on:
   # Format: - target: <relative-path>
   #          type: calls|reads|writes|triggers|renders

@@ -2,12 +2,11 @@ id: agents/gpu-recover/recover.sh
 name: recover
 type: script
 standalone: true  # T-1754 — by-design orphan, no framework imports
-subsystem: unknown
+subsystem: framework-core
 location: agents/gpu-recover/recover.sh
 tags: []
 
-purpose: "TODO: describe what this component does"
-
+purpose: "fw gpu recover: frees GPU memory on shared hosts by terminating the largest non-ollama VRAM consumer; reactive standalone utility with no framework imports (T-1754)."
 depends_on:
   # Format: - target: <relative-path>
   #          type: calls|reads|writes|triggers|renders

@@ -1,10 +1,10 @@
 id: agents/bpmn/bpmn.sh
 name: bpmn
 type: script
-subsystem: unknown
+subsystem: governance
 location: agents/bpmn/bpmn.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "fw bpmn agent: BPMN process diagram to AEF task compiler (Child-2 forward bridge); thin wrapper routing compile/promote to tools/bpmn_to_tasks.py and tools/bpmn_promote.py."
 depends_on: []
 depended_by:
 - target: bin/fw

@@ -1,10 +1,10 @@
 id: agents/dispatch/single-host-parallel-demo.sh
 name: single-host-parallel-demo
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: agents/dispatch/single-host-parallel-demo.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "arc-011 M1 single-host parallel dispatch demo: composes write-set disjointness, orchestrator-graph decisions and yield-point polling into one end-to-end headline-mechanic demo (T-2341)."
 depends_on:
 - target: bin/fw
   type: calls

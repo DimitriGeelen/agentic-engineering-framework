@@ -1,10 +1,10 @@
 id: agents/sessions/claude-code/list.sh
 name: list
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: agents/sessions/claude-code/list.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Claude Code session adapter for fw sessions (T-2417): reads `claude agents --all --json` and emits canonical JSONL per agents/sessions/SCHEMA.md."
 depends_on: []
 depended_by:
 - target: tests/unit/sessions_claude_code_adapter.bats

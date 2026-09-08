@@ -1,10 +1,10 @@
 id: agents/ux-review/ux-review.py
 name: ux-review
 type: script
-subsystem: unknown
+subsystem: watchtower
 location: agents/ux-review/ux-review.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "UX-review capture engine (T-2002): drives Watchtower render surfaces in a headless browser across every appearance preset and produces visual review artifacts for human review."
 depends_on:
 - target: web/app.py
   type: calls

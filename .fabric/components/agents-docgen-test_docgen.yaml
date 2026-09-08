@@ -1,10 +1,10 @@
 id: agents/docgen/test_docgen.py
 name: test_docgen
-type: script
-subsystem: unknown
+type: test
+subsystem: testing
 location: agents/docgen/test_docgen.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Unit tests for the component reference doc generator agents/docgen/generate_component.py (T-387)."
 depends_on:
 - target: agents/docgen/generate_component.py
   type: calls

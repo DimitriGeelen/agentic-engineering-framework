@@ -1,10 +1,10 @@
 id: agents/mcp/manifest.py
 name: manifest
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: agents/mcp/manifest.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Manifest emission for the framework MCP server (T-2265): derives framework-mcp-manifest.json from policy/capability-overlay/tool-set.yaml, emitting the {name, gated} contract consumed by orchestrator-mcp-scan."
 depends_on:
 - target: agents/audit/orchestrator-mcp-scan.sh
   type: calls

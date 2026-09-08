@@ -1,10 +1,10 @@
 id: agents/sessions/SCHEMA.md
 name: SCHEMA
-type: script
-subsystem: unknown
+type: document
+subsystem: framework-core
 location: agents/sessions/SCHEMA.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Canonical session schema (T-2417): JSONL contract between fw sessions provider adapters (agents/sessions/<provider>/) and the generic renderer."
 depends_on: []
 depended_by: []
 last_verified: 2026-06-16

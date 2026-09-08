@@ -1,10 +1,10 @@
 id: agents/termlink/bvp-estimator/bvp-estimator.sh
 name: bvp-estimator
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: agents/termlink/bvp-estimator/bvp-estimator.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "TermLink worker entry point for the BVP estimator (T-1922): thin shell wrapper forwarding to estimator.py per the agents/<name>/<name>.sh convention."
 depends_on: []
 depended_by:
 - target: agents/resume/resume.sh
