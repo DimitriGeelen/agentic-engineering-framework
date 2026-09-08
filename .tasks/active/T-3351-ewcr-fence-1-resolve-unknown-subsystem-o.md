@@ -1,8 +1,13 @@
 ---
 id: T-3351
-name: "EWCR fence-1: resolve Unknown subsystem on the 3 CORE + 17 agents/ write-set Fabric cards"
+name: "EWCR fence-1: resolve Unknown subsystem on the 3 CORE + 17 agents/ write-set
+  Fabric cards"
 description: >
-  From T-3147 measurement: 3 CORE write-set cards (agents/dispatch/single-host-parallel-demo.sh, agents/dispatch/yield-point.sh, policy/standards/aef-bpmn-mapping-v1-partI.md) plus 17 agents/ BROAD write-set cards carry subsystem Unknown. Classify each into its real subsystem so fence-1's Unknown-count clause can reach 0. Framework Fabric hygiene — needs no D1 ruling. Evidence: docs/research/executable-workflow/arc0-falsifier1-result.md
+  From T-3147 measurement: 3 CORE write-set cards (agents/dispatch/single-host-parallel-demo.sh,
+  agents/dispatch/yield-point.sh, policy/standards/aef-bpmn-mapping-v1-partI.md) plus
+  17 agents/ BROAD write-set cards carry subsystem Unknown. Classify each into its
+  real subsystem so fence-1's Unknown-count clause can reach 0. Framework Fabric hygiene
+  — needs no D1 ruling. Evidence: docs/research/executable-workflow/arc0-falsifier1-result.md
 
 status: captured
 workflow_type: build
@@ -22,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-08T19:56:50Z
-last_update: 2026-09-08T19:57:25Z
-date_finished: null
+last_update: '2026-09-08T20:00:28Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +39,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-08T20:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-08T20:00:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3351: EWCR fence-1: resolve Unknown subsystem on the 3 CORE + 17 agents/ write-set Fabric cards
@@ -46,8 +79,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The 3 CORE write-set cards (agents/dispatch/single-host-parallel-demo.sh, agents/dispatch/yield-point.sh, policy/standards/aef-bpmn-mapping-v1-partI.md) carry a real (non-Unknown) subsystem chosen from the existing subsystem taxonomy in `bin/fw fabric overview`
+- [ ] Every agents/-rooted Fabric card that `python3 tools/ewcr-arc0-unknown-overlap.py` counted as Unknown in the BROAD write set is re-classified to a real subsystem (17 cards at T-3147 measurement time; re-derive the live list, do not trust the count)
+- [ ] Re-running `python3 tools/ewcr-arc0-unknown-overlap.py` reports intersection 0 for both CORE and BROAD write sets, and the run's summary is recorded in the task Updates or a docs/research/executable-workflow/ artefact (never editing prior blocks)
+- [ ] Only .fabric/components/ card YAMLs and documentation are modified — no file under lib/, bin/, agents/, web/ or tests/ changes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
