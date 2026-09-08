@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:14:56Z
-last_update: '2026-09-08T00:45:16Z'
+last_update: 2026-09-08T21:37:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -112,6 +112,14 @@ PPID 1 on the host before the fix).
       (unlink-while-held, third process acquires) and assert mutual exclusion
       holds; (b) contention exits 75 (control leg); (c) no orphaned watchdog
       sleep after normal exit. Hermetic: scratch lock path, never the live lock.
+- [x] **A5 Legacy suite aligned:** the two behavioural collision tests in
+      `tests/unit/audit_flock.bats` are green. They were red because the TEST
+      was stale, not the code: they asserted the pre-T-2930 exit-0 collision
+      contract, while audit.sh (correctly, per A1) exits 75 on contention in
+      all modes. Their fixture was already hermetic (scratch PROJECT_ROOT/
+      CONTEXT_DIR, verified honored by audit.sh — never the live lock); only
+      the asserted exit code and test titles needed updating to the T-2930
+      contract (75 + foreground stderr message / quiet silence).
 - [x] **A4 No-widening:** `bash -n agents/audit/audit.sh` clean and the
       existing `tests/unit/audit.bats` suite keeps passing (modulo the known
       exit-75-contention flake class it already documents).
@@ -275,6 +283,8 @@ PPID 1 on the host before the fix).
 
 timeout 300 bats tests/unit/t3298_audit_lock_integrity.bats > /tmp/.t3298-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3298-bats.out
 test "$(grep -c '# skip' /tmp/.t3298-bats.out)" -eq 0
+timeout 300 bats tests/unit/audit_flock.bats > /tmp/.t3298-flock.out 2>&1 && grep -q "^ok 1 " /tmp/.t3298-flock.out && ! grep -q "^not ok" /tmp/.t3298-flock.out
+test "$(grep -c '# skip' /tmp/.t3298-flock.out)" -eq 0
 bash -n agents/audit/audit.sh
 
 ## RCA
@@ -328,7 +338,11 @@ old-bug shape (stale-mtime lock held by a live process → contender must exit
 75, not acquire), the T-2930 contention contract in both arms, the relocated
 fallback-arm sweep in both directions (sweeps stale, refuses fresh), a source
 pin that the flock arm's EXIT trap contains no `rm`, and a ps-scoped
-no-orphan-sleep check after a normal exit.
+no-orphan-sleep check after a normal exit. Additionally, the legacy
+`tests/unit/audit_flock.bats` collision tests (T-1464 era) were aligned to
+the T-2930 contract — they had been red asserting exit 0 on contention,
+which is exactly the old double-hold-friendly semantics; they now pin
+exit 75 + foreground-message/quiet-silence against a hermetic fixture.
 
 ## Evolution
 

@@ -6,7 +6,7 @@ description: >
   Inception: RCA: host deploy is whack-a-mole — declare deploy topology + end-to-end
   deploy-doctor/release orchestrator
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
 horizon: null
@@ -14,8 +14,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-06-24T21:01:38Z
-last_update: 2026-09-08T21:24:05Z
-date_finished: 2026-09-08T21:24:05Z
+last_update: '2026-08-16T22:25:08Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -116,15 +116,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -181,17 +181,7 @@ bvp_scores_proposed:
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Recommendation: GO
-
-Rationale:
-
-9 undeclared deploy-topology seams surfaced reactively this session; structural fix is to declare the topology + add an end-to-end status/orchestrator surface, mirroring the cron registry->generated->deployed chain at deploy scale
-
-Evidence:
-
-**Date**: 2026-09-08T21:24:04Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -200,35 +190,3 @@ Evidence:
 
 ### 2026-06-24T21:03:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-09-08T21:24:04Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Recommendation: GO
-
-Rationale:
-
-9 undeclared deploy-topology seams surfaced reactively this session; structural fix is to declare the topology + add an end-to-end status/orchestrator surface, mirroring the cron registry->generated->deployed chain at deploy scale
-
-Evidence:
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-45c1d7af
-- **Timestamp:** 2026-09-08T21:24:06Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-e371944c
-- **Timestamp:** 2026-09-08T21:24:06Z
-- **Overall:** UNVERIFIED
-- **Claims:** 0
-- No verifiable claims found in ## Recommendation
-
-### 2026-09-08T21:24:05Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

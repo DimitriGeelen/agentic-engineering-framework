@@ -1,6 +1,13 @@
 #!/usr/bin/env bats
 # Unit tests for agents/audit/audit.sh flock guard (T-1464)
 # Verifies foreground audits also flock-protect (lifted T-1162's QUIET-only guard).
+#
+# T-3298: the behavioural collision tests originally asserted exit 0 — the
+# pre-T-2930 contract. T-2930 changed contention to exit 75 in ALL modes
+# ("did not run" is not a verdict; see t2930_audit_contention_exit_code.bats).
+# These tests now pin the current contract: exit 75, foreground stderr message,
+# quiet-mode silence. The fixture was already hermetic (scratch PROJECT_ROOT /
+# CONTEXT_DIR, never the live lock) — only the asserted contract was stale.
 
 FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 AUDIT="$FRAMEWORK_ROOT/agents/audit/audit.sh"
@@ -47,7 +54,7 @@ teardown() {
 
 # --- Behavioural collision test ---
 
-@test "audit.sh: foreground collision exits 0 with stderr message when lock held" {
+@test "audit.sh: foreground collision exits 75 with stderr message when lock held" {
     skip_if_no_flock
     LOCK_FILE="$TMP_PROJECT/.context/locks/audit.lock"
     # Hold the lock from another process for the duration of the run
@@ -59,15 +66,15 @@ teardown() {
     sleep 0.5  # ensure holder has the lock
 
     run "$AUDIT" --section structure
-    # Expect immediate exit 0 (silent on stdout, stderr message)
-    [ "$status" -eq 0 ]
+    # T-2930 contract: contention exits 75 (did not run), stderr explains why
+    [ "$status" -eq 75 ]
     [[ "$output" == *"Another audit is already running"* ]]
 
     kill "$HOLDER_PID" 2>/dev/null || true
     wait "$HOLDER_PID" 2>/dev/null || true
 }
 
-@test "audit.sh: cron-mode (--quiet) collision exits 0 silently when lock held" {
+@test "audit.sh: cron-mode (--quiet) collision exits 75 silently when lock held" {
     skip_if_no_flock
     LOCK_FILE="$TMP_PROJECT/.context/locks/audit.lock"
     (
@@ -78,7 +85,8 @@ teardown() {
     sleep 0.5
 
     run "$AUDIT" --quiet --section structure
-    [ "$status" -eq 0 ]
+    # T-2930 contract: same 75 in quiet mode, but no message
+    [ "$status" -eq 75 ]
     # No "Another audit" message in quiet mode
     [[ "$output" != *"Another audit is already running"* ]]
 
