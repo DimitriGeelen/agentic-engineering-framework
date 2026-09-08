@@ -114,12 +114,27 @@ EOF
 # emit_review — Slice C consumer-side gate
 # ──────────────────────────────────────────────────────────────────────────────
 
-@test "emit_review: non-inception (build) passes through silently — no Rec gate" {
+@test "emit_review: partial-complete build with empty Rec BLOCKS (T-2421)" {
+    # T-2421 extended the Rec gate beyond inceptions: a build task with unticked
+    # Human ACs (the fixture carries one) and no substantive ## Recommendation
+    # refuses emission — the operator must not open /review/<id> to a blank card.
     local file
     file=$(_write_task "T-7010" "build" "")
     run emit_review "T-7010" "$file"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Partial-complete build task T-7010 has empty ## Recommendation"* ]]
+}
+
+@test "emit_review: build with all Human ACs ticked + empty Rec passes through (no gate)" {
+    # The pass-through the pre-T-2421 test meant: outside the partial-complete
+    # state the build-class Rec gate does not fire.
+    local file
+    file=$(_write_task "T-7014" "build" "")
+    # Tick the fixture's single Human AC — human_checked == human_total.
+    sed -i 's/- \[ \] \[REVIEW\] decide/- [x] [REVIEW] decide/' "$file"
+    run emit_review "T-7014" "$file"
     [ "$status" -eq 0 ]
-    [[ "$output" != *"BLOCKED: Inception"* ]]
+    [[ "$output" != *"BLOCKED"* ]]
 }
 
 @test "emit_review: inception with populated Recommendation passes" {
