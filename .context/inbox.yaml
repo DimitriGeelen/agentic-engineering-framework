@@ -4433,3 +4433,17 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-384
+  text: "T-3346 follow-up: claude TUI under --termlink exited 0 on its own after ~35min idle at the bg-jobs picker (claude-master-2755743, 2026-09-08 ~19:05); exit-marker detection worked as designed (no false positive for 35min, true positive on real exit), registration persists as bare shell. Two residuals: (1) why does an idle claude TUI exit 0 after ~35min unattended? (2) wrapper passed exit 1 to caller on claude's clean exit 0 — verify claude-fw exit-code pass-through/restart-branch semantics."
+  captured: 2026-09-08T19:02:22Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-385
+  text: "R6 (EWCR T-3147 falsifier control): policy/ has 0% Component Fabric coverage — 0 of 8 governance-semantics YAML files carded (authority-envelope, value-drivers, anti-patterns, designer-pin, proxy-policy, escalation-patterns, capability-overlay/, prompts/). Structural blind spot: a directory with no cards contributes no Unknown cards, so coverage falsifiers read it as clean. Evidence: docs/research/executable-workflow/arc0-falsifier1-result.md, tools/ewcr-arc0-coverage-check.py"
+  captured: 2026-09-08T19:56:28Z
+  context_task: T-3349
+  tags: []
+  status: pending
+  promoted_to: null
