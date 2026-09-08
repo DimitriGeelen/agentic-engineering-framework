@@ -9,10 +9,10 @@ description: >
   real subsystem so fence-1's Unknown-count clause can reach 0. Framework Fabric hygiene
   — needs no D1 ruling. Evidence: docs/research/executable-workflow/arc0-falsifier1-result.md
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:ewcr-arc0-contract-evidence, ewcr-v1]
 components: []
 related_tasks: []
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-08T19:56:50Z
-last_update: 2026-09-08T20:08:03Z
-date_finished:
+last_update: 2026-09-08T20:14:38Z
+date_finished: 2026-09-08T20:14:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -388,3 +388,20 @@ python3 -c "import glob,yaml,sys; bad=[f for f in glob.glob('.fabric/components/
 - **Action:** Re-classified 23 Unknown Fabric cards (22 agents/-rooted + policy/standards/aef-bpmn-mapping-v1-partI.md) into existing taxonomy values and replaced TODO purposes with real one-liners. Assignments: framework-core ×15 (dispatch/orchestrator/mcp/sessions/bvp-estimator/antigravity/gpu-recover clusters — matching lib/resolver.py, lib/dispatch.sh etc.), governance ×2 (bpmn.sh + the BPMN mapping doc, joining its .provenance sibling), watchtower ×2 (designer.sh, ux-review.py), audit ×2 (agents/monitor/*), termlink-integration ×2 (termlink.sh, api-usage.sh), testing ×1 (docgen test). Three .md cards' `type: script` corrected to `document`, docgen test to `test`.
 - **Output:** `python3 tools/ewcr-arc0-unknown-overlap.py` post-run summary: cards enumerated 1231; Unknown 556 → 533; **Intersection with CORE write set: 0 (was 3); Intersection with BROAD write set: 0 (was 4)**; all §5.1 row breakdowns 0; `agents` no longer appears in the Unknown-roots table. Machine-readable result at .context/audits/ewcr-arc0-unknown-overlap.json.
 - **Context:** Only .fabric/components/*.yaml files modified (plus this task file and the tool's own audit JSON output) — nothing under lib/, bin/, agents/, web/, tests/.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c759fa0a
+- **Timestamp:** 2026-09-08T20:14:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — The 3 CORE write-set cards (agents/dispatch/single-host-parallel-demo.sh, agents/dispatch/yield-point.sh, policy/standards/aef-bpmn-mapping-v1-partI.md) carry a real (non-Unknown) subsystem chosen fro
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/dispatch/single-host-parallel-demo.sh in: The 3 CORE write-set cards (agents/dispatch/single-host-parallel-demo.sh, agents/dispatch/yield-point.sh, policy/standards/aef-bpmn-mapping-v1-partI.m`
+
+### 2026-09-08T20:14:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

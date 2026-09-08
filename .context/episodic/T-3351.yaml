@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3351: EWCR fence-1: resolve Unknown subsystem on the 3 CORE + 17 agents/ write-set Fabric cards
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-08T20:15:00Z
+# ============================================================================
+
+task_id: T-3351
+task_name: "EWCR fence-1: resolve Unknown subsystem on the 3 CORE + 17 agents/ write-set Fabric cards"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-08T19:56:50Z
+completed: 2026-09-08T20:14:38Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-09-08T22:14:32+02:00
+last_commit: 2026-09-08T22:14:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  EWCR fence-1 — reclassify 23 Unknown write-set Fabric cards (22 agents/ + BPMN mapping doc); CORE and BROAD intersection 3/4 → 0/0
+
+# Key outcomes
+outcomes:
+  - 'The 3 CORE write-set cards (agents/dispatch/single-host-parallel-demo.sh, agents/dispatch/yield-point.sh, policy/standards/aef-bpmn-mapping-v1-partI.md) carry a real (non-Unknown) subsystem chosen from the existing subsystem taxonomy in `bin/fw fabric overview`'
+  - 'Every agents/-rooted Fabric card that `python3 tools/ewcr-arc0-unknown-overlap.py` counted as Unknown in the BROAD write set is re-classified to a real subsystem (17 cards at T-3147 measurement time; re-derive the live list, do not trust the count)'
+  - 'Re-running `python3 tools/ewcr-arc0-unknown-overlap.py` reports intersection 0 for both CORE and BROAD write sets, and the run''s summary is recorded in the task Updates or a docs/research/executable-workflow/ artefact (never editing prior blocks)'
+  - 'Only .fabric/components/ card YAMLs and documentation are modified — no file under lib/, bin/, agents/, web/ or tests/ changes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/ewcr-arc0-unknown-overlap.json'
+  - '.fabric/components/agents-antigravity-subagent_dispatch.yaml'
+  - '.fabric/components/agents-bpmn-bpmn.yaml'
+  - '.fabric/components/agents-designer-designer.yaml'
+  - '.fabric/components/agents-dispatch-single-host-parallel-demo.yaml'
+  - '.fabric/components/agents-dispatch-yield-point.yaml'
+  - '.fabric/components/agents-docgen-test_docgen.yaml'
+  - '.fabric/components/agents-gpu-recover-recover.yaml'
+  - '.fabric/components/agents-mcp-framework-mcp.mcp-fragment.yaml'
+  - '.fabric/components/agents-mcp-framework_mcp_server.yaml'
+  - '.fabric/components/agents-mcp-manifest.yaml'
+  - '.fabric/components/agents-metrics-api-usage.yaml'
+  - '.fabric/components/agents-monitor-liveness-check.yaml'
+  - '.fabric/components/agents-monitor-watchtower-rss-sample.yaml'
+  - '.fabric/components/agents-orchestrator-orchestrator-graph.yaml'
+  - '.fabric/components/agents-sessions-claude-code-list.yaml'
+  - '.fabric/components/agents-sessions-render.yaml'
+  - '.fabric/components/agents-sessions-SCHEMA.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-AGENT.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-bvp-estimator.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-estimator.yaml'
+  - '.fabric/components/agents-termlink-termlink.yaml'
+  - '.fabric/components/agents-ux-review-ux-review.yaml'
+  - '.fabric/components/policy-standards-aef-bpmn-mapping-v1-partI.yaml'
+  - '.tasks/active/T-3351-ewcr-fence-1-resolve-unknown-subsystem-o.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-08T22:14:32'
+    action: 'T-3351: EWCR fence-1 — reclassify 23 Unknown write-set Fabric cards (22 agents/ + BPMN mapping doc); CORE and BROAD intersection 3/4 → 0/0'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:ewcr-arc0-contract-evidence, ewcr-v1]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 17
+  commits: 1
+  files_changed: 25
+  lines_added: 104
+  lines_removed: 69
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3351-ewcr-fence-1-resolve-unknown-subsystem-o.md
+generated_by: context-agent-hybrid
