@@ -83,6 +83,19 @@ found the second case in `policy/`. Any future restatement of fence 1 should car
 coverage clause, not the Unknown-count clause alone — `policy/` scores a perfect zero
 Unknown today while having no cards at all.
 
+### 2026-09-08 — fence-1 measured scope cleared (operator-directed landing drive)
+
+| Field | Value |
+|-------|-------|
+| **Source revision** | manifest v1, rev 0 — unchanged (`c9070637` / `5be23719`) |
+| **Current arc / task** | arc-019 `ewcr-arc0-contract-evidence` (**draft**, unchanged). Drive T-3349 + slices T-3350/T-3351/T-3352 all `work-completed` |
+| **Gate state** | **Fence 1's entire measured scope is cleared.** R6: `policy/` 0% → **100%** carded (T-3350). Unknown ∩ write-set: 3 CORE / 4 BROAD → **0 / 0**, list re-derived live, 23 cards reclassified (T-3351). Coverage clause: lib **98.2%**, web **98.8%**, agents **100%**, bin 100%, policy 100% — every CORE root ≥95% with 0 Unknown (T-3352; non-component files justified in task Updates, not silently dropped). All three slices ran as TermLink workers and were independently re-verified by the parent session re-running both measurement scripts |
+| **Scope authorisation** | Arc 0's no-task-creation fence was lifted for this delta by explicit operator instruction in-session (2026-09-08, "stop finding, start landing… if there is a new scope, add that as tasks"). Registered as OBS-385 before fixing |
+| **Latest evidence** | commits `b39495a0d`/`715d5dfee` (T-3350) · `ac9a9d410`/`7c5343e3d` (T-3351) · `abfd3069c`/`ad1018958`/`a2aec9f9a` (T-3352) · re-run `tools/ewcr-arc0-coverage-check.py` + `tools/ewcr-arc0-unknown-overlap.py` |
+| **Blockers / risks** | R1 **cleared** (this block). R6 **cleared** (T-3350). R2–R5 unchanged |
+| **Human decisions needed** | D5 and D1 only — unchanged, now with fence-1 pre-cleared under the proposed threshold. Under the proposal (≥95% coverage AND 0 Unknown per CORE root, tests/ excluded) fence 1 **passes today** |
+| **Next safe action** | Operator rules on D5 and D1 at `/review/T-3147`. No runtime implementation until D1 GO — no agent-side EWCR work remains |
+
 ## 4. Human decisions required (blocking)
 
 Owner: **dimitri@geelenandcompany.com**. None may be taken by an agent.
