@@ -6,10 +6,10 @@ description: >
   Session crash-loop investigation — repeated crashes back to claude-fw menu, session
   invisible in list, verify no work loss
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T20:28:31Z
-last_update: '2026-09-07T20:30:22Z'
-date_finished:
+last_update: 2026-09-08T18:27:46Z
+date_finished: 2026-09-08T18:27:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -283,7 +283,10 @@ Operator reports repeated session crashes: sessions "tumble", require /resume, a
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-## Recommendation
+### 2026-09-08 — prevention path live-verified via T-3346 fix
+- **What changed:** The RCA's prevention ("launch with `claude-fw --termlink`") was itself broken at filing time — the wrapper killed its own claude within ~1 min (caret false-positive, split out as T-3346, fixed d9bd292af). Live end-to-end verification today: `bin/claude-fw --termlink` launched from this repo registered `claude-master-2755743` (tl-q4qb4arg), survived 210s+ past the old ~60s teardown window, PTY shows the live Claude TUI with the exit-marker injection line and zero digit-form exit markers (claude never exited). The prevention is now real, not aspirational.
+- **Plan impact:** None — investigation conclusions stand; the operator-visible fix ships under T-3346 (partial-complete, awaiting [REVIEW]).
+- **Triggered:** T-3346 (filed and fixed 2026-09-07).
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -339,3 +342,15 @@ Operator reports repeated session crashes: sessions "tumble", require /resume, a
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3345-session-crash-loop-investigation--repeat.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8ab55feb
+- **Timestamp:** 2026-09-08T18:27:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-08T18:27:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
