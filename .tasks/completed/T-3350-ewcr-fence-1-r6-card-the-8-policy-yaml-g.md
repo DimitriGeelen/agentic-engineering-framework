@@ -9,10 +9,10 @@ description: >
   prompts/ so fence-1's coverage clause becomes measurable. Framework Fabric hygiene
   — needs no D1 ruling. Evidence: docs/research/executable-workflow/arc0-falsifier1-result.md
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:ewcr-arc0-contract-evidence, ewcr-v1]
 components: []
 related_tasks: []
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-08T19:56:36Z
-last_update: '2026-09-08T20:00:13Z'
-date_finished:
+last_update: 2026-09-08T20:02:33Z
+date_finished: 2026-09-08T20:02:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -371,3 +371,15 @@ git show --name-only --format= "$(git log -1 --format=%H --grep='^T-3350')" > /t
 - **Action:** Registered + enriched 8 Fabric cards (subsystem: governance) for all policy/ YAML sources enumerated by tools/ewcr-arc0-coverage-check.py
 - **Coverage run (after):** `policy  8 files on disk, 8 with a card, 100.0% coverage, 0 card=Unknown` (was 0/8, 0.0% before this task)
 - **Drift:** `bin/fw fabric drift` output contains no policy/ source paths
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-13d3f612
+- **Timestamp:** 2026-09-08T20:02:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-08T20:02:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

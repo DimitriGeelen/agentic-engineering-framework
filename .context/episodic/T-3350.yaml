@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3350: EWCR fence-1 R6: card the 8 policy/ YAML governance files in the Component Fabric (0% coverage)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-08T20:03:05Z
+# ============================================================================
+
+task_id: T-3350
+task_name: "EWCR fence-1 R6: card the 8 policy/ YAML governance files in the Component Fabric (0% coverage)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-08T19:56:36Z
+completed: 2026-09-08T20:02:33Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-09-08T22:02:24+02:00
+last_commit: 2026-09-08T22:02:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  card the 8 policy/ YAML governance files in the Component Fabric — policy coverage 0%→100%, subsystem governance, grep-evidenced edges
+
+# Key outcomes
+outcomes:
+  - 'Every policy/ YAML source named by tools/ewcr-arc0-coverage-check.py carries a Fabric card in .fabric/components/ with a real (non-Unknown) subsystem, purpose, and location'
+  - 'Re-running `python3 tools/ewcr-arc0-coverage-check.py` reports policy/ coverage > 0% and the run''s summary is appended to the task''s Updates or a docs/research/executable-workflow/ artefact (never editing prior blocks)'
+  - '`bin/fw fabric drift` reports no unregistered policy/ files'
+  - 'No file under lib/, bin/, agents/, web/ or tests/ is modified — deliverable is .fabric/components/ cards plus documentation'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/policy-anti-patterns.yaml'
+  - '.fabric/components/policy-authority-envelope.yaml'
+  - '.fabric/components/policy-capability-overlay-tool-set.yaml'
+  - '.fabric/components/policy-designer-pin.yaml'
+  - '.fabric/components/policy-escalation-patterns.yaml'
+  - '.fabric/components/policy-proxy-policy.yaml'
+  - '.fabric/components/policy-standards-aef-bpmn-mapping-v1-partI.provenance.yaml'
+  - '.fabric/components/policy-value-drivers.yaml'
+  - '.tasks/active/T-3350-ewcr-fence-1-r6-card-the-8-policy-yaml-g.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-08T22:02:24'
+    action: 'T-3350: card the 8 policy/ YAML governance files in the Component Fabric — policy coverage 0%→100%, subsystem governance, grep-evidenced edges'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:ewcr-arc0-contract-evidence, ewcr-v1]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 9
+  lines_added: 234
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3350-ewcr-fence-1-r6-card-the-8-policy-yaml-g.md
+generated_by: context-agent-hybrid
