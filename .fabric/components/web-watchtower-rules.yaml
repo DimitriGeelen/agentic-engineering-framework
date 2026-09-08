@@ -1,0 +1,20 @@
+id: web/watchtower/rules.py
+name: rules
+type: script
+subsystem: watchtower
+location: web/watchtower/rules.py
+tags: []
+
+purpose: "Watchtower detection rules — challenge, opportunity and strength rule functions over scanner inputs"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

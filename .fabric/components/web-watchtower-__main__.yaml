@@ -1,0 +1,20 @@
+id: web/watchtower/__main__.py
+name: __main__
+type: script
+subsystem: watchtower
+location: web/watchtower/__main__.py
+tags: []
+
+purpose: "CLI entry point for the Watchtower scan engine (python3 -m web.watchtower / fw scan)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

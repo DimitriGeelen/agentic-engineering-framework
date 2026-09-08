@@ -1,0 +1,20 @@
+id: web/terminal/profiles.yaml
+name: profiles
+type: config
+subsystem: watchtower
+location: web/terminal/profiles.yaml
+tags: []
+
+purpose: "Terminal session profile presets (provider, shell/model, env, UI appearance) for Watchtower terminal quick-creation (T-967)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown
