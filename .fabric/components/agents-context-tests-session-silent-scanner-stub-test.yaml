@@ -1,0 +1,20 @@
+id: agents/context/tests/session-silent-scanner-stub-test.sh
+name: session-silent-scanner-stub-test
+type: script
+subsystem: tests
+location: agents/context/tests/session-silent-scanner-stub-test.sh
+tags: []
+
+purpose: "Stub test for agents/context/session-silent-scanner.sh (T-1212)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

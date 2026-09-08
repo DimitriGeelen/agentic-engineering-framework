@@ -1,0 +1,20 @@
+id: agents/context/tests/stop-guard-stub-test.sh
+name: stop-guard-stub-test
+type: script
+subsystem: tests
+location: agents/context/tests/stop-guard-stub-test.sh
+tags: []
+
+purpose: "Stub test for agents/context/stop-guard.sh nudge thresholds — 3 counter/focus scenarios (T-1211)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

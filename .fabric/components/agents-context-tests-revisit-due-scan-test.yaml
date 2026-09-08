@@ -1,0 +1,20 @@
+id: agents/context/tests/revisit-due-scan-test.sh
+name: revisit-due-scan-test
+type: script
+subsystem: tests
+location: agents/context/tests/revisit-due-scan-test.sh
+tags: []
+
+purpose: "Unit test for the revisit-due daily scan over DEFER decisions (T-1452, G-053)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

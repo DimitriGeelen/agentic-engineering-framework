@@ -1,0 +1,20 @@
+id: agents/context/tests/fw-task-revisit-due-test.sh
+name: fw-task-revisit-due-test
+type: script
+subsystem: tests
+location: agents/context/tests/fw-task-revisit-due-test.sh
+tags: []
+
+purpose: "Unit test for the fw task revisit-due CLI wrapper around the G-053 revisit scan (T-1453)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

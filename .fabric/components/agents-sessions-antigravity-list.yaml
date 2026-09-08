@@ -1,0 +1,20 @@
+id: agents/sessions/antigravity/list.sh
+name: list
+type: script
+subsystem: framework-core
+location: agents/sessions/antigravity/list.sh
+tags: []
+
+purpose: "Antigravity/OpenGravity session adapter for fw sessions — inspects AGY conversation/brain dirs and emits canonical JSONL per agents/sessions/SCHEMA.md (T-2417)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

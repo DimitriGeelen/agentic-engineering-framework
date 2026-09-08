@@ -1,0 +1,20 @@
+id: agents/context/tests/session-end-stub-test.sh
+name: session-end-stub-test
+type: script
+subsystem: tests
+location: agents/context/tests/session-end-stub-test.sh
+tags: []
+
+purpose: "Stub test for agents/context/session-end.sh hook behaviour (T-1212)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

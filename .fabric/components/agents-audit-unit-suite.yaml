@@ -1,0 +1,20 @@
+id: agents/audit/unit-suite.sh
+name: unit-suite
+type: script
+subsystem: audit
+location: agents/audit/unit-suite.sh
+tags: []
+
+purpose: "Scheduled tests/unit corpus runner — executes both unit legs nightly and writes the machine-readable report surfaced by fw audit check_unit_suite_report (T-3302)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown
