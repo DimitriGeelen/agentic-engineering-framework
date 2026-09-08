@@ -1,0 +1,20 @@
+id: lib/templates/scripts/agent-conversation-status.sh
+name: agent-conversation-status
+type: script
+subsystem: termlink-integration
+location: lib/templates/scripts/agent-conversation-status.sh
+tags: []
+
+purpose: "Template skill script: read-only state diagnostic for a single conversation_id thread (T-1826)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

@@ -1,0 +1,20 @@
+id: lib/human_review_state.py
+name: human_review_state
+type: script
+subsystem: task-management
+location: lib/human_review_state.py
+tags: []
+
+purpose: "Classifies a task file's '### Human' AC blocks for the P-013 render gate (prints has_review/only_other/empty/no_section/error); single source of truth extracted from update-task.sh (T-3288)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

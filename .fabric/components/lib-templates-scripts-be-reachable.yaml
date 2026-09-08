@@ -1,0 +1,20 @@
+id: lib/templates/scripts/be-reachable.sh
+name: be-reachable
+type: script
+subsystem: termlink-integration
+location: lib/templates/scripts/be-reachable.sh
+tags: []
+
+purpose: "Template skill script: one-command opt-in to agent-presence for ephemeral claude-code sessions (T-1841, /be-reachable)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

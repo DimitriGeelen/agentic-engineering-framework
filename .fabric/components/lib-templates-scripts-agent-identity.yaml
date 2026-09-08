@@ -1,0 +1,20 @@
+id: lib/templates/scripts/agent-identity.sh
+name: agent-identity
+type: script
+subsystem: termlink-integration
+location: lib/templates/scripts/agent-identity.sh
+tags: []
+
+purpose: "Template skill script: shared agent_id resolver sourced by agent-send/agent-respond so all agent-chat producers agree on identity (T-3286)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

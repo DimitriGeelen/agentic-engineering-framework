@@ -1,0 +1,20 @@
+id: lib/templates/scripts/agent-send.sh
+name: agent-send
+type: script
+subsystem: termlink-integration
+location: lib/templates/scripts/agent-send.sh
+tags: []
+
+purpose: "Template skill script: deterministic doorbell+mail send verb composing termlink primitives into one atomic delivered-or-failed send (T-1804)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown

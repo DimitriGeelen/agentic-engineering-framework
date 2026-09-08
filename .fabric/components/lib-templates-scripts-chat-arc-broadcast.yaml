@@ -1,0 +1,20 @@
+id: lib/templates/scripts/chat-arc-broadcast.sh
+name: chat-arc-broadcast
+type: script
+subsystem: termlink-integration
+location: lib/templates/scripts/chat-arc-broadcast.sh
+tags: []
+
+purpose: "Template skill script: cross-hub broadcast helper fanning an agent-chat-arc post to every fleet hub (T-1856, /broadcast-chat)"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-08
+created_by: unknown
