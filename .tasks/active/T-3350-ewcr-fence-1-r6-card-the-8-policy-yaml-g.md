@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-08T19:56:36Z
-last_update: 2026-09-08T19:58:27Z
+last_update: '2026-09-08T20:00:13Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -58,22 +58,32 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-08T20:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=280,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3350: EWCR fence-1 R6: card the 8 policy/ YAML governance files in the Component Fabric (0% coverage)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Carded the 8 policy/ YAML governance files (authority-envelope, value-drivers, anti-patterns, designer-pin, proxy-policy, escalation-patterns, capability-overlay/tool-set, standards/aef-bpmn-mapping-v1-partI.provenance) into .fabric/components/ under subsystem `governance`, with purpose and grep-evidenced depends_on/depended_by edges, so EWCR fence-1's coverage clause becomes measurable (OBS-385 / T-3147 falsifier R6).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every policy/ YAML source named by tools/ewcr-arc0-coverage-check.py carries a Fabric card in .fabric/components/ with a real (non-Unknown) subsystem, purpose, and location
-- [ ] Re-running `python3 tools/ewcr-arc0-coverage-check.py` reports policy/ coverage > 0% and the run's summary is appended to the task's Updates or a docs/research/executable-workflow/ artefact (never editing prior blocks)
-- [ ] `bin/fw fabric drift` reports no unregistered policy/ files
-- [ ] No file under lib/, bin/, agents/, web/ or tests/ is modified — deliverable is .fabric/components/ cards plus documentation
+- [x] Every policy/ YAML source named by tools/ewcr-arc0-coverage-check.py carries a Fabric card in .fabric/components/ with a real (non-Unknown) subsystem, purpose, and location
+- [x] Re-running `python3 tools/ewcr-arc0-coverage-check.py` reports policy/ coverage > 0% and the run's summary is appended to the task's Updates or a docs/research/executable-workflow/ artefact (never editing prior blocks)
+- [x] `bin/fw fabric drift` reports no unregistered policy/ files
+- [x] No file under lib/, bin/, agents/, web/ or tests/ is modified — deliverable is .fabric/components/ cards plus documentation
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -234,6 +244,18 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Coverage invariant (not a pinned live count): policy row shows >=1 carded file
+python3 tools/ewcr-arc0-coverage-check.py > /tmp/t3350-cov.out 2>&1 && grep -qE "^policy +[0-9]+ +[1-9][0-9]* " /tmp/t3350-cov.out
+
+# Drift reports no policy/ source files (unregistered or otherwise)
+bin/fw fabric drift > /tmp/t3350-drift.out 2>&1; ! grep -qE "policy/[A-Za-z]" /tmp/t3350-drift.out
+
+# All 8 cards exist, parse as YAML, and carry the governance subsystem (shape B: explicit subshell)
+bash -c 'set -eo pipefail; for c in policy-authority-envelope policy-value-drivers policy-anti-patterns policy-designer-pin policy-proxy-policy policy-escalation-patterns policy-capability-overlay-tool-set policy-standards-aef-bpmn-mapping-v1-partI.provenance; do python3 -c "import yaml; yaml.safe_load(open(\".fabric/components/$c.yaml\"))"; grep -q "^subsystem: governance" ".fabric/components/$c.yaml"; grep -q "^purpose:" ".fabric/components/$c.yaml"; done'
+
+# The T-3350 commit touches nothing under lib/ bin/ agents/ web/ tests/
+git show --name-only --format= "$(git log -1 --format=%H --grep='^T-3350')" > /tmp/t3350-files.out 2>&1 && ! grep -qE "^(lib|bin|agents|web|tests)/" /tmp/t3350-files.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -273,6 +295,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-08 — the 8th file is the provenance record, not prompts/
+- **What changed:** The task description named "prompts/" as the 8th item, but tools/ewcr-arc0-coverage-check.py walks policy/ for .yaml/.yml only — the 8th enumerated file is `policy/standards/aef-bpmn-mapping-v1-partI.provenance.yaml` (policy/prompts/ contains only .md files, which the check does not count).
+- **Plan impact:** Carded the provenance YAML instead of anything under prompts/; no prompt bundle cards were needed for the coverage clause.
+- **Triggered:** Nothing — scope unchanged, 8 cards as planned.
 
 ## Recommendation
 
@@ -339,3 +366,8 @@ bvp_scores_proposed:
 
 ### 2026-09-08T19:58:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-08T20:10:00Z — policy coverage carded [T-3350 worker]
+- **Action:** Registered + enriched 8 Fabric cards (subsystem: governance) for all policy/ YAML sources enumerated by tools/ewcr-arc0-coverage-check.py
+- **Coverage run (after):** `policy  8 files on disk, 8 with a card, 100.0% coverage, 0 card=Unknown` (was 0/8, 0.0% before this task)
+- **Drift:** `bin/fw fabric drift` output contains no policy/ source paths

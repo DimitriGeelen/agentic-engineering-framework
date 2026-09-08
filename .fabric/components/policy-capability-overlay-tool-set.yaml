@@ -1,0 +1,28 @@
+id: policy/capability-overlay/tool-set.yaml
+name: capability-overlay-tool-set
+type: config
+subsystem: governance
+location: policy/capability-overlay/tool-set.yaml
+tags: [policy, mcp, arc-010, capability-overlay]
+
+purpose: "Framework MCP tool catalogue (arc-010): source of truth for the capability overlay from which agents/mcp/manifest.py emits framework-mcp-manifest.json. Content drift vs the emitted manifest is gated by fw doctor and the T-2290 verification rule."
+
+depends_on:
+  []
+
+depended_by:
+  - target: agents/mcp/manifest.py
+    type: reads
+  - target: agents/mcp/framework_mcp_server.py
+    type: reads
+  - target: lib/govd_policy.py
+    type: reads
+  - target: agents/audit/audit.sh
+    type: reads
+  - target: agents/mcp/framework-mcp-manifest.json
+    type: triggers
+  - target: lib/upgrade.sh
+    type: writes
+
+last_verified: 2026-09-08
+created_by: T-3350

@@ -1,0 +1,18 @@
+id: policy/standards/aef-bpmn-mapping-v1-partI.provenance.yaml
+name: aef-bpmn-mapping-v1-partI-provenance
+type: config
+subsystem: governance
+location: policy/standards/aef-bpmn-mapping-v1-partI.provenance.yaml
+tags: [policy, standards, bpmn, provenance, OBS-190]
+
+purpose: "Provenance record for the vendored AEF-BPMN mapping standard Part I (frozen v1): names the authoring party (832-Workflow-designer), source commit/path, and ratification basis so AEF holds the document it ratified rather than quoting it second-hand (OBS-190)."
+
+depends_on:
+  - target: policy/standards/aef-bpmn-mapping-v1-partI.md
+    type: reads
+
+depended_by:
+  []
+
+last_verified: 2026-09-08
+created_by: T-3350

@@ -1,0 +1,28 @@
+id: policy/anti-patterns.yaml
+name: anti-patterns
+type: config
+subsystem: governance
+location: policy/anti-patterns.yaml
+tags: [policy, reviewer, T-1443]
+
+purpose: "Anti-pattern catalogue for the reviewer agent (T-1443): per-pattern detection_confidence and lie_severity axes (L-261) consumed by the static-scan reviewer and the Layer-3 audit re-scan."
+
+depends_on:
+  []
+
+depended_by:
+  - target: lib/reviewer/static_scan.py
+    type: reads
+  - target: lib/reviewer/audit.py
+    type: reads
+  - target: lib/verify-acs.sh
+    type: reads
+  - target: lib/review_link_validator.py
+    type: reads
+  - target: agents/task-create/update-task.sh
+    type: reads
+  - target: lib/upgrade.sh
+    type: writes
+
+last_verified: 2026-09-08
+created_by: T-3350

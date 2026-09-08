@@ -1,0 +1,22 @@
+id: policy/escalation-patterns.yaml
+name: escalation-patterns
+type: config
+subsystem: governance
+location: policy/escalation-patterns.yaml
+tags: [policy, reviewer, T-1443]
+
+purpose: "Layer-1 escalation patterns for the reviewer agent (T-1443 v1.1): mechanical triggers that force a human-signoff recommendation for high-risk/destructive/external-impact tasks regardless of anti-pattern findings."
+
+depends_on:
+  []
+
+depended_by:
+  - target: lib/reviewer/static_scan.py
+    type: reads
+  - target: lib/reviewer/audit.py
+    type: reads
+  - target: lib/upgrade.sh
+    type: writes
+
+last_verified: 2026-09-08
+created_by: T-3350

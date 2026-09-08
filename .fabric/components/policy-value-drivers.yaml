@@ -1,0 +1,30 @@
+id: policy/value-drivers.yaml
+name: value-drivers
+type: config
+subsystem: governance
+location: policy/value-drivers.yaml
+tags: [policy, bvp, arc-006]
+
+purpose: "BVP value-driver registry (T-1918, arc-006): constitutional directives D1-D4 plus free drivers with weights, rubrics, and retire_when conditions. Drives BVP scoring, ranking, the estimator worker, and the audit retire_when advisory rail."
+
+depends_on:
+  []
+
+depended_by:
+  - target: lib/bvp.sh
+    type: reads
+  - target: agents/audit/audit.sh
+    type: reads
+  - target: agents/termlink/bvp-estimator/estimator.py
+    type: reads
+  - target: web/blueprints/bvp.py
+    type: reads
+  - target: lib/resolver.py
+    type: reads
+  - target: lib/init.sh
+    type: writes
+  - target: lib/upgrade.sh
+    type: writes
+
+last_verified: 2026-09-08
+created_by: T-3350
