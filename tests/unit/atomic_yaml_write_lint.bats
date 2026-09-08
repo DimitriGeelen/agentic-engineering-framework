@@ -50,7 +50,14 @@ for base in ("lib", "agents"):
             src = p.read_text()
         except (UnicodeDecodeError, OSError):
             continue
-        if DUMP.search(src) and not ATOMIC.search(src):
+        # Strip comment lines before matching: prose that MENTIONS yaml.dump(
+        # (incident write-ups, origin notes) is not a writer. lib/corpus-id.sh
+        # quotes the T-2902 incident in its header and is read-only code (T-3354).
+        # A dump call on a '#' line is commented-out code — also not a writer.
+        code = "\n".join(
+            ln for ln in src.splitlines() if not ln.lstrip().startswith("#")
+        )
+        if DUMP.search(code) and not ATOMIC.search(code):
             bad.append(rel)
 
 if bad:
