@@ -88,16 +88,21 @@ print(json.dumps(ap._load_close_ready_arcs()))
     [[ "$out" == "[]" ]]
 }
 
-@test "arc with status=in-progress, ratio>=0.80, no rec → excluded" {
+@test "arc with status=in-progress, ratio>=0.80, no rec → included with blocked_reason (T-2986)" {
     write_task T-9011 work-completed
     write_task T-9012 work-completed
     write_task T-9013 work-completed
     write_task T-9014 work-completed
     write_task T-9015 started-work
     # 4/5 = 0.80, but anchor T-9011 has NO recommendation block.
+    # T-2986: no longer dropped silently — surfaced as "finished but blocked",
+    # with blocked_reason set and no verdict badge.
     write_arc no-rec arc-302 in-progress T-9011 T-9011 T-9012 T-9013 T-9014 T-9015
     out=$(run_loader)
-    [[ "$out" == "[]" ]]
+    [[ "$out" != "[]" ]]
+    [[ "$out" == *'"slug": "no-rec"'* ]]
+    [[ "$out" == *'"blocked_reason": "anchor T-9011'* ]]
+    [[ "$out" == *'"verdict": ""'* ]]
 }
 
 @test "arc with status=in-progress, ratio>=0.80, rec present → included" {
@@ -133,13 +138,18 @@ print(json.dumps(ap._load_close_ready_arcs()))
     [[ "$out" == *'"verdict": "KEEP-OPEN"'* ]]
 }
 
-@test "anchor task with empty ## Recommendation body → excluded" {
+@test "anchor task with empty ## Recommendation body → included with blocked_reason (T-2986)" {
     write_task T-9051 work-completed $'\n## Recommendation\n\n<!-- still drafting -->\n'
     write_task T-9052 work-completed
     write_task T-9053 work-completed
     write_task T-9054 work-completed
     write_task T-9055 work-completed
+    # T-2986: an empty-body Recommendation is "not present" — the arc surfaces
+    # as blocked (needs the advisory written) rather than vanishing from the queue.
     write_arc empty-rec arc-306 in-progress T-9051 T-9051 T-9052 T-9053 T-9054 T-9055
     out=$(run_loader)
-    [[ "$out" == "[]" ]]
+    [[ "$out" != "[]" ]]
+    [[ "$out" == *'"slug": "empty-rec"'* ]]
+    [[ "$out" == *'"blocked_reason": "anchor T-9051'* ]]
+    [[ "$out" == *'"verdict": ""'* ]]
 }
