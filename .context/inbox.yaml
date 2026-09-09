@@ -4503,3 +4503,19 @@ observations:
   tags: [gap]
   status: pending
   promoted_to: null
+- id: OBS-394
+  text: "PUSH DEADLOCK, self-sustaining (measured 2026-09-09, end of autonomous run). The pre-push audit gate blocks bleeding-edge on exactly one REF-scoped failure: '[FAIL] Unit suite (tests/unit): 18 of 367 unit test(s) RED (T-3302)'. Its own Evidence line names the three T-1856 anchor tests as first failures - the very tests T-3356 fixed today (now 9/9 green in 0s). The report is stale, dated 01:03. The gate's named mitigation is 're-run agents/audit/unit-suite.sh', but that run takes 7200s and times out (exit 124 on both recorded nights), so it cannot produce a clean report. Worse, the loop is self-sustaining: while this FAIL stands, 'audit --section structure' exits 2; that keeps tests/unit/audit.bats red (3 reds measured uncontended, 0 skips); those reds land in the next nightly report; the FAIL persists. The report therefore cannot come clean on its own, and the push gate stays shut. Consequence: 4 commits sit unpushed on bleeding-edge. NOT bypassed - 'git push --no-verify' is Tier 0 and requires operator approval. Breaking the loop needs the OBS-392 fix (the A3 audit line should WARN 'could not determine' on a report with timed_out: true rather than FAIL on its casualty list) and/or the OBS-388 disposition (drop the 188s nested invariant suite out of --section structure). Both are operator calls."
+  captured: 2026-09-09T16:44:28Z
+  context_task: T-3328
+  tags: [bug]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-395
+  text: "OBS-394 severity update: the push deadlock is NOT new and not caused by this run. origin/bleeding-edge last received a commit on 2026-09-07 23:06; 24 commits were already stranded before the 2026-09-09 autonomous run began, and the branch now sits 29 ahead. So the pre-push audit gate has been refusing every push for roughly two days on the single stale-report FAIL described in OBS-394, and nothing surfaced it - handovers ran, committed, and reported the refusal in their own tail output, but no alarm reached the operator. That is the same 'green line answering a narrower question' family the whole T-3302 cluster is about, one level up: the session-end protocol reports success while its last act silently fails. Worth a detector: fw doctor (or the handover itself) should WARN when the local dev branch is more than N commits ahead of its remote, or when the last successful push is older than N hours - distinct from the existing FW_BRANCH_BEHIND_WARN, which measures the opposite direction."
+  captured: 2026-09-09T16:50:08Z
+  context_task: T-3328
+  tags: [gap]
+  status: pending
+  promoted_to: null
+  urgent: true
