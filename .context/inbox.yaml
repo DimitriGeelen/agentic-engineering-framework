@@ -4447,3 +4447,52 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-386
+  text: "T-3302 nightly unit-suite report has a FALSE GREEN in its pytest leg: 2026-09-08 and 2026-09-09 both recorded pytest_rc=124 (timed out) yet the report writes tests: 0, failed_count: 0, failed: [] for that leg. A run that completed nothing is indistinguishable in the report from a clean run. This is precisely the failure mode T-3302 was filed to kill ('a green line that answers a narrower question than the one the reader is asking'), reproduced inside T-3302's own fix. The report schema needs a timed_out/incomplete state per leg that the audit surfacing (A3) treats as WARN-or-FAIL, never PASS."
+  captured: 2026-09-09T16:07:04Z
+  context_task: T-3328
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-387
+  text: "T-3302 nightly bats leg conflates TIMEOUT CASUALTIES with genuine failures. The 2026-09-09 report lists 18 'failed' tests from a run that exited 124 at the 7200s cap. Measured under T-3356: the four T-1856 anchor tests were not red at all - audit.sh --section structure exceeds 180s against an EMPTY fixture corpus because check_invariant_suite nests 'timeout 300 bats tests/lint/' (measured 188s, 108 tests, 0 reds), so tests driving a live audit are killed mid-run and 'run' captures status 124. The report should not present a killed run's in-flight tests as failures - it needs the same incomplete state as the pytest leg."
+  captured: 2026-09-09T16:07:08Z
+  context_task: T-3328
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-388
+  text: "SOVEREIGN QUESTION (T-3356): should 'audit.sh --section structure' embed a 188s nested 'bats tests/lint/' run? check_invariant_suite executes the full 108-test invariant suite from FRAMEWORK_ROOT on every --section structure invocation, irrespective of PROJECT_ROOT. Two consequences beyond the originating task: (a) it is the dominant term in the T-3302 nightly 7200s timeout, because every tests/unit file that drives a live audit multiplies it; (b) for a CONSUMER project audit it reports on the framework's own tests under the consumer's banner - project-shape conflation, arc-004 class. Candidate dispositions: promote to its own --section invariants; skip when PROJECT_ROOT != FRAMEWORK_ROOT; or leave as-is. Changing it alters the audit reporting contract (T-2837, T-3105) and could silence a real signal, so this is an operator call. NOT decided by the autonomous run."
+  captured: 2026-09-09T16:07:16Z
+  context_task: T-3356
+  tags: [sovereignty]
+  status: pending
+  promoted_to: null
+- id: OBS-389
+  text: "BVP CALIBRATION INVERSION (observed during autonomous selection): 'fw bvp --include-proposed' ranks a 27-task cluster at exactly 108 / norm 0.40 above every active task, but those tasks score LOW on the constitutional directives - T-1265 is D1:1 D2:0 D3:0 D4:2 - while T-3356 (D1:4 D2:4 D3:3) ranks below them at 97. The 108 is produced by flat free-driver baselines (F-RECALL/F-AUTONOMY/F1/F2/F3 all at the no-signal default), which dominate the aggregate and invert the directive signal. Every member of the 108 cluster is horizon:later and on the deferred-with-no-revisit list. Consequence: the ranking cannot be used for selection as-is without cross-checking directive scores by hand. NOT adjusted - calibration parameters are out of bounds for an autonomous run."
+  captured: 2026-09-09T16:07:21Z
+  context_task: T-3328
+  tags: [calibration]
+  status: pending
+  promoted_to: null
+- id: OBS-390
+  text: "Read-only allowlist gap, concrete instance (sibling of OBS-379): the check-active-task gate blocked a purely read-only command because it used command substitution. Blocked line began 'f=$(ls .tasks/active/T-3328-*.md 2>/dev/null | head -1); echo ...; grep -E ... ; sed -n ...' - every component is a read, but agents/context/lib/safe-commands.sh cannot prove that, so the whole line was gated under P-002 while focus sat on a partial-complete task. The gate's own message names this as 'a gap in the allowlist worth filing'. Practical effect on an autonomous run: routine inspect-before-select commands are refused mid-selection, and the documented escape (FW_ALLOW_PARTIAL_COMPLETE_EDIT=1) is a Tier-2 WRITE bypass being offered for a read. Candidate fix: allow a line whose every command is on the read-only allowlist, including inside $( ) substitution."
+  captured: 2026-09-09T16:07:44Z
+  context_task: T-3328
+  tags: [gap]
+  status: pending
+  promoted_to: null
+- id: OBS-391
+  text: "T-3328 A4 ('full audit.bats suite green on an UNCONTENDED run') is not satisfiable on this host as scheduled - measured, not inferred. Audit-lock-taking cron jobs start at :00 (traceability), :05 and :35 (structural 30m), :10 (observations, 6-hourly), :15 and :45 (oe-fast), :30 (oe-hourly) - seven starts per hour, so the largest gap between audit starts is ~15 minutes (:45 to :00), less whatever the :45 job still holds. tests/unit/audit.bats drives roughly 10 live 'audit.sh --section structure' invocations, each costing >=188s because check_invariant_suite nests 'timeout 300 bats tests/lint/' (T-3356 measurement), so the suite needs ~45 minutes of exclusive lock. It can therefore never complete uncontended while the cron schedule stands. Two knock-ons: (1) T-3328's own Verification line caps at 'timeout 600', which an uncontended run would blow - it currently passes only BECAUSE contention makes tests skip fast, an inverted green; (2) A4 needs re-scoping (e.g. 'no reds, skips only from contention') or the underlying nested-suite cost (OBS-388) has to go. Not re-scoped here: T-3328 is owner:human."
+  captured: 2026-09-09T16:21:10Z
+  context_task: T-3328
+  tags: [gap]
+  status: pending
+  promoted_to: null
+- id: OBS-392
+  text: "FEEDBACK LOOP between T-3302's audit surfacing and tests/unit/audit.bats (measured 2026-09-09, uncontended run). Chain: (1) the nightly unit-suite runner times out at 7200s and writes 18 'failures' to .context/audits/unit-suite/LATEST.yaml, most of which are timeout casualties not real reds (OBS-387); (2) 'fw audit --section structure' reads that report and emits its only FAIL line - 'Unit suite (tests/unit): 18 of 367 unit test(s) RED (T-3302)'; (3) that single FAIL makes the audit exit 2; (4) tests/unit/audit.bats tests that assert a clean audit ('audit runs structure section', 'audit output contains PASS/WARN/FAIL markers') therefore go RED - correctly, per T-3328 A2, since exit 2 means 'ran and found FAILs'; (5) those reds land in the next nightly report, sustaining the count. Consequence for T-3328: A4 cannot pass while the unit-suite report is dirty, regardless of anything in audit.bats - the two reds are downstream of the report, not defects in the file. Note the lag: T-3356 cleared 4 of the 18 today, but the audit FAIL persists until the nightly regenerates at 01:03. Candidate fix: the A3 audit line should not FAIL on a report whose run did not complete (timed_out: true) - it should WARN 'could not determine', which is the same could-not-look-vs-looked distinction T-3328 drew for exit 75."
+  captured: 2026-09-09T16:32:37Z
+  context_task: T-3328
+  tags: [bug]
+  status: pending
+  promoted_to: null

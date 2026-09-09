@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:06:08Z
-last_update: 2026-09-07T19:43:14Z
+last_update: 2026-09-09T16:33:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -69,6 +69,23 @@ bvp_scores_proposed:
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-09T16:33:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
@@ -347,6 +364,37 @@ grep -q "^1\.\." /tmp/.t3328-v.out
 
 ## Updates
 
+### 2026-09-09 — A4 blocked, parked (autonomous run)
+
+A1-A3 confirmed working live. An **uncontended** run of `tests/unit/audit.bats`
+(lock verified clear before start, 0 skips) reached 5/15 with **2 reds**, and both
+are the tests that assert a clean audit. They are correct behaviour, not defects:
+`fw audit --section structure` exits 2 because it emits exactly one FAIL —
+`Unit suite (tests/unit): 18 of 367 unit test(s) RED (T-3302)` — read from the
+nightly unit-suite report. Per A2, exit 2 must fail those tests, and it does.
+
+**A4 is therefore blocked on something outside this file.** Two independent reasons,
+both measured today:
+
+1. **The report is dirty and partly wrong.** The nightly runner exits 124 at its
+   7200s cap; most of its 18 "failures" are timeout casualties (OBS-387). T-3356
+   cleared 4 of them today, but the audit FAIL persists until the nightly
+   regenerates at 01:03 — so A4 cannot pass before then at the earliest. Full
+   chain in OBS-392.
+2. **"Uncontended" is not reachable on this host as scheduled.** Audit-lock cron
+   jobs start at :00, :05, :10, :15, :30, :35, :45 — largest gap ~15 min — while
+   the suite needs ~45 min of exclusive lock (~10 live `--section structure` runs
+   at >=188s each, T-3356 measurement). OBS-391. Note also that this task's own
+   Verification caps at `timeout 600`, which an uncontended run would blow: it
+   currently passes only *because* contention makes tests skip fast — an inverted
+   green.
+
+**Not re-scoped here.** A4's wording is the operator's; the candidate fix (the A3
+audit line should WARN rather than FAIL on a report with `timed_out: true` — the
+same could-not-look-vs-looked distinction this task drew for exit 75) is a change
+to T-3302's contract, not this one. Parked pending that call.
+
+
 ### 2026-09-07T07:06:08Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3328-testsunitauditbats-asserts--status--le-1.md
@@ -357,3 +405,11 @@ grep -q "^1\.\." /tmp/.t3328-v.out
 
 ### 2026-09-07T07:29:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-09T16:33:03Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-09-09T16:33:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
