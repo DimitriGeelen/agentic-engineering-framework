@@ -20,6 +20,7 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
 source "$FRAMEWORK_ROOT/lib/watchtower.sh"
 source "$FRAMEWORK_ROOT/lib/traceability.sh"
+source "$FRAMEWORK_ROOT/lib/audit-anchor-task.sh"   # T-3356: T-1856 anchor_task detection
 AUDITS_DIR="$CONTEXT_DIR/audits"
 
 # --- Schedule Subcommand (dispatch before heavy init) ---
@@ -1190,25 +1191,25 @@ fi
 # (audit exit unaffected) — matches T-1846 §4 D4 (warn not block).
 anchor_missing=0
 anchor_checked=0
-if [ -d "$PROJECT_ROOT/.context/arcs" ]; then
-    for af in "$PROJECT_ROOT/.context/arcs"/*.yaml; do
-        [ -f "$af" ] || continue
-        # Extract anchor_task value (single-line scalar). Tolerate quotes + null.
-        anchor=$(awk -F': ' '/^anchor_task:/ {sub(/^anchor_task:[[:space:]]*/, ""); print; exit}' "$af" \
-                 | tr -d ' "' \
-                 | head -c 32)
-        [ -z "$anchor" ] && continue
-        [ "$anchor" = "null" ] && continue
-        anchor_checked=$((anchor_checked + 1))
-        if ! ls "$PROJECT_ROOT"/.tasks/active/"$anchor"-*.md "$PROJECT_ROOT"/.tasks/completed/"$anchor"-*.md 2>/dev/null | grep -q .; then
-            arc_name=$(basename "$af" .yaml)
-            warn "Arc '$arc_name' anchor_task '$anchor' not found in .tasks/{active,completed}/" \
+# T-3356: detection extracted to lib/audit-anchor-task.sh so the T-1856 rule is
+# reachable without executing the whole `--section structure` block (which nests
+# a 300s `bats tests/lint/` run via check_invariant_suite). audit.sh remains the
+# sole emitter of warn/pass_over — the extraction moved detection, not policy.
+# `< <(...)` not a pipe: the while body must run in THIS shell so warn's counter
+# side effects survive.
+while IFS=$'\t' read -r _anchor_rec _anchor_f2 _anchor_f3 _anchor_f4; do
+    case "$_anchor_rec" in
+        MISSING)
+            warn "Arc '$_anchor_f2' anchor_task '$_anchor_f3' not found in .tasks/{active,completed}/" \
                  "Arc references a task that does not exist (hostage state in the reverse direction — T-1849 guards task→arc; this guards arc→task)" \
-                 "Either restore the task file, or update '$af' to point at the correct anchor (or set anchor_task: null if it's been retired)"
-            anchor_missing=$((anchor_missing + 1))
-        fi
-    done
-fi
+                 "Either restore the task file, or update '$_anchor_f4' to point at the correct anchor (or set anchor_task: null if it's been retired)"
+            ;;
+        SUMMARY)
+            anchor_checked="$_anchor_f2"
+            anchor_missing="$_anchor_f3"
+            ;;
+    esac
+done < <(anchor_task_scan "$PROJECT_ROOT")
 if [ "$anchor_missing" -eq 0 ]; then
     pass_over "$anchor_checked" "arc anchor_task reference(s)" \
          "All arc anchor_task references resolve to existing tasks" \
