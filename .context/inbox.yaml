@@ -4519,3 +4519,17 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-396
+  text: "T-3328's 75-to-skip routing makes a fully-contended audit.bats run report SUCCESS: measured 2026-09-10, 15 tests, rc=0, 0 reds, 10 of 15 SKIPPED in 2s, with 'WARNING: audit running, would contend' printed first. Uncontended the same suite has 8 hard reds (every test calling --section structure on the live root, which exits 2 on the T-3302 unit-suite FAIL). So the suite's exit code is inverted by contention: green when it could not look, red when it could. This is evidence for OBS-392/OBS-394, and it means T-3328's own 'timeout 600' Verification line passes for the wrong reason. Routing 75 to skip was correct (contention is not a verdict); the gap is that a run where 2/3 of tests skipped still exits 0 with no floor on how much of the suite actually executed."
+  captured: 2026-09-09T23:01:51Z
+  context_task: T-3328
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-397
+  text: "PREDICTION registered 2026-09-10 00:50, before the 01:03 nightly unit-suite run, so it is falsifiable at 03:03. The T-3356 fix removed 4 tests that each burned ~188s inside a nested 'bats tests/lint/' (~12.5 min total) from a suite that hit its 7200s ceiling on both 2026-09-08 and 2026-09-09 (bats_rc=124 both nights). Because the suite TIMES OUT rather than completing, freeing 12.5 minutes does not subtract 4 from the red count — it lets the runner reach tests it never got to before. So the naive expectation (18 reds becomes 14) is probably wrong, and the count may RISE. If tonight's report shows more than 14 reds, that is not a regression from T-3356; it is previously-unmeasured suite being seen for the first time. Judge the run by whether timed_out is still true, not by the red count. If timed_out is still true the T-3302 report remains unusable as a gate input regardless of the number, which is the substance of OBS-392."
+  captured: 2026-09-09T23:02:07Z
+  context_task: T-3328
+  tags: []
+  status: pending
+  promoted_to: null
