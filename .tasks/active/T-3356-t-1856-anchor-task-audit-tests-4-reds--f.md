@@ -6,12 +6,12 @@ description: >
   T-1856 anchor-task audit tests: 4 reds + file exceeds 500s (runs live audit) — align
   to current contract, make hermetic
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/audit/audit.sh, lib/audit-anchor-task.sh, tests/unit/audit_anchor_task_existence.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-08T22:06:41Z
-last_update: 2026-09-09T15:41:57Z
-date_finished:
+last_update: 2026-09-09T16:03:15Z
+date_finished: 2026-09-09T16:03:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -329,6 +329,33 @@ so it is an operator call, not an agent one. Deliberately untouched here.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The four reds were timeouts, not failures — proven, not asserted. The
+anchor rule was correct throughout and its emitted WARN is byte-identical before and
+after. What changed is that the rule is now reachable without paying for a nested
+188s suite: the file went from >500s-and-timing-out to 9/9 green in 0s. Both controls
+were run, so the suite is known to discriminate rather than merely to pass. The one
+judgement call worth your eye is that `agents/audit/audit.sh` was touched — AC2 asked
+for the restructure, AC4 restricts audit-code changes to proven bugs, and this is
+neither a bug fix nor a behaviour change. I recorded that tension in the RCA rather
+than resolving it silently.
+
+**Evidence:**
+- `bats tests/unit/audit_anchor_task_existence.bats` -> 9/9 ok, 1s wall-clock (was >500s, killed under the nightly runner).
+- Root cause located at `agents/audit/audit.sh` `check_invariant_suite`: `timeout 300 bats tests/lint/` runs inside `--section structure`. Measured 188s, 108 tests, 0 reds.
+- `audit.sh --section structure` returns rc=124 against an EMPTY fixture corpus (1 arc, 0 tasks) — the failure is independent of corpus size.
+- End-to-end equivalence: real audit still emits `[WARN] Arc 'orphan' anchor_task 'T-99999' not found in .tasks/{active,completed}/` and does not flag valid anchor `T-2222`.
+- Controls: detection broken -> tests 3,6 red; detector orphaned -> test 8 red. Neither is a tautology.
+- `bin/fw vendor self --check` clean; fabric card registered for the new lib.
+
+**Open for you (not decided here):** `--section structure` embedding a 188s nested
+`bats tests/lint/` run, executed from `FRAMEWORK_ROOT` regardless of `PROJECT_ROOT`,
+is the dominant term in the T-3302 nightly 7200s timeout and misreports framework
+tests under a consumer project's banner. Changing it alters the audit reporting
+contract (T-2837, T-3105), so it is your call, not mine.
+
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -361,3 +388,15 @@ so it is an operator call, not an agent one. Deliberately untouched here.
 - **Files:** new `lib/audit-anchor-task.sh`; `agents/audit/audit.sh` inline block replaced by a
   source + adapter (warn/pass_over emission unchanged); test file rewritten hermetic 5 -> 9 tests.
 - **Controls run:** detection broken -> tests 3,6 red; detector orphaned -> test 8 red.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8dbe8d1a
+- **Timestamp:** 2026-09-09T16:03:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-09T16:03:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
