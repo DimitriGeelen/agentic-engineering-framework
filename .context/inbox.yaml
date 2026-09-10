@@ -4494,8 +4494,8 @@ observations:
   captured: 2026-09-09T16:32:37Z
   context_task: T-3328
   tags: [bug]
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: T-3357
 - id: OBS-393
   text: "GATE ORDERING TRAP on PARK, sibling of OBS-250 (which covers close). Sequence hit live 2026-09-09: recorded a blocker in T-3328's body, ran 'fw task update T-3328 --horizon next' to park it (status auto-syncs started-work -> captured), then tried to COMMIT the parking record - refused by check-active-task with 'BLOCKED: Task T-3328 has status captured (work not started)'. You cannot commit the evidence of parking a task after you park it. The escape is to re-run 'fw work-on T-XXX' BARE (the bootstrap exemption is voided for the whole line by any redirect/heredoc, correctly per T-2987/L-547), commit, then park again - which means the park verb has to be run twice with a commit in between, and a session that parks-then-commits in the natural order is stuck. OBS-250 names the same shape for --status work-completed and proposes a grace window or narrow allowlist; the park path needs whichever fix lands there. Low severity, fully recoverable, but it costs a round trip every time and the natural ordering is the wrong one."
   captured: 2026-09-09T16:34:22Z

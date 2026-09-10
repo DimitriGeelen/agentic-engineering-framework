@@ -4924,3 +4924,9 @@ X'` returning empty group."
   task: T-3326
   date: 2026-09-07
   context: Added via context agent
+- id: L-665
+  learning: "A producer that emits a 'did this even run' flag (timed_out, exit 75, lock-held) creates an obligation on EVERY consumer of its results: branch on that flag BEFORE reading any count. agents/audit/unit-suite.sh wrote timed_out from day one; check_unit_suite_report read failed_count and runner_exit and never looked at it, so a run killed at its 7200s ceiling rendered its casualty list as a verdict. The resulting FAIL was self-sustaining (audit exit 2 -> reds audit.bats -> those reds enter the next nightly -> FAIL persists) and stranded 32 commits behind the pre-push gate for 3 days, with a named mitigation ('re-run unit-suite.sh') that was exactly the run that times out. This is L-622 read from the consumer side: L-622 says no-verdict must propagate OUTWARD to callers that manufacture the condition; this says consumers must not collapse it INWARD into a verdict. Both directions, one rule: 'could not look' is never 'looked'. When fixing it, the WARN must state the corpus is UNMEASURED rather than green, or the false-RED is merely traded for a false-GREEN one tier down."
+  source: P-011
+  task: T-3357
+  date: 2026-09-10
+  context: Added via context agent

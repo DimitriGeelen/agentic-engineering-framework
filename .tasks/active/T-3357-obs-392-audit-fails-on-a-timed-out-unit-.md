@@ -109,7 +109,7 @@ and the outward propagation L-622 asks for.
       rather than merely narrowing it
 - [x] The whole `tests/unit/t3302_unit_suite_schedule.bats` suite is green,
       including its pre-existing FAIL/WARN/PASS/stale/unparsable legs
-- [ ] Vendored copy synced (`bin/fw vendor self --check` clean) — `agents/` is a
+- [x] Vendored copy synced (`bin/fw vendor self --check` clean) — `agents/` is a
       vendored path, so consumers get the fix (OBS-250 ordering: sync BEFORE close)
 
 ### Human
