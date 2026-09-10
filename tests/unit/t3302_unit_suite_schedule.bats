@@ -58,7 +58,7 @@ _run_audit_check() {
     run env FW_UNIT_SUITE_REPORT="$1" REPO_ROOT="$REPO_ROOT" bash -c '
         pass() { echo "PASS|$1"; }
         info() { echo "INFO|$1"; }
-        warn() { echo "WARN|$1"; }
+        warn() { echo "WARN|$1"; echo "WARNEV|$2"; echo "WARNMIT|$3"; }
         fail() { echo "FAIL|$1"; echo "EVIDENCE|$2"; }
         eval "$(sed -n "/^pass_over() {/,/^}/p" "$REPO_ROOT/agents/audit/audit.sh")"
         eval "$(sed -n "/^warn_unenumerable() {/,/^}/p" "$REPO_ROOT/agents/audit/audit.sh")"
@@ -70,7 +70,7 @@ _run_audit_check() {
 
 # Fixture report writer: _write_report <path> <failed_count> <runner_exit> <finished-iso>
 _write_report() {
-    local path="$1" failed="$2" rc="$3" finished="$4"
+    local path="$1" failed="$2" rc="$3" finished="$4" timed_out="${5:-false}"
     local names="[]"
     [ "$failed" -gt 0 ] && names='["fixture red one", "fixture red two"]'
     cat > "$path" <<EOF
@@ -80,7 +80,7 @@ started: '$finished'
 finished: '$finished'
 suite_dir: tests/unit
 timeout_seconds: 7200
-timed_out: false
+timed_out: $timed_out
 runner_exit: $rc
 legs:
   bats:
@@ -198,6 +198,67 @@ PY
     _run_audit_check "$WORK/rc.yaml"
     echo "$output" | grep -q '^FAIL|Unit suite (tests/unit)'
     ! echo "$output" | grep -q '^PASS|'
+}
+
+# ── 3b. OBS-392: a timed-out run is NOT a verdict ────────────────────────────
+#
+# The runner has always emitted `timed_out`; the audit never read it, so a run
+# killed at its ceiling rendered its casualty list as RED. That FAIL exited the
+# audit 2, which reds tests/unit/audit.bats, whose reds enter the next nightly
+# report — a loop that stranded 32 commits behind the pre-push gate over three
+# days (OBS-394/395). WARN is the honest verdict: nothing was proven either way.
+
+@test "t3302 audit WARNs (never FAILs) when the run timed out, listed reds and all" {
+    _write_report "$WORK/timeout.yaml" 2 1 "$(_now_iso)" true
+    _run_audit_check "$WORK/timeout.yaml"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q '^WARN|Unit suite (tests/unit) COULD NOT DETERMINE'
+    ! echo "$output" | grep -qE '^(PASS|FAIL)\|'
+}
+
+@test "t3302 timed-out WARN says UNMEASURED, names the ceiling, and is not 'just re-run'" {
+    _write_report "$WORK/timeout2.yaml" 2 1 "$(_now_iso)" true
+    _run_audit_check "$WORK/timeout2.yaml"
+    # names the ceiling that was hit, so the reader knows which knob to turn
+    echo "$output" | grep -q '7200s ceiling'
+    # the corpus is unknown, not green — the WARN must not read as reassurance
+    echo "$output" | grep -q 'UNMEASURED, not green'
+    # still surfaces the count, but labelled as a casualty list rather than a verdict
+    echo "$output" | grep -q 'casualty list, not a verdict'
+    # and must not send the reader back into the run that cannot terminate
+    echo "$output" | grep -q 'unchanged just re-times-out'
+}
+
+@test "t3302 timed-out with ZERO listed failures is still WARN, never PASS" {
+    # The dangerous direction: killed early enough to record nothing at all.
+    # Silence here is 'never reached', not 'all green'.
+    _write_report "$WORK/timeout-empty.yaml" 0 1 "$(_now_iso)" true
+    _run_audit_check "$WORK/timeout-empty.yaml"
+    echo "$output" | grep -q '^WARN|Unit suite (tests/unit) COULD NOT DETERMINE'
+    ! echo "$output" | grep -q '^PASS|'
+}
+
+@test "t3302 CONTROL: a COMPLETED run with the same reds still FAILs" {
+    # Separates 'fix narrowed the check' from 'fix disabled the check'. Identical
+    # report except timed_out: false — this one must still block.
+    _write_report "$WORK/completed-red.yaml" 2 1 "$(_now_iso)" false
+    _run_audit_check "$WORK/completed-red.yaml"
+    echo "$output" | grep -q '^FAIL|Unit suite (tests/unit): 2 of 6800 unit test(s) RED (T-3302)'
+    ! echo "$output" | grep -q 'COULD NOT DETERMINE'
+}
+
+@test "t3302 CONTROL: a report with NO timed_out field keeps its pre-OBS-392 verdict" {
+    # Backward compat with report shapes written before the field was consumed:
+    # absent must read false, not truthy, or every legacy report silently downgrades.
+    _write_report "$WORK/legacy.yaml" 2 1 "$(_now_iso)"
+    grep -v '^timed_out:' "$WORK/legacy.yaml" > "$WORK/legacy-nofield.yaml"
+    # `! grep ...` in non-final position is a DEAD assertion under bats errexit
+    # (tools/bats-dead-negation-lint.py, T-3138) — use run/status so it bites.
+    run grep -q 'timed_out' "$WORK/legacy-nofield.yaml"
+    [ "$status" -ne 0 ]
+    _run_audit_check "$WORK/legacy-nofield.yaml"
+    echo "$output" | grep -q '^FAIL|Unit suite (tests/unit)'
+    ! echo "$output" | grep -q 'COULD NOT DETERMINE'
 }
 
 @test "t3302 audit WARNs when the report is missing" {

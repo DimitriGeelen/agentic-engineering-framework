@@ -2916,9 +2916,12 @@ check_invariant_suite
 # heavy to run from this audit (and its suites themselves spawn
 # `audit.sh --section structure`, contending this very lock), so the run is
 # nightly and this check only READS the report it leaves behind:
-#   FAIL — report lists failures or the runner exited non-zero
-#   WARN — report missing, unparsable, or finished >48h ago (two nightlies)
+#   FAIL — a COMPLETED run listed failures or exited non-zero
+#   WARN — report missing, unparsable, timed out mid-run (OBS-392), or finished
+#          >48h ago (two nightlies)
 #   PASS — fresh clean report, named over the set it examined
+# The timed-out case is the one that is easy to get wrong in both directions: it
+# is not a PASS (nothing was proven) and not a FAIL (nothing was disproven).
 # The line text names its corpus ("unit suite (tests/unit)") — the whole point
 # of OBS-361 is that a green line must not answer a broader question than the
 # one it examined (same family as the invariant-suite rewording above).
@@ -2948,6 +2951,10 @@ try:
             names.append("%s: %s" % (leg, l["error"]))
     rc = d.get("runner_exit")
     rc = 1 if rc is None else int(rc)
+    # OBS-392: a run killed at its ceiling produced no verdict. An absent field
+    # (pre-T-3302 report shape) reads false, preserving the existing behaviour.
+    to = 1 if d.get("timed_out") else 0
+    tos = int(d.get("timeout_seconds") or 0)
     age_h = -1
     fin = d.get("finished")
     if fin:
@@ -2958,8 +2965,8 @@ try:
                         .total_seconds() // 3600)
         except Exception:
             pass
-    print("%d|%d|%d|%d|%s" % (total, failed, rc, age_h,
-                              ";".join(names[:3]).replace("|", "/")))
+    print("%d|%d|%d|%d|%d|%d|%s" % (total, failed, rc, age_h, to, tos,
+                                    ";".join(names[:3]).replace("|", "/")))
 except Exception:
     pass
 PYEOF
@@ -2972,8 +2979,35 @@ PYEOF
         return 0
     fi
 
-    local _us_total _us_failed _us_rc _us_age _us_names
-    IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_names <<< "$_parsed"
+    local _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names
+    IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names <<< "$_parsed"
+
+    # OBS-392 / L-622: a run that hit its ceiling produced NO VERDICT. Its
+    # failure list is a CASUALTY list — the runner was killed mid-corpus, so a
+    # named test may be genuinely red or merely unlucky about when the axe fell,
+    # and the tests it never reached are unmeasured, not silent-because-green.
+    # FAILing on that list is the false-RED mirror of the false-GREEN family this
+    # check belongs to (T-3302/T-3328): the assertion cannot tell "looked and
+    # found a problem" from "could not look".
+    #
+    # It also deadlocks. The FAIL makes this audit exit 2, which reds
+    # tests/unit/audit.bats, whose reds land in the next nightly report, which
+    # sustains the FAIL. Measured 2026-09-07..10: 32 commits stranded behind a
+    # pre-push gate reading a report that could not come clean on its own
+    # (OBS-394/395). The FAIL's own mitigation — re-run unit-suite.sh — is
+    # exactly the run that times out, so it cannot terminate.
+    #
+    # So: WARN, never PASS. The corpus is UNMEASURED, not green, and the text has
+    # to say so — a WARN that read as reassurance would just move the false-green
+    # down one tier instead of removing it.
+    if [ "${_us_timedout:-0}" -eq 1 ]; then
+        local _us_ceiling_txt="its timeout ceiling"
+        [ "${_us_timeout_s:-0}" -gt 0 ] && _us_ceiling_txt="its ${_us_timeout_s}s ceiling"
+        warn "Unit suite (tests/unit) COULD NOT DETERMINE — nightly run hit $_us_ceiling_txt (T-3302, OBS-392)" \
+             "timed_out=true, runner_exit=$_us_rc, report ${_us_age}h old. It lists $_us_failed of $_us_total test(s) as failed, but a run killed mid-corpus yields a casualty list, not a verdict — and the tests it never reached are UNMEASURED, not green. First listed: ${_us_names:-none listed}" \
+             "Make a run COMPLETE before trusting any count: raise FW_UNIT_SUITE_TIMEOUT, or split/shard the corpus (OBS-388 covers the nested tests/lint suite). Re-running unit-suite.sh unchanged just re-times-out. Until one completes, treat tests/unit as UNKNOWN"
+        return 0
+    fi
 
     if [ "$_us_failed" -gt 0 ] || [ "$_us_rc" -ne 0 ]; then
         fail "Unit suite (tests/unit): $_us_failed of $_us_total unit test(s) RED (T-3302)" \
