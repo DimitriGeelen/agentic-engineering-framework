@@ -152,6 +152,46 @@ fw_branch_hygiene() {
         fi
     fi
 
+    # ── T-3360: the dev branch is AHEAD of its remote and NOT PUSHED ─────────
+    #
+    # Every other rail in this file measures a branch BEHIND its target and asks
+    # "can this still be reconciled?". None asked the opposite question, and the
+    # opposite direction is the one that strands work: origin/bleeding-edge last
+    # received a commit on 2026-09-07 23:06, the pre-push audit gate then refused
+    # every push for ~3 days, and the branch climbed to 32 commits ahead. Every
+    # handover in that window ran, committed, and reported success — the refusal
+    # appeared only in the tail of the handover's own stdout. Nothing watched the
+    # gap (OBS-394/395; the gate's root cause is fixed in T-3357).
+    #
+    # Reports the AGE of the oldest unpushed commit, not just the count: "32
+    # ahead" is a number, "32 ahead, oldest 3 days" is the thing worth acting on.
+    # Deliberately NOT "time since last push" — git records no reliable push
+    # timestamp (the remote-tracking reflog is absent on fresh clones and
+    # prunable), whereas commit dates are always present.
+    #
+    # Scoped three ways so it cannot become noise: silent with no remote-tracking
+    # counterpart (a local-only repo has nothing to be ahead OF), silent at or
+    # under the threshold, and WARN-only — an unpushed branch is a normal state
+    # mid-session, it is only the SIZE and AGE of the gap that is a finding.
+    local ahead_warn="${FW_BRANCH_AHEAD_WARN:-20}"
+    local _bh_up="refs/remotes/origin/$_bh_dev"
+    if git -C "$repo" rev-parse --verify -q "$_bh_up" >/dev/null 2>&1 &&
+       git -C "$repo" rev-parse --verify -q "refs/heads/$_bh_dev" >/dev/null 2>&1; then
+        local _bh_un _bh_oldest _bh_odays
+        _bh_un=$(git -C "$repo" rev-list --count "$_bh_up..refs/heads/$_bh_dev" 2>/dev/null || echo 0)
+        if [ "${_bh_un:-0}" -gt "$ahead_warn" ]; then
+            # `git log` is newest-first, so the LAST line is the oldest commit
+            # in the unpushed range — i.e. when the stranding began.
+            _bh_oldest=$(git -C "$repo" log --format=%ct "$_bh_up..refs/heads/$_bh_dev" 2>/dev/null | tail -1)
+            if [ -n "$_bh_oldest" ]; then
+                _bh_odays=$(( ( $(date +%s) - _bh_oldest ) / 86400 ))
+            else
+                _bh_odays=0
+            fi
+            echo "ahead-unpushed $_bh_dev ahead=$_bh_un oldest_days=$_bh_odays (threshold $ahead_warn)"
+        fi
+    fi
+
     local br behind ahead
     # ── local branches: merged-undeleted, else behind-threshold ──
     while IFS= read -r br; do

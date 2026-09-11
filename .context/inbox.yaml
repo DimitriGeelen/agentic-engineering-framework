@@ -4547,3 +4547,10 @@ observations:
   tags: [gap]
   status: pending
   promoted_to: null
+- id: OBS-400
+  text: "SOVEREIGN QUESTION — the tests/unit corpus does not fit its window, and every way of making it fit is an architecture decision. MEASURED 2026-09-11: the pytest leg alone ran ~316 of 2706 collected tests in ~1800s (11.7%), extrapolating to ~4.3 HOURS; the bats leg has exceeded 7200s on four consecutive nightlies. Total corpus need is ~6+ hours against a 2-hour cron slot (01:03-03:03). T-3359 fixed the STARVATION (leg 1 could consume leg 2's budget) and made each leg's grant legible, but deliberately did not make the corpus fit. The options are NOT equivalent and the agent should not pick: (a) PARALLELISE — bats --jobs / pytest-xdist. Looks obvious and is ACTIVELY UNSAFE here: tests/unit contains suites that spawn 'audit.sh --section structure', and OBS-396 already measured contention INVERTING the suite exit code (rc=0 with 10/15 skipped). Parallelism multiplies exactly that contention, trading a slow honest red for a fast false green. (b) WIDEN the window past 2h — pushes the run into working hours and collides with the daily audit and pre-push gate. (c) SHARD across several nightly slots — honest, but means no single report ever covers the whole corpus, so 'unit suite green' becomes a claim about a shard and the audit line needs re-wording to match. (d) SHRINK the corpus — find and fix the pathologically slow tests. Highest value, unknown cost, and needs a profile first. Each option changes what the phrase 'the unit suite passed' MEANS, which is why this is a scope call and not an implementation detail."
+  captured: 2026-09-11T20:02:42Z
+  context_task: T-3360
+  tags: [gap]
+  status: pending
+  promoted_to: null
