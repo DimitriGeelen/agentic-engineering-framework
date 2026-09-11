@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3349: EWCR landing drive: surface D1/D5 rulings, evaluate arc-0 scope delta, queue actionable work
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-08T20:18:35Z
+# ============================================================================
+
+task_id: T-3349
+task_name: "EWCR landing drive: surface D1/D5 rulings, evaluate arc-0 scope delta, queue actionable work"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-08T19:54:05Z
+completed: 2026-09-08T20:18:16Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-08T21:59:46+02:00
+last_commit: 2026-09-08T22:07:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  EWCR landing drive — OBS-385 (R6 policy/ zero Fabric coverage) registered, scope delta filed as T-3350/T-3351 (arc-tagged), T-3350 dispatched to TermLink worker, D1/D5 + T-3147 review surfaced. T-3351 ACs authored, dispatched to TermLink worker ewcr-unknown-resolve; T-3350 verified landed (policy/ 0%→100%)
+
+# Key outcomes
+outcomes:
+  - 'D1/D5/T-3147 review surfaced with class-correct URL via `fw task review T-3147` (review marker written)'
+  - 'Measured scope delta registered (OBS-385) and filed as arc-tagged tasks T-3350 + T-3351 — no bulk creation, one deliverable each'
+  - 'T-3350 dispatched to TermLink worker and independently verified: policy/ Fabric coverage 0% → 100%, 0 Unknown'
+  - 'T-3351 dispatched to TermLink worker and independently verified: Unknown ∩ write-set intersection 0/0 (CORE and BROAD), list re-derived live (23 cards)'
+  - 'TermLink messages checked (heartbeats + known false-stale alert only); BVP ranking checked (proposed-only, no confirmed scores — consistent with arc-0 fence)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-3349-ewcr-landing-drive-surface-d1d5-rulings-.md'
+  - '.tasks/active/T-3350-ewcr-fence-1-r6-card-the-8-policy-yaml-g.md'
+  - '.tasks/active/T-3351-ewcr-fence-1-resolve-unknown-subsystem-o.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-08T21:59:46'
+    action: 'T-3349: EWCR landing drive — OBS-385 (R6 policy/ zero Fabric coverage) registered, scope delta filed as T-3350/T-3351 (arc-tagged), T-3350 dispatched to TermLink worker, D1/D5 + T-3147 review surfaced'
+  - time: '2026-09-08T22:07:59'
+    action: 'T-3349: T-3351 ACs authored, dispatched to TermLink worker ewcr-unknown-resolve; T-3350 verified landed (policy/ 0%→100%)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24
+  commits: 3
+  files_changed: 5
+  lines_added: 1023
+  lines_removed: 6
+  footprint_refreshed_at: '2026-09-08T20:20:28Z'
+  footprint_refreshed_by_commit: c4426927b
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3349-ewcr-landing-drive-surface-d1d5-rulings-.md
+generated_by: context-agent-hybrid

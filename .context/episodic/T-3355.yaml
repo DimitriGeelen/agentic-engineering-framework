@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3355: Stale test: emit_review 'build passes through — no Rec gate' asserts pre-T-2421 contract (1 of the T-3302 unit-suite reds)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-08T22:06:14Z
+# ============================================================================
+
+task_id: T-3355
+task_name: "Stale test: emit_review 'build passes through — no Rec gate' asserts pre-T-2421 contract (1 of the T-3302 unit-suite reds)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-08T22:04:10Z
+completed: 2026-09-08T22:05:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-09T00:05:48+02:00
+last_commit: 2026-09-09T00:05:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  emit_review build test aligned to T-2421 partial-complete Rec gate + new boundary test (all-ticked passes) — 15/15 green (1 of 16 T-3302 reds)
+
+# Key outcomes
+outcomes:
+  - 'The red test is rewritten to the T-2421 contract: a build task WITH an unticked Human AC and empty ## Recommendation BLOCKS emission (non-zero exit, "Partial-complete build task" in stderr); a NEW companion test proves the pass-through that the old test meant: a build task with NO unticked Human ACs and empty Recommendation still emits silently (exit 0, no BLOCKED output)'
+  - '`bats tests/unit/audit_inception_recommendation.bats` fully green, previously-green tests unchanged'
+  - 'Only tests/unit/audit_inception_recommendation.bats and this task file modified — lib/review.sh gate is correct per T-2421 and stays untouched'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3355-stale-test-emitreview-build-passes-throu.md'
+  - '.tasks/completed/T-3354-libcorpus-idsh-truncating-yaml-write--ad.md'
+  - 'tests/unit/audit_inception_recommendation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-09T00:05:48'
+    action: 'T-3355: emit_review build test aligned to T-2421 partial-complete Rec gate + new boundary test (all-ticked passes) — 15/15 green (1 of 16 T-3302 reds)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 3
+  lines_added: 344
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3355-stale-test-emitreview-build-passes-throu.md
+generated_by: context-agent-hybrid

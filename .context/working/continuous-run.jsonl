@@ -69,3 +69,22 @@
 {"ts": "2026-09-07T06:01:35Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 2127889, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}
 {"ts": "2026-09-07T07:30:29Z", "event": "exit", "reason": "continuous-terminated", "restart_count": 0, "wrapper_pid": 2127889, "detail": "T-3263 resolved (work-completed 2026-09-03); clearing stale human-gate latch that had cycled 4+ times since 18:24:48Z (T-3268)", "exit_code": 0}
 {"ts": "2026-09-07T19:13:23Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 619707, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}
+{"ts": "2026-09-07T20:10:49Z", "event": "exit", "reason": "continuous-terminated", "restart_count": 0, "wrapper_pid": 619707, "detail": "T-3263 resolved (work-completed 2026-09-03); clearing stale human-gate latch that had cycled 4+ times since 18:24:48Z (T-3268)", "exit_code": 0}
+{"ts": "2026-09-07T20:26:48Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 3549932, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}
+{"ts": "2026-09-07T20:52:17Z", "event": "exit", "reason": "stale-signal", "restart_count": 0, "wrapper_pid": 3549932, "detail": "signal 2443s old, freshness window 300s", "exit_code": 0}
+{"ts": "2026-09-07T20:52:25Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 3884548, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=1"}
+{"ts": "2026-09-07T20:54:12Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 3904571, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}
+{"ts": "2026-09-08T10:03:28Z", "event": "exit", "reason": "no-signal", "restart_count": 0, "wrapper_pid": 3904571, "detail": "claude exited without a restart signal", "exit_code": 0}
+{"ts": "2026-09-08T14:20:59Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 596104, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}
+{"ts": "2026-09-08T15:52:27Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 1319538, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=0"}
+{"ts": "2026-09-08T18:22:25Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 2755743, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=1"}
+{"ts": "2026-09-08T19:01:02Z", "event": "exit", "reason": "no-signal", "restart_count": 0, "wrapper_pid": 2755743, "detail": "claude exited without a restart signal", "exit_code": 1}
+{"ts": "2026-09-09T07:08:12Z", "event": "exit", "reason": "no-signal", "restart_count": 0, "wrapper_pid": 996693, "detail": "claude exited without a restart signal", "exit_code": 0}
+{"ts": "2026-09-09T15:21:00Z", "event": "exit", "reason": "no-signal", "restart_count": 0, "wrapper_pid": 2406664, "detail": "claude exited without a restart signal", "exit_code": 1}
+{"ts": "2026-09-09T19:01:12Z", "event": "exit", "reason": "no-signal", "restart_count": 0, "wrapper_pid": 2406658, "detail": "claude exited without a restart signal", "exit_code": 1}
+{"ts": "2026-09-10T20:09:56Z", "event": "exit", "reason": "no-signal", "restart_count": 0, "wrapper_pid": 2310440, "detail": "claude exited without a restart signal", "exit_code": 0}
+{"ts": "2026-09-10T20:09:56Z", "event": "exit", "reason": "no-signal", "restart_count": 0, "wrapper_pid": 1115847, "detail": "claude exited without a restart signal", "exit_code": 0}
+{"ts": "2026-09-10T20:51:36Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 2205786, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=1"}
+{"ts": "2026-09-11T01:00:41Z", "event": "exit", "reason": "no-signal", "restart_count": 0, "wrapper_pid": 2205786, "detail": "claude exited without a restart signal", "exit_code": 1}
+{"ts": "2026-09-11T01:00:45Z", "event": "start", "reason": "armed", "restart_count": 0, "wrapper_pid": 2205784, "detail": "restart=enabled max_restarts=5 window=3600s armed=no termlink=1"}
+{"ts": "2026-09-11T20:24:23Z", "event": "exit", "reason": "continuous-terminated", "restart_count": 0, "wrapper_pid": 2205784, "detail": "T-3263 resolved (work-completed 2026-09-03); clearing stale human-gate latch that had cycled 4+ times since 18:24:48Z (T-3268)", "exit_code": 0}

@@ -1,40 +1,24 @@
-timestamp: 2026-09-07T07:00:02Z
+timestamp: 2026-09-11T20:05:02Z
 findings:
-  - id: D4
+  - id: D1
     level: PASS
-    check: "D4: Audit trend — insufficient history (<3 entries)"
-  - id: D5
-    level: WARN
-    check: "D5: Task lifecycle — 20 anomaly(s): T-801(156d-active) T-802(156d-active) T-803(156d-active) T-2899(28d-active) T-1542(132d-active) T-1624(129d-active) T-1820(116d-active) T-2170(97d-active) T-2171(97d-active) T-2268(90d-active) (+10 more)"
-    mitigation: "Review flagged tasks for process issues"
-  - id: D13
-    level: WARN
-    check: "D13: Inception limbo — 6 task(s): A=6/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2428(A:1hu)"
-    mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
-  - id: D3
+    check: "D1: Episodic quality — 0% [TODO] (18/2883)"
+  - id: D2
+    level: FAIL
+    check: "D2: Human review queue — 208 task(s) waiting >30d: T-100131(67d) T-100188(67d) T-1701(107d) T-1702(103d) T-1707(107d) T-1718(107d) T-1773(120d) T-1774(120d) T-1775(120d) T-1776(103d) T-1796(121d) T-1797(121d) T-1799(121d) T-1801(121d) T-1802(121d) T-1803(121d) T-1805(121d) T-1806(121d) T-1807(121d) T-1808(121d) T-1810(121d) T-1811(121d) T-1818(120d) T-1827(112d) T-1834(119d) T-1842(112d) T-1843(112d) T-1844(112d) T-1891(116d) T-1909(114d) T-1910(114d) T-1911(114d) T-1928(115d) T-1929(115d) T-1930(115d) T-1933(115d) T-1934(114d) T-1935(114d) T-1936(114d) T-1939(114d) T-1947(114d) T-1951(112d) T-1954(114d) T-1955(114d) T-1957(114d) T-1960(113d) T-1961(113d) T-1963(113d) T-1964(114d) T-1965(114d) T-1968(113d) T-1969(113d) T-1970(113d) T-1971(113d) T-1976(112d) T-1977(113d) T-1978(112d) T-1980(112d) T-1982(113d) T-1984(112d) T-1985(112d) T-1988(112d) T-1989(108d) T-1990(107d) T-1991(112d) T-1992(108d) T-1993(108d) T-1994(107d) T-1999(111d) T-2002(107d) T-2003(108d) T-2004(108d) T-2006(108d) T-2008(108d) T-2009(108d) T-2010(108d) T-2011(108d) T-2012(108d) T-2013(108d) T-2015(108d) T-2016(108d) T-2017(108d) T-2018(108d) T-2019(108d) T-2020(108d) T-2021(108d) T-2022(108d) T-2023(108d) T-2024(108d) T-2025(108d) T-2026(108d) T-2027(108d) T-2028(108d) T-2029(108d) T-2031(108d) T-2033(108d) T-2034(108d) T-2038(108d) T-2039(108d) T-2040(108d) T-2041(108d) T-2043(108d) T-2044(108d) T-2045(108d) T-2046(108d) T-2047(108d) T-2049(108d) T-2051(107d) T-2054(107d) T-2062(106d) T-2063(106d) T-2064(106d) T-2065(106d) T-2066(106d) T-2075(105d) T-2077(105d) T-2080(105d) T-2082(105d) T-2084(105d) T-2085(105d) T-2086(105d) T-2087(105d) T-2088(105d) T-2089(105d) T-2102(104d) T-2103(104d) T-2106(104d) T-2110(104d) T-2111(104d) T-2112(104d) T-2114(104d) T-2116(104d) T-2117(104d) T-2119(97d) T-2136(103d) T-2160(102d) T-2167(101d) T-2174(101d) T-2175(101d) T-2176(97d) T-2179(101d) T-2183(90d) T-2185(99d) T-2192(100d) T-2222(97d) T-2240(96d) T-2265(94d) T-2274(94d) T-2278(94d) T-2281(94d) T-2332(92d) T-2335(52d) T-2336(92d) T-2342(92d) T-2349(67d) T-2369(90d) T-2373(90d) T-2376(90d) T-2395(31d) T-2403(88d) T-2406(88d) T-2417(87d) T-2428(85d) T-2430(85d) T-2463(67d) T-2474(79d) T-2479(67d) T-2525(63d) T-2529(62d) T-2530(62d) T-2555(53d) T-2558(53d) T-2561(53d) T-2563(53d) T-2565(53d) T-2578(52d) T-2586(52d) T-2589(52d) T-2596(51d) T-2618(49d) T-2623(46d) T-2624(46d) T-2629(46d) T-2630(46d) T-2631(46d) T-2632(46d) T-2634(45d) T-2651(45d) T-2674(44d) T-2686(43d) T-2713(41d) T-2741(39d) T-2774(39d) T-2775(38d) T-2780(38d) T-2781(38d) T-2787(38d) T-2807(37d) T-2809(37d) T-2831(36d) T-2838(35d) T-2842(35d) T-2864(34d) T-2870(34d) T-2891(33d) T-2896(33d) T-2904(32d) T-2905(32d) T-2974(28d) T-2979(28d) T-2986(28d) T-2994(28d) T-3006(27d) T-3010(27d) T-3011(27d) T-3012(27d) T-3013(27d) T-3016(27d) T-3017(27d) T-3019(27d) T-3024(26d) T-3028(26d) T-3030(26d) T-3046(24d) T-3065(25d) T-3066(25d) T-3078(22d) T-3080(22d) T-3090(22d) T-3091(22d) T-3094(22d) T-3096(22d) T-3124(18d) T-3127(14d) T-3130(17d) T-3132(17d) T-3139(17d) T-3140(17d) T-3142(17d) T-3144(16d) T-3157(16d) T-3176(16d) T-3180(16d) T-3185(15d) T-3200(15d) T-3204(14d)"
+    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
+  - id: D8
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=43 avg=36 ratio=1.2x)"
-  - id: D7
+    check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - id: D10
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 70_commits_24h)"
-  - id: D6
+    check: "D10: Decision-without-dialogue — none detected"
+  - id: D11
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=7.3 earlier=9.0)"
-  - id: D12
-    level: PASS
-    check: "D12: Bypass log — no log file"
-  - id: D9
-    level: PASS
-    check: "D9: Control drift — normal (PASS 10_audits_checked)"
-  - id: D14
-    level: PASS
-    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
-  - id: D15
-    level: PASS
-    check: "D15: Inception limbo state — none (PASS no_limbo)"
+    check: "D11: Gap register staleness — all gaps fresh"
 
 summary:
-  pass: 8
-  warn: 2
-  fail: 0
-  total: 10
+  pass: 4
+  warn: 0
+  fail: 1
+  total: 5

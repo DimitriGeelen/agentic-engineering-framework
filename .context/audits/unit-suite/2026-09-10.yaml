@@ -1,0 +1,48 @@
+schema: unit-suite-report-v1
+task: T-3302
+started: '2026-09-10T01:03:01Z'
+finished: '2026-09-10T03:03:02Z'
+suite_dir: /opt/999-Agentic-Engineering-Framework/tests/unit
+timeout_seconds: 7200
+timed_out: true
+runner_exit: 1
+legs:
+  bats:
+    files: 623
+    tests: 874
+    failed_count: 22
+    skipped: 10
+    exit: 124
+    failed:
+    - 'T-2985: a lint-clean store emits a PASS line carrying the map count'
+    - "T-2985: findings are WARN tier \u2014 audit does not exit 2"
+    - "T-2985: no map store \u2192 silent, no PASS line claiming a scan"
+    - "T-2985: no linter (vendored consumer without tools/) \u2192 silent, no traceback"
+    - 'T-2985: the audit sees the REAL store, not only fixtures'
+    - "T-2980: seed referencing an existing map \u2192 PASS with the count"
+    - "T-2980: a dangling reference is FAIL tier, not WARN \u2014 audit exits 2"
+    - "T-2980: no seed references \u2192 no PASS line (nothing was checked)"
+    - 'shell-idiom ratchet (T-2649): PROJECT_ROOT framework-asset sites in shell stay
+      at the reviewed baseline'
+    - "T-1855: in-progress arc with no recent task commits \u2192 WARN"
+    - "T-1855: in-progress arc with recent task commit \u2192 pass line emitted"
+    - 'T-1855: closed arc never warns (regardless of commit recency)'
+    - "T-1855: in-progress arc with no matching tasks \u2192 skip (not WARN)"
+    - 'T-1855: arc_id given as arc-NNN matches when arc id is arc-NNN'
+    - 'T-1855: FW_STALE_ARC_DAYS=3650 makes stale arcs pass (long threshold)'
+    - 'checkpoint: finds transcript in current project directory'
+    - 'checkpoint: reads correct project when multiple exist'
+    - 'checkpoint: T-1088 filters pre-session-start JSONL entries'
+    - 'checkpoint: T-1088 without session-start-ts uses all entries (backward compat)'
+    - 'add learning: creates first entry with L-001 ID in framework project'
+    - 'add learning: uses PL- prefix in consumer project'
+    - 't5: _costs_jsonl_dir delegates to fw_claude_project_dirs (newline-separated)'
+    error: null
+  pytest:
+    files: 201
+    tests: 0
+    failed_count: 0
+    skipped: 0
+    exit: 124
+    failed: []
+    error: null

@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3354: lib/corpus-id.sh truncating YAML write — add atomic same-dir-temp + mv (L-493 class, 1 of the T-3302 unit-suite reds)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-08T21:44:40Z
+# ============================================================================
+
+task_id: T-3354
+task_name: "lib/corpus-id.sh truncating YAML write — add atomic same-dir-temp + mv (L-493 class, 1 of the T-3302 unit-suite reds)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-08T21:41:54Z
+completed: 2026-09-08T21:44:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-08T23:44:21+02:00
+last_commit: 2026-09-08T23:44:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  atomic-YAML-write linter now strips comment lines before matching — corpus-id.sh prose-mention FP cleared, control-verified both directions (1 of 16 T-3302 reds)
+
+# Key outcomes
+outcomes:
+  - 'CORRECTED SCOPE after localization: lib/corpus-id.sh is READ-ONLY (no yaml.dump call anywhere) — the red is a linter false positive: the DUMP regex in tests/unit/atomic_yaml_write_lint.bats matches `yaml.dump(` inside corpus-id.sh''s prose header comment quoting the T-2902 incident. Fix the LINTER to strip comment lines before matching (kills the comment-mention FP class); lib/corpus-id.sh stays untouched'
+  - '`bats tests/unit/atomic_yaml_write_lint.bats` fully green — both the main lint (no false positive on corpus-id.sh) and the stale-exemption test'
+  - 'The comment-strip does not mask real writers: a control check confirms the linter still flags an actual uncommented `yaml.dump(` without atomic signal (verified by temporarily adding one in a scratch file under lib/ during dev, or by inspection of the regex path — record which in Updates)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3354-libcorpus-idsh-truncating-yaml-write--ad.md'
+  - '.tasks/completed/T-3353-stale-tests-approvalsclosereadyarcs-asse.md'
+  - 'tests/unit/atomic_yaml_write_lint.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-08T23:44:21'
+    action: 'T-3354: atomic-YAML-write linter now strips comment lines before matching — corpus-id.sh prose-mention FP cleared, control-verified both directions (1 of 16 T-3302 reds)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 3
+  lines_added: 341
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3354-libcorpus-idsh-truncating-yaml-write--ad.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3342: capture arc-020 G1+G3 demo evidence into arc record
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T17:35:56Z
+# ============================================================================
+
+task_id: T-3342
+task_name: "capture arc-020 G1+G3 demo evidence into arc record"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-07T17:31:51Z
+completed: 2026-09-07T17:35:42Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-07T19:35:37+02:00
+last_commit: 2026-09-07T19:35:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  combined arc-020 headline-mechanic demo report (G1+G3)
+
+# Key outcomes
+outcomes:
+  - '`docs/reports/arc-020-headline-demo.md` exists and consolidates BOTH clauses of the arc-020 headline mechanic (distinct correspondents = G1/T-3340; self-heal = G3/T-3341) into one artifact suitable to pass as `fw arc close --demo <path>`.'
+  - 'The report references each leg''s demo script and wire-evidence file (`tests/manual/arc020_g1_demo.py` + `docs/reports/T-3340-g1-demo-evidence.md`; `tests/manual/arc020_g3_demo.py` + `docs/reports/T-3341-g3-demo-evidence.md`) and states what each demonstrated.'
+  - 'The report does NOT close the arc, does NOT set `demo_evidence:`, and explicitly names arc close as the operator''s §ACD decision (advisory-only, sovereignty-respecting).'
+  - 'The report parses as Markdown and every referenced artifact/script path exists on disk.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/arc-020-headline-demo.md'
+  - '.tasks/active/T-3342-capture-arc-020-g1g3-demo-evidence-into-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-07T19:35:37'
+    action: 'T-3342: combined arc-020 headline-mechanic demo report (G1+G3)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 412
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3342-capture-arc-020-g1g3-demo-evidence-into-.md
+generated_by: context-agent-hybrid

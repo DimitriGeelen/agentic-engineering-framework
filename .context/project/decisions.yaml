@@ -3908,3 +3908,38 @@ decisions:
     date: 2026-09-07
     task: T-3147
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-561
+    decision: "allowlist `checkpoint.sh budget` and `checkpoint.sh status` (both verified pure reads against checkpoint.sh:547/:599 — echo/cat/python-print only); `termlink pty output` (session output read); nothing for `fw bvp` (already listed at safe-commands.sh `bvp)` arm)."
+    scope: project
+    date: 2026-09-07
+    task: T-3344
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-562
+    decision: "strip only trailing fd-dups (`N>&M`) and /dev/null sinks (`2>/dev/null`, `>/dev/null`, `&>/dev/null`) before positional token reads."
+    scope: project
+    date: 2026-09-07
+    task: T-3344
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-563
+    decision: "the release tag. At release time `lib/release.sh` writes `${tag#v}` into VERSION (+ vendored copy) in a pathspec commit BEFORE tagging, so the tagged commit carries the version the tag names; a release that would decrease VERSION refuses."
+    scope: project
+    date: 2026-09-07
+    task: T-3242
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-564
+    decision: "repos without a root VERSION file release without reconciling (no file created)."
+    scope: project
+    date: 2026-09-07
+    task: T-3242
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-565
+    decision: "`do_version_sync` refuses (exit 1, actionable stderr) when FW_VERSION < newest reachable tag; unchanged when no tags reachable."
+    scope: project
+    date: 2026-09-07
+    task: T-3242
+    rationale: "Auto-captured from task file on completion"

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3357: OBS-392: audit FAILs on a timed-out unit-suite report, turning casualties into a verdict and deadlocking push
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-10T20:33:22Z
+# ============================================================================
+
+task_id: T-3357
+task_name: "OBS-392: audit FAILs on a timed-out unit-suite report, turning casualties into a verdict and deadlocking push"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-10T20:06:34Z
+completed: 2026-09-10T20:32:44Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-10T22:21:54+02:00
+last_commit: 2026-09-10T22:32:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-392 — a timed-out unit-suite report WARNs 'could not determine' instead of FAILing on its casualty list. tick ACs, mark OBS-392 promoted, vendor sync, L-665 (no-verdict flags bind every consumer)
+
+# Key outcomes
+outcomes:
+  - 'Parser extracts `timed_out` and `timeout_seconds` from the report; a report'
+  - 'A report with `timed_out: true` emits **WARN**, never FAIL and never PASS —'
+  - 'The WARN text states the corpus is UNMEASURED rather than green, names the'
+  - 'CONTROL LEG: `timed_out: false` with failures still FAILs, and a clean fresh'
+  - 'The whole `tests/unit/t3302_unit_suite_schedule.bats` suite is green,'
+  - 'Vendored copy synced (`bin/fw vendor self --check` clean) — `agents/` is a'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - '.context/inbox.yaml'
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-3357-obs-392-audit-fails-on-a-timed-out-unit-.md'
+  - 'tests/unit/t3302_unit_suite_schedule.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-10T22:21:54'
+    action: 'T-3357: OBS-392 — a timed-out unit-suite report WARNs ''could not determine'' instead of FAILing on its casualty list'
+  - time: '2026-09-10T22:32:34'
+    action: 'T-3357: tick ACs, mark OBS-392 promoted, vendor sync, L-665 (no-verdict flags bind every consumer)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 2
+  files_changed: 7
+  lines_added: 574
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3357-obs-392-audit-fails-on-a-timed-out-unit-.md
+generated_by: context-agent-hybrid

@@ -67,10 +67,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 1319
-  commits: 1
-  files_changed: 1
-  lines_added: 341
-  lines_removed: 0
+  commits: 2
+  files_changed: 7
+  lines_added: 476
+  lines_removed: 9
+  footprint_refreshed_at: '2026-09-08T18:28:11Z'
+  footprint_refreshed_by_commit: b0857fd7d
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3345-session-crash-loop-investigation--repeat.md

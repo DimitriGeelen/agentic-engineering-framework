@@ -1,15 +1,17 @@
 ---
 id: T-3359
-name: "tests/unit has not completed a single run in 4 nights: bats consumes the whole 7200s ceiling and the pytest leg measures 0 of 201 files"
+name: "tests/unit has not completed a single run in 4 nights: bats consumes the whole
+  7200s ceiling and the pytest leg measures 0 of 201 files"
 description: >
-  tests/unit has not completed a single run in 4 nights: bats consumes the whole 7200s ceiling and the pytest leg measures 0 of 201 files
+  tests/unit has not completed a single run in 4 nights: bats consumes the whole 7200s
+  ceiling and the pytest leg measures 0 of 201 files
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/unit-suite.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-11T19:50:51Z
-last_update: 2026-09-11T19:50:51Z
-date_finished: null
+last_update: 2026-09-11T19:59:57Z
+date_finished: 2026-09-11T19:59:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-11T20:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=356,acs=9)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-11T20:00:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3359: tests/unit has not completed a single run in 4 nights: bats consumes the whole 7200s ceiling and the pytest leg measures 0 of 201 files
@@ -391,3 +421,15 @@ and legible; it does not make the corpus fit. Filed separately.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3359-testsunit-has-not-completed-a-single-run.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8d3dad84
+- **Timestamp:** 2026-09-11T20:00:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-11T19:59:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

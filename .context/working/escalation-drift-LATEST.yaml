@@ -1,23 +1,21 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-07T03:23:03.102051+00:00
-corpus_total: 2852
-bug_class_total: 505
+generated: 2026-09-11T03:23:02.775096+00:00
+corpus_total: 2881
+bug_class_total: 508
 bug_class_pct: 17
-h1_flagged: 364
+h1_flagged: 366
 h1_pct_of_bug_class: 72
-h2_repeat_patterns: 164
+h2_repeat_patterns: 165
 h3_flagged: 265
 h3_pct_of_bug_class: 52
-recent_30d_flagged: 10
+recent_30d_flagged: 11
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
     name: "Fix critical hook PROJECT_ROOT bug for external projects"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
-  - tid: "T-2886-vendor-sync--push-t-2885-budget-gauge-fi"
-    name: "vendor sync + push T-2885 budget gauge fix"
   - tid: "T-2951-832-rail-round-573574--report-t-2921-ext"
     name: "832 rail round 573/574 — report T-2921 extractor fix, carry their T-456 composit"
   - tid: "T-2971-rail-611--exclusion-vs-hole-applied-to-s"
@@ -30,19 +28,21 @@ recent_sample:
     name: "A release can advance master and then fail to publish its tag, and the GitHub"
   - tid: "T-3226-fw-doctor-reports-a-spurious-fail-on-any"
     name: "fw doctor reports a spurious FAIL on any direct-script hook using CLAUDE_PROJECT"
-  - tid: "T-3273-workflowcoverage-fail-false-positive-on-"
-    name: "workflow_coverage FAIL false-positive on non-spawning worker_kind ollama-direct"
+  - tid: "T-3237-bare-wget-url-is-safe-listed--wget-write"
+    name: "bare 'wget URL' is safe-listed — wget writes to cwd by default, no flag required"
+  - tid: "T-3238-find-is-unconditionally-safe-listed-so--"
+    name: "find is unconditionally safe-listed, so -delete and -exec pass the Bash task"
 h2_top:
   - learning: "P-011"
-    task_count: 2530
+    task_count: 2611
   - learning: "L-387"
-    task_count: 2273
+    task_count: 2351
   - learning: "L-291"
-    task_count: 1142
+    task_count: 1171
   - learning: "L-398"
-    task_count: 888
+    task_count: 914
   - learning: "P-010"
-    task_count: 514
+    task_count: 529
   - learning: "L-399"
     task_count: 99
   - learning: "L-006"

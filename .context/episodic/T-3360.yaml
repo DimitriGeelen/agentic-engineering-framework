@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3360: branch-hygiene has no ahead-of-remote rail: 32 commits stranded 3 days with every handover reporting success
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-11T20:13:10Z
+# ============================================================================
+
+task_id: T-3360
+task_name: "branch-hygiene has no ahead-of-remote rail: 32 commits stranded 3 days with every handover reporting success"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-11T20:01:42Z
+completed: 2026-09-11T20:12:43Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-11T22:12:10+02:00
+last_commit: 2026-09-11T22:12:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  branch-hygiene gains an ahead-of-remote rail — the direction that actually strands work. vendor sync + final AC
+
+# Key outcomes
+outcomes:
+  - 'A new `ahead-unpushed` finding fires when the dev branch is more than'
+  - 'The finding reports the **age in days of the oldest unpushed commit**, not'
+  - '`FW_BRANCH_AHEAD_WARN` is registered in `FW_CONFIG_REGISTRY` with a'
+  - 'Scoped so it cannot become noise: silent when the branch has no'
+  - 'CONTROL LEG: a branch ahead but **at or under** the threshold stays silent,'
+  - 'CONTROL LEG: the new rail does not disturb the existing behind-direction'
+  - 'Tests use a real git fixture repo (not string fixtures), since the predicate'
+  - 'Vendored copy synced (`bin/fw vendor self --check` clean) before close —'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.context/inbox.yaml'
+  - 'lib/branch-hygiene.sh'
+  - 'lib/config.sh'
+  - '.tasks/active/T-3360-branch-hygiene-has-no-ahead-of-remote-ra.md'
+  - '.tasks/completed/T-3359-testsunit-has-not-completed-a-single-run.md'
+  - 'tests/unit/t3360_branch_ahead_unpushed.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-11T22:12:10'
+    action: 'T-3360: branch-hygiene gains an ahead-of-remote rail — the direction that actually strands work'
+  - time: '2026-09-11T22:12:34'
+    action: 'T-3360: vendor sync + final AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 8
+  lines_added: 669
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3360-branch-hygiene-has-no-ahead-of-remote-ra.md
+generated_by: context-agent-hybrid

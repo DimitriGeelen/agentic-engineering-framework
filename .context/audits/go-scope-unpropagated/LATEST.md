@@ -15,9 +15,9 @@ A completed task qualifies when ALL of:
 
 ## Population examined
 
-- completed inceptions: 455
-- with a GO recorded:   359
-- findings:             185
+- completed inceptions: 457
+- with a GO recorded:   361
+- findings:             186
 
 These are candidates for triage, not confirmed abandoned decisions:
 some may have shipped work that was simply never linked back. Deciding
@@ -26,8 +26,8 @@ which is which is the judgement this check exists to force.
 ## Findings (most recent first)
 
 - T-100200 — .tasks/completed/T-100200-enforce-session-on-master-invariant--blo.md
-- T-3287 — .tasks/completed/T-3287-cross-agent-identity-taxonomy-and-circui.md
 - T-3278 — .tasks/completed/T-3278-restart-based-m2-transport---cron-watche.md
+- T-3256 — .tasks/completed/T-3256-termlink-product-feedback--injectpty-inj.md
 - T-3184 — .tasks/completed/T-3184-bvp-cannot-select-work-zero-confirmed-sc.md
 - T-3114 — .tasks/completed/T-3114-release-channels-consumers-choose-stable.md
 - T-3108 — .tasks/completed/T-3108-enforcement-code-forks-with-the-branch--.md
@@ -69,6 +69,7 @@ which is which is the judgement this check exists to force.
 - T-2522 — .tasks/completed/T-2522-bpmn-to-aef-task-inception-yaml-mapping-.md
 - T-2520 — .tasks/completed/T-2520-aef-side-integration-surface-for-workflo.md
 - T-2505 — .tasks/completed/T-2505-ratify-p-03-red-team-test-contract-spec-.md
+- T-2494 — .tasks/completed/T-2494-rca-host-deploy-is-whack-a-mole--declare.md
 - T-2464 — .tasks/completed/T-2464-make-git-worktree-support-reliable-in-th.md
 - T-2458 — .tasks/completed/T-2458-aef-fw-mcp-adoption-strategy--consumers-.md
 - T-2453 — .tasks/completed/T-2453-f1-public-install-freshness-guarantee--f.md

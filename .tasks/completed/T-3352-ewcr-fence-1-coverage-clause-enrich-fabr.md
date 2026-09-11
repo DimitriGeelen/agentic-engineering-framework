@@ -1,13 +1,15 @@
 ---
 id: T-3352
-name: "EWCR fence-1 coverage clause: enrich Fabric coverage for CORE write-set roots (lib/web/agents) toward ≥95%"
+name: "EWCR fence-1 coverage clause: enrich Fabric coverage for CORE write-set roots
+  (lib/web/agents) toward ≥95%"
 description: >
-  EWCR fence-1 coverage clause: enrich Fabric coverage for CORE write-set roots (lib/web/agents) toward ≥95%
+  EWCR fence-1 coverage clause: enrich Fabric coverage for CORE write-set roots (lib/web/agents)
+  toward ≥95%
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:ewcr-arc0-contract-evidence, ewcr-v1]
 components: []
 related_tasks: []
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-08T21:11:18Z
-last_update: 2026-09-08T21:12:31Z
-date_finished: null
+last_update: 2026-09-08T21:18:09Z
+date_finished: 2026-09-08T21:18:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,22 +36,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-08T21:15:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=277,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-08T21:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3352: EWCR fence-1 coverage clause: enrich Fabric coverage for CORE write-set roots (lib/web/agents) toward ≥95%
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+EWCR fence-1 needs the CORE write-set roots (lib/, web/, agents/) to actually be IN the Fabric before Unknown-overlap numbers mean anything (see tools/ewcr-arc0-coverage-check.py docstring). Baseline at pickup: lib 90.4% (16 uncarded), web 91.5% (14), agents 92.9% (10). This task cards every real component among the 40 uncarded files and justifies the 5 non-components.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every uncarded file that `python3 tools/ewcr-arc0-coverage-check.py` counts under lib/, web/ and agents/ is either given a Fabric card (real subsystem from `bin/fw fabric overview` taxonomy, purpose, location) or explicitly listed in the task Updates with a one-line reason it is not a component (e.g. __init__.py, generated file)
-- [ ] Re-running `python3 tools/ewcr-arc0-coverage-check.py` reports coverage ≥95% for lib, web and agents (with the not-a-component exclusions justified, not silently dropped from the denominator — if the script's denominator can't express exclusions, report both raw and justified figures in Updates)
-- [ ] Every new card has a non-Unknown subsystem — the Unknown-count column for lib/web/agents stays 0
-- [ ] Only .fabric/ cards, this task file, and docs are modified — no file under lib/, bin/, agents/, web/ or tests/ changes
+- [x] Every uncarded file that `python3 tools/ewcr-arc0-coverage-check.py` counts under lib/, web/ and agents/ is either given a Fabric card (real subsystem from `bin/fw fabric overview` taxonomy, purpose, location) or explicitly listed in the task Updates with a one-line reason it is not a component (e.g. __init__.py, generated file)
+- [x] Re-running `python3 tools/ewcr-arc0-coverage-check.py` reports coverage ≥95% for lib, web and agents (with the not-a-component exclusions justified, not silently dropped from the denominator — if the script's denominator can't express exclusions, report both raw and justified figures in Updates)
+- [x] Every new card has a non-Unknown subsystem — the Unknown-count column for lib/web/agents stays 0
+- [x] Only .fabric/ cards, this task file, and docs are modified — no file under lib/, bin/, agents/, web/ or tests/ changes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -210,6 +241,17 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Invariant pinned per T-3326: coverage >=95 and Unknown==0 for the three CORE
+# roots, and all three rows present (n==3 guards against the pattern vanishing).
+# No exact live counts pinned — the corpus moves.
+python3 tools/ewcr-arc0-coverage-check.py > /tmp/.t3352-cov.out 2>&1 && awk '($1=="lib"||$1=="web"||$1=="agents"){n++; gsub(/%/,"",$4); if($4+0<95 || $5+0!=0) bad=1} END{exit (bad || n!=3)}' /tmp/.t3352-cov.out
+# Representative new cards exist with non-Unknown subsystem
+grep -q "^subsystem: task-management" .fabric/components/lib-human_review_state.yaml
+grep -q "^subsystem: watchtower" .fabric/components/web-watchtower-scanner.yaml
+grep -q "^subsystem: audit" .fabric/components/agents-audit-unit-suite.yaml
+# Scope fence: no T-3352 commit touched lib/ bin/ agents/ web/ tests/ (commits are immutable, so this doesn't rot)
+test -z "$(git log --format= --name-only --grep 'T-3352:' | grep -E '^(lib|bin|agents|web|tests)/')"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -249,6 +291,11 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-08 — coverage denominator vs component reality
+- **What changed:** The check's denominator counts every .py/.sh/.html/.yaml file, but 5 of the 40 uncarded files are not components (2 package __init__.py, 3 seed-data fixtures). The script cannot express exclusions, so raw and justified figures diverge and both are reported in Updates.
+- **Plan impact:** None — carding the 35 real components alone already puts all three roots ≥95% raw (98.2/98.8/100.0), so no denominator change to the tool was needed.
+- **Triggered:** Nothing filed; if a future fence wants raw==justified, the tool would need an exclusion list (deliberately not added under this task's scope fence).
 
 ## Recommendation
 
@@ -312,3 +359,30 @@ date_finished: null
 
 ### 2026-09-08T21:12:31Z — status-update [task-update-agent]
 - **Change:** tags: +ewcr-v1
+
+### 2026-09-08T21:40:00Z — coverage enrichment complete [worker]
+- **Action:** Carded 35 of the 40 uncarded files under lib/, web/, agents/; justified the 5 non-components below. Commits: abfd3069c (lib), ad1018958 (web), a2aec9f9a (agents).
+- **Coverage (tools/ewcr-arc0-coverage-check.py), baseline → final (raw, script denominator):**
+  - lib: 90.4% (151/167) → **98.2%** (164/167), Unknown 0
+  - web: 91.5% (150/164) → **98.8%** (162/164), Unknown 0
+  - agents: 92.9% (130/140) → **100.0%** (140/140), Unknown 0
+- **Justified figures (non-components removed from denominator):** lib 164/164 = 100%, web 162/162 = 100%, agents 140/140 = 100%. The script's denominator cannot express exclusions, so both figures are recorded here per the AC.
+- **Not-a-component exclusions (5), with reasons:**
+  - `lib/seeds/decisions.yaml` — seed-data fixture copied into consumer projects by `fw init`, not a live component
+  - `lib/seeds/patterns.yaml` — seed-data fixture (same class)
+  - `lib/seeds/practices.yaml` — seed-data fixture (same class)
+  - `web/llm/__init__.py` — package init (re-exports only, no behaviour of its own)
+  - `web/watchtower/__init__.py` — package init (1-line docstring)
+- **New cards by subsystem:** task-management (lib/human_review_state.py), termlink-integration (12 lib/templates/scripts/*.sh skill-script templates), watchtower (4 web/llm modules, 4 web/watchtower scan-engine modules + __main__, ux-review/index.html, terminal/profiles.yaml), tests (web/watchtower/test_scan.py, 6 agents/context/tests, 1 agents/task-create/tests), audit (agents/audit/unit-suite.sh), framework-core (2 agents/sessions/antigravity adapters).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-52ad2777
+- **Timestamp:** 2026-09-08T21:18:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-08T21:18:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,44 @@
+schema: unit-suite-report-v1
+task: T-3302
+started: '2026-09-09T01:03:00Z'
+finished: '2026-09-09T03:03:01Z'
+suite_dir: /opt/999-Agentic-Engineering-Framework/tests/unit
+timeout_seconds: 7200
+timed_out: true
+runner_exit: 1
+legs:
+  bats:
+    files: 623
+    tests: 367
+    failed_count: 18
+    skipped: 0
+    exit: 124
+    failed:
+    - "T-1856: arc with nonexistent anchor_task \u2192 WARN emitted (audit exit \u2264\
+      1)"
+    - "T-1856: arc without anchor_task \u2192 no warning, no pass line"
+    - "T-1856: arc with anchor_task: null \u2192 silent, treated as unset"
+    - "T-1856: mix of valid + orphan \u2192 only the orphan warns"
+    - audit runs structure section
+    - audit output contains PASS/WARN/FAIL markers
+    - audit output contains AUDIT REPORT header
+    - audit output contains timestamp
+    - audit exits 0 for all-pass sections
+    - audit --quiet suppresses terminal output
+    - audit --output writes YAML report
+    - audit YAML report is valid
+    - 'T-2985: a lint-clean store emits a PASS line carrying the map count'
+    - "T-2985: findings are WARN tier \u2014 audit does not exit 2"
+    - "T-2985: no map store \u2192 silent, no PASS line claiming a scan"
+    - "T-2985: no linter (vendored consumer without tools/) \u2192 silent, no traceback"
+    - 'T-2985: the audit sees the REAL store, not only fixtures'
+    - "T-2980: seed referencing an existing map \u2192 PASS with the count"
+    error: null
+  pytest:
+    files: 201
+    tests: 0
+    failed_count: 0
+    skipped: 0
+    exit: 124
+    failed: []
+    error: null

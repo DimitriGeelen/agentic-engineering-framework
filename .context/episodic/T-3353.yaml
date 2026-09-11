@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3353: Stale tests: approvals_close_ready_arcs asserts pre-T-2986 exclusion of no-rec arcs (2 of the T-3302 unit-suite reds)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-08T21:41:41Z
+# ============================================================================
+
+task_id: T-3353
+task_name: "Stale tests: approvals_close_ready_arcs asserts pre-T-2986 exclusion of no-rec arcs (2 of the T-3302 unit-suite reds)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-08T21:39:14Z
+completed: 2026-09-08T21:41:23Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-08T23:41:21+02:00
+last_commit: 2026-09-08T23:41:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  rewrite 2 stale approvals_close_ready_arcs tests to the T-2986 blocked_reason contract — 6/6 green (2 of 16 T-3302 reds cleared)
+
+# Key outcomes
+outcomes:
+  - 'The two red tests in tests/unit/approvals_close_ready_arcs.bats are rewritten to assert the T-2986 contract: a threshold-met in-progress arc with a missing or empty-body anchor Recommendation is INCLUDED with a non-empty `blocked_reason` and an empty `verdict` (not excluded as `[]`)'
+  - '`bats tests/unit/approvals_close_ready_arcs.bats` is fully green (0 not-ok) — including the 4 previously-green tests, unchanged'
+  - 'Only tests/unit/approvals_close_ready_arcs.bats and this task file are modified — the loader code in web/blueprints/approvals.py is correct per T-2986 and stays untouched'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3353-stale-tests-approvalsclosereadyarcs-asse.md'
+  - 'tests/unit/approvals_close_ready_arcs.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-08T23:41:21'
+    action: 'T-3353: rewrite 2 stale approvals_close_ready_arcs tests to the T-2986 blocked_reason contract — 6/6 green (2 of 16 T-3302 reds cleared)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 343
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3353-stale-tests-approvalsclosereadyarcs-asse.md
+generated_by: context-agent-hybrid

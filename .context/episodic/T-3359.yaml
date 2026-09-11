@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3359: tests/unit has not completed a single run in 4 nights: bats consumes the whole 7200s ceiling and the pytest leg measures 0 of 201 files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-11T20:00:49Z
+# ============================================================================
+
+task_id: T-3359
+task_name: "tests/unit has not completed a single run in 4 nights: bats consumes the whole 7200s ceiling and the pytest leg measures 0 of 201 files"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-11T19:50:51Z
+completed: 2026-09-11T19:59:57Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-11T21:59:12+02:00
+last_commit: 2026-09-11T21:59:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reserve a pytest budget the bats leg cannot consume — 201 files were being measured with a 1-second ceiling. vendor sync + final AC
+
+# Key outcomes
+outcomes:
+  - 'The pytest leg receives a guaranteed minimum budget that the bats leg cannot'
+  - 'The reserve is configurable (env override) with a documented default, and the'
+  - 'CONTROL LEG: when the bats leg finishes EARLY, the pytest leg still receives'
+  - 'Each leg''s granted budget is recorded in the report, so a starved leg is'
+  - 'Tests pin the starvation case directly: a leg-1 overrun must leave leg 2 a'
+  - '`tests/unit/t3302_unit_suite_schedule.bats` stays green in full (16 existing'
+  - 'Vendored copy synced (`bin/fw vendor self --check` clean) before close —'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/unit-suite.sh'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-3359-testsunit-has-not-completed-a-single-run.md'
+  - '.tasks/completed/T-3357-obs-392-audit-fails-on-a-timed-out-unit-.md'
+  - 'tests/unit/t3302_unit_suite_schedule.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-11T21:59:12'
+    action: 'T-3359: reserve a pytest budget the bats leg cannot consume — 201 files were being measured with a 1-second ceiling'
+  - time: '2026-09-11T21:59:47'
+    action: 'T-3359: vendor sync + final AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 2
+  files_changed: 7
+  lines_added: 566
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3359-testsunit-has-not-completed-a-single-run.md
+generated_by: context-agent-hybrid

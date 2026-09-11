@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3344: read-only allowlist gaps: checkpoint.sh budget, termlink pty output, fw bvp (OBS-379)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-07T20:10:59Z
+# ============================================================================
+
+task_id: T-3344
+task_name: "read-only allowlist gaps: checkpoint.sh budget, termlink pty output, fw bvp (OBS-379)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-07T20:02:22Z
+completed: 2026-09-07T20:09:45Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  read-only allowlist gaps: checkpoint.sh budget, termlink pty output, fw bvp (OBS-379)
+
+# Key outcomes
+outcomes:
+  - '**A1 Read-only nature verified first:** before allow-listing, each candidate is checked for write behavior in its source (checkpoint.sh `budget` subcommand must not write the cache; `termlink pty output` is read-only; `fw bvp` bare/`--include-proposed` reads only) — findings recorded in ## Decisions; any candidate that DOES write is excluded and noted'
+  - '**A2 Allowlist entries added:** `is_bash_safe_command` accepts the verified read-only forms (scoped tightly — e.g. `checkpoint.sh budget` exactly, not all checkpoint.sh subcommands; `termlink pty output` not `termlink pty inject`; `fw bvp` without mutating verbs like `confirm`)'
+  - '**A3 Pinned:** safe-commands suite gains cases: each allowed form SAFE; near-miss mutating siblings (`checkpoint.sh` bare, `termlink pty inject`, `fw bvp confirm`) NOT-SAFE (controls)'
+  - '**A4 No-widening:** full safe-commands suites green (includes the fresh T-3237/T-3238 cases); `bash -n agents/context/lib/safe-commands.sh` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-07 — A1 read-only verification findings'
+    chose: 'allowlist `checkpoint.sh budget` and `checkpoint.sh status` (both verified pure reads against checkpoint.sh:547/:599 — echo/cat/python-print only); `termlink pty output` (session output read); nothing for `fw bvp` (already listed at safe-commands.sh `bvp)` arm).'
+    rationale: 'A1 requires source verification before any entry; `post-tool` (writes counters), `reset`, `baseline` (write caches) and `pty inject|mode` (write into sessions) are excluded.'
+    alternatives_rejected: ['a blanket `checkpoint.sh` or `pty` arm (over-wide); patching `fw bvp`''s arm to accept `2>&1` as a sub-verb (symptom patch — the affix belongs in a stripper, per the file''s own three prior incidents).']
+  - decision: '2026-09-07 — trailing-redirect stripper scope'
+    chose: 'strip only trailing fd-dups (`N>&M`) and /dev/null sinks (`2>/dev/null`, `>/dev/null`, `&>/dev/null`) before positional token reads.'
+    rationale: 'these forms write nothing; a redirect to a real file never matches the patterns, and `has_bash_write_pattern` still judges the ORIGINAL unstripped line upstream — the stripper cannot widen write admission (pinned by the real-file control test).'
+    alternatives_rejected: ['stripping all redirects (would hide `> file` from the sub-verb read — even though the write-pattern check catches it upstream, defense in depth says don''t).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 8
+  lines_added: 559
+  lines_removed: 10
+  footprint_refreshed_at: '2026-09-07T20:11:24Z'
+  footprint_refreshed_by_commit: abfe633d1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3344-read-only-allowlist-gaps-checkpointsh-bu.md
+generated_by: context-agent-hybrid

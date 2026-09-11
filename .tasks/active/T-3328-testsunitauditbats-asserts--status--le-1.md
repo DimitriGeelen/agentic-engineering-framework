@@ -15,10 +15,10 @@ name: "tests/unit/audit.bats asserts status -le 1 on audit.sh runs. That conflat
 description: >
   Promoted from observation OBS-341
 
-status: started-work
+status: captured
 workflow_type: test
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-07T07:06:08Z
-last_update: 2026-09-09T16:33:38Z
+last_update: 2026-09-09T23:02:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -413,3 +413,23 @@ to T-3302's contract, not this one. Parked pending that call.
 ### 2026-09-09T16:33:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-09-09T16:34:27Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-09-09T16:50:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-09-09T16:50:34Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-09-09T23:02:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-09-09T23:02:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: now → next

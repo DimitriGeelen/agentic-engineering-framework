@@ -1,0 +1,122 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3352: EWCR fence-1 coverage clause: enrich Fabric coverage for CORE write-set roots (lib/web/agents) toward ≥95%
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-08T21:18:27Z
+# ============================================================================
+
+task_id: T-3352
+task_name: "EWCR fence-1 coverage clause: enrich Fabric coverage for CORE write-set roots (lib/web/agents) toward ≥95%"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-08T21:11:18Z
+completed: 2026-09-08T21:18:09Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-09-08T23:12:49+02:00
+last_commit: 2026-09-08T23:16:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file + author ACs for fence-1 coverage clause (lib/web/agents toward >=95%), dispatched to TermLink worker ewcr-coverage-95. fabric cards for lib/ — human_review_state + 12 template skill scripts (lib 90.4%→98.2%); seeds/*.yaml justified as data fixtures. fabric cards for web/ — llm providers, watchtower scan engine, ux-review page, terminal profiles (web 91.5%→98.8%); 2 __init__.py justified. fabric cards for agents/ — unit-suite runner, antigravity session adapters, 7 test scripts (agents 92.9%→100%)
+
+# Key outcomes
+outcomes:
+  - 'Every uncarded file that `python3 tools/ewcr-arc0-coverage-check.py` counts under lib/, web/ and agents/ is either given a Fabric card (real subsystem from `bin/fw fabric overview` taxonomy, purpose, location) or explicitly listed in the task Updates with a one-line reason it is not a component (e.g. __init__.py, generated file)'
+  - 'Re-running `python3 tools/ewcr-arc0-coverage-check.py` reports coverage ≥95% for lib, web and agents (with the not-a-component exclusions justified, not silently dropped from the denominator — if the script''s denominator can''t express exclusions, report both raw and justified figures in Updates)'
+  - 'Every new card has a non-Unknown subsystem — the Unknown-count column for lib/web/agents stays 0'
+  - 'Only .fabric/ cards, this task file, and docs are modified — no file under lib/, bin/, agents/, web/ or tests/ changes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fabric cards for lib/ — human_review_state + 12 template skill scripts (lib 90.4%→98.2%); seeds/*.yaml justified as data fixtures'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/focus.yaml'
+  - '.fabric/components/agents-audit-unit-suite.yaml'
+  - '.fabric/components/agents-context-tests-fw-task-revisit-due-test.yaml'
+  - '.fabric/components/agents-context-tests-revisit-due-scan-test.yaml'
+  - '.fabric/components/agents-context-tests-session-end-stub-test.yaml'
+  - '.fabric/components/agents-context-tests-session-silent-scanner-stub-test.yaml'
+  - '.fabric/components/agents-context-tests-stop-guard-stub-test.yaml'
+  - '.fabric/components/agents-context-tests-subagent-stop-stub-test.yaml'
+  - '.fabric/components/agents-sessions-antigravity-list.yaml'
+  - '.fabric/components/agents-sessions-antigravity-provision.yaml'
+  - '.fabric/components/agents-task-create-tests-revisit-at-preservation-test.yaml'
+  - '.fabric/components/lib-human_review_state.yaml'
+  - '.fabric/components/lib-templates-scripts-agent-chat-arc-recent.yaml'
+  - '.fabric/components/lib-templates-scripts-agent-conversation-list.yaml'
+  - '.fabric/components/lib-templates-scripts-agent-conversation-status.yaml'
+  - '.fabric/components/lib-templates-scripts-agent-identity.yaml'
+  - '.fabric/components/lib-templates-scripts-agent-listeners-fleet.yaml'
+  - '.fabric/components/lib-templates-scripts-agent-listeners.yaml'
+  - '.fabric/components/lib-templates-scripts-agent-respond.yaml'
+  - '.fabric/components/lib-templates-scripts-agent-send.yaml'
+  - '.fabric/components/lib-templates-scripts-be-reachable.yaml'
+  - '.fabric/components/lib-templates-scripts-chat-arc-broadcast.yaml'
+  - '.fabric/components/lib-templates-scripts-listener-heartbeat.yaml'
+  - '.fabric/components/lib-templates-scripts-recent-dm.yaml'
+  - '.fabric/components/web-llm-manager.yaml'
+  - '.fabric/components/web-llm-ollama_provider.yaml'
+  - '.fabric/components/web-llm-openrouter_provider.yaml'
+  - '.fabric/components/web-llm-provider.yaml'
+  - '.fabric/components/web-static-ux-review-index.yaml'
+  - '.fabric/components/web-terminal-profiles-yaml.yaml'
+  - '.fabric/components/web-watchtower-feedback.yaml'
+  - '.fabric/components/web-watchtower-__main__.yaml'
+  - '.fabric/components/web-watchtower-prioritizer.yaml'
+  - '.fabric/components/web-watchtower-rules.yaml'
+  - '.fabric/components/web-watchtower-scanner.yaml'
+  - '.fabric/components/web-watchtower-test_scan.yaml'
+  - '.tasks/active/T-3352-ewcr-fence-1-coverage-clause-enrich-fabr.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-08T23:12:49'
+    action: 'T-3352: file + author ACs for fence-1 coverage clause (lib/web/agents toward >=95%), dispatched to TermLink worker ewcr-coverage-95'
+  - time: '2026-09-08T23:15:41'
+    action: 'T-3352: fabric cards for lib/ — human_review_state + 12 template skill scripts (lib 90.4%→98.2%); seeds/*.yaml justified as data fixtures'
+  - time: '2026-09-08T23:16:14'
+    action: 'T-3352: fabric cards for web/ — llm providers, watchtower scan engine, ux-review page, terminal profiles (web 91.5%→98.8%); 2 __init__.py justified'
+  - time: '2026-09-08T23:16:47'
+    action: 'T-3352: fabric cards for agents/ — unit-suite runner, antigravity session adapters, 7 test scripts (agents 92.9%→100%)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:ewcr-arc0-contract-evidence, ewcr-v1]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6
+  commits: 5
+  files_changed: 39
+  lines_added: 1028
+  lines_removed: 1
+  footprint_refreshed_at: '2026-09-08T21:21:04Z'
+  footprint_refreshed_by_commit: f7212f958
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3352-ewcr-fence-1-coverage-clause-enrich-fabr.md
+generated_by: context-agent-hybrid
