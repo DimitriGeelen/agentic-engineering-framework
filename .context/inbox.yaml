@@ -4533,3 +4533,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-398
+  text: "BVP RANKING CANNOT DISCRIMINATE (measured 2026-09-11, autonomous-run selection step). 'fw bvp' reports zero confirmed scores; '--include-proposed' returns a table in which 85% (170/201) of tasks have NO cost at all (blast_radius unmeasured -> no quadrant), and the entire top band is 27 tasks tied at EXACTLY 108 / 0.40. That band is dominated by PARKED backlog (Export docs to PDF/DOCX, SSD evaluation, DAG federation, KCP integration) which the estimator scored identically to live structural work. Consequence: a mandate that says 'select Q1 first, then Q2' cannot be executed from this table — following the hv-lc column literally selects a docs-to-PDF exporter over a four-day outage in the framework's own test measurement. The flat 108 band is the signal: the heuristic estimator is not separating value, it is assigning a constant. Two distinct defects: (a) cost is unmeasurable for 85% of the corpus because components: only resolves at work-completed (T-3068 names this), so the quadrant axis is mostly absent; (b) the VALUE axis itself is degenerate - a 27-way tie to two decimal places is not a ranking. Until (b) is addressed, BVP-driven autonomous selection is not actually possible and any claim to have followed it is decoration."
+  captured: 2026-09-11T19:58:00Z
+  context_task: T-3359
+  tags: [gap]
+  status: pending
+  promoted_to: null
+- id: OBS-399
+  text: "UNARC'D STRUCTURAL CLUSTER: the T-3302 false-signal cluster carries no arc_id at all. T-3302 (nightly unit-suite runner), T-3297 (pre-push gate deadlocks against cron audit), T-3298 (audit.sh unlinks its own flock'd lock file), T-3328 (audit.bats conflates exit 2 with exit 75) — all four are status:started-work, horizon:now, owner:human, and none resolves to an arc. Governance consequence: a top-down selection rule that gates task choice on arc membership cannot reach this work at all, even though it is the deepest live Reliability (D2) hole in the repo — the framework's own unit corpus has not completed a measured run since at least 2026-09-08. Either these belong to an existing arc (candidate: a false-signal / measurement-integrity arc that does not yet exist) or arc membership is not actually a precondition for structural work and the selection rule needs an explicit escape for unarc'd defect clusters. Sovereign question, not an agent call: which of those two is true determines whether 'arc gates task' is a real invariant or an aspiration."
+  captured: 2026-09-11T19:58:09Z
+  context_task: T-3359
+  tags: [gap]
+  status: pending
+  promoted_to: null

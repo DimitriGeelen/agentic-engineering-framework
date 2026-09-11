@@ -19,6 +19,14 @@
 #   FW_UNIT_SUITE_REPORT_DIR  report dir      (default: .context/audits/unit-suite)
 #   FW_UNIT_SUITE_LOCK        lock file       (default: .context/locks/unit-suite.lock)
 #   FW_UNIT_SUITE_TIMEOUT     total seconds   (default: 7200)
+#   FW_UNIT_SUITE_PY_RESERVE  seconds reserved for the pytest leg (default: 1800)
+#
+# Budget split (T-3359). The two legs run sequentially against one wall-clock
+# window, so leg 1 overrunning used to starve leg 2 down to the 1-second floor of
+# _remaining(). Measured: four consecutive nightlies (2026-09-08..11) recorded
+# `pytest: files: 201, tests: 0, exit: 124` — 2706 collected tests handed a
+# 1-second budget, reported as a leg with zero failures. The reserve carves leg
+# 2's share out of leg 1's cap up front, so starvation is not reachable.
 #
 # Exit: 0 clean (or skipped on held lock), 1 test failures, 2 leg could not run.
 set -u
@@ -31,6 +39,12 @@ SUITE_DIR="${FW_UNIT_SUITE_DIR:-$FRAMEWORK_ROOT/tests/unit}"
 REPORT_DIR="${FW_UNIT_SUITE_REPORT_DIR:-$PROJECT_ROOT/.context/audits/unit-suite}"
 LOCK_FILE="${FW_UNIT_SUITE_LOCK:-$PROJECT_ROOT/.context/locks/unit-suite.lock}"
 TOTAL_TIMEOUT="${FW_UNIT_SUITE_TIMEOUT:-7200}"
+PY_RESERVE="${FW_UNIT_SUITE_PY_RESERVE:-1800}"
+# Degenerate configs must not invert the split: never reserve the whole window.
+if [ "$PY_RESERVE" -ge "$TOTAL_TIMEOUT" ]; then
+    PY_RESERVE=$(( TOTAL_TIMEOUT / 2 ))
+fi
+[ "$PY_RESERVE" -lt 1 ] && PY_RESERVE=1
 
 mkdir -p "$REPORT_DIR" "$(dirname "$LOCK_FILE")"
 RUN_LOG="$REPORT_DIR/runs.log"
@@ -53,6 +67,15 @@ _remaining() {
     echo "$_left"
 }
 
+# Leg 1's cap: the window MINUS the reserve held back for leg 2. This is the
+# whole fix — leg 1 is never handed a budget it could spend on leg 2's behalf.
+_remaining_reserved() {
+    local _left=$(( TOTAL_TIMEOUT - PY_RESERVE - ( $(date +%s) - START_EPOCH ) ))
+    [ "$_left" -lt 1 ] && _left=1
+    echo "$_left"
+}
+
+BATS_BUDGET=0 PY_BUDGET=0
 BATS_OUT="$(mktemp)" PY_OUT="$(mktemp)"
 trap 'rm -f "$BATS_OUT" "$PY_OUT"' EXIT
 
@@ -64,7 +87,8 @@ if [ "$BATS_FILES" -eq 0 ]; then
 elif ! command -v bats >/dev/null 2>&1; then
     BATS_ERROR="bats not installed"
 else
-    ( cd "$FRAMEWORK_ROOT" && timeout "$(_remaining)" bats "$SUITE_DIR" ) \
+    BATS_BUDGET="$(_remaining_reserved)"
+    ( cd "$FRAMEWORK_ROOT" && timeout "$BATS_BUDGET" bats "$SUITE_DIR" ) \
         > "$BATS_OUT" 2>&1 || BATS_RC=$?
 fi
 
@@ -79,7 +103,8 @@ else
     # --color=no + env scrub: FORCE_COLOR/PY_COLORS make pytest write ANSI into
     # the redirected file, and the ^FAILED name-parse below finds nothing
     # (OBS-374 class — reproduced live under FORCE_COLOR=3, T-3302).
-    ( cd "$FRAMEWORK_ROOT" && timeout "$(_remaining)" \
+    PY_BUDGET="$(_remaining)"
+    ( cd "$FRAMEWORK_ROOT" && timeout "$PY_BUDGET" \
         env -u FORCE_COLOR PY_COLORS=0 NO_COLOR=1 \
         python3 -m pytest "$SUITE_DIR" -q -rf -p no:cacheprovider --color=no ) \
         > "$PY_OUT" 2>&1 || PY_RC=$?
@@ -99,6 +124,8 @@ T3302_SUITE_DIR="$SUITE_DIR" T3302_TIMEOUT="$TOTAL_TIMEOUT" \
 T3302_RUNNER_EXIT="$RUNNER_EXIT" \
 T3302_BATS_FILES="$BATS_FILES" T3302_BATS_RC="$BATS_RC" T3302_BATS_ERROR="$BATS_ERROR" \
 T3302_PY_FILES="$PY_FILES" T3302_PY_RC="$PY_RC" T3302_PY_ERROR="$PY_ERROR" \
+T3302_BATS_BUDGET="$BATS_BUDGET" T3302_PY_BUDGET="$PY_BUDGET" \
+T3302_PY_RESERVE="$PY_RESERVE" \
 T3302_REPORT_DIR="$REPORT_DIR" \
 python3 - "$BATS_OUT" "$PY_OUT" <<'PY'
 import os, re, sys, yaml, datetime
@@ -138,11 +165,15 @@ report = {
     "finished": env["T3302_FINISHED"],
     "suite_dir": env["T3302_SUITE_DIR"],
     "timeout_seconds": _int("T3302_TIMEOUT"),
+    # T-3359: the reserve carved out for leg 2 up front. Recorded so a reader can
+    # tell which split produced the numbers below.
+    "pytest_reserve_seconds": _int("T3302_PY_RESERVE"),
     "timed_out": timed_out,
     "runner_exit": _int("T3302_RUNNER_EXIT"),
     "legs": {
         "bats": {
             "files": _int("T3302_BATS_FILES"),
+            "budget_seconds": _int("T3302_BATS_BUDGET"),
             "tests": bats_tests,
             "failed_count": len(bats_failed),
             "skipped": bats_skipped,
@@ -152,6 +183,7 @@ report = {
         },
         "pytest": {
             "files": _int("T3302_PY_FILES"),
+            "budget_seconds": _int("T3302_PY_BUDGET"),
             "tests": py_passed + py_failed_n + py_skipped + py_errors,
             "failed_count": len(py_failed) or py_failed_n + py_errors,
             "skipped": py_skipped,

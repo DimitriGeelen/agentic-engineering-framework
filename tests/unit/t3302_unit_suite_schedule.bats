@@ -44,6 +44,42 @@ def test_fixture_py_red():
 EOF
 }
 
+# A corpus whose bats leg CANNOT finish inside the window — the shape that
+# starved the pytest leg to 1 second on four consecutive nightlies (T-3359).
+_write_overrunning_bats_fixture() {
+    cat > "$WORK/suite/slow.bats" <<'EOF'
+@test "fixture bats overruns the window" { sleep 30; }
+EOF
+    # Deliberately slower than the old 1-second starvation floor: under the
+    # pre-T-3359 arithmetic this leg is killed and records 0 tests; with the
+    # reserve it completes. A trivial test here would pass either way, which is
+    # the false-green this whole file is about.
+    cat > "$WORK/suite/test_fixture.py" <<'EOF'
+import time
+
+def test_fixture_slow_enough_to_starve():
+    time.sleep(3)
+    assert True
+EOF
+}
+
+# Read one field out of the emitted report.
+_report_field() {
+    python3 -c 'import sys,yaml;d=yaml.safe_load(open(sys.argv[1]));
+ks=sys.argv[2].split(".")
+for k in ks: d=d[k]
+print(d)' "$WORK/reports/LATEST.yaml" "$1"
+}
+
+_run_runner_budget() {
+    run env FW_UNIT_SUITE_DIR="$WORK/suite" \
+            FW_UNIT_SUITE_REPORT_DIR="$WORK/reports" \
+            FW_UNIT_SUITE_LOCK="$LOCK" \
+            FW_UNIT_SUITE_TIMEOUT="$1" \
+            FW_UNIT_SUITE_PY_RESERVE="$2" \
+        "$RUNNER"
+}
+
 _run_runner() {
     run env FW_UNIT_SUITE_DIR="$WORK/suite" \
             FW_UNIT_SUITE_REPORT_DIR="$WORK/reports" \
@@ -183,6 +219,59 @@ PY
 }
 
 # ── 3. audit branches against fixture reports ────────────────────────────────
+
+# ── 2b. T-3359: leg 1 must not be able to starve leg 2 ───────────────────────
+#
+# The legs share one wall-clock window. _remaining() floors at 1, so a bats leg
+# that consumed the whole budget handed pytest `timeout 1`. Measured on four
+# consecutive nightlies: `pytest: files: 201, tests: 0, exit: 124` — 2706
+# collected tests given one second, reported as a leg with zero failures.
+
+@test "T-3359: a bats leg that overruns still leaves the pytest leg its reserve" {
+    _write_overrunning_bats_fixture
+    # window 15s, reserve 8s -> bats capped at ~7s, pytest must still get ~8s.
+    _run_runner_budget 15 8
+    [ -f "$WORK/reports/LATEST.yaml" ]
+
+    # THE assertion: leg 2's grant is above the old starvation floor of 1.
+    run _report_field 'legs.pytest.budget_seconds'
+    [ "$status" -eq 0 ]
+    [ "$output" -gt 1 ]
+
+    # and leg 1 was capped short of the whole window, which is what frees it
+    run _report_field 'legs.bats.budget_seconds'
+    [ "$output" -lt 15 ]
+}
+
+@test "T-3359: the starved pytest leg actually MEASURES its tests, not zero" {
+    # The point of the reserve is not a bigger number in the report — it is that
+    # leg 2 produces a real measurement while leg 1 is still overrunning.
+    _write_overrunning_bats_fixture
+    _run_runner_budget 15 8
+    run _report_field 'legs.pytest.tests'
+    [ "$status" -eq 0 ]
+    [ "$output" -gt 0 ]
+}
+
+@test "T-3359 CONTROL: an early-finishing bats leg does not CAP the pytest leg" {
+    # A floor without a ceiling. If bats finishes fast, leg 2 inherits everything
+    # left over — not merely the reserve. Guards against 'fix' by hard-splitting.
+    _write_green_fixture_suite
+    _run_runner_budget 60 10
+    run _report_field 'legs.pytest.budget_seconds'
+    [ "$status" -eq 0 ]
+    [ "$output" -gt 10 ]
+}
+
+@test "T-3359: a reserve >= the whole window is clamped, not honoured" {
+    # Degenerate config must not invert the split and starve leg 1 instead.
+    _write_green_fixture_suite
+    _run_runner_budget 20 99
+    run _report_field 'pytest_reserve_seconds'
+    [ "$output" -lt 20 ]
+    run _report_field 'legs.bats.budget_seconds'
+    [ "$output" -gt 1 ]
+}
 
 @test "t3302 audit FAILs when the report lists failures, naming the corpus" {
     _write_report "$WORK/red.yaml" 2 1 "$(_now_iso)"
