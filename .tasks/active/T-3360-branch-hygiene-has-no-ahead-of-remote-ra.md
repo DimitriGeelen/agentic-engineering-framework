@@ -84,7 +84,7 @@ carries both the count and the stranding duration.
       exactly as before on their own fixtures
 - [x] Tests use a real git fixture repo (not string fixtures), since the predicate
       is entirely about git state
-- [ ] Vendored copy synced (`bin/fw vendor self --check` clean) before close —
+- [x] Vendored copy synced (`bin/fw vendor self --check` clean) before close —
       `lib/` is a vendored path (OBS-250 ordering)
 
 ### Human

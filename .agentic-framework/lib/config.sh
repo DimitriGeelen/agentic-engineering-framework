@@ -244,6 +244,7 @@ FW_CONFIG_REGISTRY=(
     # Defaults below are read from the CALL SITES, not from CLAUDE.md.
     "BRANCH_BEHIND_WARN|50|Commits-behind-origin/master threshold for the branch-hygiene WARN and the handover merge-back nudge (agents/handover/handover.sh). T-100143/T-100144."
     "STALE_ARC_DAYS|30|Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale (agents/audit/audit.sh). T-1855."
+    "BRANCH_AHEAD_WARN|20|Commits-ahead-of-origin threshold for the branch-hygiene ahead-unpushed WARN (lib/branch-hygiene.sh). Measures the OPPOSITE direction to BRANCH_BEHIND_WARN: work committed locally and never pushed. Fires on the dev branch only, reports the age of the oldest unpushed commit, WARN-only. Origin: 32 commits stranded 3 days behind a refusing pre-push gate while every handover reported success (OBS-394/395). T-3360."
     "BRANCH_STALE_DAYS|30|Days without a commit ON a branch before its behind-count is allowed to raise a branch-hygiene staleness finding (lib/branch-hygiene.sh). Gates BRANCH_BEHIND_WARN: master moves ~41 commits/day here, so the commit threshold alone trips in ~1.2 days and fires on every healthy branch. Same unit and default as STALE_ARC_DAYS. T-3094 (T-3093 slice 1)."
     # Release-train branch model (T-3185 keystone). Two branches, two jobs:
     # DEV_BRANCH authors, RELEASE_BRANCH only ever fast-forwards from it at a
