@@ -86,7 +86,7 @@ measured at all, and that a starved leg is legible as starved rather than green.
       old arithmetic is what produces the failure
 - [x] `tests/unit/t3302_unit_suite_schedule.bats` stays green in full (16 existing
       tests + the new ones)
-- [ ] Vendored copy synced (`bin/fw vendor self --check` clean) before close —
+- [x] Vendored copy synced (`bin/fw vendor self --check` clean) before close —
       `agents/` is a vendored path (OBS-250 ordering)
 
 ### Human
