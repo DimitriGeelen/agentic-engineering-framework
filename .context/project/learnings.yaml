@@ -4930,3 +4930,9 @@ X'` returning empty group."
   task: T-3357
   date: 2026-09-10
   context: Added via context agent
+- id: L-666
+  learning: "Monitoring rails get their finding classes from the failures already SEEN, not from where the value sits — so they reliably cover the visible half of an axis and miss the dangerous half. lib/branch-hygiene.sh had five rails for branches BEHIND their target and none for AHEAD. Behind-ness is recoverable at any time (the commits are on the remote); ahead-ness holds the only copy, and looks identical to healthy work-in-progress right up to the moment it is lost. 32 commits sat stranded 3 days while every handover reported success. The generalisable check when building any health rail: name the axis, then ask which END of it you are measuring and whether the other end is where the loss actually occurs. Corollary for the finding text: report the DURATION, not just the magnitude — 'ahead=36' is a number, 'ahead=36 oldest_days=3' is a decision. And prefer a signal derivable from always-present data (commit dates) over one needing infrastructure that may be absent (git keeps no reliable last-push timestamp)."
+  source: P-001
+  task: T-3360
+  date: 2026-09-11
+  context: Added via context agent

@@ -4554,3 +4554,10 @@ observations:
   tags: [gap]
   status: pending
   promoted_to: null
+- id: OBS-401
+  text: "CORRECTION to OBS-400 — the pytest extrapolation in it is WRONG and the correction changes the decision. OBS-400 states the pytest leg needs ~4.3 HOURS and the corpus ~6+ hours against a 2h window. That was extrapolated from a progress-bar sample taken during the run's slow early phase. MEASURED to completion 2026-09-11: the pytest leg finished in 1761.01s (29m21s) — 22 failed, 2677 passed, 7 skipped. It does NOT need 4.3 hours; it fits comfortably inside the 1800s reserve T-3359 established (with ~39s margin, which is tight and worth widening). Consequences: (1) option (d) 'shrink the corpus' is far less urgent for the pytest leg than OBS-400 implies — pytest is not the problem; (2) the corpus-vs-window problem is now specifically a BATS problem (>5400s under the new cap, >7200s before it), not a whole-corpus problem, which narrows the options considerably and makes (c) shard / (d) profile-the-bats-leg the live candidates; (3) MOST IMPORTANT — the 22 pytest failures are REAL, previously-unmeasured reds that four nights of nightlies reported as 'failed_count: 0'. They need triage as findings in their own right (one bug = one task), and they are the concrete payoff of the T-3359 starvation fix. Method note: extrapolating a runtime from an early-phase progress sample is unsound when test cost is non-uniform; the honest move was to wait for the run to finish, which is what produced this number."
+  captured: 2026-09-11T20:23:46Z
+  context_task: T-3361
+  tags: [bug]
+  status: pending
+  promoted_to: null
