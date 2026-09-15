@@ -4948,3 +4948,15 @@ X'` returning empty group."
   task: T-3363
   date: 2026-09-15
   context: Added via context agent
+- id: L-669
+  learning: "A guard that answers a STRUCTURAL question with a POSITIONAL test passes every case it was written against and fails the first case it was not. T-3368: _auto_link_files needed to know 'am I inside a tag?' and expressed it as three regex lookbehinds — (?<!href=\"), (?<!/file/), (?<!\">). A lookbehind tests a fixed string at a fixed offset; tag context is unbounded. It matched href=\"p\" and missed href=\"./p\" because T-1551 normalises leading-dot relative paths to ./, putting two characters between the guard and the path; src= was never covered at all. Neither T-1551 nor T-1722 is wrong alone — the defect exists only in their composition, so neither task's tests could have caught it. The tell is that the guard's coverage and its tests' coverage are the same set, which makes a guard report complete success at exactly the moment it is incomplete. Fix shape: answer the structural question structurally (partition markup from text) rather than adding the Nth positional guard, and REMOVE the old guards so no future reader mistakes them for the protection. Parametrise the regression test over shapes no bug report mentions. Sibling of L-598 (positional token readers in command classifiers) and L-021 (substring match where a structural one was needed)."
+  source: P-001
+  task: T-3365
+  date: 2026-09-15
+  context: Added via context agent
+- id: L-670
+  learning: "A failure signal dominated by harness noise trains its readers to discount it, which is how a real bug rides along unseen. Measured on the 2026-09-15 unit-suite triage: the nightly reported 22 failures. 15 were ONE harness defect counted fifteen times (module-state contamination, two causes: T-3363 dangling PROJECT_ROOT after reload, T-3367 importlib.reload rebuilding a class other modules had bound). Of the 7 that remained, T-3364 and T-3365 were stale tests that never noticed production deliberately moved (ROOT_FILES allowlist added by T-2281; _breadcrumb.html added to render_page's HX branch), T-3326 is an exact-live-count pin versus a growing corpus, T-2219 x3 have their own owner — and exactly ONE, T-3368, was a user-visible production bug. So roughly 1 in 22 of the signal was about shipped behaviour. Worse, T-3368 was invisible while the harness was broken: contamination left PROJECT_ROOT dangling, the existence gate missed, the linkifier never fired, and the test asserting the CORRECT output passed. Fixing the harness is what made the real bug observable. The operational rule: when triaging a large failure count, classify by NATURE (harness defect / stale test / production bug) before by owner, publish the ratio, and treat a harness-dominated ratio as an urgent finding in its own right — not as background noise to be worked through one ticket at a time."
+  source: P-001
+  task: T-3365
+  date: 2026-09-15
+  context: Added via context agent
