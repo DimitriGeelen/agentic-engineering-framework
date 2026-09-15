@@ -104,6 +104,24 @@ bvp_scores_proposed:
 - [ ] Suite failure count drops from 5 to 4 with no new red, measured by the
       run-final full suite.
 
+      **Pre-registered prediction (written before the run reported):**
+      `4 failed, 2709 passed, 2 skipped`, total **2715**.
+
+      Derived twice, independently, because the equivalent line in T-3368's
+      prediction was an arithmetic slip:
+      - forward — previous run was 5/2706/2/2713; this task fixes one failure
+        and adds two tests, so 2706 + 1 + 2 = **2709** passed, total 2713 + 2 = 2715.
+      - by subtraction — 2715 − 4 − 2 = **2709**. The two agree.
+
+      Remaining four should be `test_corpus_lint` (T-3326) and
+      `test_inception_decide_warning_widen` ×3 (T-2219).
+
+      - **total != 2715** → a collection error; the two new tests did not run.
+      - **fewer than 4** → something else changed as a side effect; investigate,
+        do not bank it.
+      - **any node id not on that list** → the realignment touched a surface
+        this file's own run did not cover.
+
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
