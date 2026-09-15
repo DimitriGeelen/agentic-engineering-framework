@@ -264,6 +264,29 @@ Removal is not tidying: `(?<!">)` was suppressing legitimate links whenever text
 followed any `">`-terminated tag, so the guards cost false negatives while never
 providing complete coverage.
 
+### Pre-registered prediction (AC 5, written before the run was launched)
+
+The suite reported **7 failed / 2697 passed / 2 skipped / 2706 total** at T-3367
+close. This task fixes exactly one of those seven and adds seven tests, so:
+
+- **failed: 6** — the remaining standing causes: `test_corpus_lint` (T-3326),
+  `test_file_route_extensions` (T-3364), `test_inception_decide_warning_widen`
+  ×3 (T-2219), `test_render_page_guard` (T-3365).
+- **total: 2713** — 2706 + 7 new (5 parametrised shapes + link-text control +
+  feature-still-works).
+- **passed: 2707**, skipped 2.
+
+Interpretation fixed in advance:
+
+- **More than 6, or a node id not on that list** — the tag/text partitioning
+  broke a surface these four test files do not cover. The lookbehind removal is
+  the most likely culprit and should be reverted first, since it was the one
+  change made for tidiness rather than to fix the reported defect.
+- **Fewer than 6** — something else got fixed or suppressed as a side effect;
+  investigate rather than bank it.
+- **total != 2713** — a collection error, which a green-looking failure count
+  would otherwise hide (T-3217 class: a test that never runs reports nothing).
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
