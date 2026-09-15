@@ -4561,3 +4561,10 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-402
+  text: "unit-suite.sh pytest parser scoops ERROR-level LOG lines into the failure list: the comprehension at agents/audit/unit-suite.sh:155 filters on l.startswith(('FAILED ','ERROR ')), which cannot distinguish pytest's 'ERROR <nodeid>' collection error from a captured log record rendered as 'ERROR    web.embeddings:embeddings.py:222 embedding unavailable [contention] ... busy'. Worse, failed_count uses 'len(py_failed) or ...', so the contaminated list length OVERRIDES pytest's own self-reported count. Live effect: LATEST.yaml reports failed_count 23 across four nightlies while pytest itself reported 22 failed. Proven by replaying the exact parser logic against a two-line synthetic sample (2 real failures in, 2 entries out, one of them the log line). Same false-count family as T-3357/OBS-392: a number that looks authoritative but was derived from a pattern matching more than it means. Found during T-3362 triage."
+  captured: 2026-09-15T16:50:57Z
+  context_task: T-3362
+  tags: [bug]
+  status: promoted
+  promoted_to: task

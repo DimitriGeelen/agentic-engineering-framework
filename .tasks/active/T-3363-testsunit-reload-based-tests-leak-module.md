@@ -1,25 +1,18 @@
 ---
-id: T-3326
-name: "Stale-verification class: P-011 lines and unit tests anchored to MUTABLE CORPUS
-  STATE rot as the corpus moves, blocking closes for reasons unrelated to the code
-  under test. Two instances measured in one close-out sweep (2026-09-06): (1) T-2969
-  verification line 3 greps 'fw audit --section structure' for the 'readme-first-run
-  is draft with all 2 constituent' line — that arc moved draft->in-progress since
-  authoring, so the warning legitimately vanished and the close is blocked by corpus
-  drift; (2) T-2871's tests/unit/test_aef_meta_census.py pins exact census counts
-  (56 carriers, 102 state hits) from the August measurement — corpus grew to 74/138,
-  tests red, close blocked; the assertion cannot distinguish 'measurement method broke'
-  from 'corpus changed'. Fix shape per instance: anchor tests to committed FIXTURE
-  corpora (hermetic), or pin the invariant/property rather than the live count; verification
-  lines should not grep live-audit output for specific corpus entities. Sibling of
-  the false-green/false-red family (T-1828, T-3105): a check whose subject can drift
-  under it measures the drift, not the code."
+id: T-3363
+name: "tests/unit: reload-based tests leak module globals — 16 failures that pass
+  in isolation"
 description: >
-  Promoted from observation OBS-377
+  Reload-based tests leave web.shared.PROJECT_ROOT and sibling module globals pointing
+  at deleted tmp dirs, so 16 tests across 6 files fail in the full suite and pass
+  alone. T-1995 diagnosed this and fixed it with a per-test autouse re-pin fixture
+  applied to only 2 files; the 6 affected files never got it. Correlation is total.
+  Reproduced in 10s. Four independent contaminators bisected. See docs/reports/T-3362-pytest-triage.md
+  group B.
 
-status: started-work
+status: captured
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: []
 components: []
@@ -34,8 +27,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-07T07:05:24Z
-last_update: '2026-09-08T07:45:17Z'
+created: 2026-09-15T16:56:09Z
+last_update: '2026-09-15T17:00:27Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -48,17 +41,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-07T07:45:09Z'
+  - ts: '2026-09-15T17:00:13Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=261,acs=4)
+      (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-07T07:45:16Z'
+  - ts: '2026-09-15T17:00:27Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -75,57 +68,20 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-09-08T07:45:17Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 3
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3326: Stale-verification class: P-011 lines and unit tests anchored to MUTABLE CORPUS STATE rot as the corpus moves, blocking closes for reasons unrelated to the code under test. Two instances measured in one close-out sweep (2026-09-06): (1) T-2969 verification line 3 greps 'fw audit --section structure' for \"'readme-first-run' is draft with all 2 constituent\" — that arc moved draft->in-progress since authoring, so the warning legitimately vanished and the close is blocked by corpus drift; (2) T-2871's tests/unit/test_aef_meta_census.py pins exact census counts (56 carriers, 102 state hits) from the August measurement — corpus grew to 74/138, tests red, close blocked; the assertion cannot distinguish 'measurement method broke' from 'corpus changed'. Fix shape per instance: anchor tests to committed FIXTURE corpora (hermetic), or pin the invariant/property rather than the live count; verification lines should not grep live-audit output for specific corpus entities. Sibling of the false-green/false-red family (T-1828, T-3105): a check whose subject can drift under it measures the drift, not the code.
+# T-3363: tests/unit: reload-based tests leak module globals — 16 failures that pass in isolation
 
 ## Context
 
-Two measured instances of P-011/unit-test checks anchored to MUTABLE corpus state
-(2026-09-06 close-out sweep): (1) T-2969 verification line 3 greps live
-`fw audit --section structure` output for a specific arc's constituent-count line —
-the arc moved draft→in-progress, the line legitimately vanished, close blocked;
-(2) T-2871's `tests/unit/test_aef_meta_census.py` pins exact live census counts
-(56 carriers / 102 state hits at August measurement; corpus is now 74/138) — red
-for corpus growth, not method breakage. Fix shape: anchor to committed FIXTURE
-corpora (hermetic) or pin the invariant/property, never the live count; P-011
-lines must not grep live-audit output for specific corpus entities.
-
-**Third measured instance (2026-09-15, T-3362 triage).**
-`tests/unit/test_corpus_lint.py::test_live_corpus_all_versions_census` fails
-`assert len(targets) == 42` → `assert 47 == 42`. Same shape as instance (2): an
-exact live corpus count, red for corpus growth rather than method breakage.
-
-It was invisible until now for a reason worth noting here: the nightly unit suite
-starved its pytest leg to `timeout 1` and reported `failed_count: 0` for four
-consecutive runs (fixed in T-3359). So the rot this task describes had no surface
-that would report it. Triage: `docs/reports/T-3362-pytest-triage.md` group E.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] **A1 Census test re-anchored:** `tests/unit/test_aef_meta_census.py` no longer asserts exact live-corpus counts; it pins the measurement METHOD (invariants/properties — e.g. counts are non-decreasing vs a committed baseline, parser finds >0 carriers, categories sum to total) and/or runs against a committed fixture corpus; suite green on the current corpus AND the assertions would survive corpus growth by construction
-- [x] **A2 T-2969 verification unblocked:** T-2969's stale verification line (grep of live `fw audit` output for a specific arc's constituent-count line) is replaced in the T-2969 task file with a check of the CODE under test that does not depend on live corpus state; the replacement line passes
-- [x] **A3 Class codified at author-time:** the task template's `## Verification` comment block (`.tasks/templates/zzz-default.md`) gains a short "mutable-corpus anchor" warning naming the class (pin the invariant or a fixture, never the live count / live-audit line), and a learning is captured via `fw context add-learning` referencing T-3326
-- [x] **A4 No-widening:** `python3 -m pytest tests/unit/test_aef_meta_census.py -q` green; no other suite newly red (`bash -n` on any touched shell files)
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,6 +124,17 @@ that would report it. Triage: `docs/reports/T-3362-pytest-triage.md` group E.
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+#
+# ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
+# Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
+# state — an exact live count, or a grep of live `fw audit`/`fw doctor` output
+# for a specific corpus entity (a named arc, a task count, a census number).
+# The corpus moves under the check, and the line rots: it goes red (or vanishes
+# its pattern) for reasons unrelated to the code under test, blocking closes.
+# Pin the INVARIANT (categories sum, count > 0, property holds) or run the code
+# against a COMMITTED FIXTURE — never the live count or a live-audit line.
+# Origin: T-2969 line grepping live audit for one arc's status; T-2871's census
+# test pinning exact live counts (56→74 files) — both blocked closes (OBS-377).
 #
 # ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
 #
@@ -275,15 +242,6 @@ that would report it. Triage: `docs/reports/T-3362-pytest-triage.md` group E.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/unit/test_aef_meta_census.py -q > /tmp/.t3326-census.out 2>&1 && grep -q passed /tmp/.t3326-census.out && ! grep -q failed /tmp/.t3326-census.out
-grep -q "test_census_method_exact_counts_on_fixture_corpus" tests/unit/test_aef_meta_census.py && ! grep -q 'c\["files"\] == 74' tests/unit/test_aef_meta_census.py
-grep -q "Re-anchored under T-3326" .tasks/completed/T-2969-draft-arc-with-all-constituents-complete.md
-grep -q "Mutable-corpus anchor (T-3326)" .tasks/templates/default.md
-grep -q "pin the invariant or a committed fixture, never the live count" .context/project/learnings.yaml
-# Scoped to this task's vendored file (T-3326): full `vendor self --check` is held
-# red by another worker's uncommitted agents/context/lib/safe-commands.sh drift.
-diff -q .tasks/templates/default.md .agentic-framework/.tasks/templates/default.md
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -299,14 +257,6 @@ diff -q .tasks/templates/default.md .agentic-framework/.tasks/templates/default.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** Two task closes blocked in the 2026-09-06 sweep by checks that went red/pattern-missing for reasons unrelated to the code under test: T-2969's P-011 line grepped live `fw audit --section structure` for arc-016's draft-constituent WARN (the arc legitimately moved draft→in-progress, the line vanished), and T-2871's `test_aef_meta_census.py` pinned exact live census counts (56 carriers/102 state at authoring; corpus grew to 74/138, suite red).
-
-**Root cause:** The checks anchored their subject to MUTABLE corpus state — a specific live-audit output line and exact live counts — so they measured corpus drift, not the code. Neither could distinguish "measurement method broke" from "corpus changed".
-
-**Why structurally allowed:** P-011 runs whatever the author writes with no notion of whether a line checks code or live state; the census test even documented its exact-count brittleness as "a feature" ("the numbers moved is worth eyeballing"), which normalised the anchor. No author-time warning named the class (sibling of T-1828/T-3105 false-green/false-red family).
-
-**Prevention (distinct from the fix):** Author-time warning "Mutable-corpus anchor (T-3326)" added to the template's `## Verification` comment block; learning L-664 captured ("pin the invariant or a committed fixture, never the live count"). The fix itself re-anchors both instances: exact counts now run against a committed inline fixture corpus (hermetic), live corpus gets structural invariants that survive growth by construction; T-2969's line was replaced by the hermetic bats suite `t2969_draft_arc_complete_warning.bats`.
 
 ## Evolution
 
@@ -361,14 +311,6 @@ diff -q .tasks/templates/default.md .agentic-framework/.tasks/templates/default.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO
-**Rationale:** All four Agent ACs shipped and verified. The census test is re-anchored by construction (exact counts moved to a committed inline fixture corpus that only census() method breakage can redden; the live corpus is checked by invariants — sums, >0 carriers, the non-frozen>frozen exposure property). T-2969's stale live-audit grep is gone, replaced by the hermetic bats suite, with a T-3326 re-anchor note; verified passing on this host. The class is codified at author-time (template warning + L-664).
-**Evidence:**
-- `python3 -m pytest tests/unit/test_aef_meta_census.py -q` → 7 passed (was 6; fixture test added, exact live-count test removed)
-- T-2969 replacement lines re-run: bash -n + `bats tests/unit/t2969_draft_arc_complete_warning.bats` → 1..6, 0 not-ok, 0 skips
-- `.tasks/templates/default.md` gains "Mutable-corpus anchor (T-3326)" block in the `## Verification` comments
-- Learning L-664 captured referencing T-3326
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -392,14 +334,7 @@ diff -q .tasks/templates/default.md .agentic-framework/.tasks/templates/default.
 
 ## Updates
 
-### 2026-09-07T07:05:24Z — task-created [task-create-agent]
+### 2026-09-15T16:56:09Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3326-stale-verification-class-p-011-lines-and.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3363-testsunit-reload-based-tests-leak-module.md
 - **Context:** Initial task creation
-
-### 2026-09-07T07:09:24Z — status-update [task-update-agent]
-- **Change:** horizon: now → later
-
-### 2026-09-07T19:35:25Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: later → now (auto-sync)

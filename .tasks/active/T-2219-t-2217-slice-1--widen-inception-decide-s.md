@@ -18,7 +18,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-05T20:27:00Z
-last_update: '2026-08-17T12:36:06Z'
+last_update: '2026-09-15T17:00:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -122,6 +122,23 @@ bvp_scores_proposed:
       D4=3 (body:portability-abstraction); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-15T17:00:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-05T20:30:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -150,6 +167,15 @@ cost_estimate_proposed:
 T-2217 GO scope Slice 1 (Candidate A, F8 ≈ 0.5). When `fw inception decide` records a Decision but the side-effect chain (e.g. `--status work-completed` transition) emits a multi-line stderr that the operator needs to act on, Watchtower's htmx warning at `web/blueprints/inception.py:551` truncates the message to **150 chars** and renders it unescaped/inline — long stderr (e.g. the disposition-gate block message at ~700 chars with bullet list + bypass options) shows the first sentence only and the operator has no way to recover the rest from the page. This is the visible symptom that triggered T-2217.
 
 **Asymmetry to fix.** The sibling error path (`inception.py:579-587`, the htmx pre-decision validation rejection) already handles wide stderr correctly: `_html.escape(... [:300])` + `white-space:pre-wrap` style. Lines 549-553 (side-effect warning) and 556-562 (commit-failure warning) do NOT. Slice 1 closes that gap with three coordinated changes: widen to 1500, HTML-escape, render with `pre-wrap` so newlines survive.
+
+**Its tests are already committed and standing red (noted 2026-09-15, T-3362 triage).**
+`tests/unit/test_inception_decide_warning_widen.py` shipped with this task on
+2026-06-05 and pins all three properties (1500-char truncation, HTML-escaping,
+`pre-wrap`). All three fail today — correctly, because the production code at
+`web/blueprints/inception.py` still truncates at `[:300]`. They are TDD-red, not
+broken tests: finishing this task turns them green, and they are the cheapest
+available proof that it is done. No action needed on the tests themselves.
+Triage: `docs/reports/T-3362-pytest-triage.md` group F. Sibling: T-2221 (cockpit.py).
 
 Out of scope (separate slices): the form-redirect path (`?warning=`, `?error=` at lines 596-605) — URL query strings have practical length constraints, separate UX class. Playwright contract test (Slice 2, M-cost). Disposition-gate regex anchor (Slice 3, T-2218, shipped).
 
