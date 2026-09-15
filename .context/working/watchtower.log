@@ -11,9 +11,5 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3002
  * Running on http://192.168.10.107:3002
 Press CTRL+C to quit
-127.0.0.1 - - [15/Sep/2026 20:57:11] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [15/Sep/2026 20:57:11] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [15/Sep/2026 20:57:24] "GET /tasks/T-3368 HTTP/1.1" 200 -
-192.168.10.107 - - [15/Sep/2026 21:47:46] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [15/Sep/2026 21:47:46] "GET /api/_identity HTTP/1.1" 200 -
-192.168.10.107 - - [15/Sep/2026 21:47:47] "GET /api/_identity HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 22:59:44] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 22:59:44] "GET /api/_identity HTTP/1.1" 200 -

@@ -652,15 +652,15 @@ function filterACs(filter) {
             <div style="margin-bottom:0.3rem;"><strong>Steps:</strong></div>
             <ol style="margin:0 0 0.3rem 1rem; padding:0;">
                 {% for step in ac.steps %}
-                <li>{{ step }}</li>
+                <li>{{ step | safe }}</li>
                 {% endfor %}
             </ol>
             {% endif %}
             {% if ac.expected %}
-            <div><strong>Expected:</strong> {{ ac.expected }}</div>
+            <div><strong>Expected:</strong> {{ ac.expected | safe }}</div>
             {% endif %}
             {% if ac.if_not %}
-            <div style="color:var(--pico-muted-color);"><strong>If not:</strong> {{ ac.if_not }}</div>
+            <div style="color:var(--pico-muted-color);"><strong>If not:</strong> {{ ac.if_not | safe }}</div>
             {% endif %}
         </div>
         {% endif %}

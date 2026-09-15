@@ -18,7 +18,7 @@ description: >
   render_markdown_safe already provides, and a test that a literal '<script>' in an
   AC step stays inert.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -36,7 +36,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T18:58:54Z
-last_update: '2026-09-15T19:00:24Z'
+last_update: 2026-09-15T20:56:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,8 +88,32 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **XSS safety established BEFORE adding `| safe` — this is the gate on
+      whether the fix is legitimate at all.** `| safe` on attacker-influenced
+      content is how an XSS hole is made, and task files are content. Two
+      independent facts must be shown, not assumed:
+      (a) `_render_md_inline` / `_render_md_block` run
+      `markdown2.markdown(text, safe_mode='escape')`, so raw HTML arriving from a
+      task file is escaped *before* any linkifier runs;
+      (b) the linkifiers emit only framework-constructed anchors
+      (`/file/…`, `/tasks/T-…`), never attacker-supplied markup.
+      Demonstrated by a probe feeding `<script>` and an `onerror=` payload
+      through the real helper, not by reading the code.
+- [ ] **All six sites fixed, not the one that was noticed.**
+      `task_detail.html` (steps/expected/if_not) and `_approvals_content.html`
+      (steps/expected/if_not). `_review_acs.html` already has all three and is
+      the reference implementation — fixing only the page I happened to look at
+      would leave `/approvals` broken in exactly the same way, which is how this
+      became a 6-site divergence in the first place.
+- [ ] **Regression test pins both halves:** a literal `<script>` in an AC field
+      renders INERT (escaped), and a Markdown link to a real repo path renders as
+      a single clickable anchor. The first without the second would be satisfied
+      by reverting the fix; the second without the first would be satisfied by an
+      XSS hole.
+- [ ] **Control leg:** with `| safe` removed again, the "renders as an anchor"
+      assertion fails. Proves the test observes the template, not just the helper.
+- [ ] Live-verified on the running Watchtower after restart, and the suite shows
+      no new red.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -346,3 +370,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3369-human-ac-stepsexpectedif-not-render-esca.md
 - **Context:** Initial task creation
+
+### 2026-09-15T20:56:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
