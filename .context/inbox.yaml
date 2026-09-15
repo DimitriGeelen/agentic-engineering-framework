@@ -4568,3 +4568,17 @@ observations:
   tags: [bug]
   status: promoted
   promoted_to: task
+- id: OBS-403
+  text: "OBS: a pytest unit test (tests/unit/test_audit_frontmatter_variants.py) shells out to agents/audit/audit.sh --section structure, whose structure section runs 'timeout 300 bats tests/lint/' against the REAL repo -- including a full 'xargs -P 8 shellcheck' sweep of every tracked bash source. So the 'unit' suite silently contains the lint suite plus a repo-wide shellcheck, bounded at 300s by that one test. This is a large, undeclared chunk of the ~1761s pytest leg measured in OBS-401, and it explains multi-minute stdout silence mid-run that looks like a hang. Cross-ref OBS-396 (audit contention) -- this is NOT that: nothing is blocked, it is real work. Relevant to the OBS-400/401 unit-suite window question: sharding by file would split this test off cheaply."
+  captured: 2026-09-15T17:25:34Z
+  context_task: T-3363
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-404
+  text: "OBS: tests/lint/no-untracked-test-files.bats (T-3074) misses conftest.py. Its _is_collectable() matches *.bats, test_*.py, *_test.py -- pytest also loads conftest.py as a plugin, and an untracked one is strictly worse than an untracked test file: it does not merely fail to run elsewhere, it silently changes the pass/fail result of every test in its directory, so the suite is green on the author's machine and red in every clone. Found live in T-3363: tests/unit/conftest.py (the 16-failure isolation fix) sat untracked and the guard did not flag it. Same family as the guard's own origin story, one level up. Fix is one case-arm: add conftest.py to _is_collectable. Also consider tests/conftest.py at any depth."
+  captured: 2026-09-15T17:25:59Z
+  context_task: T-3363
+  tags: []
+  status: pending
+  promoted_to: null
