@@ -76,7 +76,39 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Diagnosis complete (read-only, during T-3367's verification run). Not yet fixed.**
+
+`web/shared.py:653 _auto_link_files()` runs `_ARTEFACT_PATH_RE.sub()` over
+**already-rendered HTML** with no tag awareness. When a markdown link's target is
+a repo path that exists, the path inside the emitted `href="..."` attribute is
+itself matched and rewritten, nesting an anchor inside the attribute:
+
+```html
+<a href="./<a href="/file/.context/working/feedback-stream.yaml">.context/working/feedback-stream.yaml</a>">feedback-stream</a>
+```
+
+The same test shows the contrast: `[the report](docs/reports/X.md)` renders
+correctly, because that path does **not** exist on disk and the gate at
+`web/shared.py:668` — `if (PROJECT_ROOT / path).exists():` — declines to
+substitute. So the defect fires only for links whose target actually exists,
+which is the majority of real task bodies.
+
+**Why this was invisible until now.** That same existence gate is what made the
+test a FALSE GREEN under contamination: with `web.shared.PROJECT_ROOT` left
+pointing at a deleted tmp dir by a reload-based test (T-3363 cause 1),
+`.exists()` returned False, the linkifier never fired, and the assertion saw the
+plain href it wanted. Fixing the contamination unmasked a live rendering bug.
+The bug is older than its visibility.
+
+**Fix direction (not authorization — this is discovery).** Substitute only in
+text nodes, not inside tags: split the HTML on `<[^>]*>` and run the regex on the
+between-tag segments, or reject any match whose surrounding context places it
+inside a tag. A blunt "skip if preceded by `href=\"`" would miss the general case
+(`src=`, `title=`, and any future attribute).
+
+**Blast radius.** Every Markdown surface — `/review`, `/tasks`, `/approvals`,
+`/inception` — since T-1722 promoted `_auto_link_files` into `render_markdown_safe`.
+T-1575 rendering-contract territory.
 
 ## Acceptance Criteria
 

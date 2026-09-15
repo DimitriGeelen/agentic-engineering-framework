@@ -13,10 +13,10 @@ description: >
   del sys.modules replacing the module. This is a class inside a module that was never
   deleted. Split from T-3363 whose fixture closes cause 1 only.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -31,8 +31,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T17:49:09Z
-last_update: 2026-09-15T17:52:16Z
-date_finished:
+last_update: 2026-09-15T18:46:48Z
+date_finished: 2026-09-15T18:46:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -95,7 +95,7 @@ cost_estimate_proposed:
       failure: `test_embed_health.py` (6) and `test_incremental_reindex.py` (4).
 - [x] **Control leg:** with the fix neutralised, that same ordering fails again.
       Distinguishes "the fix works" from "the ordering stopped reproducing".
-- [ ] **Anti-masking leg:** a full-suite run afterwards still reports the 7 genuine
+- [x] **Anti-masking leg:** a full-suite run afterwards still reports the 7 genuine
       standing failures (T-3364, T-3365, T-3326/E, T-2219×3, T-3368). An isolation
       fix must not paper over real reds — T-3363 measured contamination producing a
       false GREEN, so this risk is demonstrated here, not theoretical.
@@ -167,6 +167,65 @@ read from the class the patch never touched.
 
 Both control legs fail as required, so the fix is load-bearing and the orderings
 still reproduce without it.
+
+### Pre-registered prediction (anti-masking leg, written before the run reported)
+
+The full suite should report **exactly 7 failures** — the standing causes, all
+independently owned, none of them contamination:
+
+| # | Node id | Owner |
+|---|---------|-------|
+| 1 | `test_corpus_lint.py::test_live_corpus_all_versions_census` | T-3326 |
+| 2 | `test_file_route_extensions.py::test_is_viewable_path_rejects_unknown_dir` | T-3364 |
+| 3 | `test_render_page_guard.py::test_guard_skipped_on_htmx_request` | T-3365 |
+| 4-6 | `test_inception_decide_warning_widen.py` (3 tests) | T-2219 |
+| 7 | `test_review_markdown_render.py::test_parse_ac_body_renders_steps_as_html` | T-3368 |
+
+Interpretation, fixed in advance:
+
+- **Fewer than 7** — the fixture is masking a real red. This is the branch that
+  matters: T-3363 *measured* contamination producing a false GREEN, so an
+  isolation fixture suppressing a genuine failure is a demonstrated risk here, not
+  a hypothetical one. Would make the fix worse than the bug.
+- **More than 7** — a further contaminator, or a standing cause the triage missed.
+- **7, but not these 7** — the set matters, not the count.
+
+Baseline for the delta: pre-T-3363 the suite reported 22 real failures; after
+T-3363 alone, 17. Expected now: 7.
+
+### Result (measured 2026-09-15, run 1877.28s)
+
+**`7 failed, 2697 passed, 2 skipped in 1877.28s`** — prediction confirmed on both
+count and set. All seven are the predicted node ids, in the predicted ownership:
+
+| # | Node id | Owner | Predicted |
+|---|---------|-------|-----------|
+| 1 | `test_corpus_lint.py::test_live_corpus_all_versions_census` | T-3326 | yes |
+| 2 | `test_file_route_extensions.py::test_is_viewable_path_rejects_unknown_dir` | T-3364 | yes |
+| 3 | `test_inception_decide_warning_widen.py::test_side_effect_warning_truncation_widened_to_1500` | T-2219 | yes |
+| 4 | `test_inception_decide_warning_widen.py::test_side_effect_warning_html_escaped` | T-2219 | yes |
+| 5 | `test_inception_decide_warning_widen.py::test_side_effect_warning_uses_pre_wrap_style` | T-2219 | yes |
+| 6 | `test_render_page_guard.py::test_guard_skipped_on_htmx_request` | T-3365 | yes |
+| 7 | `test_review_markdown_render.py::test_parse_ac_body_renders_steps_as_html` | T-3368 | yes |
+
+Reconciliation across the three runs, with totals held constant — this is the
+check that rules out masking-by-disappearance, which a failure-count alone cannot:
+
+| Run | failed | passed | skipped | total |
+|---|---:|---:|---:|---:|
+| nightly baseline (pre-fix) | 22 | 2677 | 7 | 2706 |
+| after T-3363 alone | 17 | 2687 | 2 | 2706 |
+| after T-3367 | **7** | **2697** | 2 | **2706** |
+
+The T-3363->T-3367 step is 10 fail->pass with **zero residue**: exactly the 10
+victims this task claimed (6 in `test_embed_health.py`, 4 in
+`test_incremental_reindex.py`), no test newly red, no test vanished from the
+count. A fixture that suppressed a real failure would show as `total` holding
+while `failed` fell *below* 7, or as `total` dropping. Neither happened.
+
+Of the 22 failures the nightly originally reported, **15 were never failures of
+the code under test** — they were two harness defects (L-421 cause 1, and the
+rebound-class-identity cause named here) counted fifteen times.
 
 ## Verification
 
@@ -280,3 +339,20 @@ c=$(mktemp); timeout 600 python3 -m pytest --noconftest tests/unit/test_chunk_ca
 
 ### 2026-09-15T17:52:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ebdef139
+- **Timestamp:** 2026-09-15T18:47:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — The fix is **test-side**. `from web.config import Config` in `web/embeddings.py`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/embeddings.py in: The fix is **test-side**. `from web.config import Config` in `web/embeddings.py``
+
+### 2026-09-15T18:46:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

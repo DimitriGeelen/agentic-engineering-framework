@@ -4596,3 +4596,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-407
+  text: "OBS-394/395 SUPERSEDED for current state: the push deadlock is no longer the pre-push audit gate — it is OneDev authorization. Evidence: the 2026-09-15 handover push failed with 'remote: You do not have permission to push to this project.' followed by 'fatal: Authentication failed for https://onedev...'. The 'remote:' prefix is dispositive — that string can only come from the server, so the pre-push hook ran, PASSED, and the push reached OneDev over the network. A hook refusal exits before any network contact and cannot produce a 'remote:' line. Consequence for triage: fixing the unit suite (T-3363/T-3367, 22 real failures -> 7) does NOT unblock the push, and OBS-394's named mitigation (re-run unit-suite.sh) would not have either. The operator action is a credential one (grant/rotate the OneDev push token for this identity); no amount of agent-side test work reaches it. 47+ commits remain stranded on bleeding-edge. Note the two blockers stacked in sequence and looked like one: the gate deadlock was real on 2026-09-09, and auth became the binding constraint afterwards, so the symptom ('push fails every session') never changed while the cause did."
+  captured: 2026-09-15T18:25:12Z
+  context_task: T-3367
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-408
+  text: "OBS-250 WIDENS: the post-close dead end is not specific to 'fw vendor self'. Measured on T-3367 close (2026-09-15): --status work-completed clears focus as its last act, and the very next action — re-running the task's OWN ## Verification block to capture its output for the record — was refused by the Tier-1 task gate twice, on two different grounds. (1) With temp files: refused as a file-write pattern. (2) Without temp files (pipe to tail): refused because 'timeout 600 python3 -m pytest' is not on the read-only allowlist in agents/context/lib/safe-commands.sh. CLAUDE.md documents this trap only for vendored-path sync; the class is broader — ANY trailing action belonging to a just-closed task has no task to run under. Note the second refusal is CORRECT and should not be 'fixed' by allowlisting pytest: pytest writes caches and tmp files, so the gate cannot prove it reads. The real asymmetry is that verification output is only capturable BEFORE close, while the natural moment to want it is immediately after. Candidate fixes are the same three OBS-250 names (grace window, narrow allowlist, auto-capture at close) plus a fourth specific to this instance: have update-task.sh persist the P-011 gate's per-leg output into the task file or episodic at close time, so the record exists without anyone needing to re-run anything."
+  captured: 2026-09-15T18:48:23Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null

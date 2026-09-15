@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3367: tests/unit: importlib.reload(web.config) rebuilds Config, orphaning import-time bindings — 10 failures
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-15T18:47:20Z
+# ============================================================================
+
+task_id: T-3367
+task_name: "tests/unit: importlib.reload(web.config) rebuilds Config, orphaning import-time bindings — 10 failures"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-15T17:49:09Z
+completed: 2026-09-15T18:46:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-15T20:13:59+02:00
+last_commit: 2026-09-15T20:13:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  restore rebound class identity — fixes the remaining 10 contamination failures
+
+# Key outcomes
+outcomes:
+  - '**The mechanism is proven by bisection, not by reading.** `test_embed_health.py`'
+  - '**Class identity is confirmed as the carrier** — a probe shows'
+  - 'All 10 victims pass in the contaminator-first ordering that reproduced the'
+  - '**Control leg:** with the fix neutralised, that same ordering fails again.'
+  - '**Anti-masking leg:** a full-suite run afterwards still reports the 7 genuine'
+  - 'The fix is **test-side**. `from web.config import Config` in `web/embeddings.py`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'restore rebound class identity — fixes the remaining 10 contamination failures'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-3363-testsunit-reload-based-tests-leak-module.md'
+  - '.tasks/active/T-3367-testsunit-importlibreloadwebconfig-rebui.md'
+  - '.tasks/active/T-3368-watchtower-markdown-render-auto-linkifie.md'
+  - 'tests/unit/conftest.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-15T20:13:59'
+    action: 'T-3367: restore rebound class identity — fixes the remaining 10 contamination failures'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 57 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 57
+  commits: 1
+  files_changed: 5
+  lines_added: 739
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3367-testsunit-importlibreloadwebconfig-rebui.md
+generated_by: context-agent-hybrid
