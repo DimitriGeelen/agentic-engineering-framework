@@ -4582,3 +4582,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-405
+  text: "OBS: BVP gives no intra-cluster ordering, on BOTH axes, precisely when selection happens. Five freshly-filed tasks from one triage (T-3364/3365/3366/3367/3368) all score value D1=4 D2=4 D3=3 D4=2 F-RECALL=2 AND cost blast_radius=None tier=2 effort=8 -- identical quadrant, zero ordering. Value ties because the estimator is a text heuristic and the five are textually near-identical (it DOES discriminate across dissimilar tasks: T-1062 D1=2 D2=0 D3=4, T-3090 D1=3 D2=0 D3=0, T-2219 D1=4 D2=0 D3=0 D4=3 -- so not a stub). Cost ties for a structural reason: blast_radius is None until components: resolves at work-completed (T-3068), so every UNSTARTED task falls back to the same tier=2 effort=8 default. Net: a 'select by BVP quadrant' policy is inoperative within a cluster, which is the common case since triage emits siblings. Anyone selecting this way must state an explicit tiebreak and record that BVP was consulted and degenerate. Cross-ref OBS-398."
+  captured: 2026-09-15T17:51:34Z
+  context_task: T-3363
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-406
+  text: "OBS: the task template embeds literal section headers ('## Verification', '## Acceptance Criteria') INSIDE the Human-AC HTML comment block as prose guidance. Any agent splicing a section programmatically with s.index('## Verification') matches the occurrence inside the comment first, splices from the wrong offset, and leaves an unterminated '<!--' -- silently corrupting the Human AC block and dropping the real section. Hit live in T-3367 (repaired; comment markers went 8 open / 7 close). Agents edit task files programmatically as a matter of course, so this is a foot-gun in the template rather than a one-off slip. Cheap mitigations: anchor splices to a line-start regex ('^## Verification$' with re.M), or stop naming section headers verbatim inside template comments (backtick-quote them differently, e.g. 'the Verification section'). Detection: a task file whose '<!--' and '-->' counts differ."
+  captured: 2026-09-15T18:13:46Z
+  context_task: T-3367
+  tags: []
+  status: pending
+  promoted_to: null

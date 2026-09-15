@@ -99,3 +99,69 @@ def _restore_fragile_module_globals():
             # "before" to restore, so pin the repo root — a dangling tmp path here is
             # exactly the T-1995 failure.
             setattr(mod, attr, _REPO)
+
+
+# ---------------------------------------------------------------------------
+# T-3367: rebound class identity — a third cause, neither of L-421's two.
+#
+# `importlib.reload(m)` re-executes m in place. `sys.modules[m]` keeps its
+# identity — which is why every module-level guard, including the one above,
+# misses this — but every `class X:` statement in m builds a NEW class object.
+# Any module that did `from m import X` at import time still holds the old one.
+#
+# It takes three participants, which is why single-file bisection never found it
+# and why it outlived T-1995 / T-1997 / T-3362:
+#
+#   1. an early MODULE-LEVEL importer pins the old class
+#      (tests/unit/test_chunk_cap.py:28  `from web import embeddings as E`,
+#       and web/embeddings.py:29 `from web.config import Config`)
+#   2. a reloader builds a new one
+#      (tests/unit/test_csrf_cookie_scoping.py:45  `importlib.reload(web.config)`)
+#   3. a victim whose own import is LAZY straddles the two: its in-function
+#      `from web.config import Config` resolves to the new class, while the code
+#      under test still reads the old one, so monkeypatching is silently inert
+#      (tests/unit/test_embed_health.py:148,198 -> 6 failures;
+#       tests/unit/test_incremental_reindex.py:528 -> 4)
+#
+# Measured minimal reproducer, with both controls:
+#   chunk_cap + csrf + embed_health -> identical=False, 6 failed
+#   drop chunk_cap                  -> identical=True,  29 passed
+#   drop csrf                       -> identical=True,  35 passed
+#
+# Restoring the ORIGINAL class re-aligns every import-time consumer at once,
+# because they all bound that same original. Fixing it consumer-by-consumer is
+# whack-a-mole and reopens on the next `from web.config import ...`.
+#
+# Test-side on purpose: `from web.config import Config` in web/embeddings.py is
+# ordinary Python, not a defect. The defect is a test reloading a module that
+# other modules bound from.
+# ---------------------------------------------------------------------------
+
+# module name -> attributes whose *identity* a reload destroys.
+_FRAGILE_BINDINGS = {"web.config": ("Config",)}
+
+# Captured once, the first time each attribute is seen, so the restore target is
+# the object every import-time consumer bound — not whatever a prior test left.
+_ORIGINAL_BINDINGS: dict = {}
+
+
+@pytest.fixture(autouse=True)
+def _restore_rebound_class_identity():
+    """Restore class objects that `importlib.reload` rebuilt underneath importers."""
+    for mod_name, attrs in _FRAGILE_BINDINGS.items():
+        mod = sys.modules.get(mod_name)
+        if mod is None:
+            continue
+        for attr in attrs:
+            key = (mod_name, attr)
+            if key not in _ORIGINAL_BINDINGS and hasattr(mod, attr):
+                _ORIGINAL_BINDINGS[key] = getattr(mod, attr)
+
+    yield
+
+    for (mod_name, attr), original in _ORIGINAL_BINDINGS.items():
+        mod = sys.modules.get(mod_name)
+        # `is not` on purpose: this is an identity failure, not a value one. The
+        # rebuilt class compares equal on every attribute and is still wrong.
+        if mod is not None and getattr(mod, attr, None) is not original:
+            setattr(mod, attr, original)
