@@ -149,4 +149,65 @@ def test_auto_link_files_directly_idempotent():
     path = _existing_artefact("docs/reports/T-*.md")
     once = _auto_link_files(f"<p>see {path}</p>")
     twice = _auto_link_files(once)
-    assert once == twice  # the (?<!href=") guard prevents re-linking
+    # T-3368: the tag/text split prevents re-linking — not the old
+    # `(?<!href=")` lookbehind, which was removed. Attributing the protection to
+    # the wrong mechanism is how the next author reaches for a fourth lookbehind.
+    assert once == twice
+
+
+# ---------------------------------------------------------------------------
+# T-3368: the linkifier must never rewrite inside a tag.
+#
+# History worth keeping, because it is the reason these are parametrised over
+# four shapes instead of asserting the one reported case. T-1722 guarded this
+# with three lookbehinds — `(?<!href=")`, `(?<!/file/)`, `(?<!">)`. A lookbehind
+# tests a fixed string at a fixed offset, and "am I inside a tag?" is not a
+# question of fixed offset. T-1551 normalises leading-dot relative paths to
+# `./`, which slid two characters between `href="` and the path and walked
+# straight past the guard; `src=` was never guarded at all.
+#
+# So a test that only pins `href="./p"` would go green against a fourth
+# lookbehind and leave the class exactly as open as T-1722 left it.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "template",
+    [
+        '<a href="{p}">text</a>',        # the shape T-1722's guard did catch
+        '<a href="./{p}">text</a>',      # the shape it missed (T-1551 normalisation)
+        '<a href="../{p}">text</a>',     # same miss, one level up
+        '<img src="./{p}">',             # never guarded at all
+        '<span title="{p}">x</span>',    # any future attribute, by construction
+    ],
+)
+def test_no_rewrite_inside_a_tag(template):
+    path = _existing_artefact("docs/reports/T-*.md")
+    html = template.format(p=path)
+    out = _auto_link_files(html)
+    assert out == html, f"linkifier rewrote inside a tag: {out!r}"
+
+
+def test_link_text_is_not_double_linked():
+    """Anchor *text* must not be linkified either — the other side of the bug.
+
+    Splitting on tags makes each text node its own segment, which is what stops
+    attribute rewriting. But it also destroys the adjacency the `(?<!">)` guard
+    relied on to protect link text, so without an anchor-depth counter the fix
+    would nest anchors from the inside instead of the outside. This is the
+    control for that half.
+    """
+    path = _existing_artefact("docs/reports/T-*.md")
+    html = f'<a href="/file/{path}">{path}</a>'
+    assert _auto_link_files(html) == html
+
+
+def test_text_outside_tags_still_linkifies():
+    """The feature must survive the fix.
+
+    Disabling linkification would satisfy every assertion above and destroy the
+    thing the function exists for, so this asserts the positive case in the same
+    breath as the negative ones.
+    """
+    path = _existing_artefact("docs/reports/T-*.md")
+    out = _auto_link_files(f"<p>see {path} for detail</p>")
+    assert f'<a href="/file/{path}">{path}</a>' in out

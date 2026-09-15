@@ -12,7 +12,7 @@ description: >
   so the linkifier never fired and the assertion saw the plain href it expected. Fixing
   the contamination unmasked it. T-1575 rendering-contract territory.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,7 +30,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T17:49:30Z
-last_update: '2026-09-15T17:51:03Z'
+last_update: 2026-09-15T18:51:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -59,6 +59,24 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-15T18:49:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-09-15T17:51:03Z'
@@ -114,8 +132,25 @@ T-1575 rendering-contract territory.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **The mechanism is demonstrated, not inferred.** A probe shows
+      `_auto_link_files` rewriting a path that sits inside an `href="./…"`
+      attribute, and shows *why* the three existing lookbehinds at
+      `web/shared.py:633-635` do not stop it: T-1551 normalises leading-dot
+      relative paths to `./`, so the six characters before the match are `ef="./`
+      rather than `href="`. Without this the fix is a guess.
+- [x] **The fix is structural, not another fixed-string guard.** No nested anchor
+      is produced for **any** of `href="p"`, `href="./p"`, `href="../p"`, or
+      `src="p"`. A fourth lookbehind would pass the current test and leave the
+      class open — that is precisely how this bug survived T-1722.
+- [x] **Control leg:** with the fix reverted, the new regression test fails.
+      Distinguishes "the fix works" from "the test never exercised the path" —
+      the T-3363/T-3367 lesson applied to this task.
+- [x] **The feature still works.** A path in ordinary prose still becomes a
+      `/file/` link, and a backticked path still renders `<a …><code>…</code></a>`
+      per the T-1575 contract. Disabling linkification would pass the failing
+      assertion while destroying the feature; that is not a fix.
+- [ ] `tests/unit/test_review_markdown_render.py` passes in full, and the suite's
+      failure count drops from 7 to 6 with no new red.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,6 +182,87 @@ T-1575 rendering-contract territory.
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+- [ ] [REVIEW] A task page whose body contains a Markdown link to a real repo path
+      renders as one clean clickable link — no visible `<a href=` fragments, no
+      doubled link text, nothing that looks like escaped HTML leaking into the page.
+
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` to get the base URL
+  2. Open `<that URL>/tasks/T-3368` in a browser
+  3. Look at the **Context** section — it contains Markdown links to real repo
+     paths (`web/shared.py`), which is exactly the shape that triggered the bug
+  4. Click one of the rendered path links
+
+  **Expected:** each path shows once, as a single underlined link; clicking opens
+  the file view. No stray `">` or `href=` characters visible in the page text.
+
+  **If not:** screenshot the mis-rendered line and note which path shape it used
+  (`p`, `./p`, `../p`), then reopen this task — the tag-splitting fix missed a shape.
+
+  *Why this is [REVIEW] and not [REVIEWER]:* the Agent ACs already pin the
+  structural facts by assertion (no nested `<a>`, all four attribute shapes). What
+  a static scan cannot answer is whether the rendered page *looks* right to the
+  operator reading it — the audience for this judgement is the human using
+  Watchtower, which is the T-2143 audience test coming out on the Human side.
+
+## Measurements
+
+### AC 1 — mechanism (probe, before any code change)
+
+| input | before fix |
+|---|---|
+| `<a href="PATH">` | clean — T-1722's guard catches this one shape |
+| `<a href="./PATH">` | **nested `<a>`** |
+| `<a href="../PATH">` | **nested `<a>`** |
+| `<img src="./PATH">` | **anchor injected into the `src` attribute** |
+| bare prose | correct |
+| backticked | correct (`<a><code>`, T-1575) |
+
+Why the guard misses, measured directly rather than reasoned about — for
+`<a href="./.context/working/feedback-stream.yaml">` the match begins at offset
+11 and the six preceding characters are `ef="./`, not `href="`. T-1551
+normalises leading-dot relative paths to `./` for safe_mode; those two
+characters are the whole defect. Neither feature is wrong on its own.
+
+### AC 2/4 — after the fix, all ten shapes
+
+`href="p"`, `href="./p"`, `href="../p"`, `src="./p"`, `title="p"` all untouched;
+anchor *text* no longer double-linked; bare prose, backticked, and `<code>`
+spans still linkify; text after a `">`-terminated tag now linkifies (a false
+negative the old `(?<!">)` guard caused); malformed `</a></a>` clamps instead of
+re-enabling rewriting.
+
+### AC 3 — control leg
+
+`git checkout web/shared.py` (revert to HEAD), same tests:
+
+```
+5 failed, 37 passed
+  test_no_rewrite_inside_a_tag[<a href="./{p}">text</a>]
+  test_no_rewrite_inside_a_tag[<a href="../{p}">text</a>]
+  test_no_rewrite_inside_a_tag[<img src="./{p}">]
+  test_no_rewrite_inside_a_tag[<span title="{p}">x</span>]
+  test_parse_ac_body_renders_steps_as_html
+```
+
+The `href="{p}"` shape passes **even reverted** — correct, and the reason the
+parametrisation matters: a fourth lookbehind would have turned the other four
+green while leaving the class open. Restore verified byte-identical (`diff -q`),
+then 42 passed.
+
+### Lookbehind removal (measured, not assumed)
+
+The three lookbehinds are subsumed by the tag/text split, so they were removed.
+Checked across `test_render_artefact_paths`, `test_review_markdown_render`,
+`test_extract_recommendation`, `test_render_page_guard`: **79 passed, 1 failed**,
+and the one failure is `test_guard_skipped_on_htmx_request`
+(`TemplateNotFound: _breadcrumb.html`) — T-3365's pre-existing standing failure,
+item 6 of the 7 the suite already reports. Not caused by this change.
+
+Removal is not tidying: `(?<!">)` was suppressing legitimate links whenever text
+followed any `">`-terminated tag, so the guards cost false negatives while never
+providing complete coverage.
 
 ## Verification
 
@@ -276,6 +392,21 @@ T-1575 rendering-contract territory.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-3368 — the render-surface file under test.
+o=$(mktemp); timeout 600 python3 -m pytest tests/unit/test_review_markdown_render.py -q -p no:cacheprovider --color=no > "$o" 2>&1 && grep -q "passed" "$o"
+
+# The T-1575 rendering contract must survive the tag-splitting change.
+c=$(mktemp); timeout 600 python3 -m pytest tests/unit/test_extract_recommendation.py -q -p no:cacheprovider --color=no > "$c" 2>&1 && grep -q "passed" "$c"
+
+# web/ is a vendored path (CLAUDE.md §Vendored-path-touching tasks): sync BEFORE close,
+# not after — closing clears focus and there is no route back (OBS-250, widened OBS-408).
+bin/fw vendor self --check
+
+# web/ is a deployment surface: Flask runs debug=False, so a fix can be on disk,
+# unit-green and closed while the running process still serves the pre-fix bytes
+# (G-104, T-3282). Exits 0 when current OR when no Watchtower is running.
+bin/fw watchtower current
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -372,3 +503,6 @@ T-1575 rendering-contract territory.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3368-watchtower-markdown-render-auto-linkifie.md
 - **Context:** Initial task creation
+
+### 2026-09-15T18:49:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

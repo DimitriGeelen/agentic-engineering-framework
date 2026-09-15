@@ -4610,3 +4610,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-409
+  text: "Allowlist gap in agents/context/lib/safe-commands.sh, surfaced by its own block message (which invites the filing). The Tier-1 gate refused a genuinely read-only command — a shell 'for' loop running python3 -c that only opens task files and prints frontmatter fields — because the classifier prefix-matches the command string and 'for t in T-3368 T-3364 T-3365' is not on the allowlist. This is not a missing entry that could be added: a shell loop, a subshell, or any command whose effect depends on its body cannot be proven read-only by prefix matching, so the gap is structural to the classifier's design rather than to its data. Sibling of L-598 (positional token readers in command classifiers lose to an open-ended set of shapes) and L-021 (exception matched a substring rather than a structure). Practical effect observed this session: with focus cleared after a task close, ad-hoc inspection is impossible and the agent is pushed toward fw verbs or bare grep. That may well be the intended behaviour — if so it is worth stating as intent in the block message, because the current wording ('that is a gap in the allowlist worth filing') implies the allowlist could be extended to cover it, which for this shape it cannot."
+  captured: 2026-09-15T18:49:50Z
+  context_task: T-3368
+  tags: []
+  status: pending
+  promoted_to: null

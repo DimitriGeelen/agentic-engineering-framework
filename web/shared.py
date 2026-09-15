@@ -627,12 +627,18 @@ def _build_artefact_path_re():
     root_files = "|".join(re_mod.escape(f) for f in sorted(ROOT_FILES))
     pattern = (
         # Three guards to keep idempotent and avoid wrapping an already-linked path:
+        # T-3368 removed three lookbehinds that used to sit here:
         #   (?<!href=")  — path is not the href target of an existing <a>
         #   (?<!/file/)  — path is not the suffix of an already-built /file/<...> URL
-        #   (?<!">)      — path is not the link text immediately following an anchor's closing `">`
-        r'(?<!href=")'
-        r'(?<!/file/)'
-        r'(?<!">)'
+        #   (?<!">)      — path is not the link text following an anchor's closing `">`
+        # All three were asking "am I inside a tag?", which a lookbehind cannot
+        # answer: it tests a fixed string at a fixed offset, and tag context is
+        # unbounded. They are subsumed by the tag/text partitioning in
+        # _auto_link_files, which answers the question directly. Keeping them
+        # would not be merely redundant — `(?<!">)` also suppressed a LEGITIMATE
+        # link whenever text followed any `">`-terminated tag (`<img src="x.png">
+        # web/shared.py` linkified nothing), so they cost real false negatives
+        # while providing coverage that was never complete.
         r'(`?)'
         r'('
             # Branch 1: prefix + path-body + extension (existing T-1722 shape).
@@ -648,6 +654,25 @@ def _build_artefact_path_re():
 
 
 _ARTEFACT_PATH_RE = _build_artefact_path_re()
+
+# T-3368: tag/text partitioning for _auto_link_files.
+#
+# The capturing group is deliberate — `re.split` with a capturing pattern keeps
+# the delimiters, so the result alternates text, tag, text, tag, …, text. Even
+# indices are always text and odd indices are always tags, which is what lets the
+# loop below rewrite one and never the other.
+#
+# `<[^>]*>` is not a general HTML parser and is not trying to be. It is exactly
+# as strict as the producer: this function only ever sees output from the
+# repo's own Markdown renderer with safe_mode='escape', so a literal `<` or `>`
+# in the source text arrives already escaped as `&lt;`/`&gt;` and cannot be
+# mistaken for a tag. Reaching for html.parser here would buy nothing and would
+# rewrite entities on the way out.
+_TAG_SPLIT_RE = re_mod.compile(r"(<[^>]*>)")
+
+# `<a` must not also match `<abbr`/`<article`, so require a delimiter after it.
+_A_OPEN_RE = re_mod.compile(r"<a(?=[\s/>])", re_mod.IGNORECASE)
+_A_CLOSE_RE = re_mod.compile(r"</a(?=[\s>])", re_mod.IGNORECASE)
 
 
 def _auto_link_files(html: str) -> str:
@@ -675,7 +700,38 @@ def _auto_link_files(html: str) -> str:
             return f'<a href="/file/{path}">{inner}</a>'
         return m.group(0)
 
-    return _ARTEFACT_PATH_RE.sub(_replace, html)
+    # T-3368: substitute in TEXT ONLY — never inside a tag, never inside an <a>.
+    #
+    # This used to be `_ARTEFACT_PATH_RE.sub(_replace, html)` over the whole
+    # rendered string, with three lookbehinds in the pattern standing in for tag
+    # awareness. Lookbehinds cannot do that job, because they test a fixed string
+    # at a fixed offset and the thing they need to know — "am I inside a tag?" —
+    # is unbounded. `(?<!href=")` saw `href="p"` and missed `href="./p"`: T-1551
+    # normalises leading-dot relative paths to `./`, which puts two characters
+    # between the guard and the path, so the six preceding characters read
+    # `ef="./`. The path inside the attribute was rewritten into an anchor and the
+    # result was `<a href="./<a href="/file/p">p</a>">`. Nothing guarded `src=` at
+    # all. A fourth lookbehind would have fixed the reported case and left the
+    # class open, which is exactly how this survived T-1722.
+    #
+    # Splitting on tags is the structural answer, but it is not sufficient alone:
+    # once tags are their own segments, the `(?<!">)` guard that kept link TEXT
+    # from being linkified no longer sees the `">` before it, so `<a …>p</a>`
+    # would nest from the inside instead. Hence the anchor depth counter.
+    parts = _TAG_SPLIT_RE.split(html)
+    anchor_depth = 0
+    for i, seg in enumerate(parts):
+        if i % 2:  # odd indices are the tags themselves — never rewritten
+            if _A_OPEN_RE.match(seg):
+                anchor_depth += 1
+            elif _A_CLOSE_RE.match(seg):
+                # Clamp: malformed markup can close more anchors than it opened,
+                # and a negative depth would silently re-enable rewriting inside
+                # the next real anchor.
+                anchor_depth = max(0, anchor_depth - 1)
+        elif anchor_depth == 0:
+            parts[i] = _ARTEFACT_PATH_RE.sub(_replace, seg)
+    return "".join(parts)
 
 
 def render_markdown_safe(text: str) -> str:
