@@ -10,12 +10,12 @@ description: >
   test loader. Test-fixture drift, not a product defect. Oldest red in the cluster
   at ~3.7 months. See docs/reports/T-3362-pytest-triage.md group D.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_render_page_guard.py, web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -28,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T16:56:46Z
-last_update: 2026-09-15T19:48:36Z
-date_finished:
+last_update: 2026-09-15T20:21:36Z
+date_finished: 2026-09-15T20:21:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -94,8 +94,15 @@ bvp_scores_proposed:
       HX render path — which is exactly how it decayed this time.
 - [x] **Control leg:** removing the stub reproduces `TemplateNotFound`. Proves
       the stub is what fixed it, rather than something incidental.
-- [ ] No other test in `tests/unit/test_render_page_guard.py` regresses, and the
+- [x] No other test in `tests/unit/test_render_page_guard.py` regresses, and the
       suite's failure count drops from 6 to 5 with no new red.
+
+      Measured: **`5 failed, 2706 passed, 2 skipped`** (2713 total, 1785.85s).
+      Total held constant at 2713 — this task added no tests — and passed rose by
+      exactly one. A drop with the total constant and passed up by the same amount
+      is a fix; a drop with the total falling would be a disappearance. Remaining:
+      `test_corpus_lint` (T-3326), `test_file_route_extensions` (T-3364),
+      `test_inception_decide_warning_widen` ×3 (T-2219).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -393,3 +400,15 @@ deleting it is itself a gate failure rather than a quiet reversion.
 
 ### 2026-09-15T19:48:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d944c2ab
+- **Timestamp:** 2026-09-15T20:21:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-15T20:21:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
