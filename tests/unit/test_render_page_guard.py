@@ -52,6 +52,16 @@ def _app_with_templates(templates: dict) -> Flask:
         # double-extends chain wouldn't actually crash on missing macros —
         # we want the guard to fire, not unrelated Jinja errors.
         "base.html": "<html><nav>chrome</nav>{% block content %}{% endblock %}</html>",
+        # T-3365: render_page's HX-Request branch renders this partial directly
+        # (web/shared.py:1404) so an htmx #content swap also refreshes the
+        # breadcrumb. Without it the htmx test dies on TemplateNotFound before
+        # the guard it is testing ever runs — production grew a template
+        # dependency and this fake loader never learned about it.
+        #
+        # The marker text is deliberately distinctive so a test can assert the
+        # breadcrumb actually RENDERED. A silent stub would turn the test green
+        # and leave it exactly as blind to the next change in the HX path.
+        "_breadcrumb.html": '<nav class="breadcrumb">CRUMB</nav>',
     }
     base_templates.update(templates)
     app.jinja_env.loader = DictLoader(base_templates)
@@ -134,3 +144,7 @@ def test_guard_skipped_on_htmx_request():
         # our DictLoader's stub base.html that emits one nav. The point is:
         # the guard did NOT raise.
         assert "chrome" in out or "x" in out
+        # T-3365: and the breadcrumb partial really was prepended. Asserting the
+        # dependency rather than just tolerating it — this is what makes the test
+        # notice the next time the HX render path changes.
+        assert "CRUMB" in out

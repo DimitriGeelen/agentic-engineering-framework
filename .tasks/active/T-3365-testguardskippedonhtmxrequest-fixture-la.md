@@ -10,7 +10,7 @@ description: >
   test loader. Test-fixture drift, not a product defect. Oldest red in the cluster
   at ~3.7 months. See docs/reports/T-3362-pytest-triage.md group D.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T16:56:46Z
-last_update: '2026-09-15T17:00:27Z'
+last_update: 2026-09-15T19:48:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,8 +80,22 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **The failure is shown to originate outside the code under test.** The
+      error is `TemplateNotFound: _breadcrumb.html` raised from
+      `web/shared.py:1404` — the HX-Request branch of `render_page`, which
+      renders the breadcrumb partial so an htmx `#content` swap refreshes it.
+      The guard this test exercises never runs. Production is correct; the
+      test's `DictLoader` stub set predates the dependency.
+- [x] **The fixture supplies the missing partial** and
+      `test_guard_skipped_on_htmx_request` passes.
+- [x] **The dependency is pinned, not merely satisfied.** The test asserts the
+      htmx response actually CONTAINS the breadcrumb. Adding a silent stub would
+      turn the test green and leave it just as blind to the next change in the
+      HX render path — which is exactly how it decayed this time.
+- [x] **Control leg:** removing the stub reproduces `TemplateNotFound`. Proves
+      the stub is what fixed it, rather than something incidental.
+- [ ] No other test in `tests/unit/test_render_page_guard.py` regresses, and the
+      suite's failure count drops from 6 to 5 with no new red.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -242,6 +256,13 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-3365 — the test file under repair.
+o=$(mktemp); timeout 600 python3 -m pytest tests/unit/test_render_page_guard.py -q -p no:cacheprovider --color=no > "$o" 2>&1 && grep -q "6 passed" "$o"
+
+# The breadcrumb dependency is asserted, not merely tolerated — if this grep
+# stops matching, the test went back to passing without checking anything.
+grep -q 'assert "CRUMB" in out' tests/unit/test_render_page_guard.py
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -257,6 +278,37 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `test_guard_skipped_on_htmx_request` failed with
+`jinja2.exceptions.TemplateNotFound: _breadcrumb.html`.
+
+**Root cause:** not in the code under test. `render_page`'s HX-Request branch
+renders the breadcrumb partial directly (`web/shared.py:1404`, "Prepend the
+breadcrumb partial so an htmx `#content` swap also refreshes it"). The test
+builds a fake `DictLoader` supplying only `_wrapper.html` and `base.html`, so
+the render died before the guard it exercises ever ran. Production grew a
+template dependency; the fake loader did not learn about it.
+
+**Why structurally allowed:** a hand-maintained `DictLoader` is a *duplicate*
+of production's template dependency set, with no mechanism keeping the two in
+step. It decays silently and asymmetrically — adding a dependency in production
+breaks the test (loud, which is what happened here), but REMOVING one leaves a
+dead stub the test keeps happily serving, and nothing ever says so. The loud
+direction is the lucky one.
+
+The measurement worth keeping: this is the third distinct cause behind the
+"22 nightly failures", and like T-3364 it is a test that never noticed
+production moved — not a defect in the shipped system. Of the original 22, the
+overwhelming majority were test-infrastructure decay and exactly one (T-3368)
+was a user-visible production bug. That ratio is itself the finding: a failure
+signal dominated by harness noise trains readers to discount it, which is
+precisely what let T-3368 ride along unseen.
+
+**Prevention:** the fix asserts the breadcrumb actually rendered (`assert
+"CRUMB" in out`) rather than merely not throwing. A silent stub would have
+turned the test green while leaving it exactly as blind to the next change in
+the HX render path. The `## Verification` block greps for that assertion, so
+deleting it is itself a gate failure rather than a quiet reversion.
 
 ## Evolution
 
@@ -338,3 +390,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3365-testguardskippedonhtmxrequest-fixture-la.md
 - **Context:** Initial task creation
+
+### 2026-09-15T19:48:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
