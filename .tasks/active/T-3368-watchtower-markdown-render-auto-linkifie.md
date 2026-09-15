@@ -12,12 +12,12 @@ description: >
   so the linkifier never fired and the assertion saw the plain href it expected. Fixing
   the contamination unmasked it. T-1575 rendering-contract territory.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -30,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T17:49:30Z
-last_update: 2026-09-15T18:51:27Z
-date_finished:
+last_update: 2026-09-15T19:47:40Z
+date_finished: 2026-09-15T19:47:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -149,7 +149,7 @@ T-1575 rendering-contract territory.
       `/file/` link, and a backticked path still renders `<a …><code>…</code></a>`
       per the T-1575 contract. Disabling linkification would pass the failing
       assertion while destroying the feature; that is not a fix.
-- [ ] `tests/unit/test_review_markdown_render.py` passes in full, and the suite's
+- [x] `tests/unit/test_review_markdown_render.py` passes in full, and the suite's
       failure count drops from 7 to 6 with no new red.
 
 ### Human
@@ -286,6 +286,43 @@ Interpretation fixed in advance:
   investigate rather than bank it.
 - **total != 2713** — a collection error, which a green-looking failure count
   would otherwise hide (T-3217 class: a test that never runs reports nothing).
+
+### AC 5 result (measured, 1786.15s)
+
+**`6 failed, 2705 passed, 2 skipped`** — total 2713.
+
+| quantity | predicted | actual | |
+|---|---|---|---|
+| failed | 6 | 6 | match |
+| failure set | the 6 named below | identical | match |
+| total | 2713 | 2713 | match |
+| passed | "2707" | 2705 | **my arithmetic slip** |
+
+The `passed: 2707` line was wrong when written — inconsistent with the same
+prediction's own total (2713 − 6 − 2 = 2705). Recording it as an error in the
+prediction rather than quietly reconciling it: the two quantities that were
+derived independently (failure count + set, and total) both matched exactly, and
+the third was a subtraction I got wrong.
+
+Remaining six, all separately owned, none introduced here:
+
+```
+test_corpus_lint.py::test_live_corpus_all_versions_census                      T-3326
+test_file_route_extensions.py::test_is_viewable_path_rejects_unknown_dir       T-3364
+test_inception_decide_warning_widen.py::…_truncation_widened_to_1500           T-2219
+test_inception_decide_warning_widen.py::…_html_escaped                         T-2219
+test_inception_decide_warning_widen.py::…_uses_pre_wrap_style                  T-2219
+test_render_page_guard.py::test_guard_skipped_on_htmx_request                  T-3365
+```
+
+`test_review_markdown_render::test_parse_ac_body_renders_steps_as_html` is gone
+from the list, and the total rose by exactly the 7 tests this task added — so the
+drop is a fix, not a disappearance.
+
+Note on the run: a first attempt was **killed** at ~10% by the agent harness (both
+its job and its waiter stopped together). That produced no verdict and was not
+treated as one — T-3063's killed/refused distinction. Re-run clean from scratch
+with a completion sentinel so "finished" is distinguishable from "stopped".
 
 ## Verification
 
@@ -446,6 +483,65 @@ bin/fw watchtower current
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** on every Markdown surface (`/review`, `/tasks`, `/approvals`,
+`/inception`), a Markdown link whose target is a real repo path rendered as
+`<a href="./<a href="/file/p">p</a>">` — a nested anchor inside an attribute.
+The link was broken and the raw markup was visible to the operator.
+
+**Root cause:** `_auto_link_files` applied a regex to *already-rendered HTML*
+with no way to tell markup from text. T-1722 knew this and guarded it with three
+lookbehinds. A lookbehind cannot express the constraint: it tests a fixed string
+at a fixed offset, and "am I inside a tag?" is unbounded. `(?<!href=")` matched
+`href="p"` and missed `href="./p"` because T-1551 normalises leading-dot
+relative paths to `./`, putting two characters between the guard and the path.
+`src=` was never guarded at all.
+
+Neither T-1551 nor T-1722 is wrong on its own. The defect exists only in their
+composition, which is why neither task's tests could have caught it: each was
+correct within its own scope.
+
+**Why structurally allowed — two independent failures, and the second is the
+one worth remembering:**
+
+1. *No test covered the interaction.* T-1722's tests pinned the shape its guard
+   handled (`href="p"`), so the guard's coverage and the test's coverage were
+   the same set. A guard tested only against the cases it was designed for
+   reports complete success at exactly the moment it is incomplete.
+
+2. *The test that WOULD have caught it was a false green for months.*
+   `test_parse_ac_body_renders_steps_as_html` asserts the correct clean href and
+   was failing — but only in isolation. In the full suite, module-state
+   contamination (T-3363 cause 1) left `web.shared.PROJECT_ROOT` pointing at a
+   deleted tmp dir, so the `(PROJECT_ROOT / path).exists()` gate returned False,
+   the linkifier never fired, and the assertion saw the plain href it wanted.
+   The bug is strictly older than its visibility. It took fixing the *harness*
+   (T-3363, T-3367) to make a real defect observable — and the nightly reported
+   `failed_count: 0` throughout (T-3359 starvation), so nothing pointed here at
+   all.
+
+**Prevention** (distinct from the fix):
+
+- The regression test is parametrised over five attribute shapes — `href="p"`,
+  `href="./p"`, `href="../p"`, `src="p"`, `title="p"` — deliberately including
+  shapes no current bug report mentions. A fourth lookbehind would have turned
+  the reported case green and left the class open; the parametrisation is what
+  makes that visible instead.
+- A control leg (`test_link_text_is_not_double_linked`) pins the *other* side:
+  tag-splitting alone would nest anchors from the inside, so the anchor-depth
+  counter has its own failing-without-it test.
+- `test_text_outside_tags_still_linkifies` pins the positive case, so a future
+  "fix" that simply disables linkification cannot pass.
+- The three lookbehinds were removed rather than left in place, so no future
+  reader can mistake them for the thing providing protection. The idempotency
+  test's comment, which credited `(?<!href=")`, was corrected for the same
+  reason — a comment that misattributes the mechanism is how the next author
+  reaches for a fifth lookbehind.
+
+**Generalisation:** a guard that answers a structural question with a
+positional test will pass every case it was written against and fail the first
+case it was not. Sibling of L-598 (positional token readers in command
+classifiers) and L-021 (substring match where a structural one was needed).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -499,6 +595,39 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The defect is fixed at the structural level rather than patched at
+the reported symptom, and every claim below is backed by a recorded run rather
+than by inspection. The one thing I cannot verify is the only thing left open:
+whether the rendered page *looks* right to the operator. That is the `[REVIEW]`
+AC, and it is genuinely yours — the Agent ACs already pin every structural fact a
+scan can reach, so what remains is a judgement about the reading experience.
+
+**Evidence:**
+- Probe before the change reproduced the defect on 4 attribute shapes and showed
+  the exact mechanism (match offset 11, preceding six characters `ef="./`).
+- Regression test parametrised over 5 shapes, deliberately wider than the
+  reported case; plus a control for the inside-out nesting the fix could have
+  introduced, plus a positive test so disabling the feature cannot pass.
+- Control leg: reverting `web/shared.py` to HEAD fails 5; restore verified
+  byte-identical with `diff -q`; 42 passed after.
+- Full suite: **6 failed, 2705 passed, 2 skipped** (2713 total, 1786s) — down
+  from 7, with the total up by exactly the 7 tests added, so the drop is a fix
+  and not a disappearance. All 6 remaining are separately owned.
+- Lookbehind removal measured across 4 render test files (79 passed; the single
+  failure is T-3365's pre-existing `TemplateNotFound`), not assumed safe.
+- Live-verified on the running Watchtower after `fw watchtower restart`:
+  `/tasks/T-3368` returns 0 corrupt-attribute occurrences.
+- `fw vendor self --check` clean, run **before** close per the OBS-250 ordering.
+
+**Surfaced but deliberately not fixed here:** the live check found a *second*,
+unrelated defect — Human-AC Steps/Expected/If-not are rendered as bare `{{ }}` in
+`task_detail.html`, so already-rendered HTML gets escaped and the operator sees
+raw markup. Different root cause, so filed as **T-3369** rather than folded in.
+Worth knowing when you look at this page: some AC text on it will still display
+escaped until T-3369 lands. That is T-3369's bug, not this fix failing.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -529,3 +658,20 @@ bin/fw watchtower current
 
 ### 2026-09-15T18:49:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-48ed1c64
+- **Timestamp:** 2026-09-15T19:47:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Human)** — [REVIEW] A task page whose body contains a Markdown link to a real repo path
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows o' in Expected: each path shows once, as a single underlined link; clicking opens   the file view. No stray `">` or `href=` characters visible in the page t`
+
+### 2026-09-15T19:47:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
