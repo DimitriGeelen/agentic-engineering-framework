@@ -78,10 +78,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 204
-  commits: 2
-  files_changed: 9
-  lines_added: 118
-  lines_removed: 35
+  commits: 3
+  files_changed: 18
+  lines_added: 315
+  lines_removed: 95
+  footprint_refreshed_at: '2026-09-15T20:22:03Z'
+  footprint_refreshed_by_commit: 062cc079e
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3365-testguardskippedonhtmxrequest-fixture-la.md

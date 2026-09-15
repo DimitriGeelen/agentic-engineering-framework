@@ -57,7 +57,31 @@ def test_is_viewable_path_rejects_traversal():
 def test_is_viewable_path_rejects_unknown_dir():
     assert not is_viewable_path("etc/passwd")
     assert not is_viewable_path("/etc/passwd")
-    assert not is_viewable_path("README.md")  # repo-root, not under any prefix
+
+
+def test_is_viewable_path_allows_allowlisted_root_files():
+    """T-2281 (T-2275) deliberately made depth-0 files in ROOT_FILES viewable.
+
+    This assertion used to read `assert not is_viewable_path("README.md")` with
+    the comment "repo-root, not under any prefix" — correct before T-2281,
+    stale after it. Realigned rather than reverted: `web/shared.py` documents the
+    widening as intentional ("Allowlist, not generic depth-0"), and the set is
+    six public documents with nothing secret-bearing in it.
+    """
+    for name in ("README.md", "VERSION", "LICENSE"):
+        assert is_viewable_path(name), name
+
+
+def test_is_viewable_path_root_allowlist_is_not_generic_depth_zero():
+    """The control: a root file NOT on the allowlist is still refused.
+
+    Load-bearing. Without it the test above passes just as happily against a
+    generic "any depth-0 file is viewable" rule — which is the genuinely
+    dangerous version of this change, since is_viewable_path gates what the
+    /file/ route will serve.
+    """
+    for name in (".env", "secrets.txt", ".git-credentials", "Makefile"):
+        assert not is_viewable_path(name), name
 
 
 def test_is_viewable_path_rejects_unknown_extension():

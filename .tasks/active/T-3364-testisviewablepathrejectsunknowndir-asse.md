@@ -11,7 +11,7 @@ description: >
   invisible behind the starved nightly. See docs/reports/T-3362-pytest-triage.md group
   C.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T16:56:32Z
-last_update: '2026-09-15T17:00:27Z'
+last_update: 2026-09-15T20:22:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -81,8 +81,28 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **Established which side is stale, with evidence — before changing either.**
+      `is_viewable_path` gates what `/file/` will serve, so "the test is wrong"
+      is the dangerous default answer here: if production had widened by
+      accident, realigning the test would ratify a file-exposure regression.
+      Evidence required that the widening was deliberate: `web/shared.py:592-594`
+      cites T-2281 (T-2275) and states "Allowlist, not generic depth-0".
+- [x] **The allowlist is enumerated and judged, not assumed benign.** `ROOT_FILES`
+      is a closed `frozenset` of exactly six public documents — `README.md`,
+      `CLAUDE.md`, `FRAMEWORK.md`, `VERSION`, `LICENSE`, `CHANGELOG`. No
+      secret-bearing file (`.env`, credentials, keys) is reachable, and because
+      it is an enumerated set rather than a pattern it cannot drift open. Had
+      this turned up anything sensitive, the task becomes a security finding
+      instead of a test fix.
+- [x] **The test asserts the current contract**, not the pre-T-2281 one:
+      an allowlisted root file IS viewable; the prefix rule still rejects
+      `etc/passwd` and `/etc/passwd`.
+- [x] **Control leg — the allowlist is proven to BE an allowlist.** A root-level
+      file that is *not* in `ROOT_FILES` is still rejected. Without this, the
+      realigned test would pass equally against a generic "any depth-0 file is
+      viewable" rule, which is the actual dangerous version of this change.
+- [ ] Suite failure count drops from 5 to 4 with no new red, measured by the
+      run-final full suite.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -243,6 +263,16 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-3364 — the realigned test file.
+o=$(mktemp); timeout 600 python3 -m pytest tests/unit/test_file_route_extensions.py -q -p no:cacheprovider --color=no > "$o" 2>&1 && grep -q "passed" "$o"
+
+# The control must exist. Without it the positive assertion passes equally
+# against a generic depth-0 rule, which is the file-exposure version of this change.
+grep -q "test_is_viewable_path_root_allowlist_is_not_generic_depth_zero" tests/unit/test_file_route_extensions.py
+
+# ROOT_FILES must stay an enumerated allowlist, not become a pattern.
+python3 -c "import sys; sys.path.insert(0,'.'); from web.shared import ROOT_FILES; assert isinstance(ROOT_FILES, frozenset) and len(ROOT_FILES) == 6, ROOT_FILES"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -258,6 +288,40 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `test_is_viewable_path_rejects_unknown_dir` failed on
+`assert not is_viewable_path("README.md")  # repo-root, not under any prefix`.
+
+**Root cause:** the assertion encodes pre-T-2281 semantics. T-2281 (T-2275)
+deliberately added a `ROOT_FILES` allowlist so depth-0 documents bypass the
+prefix+extension checks. The test was never updated. Production is correct.
+
+**Why this one deserved more care than it looks:** `is_viewable_path` decides
+what the `/file/` route will serve, so "the test is stale, realign it" is the
+*dangerous* default answer. The same symptom — a test asserting a path is not
+viewable, production saying it is — is exactly what an accidental file-exposure
+regression looks like. The two are indistinguishable from the failure alone.
+
+What separated them was evidence, not plausibility: `web/shared.py:592-594`
+names the task and states the intent ("Allowlist, not generic depth-0"), and the
+set is a closed `frozenset` of six public documents with nothing secret-bearing
+in it. Had `ROOT_FILES` been a pattern, or contained anything credential-like,
+the correct outcome would have been a security finding and NOT a test edit.
+
+**Why structurally allowed:** T-2281 widened a predicate and added coverage for
+the new behaviour without revisiting the existing test that asserted its
+negation. Both tests then described the same predicate and disagreed. Nothing
+checks a test suite for internal contradiction, and the contradiction was
+invisible for a further reason: the nightly was reporting `failed_count: 0`
+throughout (T-3359 starvation), so the red never surfaced.
+
+**Prevention:** the realigned test ships with its own control
+(`test_is_viewable_path_root_allowlist_is_not_generic_depth_zero`) asserting
+that `.env`, `secrets.txt`, `.git-credentials` and `Makefile` are still refused.
+Without it, the positive assertion would pass equally against a generic
+"any depth-0 file is viewable" rule — the version of this change that would
+genuinely expose files. The control is what makes the test able to tell the
+allowlist apart from the hole.
 
 ## Evolution
 
@@ -339,3 +403,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3364-testisviewablepathrejectsunknowndir-asse.md
 - **Context:** Initial task creation
+
+### 2026-09-15T20:22:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
