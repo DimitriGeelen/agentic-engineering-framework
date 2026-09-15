@@ -1,8 +1,8 @@
 {
   "branch": "bleeding-edge",
-  "consecutive_failures": 6,
+  "consecutive_failures": 9,
   "first_failure_ts": "2026-09-08T09:59:53Z",
   "last_failure_kind": "refused",
-  "last_failure_ts": "2026-09-11T20:14:37Z",
-  "last_session": "S-2026-0911-2214"
+  "last_failure_ts": "2026-09-15T18:21:04Z",
+  "last_session": "S-2026-0915-2020"
 }

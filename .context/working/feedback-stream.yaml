@@ -40623,3 +40623,21 @@ scan_id: R-f5e4b687
 task_id: T-3360
 payload:
   task_file: .tasks/active/T-3360-branch-hygiene-has-no-ahead-of-remote-ra.md
+---
+kind: scan_emitted
+timestamp: '2026-09-15T18:47:07Z'
+scan_id: R-ebdef139
+task_id: T-3367
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-15T18:47:07Z'
+scan_id: R-ebdef139
+task_id: T-3367
+payload:
+  task_file: .tasks/active/T-3367-testsunit-importlibreloadwebconfig-rebui.md

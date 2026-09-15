@@ -1,7 +1,7 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-11T03:23:02.775096+00:00
-corpus_total: 2881
+generated: 2026-09-15T03:23:02.838128+00:00
+corpus_total: 2883
 bug_class_total: 508
 bug_class_pct: 17
 h1_flagged: 366
@@ -9,17 +9,13 @@ h1_pct_of_bug_class: 72
 h2_repeat_patterns: 165
 h3_flagged: 265
 h3_pct_of_bug_class: 52
-recent_30d_flagged: 11
+recent_30d_flagged: 9
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
     name: "Fix critical hook PROJECT_ROOT bug for external projects"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
-  - tid: "T-2951-832-rail-round-573574--report-t-2921-ext"
-    name: "832 rail round 573/574 — report T-2921 extractor fix, carry their T-456 composit"
-  - tid: "T-2971-rail-611--exclusion-vs-hole-applied-to-s"
-    name: "rail 611 — exclusion-vs-hole applied to stale-arc membership; three broken"
   - tid: "T-3048-fw-test-unitall-runs-bats-on-testsunit-w"
     name: "fw test unit/all runs bats on tests/unit with no directory guard — hard error"
   - tid: "T-3138-106-bats-assertions-cannot-fail-bash-exe"
@@ -32,15 +28,17 @@ recent_sample:
     name: "bare 'wget URL' is safe-listed — wget writes to cwd by default, no flag required"
   - tid: "T-3238-find-is-unconditionally-safe-listed-so--"
     name: "find is unconditionally safe-listed, so -delete and -exec pass the Bash task"
+  - tid: "T-3273-workflowcoverage-fail-false-positive-on-"
+    name: "workflow_coverage FAIL false-positive on non-spawning worker_kind ollama-direct"
 h2_top:
   - learning: "P-011"
-    task_count: 2611
+    task_count: 2617
   - learning: "L-387"
-    task_count: 2351
+    task_count: 2357
   - learning: "L-291"
-    task_count: 1171
+    task_count: 1173
   - learning: "L-398"
-    task_count: 914
+    task_count: 916
   - learning: "P-010"
     task_count: 529
   - learning: "L-399"

@@ -1,7 +1,7 @@
 schema: unit-suite-report-v1
 task: T-3302
-started: '2026-09-15T01:03:01Z'
-finished: '2026-09-15T03:02:39Z'
+started: '2026-09-12T01:03:01Z'
+finished: '2026-09-12T03:02:37Z'
 suite_dir: /opt/999-Agentic-Engineering-Framework/tests/unit
 timeout_seconds: 7200
 pytest_reserve_seconds: 1800
@@ -33,7 +33,7 @@ legs:
     error: null
   pytest:
     files: 201
-    budget_seconds: 1799
+    budget_seconds: 1800
     tests: 2706
     failed_count: 23
     skipped: 7

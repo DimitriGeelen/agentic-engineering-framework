@@ -4936,3 +4936,15 @@ X'` returning empty group."
   task: T-3360
   date: 2026-09-11
   context: Added via context agent
+- id: L-667
+  learning: "Cross-test contamination can need THREE participants, which defeats single-file bisection and is why L-421's two causes did not cover it. importlib.reload(m) re-executes m in place: sys.modules[m] keeps its identity (so every module-level guard misses it) but each 'class X:' statement builds a NEW class object, orphaning every 'from m import X' taken at import time. The break needs (1) an early MODULE-LEVEL importer pinning the old class, (2) a reloader building a new one, (3) a victim whose own import is LAZY, so its in-function 'from m import X' resolves to the new class while the code under test reads the old one — monkeypatch then lands on an object nothing reads and is silently inert. Each participant is necessary and none is sufficient, so bisecting one file at a time returns clean every time and the search looks like a dead end. Diagnostic that ends it in seconds: assert identity, not value — 'consumer.X is provider.X'. The rebuilt class compares EQUAL on every attribute and is still wrong, so value comparison cannot see it. Measured in T-3367: chunk_cap+csrf+embed_health -> identical=False, 6 failed; dropping either participant -> identical=True, all pass. Fix test-side by restoring the ORIGINAL class object after each test (re-aligns every import-time consumer at once); fixing consumer-by-consumer is whack-a-mole. 'from web.config import Config' in production code is ordinary Python and NOT the defect."
+  source: P-001
+  task: T-3367
+  date: 2026-09-15
+  context: Added via context agent
+- id: L-668
+  learning: "Cross-test contamination produces FALSE GREENS as well as false reds, so 'N tests fail in the suite and pass alone' understates the damage and points triage the wrong way. Measured in T-3363: fixing a dangling web.shared.PROJECT_ROOT moved the suite 22 failed -> 17, but the transitions were 6 fail->pass, 5 skip->pass, and 1 PASS->FAIL. The pass->fail case (test_review_markdown_render) was a live rendering bug — _auto_link_files is existence-gated on '(PROJECT_ROOT / path).exists()', so a PROJECT_ROOT pointing at a deleted tmp dir made the check miss, the auto-linkifier never fired, and the assertion saw exactly the clean href it asserted. The contamination had been holding a real defect green. Two consequences for triage: (1) never scope a contamination task as 'fix the N failures' — the correct scope is 'restore the suite's ability to report', and the failure count can legitimately go UP; (2) reconcile the full transition matrix (fail->pass, skip->pass, pass->fail, and skips) rather than the failure delta alone, because a delta of -5 concealed six fixes, five silently-dropped tests and one unmasked bug. A suite that lies does not lie in one direction."
+  source: P-001
+  task: T-3363
+  date: 2026-09-15
+  context: Added via context agent
