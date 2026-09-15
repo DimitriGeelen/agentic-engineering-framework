@@ -4617,3 +4617,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-410
+  text: "SOVEREIGN QUESTION (T-3326, surfaced not resolved): what is test_live_corpus_all_versions_census FOR? It pins exact live counts (32 stored versions, 14 carrying findings) and goes red whenever the corpus grows — it is the last of the original 22 nightly failures with no cheap fix, and it is a genuine design tension rather than a defect. Two framework positions collide head-on. (1) CLAUDE.md's own verification guidance names T-3326 as the ORIGIN of the mutable-corpus-anchor anti-pattern and says: never anchor to live corpus state, pin the INVARIANT or run against a COMMITTED FIXTURE. (2) The test's docstring argues, carefully and correctly, that the EXACT count is the load-bearing part: the check that matters is not that both numbers are re-derived but that '14 then' and '14 now' are the SAME 14 rather than two changes that cancelled — a rule change removing N findings while the corpus adds N is invisible to any invariant-style assertion. Both are right, which is why this needs a decision rather than a fix. Three candidates, all with real costs. A) Convert to an invariant (count>0, categories sum) — stops the false reds, LOSES the cancellation detector that is the test's actual value. B) Run the lint against a committed fixture corpus — keeps exactness and stops the reds, but the test no longer observes the LIVE store, which may be the entire point. C) Accept it is not a unit test at all: a census of live corpus health belongs in fw audit as a reported metric with a drift alarm, not as a pass/fail gate that blocks unrelated task closes. My read is C is most honest and B is the cheapest defensible, but this is a scope call about what the corpus store is owed, so it is the operator's. Not deciding it to keep momentum."
+  captured: 2026-09-15T20:25:01Z
+  context_task: T-3364
+  tags: []
+  status: pending
+  promoted_to: null

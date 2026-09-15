@@ -4960,3 +4960,9 @@ X'` returning empty group."
   task: T-3365
   date: 2026-09-15
   context: Added via context agent
+- id: L-671
+  learning: "Four of the 2026-09-15 triage's root causes are ONE shape: a check coupled to its subject by POSITION or TEXT rather than by STRUCTURE, which then drifts silently when the subject moves. T-3368: a regex lookbehind at a fixed offset asked 'am I inside a tag?' and missed once T-1551 inserted './' between the guard and the path. T-3364: an assertion pinned the pre-T-2281 semantics of is_viewable_path and contradicted the newer test of the same predicate, with nothing checking a suite for internal contradiction. T-3365: a hand-maintained DictLoader duplicated production's template dependency set with no mechanism keeping them in step. T-2219: a deliberate static-source pin greps web/blueprints/inception.py and slices a block by textual search — its own docstring calls it 'a static-source pin (matches the file content as edited)' — so ordinary edits to that file move the block out from under it. The shared property is that each check re-implements a fact about the subject instead of asking the subject, so the two copies diverge and the check keeps reporting confidently against its stale copy. These are not equally fixable: T-3368's was replaceable with a structural answer (partition markup from text) and T-3365's with an assertion that the dependency really rendered, but T-2219's static pin was a CONSIDERED trade (Slice 2, the real render test, was costed at M and deferred), so the lesson is not 'never pin text' — it is that a positional pin has an ongoing maintenance liability that must be booked at the time it is chosen, not discovered later as a mystery red."
+  source: P-001
+  task: T-3364
+  date: 2026-09-15
+  context: Added via context agent
