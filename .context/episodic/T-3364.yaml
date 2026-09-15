@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3364: test_is_viewable_path_rejects_unknown_dir asserts the pre-T-2281 contract for README.md
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-15T20:54:55Z
+# ============================================================================
+
+task_id: T-3364
+task_name: "test_is_viewable_path_rejects_unknown_dir asserts the pre-T-2281 contract for README.md"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-15T16:56:32Z
+completed: 2026-09-15T20:54:38Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-15T22:24:15+02:00
+last_commit: 2026-09-15T22:25:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  realign stale assertion to T-2281's deliberate ROOT_FILES allowlist. pre-register run-final prediction (4 failed / 2709 passed / 2715 total). capture cross-cause synthesis (positional/textual coupling) + OBS-410 (T-3326 Sovereign question)
+
+# Key outcomes
+outcomes:
+  - '**Established which side is stale, with evidence — before changing either.**'
+  - '**The allowlist is enumerated and judged, not assumed benign.** `ROOT_FILES`'
+  - '**The test asserts the current contract**, not the pre-T-2281 one:'
+  - '**Control leg — the allowlist is proven to BE an allowlist.** A root-level'
+  - 'Suite failure count drops from 5 to 4 with no new red, measured by the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-3365.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/session.yaml'
+  - '.tasks/active/T-3364-testisviewablepathrejectsunknowndir-asse.md'
+  - 'tests/unit/test_file_route_extensions.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-15T22:24:15'
+    action: 'T-3364: realign stale assertion to T-2281''s deliberate ROOT_FILES allowlist'
+  - time: '2026-09-15T22:24:37'
+    action: 'T-3364: pre-register run-final prediction (4 failed / 2709 passed / 2715 total)'
+  - time: '2026-09-15T22:25:54'
+    action: 'T-3364: capture cross-cause synthesis (positional/textual coupling) + OBS-410 (T-3326 Sovereign question)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 238 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 238
+  commits: 3
+  files_changed: 12
+  lines_added: 173
+  lines_removed: 48
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3364-testisviewablepathrejectsunknowndir-asse.md
+generated_by: context-agent-hybrid

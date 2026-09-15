@@ -11,12 +11,12 @@ description: >
   invisible behind the starved nightly. See docs/reports/T-3362-pytest-triage.md group
   C.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_file_route_extensions.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -29,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T16:56:32Z
-last_update: 2026-09-15T20:22:23Z
-date_finished:
+last_update: 2026-09-15T20:54:38Z
+date_finished: 2026-09-15T20:54:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -101,8 +101,15 @@ bvp_scores_proposed:
       file that is *not* in `ROOT_FILES` is still rejected. Without this, the
       realigned test would pass equally against a generic "any depth-0 file is
       viewable" rule, which is the actual dangerous version of this change.
-- [ ] Suite failure count drops from 5 to 4 with no new red, measured by the
+- [x] Suite failure count drops from 5 to 4 with no new red, measured by the
       run-final full suite.
+
+      **Result: `4 failed, 2709 passed, 2 skipped` — total 2715, 1788.67s.**
+      Every predicted quantity matched, and so did the failure set:
+      `test_corpus_lint` (T-3326) + `test_inception_decide_warning_widen` ×3
+      (T-2219). Deriving the passed count twice (forward and by subtraction) is
+      what made it right this time; T-3368's equivalent line was derived once
+      and was wrong.
 
       **Pre-registered prediction (written before the run reported):**
       `4 failed, 2709 passed, 2 skipped`, total **2715**.
@@ -424,3 +431,15 @@ allowlist apart from the hole.
 
 ### 2026-09-15T20:22:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6a98ef7f
+- **Timestamp:** 2026-09-15T20:54:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-15T20:54:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
