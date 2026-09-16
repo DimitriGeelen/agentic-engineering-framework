@@ -327,6 +327,20 @@ The `17 failed` figure recorded above under *Result of the confirming run* preda
 T-3367 and is stale. It is left in place rather than edited — a failed prediction
 is evidence, and overwriting it would erase the record this task exists to keep.
 
+**AC 3 is not ticked, and what is missing is one specific run.** The reduced
+ordering above reproduces 15 of the 16 victims in its control, not 16 — so it is
+evidence that the fixture works across both causes, but it is *not* "the
+contaminator-first ordering that reproduced the failure", which was the full
+suite. A full `pytest tests/unit` run was launched this session and was still at
+~10% after 13 minutes: the host was saturated by unrelated work (loadavg 23 at
+launch, `rustc`, `llama-server`, 104 chromium processes, and 19 concurrent
+`claude`/`claude-fw` sessions — the OBS-429 neighbourhood), giving pytest 10% CPU
+and a projected ~108 minutes. Left running detached; output at
+`/root/.claude/jobs/dadae3c3/tmp/fullsuite.txt`. The number it produces replaces
+the stale `17 failed` above. Until then AC 3 stays unticked — a green reduced run
+is not the criterion as written, and T-3304 already records that measurements
+taken on a loud host are the ones that need re-taking.
+
 **One thing this session could not explain.**
 `test_review_markdown_render.py::test_parse_ac_body_renders_steps_as_html` — the
 false-green case — passes in isolation (`1 passed in 0.41s`). The hypothesis that
