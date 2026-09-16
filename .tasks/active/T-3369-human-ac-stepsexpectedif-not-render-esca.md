@@ -112,56 +112,97 @@ bvp_scores_proposed:
       XSS hole.
 - [x] **Control leg:** with `| safe` removed again, the "renders as an anchor"
       assertion fails. Proves the test observes the template, not just the helper.
-- [ ] Live-verified on the running Watchtower after restart, and the suite shows
-      no new red. **← THE ONLY OPEN AC. Do not tick without doing both.**
+- [x] Live-verified on the running Watchtower after restart, and the suite shows
+      no new red. **Both halves done 2026-09-16 — see `## Resolution`.** The live
+      half is an AC-REGION audit (not the whole-page grep that was inconclusive at
+      park time); the suite half is set parity, not merely count parity.
 
-## Parked state (2026-09-15, budget stop condition)
+## Resolution (2026-09-16)
 
-Parked at the framework's 300k session-token cap, not because the work stalled.
-Committed at `b3cdcd274`; nothing is half-written on disk.
+Parked at the 300k session cap, not stalled; resumed after compaction reset the
+budget and `bin/fw work-on T-3369` lifted the park-ordering interlock.
 
-**Done and evidenced:**
-- 12 XSS payloads through both real helpers → zero live tags, zero dangerous
-  attributes (`markdown2` runs `safe_mode='escape'` ahead of every linkifier).
-- All 9 interpolations across 3 templates now carry `| safe` (grep-verified).
-- `tests/unit/test_ac_field_render_safety.py` — 16 passed.
-- Control: reverting 1 of 6 sites fails the parity test and names the template.
-- `fw vendor self --check` clean; Watchtower restarted, `watchtower current` OK.
+### Half 1 — live check, AC region specifically
 
-**What is NOT done — and precisely why it is not ticked:**
+The park note recorded the earlier whole-page grep as **inconclusive** and said
+why: `/tasks/T-3368` legitimately contains both escaped and unescaped markup,
+because T-3368's own `description:` frontmatter quotes example markup that
+*must* stay escaped. A page-wide count therefore measures the wrong thing.
 
-1. **The full suite was never run against this change.** No claim is made about
-   new red. It should be `4 failed / 2725 passed / 2 skipped` (2731 total:
-   2715 + 16 new tests) if nothing regressed — treat that as a prediction to
-   check, not a result.
+Re-run scoped to the `human-ac-card` body only:
 
-2. **The live check was inconclusive and I am recording it as inconclusive.**
-   After restart, `/tasks/T-3368` still showed 4 occurrences of
-   `&lt;a href=&#34;/file/`. Those are **not** the bug: they come from T-3368's
-   `description:` frontmatter, which literally contains the example string
-   `'<a href="./<a href="/file/PATH">PATH</a>">text</a>'` as documentation, and
-   escaping that is correct — rendering it would emit real nested anchors. So
-   the grep was measuring the wrong thing.
+| measurement | result | required |
+|---|---:|---|
+| live `/file/` anchors | 1 (`/file/web/shared.py`) | ≥1 |
+| escaped `&lt;a href=` | 0 | 0 |
+| live `<code>` tags | 9 | — |
+| escaped `&lt;code&gt;` | 0 | 0 |
+| live `<script>` tags | 0 | 0 |
+| `on*` handlers | 0 | 0 |
 
-   The genuine signal was the other number: real `/file/` anchors on that page
-   went **0 → 1**. That is consistent with the fix working, but one anchor is
-   weak evidence and I ran out of budget before isolating the AC region itself.
+The load-bearing line is the Steps entry rendering as
+`<code><a href="/file/web/shared.py">web/shared.py</a></code>` — the exact shape
+that appeared as `&lt;code&gt;&lt;a href=&#34;…` before the fix. The last two
+rows are the XSS leg holding **live**, not merely in unit tests.
 
-   **Next session: verify the AC region specifically, not the whole page.** Open
-   `/tasks/T-3368`, find the `[REVIEW]` Human AC, and confirm the backticked
-   `web/shared.py` in its Steps renders as a clickable link rather than as
-   `&lt;code&gt;&lt;a href=…`. A whole-page grep cannot answer this because the
-   page legitimately contains both escaped and unescaped markup.
+### Half 2 — suite, predicted before the run
+
+Prediction committed at `b3cdcd274` *before* execution: `4 failed / 2725 passed /
+2 skipped`, 2731 total (2715 + 16 new tests).
+
+Result: **`4 failed, 2725 passed, 2 skipped in 1831.87s`** — 2731 total. Exact on
+all four quantities.
+
+Count parity is not set parity, so the failures were checked by identity:
+
+| failing test | owner |
+|---|---|
+| `test_live_corpus_all_versions_census` | T-3326 / OBS-410 (Sovereign question) |
+| `test_side_effect_warning_truncation_widened_to_1500` | T-2219 (`owner: human`) |
+| `test_side_effect_warning_html_escaped` | T-2219 |
+| `test_side_effect_warning_uses_pre_wrap_style` | T-2219 |
+
+Identical to the documented set. `2709 + 16 = 2725` accounts for every new pass,
+so all 16 new tests are green and nothing previously-green turned red.
+
+### Filed, not folded in (one bug, one task)
+
+- **OBS-411** — backticked *non-tag* placeholders render a literal `&lt;`:
+  `` `<that URL>` `` → `<code>&amp;lt;that URL&gt;</code>`, while `` `<b>` `` →
+  `<code>&lt;b&gt;</code>` is correct. Discriminator is whether the `<…>` is a
+  recognised tag name. **Upstream of this task** — it is in the helper output,
+  not the template; this fix is only what made it visible.
+- **OBS-412** — OBS-397's pre-registered prediction confirmed: the nightly still
+  times out, and its pytest leg reports `failed_count: 0` having run `tests: 0`.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
+- [ ] [REVIEW] Human-AC fields on a task page read as rendered prose, not as markup
+
+  **Steps:**
+  1. `bin/fw watchtower url` to get the base URL
+  2. Open http://192.168.10.107:3002/tasks/T-3368 in a browser
+  3. Scroll to the **Human** acceptance criterion (the one badged *Review*)
+  4. Read its **Steps**, **Expected** and **If not** blocks
+  5. Open http://192.168.10.107:3002/approvals and read the same three fields on any card there
+
+  **Expected:** the three fields read as ordinary formatted text — inline code in a
+  code style, `web/shared.py` as a single underlined link that opens the file view.
+  No visible angle-bracket markup, no `&lt;`, no stray `href=` or `"&gt;` in the
+  prose. Both pages look the same as each other.
+
+  **If not:** note which page and which of the three fields, and whether the text
+  shows escaped markup (regression of this task) or a stray `&lt;` in front of a
+  placeholder word (that is OBS-411, a separate known defect — not this task).
+
+  *Why this is [REVIEW] and not [REVIEWER]:* the Agent ACs already pin the
+  structure by assertion — 9 interpolations carry `| safe`, zero bare, 16 tests
+  green, XSS payloads inert. What a static scan cannot answer is whether the
+  operator reading Watchtower sees prose that reads cleanly. Per the T-2143
+  audience test, the subject here is the human's reading experience, so it lands
+  on the Human side.
+
+## Verification` instead of a Human AC here. Only keep [REVIEW] if
      verification genuinely needs human taste (tone, feel, layout rhythm).
      See CLAUDE.md §AC Classification Guidance for the conversion rule.
 
@@ -185,6 +226,13 @@ Committed at `b3cdcd274`; nothing is half-written on disk.
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_ac_field_render_safety.py -q
+test "$(grep -hoE '(ac\.steps|step|ac\.expected|ac\.if_not)[^}]*\| *safe' web/templates/task_detail.html web/templates/_approvals_content.html web/templates/_review_acs.html | wc -l)" -ge 9
+! grep -nE '\{\{ *(step|ac\.steps|ac\.expected|ac\.if_not) *\}\}' web/templates/task_detail.html web/templates/_approvals_content.html web/templates/_review_acs.html
+bin/fw vendor self --check
+bin/fw watchtower current
+
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -314,6 +362,36 @@ Committed at `b3cdcd274`; nothing is half-written on disk.
 
 ## RCA
 
+**Symptom:** Human-AC Steps / Expected / If-not rendered as literal markup to the
+operator — `&lt;code&gt;&lt;a href=&#34;/file/web/shared.py&#34;&gt;…` instead of a
+clickable link.
+
+**Root cause:** `_parse_ac_body` returns *already-rendered HTML* (it runs
+`_render_md_inline` / `_render_md_block`, which call `_auto_link_files`), but
+`task_detail.html` and `_approvals_content.html` interpolated it as bare
+`{{ … }}`, so Jinja autoescaped it a second time. `_review_acs.html` already had
+`| safe` on all three fields — so this was a 6-site divergence, not a single miss.
+
+**Why structurally allowed:** nothing ties the T-1575 rendering contract ("the
+caller must mark the returned string `| safe`") to the templates that consume it.
+The contract lives in prose; the templates were free to diverge silently. It
+stayed invisible because double-escaping is only *visible* when the content
+actually contains markup — i.e. when the linkifier fires, which it only does for
+paths that exist on disk. Most ACs cite no real path, so most ACs looked fine.
+The template last changed 2026-07-29 (T-2674) and these three fields never
+carried `| safe` at all.
+
+**Prevention** (distinct from the fix): `tests/unit/test_ac_field_render_safety.py`
+pins both halves at once — a literal `<script>` in an AC field stays inert, AND a
+Markdown link to a real repo path renders as a single clickable anchor. Either
+assertion alone is satisfiable by the wrong code (the first by reverting the fix,
+the second by an XSS hole), which is why they are paired. Cross-template parity is
+enforced as an *absence* assertion (`_UNSAFE_INTERP`), so a seventh site added
+later fails the test rather than silently joining the divergence. A control leg
+confirms the test observes the template, not just the helper: removing `| safe`
+from one of the six sites fails the parity test and names the template.
+
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -354,32 +432,34 @@ Committed at `b3cdcd274`; nothing is half-written on disk.
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** The fix is a template-level `| safe` on content that was already
+being rendered to HTML upstream — it restores the T-1575 contract rather than
+widening it. The XSS question was settled *before* the filter was added, by
+probing the real helpers rather than reading the code: `markdown2` runs
+`safe_mode='escape'` ahead of every linkifier, so raw markup from a task file is
+escaped before anything else touches it, and the linkifiers emit only
+framework-constructed `/file/` and `/tasks/` anchors. All six divergent sites were
+fixed, not just the one that was noticed — fixing only `/tasks/` would have left
+`/approvals` broken identically, which is how a 6-site divergence forms.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+**Evidence:**
+- 12 XSS payloads through both real helpers → 0 live tags, 0 dangerous attributes.
+- 9/9 interpolations across 3 templates carry `| safe`; 0 bare (grep-verified).
+- `tests/unit/test_ac_field_render_safety.py` — 16 passed.
+- Control leg: removing `| safe` from 1 of 6 sites fails the parity test and names
+  the template — so the test observes the template, not just the helper.
+- Live AC-region audit on `/tasks/T-3368`: 1 live `/file/` anchor, 0 escaped
+  anchors, 0 escaped `<code>`, 0 `<script>`, 0 `on*` handlers.
+- Full suite: `4 failed, 2725 passed, 2 skipped` (2731) — exactly the prediction
+  committed at `b3cdcd274` before the run, and the 4 failures are the same 4 by
+  identity (T-3326 ×1, T-2219 ×3), not merely the same count.
+- `fw vendor self --check` clean; `fw watchtower current` OK (server not stale).
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**What this does NOT claim:** OBS-411 (a literal `&lt;` in front of backticked
+non-tag placeholders) is still present. It is upstream of this task — in the
+helper, not the template — and this fix is what made it visible. Filed separately.
 
 ## Decisions
 
