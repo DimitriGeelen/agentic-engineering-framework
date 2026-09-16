@@ -4638,3 +4638,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-413
+  text: "OBS-409 — TWO MORE MEASURED INSTANCES, and a third that is sharper than both (2026-09-16, one session). check-active-task.sh refused purely READ-ONLY command lines because they contained a stderr-suppression suffix (fd 2 redirected into the null device). (1) an 'echo + cat .tool-counter + cat focus.yaml' state-gather during /resume; (2) an 'ls + grep' confirming a task close. Neither writes anything. THE THIRD IS THE INTERESTING ONE: the attempt to file THIS observation was itself refused, because the note TEXT quoted the offending characters inside a double-quoted argument to 'bin/fw note'. There was no redirect in that command at all — the matcher cannot distinguish a redirect OPERATOR from the identical characters inside a string LITERAL. The observation about textual-vs-structural matching was blocked by the textual matcher for containing the text it describes. SUBSTANCE: the predicate classifies by surface shape of the command line rather than by shell structure, so 'suppress stderr' and 'quote a character in an argument' are indistinguishable from 'create a file'. Same positional-vs-structural class as T-3368 (regex applied over rendered HTML) and T-2219 (static-source pin). NOT proposing an allowlist entry for the stderr-suppression idiom: that is the tempting small fix and it does not generalise, since instance 3 has no redirect to allowlist. The general shape is 'decide from parsed shell structure, not from substring presence' — e.g. shlex-level parse, or at minimum ignore anything inside quotes. Cost of non-fix is one silent retry per occurrence, never a visible failure, which is why it recurs rather than gets fixed."
+  captured: 2026-09-16T03:48:27Z
+  context_task: T-3369
+  tags: []
+  status: pending
+  promoted_to: null
