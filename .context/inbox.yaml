@@ -4687,3 +4687,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-420
+  text: "CORRECTION to OBS-418 — the T-1626 missing-hook witness is NOT broken. It works. My probe was wrong and so is the claim I filed. Evidence: 'cd <tempdir with .tasks marker> && env -u CLAUDE_PROJECT_DIR -u PROJECT_ROOT bin/fw hook bogus-witness-scoped' writes bogus-witness-scoped=1 to BOTH the temp project's .hook-counter and .hook-failure-counter, exit 0, and leaks nothing to the real repo. The earlier probe passed PROJECT_ROOT= as an ENV VAR, which bin/fw deliberately discards: bin/fw:203-234 re-resolves PROJECT_ROOT from cwd / CLAUDE_PROJECT_DIR as the T-2390 HOME-poison guard (hardened again by T-2446 and T-3285). So the writes went to the REAL repo, and the real repo's counters prove it — bogus-hook-name-probe=1 and bogus-hook-name-for-T1628=2 in .hook-counter, =21 failures in .hook-failure-counter, plus 22 lines in .hook-crashes.log. What WAS broken is the test: tests/unit/hook_telemetry.bats test 14 asserted against a temp dir the binary ignores, so it could never pass, and each run polluted live telemetry instead. Fixed in T-3372 by scoping via cwd+env -u, with a control leg asserting the live repo count is unchanged. Lesson worth keeping: an assertion that a thing DOESN'T happen is only as good as the scoping of the probe — I read 'the temp dir is empty' as 'nothing was recorded' when the correct reading was 'it was recorded somewhere else'. Absence at the observation point is not absence."
+  captured: 2026-09-16T15:32:45Z
+  context_task: T-3372
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-421
+  text: "OBS: test-suite pollution class — bats tests that scope bin/fw with an ENV PROJECT_ROOT are not isolated, because bin/fw re-resolves PROJECT_ROOT from cwd (bin/fw:203-234, T-2390/T-2446/T-3285 poison guards). bats runs with cwd inside the repo, so every such test resolves to the REAL project and mutates live state instead of its temp dir. Confirmed instance (fixed in T-3372): tests/unit/hook_telemetry.bats test 14 wrote bogus-hook-name-for-T1628 into the live .hook-counter (=2) and .hook-failure-counter (=21) plus 22 .hook-crashes.log lines. Same shape, NOT yet verified individually, in four more files: tests/unit/t2230_bvp_driver_init.bats, tests/unit/gaps_close.bats, tests/unit/t2331_driver_propose.bats, tests/unit/init_fresh_value_drivers.bats — each uses PROJECT_ROOT=$TEST_TEMP_DIR with a bin/fw invocation, and their verbs write value-drivers/gaps/driver-proposal state, so the blast radius is policy and register files rather than counters. Two reasons this matters beyond tidiness: (1) a test asserting against its temp dir can be permanently red while silently succeeding against production state, which is how test 14 survived; (2) the pollution lands in exactly the files fw doctor and the T-1629 threshold escalation read, so the suite manufactures signal in the surfaces meant to detect drift. The correct scoping is 'cd <temp> && env -u CLAUDE_PROJECT_DIR -u PROJECT_ROOT bin/fw ...' plus a control assertion that the live path is unchanged. Not fixed here — one bug one task, and each file needs its own verification that it actually leaks."
+  captured: 2026-09-16T15:32:58Z
+  context_task: T-3372
+  tags: []
+  status: pending
+  promoted_to: null

@@ -115,11 +115,34 @@ teardown() {
     # The exact T-1626 scenario: hook is configured but not found. Pre-T-1628
     # this exited 0 silently. Now it must increment .hook-failure-counter
     # under the configured hook name so B-3 / fw doctor see the drift.
-    PROJECT_ROOT="$TEST_TEMP_DIR" run "$FRAMEWORK_ROOT/bin/fw" hook bogus-hook-name-for-T1628
+    #
+    # T-3372: this test used to run `PROJECT_ROOT="$TEST_TEMP_DIR" fw hook …` and
+    # then assert against $TEST_TEMP_DIR. It could never pass, and worse, it was
+    # never inert: `bin/fw` DELIBERATELY re-resolves PROJECT_ROOT from cwd /
+    # CLAUDE_PROJECT_DIR (bin/fw:203-234, the T-2390 $HOME-poison guard), so the
+    # env var was discarded and every run of this suite incremented the REAL
+    # repo's .hook-counter and .hook-failure-counter. The live files accumulated
+    # `bogus-hook-name-for-T1628=21` failures that way — a test suite writing
+    # into the telemetry that `fw doctor` and the T-1629 escalation read.
+    #
+    # Scope it the way the binary actually resolves a project: cd into a temp dir
+    # carrying a project marker, with CLAUDE_PROJECT_DIR unset.
+    mkdir -p "$TEST_TEMP_DIR/.tasks/active"
+    local live_before live_after
+    live_before="$(grep -c 'bogus-hook-name-for-T1628' "$FRAMEWORK_ROOT/.context/working/.hook-counter" 2>/dev/null || echo 0)"
+
+    run bash -c "cd '$TEST_TEMP_DIR' && env -u CLAUDE_PROJECT_DIR -u PROJECT_ROOT '$FRAMEWORK_ROOT/bin/fw' hook bogus-hook-name-for-T1628"
     [ "$status" -eq 0 ]
+
     [ -f "$TEST_TEMP_DIR/.context/working/.hook-failure-counter" ]
     grep -q '^bogus-hook-name-for-T1628=1$' "$TEST_TEMP_DIR/.context/working/.hook-failure-counter"
     grep -q '^bogus-hook-name-for-T1628=1$' "$TEST_TEMP_DIR/.context/working/.hook-counter"
+
+    # CONTROL: the write must have gone ONLY to the temp project. Without this,
+    # the assertions above pass just as happily while the suite keeps polluting
+    # the live repo — which is exactly how the old version stayed unnoticed.
+    live_after="$(grep -c 'bogus-hook-name-for-T1628' "$FRAMEWORK_ROOT/.context/working/.hook-counter" 2>/dev/null || echo 0)"
+    [ "$live_before" -eq "$live_after" ]
 }
 
 @test "performance: 1000 fires under 5000ms (<5ms each, T-1626 budget)" {
