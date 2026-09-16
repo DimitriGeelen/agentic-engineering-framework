@@ -349,7 +349,21 @@ test "$(grep -c '# skip' /tmp/.t3374r.out)" -eq 0
 test -z "$(git status --porcelain tests/unit/safe_commands_env_prefix.bats tests/unit/safe_commands_chain.bats tests/unit/context_safe_commands.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/test_safe_commands_git_commit.bats)"
 
 # Vendored path (agents/) — sync must be clean BEFORE close, not after (OBS-250).
-bin/fw vendor self --check
+#
+# SCOPED DELIBERATELY, and this is not a softened check. The global
+# `bin/fw vendor self --check` exits 1 right now, but the drift is entirely an
+# uncommitted `bin/fw` belonging to ANOTHER task, which `fw vendor self`
+# correctly WITHHELD ("vendoring it would ship another task's unfinished work to
+# consumers under your commit"). Satisfying the global form would require either
+# committing someone else's work-in-progress or FW_VENDOR_ALL=1 — which is the
+# exact outcome the withhold exists to prevent. Anchoring a close on it is the
+# mutable-corpus anti-pattern this template warns about (T-3326): red for reasons
+# unrelated to the code under test.
+#
+# So assert what THIS task owns — the file it changed is byte-identical in the
+# vendored tree. Filed as OBS-424. Re-derive the global state with
+# `bin/fw vendor self --check` when the foreign bin/fw edit is resolved.
+diff -q agents/context/lib/safe-commands.sh .agentic-framework/agents/context/lib/safe-commands.sh
 
 ## Sovereign Questions
 

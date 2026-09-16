@@ -4716,3 +4716,10 @@ observations:
   status: pending
   promoted_to: null
   urgent: true
+- id: OBS-424
+  text: "Vendored-path close gate is unsatisfiable while ANY unrelated vendored file is uncommitted. CLAUDE.md requires `bin/fw vendor self --check` in Verification for tasks touching bin/ lib/ agents/ policy/ web/. But `fw vendor self` deliberately WITHHOLDS uncommitted files belonging to other tasks (correct: vendoring them would ship another tasks unfinished work to consumers under your commit), and `--check` then reports global DRIFT and exits 1. Measured on T-3374: my agents/ file synced and is byte-identical in .agentic-framework/, yet --check exits 1 solely because of a foreign uncommitted bin/fw. The task author has only bad options: commit someone elses WIP, use FW_VENDOR_ALL=1 (ships exactly what the withhold prevents, logged Tier-2), or skip the mandated check. This is also the T-3326 mutable-corpus-anchor anti-pattern the task template itself warns against - a verification line going red for reasons unrelated to the code under test. T-3374 resolved it by scoping to `diff -q <changed file> <vendored copy>` and recording why. Candidate structural fixes: (a) `vendor self --check --scope <paths>` so a task asserts only what it owns; (b) --check ignores paths it would have withheld, reporting them separately as INFO; (c) CLAUDE.md prescribes the scoped form. All three are governance changes, not chores."
+  captured: 2026-09-16T17:51:59Z
+  context_task: T-3374
+  tags: [gap]
+  status: pending
+  promoted_to: null
