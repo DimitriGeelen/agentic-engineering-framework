@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3373: safe-commands allowlist: read-only command-substitution assignment classifies as unsafe
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-16T17:21:18Z
+# ============================================================================
+
+task_id: T-3373
+task_name: "safe-commands allowlist: read-only command-substitution assignment classifies as unsafe"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-16T17:16:34Z
+completed: 2026-09-16T17:21:00Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  safe-commands allowlist: read-only command-substitution assignment classifies as unsafe
+
+# Key outcomes
+outcomes:
+  - 'Gap reproduced by a **measured probe** against `is_bash_safe_command`, not'
+  - 'Probe includes a **control leg**: at least one form that correctly reads'
+  - 'Gap registered as an OBS entry in `.context/inbox.yaml`, carrying the'
+  - 'Task records that the fix is **NOT authorized** and names the constraint'
+  - '`agents/context/lib/safe-commands.sh` is **unmodified** by this task'
+  - 'Direction of failure established (fail-closed vs fail-open), so the filing'
+  - 'Adjacent fail-OPEN finding surfaced during probing filed **separately**'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3373-safe-commands-allowlist-read-only-comman.md
+generated_by: context-agent-hybrid

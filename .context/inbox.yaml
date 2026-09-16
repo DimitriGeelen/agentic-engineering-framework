@@ -4701,3 +4701,18 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-422
+  text: "safe-commands allowlist blind spot: a read-only command wrapped as a command-substitution assignment (WURL=$(cat file), out=$(bin/fw doctor)) classifies UNSAFE, so check-active-task refuses pure reads. Measured 4/4 paired forms flip SAFE->UNSAFE purely from the wrapper; two control legs read correctly (FW_X=1 bin/fw doctor SAFE, rm -rf UNSAFE). Fail-CLOSED: 7 adversarial forms all stayed UNSAFE, so it over-blocks and is not a security hole. Sixth instance of the positional-token-reader class L-598 (prior: T-1908 env prefixes, T-2834 chain segments, T-2988 grouping, T-3096 wrappers, T-3344 redirects). The T-1908 stripper at safe-commands.sh:294 requires a trailing command after the assignment, which this shape does not have. Evidence + probe in T-3373. Fix NOT authorized: safe-commands.sh:51-53 deliberately leaves command substitution unhandled to avoid catching the documented curl \"$(bin/fw watchtower url)\" idiom, and any fix must reconcile with that."
+  captured: 2026-09-16T17:19:54Z
+  context_task: T-3373
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-423
+  text: "Tier-1 gate fail-OPEN: the T-1908 env-prefix stripper in safe-commands.sh:294 removes ANY NAME=VALUE prefix with no exclusion for variables that control binary resolution or shell startup. Measured SAFE verdicts for: PATH=/tmp cat x | LD_PRELOAD=/tmp/e.so cat x | BASH_ENV=/tmp/e.sh cat x | IFS=x cat y. grep for LD_PRELOAD/BASH_ENV/PATH= in that file returns no matches - there is no denylist to have missed these, the category was never represented. The classifier decides SAFE from the base command AFTER stripping, while the discarded prefix is what determines what that base name resolves to. Direction is opposite to OBS-422: that one over-blocks, this one under-blocks. CONFIDENCE: classifier behaviour is MEASURED; end-to-end exploitability is INFERRED and NOT verified (would additionally require placing a file at the redirected path, itself gated; not attempted, and no exploit chain recorded by design). Established claim is narrower and sufficient to act on: a Tier-1 gate computes its read-only verdict from a token whose meaning the discarded prefix controls. Found incidentally while building control legs for OBS-422/T-3373; filed separately per one-bug-one-task. Needs its own task + scrutiny; NOT fixed."
+  captured: 2026-09-16T17:20:06Z
+  context_task: T-3373
+  tags: [bug]
+  status: pending
+  promoted_to: null
+  urgent: true
