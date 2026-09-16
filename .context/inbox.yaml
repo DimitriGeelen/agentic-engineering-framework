@@ -4652,3 +4652,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-415
+  text: "SOVEREIGN QUESTION (measured live 2026-09-16, T-3370, autonomous-run selection step). The Mandate directs selection by BVP quadrant — 'Q1 high value/low cost, work first to exhaustion'. That instruction is NOT EXECUTABLE against this corpus, and the evidence is now three-fold and reproducible: (1) the task actually in flight, T-3370, has NO quadrant — 'fw bvp T-3370' reports 'cost_estimate: absent. Set in task frontmatter to enable ranking'; (2) 'fw bvp --include-proposed --quadrant hv-lc' prints its own disclaimer: '175/206 task(s) (85%) have no known cost — blast_radius unmeasured, so no quadrant', i.e. thresholds are computed over 31 tasks and applied to a corpus of 206; (3) every row in the hv-lc band scores IDENTICALLY at 108 / 0.40 / 3.6, and the top of that band is 'Export docs section as PDF/DOCX/other formats' — parked backlog. This reconfirms OBS-398 and OBS-405 with a new instance and adds a sharper one: the degenerate vector D1=4 D2=4 D3=3 D4=2 F-RECALL=2 that T-3370 received is BYTE-IDENTICAL to the one T-3369 received, a structurally different task. The estimator is not scoring, it is assigning a constant. CONSEQUENCE FOR GOVERNANCE, which is the part that needs a human: an autonomous mandate whose selection rule is 'follow the quadrant' cannot be followed faithfully; any agent claiming to have followed it is decorating a choice it made on other grounds. I proceeded on T-3370 under an explicitly stated assumption (continue the in-flight task, per 'do not stop mid-task') and recorded that rationale BEFORE executing, rather than reconstructing it afterwards. NOT RESOLVING THIS — it is an architectural/priority decision. The candidates are named in OBS-398 and OBS-400; what is new here is that the failure now blocks the meta-level (how work is selected), not just the ranking view."
+  captured: 2026-09-16T13:30:41Z
+  context_task: T-3370
+  tags: []
+  status: pending
+  promoted_to: null
