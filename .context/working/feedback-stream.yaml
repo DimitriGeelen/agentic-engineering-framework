@@ -40731,3 +40731,21 @@ scan_id: R-45c275a0
 task_id: T-3371
 payload:
   task_file: .tasks/active/T-3371-fix-lost-update-race-in-hook-telemetry-c.md
+---
+kind: scan_emitted
+timestamp: '2026-09-16T15:33:56Z'
+scan_id: R-5d94c05b
+task_id: T-3372
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-16T15:33:56Z'
+scan_id: R-5d94c05b
+task_id: T-3372
+payload:
+  task_file: .tasks/active/T-3372-restore-the-t-1626-missing-hook-witness-.md

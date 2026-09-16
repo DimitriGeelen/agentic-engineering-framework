@@ -76,10 +76,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 11
-  commits: 2
-  files_changed: 5
-  lines_added: 752
-  lines_removed: 41
+  commits: 3
+  files_changed: 25
+  lines_added: 1074
+  lines_removed: 151
+  footprint_refreshed_at: '2026-09-16T15:08:20Z'
+  footprint_refreshed_by_commit: bdc9f4532
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3371-fix-lost-update-race-in-hook-telemetry-c.md

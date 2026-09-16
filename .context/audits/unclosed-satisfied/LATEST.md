@@ -26,7 +26,7 @@ alone (CLAUDE.md Human Task Completion Rule).
 Rows with an empty `## Verification` block need that scrutiny most —
 nothing mechanical would gate their close.
 
-## Qualifying tasks (22)
+## Qualifying tasks (23)
 
 | Task | Status | Workflow | Name | Agent ACs | Verification cmds? |
 |------|--------|----------|------|----------:|--------------------|
@@ -49,6 +49,7 @@ nothing mechanical would gate their close.
 | T-3317 | started-work | build | A worker's rewrite of agents/audit/audit.sh dropped ... | 4 | yes |
 | T-3324 | started-work | build | fw doctor spends ~79s of every run on 'bats --count ... | 4 | yes |
 | T-3326 | started-work | build | Stale-verification class: P-011 lines and unit tests... | 4 | yes |
+| T-3371 | started-work | build | Fix lost-update race in hook telemetry counter (OBS-... | 6 | yes |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |
