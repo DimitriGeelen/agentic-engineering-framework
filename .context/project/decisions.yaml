@@ -3943,3 +3943,10 @@ decisions:
     date: 2026-09-07
     task: T-3242
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-566
+    decision: "Operator ruling (T-3370): an unused/unreferenced/unwired item defaults to one of three readings — (A) wanted but broken, (B) wanted but never wired, (C) genuinely no longer wanted. Only C is DELETE, and C requires an affirmative reason the purpose no longer needs it, not an absence of references or telemetry. A and B are ADD. Rationale: deleting a broken-but-wanted capability destroys the human intent that created it, which is the expensive half; leaving a dead item costs storage and attention. Under D1 (weight 9) prefer the reversible error. Every DELETE row must state which reading applies and why it is C."
+    scope: project
+    date: 2026-09-16
+    task: T-3370
+    rationale: "Not specified"

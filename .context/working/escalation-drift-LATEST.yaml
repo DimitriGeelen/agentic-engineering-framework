@@ -1,7 +1,7 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-15T03:23:02.838128+00:00
-corpus_total: 2883
+generated: 2026-09-16T03:23:03.275698+00:00
+corpus_total: 2886
 bug_class_total: 508
 bug_class_pct: 17
 h1_flagged: 366
@@ -9,15 +9,11 @@ h1_pct_of_bug_class: 72
 h2_repeat_patterns: 165
 h3_flagged: 265
 h3_pct_of_bug_class: 52
-recent_30d_flagged: 9
+recent_30d_flagged: 7
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
-  - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
-    name: "Fix critical hook PROJECT_ROOT bug for external projects"
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
-  - tid: "T-3048-fw-test-unitall-runs-bats-on-testsunit-w"
-    name: "fw test unit/all runs bats on tests/unit with no directory guard — hard error"
   - tid: "T-3138-106-bats-assertions-cannot-fail-bash-exe"
     name: "106 bats assertions cannot fail: bash exempts !-inverted commands from errexit"
   - tid: "T-3193-a-release-can-advance-master-and-then-fa"
@@ -32,15 +28,15 @@ recent_sample:
     name: "workflow_coverage FAIL false-positive on non-spawning worker_kind ollama-direct"
 h2_top:
   - learning: "P-011"
-    task_count: 2617
+    task_count: 2623
   - learning: "L-387"
-    task_count: 2357
+    task_count: 2363
   - learning: "L-291"
-    task_count: 1173
+    task_count: 1175
   - learning: "L-398"
-    task_count: 916
+    task_count: 918
   - learning: "P-010"
-    task_count: 529
+    task_count: 532
   - learning: "L-399"
     task_count: 99
   - learning: "L-006"

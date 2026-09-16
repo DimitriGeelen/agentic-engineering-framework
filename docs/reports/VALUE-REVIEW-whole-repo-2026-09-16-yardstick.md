@@ -103,3 +103,36 @@ is the JUDGE's call, and whether it is acted on is the operator's.
 - DELETE on absence-of-usage-data alone (protocol rule; caps at MEDIUM and must be stated).
 - Weakening any test, gate, check or audit to make the picture cleaner.
 - Treating a Sovereign item as a cost.
+
+---
+
+## 5. Operator ruling — 2026-09-16 (binding, supersedes any judge inference)
+
+Recorded verbatim from the operator, during the run:
+
+> "something not showing up or not working, not being used doesn't per se mean it
+> doesn't have any value, right? It could also mean that we want it, but it's just
+> fucked up, broken and missing."
+
+**What this settles.** The protocol already forbids DELETE on absence-of-usage-data
+alone ("no data is not zero"). The operator's ruling goes further and is stronger: it
+says the *default reading* of an unused, unwired or unreferenced item is **not** "dead
+weight awaiting removal". It is **an open question with three distinct answers**, and
+the review must say which one it is picking and why:
+
+| Reading | Correct axis | What distinguishes it |
+|---|---|---|
+| **A — Wanted, but broken** | **ADD** (repair/complete), not DELETE | The capability is in the stated purpose or serves a driver; the item is a partial or non-functioning attempt at it. Non-use is a *symptom of the breakage*, not evidence against the capability. |
+| **B — Wanted, but never wired** | **ADD** (wire it) | The implementation is complete and correct; nothing invokes it. The four unwired write-time gates (D §4.1) are the type case. |
+| **C — Genuinely no longer wanted** | DELETE | Requires an affirmative reason the *purpose* no longer needs it — origin found and reason no longer holds — **not** merely an absence of references or telemetry. |
+
+**The asymmetry is deliberate and is the point.** Deleting a broken-but-wanted
+capability destroys the intent along with the artefact, and the intent is the expensive
+part — it took a human decision to want it. Leaving a genuinely dead item in place costs
+only storage and a little attention. Under D1 (Antifragility, weight 9) the reversible
+error is the one to prefer.
+
+**Binding instruction for classification:** every DELETE row must state which of A / B / C
+applies and why it is C. A DELETE row that cannot rule out A and B is an **ADD** or an
+**INVESTIGATE**, never a DELETE. "No references found" is evidence for none of the three
+on its own.
