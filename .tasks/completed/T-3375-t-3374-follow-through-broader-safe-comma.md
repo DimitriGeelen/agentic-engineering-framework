@@ -6,10 +6,10 @@ description: >
   T-3374 follow-through: broader safe-commands regression sweep + learning capture
   + OBS-419 third instance
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-16T17:53:49Z
-last_update: '2026-09-16T18:00:25Z'
-date_finished:
+last_update: 2026-09-16T18:04:54Z
+date_finished: 2026-09-16T18:04:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -149,36 +149,18 @@ that created them (`t3096_`, `t3221_`, `t3245_`…), which is the repo's dominan
 naming convention for regression pins. Selecting consumers by name in this repo is
 structurally guaranteed to under-select.
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+<!-- NO `### Human` SECTION. Every criterion on this task is agent-verifiable by a
+     deterministic command, so the template's own instruction applies: "Remove this
+     section if all criteria are agent-verifiable."
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+     Removed rather than relocated, and the reason is worth recording. The T-2420
+     close gate refused this task because `## Evidence` sat between `### Agent` and
+     `### Human`, which closes the Acceptance Criteria block early — Human ACs would
+     then have reported 0/0 and the task would have archived as fully complete. The
+     gate was right and the defect was mine. Leaving an empty boilerplate Human
+     block behind an intervening `##` heading is exactly the trap it exists to
+     catch, so deleting the empty block removes the trap instead of relocating it.
+     No Human AC was lost: there were none. -->
 
 ## Verification
 
@@ -330,6 +312,49 @@ grep -q 'OBS-425' .context/inbox.yaml
 
 ## RCA
 
+The defect under analysis is **T-3374's verification scope**, not the classifier
+(the sweep found the classifier clean, 279/279).
+
+**Symptom:** T-3374 closed claiming "all five existing `safe_commands` bats suites
+green", presenting that as the regression evidence for a change to a Tier-1 gate.
+Eighteen suites actually exercise the changed code. Thirteen were never run.
+
+**Root cause:** the consumer set was selected by **filename pattern** (`*safe_commands*`)
+rather than by **dependency**. Those are different sets, and in this repo they
+diverge badly: the dominant naming convention for a regression pin is the ID of the
+task that created it (`t3096_…`, `t3221_…`, `t3245_…`), so a suite that pins
+`is_bash_safe_command` behaviour is *more* likely to be named after its origin task
+than after the module. Selecting by module name is structurally guaranteed to
+under-select here.
+
+**Why structurally allowed:** nothing asked for the dependency set. The framework
+*did* emit the signal — `fw fabric blast-radius HEAD` printed
+`safe-commands (21 edges) — High connectivity` during the T-3374 commit — but it is
+advisory output at commit time, after the verification block was already written,
+and it names the component, not the tests that exercise it. The AC that should have
+caught this said "all five existing suites green", which is self-fulfilling: an AC
+that names its own scope can never fail for having the wrong scope. L-533 had
+already recorded the class ("sibling-site sweeps need an enumerating guard, not a
+memory of which sites we have") and it surfaced in this task's own `fw work-on`
+output — *after* T-3374 had closed.
+
+**Prevention:**
+1. This task's `## Verification` derives the consumer set with the grep at run time
+   and asserts `>= 18`, so a newly added consumer suite is picked up automatically
+   rather than depending on anyone's memory. It runs `bats` over that derived list
+   in one command, so a suite cannot be silently dropped from it.
+2. The floor assertion (`ok >= 279`) makes an empty file list fail instead of
+   passing trivially — the enumerating guard needs its own control leg, or it
+   becomes the next false green.
+3. L-673 records the adjacent detection-asymmetry lesson from T-3374 itself.
+
+**Not claimed:** this prevents recurrence *for this module*. A general rail — deriving
+test consumers from the fabric graph at close time for any changed component — would
+prevent the class. That is a governance change and is left as a Sovereign question
+rather than asserted here.
+
+## RCA notes (template guidance retained below)
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -424,3 +449,15 @@ grep -q 'OBS-425' .context/inbox.yaml
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3375-t-3374-follow-through-broader-safe-comma.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-39862c75
+- **Timestamp:** 2026-09-16T18:07:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-16T18:04:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3374: Fix OBS-423 fail-open: safe-commands env-prefix stripper accepts PATH/LD_PRELOAD/BASH_ENV without denylist
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-16T17:52:57Z
+# ============================================================================
+
+task_id: T-3374
+task_name: "Fix OBS-423 fail-open: safe-commands env-prefix stripper accepts PATH/LD_PRELOAD/BASH_ENV without denylist"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-16T17:40:03Z
+completed: 2026-09-16T17:52:18Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-16T19:50:51+02:00
+last_commit: 2026-09-16T19:52:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  close OBS-423 Tier-1 fail-open — env-prefix stripper now refuses resolution-affecting names (PATH/SHELL/LD_*/DYLD_*/BASH_ENV/IFS/interpreter opts/git exec hooks). Duplicate strip loop removed rather than denylist pasted twice, so env PATH=... (second entry point) is closed by construction. 19 new tests, control leg fails 13/19 against pre-fix source; 122 existing safe_commands tests green, 0 skips, none modified. GIT_DIR stays SAFE — retargets what is READ not what RUNS, per pinned T-1908 contract.. vendor sync (agents/ path) + fabric card for new suite + OBS-424 (vendored-path close gate unsatisfiable while an unrelated vendored file is uncommitted; scoped the Verification line and recorded why)
+
+# Key outcomes
+outcomes:
+  - 'Denylist applied to **BOTH** assignment-stripping loops (the primary T-1908'
+  - 'All four OBS-423 measured forms classify UNSAFE:'
+  - 'The wrapper-nested path `env PATH=/tmp cat x` classifies UNSAFE'
+  - 'T-1908 / L-399 contract preserved — `FW_SWITCH_FOCUS=1 fw work-on T-X`,'
+  - '**Control leg**: the new test file fails against the UNFIXED implementation.'
+  - 'All five existing `safe_commands` bats suites green with **zero skips**'
+  - 'No existing test deleted, weakened, or modified — asserted by'
+  - 'Residual risk (denylist incompleteness) and the allowlist alternative recorded'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'close OBS-423 Tier-1 fail-open — env-prefix stripper now refuses resolution-affecting names (PATH/SHELL/LD_*/DYLD_*/BASH_ENV/IFS/interpreter opts/git exec hooks). Duplicate strip loop removed rather than denylist pasted twice, so env PATH=... (second entry point) is closed by construction. 19 new tests, control leg fails 13/19 against pre-fix source; 122 existing safe_commands tests green, 0 skips, none modified. GIT_DIR stays SAFE — retargets what is READ not what RUNS, per pinned T-1908 contract.'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/inbox.yaml'
+  - '.fabric/components/tests-unit-t3374_env_prefix_denylist.yaml'
+  - '.tasks/active/T-3374-fix-obs-423-fail-open-safe-commands-env-.md'
+  - 'tests/unit/t3374_env_prefix_denylist.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-16T19:50:51'
+    action: 'T-3374: close OBS-423 Tier-1 fail-open — env-prefix stripper now refuses resolution-affecting names (PATH/SHELL/LD_*/DYLD_*/BASH_ENV/IFS/interpreter opts/git exec hooks). Duplicate strip loop removed rather than denylist pasted twice, so env PATH=... (second entry point) is closed by construction. 19 new tests, control leg fails 13/19 against pre-fix source; 122 existing safe_commands tests green, 0 skips, none modified. GIT_DIR stays SAFE — retargets what is READ not what RUNS, per pinned T-1908 contract.'
+  - time: '2026-09-16T19:52:11'
+    action: 'T-3374: vendor sync (agents/ path) + fabric card for new suite + OBS-424 (vendored-path close gate unsatisfiable while an unrelated vendored file is uncommitted; scoped the Verification line and recorded why)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 2
+  files_changed: 6
+  lines_added: 930
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3374-fix-obs-423-fail-open-safe-commands-env-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3375: T-3374 follow-through: broader safe-commands regression sweep + learning capture + OBS-419 third instance
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-16T18:07:16Z
+# ============================================================================
+
+task_id: T-3375
+task_name: "T-3374 follow-through: broader safe-commands regression sweep + learning capture + OBS-419 third instance"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-16T17:53:49Z
+completed: 2026-09-16T18:04:54Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-16T20:01:18+02:00
+last_commit: 2026-09-16T20:01:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  broader safe-commands sweep — enumeration finds 18 consumer suites, not the 5 T-3374 ran by filename; all 18 green (279 tests, 0 fail, 0 skip) so T-3374 holds on stronger evidence. L-673 (fail-open in a gate produces silence, not a complaint — detection asymmetry decides which direction you hear about). OBS-425 (OBS-419 third instance: close prompts for the learning, then blocks the command it printed).
+
+# Key outcomes
+outcomes:
+  - 'Consumer set derived by **enumeration**, not by filename pattern — the list is'
+  - 'All enumerated suites run against the post-T-3374 library; pass/fail and'
+  - 'Result stated plainly either way. A red here is a finding to file, not a'
+  - 'Learning captured referencing T-3374 (the close gate''s bug-fix learning'
+  - 'OBS-419''s third instance recorded with the specific command that was refused'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-3375-t-3374-follow-through-broader-safe-comma.md'
+  - '.tasks/completed/T-3374-fix-obs-423-fail-open-safe-commands-env-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-16T20:01:18'
+    action: 'T-3375: broader safe-commands sweep — enumeration finds 18 consumer suites, not the 5 T-3374 ran by filename; all 18 green (279 tests, 0 fail, 0 skip) so T-3374 holds on stronger evidence. L-673 (fail-open in a gate produces silence, not a complaint — detection asymmetry decides which direction you hear about). OBS-425 (OBS-419 third instance: close prompts for the learning, then blocks the command it printed).'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 4
+  lines_added: 439
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3375-t-3374-follow-through-broader-safe-comma.md
+generated_by: context-agent-hybrid
