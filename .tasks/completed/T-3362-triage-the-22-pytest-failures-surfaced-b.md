@@ -4,10 +4,10 @@ name: "Triage the 22 pytest failures surfaced by the T-3359 starvation fix"
 description: >
   Triage the 22 pytest failures surfaced by the T-3359 starvation fix
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T16:44:56Z
-last_update: '2026-09-15T17:00:27Z'
-date_finished:
+last_update: 2026-09-16T21:10:42Z
+date_finished: 2026-09-16T21:10:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -89,7 +89,7 @@ rather than re-filed.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] All 23 reported entries are accounted for: each is either reproduced locally
+- [x] All 23 reported entries are accounted for: each is either reproduced locally
       with its assertion/error captured, or shown not to be a test at all
 - [x] Failures are grouped into root-cause classes, each class stating the shared
       cause — not merely the shared filename
@@ -99,27 +99,6 @@ rather than re-filed.
       one of the 23 entries and its disposition
 - [x] No file under `lib/`, `web/`, `agents/`, or `bin/` is modified by this task
       (triage-only scope fence, verified by git diff)
-
-## Dispositions
-
-23 reported entries → **1 parser artefact + 22 real test failures → 6 root causes.**
-
-| Group | Entries | Cause | Disposition |
-|---|---:|---|---|
-| A | 1 | `unit-suite.sh:155` counts ERROR-level *log* lines as failures; `len(py_failed) or …` lets the contaminated list override pytest's own count (23 vs 22) | **OBS-402 → T-3366** |
-| B | 16 | Reload-based tests leak `web.shared.PROJECT_ROOT` etc.; T-1995's per-test re-pin fixture was applied to 2 files and never generalised | **T-3363** |
-| C | 1 | `test_is_viewable_path_rejects_unknown_dir` asserts the contract T-2281 deliberately superseded (`ROOT_FILES` allowlist) | **T-3364** |
-| D | 1 | `test_guard_skipped_on_htmx_request` DictLoader lacks the `_breadcrumb.html` stub T-2009 made mandatory | **T-3365** |
-| E | 1 | `test_live_corpus_all_versions_census` pins an exact live corpus count (42, now 47) | **T-3326** (existing) |
-| F | 3 | `test_inception_decide_warning_widen.py` is TDD-red for unfinished T-2219 | **T-2219** (existing) |
-
-**Only 6 of the 22 are failures of the code under test.** The other 16 are one
-harness defect counted sixteen times.
-
-Three of the four standing causes are tests that stopped matching their subject:
-an assertion outliving its contract (C), a fixture outliving its dependency (D), a
-count outliving its corpus (E). The oldest has been red since **2026-05-23** —
-~3.7 months — behind a nightly that reported `failed_count: 0`.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -151,6 +130,27 @@ count outliving its corpus (E). The oldest has been red since **2026-05-23** —
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+## Dispositions
+
+23 reported entries → **1 parser artefact + 22 real test failures → 6 root causes.**
+
+| Group | Entries | Cause | Disposition |
+|---|---:|---|---|
+| A | 1 | `unit-suite.sh:155` counts ERROR-level *log* lines as failures; `len(py_failed) or …` lets the contaminated list override pytest's own count (23 vs 22) | **OBS-402 → T-3366** |
+| B | 16 | Reload-based tests leak `web.shared.PROJECT_ROOT` etc.; T-1995's per-test re-pin fixture was applied to 2 files and never generalised | **T-3363** |
+| C | 1 | `test_is_viewable_path_rejects_unknown_dir` asserts the contract T-2281 deliberately superseded (`ROOT_FILES` allowlist) | **T-3364** |
+| D | 1 | `test_guard_skipped_on_htmx_request` DictLoader lacks the `_breadcrumb.html` stub T-2009 made mandatory | **T-3365** |
+| E | 1 | `test_live_corpus_all_versions_census` pins an exact live corpus count (42, now 47) | **T-3326** (existing) |
+| F | 3 | `test_inception_decide_warning_widen.py` is TDD-red for unfinished T-2219 | **T-2219** (existing) |
+
+**Only 6 of the 22 are failures of the code under test.** The other 16 are one
+harness defect counted sixteen times.
+
+Three of the four standing causes are tests that stopped matching their subject:
+an assertion outliving its contract (C), a fixture outliving its dependency (D), a
+count outliving its corpus (E). The oldest has been red since **2026-05-23** —
+~3.7 months — behind a nightly that reported `failed_count: 0`.
 
 ## Verification
 
@@ -289,6 +289,59 @@ test -z "$(git status --porcelain lib/ web/ bin/ agents/)"
 
 ## RCA
 
+**Symptom:** the T-3359 starvation fix let the nightly unit suite actually run, and
+it immediately reported **23 failing entries**. Before that fix the same suite
+reported `failed_count: 0` — not because it passed, but because it was never
+reaching a verdict. The oldest of the failures it surfaced had been red since
+**2026-05-23**, ~3.7 months, behind that zero.
+
+**Root cause:** six distinct causes, but they are not six independent bugs.
+
+1. **One harness defect counted sixteen times (group B, T-3363).** Reload-based
+   tests leak module globals (`web.shared.PROJECT_ROOT` and siblings) into each
+   other. T-1995 wrote a per-test re-pin fixture that fixes exactly this — and
+   applied it to 2 files, never generalising it. 16 of the 22 real failures are
+   that one omission, re-observed once per contaminated file.
+2. **Three tests that outlived their subject.** An assertion outliving its
+   contract (C: `test_is_viewable_path_rejects_unknown_dir` still asserts the
+   `ROOT_FILES` allowlist T-2281 deliberately superseded), a fixture outliving its
+   dependency (D: a DictLoader missing the `_breadcrumb.html` stub T-2009 made
+   mandatory), and a count outliving its corpus (E: a census pinned to exactly 42
+   when the live corpus now holds 47 — the T-3326 mutable-anchor class).
+3. **Three TDD-reds for unfinished work** (F, T-2219) — correctly red, mis-read as
+   regressions because nothing distinguished "not built yet" from "broken".
+4. **The count itself was wrong (A, T-3366).** `unit-suite.sh:155` counts
+   ERROR-level *log* lines as failures, and `len(py_failed) or …` lets that
+   contaminated list override pytest's own number. That is the 23-vs-22 gap: one
+   of the "failures" was never a test.
+
+**Why structurally allowed:** two reinforcing blindnesses. First, **nothing runs
+`tests/unit` on a schedule whose verdict anyone reads** (T-3302, still open) — a
+suite nobody looks at cannot go red, it can only accumulate. Second, when it was
+finally looked at, **the signal was contaminated by its own harness** (cause 4),
+so the first thing a reader saw was a count that disagreed with pytest. L-670
+names the consequence directly: *a failure signal dominated by harness noise
+trains its readers to discount it.* The zero and the noise protected each other —
+the zero kept anyone from looking, and the noise justified not trusting what they
+saw when they did.
+
+The sharpest single lesson is L-668: **cross-test contamination produces false
+GREENS as well as false reds.** "N tests passing" from a suite with leaking module
+globals is not a measurement of N tests.
+
+**Prevention** (distinct from the fix — this task fixed nothing by design, its
+scope fence forbids touching `lib/ web/ bin/ agents/`):
+- Every one of the six classes now has an owning task rather than a line in a log:
+  T-3366 (A), **T-3363 (B, the 16)**, T-3364 (C, closed), T-3365 (D, closed),
+  T-3326 (E), T-2219 (F). Verified present at close.
+- Three learnings capture the transferable shape: **L-668** (contamination cuts
+  both ways), **L-670** (noisy signals train their own readers to ignore them),
+  **L-671** (four of these root causes are one shape — a check coupled to state it
+  does not own).
+- The standing structural gap — no scheduled run of `tests/unit` with a read
+  verdict — is **not** closed by this task and remains owned by T-3302. Recorded
+  here so the next reader does not mistake "triaged" for "guarded".
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -383,3 +436,15 @@ test -z "$(git status --porcelain lib/ web/ bin/ agents/)"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3362-triage-the-22-pytest-failures-surfaced-b.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0f51e5d6
+- **Timestamp:** 2026-09-16T21:10:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-16T21:10:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

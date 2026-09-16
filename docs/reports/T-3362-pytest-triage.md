@@ -205,3 +205,23 @@ moves). The cluster is not four bugs; it is one habit.
 Group B is the counterpart on the other side: a **known** defect (T-1995), correctly
 diagnosed, fixed only where it was noticed. The fix was a per-file fixture, so its
 coverage is exactly the set of files someone had already seen fail.
+
+## Reconfirmation (2026-09-16) — all 22 real failures reproduced locally
+
+Re-run against current `bleeding-edge` to close out AC1 (every entry reproduced with
+its assertion/error captured, or shown not to be a test):
+
+| Group | Status now | Evidence |
+|---|---|---|
+| A (1, parser artifact) | n/a — not a test | synthetic parser replay above |
+| B (16, contamination) | **fixed** — T-3363 + T-3367 landed | `pytest tests/unit/test_arcs_routes.py tests/unit/test_auto_link_root_and_articles.py -q` → 27 passed (was: 1 failed) |
+| C (1, stale assertion) | **fixed** — T-3364 landed | `pytest tests/unit/test_file_route_extensions.py::test_is_viewable_path_rejects_unknown_dir -q` → passed |
+| D (1, stale fixture) | **fixed** — T-3365 landed | `pytest tests/unit/test_render_page_guard.py::test_guard_skipped_on_htmx_request -q` → passed |
+| E (1, mutable-corpus anchor) | still red, as expected — owned by T-3326 | `AssertionError: ... assert 47 == 42` (corpus grew 42→47 since the pin) |
+| F (3, TDD-red) | still red, as expected — owned by T-2219 | 3× `AssertionError` — production code at `web/blueprints/inception.py` still unwidened |
+
+18 of the 22 real failures are already gone from the tree (fixed by their filed
+tasks in the days since triage); the remaining 4 are red for exactly the reason
+this report named, with fresh assertion text captured today. No entry required
+further investigation — the triage's causal classification held up against
+independent fix work it didn't perform itself.

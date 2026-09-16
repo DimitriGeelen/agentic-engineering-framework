@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3362: Triage the 22 pytest failures surfaced by the T-3359 starvation fix
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-16T21:11:03Z
+# ============================================================================
+
+task_id: T-3362
+task_name: "Triage the 22 pytest failures surfaced by the T-3359 starvation fix"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-15T16:44:56Z
+completed: 2026-09-16T21:10:42Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-09-15T19:05:18+02:00
+last_commit: 2026-09-15T19:05:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  triage the 22 pytest failures — 23 entries, 6 root causes, 4 tasks filed
+
+# Key outcomes
+outcomes:
+  - 'All 23 reported entries are accounted for: each is either reproduced locally'
+  - 'Failures are grouped into root-cause classes, each class stating the shared'
+  - 'Every class is either filed as its own task, or cross-referenced to an'
+  - 'Triage report written to `docs/reports/T-3362-pytest-triage.md`, naming every'
+  - 'No file under `lib/`, `web/`, `agents/`, or `bin/` is modified by this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - 'docs/reports/T-3362-pytest-triage.md'
+  - '.tasks/active/T-2219-t-2217-slice-1--widen-inception-decide-s.md'
+  - '.tasks/active/T-3326-stale-verification-class-p-011-lines-and.md'
+  - '.tasks/active/T-3362-triage-the-22-pytest-failures-surfaced-b.md'
+  - '.tasks/active/T-3363-testsunit-reload-based-tests-leak-module.md'
+  - '.tasks/active/T-3364-testisviewablepathrejectsunknowndir-asse.md'
+  - '.tasks/active/T-3365-testguardskippedonhtmxrequest-fixture-la.md'
+  - '.tasks/active/T-3366-unit-suitesh-pytest-parser-scoops-error-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-15T19:05:18'
+    action: 'T-3362: triage the 22 pytest failures — 23 entries, 6 root causes, 4 tasks filed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1705 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1705
+  commits: 2
+  files_changed: 12
+  lines_added: 2741
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3362-triage-the-22-pytest-failures-surfaced-b.md
+generated_by: context-agent-hybrid
