@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-10T20:31:54Z
-last_update: 2026-09-16T19:37:46Z
+last_update: 2026-09-16T20:06:59Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -118,9 +118,22 @@ its durability: prompt text is host-, shell-, and user-dependent; a marker is no
       signal in the stale copy.
 - [ ] A regression test covers exit-from-a-root-prompt: with a `root@host:/path#` prompt,
       exit detection fires and `termlink_cleanup` runs (no orphaned session left behind).
-- [ ] Prevention rail exists for the stale-copy class if that is the confirmed cause:
+- [x] Prevention rail exists for the stale-copy class if that is the confirmed cause:
       claude-fw reports its own version/provenance, or `fw doctor` WARNs when the
       executed `claude-fw` differs from the repo's.
+      → Rail is live and observed firing on this host. `bin/fw doctor --quick` emits:
+        `WARN  Installed claude-fw drifted from repo source — supervision export may be stale`
+        `      on PATH: /usr/bin/claude-fw`
+        `      repo:    /opt/999-Agentic-Engineering-Framework/bin/claude-fw`
+      → `tests/integration/t2501_claude_fw_drift.bats`: **4/4 ok, 0 skips**, including
+        `T-3358: TWO stale copies on PATH → both reported, not just the first` — the
+        case a single `command -v` hit would miss, which is the fleet mechanism this
+        task traced.
+      → The suite was RED (4/4, exit 127) until this session: `setup_file` assigned
+        `CLEAN_PATH_DIR` without `export`, and bats runs `setup_file` in a separate
+        process from the tests, so every test built `PATH='<fixture>:'` — whose empty
+        trailing component resolves nothing — and died before reaching an assertion.
+        Fixed in 32b216745. The green above is the first real run of these assertions.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

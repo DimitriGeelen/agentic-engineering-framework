@@ -4744,3 +4744,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-428
+  text: "SOVEREIGN: continuous-run last_terminated_reason is a ONE-WAY latch and nothing clears it — T-3268 shipped the detector, not the prevention. bin/claude-fw:388 sets the latch; it is then replayed verbatim on every turn regardless of whether the condition that set it is still true. fw doctor now reports the symptom correctly (T-3268 cycling detector, bin/fw:2628-2660): observed 3x in 15 minutes on 2026-09-16, and the live stale reason is itself the message written when CLEARING a previous stale latch ('T-3263 resolved ...; clearing stale human-gate latch that had cycled 4+ times ... (T-3268)') — the clearing act became the next latch, which is the defect demonstrating itself. WHY THIS IS SOVEREIGN AND NOT INITIATIVE: changing how the loop clears its own termination state changes the bounded-autonomy ceiling — i.e. the conditions under which the agent may keep itself running. That is the operator's call, not the agent's, so it is surfaced rather than decided. Candidate directions (NOT chosen): (a) make the latch condition-checked rather than replayed — re-evaluate the predicate each turn instead of replaying the string; (b) TTL the latch so a reason expires unless re-asserted; (c) require the reason to carry a machine-checkable predicate (the human-gate:human-ac:T-XXXX form already is one — doctor proves staleness from task status today, and could refuse to replay on that basis). Note (c) is partially built already: the detector resolves T-XXXX status and prints 'provably stale', then still tells a human to clear it by hand."
+  captured: 2026-09-16T20:08:09Z
+  context_task: T-3358
+  tags: []
+  status: pending
+  promoted_to: null

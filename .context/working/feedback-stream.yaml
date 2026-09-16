@@ -40821,3 +40821,21 @@ scan_id: R-39862c75
 task_id: T-3375
 payload:
   task_file: .tasks/active/T-3375-t-3374-follow-through-broader-safe-comma.md
+---
+kind: scan_emitted
+timestamp: '2026-09-16T20:05:38Z'
+scan_id: R-1b592359
+task_id: T-3377
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-16T20:05:38Z'
+scan_id: R-1b592359
+task_id: T-3377
+payload:
+  task_file: .tasks/active/T-3377-fw-doctor-hangs-large-file-scan-tree-for.md

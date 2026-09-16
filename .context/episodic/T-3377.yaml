@@ -102,10 +102,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 8
-  commits: 2
-  files_changed: 33
-  lines_added: 1394
-  lines_removed: 396
+  commits: 3
+  files_changed: 40
+  lines_added: 1972
+  lines_removed: 409
+  footprint_refreshed_at: '2026-09-16T20:06:04Z'
+  footprint_refreshed_by_commit: 112ed3b39
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3377-fw-doctor-hangs-large-file-scan-tree-for.md
