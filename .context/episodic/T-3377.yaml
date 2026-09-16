@@ -1,0 +1,112 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3377: fw doctor hangs: large-file scan-tree forks grep+stat per file across 17k tracked files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-16T20:05:51Z
+# ============================================================================
+
+task_id: T-3377
+task_name: "fw doctor hangs: large-file scan-tree forks grep+stat per file across 17k tracked files"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-16T19:55:04Z
+completed: 2026-09-16T20:03:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-16T22:03:03+02:00
+last_commit: 2026-09-16T22:03:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  large-file scan_tree — bulk size filter, 101s -> 0s, byte-identical output. vendor sync + fabric card; restore vendored VERSION to 1.6.769
+
+# Key outcomes
+outcomes:
+  - '`scan_tree` over the full tracked tree completes in **under 30s** (baseline: >95s documented, >60s measured here as a timeout, not a completion)'
+  - 'Post-fix `scan_tree` output is **byte-identical** to a captured pre-fix baseline over the same tree — the change is performance-only, with no shift in which files are reported or at which threshold'
+  - '`bin/fw doctor --quick` completes (exit 0 or 1, not 124) within a 120s timeout and emits its large-file line'
+  - 'A bats regression test pins scan_tree behaviour against a **committed fixture repo** (block threshold, warn threshold, allowlist exemption, clean tree) rather than the live corpus — per T-3326, no live-count anchors'
+  - 'The sibling `secret-scan.sh scan-tree` site is **enumerated and reported** (L-533: select by dependency, not by remembered filename) — fixed in the same pass if it shares the per-file-fork shape, or explicitly scoped out here with the reason'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/large-file-scan.sh'
+  - 'agents/git/lib/large-file-scan.sh'
+  - '.context/audits/2026-09-16.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-3375.yaml'
+  - '.context/handovers/S-2026-0916-1801.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0916-2114.discard-manifest.yaml'
+  - '.context/handovers/S-2026-0916-2121.discard-manifest.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/continuous-run.jsonl'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.push-state.json'
+  - '.context/working/.session-baseline'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.fabric/components/tests-unit-t3377_large_file_scan.yaml'
+  - '.fabric/components/tests-unit-test_ac_field_render_safety.yaml'
+  - '.tasks/active/T-3377-fw-doctor-hangs-large-file-scan-tree-for.md'
+  - 'tests/unit/t3377_large_file_scan.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-16T22:03:03'
+    action: 'T-3377: large-file scan_tree — bulk size filter, 101s -> 0s, byte-identical output'
+  - time: '2026-09-16T22:03:26'
+    action: 'T-3377: vendor sync + fabric card; restore vendored VERSION to 1.6.769'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8
+  commits: 2
+  files_changed: 33
+  lines_added: 1394
+  lines_removed: 396
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3377-fw-doctor-hangs-large-file-scan-tree-for.md
+generated_by: context-agent-hybrid
