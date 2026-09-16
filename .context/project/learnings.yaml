@@ -4972,3 +4972,9 @@ X'` returning empty group."
   task: T-3371
   date: 2026-09-16
   context: Added via context agent
+- id: L-673
+  learning: "A prefix-stripping classifier can fail in BOTH directions, but only one direction ever reports itself. Five fixes to is_bash_safe_command (T-1908 env prefixes, T-2834 chain segments, T-2988 grouping, T-3096 wrappers, T-3344 redirects) were all false-BLOCKs, each found because an agent was stopped and complained. The sixth (T-3374 / OBS-423) was a false-ALLOW and was found only by accident while building control legs for a different observation — a fail-open in a gate produces silence, not a complaint. Two consequences: (1) when adding any affix stripper to a safety predicate, ask explicitly whether the discarded affix can change the meaning of the token about to be judged; (2) do not read a long run of one-directional bug reports as evidence the other direction is sound - the detection asymmetry, not the code, decides which direction you hear about."
+  source: P-001
+  task: T-3375
+  date: 2026-09-16
+  context: Added via context agent

@@ -4723,3 +4723,10 @@ observations:
   tags: [gap]
   status: pending
   promoted_to: null
+- id: OBS-425
+  text: "OBS-419 THIRD INSTANCE (measured 2026-09-16, T-3374). The close of T-3374 printed its own LEARNING PROMPT -- \"cd ... && bin/fw fix-learned T-3374 <what was learned>\" -- and that exact command was then refused by check-active-task with \"BLOCKED: No active task\", because --status work-completed clears focus as its last act. The framework asks for the learning in the same breath that it removes the only state under which the learning can be captured. Prior instances: OBS-250 (T-3236, vendor sync after close) and OBS-419 (T-3371). Three instances now, all the same shape: a post-close action the framework itself prescribes has no task to run under, and fw work-on <closed-id> cannot help because status-transitions.yaml has no outgoing edge from work-completed. Workaround used each time: point focus at a different active task and capture the learning from there, which files it under the wrong task unless the text names the original explicitly (L-673 names T-3374 in its body for this reason). Candidate fixes unchanged from OBS-250: grace window on focus after close, narrow allowlist carve for the specific post-close verbs the close prompt names (fix-learned, context add-learning, vendor self), or have the close perform the capture itself. All governance changes."
+  captured: 2026-09-16T17:57:55Z
+  context_task: T-3375
+  tags: [gap]
+  status: pending
+  promoted_to: null
