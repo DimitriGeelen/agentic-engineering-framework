@@ -4645,3 +4645,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-414
+  text: "ALLOWLIST GAP (filed at the gate's own invitation, 2026-09-16). check-active-task.sh refused 'bin/fw vendor self --check' under a partial-complete task with the message: 'this command writes nothing the gate can detect. It was gated because bin/fw vendor self --check is not on the read-only allowlist (agents/context/lib/safe-commands.sh), so the gate cannot prove it is a read. If it genuinely only reads, that is a gap in the allowlist worth filing.' It genuinely only reads — '--check' is the drift-REPORTING variant of 'fw vendor self'; the syncing behaviour is the bare form. Evidence it is read-only in practice: it is the command CLAUDE.md prescribes as a '## Verification' line for every vendored-path-touching task, i.e. the framework already runs it inside the close gate, where a mutation would be a governance violation. NOTE THE CONTRAST with OBS-409/OBS-413, filed minutes earlier: those are the gate matching surface TEXT and getting it wrong. This one is the gate reasoning correctly about its own limits — it does not claim the command writes, it says it cannot PROVE the command reads, names the file that would settle it, and invites the filing. That is the right shape for a refusal and worth preserving as the model when the allowlist entry is added. Suggested entry: 'fw vendor self --check' (the flagged form only, NOT bare 'fw vendor self', which does write)."
+  captured: 2026-09-16T03:48:54Z
+  context_task: T-3369
+  tags: []
+  status: pending
+  promoted_to: null
