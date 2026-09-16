@@ -4666,3 +4666,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-417
+  text: "OBS: I1 RESOLVED — write-time hooks DO fire; the alarm was a lost-update race in the hook counter itself. Measured: one Edit tool call incremented all 10 Write|Edit-matched hooks by exactly 1 (check-arc-id 7->8, check-human-ac-tick 7->8, check-onboarding-gate, check-inception-schema, check-inception-decisions, check-heredoc-cmd-sub, check-worktree-governance-write, check-settings-edit, commit-cadence 7->8, check-active-completed-dup 6->7). check-fabric-new-file did not move, consistent with it being PostToolUse on NEW files. So write-time governance is live. BUT the instrument is broken: lib/hook-telemetry.sh:_fw_telemetry_increment does a non-atomic read-modify-write (mapfile, edit array, 'printf > file') with no lock. Under concurrency the last writer wins with ITS stale view, silently discarding every key it had not read. Reproduced with the framework's own function: 8 processes x 200 increments = 1600 expected, actual sum 17 (98.9% lost), 5 of 8 keys vanished from the file, and a duplicate key appeared. The live .hook-counter shows exactly that damage: 'budget-gate' appears twice (39 and a shadowed stale 31) plus a blank line. This explains the judge's I1 premise: the two evidence snapshots listing only Bash/* hooks were clobbered files, not evidence of unfired gates. Consumers affected: fw doctor and the T-1629 hook-threshold escalation both read this counter, so hook-failure escalation is reading lossy data - a monitoring instrument that silently under-reports is the C2 false-green class. Fix is NOT applied (research is not authorization); candidates are flock around the read-modify-write, or atomic write-to-temp + mv, weighed against the file's stated <5ms/fire budget."
+  captured: 2026-09-16T14:48:49Z
+  context_task: T-3370
+  tags: []
+  status: pending
+  promoted_to: null

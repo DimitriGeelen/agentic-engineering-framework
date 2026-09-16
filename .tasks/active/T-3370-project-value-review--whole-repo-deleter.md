@@ -98,6 +98,10 @@ bvp_scores_proposed:
       the judge to the evidence files, AND the report names the worker that wrote it.
       Self-judged classification fails this AC and drops every confidence one level
       (protocol rule).
+      *I1 probe marker (2026-09-16):* this Edit is the pre-registered single-edit
+      probe for judge finding I1 — whether the ~12 PreToolUse hooks matched only on
+      `Write|Edit` still fire. Counter diffed before/after around this one tool call.
+
       *Check corrected 2026-09-16 (OBS-416):* this AC originally read
       `grep -q "JUDGE" docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-judge-prompt.md
 test -f docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-yardstick.md`. That check can never match —
