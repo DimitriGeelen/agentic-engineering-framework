@@ -2666,31 +2666,73 @@ PY
     # lives in up to four places (repo bin/, host clone ~/.agentic-framework,
     # in-repo vendor, ~/.local/bin symlink) and no other check covers it: the
     # audit self-vendor find-filter skips no-extension names, CTL-019 checks
-    # existence only, and `fw vendor self` excludes claude-fw. We compare the file
-    # actually on PATH (symlink resolved) against this checkout's bin/claude-fw.
-    # WARN-only; SKIP when claude-fw is not installed (humans who never use it).
-    local _cfw_path _cfw_real _cfw_src="$FRAMEWORK_ROOT/bin/claude-fw"
-    _cfw_path=$(command -v claude-fw 2>/dev/null || true)
-    if [ -n "$_cfw_path" ] && [ -f "$_cfw_src" ]; then
-        _cfw_real=$(readlink -f "$_cfw_path" 2>/dev/null || echo "$_cfw_path")
-        if cmp -s "$_cfw_real" "$_cfw_src"; then
-            echo -e "  ${GREEN}OK${NC}  Installed claude-fw matches repo source"
+    # existence only, and `fw vendor self` excludes claude-fw. WARN-only; SKIP
+    # when claude-fw is not installed anywhere (humans who never use it).
+    #
+    # T-3358: the original version of this check compared ONLY `command -v
+    # claude-fw` — the single hit this shell's PATH resolves to. That is blind to
+    # a SECOND, stale copy sitting further down PATH (or in a directory absent
+    # from this shell's PATH but present in another execution context, e.g. a
+    # systemd unit with no Environment=PATH= override, which inherits the
+    # service manager's default PATH and can land on a copy this interactive
+    # check never sees). Measured on the framework's own host: an interactive
+    # shell resolves `/root/.local/bin/claude-fw` (current, T-3346 marker) first
+    # and this check reported OK — while `/usr/bin/claude-fw` (pre-T-3346, no
+    # marker, root-prompt-blind regex) sat unreported on the same PATH, is the
+    # ONLY claude-fw a minimal-PATH service context resolves, and is the
+    # confirmed mechanism behind the T-3358 orphaned root-fleet sessions. Scan
+    # every directory on PATH, dedup by resolved realpath, and WARN on each
+    # drifted copy found — not only the first.
+    local _cfw_src="$FRAMEWORK_ROOT/bin/claude-fw"
+    local -a _cfw_seen=() _cfw_hits=()
+    local _cfw_dir _cfw_real _cfw_seen_one _cfw_dup
+    if [ -f "$_cfw_src" ]; then
+        local _old_ifs="$IFS"
+        IFS=':'
+        for _cfw_dir in $PATH; do
+            IFS="$_old_ifs"
+            [ -n "$_cfw_dir" ] || continue
+            [ -x "$_cfw_dir/claude-fw" ] || continue
+            _cfw_real=$(readlink -f "$_cfw_dir/claude-fw" 2>/dev/null || echo "$_cfw_dir/claude-fw")
+            _cfw_dup=0
+            for _cfw_seen_one in "${_cfw_seen[@]:-}"; do
+                [ "$_cfw_seen_one" = "$_cfw_real" ] && _cfw_dup=1 && break
+            done
+            [ "$_cfw_dup" = 1 ] && continue
+            _cfw_seen+=("$_cfw_real")
+            _cfw_hits+=("$_cfw_real")
+        done
+        IFS="$_old_ifs"
+    fi
+    if [ "${#_cfw_hits[@]}" -gt 0 ]; then
+        local _cfw_drifted=0 _cfw_hit
+        for _cfw_hit in "${_cfw_hits[@]}"; do
+            if ! cmp -s "$_cfw_hit" "$_cfw_src"; then
+                echo -e "  ${YELLOW}WARN${NC}  Installed claude-fw drifted from repo source — supervision export may be stale"
+                echo -e "         on PATH: $_cfw_hit"
+                echo -e "         repo:    $_cfw_src"
+                # T-2807: this used to say `bash ~/.agentic-framework/install.sh`, which
+                # assumes a git checkout in $HOME. It is already fragile (the global may
+                # be absent or not a checkout) and becomes false under T-2800, which
+                # removes the global entirely. Both lines below work with nothing in
+                # $HOME; the direct copy is the one that needs no network.
+                echo -e "         Refresh: rm -f \"$_cfw_hit\" && cp \"$_cfw_src\" \"$_cfw_hit\" && chmod +x \"$_cfw_hit\""
+                echo -e "                  (rm -f first — a bare cp onto a symlink writes through it)"
+                echo -e "         Or:      curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash"
+                warnings=$((warnings + 1))
+                _cfw_drifted=$((_cfw_drifted + 1))
+            fi
+        done
+        if [ "$_cfw_drifted" -eq 0 ]; then
+            if [ "${#_cfw_hits[@]}" -gt 1 ]; then
+                echo -e "  ${GREEN}OK${NC}  Installed claude-fw matches repo source (${#_cfw_hits[@]} copies on PATH, all current)"
+            else
+                echo -e "  ${GREEN}OK${NC}  Installed claude-fw matches repo source"
+            fi
         else
-            echo -e "  ${YELLOW}WARN${NC}  Installed claude-fw drifted from repo source — supervision export may be stale"
-            echo -e "         on PATH: $_cfw_real"
-            echo -e "         repo:    $_cfw_src"
-            # T-2807: this used to say `bash ~/.agentic-framework/install.sh`, which
-            # assumes a git checkout in $HOME. It is already fragile (the global may
-            # be absent or not a checkout) and becomes false under T-2800, which
-            # removes the global entirely. Both lines below work with nothing in
-            # $HOME; the direct copy is the one that needs no network.
-            echo -e "         Refresh: rm -f \"$_cfw_path\" && cp \"$_cfw_src\" \"$_cfw_path\" && chmod +x \"$_cfw_path\""
-            echo -e "                  (rm -f first — a bare cp onto a symlink writes through it)"
-            echo -e "         Or:      curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash"
             echo -e "         Then relaunch the session with: claude-fw"
-            warnings=$((warnings + 1))
         fi
-    elif [ -z "$_cfw_path" ]; then
+    else
         echo -e "  ${CYAN}SKIP${NC}  claude-fw not on PATH (no auto-restart wrapper installed)"
     fi
 
