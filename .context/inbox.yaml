@@ -4751,3 +4751,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-429
+  text: "SOVEREIGN/URGENT: a CONCURRENT WRITER is committing to bleeding-edge in this same checkout. Detected 2026-09-16 ~22:19 during T-3378: commits d07fa77cd and f2226c381 (T-3361, 'add BRANCH_AHEAD_WARN to web config registry') appeared on top of my own 6a1282f56 while I was mid-task, and web/blueprints/config.py changed under me between two runs of the SAME lint (tests/lint/config-registry-parity.bats went 2-of-3 RED -> 3/3 GREEN with no edit by me). I had already formed and filed a hypothesis that the key was missing; it was being ADDED by someone else as I measured it. CONSEQUENCES: (1) any measurement taken here is a snapshot of a tree with another writer in it — a red gate can go green, and a green one red, for reasons unrelated to the work under test, which is a false-green/false-red generator for every close gate; (2) CLAUDE.md's 'One lock at a time' and the converging-write-set discipline assume a single writer per checkout and there is no lock that makes that true; (3) the VERSION working-tree regression (OBS-426) and the stray root-dir files ('6', 'Summary:', 'FABRIC: 2 component(s) modified: ...' — filenames that are plainly captured stdout) are both consistent with a second writer rather than with anything this session did. NOT RESOLVED HERE: whether the concurrent writer is a second interactive session, a TermLink worker, or a cron/stop-driver path is unknown, and deciding how concurrent sessions should share a checkout (serialise, worktree-per-session, advisory lock) is an architecture call for the operator, not the agent."
+  captured: 2026-09-16T20:22:21Z
+  context_task: T-3378
+  tags: []
+  status: pending
+  promoted_to: null
