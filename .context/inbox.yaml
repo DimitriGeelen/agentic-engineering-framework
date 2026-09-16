@@ -4659,3 +4659,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-416
+  text: "OBS: 'fw termlink dispatch' writes NO row to .context/dispatches.jsonl — verified: 0 matches for vr-gather-d/e/f and vr-judge after 4 successful dispatches. The source says so explicitly (agents/termlink/termlink.sh:634: 'this call path has no dispatches.jsonl row to join against; the TermLink worker dir at /tmp/tl-dispatch/$name is the join target instead'). Only 'fw resolver dispatch' populates that ledger. Two consequences: (1) any AC or audit that evidences 'a worker ran' by grepping dispatches.jsonl is a FALSE GREEN for the direct-dispatch path — it can never match, and a never-matching grep is indistinguishable from a failing one only by the exit code, which -q discards. T-3370 AC 5 was written this way by me and is being corrected. (2) The only join target is /tmp/tl-dispatch/<name>, which is ephemeral — so direct-dispatch worker provenance does not survive a reboot and cannot be audited after the fact. CLAUDE.md's Sub-Agent Dispatch Protocol presents dispatches.jsonl as the dispatch ledger without noting the split. Same family as OBS-397/OBS-396 (a check reporting success while measuring nothing)."
+  captured: 2026-09-16T13:45:27Z
+  context_task: T-3370
+  tags: []
+  status: pending
+  promoted_to: null

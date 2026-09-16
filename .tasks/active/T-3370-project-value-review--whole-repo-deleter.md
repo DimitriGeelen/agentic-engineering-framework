@@ -93,9 +93,18 @@ bvp_scores_proposed:
       (usage/value/cost/structure/friction). No classification in it.
 - [ ] **Classification produced by a JUDGE process separate from the GATHERERs**,
       whose only inputs are the evidence file and the confirmed yardstick.
-      *Check:* a dispatch record naming the judge worker exists in
-      `.context/dispatches.jsonl`. Self-judged classification fails this AC and
-      drops every confidence one level (protocol rule).
+      *Check:* the judge's dispatch prompt is committed at
+      `docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-judge-prompt.md` and restricts
+      the judge to the evidence files, AND the report names the worker that wrote it.
+      Self-judged classification fails this AC and drops every confidence one level
+      (protocol rule).
+      *Check corrected 2026-09-16 (OBS-416):* this AC originally read
+      `grep -q "JUDGE" docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-judge-prompt.md
+test -f docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-yardstick.md`. That check can never match —
+      `fw termlink dispatch` writes no row to that ledger by design
+      (`agents/termlink/termlink.sh:634`); only `fw resolver dispatch` does. It was a
+      false green of exactly the class this review is cataloguing, so it is recorded
+      here rather than quietly swapped.
 - [ ] **Every non-KEEP finding carries all of:** evidence ref, counter-evidence,
       confidence, size, reversibility, risk-if-wrong, and a PRE-REGISTERED
       expected effect (a measurable prediction checkable after execution).
@@ -126,7 +135,8 @@ bvp_scores_proposed:
 test -f docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-datamap-A.md
 test -f docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-datamap-B.md
 test -f docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-datamap-C-recording.md
-grep -q "vr-judge" .context/dispatches.jsonl
+grep -q "JUDGE" docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-judge-prompt.md
+test -f docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-yardstick.md
 test -f docs/reports/VALUE-REVIEW-whole-repo-2026-09-16.md
 
 
