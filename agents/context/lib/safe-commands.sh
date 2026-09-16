@@ -128,6 +128,101 @@ is_bash_safe_command() {
     _fw_single_command_is_safe "$_cmd"
 }
 
+# --- T-3374 (OBS-423): env-prefix denylist ------------------------------------
+#
+# The T-1908 stripper below removes leading `NAME=VALUE` prefixes so the base
+# command can be read. It stripped ANY name. That is fail-OPEN: the classifier
+# decides SAFE from the base command AFTER stripping, while some of those
+# prefixes are precisely what decides what that base name RESOLVES to.
+#
+# Measured before this fix, all four classified SAFE:
+#     PATH=/tmp cat x            LD_PRELOAD=/tmp/e.so cat x
+#     BASH_ENV=/tmp/e.sh cat x   IFS=x cat y
+#
+# A grep for these names in this file returned nothing — there was no denylist
+# that missed them; the category was never represented. Sibling of OBS-422 in
+# the same function, but the opposite direction: that one over-blocks reads,
+# this one under-blocks writes.
+#
+# WHY A DENYLIST AND NOT A NAME ALLOWLIST. An allowlist (`FW_*` only) is
+# strictly safer and was rejected deliberately: tests/unit/safe_commands_env_-
+# prefix.bats pins `FOO=1 BAR=2 fw work-on T-X` as SAFE, a documented T-1908 /
+# L-399 contract. Rewriting that test so this change could pass would be
+# weakening a pinned contract to accommodate the fix. The denylist keeps every
+# pinned contract green and still closes the measured hole. The residual — a
+# denylist cannot cover a name nobody thought of — is real, is NOT claimed away,
+# and the allowlist alternative is recorded as a Sovereign question in T-3374.
+#
+# FAILURE DIRECTION IS TOWARD BLOCKING, same idiom as the T-3096 wrapper loop:
+# on a denied name the strip loop STOPS, leaving `NAME=VALUE` as the first word,
+# which matches no case arm, so the line gates. This function can only ever
+# REFUSE something that previously passed; it cannot admit anything.
+
+# _fw_env_prefix_is_denied <NAME> — true when NAME redirects what a following
+# command resolves to, makes the shell/interpreter execute extra code, or
+# changes how the line is parsed.
+_fw_env_prefix_is_denied() {
+    case "$1" in
+        # binary resolution / the shell itself
+        PATH|SHELL) return 0 ;;
+        # dynamic linker — LD_* (ELF) and DYLD_* (macOS; D4 portability, the
+        # framework is not Linux-only)
+        LD_*|DYLD_*) return 0 ;;
+        # shell startup files, option sets, and exported-function smuggling
+        ENV|BASH_ENV|SHELLOPTS|BASHOPTS|BASH_FUNC_*) return 0 ;;
+        # word splitting — changes how the command line itself is parsed
+        IFS) return 0 ;;
+        # interpreter module/option paths: these run code at interpreter start
+        PYTHONPATH|PYTHONHOME|PYTHONSTARTUP|PERL5LIB|PERL5OPT|RUBYOPT|NODE_OPTIONS) return 0 ;;
+        # git hands these to a shell. `git` is broadly allowlisted for read-only
+        # sub-verbs, so these turn an allowlisted read into arbitrary execution.
+        GIT_SSH|GIT_SSH_COMMAND|GIT_ASKPASS|GIT_PROXY_COMMAND) return 0 ;;
+        GIT_EXTERNAL_DIFF|GIT_PAGER|GIT_EDITOR|GIT_SEQUENCE_EDITOR) return 0 ;;
+        # GIT_CONFIG_* can inject core.pager / diff.external at invocation time,
+        # which is the same arbitrary-execution vector one indirection further out.
+        GIT_CONFIG|GIT_CONFIG_GLOBAL|GIT_CONFIG_SYSTEM) return 0 ;;
+        GIT_CONFIG_COUNT|GIT_CONFIG_KEY_*|GIT_CONFIG_VALUE_*) return 0 ;;
+        #
+        # DELIBERATELY NOT DENIED — repository retargeting: GIT_DIR, GIT_WORK_TREE,
+        # GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY, GIT_ALTERNATE_OBJECT_DIRECTORIES.
+        # These change WHICH repository is read, not WHAT executes, and the git
+        # sub-verb allowlist already constrains this path to read-only verbs. A
+        # read of a different repo is still a read.
+        #
+        # This boundary was drawn by a failing test, and the test was right:
+        # tests/unit/safe_commands_env_prefix.bats:44 pins `GIT_DIR=foo git status`
+        # as safe. The first draft of this denylist included GIT_DIR and broke it.
+        # The fix was to narrow the denylist to the execution-causing names —
+        # NOT to edit the test, which would have been weakening a pinned contract
+        # to make a new change pass. Recorded because the distinction (redirecting
+        # what is READ vs. redirecting what RUNS) is the useful line here, and it
+        # was not obvious until something bit.
+        # generic spawn-a-program hooks
+        PAGER|EDITOR|VISUAL) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+# _fw_strip_env_prefixes <cmd> — strip leading NAME=VALUE prefixes, stopping at
+# the first DENIED name. Result in $_FW_ENV_STRIPPED (a global rather than a
+# command substitution: this runs on the hook hot path and a fork per Bash tool
+# call is a cost with no benefit).
+#
+# ONE implementation, deliberately. The regex used to appear TWICE — once here
+# and once re-entered inside the T-3096 wrapper loop, which is what makes
+# `env PATH=/tmp cat x` a distinct bypass from `PATH=/tmp cat x`. Two copies of
+# a security predicate is two chances to fix only one; the duplication is
+# removed rather than the denylist being pasted into both.
+_fw_strip_env_prefixes() {
+    local c="$1" _name
+    while [[ "$c" =~ ^([A-Za-z_][A-Za-z0-9_]*)=[^[:space:]]+[[:space:]]+(.*)$ ]]; do
+        _name="${BASH_REMATCH[1]}"
+        _fw_env_prefix_is_denied "$_name" && break
+        c="${BASH_REMATCH[2]}"
+    done
+    _FW_ENV_STRIPPED="$c"
+}
+
 # Single (non-compound) command classification. This is the original
 # is_bash_safe_command body, unchanged apart from the name.
 _fw_single_command_is_safe() {
@@ -202,9 +297,9 @@ _fw_single_command_is_safe() {
     # matches, the safe-command path is skipped, and the downstream
     # captured-status check blocks the very command the focus-drift block
     # message recommended. Strip one prefix at a time until none remain.
-    while [[ "$cmd" =~ ^[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]+[[:space:]]+(.*)$ ]]; do
-        cmd="${BASH_REMATCH[1]}"
-    done
+    # T-3374: now stops at a denied name (PATH/LD_*/BASH_ENV/IFS/...), leaving it
+    # as the first word so no case arm matches and the line gates.
+    _fw_strip_env_prefixes "$cmd"; cmd="$_FW_ENV_STRIPPED"
 
     # T-3096: strip TRANSPARENT WRAPPERS and judge the command they wrap.
     #
@@ -291,9 +386,10 @@ _fw_single_command_is_safe() {
         [ -z "$_wrest" ] && break
         cmd="$_wrest"
         # `env`'s K=V assignments are re-stripped by re-entering the T-1908 loop.
-        while [[ "$cmd" =~ ^[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]+[[:space:]]+(.*)$ ]]; do
-            cmd="${BASH_REMATCH[1]}"
-        done
+        # T-3374: this is the SECOND entry point, and the one that makes
+        # `env PATH=/tmp cat x` a distinct bypass from the bare form. It calls
+        # the same helper, so the denylist cannot drift between the two.
+        _fw_strip_env_prefixes "$cmd"; cmd="$_FW_ENV_STRIPPED"
     done
 
     # T-3344: strip trailing NON-WRITING redirection tokens — fd-dups (`2>&1`,
