@@ -36,7 +36,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T18:58:54Z
-last_update: 2026-09-15T20:56:06Z
+last_update: 2026-09-16T03:09:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,7 +88,7 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **XSS safety established BEFORE adding `| safe` — this is the gate on
+- [x] **XSS safety established BEFORE adding `| safe` — this is the gate on
       whether the fix is legitimate at all.** `| safe` on attacker-influenced
       content is how an XSS hole is made, and task files are content. Two
       independent facts must be shown, not assumed:
@@ -99,21 +99,59 @@ bvp_scores_proposed:
       (`/file/…`, `/tasks/T-…`), never attacker-supplied markup.
       Demonstrated by a probe feeding `<script>` and an `onerror=` payload
       through the real helper, not by reading the code.
-- [ ] **All six sites fixed, not the one that was noticed.**
+- [x] **All six sites fixed, not the one that was noticed.**
       `task_detail.html` (steps/expected/if_not) and `_approvals_content.html`
       (steps/expected/if_not). `_review_acs.html` already has all three and is
       the reference implementation — fixing only the page I happened to look at
       would leave `/approvals` broken in exactly the same way, which is how this
       became a 6-site divergence in the first place.
-- [ ] **Regression test pins both halves:** a literal `<script>` in an AC field
+- [x] **Regression test pins both halves:** a literal `<script>` in an AC field
       renders INERT (escaped), and a Markdown link to a real repo path renders as
       a single clickable anchor. The first without the second would be satisfied
       by reverting the fix; the second without the first would be satisfied by an
       XSS hole.
-- [ ] **Control leg:** with `| safe` removed again, the "renders as an anchor"
+- [x] **Control leg:** with `| safe` removed again, the "renders as an anchor"
       assertion fails. Proves the test observes the template, not just the helper.
 - [ ] Live-verified on the running Watchtower after restart, and the suite shows
-      no new red.
+      no new red. **← THE ONLY OPEN AC. Do not tick without doing both.**
+
+## Parked state (2026-09-15, budget stop condition)
+
+Parked at the framework's 300k session-token cap, not because the work stalled.
+Committed at `b3cdcd274`; nothing is half-written on disk.
+
+**Done and evidenced:**
+- 12 XSS payloads through both real helpers → zero live tags, zero dangerous
+  attributes (`markdown2` runs `safe_mode='escape'` ahead of every linkifier).
+- All 9 interpolations across 3 templates now carry `| safe` (grep-verified).
+- `tests/unit/test_ac_field_render_safety.py` — 16 passed.
+- Control: reverting 1 of 6 sites fails the parity test and names the template.
+- `fw vendor self --check` clean; Watchtower restarted, `watchtower current` OK.
+
+**What is NOT done — and precisely why it is not ticked:**
+
+1. **The full suite was never run against this change.** No claim is made about
+   new red. It should be `4 failed / 2725 passed / 2 skipped` (2731 total:
+   2715 + 16 new tests) if nothing regressed — treat that as a prediction to
+   check, not a result.
+
+2. **The live check was inconclusive and I am recording it as inconclusive.**
+   After restart, `/tasks/T-3368` still showed 4 occurrences of
+   `&lt;a href=&#34;/file/`. Those are **not** the bug: they come from T-3368's
+   `description:` frontmatter, which literally contains the example string
+   `'<a href="./<a href="/file/PATH">PATH</a>">text</a>'` as documentation, and
+   escaping that is correct — rendering it would emit real nested anchors. So
+   the grep was measuring the wrong thing.
+
+   The genuine signal was the other number: real `/file/` anchors on that page
+   went **0 → 1**. That is consistent with the fix working, but one anchor is
+   weak evidence and I ran out of budget before isolating the AC region itself.
+
+   **Next session: verify the AC region specifically, not the whole page.** Open
+   `/tasks/T-3368`, find the `[REVIEW]` Human AC, and confirm the backticked
+   `web/shared.py` in its Steps renders as a clickable link rather than as
+   `&lt;code&gt;&lt;a href=…`. A whole-page grep cannot answer this because the
+   page legitimately contains both escaped and unescaped markup.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -373,3 +411,11 @@ bvp_scores_proposed:
 
 ### 2026-09-15T20:56:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-15T21:02:16Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-09-16T03:09:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

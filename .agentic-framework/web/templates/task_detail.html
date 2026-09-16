@@ -504,17 +504,17 @@
             <h6>Steps</h6>
             <ol>
                 {% for step in ac.steps %}
-                <li>{{ step }}</li>
+                <li>{{ step | safe }}</li>
                 {% endfor %}
             </ol>
             {% endif %}
             {% if ac.expected %}
             <h6>Expected</h6>
-            <p>{{ ac.expected }}</p>
+            <p>{{ ac.expected | safe }}</p>
             {% endif %}
             {% if ac.if_not %}
             <h6>If not</h6>
-            <p>{{ ac.if_not }}</p>
+            <p>{{ ac.if_not | safe }}</p>
             {% endif %}
         </div>
         {% elif ac.body %}
