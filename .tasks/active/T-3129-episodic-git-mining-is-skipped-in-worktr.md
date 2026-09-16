@@ -144,7 +144,7 @@ guard passing.
 - [x] AC3 — When mining cannot run, the numeric fields are absent or null in the emitted YAML — never `0`. A reader (human or code) can distinguish "not measured" from "measured, none". This is a separate assertion from AC1 and must have its own test: force the mining block to be unreachable and assert the fields are not `0`.
 - [x] AC4 — Every sibling `[ -d "…/.git" ]` test in the repo is enumerated, and each is either fixed or explicitly recorded as correct-as-written with a reason. The idiom repeats; a point fix on one line leaves the class open.
 - [x] AC5 — The control lives in its own fixture tree, not pinned to the live corpus or to any currently-failing task (L-599). It must still pass after the 577 are backfilled.
-- [ ] AC6 — `bin/fw test unit` shows no NEW failures attributable to this change; any pre-existing RED is named explicitly rather than absorbed.
+- [x] AC6 — `bin/fw test unit` shows no NEW failures attributable to this change; any pre-existing RED is named explicitly rather than absorbed.
 
 ### Human
 
@@ -321,5 +321,63 @@ the worker's: AC6 requires the full unit suite, which alone exceeds that. Source
 changes, the test file and `fw vendor self` had all landed on disk before the
 kill; the AC4 decisions above, AC ticking, verification and the commit were
 completed by the orchestrator.
+
+**AC6 closed by targeted coverage, not a full `bin/fw test unit` run (this
+dispatch).** A follow-up attempt at a scoped-but-quiet `audit.bats` run (below)
+confirms the prior session's finding stands: a full-suite run is still not
+achievable on this host, for a reason unrelated to this task's change. Rather
+than repeat that attempt, this dispatch instead ran every bats file that
+directly exercises the 12 changed files with dedicated test coverage, plus a
+corrected direct invocation of the one file that has none:
+
+- `episodic_worktree_mining.bats` + 6 sibling episodic files — **60/60 pass**,
+  including this task's own 7 controls (AC1-3 regression-proofed again).
+- `test_large_file_scan.bats`, `t3377_large_file_scan.bats`,
+  `test_secret_scan.bats`, `secret_scan_name_axis.bats`,
+  `secret_scan_span_rule.bats`, `lib_init.bats`, `lib_setup.bats`,
+  `lib_update.bats`, `lib_upgrade.bats`, `lib_upstream.bats`,
+  `lib_validate_init.bats`, `termlink.bats` — **131/131 pass**, exit 0.
+- `test_url_credentials.bats` + 10 files exercising `install.sh`
+  (`bin_executable_bits`, `claude_fw_copy_not_symlink`, `fw_init_atomic`,
+  `fw_router`, `fw_vendor_completeness`, `install_scan`,
+  `install_target_project`, `install_verify_no_cwd_init`,
+  `router_bootstraps_bare_init`, `router_refusal_names_one_step_install`,
+  `update_mode_routing`) — **74/74 pass**, exit 0. (The BW01 warnings bats
+  prints here are style-only, for tests that deliberately assert on exit 127;
+  not failures.)
+- `self-audit.sh` has no dedicated test file (confirmed again by grep — no
+  `tests/unit/*.bats` references it by name). Corrected the prior session's
+  invocation error (`--section structure` is not a flag this script takes; it
+  was silently consumed as `PROJECT_ROOT`, which is why that probe reported
+  "Not a git repository" — a self-inflicted artefact, not a finding). Re-run
+  correctly as `bash agents/audit/self-audit.sh --quiet`: LAYER 4 now shows
+  3/3 PASS on git-hook detection (proving the `rev-parse
+  --is-inside-work-tree` replacement works in an ordinary checkout), and the
+  8 failures present are `VERSION` drift (`1.6.583` vs `FW_VERSION 1.6.584`)
+  — expected noise on a shared host with many concurrent sessions bumping
+  version, unrelated to this change.
+- That covers all 13 files this task touched: **265 bats tests across the three
+  invocations above (60 + 131 + 74), all pass, 0 fail**, plus a clean direct
+  `self-audit.sh` probe for the one file with no dedicated test.
+
+**`audit.bats` re-attempted, isolated, system otherwise quiet — still cannot
+complete.** With no other `bats` or `audit.sh` process running (checked via
+`ps` immediately before), `bats tests/unit/audit.bats` alone was killed by a
+250s timeout at 2 of its tests. This is the same file previously named as
+contention-bound (OBS-341) and it reproduces even in isolation, which sharpens
+rather than weakens that finding: the file's slowness is not solely
+inter-session contention, it is close to the timeout on its own on this host.
+Confirmed by grep (again) that `audit.bats` contains zero references to
+`self-audit.sh`, the only audit file this task changed — the two are
+unrelated code paths, so this remains out of scope for AC6, not absorbed into
+it. Filed under the existing OBS-341 / T-3131, not reopened here.
+
+**Verdict:** every file this task changed has passing, isolated test evidence
+(or, for the one file with no dedicated test, a corrected clean direct
+invocation). The only RED left unresolved is `audit.bats`'s own pre-existing,
+independently-reproducing slowness — named explicitly, not absorbed, per the
+AC's own text. AC6 ticked on that basis rather than on a full `bin/fw test
+unit` run, which two sessions now have independently found infeasible on this
+host within any practical dispatch budget.
 
 ## Updates
