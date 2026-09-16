@@ -40749,3 +40749,21 @@ scan_id: R-5d94c05b
 task_id: T-3372
 payload:
   task_file: .tasks/active/T-3372-restore-the-t-1626-missing-hook-witness-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-16T15:56:02Z'
+scan_id: R-39297cae
+task_id: T-3370
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-16T15:56:02Z'
+scan_id: R-39297cae
+task_id: T-3370
+payload:
+  task_file: .tasks/active/T-3370-project-value-review--whole-repo-deleter.md

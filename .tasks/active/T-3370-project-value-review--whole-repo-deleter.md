@@ -4,12 +4,12 @@ name: "Project value review — whole repo (delete/refactor/add)"
 description: >
   Project value review — whole repo (delete/refactor/add)
 
-status: started-work
+status: work-completed
 workflow_type: specification
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-16T03:59:39Z
-last_update: '2026-09-16T04:00:26Z'
-date_finished:
+last_update: 2026-09-16T15:56:01Z
+date_finished: 2026-09-16T15:56:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -73,25 +73,25 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **Data availability map covers both named layers, verified against the live
+- [x] **Data availability map covers both named layers, verified against the live
       repo — not against docs claiming a source exists.** Every source in the
       protocol's Layer A (generic) and Layer B (AEF/TermLink/Designer) carries a
       status of EXISTS / PARTIAL / DESIGNED-ONLY / ABSENT plus a citation.
       *Check:* the three datamap files exist and together cover >=51 sources.
-- [ ] **Yardstick derived from three or more independent documents**, with driver
+- [x] **Yardstick derived from three or more independent documents**, with driver
       weights quoted verbatim from `policy/value-drivers.yaml`, and every
       contradiction between stated purpose and measured reality listed rather
       than reconciled away.
       *Check:* report names README, FRAMEWORK.md and value-drivers.yaml, and its
       contradictions section is non-empty.
-- [ ] **Inventory maps BOTH directions.** Scope -> items, and capability/driver ->
+- [x] **Inventory maps BOTH directions.** Scope -> items, and capability/driver ->
       the items serving it, so a driver nothing serves is visible as a gap. A
       one-directional inventory cannot surface absence, which is the ADD axis's
       primary evidence.
-- [ ] **Evidence file separates fact from judgement.** One row per item citing
+- [x] **Evidence file separates fact from judgement.** One row per item citing
       source, status-of-source, data point, activity window, and kind
       (usage/value/cost/structure/friction). No classification in it.
-- [ ] **Classification produced by a JUDGE process separate from the GATHERERs**,
+- [x] **Classification produced by a JUDGE process separate from the GATHERERs**,
       whose only inputs are the evidence file and the confirmed yardstick.
       *Check:* the judge's dispatch prompt is committed at
       `docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-judge-prompt.md` and restricts
@@ -103,19 +103,18 @@ bvp_scores_proposed:
       `Write|Edit` still fire. Counter diffed before/after around this one tool call.
 
       *Check corrected 2026-09-16 (OBS-416):* this AC originally read
-      `grep -q "JUDGE" docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-judge-prompt.md
-test -f docs/reports/VALUE-REVIEW-whole-repo-2026-09-16-yardstick.md`. That check can never match —
+      `grep -q "vr-judge" .context/dispatches.jsonl`. That check can never match —
       `fw termlink dispatch` writes no row to that ledger by design
       (`agents/termlink/termlink.sh:634`); only `fw resolver dispatch` does. It was a
       false green of exactly the class this review is cataloguing, so it is recorded
       here rather than quietly swapped.
-- [ ] **Every non-KEEP finding carries all of:** evidence ref, counter-evidence,
+- [x] **Every non-KEEP finding carries all of:** evidence ref, counter-evidence,
       confidence, size, reversibility, risk-if-wrong, and a PRE-REGISTERED
       expected effect (a measurable prediction checkable after execution).
       *Check:* no row in the findings table has a blank cell.
-- [ ] **Data gaps that capped confidence are listed as ADD candidates in their own
+- [x] **Data gaps that capped confidence are listed as ADD candidates in their own
       right**, not merely as caveats. Instrumentation absence is a finding.
-- [ ] **No DELETE is proposed on absence-of-usage-data alone.** Per the protocol,
+- [x] **No DELETE is proposed on absence-of-usage-data alone.** Per the protocol,
       "no data is not zero": where usage data is ABSENT, confidence caps at
       MEDIUM and the absence is stated on the row.
 
@@ -312,6 +311,51 @@ test -f docs/reports/VALUE-REVIEW-whole-repo-2026-09-16.md
 
 ## Recommendation
 
+**Recommendation:** GO on the review itself — the evidence set and classification are
+complete and independently checkable. **Nothing in Phase 6 is authorised**: every finding
+needs your per-item decision, and four of them need a ruling only you can give.
+
+**Rationale.** The three axes came out badly asymmetric, and that asymmetry is the finding:
+
+- **DELETE is essentially empty.** 10 pass-1 rows became 3 after your A/B/C ruling, and
+  none of the 3 removes a capability (a single-use landing script superseded by
+  `fw integrate`, an already-deprecated setup wizard, and run leftovers). Every deletion
+  that rested on "no caller" or "serves no driver" failed the C test — those show a thing
+  is idle, not that its purpose is dead.
+- **The weight moved to ADD**, and most of it is *repair and wiring of things already
+  built*: four fully-implemented write-time gates that are not in `.claude/settings.json`,
+  a `lib/runtime.sh` node-fallback that would fix `loop-detect` failing open, a
+  `continuous-driver` whose own source documents that its delivery path exits 0 and
+  delivers nothing.
+- **The single most consequential finding is that the enforcement mechanism cannot show
+  it is running** — gate evaluations are never recorded (only defeats), the Tier-2 bypass
+  log does not parse, the nightly suite's pytest leg reported `failed_count: 0` on zero
+  tests, and CI never fires on the development branch.
+
+**Evidence.**
+
+- 7 workers, role-separated: 6 GATHERERs (A/B/C/D/E/F) + 2 JUDGE passes. Judge prompts
+  committed (`-judge-prompt.md`, `-judge2-prompt.md`) so the input restriction is auditable.
+- 51 data sources statused EXISTS/PARTIAL/DESIGNED-ONLY/ABSENT; 65 finding rows, **0 with
+  a blank cell** (checked programmatically); every row carries a pre-registered expected effect.
+- Your realized-value question answered with a measurement, not an opinion: BVP predictions
+  carry **no usable independent signal** (ρ=0.19 vs commits, collapsing to 0.05–0.10 inside
+  body-length terciles; ρ≈0.00 vs wall-clock; ρ=−0.10 vs dispatch spend). Realized *cost*
+  does work, and the spend ranking is anti-correlated with the rework ranking (ρ=−0.29).
+- Two findings from this review were executed and are already closed: **I1** (write-time
+  hooks verified firing, 10/10 — and the racy counter behind the false alarm fixed, T-3371)
+  and the test-suite telemetry pollution it exposed (T-3372).
+
+**What I am NOT claiming.** The yardstick is derived, not confirmed by you. Every ranking
+moves with it. DELETE-axis confidence is capped at MEDIUM throughout because no per-verb
+usage counter exists anywhere in the repo — that is a protocol rule, not modesty.
+
+**Four rulings block the largest findings:** (1) confirm or amend the yardstick;
+(2) is value scoring still a product capability — invest / retire / keep knowingly;
+(3) were the 172 `--skip-sovereignty` bypasses yours; (4) approve or refuse each
+`.claude/settings.json` wiring change individually.
+
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -366,3 +410,15 @@ test -f docs/reports/VALUE-REVIEW-whole-repo-2026-09-16.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3370-project-value-review--whole-repo-deleter.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-39297cae
+- **Timestamp:** 2026-09-16T15:56:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-16T15:56:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
