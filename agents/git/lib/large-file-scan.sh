@@ -141,21 +141,45 @@ scan_tree() {
 
     local hits=0 warns=0
     local path size
-    while IFS= read -r path; do
+    # T-3377: size-filter in BULK, before any per-path work.
+    #
+    # This loop used to run per tracked file: `_lf_is_allowed` (a pipeline —
+    # subshell + `grep` fork) and then a `stat` fork, for every path git listed.
+    # At 17,270 tracked files that is ~35-50k process spawns, measured at
+    # user 19s / sys 49s and still unfinished at a 60s timeout. `fw doctor`
+    # calls this inline, so doctor could not return (exit 124 at 120s).
+    #
+    # The observation that fixes it: a file is only ever REPORTED if it is at
+    # least `warn` bytes, and in this repo that is a handful of paths. So get
+    # every size in one batched pass (xargs feeds many paths per `stat`), drop
+    # everything under the warn threshold in awk, and let the allowlist regex
+    # and the size formatter run only on what survives — tens of paths, not
+    # tens of thousands.
+    #
+    # Semantics are deliberately untouched. Order is preserved (xargs and awk
+    # are both order-preserving over git ls-files output). The allowlist is
+    # still consulted before any report, and it exempts from BOTH thresholds,
+    # so applying it after the size cut cannot change the result: a path below
+    # warn produced no output under either ordering. A path git lists but that
+    # is missing on disk yields no stat line, which matches the old
+    # `|| echo 0` → skip. T-3062 fixed the AUDIT call site's cost by moving
+    # this scan to the daily horizon; doctor's inline call site was missed
+    # (L-533 — enumerate consumers by dependency, not by remembered filename).
+    while read -r size path; do
         [ -z "$path" ] && continue
         if _lf_is_allowed "$path" "$allow_re"; then
             continue
         fi
-        size=$(stat -c %s "$root/$path" 2>/dev/null || echo 0)
-        [ "$size" = "0" ] && continue
         if [ "$size" -ge "$block" ]; then
             printf '  [BLOCK] %s — %s\n' "$path" "$(_lf_human_size "$size")"
             hits=$((hits + 1))
-        elif [ "$size" -ge "$warn" ]; then
+        else
             printf '  [WARN]  %s — %s\n' "$path" "$(_lf_human_size "$size")"
             warns=$((warns + 1))
         fi
-    done < <(git -C "$root" ls-files 2>/dev/null)
+    done < <(cd "$root" 2>/dev/null && git ls-files 2>/dev/null \
+                | xargs -d '\n' -r stat -c '%s %n' -- 2>/dev/null \
+                | awk -v w="$warn" '$1 + 0 >= w + 0')
 
     if [ "$hits" -gt 0 ]; then return 1; fi
     return 0

@@ -71,10 +71,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 11
-  commits: 1
-  files_changed: 4
-  lines_added: 439
-  lines_removed: 0
+  commits: 2
+  files_changed: 8
+  lines_added: 686
+  lines_removed: 38
+  footprint_refreshed_at: '2026-09-16T18:07:36Z'
+  footprint_refreshed_by_commit: 0afaeecfa
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3375-t-3374-follow-through-broader-safe-comma.md

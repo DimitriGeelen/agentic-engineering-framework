@@ -40767,3 +40767,57 @@ scan_id: R-39297cae
 task_id: T-3370
 payload:
   task_file: .tasks/active/T-3370-project-value-review--whole-repo-deleter.md
+---
+kind: scan_emitted
+timestamp: '2026-09-16T17:21:04Z'
+scan_id: R-43e95aa8
+task_id: T-3373
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-16T17:21:04Z'
+scan_id: R-43e95aa8
+task_id: T-3373
+payload:
+  task_file: .tasks/active/T-3373-safe-commands-allowlist-read-only-comman.md
+---
+kind: scan_emitted
+timestamp: '2026-09-16T17:52:43Z'
+scan_id: R-71408866
+task_id: T-3374
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-16T17:52:43Z'
+scan_id: R-71408866
+task_id: T-3374
+payload:
+  task_file: .tasks/active/T-3374-fix-obs-423-fail-open-safe-commands-env-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-16T18:07:03Z'
+scan_id: R-39862c75
+task_id: T-3375
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-16T18:07:03Z'
+scan_id: R-39862c75
+task_id: T-3375
+payload:
+  task_file: .tasks/active/T-3375-t-3374-follow-through-broader-safe-comma.md

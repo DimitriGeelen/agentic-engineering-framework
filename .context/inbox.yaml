@@ -4730,3 +4730,17 @@ observations:
   tags: [gap]
   status: pending
   promoted_to: null
+- id: OBS-426
+  text: "VERSION working-tree regression: HEAD has 1.6.769 (7dbd3ba2d 'reconcile VERSION to 1.6.769, tag-as-canonical T-3242') but the working tree holds 1.6.568 — an uncommitted DOWNGRADE of 201 patch levels. Causes 'fw doctor' FAIL 'VERSION (1.6.568) is BELOW the latest release tag (v1.6.768)' and makes every consumer-drift WARN compare against the wrong baseline (all ~20 consumers reported against v1.6.568 instead of v1.6.769). Not caused by 'fw vendor self': the vendored .agentic-framework/VERSION is still 1.6.769, the opposite of what a source->vendor sync produces, so something wrote the repo VERSION directly. Discovered incidentally during T-3377 (doctor was previously unable to run long enough to report it). Fix is probably 'git checkout -- VERSION' but WHY it regressed is unknown and matters more than the restore."
+  captured: 2026-09-16T20:01:53Z
+  context_task: T-3377
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-427
+  text: "secret-scan.sh scan-tree costs 188s and is NOT the T-3377 defect class — enumerated, not assumed. Its scan_tree (agents/git/lib/secret-scan.sh:215-240) already avoids the per-file fork shape: it runs 'git grep -nIE' once per PATTERN and says so at line 225-226 ('runs entirely in-process (no per-file fork to file)'). So its cost is O(patterns x tree), not O(files x forks), and the T-3377 fix (bulk stat + awk size cut) does not transfer. Anyone optimising it by analogy with T-3377 will be fixing the wrong axis. Real options are pattern consolidation into fewer git-grep passes, or a single combined alternation regex. It is the LARGER half of the 347s structure-section total that T-3062 measured (188s of it), so it is worth its own task — but only with its own measurement."
+  captured: 2026-09-16T20:02:01Z
+  context_task: T-3377
+  tags: []
+  status: pending
+  promoted_to: null
