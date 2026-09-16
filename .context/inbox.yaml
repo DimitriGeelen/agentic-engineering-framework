@@ -4673,3 +4673,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-418
+  text: "OBS: the T-1626 missing-hook witness is broken — 'bin/fw hook <missing>' warns and exits 0 but records NOTHING. Measured: PROJECT_ROOT=<tmp> bin/fw hook bogus-hook-name-probe prints 'WARNING: Hook script not found ... (degrading to allow)', exit 0, and .context/working/ stays EMPTY — neither .hook-counter nor .hook-failure-counter is created. tests/unit/hook_telemetry.bats test 14 ('missing-hook degrade-to-allow path records as failure (T-1626 witness)') asserts exactly this and is RED. Confirmed pre-existing, NOT a regression from T-3371: git-stashed the T-3371 change and test 14 failed identically on the unmodified file. This is the T-1626 origin scenario regressed — that inception exists because dozens of 'hook error / bin/fw: not found' messages flowed past while every health surface reported clean, and T-1628 shipped the counter so fw doctor and the T-1629 threshold escalation could see it. With the witness dead, a hook configured in settings.json but missing on disk is invisible to every automated surface again; only the stderr WARNING remains, and nothing reads stderr. Related: judge finding A3 ('fail loud on a missing hook script') and D section 4.3 ('fw hook exits 0 when the hook script is missing', bin/fw:9101). Not fixed here — one bug one task, and T-3371's scope is the counter race. Needs its own task."
+  captured: 2026-09-16T15:01:00Z
+  context_task: T-3371
+  tags: []
+  status: pending
+  promoted_to: null

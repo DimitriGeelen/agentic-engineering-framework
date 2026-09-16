@@ -32,32 +32,100 @@ fw_record_hook_fire() {
 }
 
 # _fw_telemetry_increment <file> <key>
-#   Read-modify-write of a flat `key=count\n` file. If the key already exists,
-#   increments its value; otherwise appends `key=1`. Pure bash — no subprocess
-#   fork — to keep per-fire overhead under the T-1626 5ms budget. On a typical
-#   <20-line counter file this completes in well under 1ms.
+#   Read-modify-write of a flat `key=count\n` file, serialized by flock.
+#
+#   T-3371 (OBS-417): this was lock-free until 2026-09-16. The read-modify-write
+#   (mapfile → edit array → `printf > file`) is not atomic, so two hooks firing
+#   concurrently both read, both write, and the LAST WRITER WINS WITH ITS OWN
+#   STALE VIEW — silently discarding every key it had not read. Measured with
+#   this repo's own function, 8 processes x 200 increments: 1600 expected,
+#   **17 recorded** (98.9% lost), 5 of 8 keys gone from the file entirely, plus
+#   a duplicate key. The live `.hook-counter` carried exactly that damage: two
+#   `budget-gate` lines (one live, one shadowed corpse) and a blank line.
+#
+#   Why that mattered more than a wrong number: `fw doctor` and the T-1629
+#   hook-threshold escalation both read this file. An instrument that loses ~99%
+#   of its signal under load reads identically to a quiet, healthy system — so
+#   hook-failure escalation silently under-reports precisely when concurrency
+#   (i.e. dispatched workers) makes hook breakage most likely. It also produced
+#   a false alarm of its own: a clobbered snapshot listing only `Bash`-matched
+#   hooks was read as evidence that write-time gates were not firing at all.
+#
+#   Cost: flock adds ~1.7ms, measured 2.3ms/fire total against the 5ms budget
+#   above (200 fires, 20-key file). The budget is why this was written lock-free;
+#   it is not why it should stay wrong. flock needs no stale-lock handling — the
+#   kernel releases on fd close or process death.
+#
+#   Degrade-to-allow (L-331): if flock is unavailable or the lock cannot be taken
+#   within FW_TELEMETRY_LOCK_WAIT seconds, the increment proceeds UNLOCKED rather
+#   than failing or hanging. Telemetry must never block a hook — a lossy counter
+#   is bad, a wedged gate is worse.
 _fw_telemetry_increment() {
     local file="$1"
     local key="$2"
-    local -a lines
+    local lockfd=""
+
+    # Probe flock once per shell, not per fire.
+    if [ -z "${_FW_TELEMETRY_HAS_FLOCK:-}" ]; then
+        if command -v flock >/dev/null 2>&1; then
+            _FW_TELEMETRY_HAS_FLOCK=1
+        else
+            _FW_TELEMETRY_HAS_FLOCK=0
+        fi
+    fi
+
+    if [ "$_FW_TELEMETRY_HAS_FLOCK" = "1" ]; then
+        # `>>` never truncates, so the lock file is safe to share and safe to
+        # leave behind. Auto-assigned fd avoids colliding with a caller's fds.
+        if exec {lockfd}>>"${file}.lock" 2>/dev/null; then
+            flock -w "${FW_TELEMETRY_LOCK_WAIT:-2}" "$lockfd" 2>/dev/null || true
+        fi
+    fi
+
+    _fw_telemetry_rmw "$file" "$key"
+
+    [ -n "$lockfd" ] && exec {lockfd}>&- 2>/dev/null
+    return 0
+}
+
+# _fw_telemetry_rmw <file> <key>
+#   The read-modify-write itself. Assumes the caller holds the lock (or has
+#   decided to proceed without one). Also self-heals the two corruption shapes
+#   the pre-T-3371 race left behind: a blank line, and a shadowed duplicate key
+#   that the old first-match-wins loop would increment forever while orphaning
+#   the rest. First occurrence of a key wins — deliberately NOT a sum, which
+#   would inflate the live count by folding in a stale corpse.
+_fw_telemetry_rmw() {
+    local file="$1"
+    local key="$2"
+    local -a lines out
     local i k v
     local found=0
-    if [ -f "$file" ]; then
-        mapfile -t lines < "$file"
-        for i in "${!lines[@]}"; do
-            k="${lines[i]%%=*}"
-            if [ "$k" = "$key" ]; then
-                v="${lines[i]#*=}"
-                lines[i]="$key=$((v + 1))"
-                found=1
-                break
-            fi
-        done
-        [ "$found" = "0" ] && lines+=("$key=1")
-        printf '%s\n' "${lines[@]}" > "$file"
-    else
+
+    if [ ! -f "$file" ]; then
         printf '%s=1\n' "$key" > "$file"
+        return 0
     fi
+
+    mapfile -t lines < "$file"
+    local -A seen 2>/dev/null || true
+    for i in "${!lines[@]}"; do
+        [ -z "${lines[i]}" ] && continue                 # drop blank lines
+        k="${lines[i]%%=*}"
+        v="${lines[i]#*=}"
+        [ "$k" = "${lines[i]}" ] && continue             # no '=' — malformed
+        [ -z "$k" ] && continue                          # empty key
+        [ -n "${seen[$k]:-}" ] && continue               # shadowed duplicate
+        seen[$k]=1
+        case "$v" in ''|*[!0-9]*) v=0 ;; esac            # non-numeric → 0
+        if [ "$k" = "$key" ]; then
+            v=$((v + 1))
+            found=1
+        fi
+        out+=("$k=$v")
+    done
+    [ "$found" = "0" ] && out+=("$key=1")
+    printf '%s\n' "${out[@]}" > "$file"
 }
 
 # fw_hook_counter_get <kind> <hookname>
