@@ -117,6 +117,33 @@ bvp_scores_proposed:
       half is an AC-REGION audit (not the whole-page grep that was inconclusive at
       park time); the suite half is set parity, not merely count parity.
 
+### Human
+
+- [ ] [REVIEW] Human-AC fields on a task page read as rendered prose, not as markup
+
+  **Steps:**
+  1. `bin/fw watchtower url` to get the base URL
+  2. Open http://192.168.10.107:3002/tasks/T-3368 in a browser
+  3. Scroll to the **Human** acceptance criterion (the one badged *Review*)
+  4. Read its **Steps**, **Expected** and **If not** blocks
+  5. Open http://192.168.10.107:3002/approvals and read the same three fields on any card there
+
+  **Expected:** the three fields read as ordinary formatted text — inline code in a
+  code style, `web/shared.py` as a single underlined link that opens the file view.
+  No visible angle-bracket markup, no `&lt;`, no stray `href=` or `"&gt;` in the
+  prose. Both pages look the same as each other.
+
+  **If not:** note which page and which of the three fields, and whether the text
+  shows escaped markup (regression of this task) or a stray `&lt;` in front of a
+  placeholder word (that is OBS-411, a separate known defect — not this task).
+
+  *Why this is [REVIEW] and not [REVIEWER]:* the Agent ACs already pin the
+  structure by assertion — 9 interpolations carry `| safe`, zero bare, 16 tests
+  green, XSS payloads inert. What a static scan cannot answer is whether the
+  operator reading Watchtower sees prose that reads cleanly. Per the T-2143
+  audience test, the subject here is the human's reading experience, so it lands
+  on the Human side.
+
 ## Resolution (2026-09-16)
 
 Parked at the 300k session cap, not stalled; resumed after compaction reset the
@@ -175,55 +202,6 @@ so all 16 new tests are green and nothing previously-green turned red.
 - **OBS-412** — OBS-397's pre-registered prediction confirmed: the nightly still
   times out, and its pytest leg reports `failed_count: 0` having run `tests: 0`.
 
-### Human
-
-- [ ] [REVIEW] Human-AC fields on a task page read as rendered prose, not as markup
-
-  **Steps:**
-  1. `bin/fw watchtower url` to get the base URL
-  2. Open http://192.168.10.107:3002/tasks/T-3368 in a browser
-  3. Scroll to the **Human** acceptance criterion (the one badged *Review*)
-  4. Read its **Steps**, **Expected** and **If not** blocks
-  5. Open http://192.168.10.107:3002/approvals and read the same three fields on any card there
-
-  **Expected:** the three fields read as ordinary formatted text — inline code in a
-  code style, `web/shared.py` as a single underlined link that opens the file view.
-  No visible angle-bracket markup, no `&lt;`, no stray `href=` or `"&gt;` in the
-  prose. Both pages look the same as each other.
-
-  **If not:** note which page and which of the three fields, and whether the text
-  shows escaped markup (regression of this task) or a stray `&lt;` in front of a
-  placeholder word (that is OBS-411, a separate known defect — not this task).
-
-  *Why this is [REVIEW] and not [REVIEWER]:* the Agent ACs already pin the
-  structure by assertion — 9 interpolations carry `| safe`, zero bare, 16 tests
-  green, XSS payloads inert. What a static scan cannot answer is whether the
-  operator reading Watchtower sees prose that reads cleanly. Per the T-2143
-  audience test, the subject here is the human's reading experience, so it lands
-  on the Human side.
-
-## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
 
