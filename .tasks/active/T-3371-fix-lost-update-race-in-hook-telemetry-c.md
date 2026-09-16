@@ -102,8 +102,16 @@ write-time gates not firing, and the alarm turned out to be the instrument's own
       orphaning the rest.
       *Check:* test seeds a file containing a duplicate key + blank line, increments,
       and asserts one line per key and no empty key.
-- [x] **Vendored copy synced before close** (OBS-250): `bin/fw vendor self --check`
-      clean, run BEFORE `--status work-completed`, since `lib/` is a vendored path.
+- [x] **Vendored copy synced before close** (OBS-250), run BEFORE
+      `--status work-completed`, since `lib/` is a vendored path.
+      *Check:* `cmp -s lib/hook-telemetry.sh .agentic-framework/lib/hook-telemetry.sh`.
+      Deliberately scoped to THIS task's file rather than `bin/fw vendor self --check`:
+      the tree carries an unrelated uncommitted `bin/fw` edit (a doctor WARN wording
+      tweak, not mine), which makes the repo-wide check red for reasons that have
+      nothing to do with this change. Pinning the whole-tree state here would be the
+      mutable-corpus anchor the task template warns against — the line would rot on
+      someone else's work. `fw vendor self` WAS run; it synced lib/ and withheld the
+      uncommitted bin/fw, which is the gate behaving correctly.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -175,7 +183,7 @@ fails identically on the unmodified file. Filed as **OBS-418**; it needs its own
 bash -n lib/hook-telemetry.sh
 timeout 900 bats tests/unit/hook_telemetry_race.bats > /tmp/.t3371-verif.out 2>&1 && grep -q "^ok 7" /tmp/.t3371-verif.out
 grep -q "^ok 2 T-3371 CONTROL" /tmp/.t3371-verif.out
-bin/fw vendor self --check
+cmp -s lib/hook-telemetry.sh .agentic-framework/lib/hook-telemetry.sh
 
 
 # Shell commands that MUST pass before work-completed. One per line.
