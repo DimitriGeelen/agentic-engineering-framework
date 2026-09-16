@@ -2907,6 +2907,104 @@ check_invariant_suite() {
 }
 check_invariant_suite
 
+# T-3191: run the dead-negation lint (tools/bats-dead-negation-lint.py, T-3138)
+# from a gate nothing has to choose to run.
+#
+# T-3138 measured 106 inert `! cmd` bats assertions and shipped the linter, but
+# wired it into no runner: no audit section, no `fw test lint`, no cron, no
+# hook. T-3190 reintroduced the exact class two days later in a brand-new
+# suite (tests/unit/t3190_release_master_ff.bats) and it went green on every
+# surface that ran — only mutation testing (not a scheduled check) caught it.
+#
+# Placed here, not in `fw test lint`, because `fw test lint` has the identical
+# defect this whole section exists to close: nothing schedules it either (see
+# the T-2837 comment on check_invariant_suite above — 25 cron jobs, 5 run `fw
+# audit`, none ran a test suite). Audit is the one surface that is both
+# cron'd (`*/30 * * * * ... audit --section structure ...`) and gates
+# `git push` (pre-push runs agents/audit/audit.sh directly) — a red finding
+# here is unavoidable, not opt-in.
+#
+# Placed inline (not report-read like check_unit_suite_report below) because
+# the cost profile is opposite tests/unit's: this is a pure Python source-text
+# scan over *.bats files, no subprocess, no bats binary required, no timeout
+# risk. Measured: ~748 files in well under a second.
+check_dead_negation_lint() {
+    local _tool="$FRAMEWORK_ROOT/tools/bats-dead-negation-lint.py"
+    [ -f "$_tool" ] || return 0
+    local _dir="$FRAMEWORK_ROOT/tests"
+    [ -d "$_dir" ] || return 0
+    [ -n "$(find "$_dir" -name '*.bats' -print -quit 2>/dev/null)" ] || return 0
+
+    local _json
+    _json=$(python3 "$_tool" "$_dir" --json 2>/dev/null) || true
+    local _dead _scanned
+    _dead=$(printf '%s' "$_json" | python3 -c "import json,sys
+try:
+    print(json.load(sys.stdin).get('dead',''))
+except Exception:
+    print('')" 2>/dev/null)
+    _scanned=$(printf '%s' "$_json" | python3 -c "import json,sys
+try:
+    print(json.load(sys.stdin).get('files_scanned',''))
+except Exception:
+    print('')" 2>/dev/null)
+
+    case "$_dead" in
+        ''|*[!0-9]*)
+            warn_unenumerable "dead-negation lint output (tests/)" \
+                "Dead-negation lint (tests/) NOT CHECKED" \
+                "python3 tools/bats-dead-negation-lint.py tests/ --json produced no parseable JSON" \
+                "Run manually: python3 tools/bats-dead-negation-lint.py tests/"
+            return 0
+            ;;
+    esac
+
+    if [ "$_dead" -eq 0 ]; then
+        pass_over "$_scanned" "bats file(s) scanned for dead negations (tests/, T-3138/T-3191)" \
+            "Dead-negation lint (tests/) clean"
+        return 0
+    fi
+
+    # Scope (T-3126 discipline): worktree only if every flagged file is
+    # uncommitted-vs-HEAD — a dead negation living solely in an untracked or
+    # locally-modified file is not a property of the ref being pushed.
+    local _files _f _scope="ref" _reason="" _any=0 _all_unc=1
+    _files=$(printf '%s' "$_json" | python3 -c "import json,sys
+try:
+    d = json.load(sys.stdin)
+    print('\n'.join(sorted({f['path'] for f in d.get('findings', [])})))
+except Exception:
+    pass" 2>/dev/null)
+    if _t3126_git_ok "$FRAMEWORK_ROOT" && [ -n "$_files" ]; then
+        while IFS= read -r _f; do
+            [ -z "$_f" ] && continue
+            _any=1
+            local _rel="${_f#"$FRAMEWORK_ROOT"/}"
+            _t3126_path_uncommitted "$FRAMEWORK_ROOT" "$_rel" || _all_unc=0
+        done <<< "$_files"
+        if [ "$_any" -eq 1 ] && [ "$_all_unc" -eq 1 ]; then
+            _scope="worktree"
+            _reason="every flagged file is uncommitted-vs-HEAD"
+        else
+            _reason="at least one flagged file is committed to HEAD"
+        fi
+    else
+        _reason="git HEAD unreadable — scope undecidable, defaulting to ref"
+    fi
+
+    fail "Dead-negation lint (tests/): $_dead inert '! cmd' assertion(s) found (T-3138, T-3191)" \
+         "$(printf '%s' "$_json" | python3 -c "import json,sys
+try:
+    d = json.load(sys.stdin)
+    for f in d.get('findings', [])[:3]:
+        print('%s:%s: %s' % (f['path'], f['line'], f['text']))
+except Exception:
+    pass" 2>/dev/null | tr '\n' ';')" \
+         "Fix each assertion (make it the block's last statement, or guard with a top-level ||) — see tools/bats-dead-negation-lint.py header" \
+         "$_scope" "$_reason"
+}
+check_dead_negation_lint
+
 # T-3302: surface the nightly tests/unit corpus run (agents/audit/unit-suite.sh,
 # cron job unit-suite-nightly).
 #

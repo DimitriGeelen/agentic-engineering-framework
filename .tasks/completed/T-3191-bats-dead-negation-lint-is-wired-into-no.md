@@ -9,10 +9,10 @@ description: >
   exposed it. The sweep cleaned the existing sites but left no rail against the next
   one.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-27T07:40:03Z
-last_update: '2026-08-27T07:45:15Z'
-date_finished:
+last_update: 2026-09-16T23:43:06Z
+date_finished: 2026-09-16T23:43:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -79,12 +79,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `tools/bats-dead-negation-lint.py` runs from a gate that fires without anyone choosing to run it (audit section, `fw test lint`, or pre-push) — decide which, and say why in the task
-- [ ] The gate scans the whole `tests/` tree, not a pinned list, so a newly-added suite is covered on its first run
-- [ ] A newly-introduced dead negation makes the gate go RED, proven by adding one to a scratch fixture and watching it fire — not by reading the linter's exit code
-- [ ] CONTROL LEG: the same gate is GREEN on the tree as it stands today, so RED means "new dead negation" and not "gate is always red"
-- [ ] The T-3190 suite (`tests/unit/t3190_release_master_ff.bats`) is covered by whatever scan path is chosen
-- [ ] Wiring is recorded where the next person looks: the linter's own header says what runs it
+- [x] `tools/bats-dead-negation-lint.py` runs from a gate that fires without anyone choosing to run it (audit section, `fw test lint`, or pre-push) — decide which, and say why in the task
+- [x] The gate scans the whole `tests/` tree, not a pinned list, so a newly-added suite is covered on its first run
+- [x] A newly-introduced dead negation makes the gate go RED, proven by adding one to a scratch fixture and watching it fire — not by reading the linter's exit code
+- [x] CONTROL LEG: the same gate is GREEN on the tree as it stands today, so RED means "new dead negation" and not "gate is always red"
+- [x] The T-3190 suite (`tests/unit/t3190_release_master_ff.bats`) is covered by whatever scan path is chosen
+- [x] Wiring is recorded where the next person looks: the linter's own header says what runs it
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -118,6 +118,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 tools/bats-dead-negation-lint.py tests/ --json > /tmp/.t3191-lint.out 2>&1 && grep -q '"verdict": "PASS"' /tmp/.t3191-lint.out
+bash -n agents/audit/audit.sh
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -249,14 +253,10 @@ bvp_scores_proposed:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-17 — which gate runs the linter
+- **Chose:** `agents/audit/audit.sh`, new `check_dead_negation_lint`, in the STRUCTURE section, scanning the whole `tests/` tree via the linter's own recursive `rglob("*.bats")`.
+- **Why:** The audit's STRUCTURE section is both cron'd (`*/30 * * * * ... audit --section structure ...`) and run directly by `.git/hooks/pre-push` (confirmed by reading the hook — it invokes `agents/audit/audit.sh`, not `fw test`). A finding there cannot be skipped by choosing not to run a verb. `fw test lint` was rejected for the same reason T-2837's `check_invariant_suite` comment gives for `tests/lint/`: nothing schedules `fw test lint` either (25 cron jobs, 5 run `fw audit`, none run a test suite) — wiring there would just relocate the exact defect this task exists to close. Placed inline rather than as a nightly report-read (the `tests/unit` pattern, T-3302) because the linter is a pure Python source-text scan with no subprocess/bats dependency and no timeout risk — measured ~748 files in well under a second, so there's no cost reason to defer it to a nightly job.
+- **Rejected:** `fw test lint` (see above — unscheduled). A dedicated pre-commit/PreToolUse hook (rejected as heavier machinery than needed; audit already gates pre-push, and a hook would duplicate that without covering anything audit doesn't).
 
 ## Decision
 
@@ -274,3 +274,23 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3191-bats-dead-negation-lint-is-wired-into-no.md
 - **Context:** Initial task creation
+
+### 2026-09-16T23:26:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-03cb1134
+- **Timestamp:** 2026-09-16T23:43:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — The T-3190 suite (`tests/unit/t3190_release_master_ff.bats`) is covered by whatever scan path is chosen
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/t3190_release_master_ff.bats in: The T-3190 suite (`tests/unit/t3190_release_master_ff.bats`) is covered by whatever scan path is chosen`
+
+### 2026-09-16T23:43:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

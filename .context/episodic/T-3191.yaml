@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3191: bats-dead-negation-lint is wired into no gate, so the 107th inert assertion lands unchallenged
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-16T23:43:21Z
+# ============================================================================
+
+task_id: T-3191
+task_name: "bats-dead-negation-lint is wired into no gate, so the 107th inert assertion lands unchallenged"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-27T07:40:03Z
+completed: 2026-09-16T23:43:06Z
+duration_days: 20
+updates_count: 2
+first_commit: 2026-08-27T09:40:33+02:00
+last_commit: 2026-08-27T09:40:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the unwired dead-negation linter gap; close T-3190
+
+# Key outcomes
+outcomes:
+  - '`tools/bats-dead-negation-lint.py` runs from a gate that fires without anyone choosing to run it (audit section, `fw test lint`, or pre-push) — decide which, and say why in the task'
+  - 'The gate scans the whole `tests/` tree, not a pinned list, so a newly-added suite is covered on its first run'
+  - 'A newly-introduced dead negation makes the gate go RED, proven by adding one to a scratch fixture and watching it fire — not by reading the linter''s exit code'
+  - 'CONTROL LEG: the same gate is GREEN on the tree as it stands today, so RED means "new dead negation" and not "gate is always red"'
+  - 'The T-3190 suite (`tests/unit/t3190_release_master_ff.bats`) is covered by whatever scan path is chosen'
+  - 'Wiring is recorded where the next person looks: the linter''s own header says what runs it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-17 — which gate runs the linter'
+    chose: '`agents/audit/audit.sh`, new `check_dead_negation_lint`, in the STRUCTURE section, scanning the whole `tests/` tree via the linter''s own recursive `rglob("*.bats")`.'
+    rationale: 'The audit''s STRUCTURE section is both cron''d (`*/30 * * * * ... audit --section structure ...`) and run directly by `.git/hooks/pre-push` (confirmed by reading the hook — it invokes `agents/audit/audit.sh`, not `fw test`). A finding there cannot be skipped by choosing not to run a verb. `fw test lint` was rejected for the same reason T-2837''s `check_invariant_suite` comment gives for `tests/lint/`: nothing schedules `fw test lint` either (25 cron jobs, 5 run `fw audit`, none run a test suite) — wiring there would just relocate the exact defect this task exists to close. Placed inline rather than as a nightly report-read (the `tests/unit` pattern, T-3302) because the linter is a pure Python source-text scan with no subprocess/bats dependency and no timeout risk — measured ~748 files in well under a second, so there''s no cost reason to defer it to a nightly job.'
+    alternatives_rejected: ['`fw test lint` (see above — unscheduled). A dedicated pre-commit/PreToolUse hook (rejected as heavier machinery than needed; audit already gates pre-push, and a hook would duplicate that without covering anything audit doesn''t).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-3190.yaml'
+  - '.tasks/active/T-3191-bats-dead-negation-lint-is-wired-into-no.md'
+  - '.tasks/completed/T-3190-fw-release-tag-and-release-never-fast-fo.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-27T09:40:33'
+    action: 'T-3191: file the unwired dead-negation linter gap; close T-3190'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 29763 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 29763
+  commits: 1
+  files_changed: 3
+  lines_added: 348
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3191-bats-dead-negation-lint-is-wired-into-no.md
+generated_by: context-agent-hybrid

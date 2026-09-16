@@ -26,6 +26,15 @@ Usage:
     tools/bats-dead-negation-lint.py [PATH ...] [--json]
 
 Exit 0 when nothing is flagged, 1 when dead assertions are found, 2 on bad usage.
+
+Wired into (T-3191): `agents/audit/audit.sh` `check_dead_negation_lint`, in the
+structure section, over the whole `tests/` tree. That section is both cron'd
+(`*/30 * * * * ... audit --section structure ...`) and run by `git`'s
+`pre-push` hook, so a newly-introduced dead negation cannot land without
+tripping a gate someone did not have to choose to run. It is deliberately NOT
+wired into `fw test lint` — that verb has the identical "nothing schedules it"
+defect this file exists to close. See the T-3191 comment above
+`check_dead_negation_lint` for the full reasoning.
 """
 from __future__ import annotations
 
