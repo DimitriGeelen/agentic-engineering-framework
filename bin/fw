@@ -2708,7 +2708,7 @@ PY
         local _cfw_drifted=0 _cfw_hit
         for _cfw_hit in "${_cfw_hits[@]}"; do
             if ! cmp -s "$_cfw_hit" "$_cfw_src"; then
-                echo -e "  ${YELLOW}WARN${NC}  claude-fw on PATH drifted from repo source — supervision export may be stale"
+                echo -e "  ${YELLOW}WARN${NC}  Installed claude-fw drifted from repo source — supervision export may be stale"
                 echo -e "         on PATH: $_cfw_hit"
                 echo -e "         repo:    $_cfw_src"
                 # T-2807: this used to say `bash ~/.agentic-framework/install.sh`, which
