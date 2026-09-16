@@ -10,10 +10,10 @@ description: >
   Reproduced in 10s. Four independent contaminators bisected. See docs/reports/T-3362-pytest-triage.md
   group B.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T16:56:09Z
-last_update: 2026-09-15T17:51:55Z
+last_update: 2026-09-16T21:12:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -79,8 +79,13 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The polluted module global(s) are identified **by measurement, per victim file**,
+- [x] The polluted module global(s) are identified **by measurement, per victim file**,
       not assumed to be `PROJECT_ROOT` everywhere
+      *(Two distinct carriers measured, not one assumed: cause 1 — `web.shared.PROJECT_ROOT`
+      left dangling by reload, 6 victims; cause 2 — `web.config.Config` rebuilt as a new
+      class object by reload while import-time consumers hold the old one, 10 victims,
+      bisected to exact files and line numbers in `tests/unit/conftest.py`. Both
+      re-measured 2026-09-16 with controls — see the dated section below.)*
 - [x] The fix is **suite-level, applied once** — a `tests/unit/conftest.py` autouse
       fixture, not T-1995's per-file fixture copied six more times. A test file added
       tomorrow must be protected without anyone editing it
@@ -90,6 +95,15 @@ bvp_scores_proposed:
       Without this, a fixture that does nothing is indistinguishable from one that works
 - [ ] **Anti-masking leg:** the 6 genuine reds from T-3362 (groups C/D/E/F) are still
       red after the fix — an isolation fixture must not paper over real failures
+      *(NOT TICKED — deliberately. The property this AC exists to test is demonstrated:
+      every genuine red whose owning task is still open is still red (E/T-3326: 1 failed;
+      F/T-2219: 3 failed), and nothing was papered over. But the AC as WRITTEN names six,
+      and only four are red — C and D went green because T-3364 and T-3365 landed and are
+      in `.tasks/completed/`. Ticking it would require reading "the 6" as descriptive of
+      the set at writing time rather than a literal count. That reading is defensible and
+      it is not mine to make: it is the same move as Sovereign-question option (a) —
+      re-interpreting the standard my own output is judged against, after seeing the
+      result. Surfaced, not decided. Evidence table in the 2026-09-16 section below.)*
 - [x] `conftest.py` carries a comment naming L-421 and stating why the fix is
       victim-side-at-scale rather than polluter-side
 
@@ -260,6 +274,66 @@ Recorded for the Sovereign; task parked.
 
 **Not blocked by this question:** the cause-1 fixture is committed (`d3ffa892c`),
 measured, and load-bearing. Parking T-3363 does not park the fix.
+
+### 2026-09-16 — the question's precondition resolved by event; (a) was never taken
+
+**T-3367 is `work-completed` and in `.tasks/completed/`** (all 6 of its Agent ACs
+ticked, closed 2026-09-15). That is precisely the precondition option (b) named:
+*"Leave T-3363 open until T-3367 lands, then verify all 16 together against the
+original AC."*
+
+So the branch that required a judgment — **(a), narrowing AC 3 — was not taken,
+and no acceptance criterion has been edited.** The wording of AC 3 in this file is
+byte-identical to what it was when the measurement disagreed with it. What changed
+is the world, not the standard.
+
+Option (b) is also the do-nothing branch: the task was already open, which is (b)'s
+state. Executing it means running the check AC 3 already names. That check now
+passes, with a control:
+
+| Leg | Command | Result |
+|---|---|---|
+| **AC 3** — all 16 victims, contaminator-first, both causes | `pytest test_decide_commit test_chunk_cap test_csrf_cookie_scoping test_task_panel test_task_panel_edit test_auto_link_root_and_articles test_cockpit_activity test_embed_health test_incremental_reindex` | **100 passed** |
+| **Control** — same ordering, fixture neutralised | same, plus `--noconftest` | **15 failed, 83 passed, 2 skipped** |
+
+The control is what makes the green mean something: with the conftest off, 15 of
+the 16 victims go red again and the 2 silently-dropped tests reappear as skips.
+The 16th victim does not reproduce in this reduced ordering — its contaminator is
+not among these three files. Stated rather than rounded up.
+
+**AC 5 (anti-masking), measured per genuine red rather than as a count:**
+
+| Genuine red | T-3362 group | Owning task | Result | Reading |
+|---|---|---|---|---|
+| `test_live_corpus_all_versions_census` | E | T-3326 **open** | **1 failed** | still red — not masked |
+| `test_is_viewable_path_rejects_unknown_dir` | C | T-3364 **closed** | 1 passed | green because its fix landed |
+| `test_guard_skipped_on_htmx_request` | D | T-3365 **closed** | 1 passed | green because its fix landed |
+| `test_side_effect_warning_*` (×3) | F | T-2219 **open** | **3 failed** | still red — not masked |
+
+Every genuine red whose owning task is still open is **still red**. The only two
+that turned green have owning tasks in `.tasks/completed/` — a verifiable reason
+that is not "the fixture hid it". The expected red set legitimately shrank from 6
+to 4 between the T-3362 triage and today, and saying "4 of 6 still red" without
+that reason would look like masking.
+
+**Re-measurement of cause 2 (T-3367's reproducer), this session:**
+
+| Leg | Was | Now |
+|---|---|---|
+| `test_chunk_cap` + `test_csrf_cookie_scoping` + `test_embed_health` | 6 failed | **38 passed** |
+| `test_chunk_cap` + `test_csrf_cookie_scoping` + `test_incremental_reindex` | 4 failed | **37 passed** |
+
+The `17 failed` figure recorded above under *Result of the confirming run* predates
+T-3367 and is stale. It is left in place rather than edited — a failed prediction
+is evidence, and overwriting it would erase the record this task exists to keep.
+
+**One thing this session could not explain.**
+`test_review_markdown_render.py::test_parse_ac_body_renders_steps_as_html` — the
+false-green case — passes in isolation (`1 passed in 0.41s`). The hypothesis that
+its contaminator is `test_arc_membership_web_surfaces.py` (the only file that
+reloads `web.blueprints.tasks`, and it sorts before the victim) was **disproved**:
+the pair runs `25 passed`. Its contaminator is still unidentified. The live defect
+it concealed is already owned by **T-3368**; only the bisection is outstanding.
 
 
 ## Decisions
@@ -593,3 +667,7 @@ that matters:**
 ### 2026-09-15T17:51:55Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-09-16T21:12:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
