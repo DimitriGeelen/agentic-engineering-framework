@@ -20,3 +20,6 @@
 2026-08-05T22:06:52Z missing-hook bogus-hook-name-for-T1628 script=/opt/999-Agentic-Engineering-Framework/agents/context/bogus-hook-name-for-T1628.sh
 2026-08-06T00:01:41Z missing-hook bogus-hook-name-for-T1628 script=/opt/999-Agentic-Engineering-Framework/agents/context/bogus-hook-name-for-T1628.sh
 2026-08-30T18:56:20Z missing-hook ... script=/opt/999-Agentic-Engineering-Framework/agents/context/....sh
+2026-09-16T15:00:26Z missing-hook bogus-hook-name-for-T1628 script=/opt/999-Agentic-Engineering-Framework/agents/context/bogus-hook-name-for-T1628.sh
+2026-09-16T15:00:41Z missing-hook bogus-hook-name-for-T1628 script=/opt/999-Agentic-Engineering-Framework/agents/context/bogus-hook-name-for-T1628.sh
+2026-09-16T15:00:50Z missing-hook bogus-hook-name-probe script=/opt/999-Agentic-Engineering-Framework/agents/context/bogus-hook-name-probe.sh

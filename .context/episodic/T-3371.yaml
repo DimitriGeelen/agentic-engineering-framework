@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3371: Fix lost-update race in hook telemetry counter (OBS-417)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-16T15:07:03Z
+# ============================================================================
+
+task_id: T-3371
+task_name: "Fix lost-update race in hook telemetry counter (OBS-417)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-16T14:53:33Z
+completed: 2026-09-16T15:05:32Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-16T17:03:08+02:00
+last_commit: 2026-09-16T17:03:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix lost-update race in hook telemetry counter — flock-serialized RMW + self-heal of duplicate/blank lines; regression test with control leg (1600/1600 vs 17/1600 before); OBS-418 filed for the pre-existing red T-1626 witness. vendor sync lib/hook-telemetry.sh; scope vendor verification to this task's file (unrelated uncommitted bin/fw edit in tree)
+
+# Key outcomes
+outcomes:
+  - '**No increments are lost under concurrency.** 8 concurrent processes × 200'
+  - '**The control leg proves the test can fail.** The same test, run against a'
+  - '**Per-fire cost stays within the file''s documented budget** of <5 ms'
+  - '**Telemetry still never blocks a hook (L-331, degrade-to-allow).** If the lock'
+  - '**Existing corruption is not silently inherited.** The live counter currently'
+  - '**Vendored copy synced before close** (OBS-250), run BEFORE'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix lost-update race in hook telemetry counter — flock-serialized RMW + self-heal of duplicate/blank lines; regression test with control leg (1600/1600 vs 17/1600 before); OBS-418 filed for the pre-existing red T-1626 witness'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/hook-telemetry.sh'
+  - '.context/inbox.yaml'
+  - 'lib/hook-telemetry.sh'
+  - '.tasks/active/T-3371-fix-lost-update-race-in-hook-telemetry-c.md'
+  - 'tests/unit/hook_telemetry_race.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-16T17:03:08'
+    action: 'T-3371: fix lost-update race in hook telemetry counter — flock-serialized RMW + self-heal of duplicate/blank lines; regression test with control leg (1600/1600 vs 17/1600 before); OBS-418 filed for the pre-existing red T-1626 witness'
+  - time: '2026-09-16T17:03:42'
+    action: 'T-3371: vendor sync lib/hook-telemetry.sh; scope vendor verification to this task''s file (unrelated uncommitted bin/fw edit in tree)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 5
+  lines_added: 752
+  lines_removed: 41
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3371-fix-lost-update-race-in-hook-telemetry-c.md
+generated_by: context-agent-hybrid

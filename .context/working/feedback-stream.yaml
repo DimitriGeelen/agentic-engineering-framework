@@ -40713,3 +40713,21 @@ scan_id: R-d514ad7d
 task_id: T-3369
 payload:
   task_file: .tasks/active/T-3369-human-ac-stepsexpectedif-not-render-esca.md
+---
+kind: scan_emitted
+timestamp: '2026-09-16T15:06:49Z'
+scan_id: R-45c275a0
+task_id: T-3371
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-16T15:06:49Z'
+scan_id: R-45c275a0
+task_id: T-3371
+payload:
+  task_file: .tasks/active/T-3371-fix-lost-update-race-in-hook-telemetry-c.md

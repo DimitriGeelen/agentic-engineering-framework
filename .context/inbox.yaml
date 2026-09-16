@@ -4680,3 +4680,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-419
+  text: "OBS-250 second instance, sharper than the first: closing T-3371 cleared focus, and the very next thing the close output RECOMMENDED — 'LEARNING PROMPT ... consider: bin/fw fix-learned T-3371' — was then refused by check-active-task with 'BLOCKED: No active task'. The framework prompts for trailing work in the same breath as removing the only state under which that work can run. The first OBS-250 instance was 'fw vendor self' after close; this shows the gap is not specific to vendoring but to the whole post-close tail (learning capture, fix-learned, episodic touch-ups), and it is worse here because the framework itself issues the prompt. Note fw fix-learned is also a write path, so the recommended command in the prompt is itself blocked. Workaround used: re-point focus at the still-active parent task T-3370 and record the learning with --task T-3371 — this SATISFIES the gate rather than bypassing it (T-3370 is genuinely active and genuinely owns this work), so no Tier-2 entry was logged. That workaround only exists because a parent task happened to be open; a standalone bugfix closed on its own would have no route except filing a new task to run one command, or a logged bypass. Candidate fixes are already named in OBS-250 (grace window on focus after close, narrow allowlist, or auto-run as part of close); this instance adds evidence that the close output's own recommendations should be inside whatever window is chosen."
+  captured: 2026-09-16T15:08:04Z
+  context_task: T-3370
+  tags: []
+  status: pending
+  promoted_to: null

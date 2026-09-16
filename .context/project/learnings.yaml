@@ -4966,3 +4966,9 @@ X'` returning empty group."
   task: T-3364
   date: 2026-09-15
   context: Added via context agent
+- id: L-672
+  learning: "Any counter, metric, or audit trail written concurrently by more than one process needs a lock or an append-only design — a whole-file read-modify-write (mapfile -> edit -> truncate-and-rewrite) silently DELETES other writers' rows, not just its own increment. Measured in lib/hook-telemetry.sh (T-3371): 8 procs x 200 increments recorded 17 of 1600 (98.9% loss), 5 of 8 keys gone from the file. The class is invisible by construction: a lossy counter emits a plausible smaller number with no error, so a broken instrument and a quiet system read identically — and it is lossiest exactly under concurrency, i.e. when dispatched workers run and hook breakage is most likely. Two secondary lessons: (1) a documented performance constraint that is never re-measured becomes a standing argument against the fix — 'pure bash, no fork, <5ms' blocked locking for months, yet flock measured 2.3ms inside that same 5ms budget; (2) a concurrency regression test MUST carry a control leg running the same assertions against the unlocked implementation and requiring them to FAIL, otherwise green is equally consistent with 'the lock works' and 'the test has no teeth'. Other whole-file-rewrite state files under .context/working/ likely share the shape."
+  source: P-001
+  task: T-3371
+  date: 2026-09-16
+  context: Added via context agent

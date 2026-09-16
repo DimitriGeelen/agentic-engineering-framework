@@ -4,12 +4,12 @@ name: "Fix lost-update race in hook telemetry counter (OBS-417)"
 description: >
   Fix lost-update race in hook telemetry counter (OBS-417)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/hook-telemetry.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-16T14:53:33Z
-last_update: '2026-09-16T15:00:26Z'
-date_finished:
+last_update: 2026-09-16T15:05:32Z
+date_finished: 2026-09-16T15:05:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -314,6 +314,68 @@ cmp -s lib/hook-telemetry.sh .agentic-framework/lib/hook-telemetry.sh
 
 ## RCA
 
+**Symptom.** `.context/working/.hook-counter` under-counted silently. The live file
+carried two `budget-gate` lines (39 live, 31 an orphaned corpse) and a blank line.
+Reproduced: 8 processes × 200 increments = 1600 expected, **17 recorded**, 5 of 8 keys
+absent from the file entirely.
+
+**Root cause.** `_fw_telemetry_increment` performed a non-atomic read-modify-write —
+`mapfile` the whole file, edit the array in memory, `printf '%s\n' > "$file"` — with no
+lock. Two concurrent hooks both read the same starting state, both rewrite the entire
+file, and the second write lands with a view that never contained the first writer's key.
+The loser's increment is gone, and so is every key it had not read. The `> "$file"`
+truncate-and-rewrite is what makes it destructive rather than merely lossy: it does not
+just miss an increment, it deletes other hooks' rows.
+
+**Why structurally allowed.** Three things compounded:
+
+1. **The defect is invisible by construction.** A counter that loses counts produces a
+   plausible smaller number. There is no error, no exit code, no log line. A quiet
+   instrument and a quiet system are the same reading — the C2 false-green class this
+   task's parent review (T-3370) exists to catalogue.
+2. **Nothing exercised concurrency.** `tests/unit/hook_telemetry.bats` (15 tests) covers
+   creation, increment, failure counters, degrade-to-allow and a *serial* performance
+   budget. Every one fires a single process. The concurrent case — the only one where the
+   bug exists — had no test, so the suite was green throughout.
+3. **The performance budget pointed away from the fix.** `lib/hook-telemetry.sh:15`
+   documents "<5ms per fire … achieved by … Pure bash — no subprocess fork", which reads
+   as a standing argument against locking. It was never re-tested: flock costs 1.7ms and
+   lands at 2.3ms total, comfortably inside the same budget. A constraint recorded once
+   and never re-measured became a reason not to look.
+
+The result: the race shipped in T-1628 (the task whose *entire purpose* was making hook
+breakage observable) and survived until a value review happened to pull on the counter
+for an unrelated question.
+
+**Blast radius.** `fw doctor` and the T-1629 hook-threshold escalation both consume this
+counter. Hook-failure escalation was reading lossy data — and lossiest exactly under
+concurrency, i.e. when dispatched workers are running, which is when hook breakage is
+most likely. It also manufactured a false alarm: a clobbered snapshot listing only
+`Bash`-matched hooks was read (in this very review, finding I1) as evidence that ~12
+write-time governance gates were not firing at all. They were.
+
+**Prevention.**
+
+- `tests/unit/hook_telemetry_race.bats` pins the concurrent case: 1600/1600, 8 keys, 0
+  duplicates.
+- **A control leg** (`test 2`) runs the identical assertions against a deliberately
+  lock-free implementation and *requires them to fail*. Without it a green result is
+  equally consistent with "the lock works" and "the test has no teeth" — which is the
+  same failure mode as the bug itself, one level up.
+- The rewrite self-heals the corruption already on disk (blank lines, shadowed duplicate
+  keys), so existing damage converges rather than persisting forever behind a
+  first-match-wins loop.
+- The perf assertion runs outside the bats harness, because bats' DEBUG trap measured the
+  same code at ~88ms/fire vs ~2.3ms — an in-harness number would have reported the
+  harness's cost as the subject's and busted a budget that was never breached.
+
+**Learning (generalises beyond this file).** Any counter, metric or audit trail written by
+more than one process concurrently needs either a lock or an append-only design. The
+framework has at least one other instance of the shape — `.context/working/` holds several
+whole-file-rewrite state files (judge finding R15 proposes converting them to append-only
+logs). This task fixes one; the class is open.
+
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -408,3 +470,15 @@ cmp -s lib/hook-telemetry.sh .agentic-framework/lib/hook-telemetry.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3371-fix-lost-update-race-in-hook-telemetry-c.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-45c275a0
+- **Timestamp:** 2026-09-16T15:06:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-16T15:05:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
