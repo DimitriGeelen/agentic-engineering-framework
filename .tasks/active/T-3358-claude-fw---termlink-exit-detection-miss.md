@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-10T20:31:54Z
-last_update: 2026-09-16T20:06:59Z
+last_update: 2026-09-16T20:22:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -116,8 +116,20 @@ its durability: prompt text is host-, shell-, and user-dependent; a marker is no
 - [ ] Exit detection no longer depends on a prompt regex on any copy the fleet runs —
       either by propagating the T-3346 marker build or by implementing the marker/child-PID
       signal in the stale copy.
-- [ ] A regression test covers exit-from-a-root-prompt: with a `root@host:/path#` prompt,
+- [x] A regression test covers exit-from-a-root-prompt: with a `root@host:/path#` prompt,
       exit detection fires and `termlink_cleanup` runs (no orphaned session left behind).
+      → `tests/unit/t3358_claude_fw_exit_detection.bats`, committed 6a1282f56: **6/6 ok,
+        0 skips**. Test 2 pins "root prompt WITH the marker IS an exit, marker code
+        survives"; test 5 drives the real poll loop end-to-end and proves cleanup fires
+        on the marker and NOT on a bare root prompt; test 6 proves cleanup runs exactly
+        once when the wrapper is killed with no marker ever shown (0 would be an orphan).
+      → The file existed untracked and RED 5/6. Both causes were harness defects, not
+        product defects: `teardown` ended on a test that returns 1 when `PROJ` is unset
+        (failing all four Part 1 tests at the teardown line), and test 6 asserted that NO
+        cleanup occurs after SIGTERM — which contradicts `bin/claude-fw:125`
+        `trap 'termlink_cleanup; …' EXIT`, the very anti-orphaning guarantee this task
+        exists to provide. Changing the product to satisfy that assertion would have
+        reintroduced the bug. The assertion was inverted (exactly-once), not removed.
 - [x] Prevention rail exists for the stale-copy class if that is the confirmed cause:
       claude-fw reports its own version/provenance, or `fw doctor` WARNs when the
       executed `claude-fw` differs from the repo's.
