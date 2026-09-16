@@ -4624,3 +4624,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-411
+  text: "Backticked non-tag placeholders render a literal '&lt;' in AC fields: `<that URL>` -> <code>&amp;lt;that URL&gt;</code>, while `<b>` -> <code>&lt;b&gt;</code> renders correctly. Discriminator is whether the <...> is a recognised HTML tag name: markdown2 safe_mode='escape' escapes only the '<' of a non-tag sequence (leaving '>' bare), then the code-span stage re-encodes that '&' to '&amp;'. Asymmetric and user-visible. Repro (recorded check): python3 -c on web.blueprints.tasks._render_md_inline('`<that URL>/x`'). Impact: CLAUDE.md Human-AC format guidance encourages placeholder shapes like <host>/<path> in copy-pasteable Steps, so an operator copy-pasting gets '&lt;' garbage. PRE-EXISTING and upstream of T-3369 (it is in the helper output, not the template); T-3369's | safe fix is what made it visible, since previously the whole field was escaped wholesale. Separate root cause -> separate task per one-bug-one-task. Seen in the Human AC Steps of /tasks/T-3368 step 2."
+  captured: 2026-09-16T03:12:35Z
+  context_task: T-3369
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-412
+  text: "RECONCILIATION of OBS-397's pre-registered prediction (registered 2026-09-09 23:02, before the 01:03 nightly; falsifiable at 03:03). PREDICTION: judge the run by whether timed_out is still true, NOT by the red count; if timed_out is still true the T-3302 report remains unusable as a gate input regardless of the number. OUTCOME (.context/audits/unit-suite/LATEST.yaml, run 2026-09-16T01:03->03:03Z): timed_out: true, runner_exit: 1, bats exit 124 with 13 named reds, pytest exit 124. CONFIRMED. The pytest leg demonstrates the warning at maximum strength: it reports failed_count: 0 and skipped: 0 — with tests: 0. It timed out before executing a single test, because the bats leg consumed the window. A consumer reading only failed_count sees a clean green; the only disambiguators are tests:0 and exit:124, neither of which is the field anyone greps. This is the same false-green family as T-3359 (which OBS-397 was written about) reappearing one layer up: T-3359 fixed leg-1-starves-leg-2 budget accounting, but a leg that is granted a budget and then times out inside it still reports zero failures rather than 'no verdict' (the T-3063 killed/refused distinction, unapplied to suite legs). SUGGESTED SHAPE, not a decision: a leg with exit 124 and tests 0 should serialise as failed_count: null / verdict: no-result, so that downstream gates cannot read it as a pass. Relates to OBS-392, OBS-400."
+  captured: 2026-09-16T03:13:33Z
+  context_task: T-3369
+  tags: []
+  status: pending
+  promoted_to: null
