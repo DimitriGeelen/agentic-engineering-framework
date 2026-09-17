@@ -96,6 +96,19 @@ Unknown today while having no cards at all.
 | **Human decisions needed** | D5 and D1 only — unchanged, now with fence-1 pre-cleared under the proposed threshold. Under the proposal (≥95% coverage AND 0 Unknown per CORE root, tests/ excluded) fence 1 **passes today** |
 | **Next safe action** | Operator rules on D5 and D1 at `/review/T-3147`. No runtime implementation until D1 GO — no agent-side EWCR work remains |
 
+### 2026-09-17 — second landing drive (T-3381): no agent-side work found, arc focus taken
+
+| Field | Value |
+|-------|-------|
+| **Source revision** | manifest v1, rev 0 — unchanged (`c9070637` / `5be23719`) |
+| **Current arc / task** | arc-019 `ewcr-arc0-contract-evidence` (**draft**, unchanged). T-3147 partial-complete, 0/2 Human ACs |
+| **Drive outcome** | **Nothing landed, by design.** A second operator "stop finding, start landing" drive re-reconciled the backlog and reached the same terminal state as the 2026-09-08 drive: all four arc tasks plus drive T-3349 are `work-completed`, fence 1's measured scope is cleared, and the only remaining items are D1 and D5 — which §4 records as human-only. Building the runtime would require superseding the 2026-08-26 draft-only fence, i.e. taking D1 |
+| **Arc focus** | Switched `continuous-run` → `ewcr-arc0-contract-evidence` (operator-authorised in-session). Previous *task* focus T-3363 is itself operator-blocked on its AC5 advisory, so nothing in flight was pre-empted |
+| **Backlog reconciliation** | Arc tasks by `arc_id`: T-3147, T-3350, T-3351, T-3352. Broad grep adds T-3349 (drive) and T-3146 (832 triage, tangential). **No handover message exists**: no workflow/designer agent session on the TermLink hub, no EWCR topic, no EWCR channel, and the only EWCR inbox item (OBS-385) had already landed as T-3350. Every task's origin is this repo's own drives — none orphaned, none from a peer |
+| **BVP** | `--quadrant hv-lc` and `hv-hc` both return empty: no task in the corpus has confirmed `bvp_scores:`. That is D2 (BVP confirmation, human-only) un-ruled, not a tooling failure — and is consistent with the arc-0 fence |
+| **Human decisions needed** | D1 and D5 only — unchanged for the ninth day. `http://192.168.10.107:3002/review/T-3147` (verified 200) |
+| **Next safe action** | Unchanged: operator rules D5 then D1. Until D1 GO there is no in-scope agent work; a third landing drive will reach this same row |
+
 ## 4. Human decisions required (blocking)
 
 Owner: **dimitri@geelenandcompany.com**. None may be taken by an agent.
