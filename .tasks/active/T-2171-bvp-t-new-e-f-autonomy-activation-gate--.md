@@ -10,18 +10,18 @@ description: >
   uncomments the carve, sets weight=4, and validates the rubric ZERO-NEGATIVE guardrail
   (autonomy that removes Tier-0 gates scores ≤0).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [v3-followup-E, f-autonomy-activation, arc:value-prioritisation, 
       blocked-on-T-2158]
-components: []
+components: [agents/audit/audit.sh, agents/termlink/bvp-estimator/estimator.py, bin/fw, lib/resolver.py, tests/unit/t2915_resolver_inflight_expiry.bats, tests/unit/test_audit_retire_when.bats, tests/unit/test_bvp_estimator.py, tests/unit/test_resolver.py, web/templates/bvp.html]
 related_tasks: [T-2158, T-2166, T-2168, T-2170]
 arc_id: value-prioritisation
 created: 2026-06-01T22:22:20Z
-last_update: '2026-08-17T12:36:06Z'
-date_finished:
+last_update: 2026-09-17T16:38:43Z
+date_finished: 2026-09-17T16:38:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -292,6 +292,16 @@ out=$(bin/fw bvp >/dev/null 2>&1; echo $?); [ "$out" = "0" ]
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-06-26 — the confirm-smoke AC named a flag that does not exist
+- **What changed:** The filed AC wrote `fw bvp confirm … --F-AUTONOMY 3`. The real flag is `--override Dn=N`, and the filed form is **silently ignored**. Re-checked 2026-09-17: the parse loop at `lib/bvp.sh:830-850` skips every argument other than `--override` with a bare `i += 1`, and emits no error. The AC's own citation (`778-795`) now points at the docstring. Run as written, the smoke would have "passed" without exercising F-AUTONOMY at all.
+- **Plan impact:** The AC was re-run with `--override F-AUTONOMY=3 --i-am-human`, which wrote the score, and then reverted. The correction is recorded inline on the AC, not hidden.
+- **Triggered:** No new task. The false-green shape, where an unknown flag is swallowed without error, is noted here for whoever next touches `fw bvp confirm` argument parsing.
+
+### 2026-06-26 — activation happened before its gate was verified
+- **What changed:** This task was filed as the gate *before* activation. In practice the policy carve was removed by T-2362 (live from 2026-06-13), and this task's verification pass came afterwards, against the already-live state.
+- **Plan impact:** The ACs were verified against the activated state rather than as preconditions. The Human `[REVIEW]` ("is activation the right call now") now reviews a decision already in effect. The Recommendation states this sequencing and the one-line revert (re-carve the entry in `policy/value-drivers.yaml`).
+- **Triggered:** No new task. The Sovereign sign-off stays open as the Human AC.
+
 ## Decisions
 
 ### 2026-06-12 — Pre-flight strategy (partial closure under captured ACs)
@@ -356,12 +366,20 @@ out=$(bin/fw bvp >/dev/null 2>&1; echo $?); [ "$out" = "0" ]
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8378e6d8
-- **Timestamp:** 2026-06-11T23:08:00Z
+- **Scan ID:** R-9176e55f
+- **Timestamp:** 2026-09-17T16:39:03Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
-- **Suppressed:** 1 (by override)
-  - AC-verify-mismatch @ AC#5 (Agent)
+**Per-AC findings:**
+
+- **AC#7 (Agent)** — Single-driver confirm smoke: confirm flow accepts an F-AUTONOMY score (verifies the activation didn't break the confirm flow). **Syntax correction:** the original AC wrote `--F-AUTONOMY 3`, but `fw bv
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/bvp.sh in: Single-driver confirm smoke: confirm flow accepts an F-AUTONOMY score (verifies the activation didn't break the confirm flow). **Syntax correction:** `
+
+- **Expired overrides:** 1
+  - OV-cad6c610 pattern=AC-verify-mismatch expired_at=2026-09-09T23:07:55Z
+
+### 2026-09-17T16:38:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
