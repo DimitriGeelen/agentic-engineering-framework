@@ -269,12 +269,12 @@ The arc itself remains for the human to close per T-1671 (agent-gate on `fw arc 
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6d66bbde
-- **Timestamp:** 2026-08-19T05:01:23Z
+- **Scan ID:** R-3dc8ad41
+- **Timestamp:** 2026-09-17T05:18:29Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 4
+- **Findings:** 5
 
 **Per-AC findings:**
 
@@ -289,5 +289,7 @@ The arc itself remains for the human to close per T-1671 (agent-gate on `fw arc 
      - evidence: `test -f tests/unit/arc_abandon.bats`
   2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 52
      - evidence: `bin/fw arc 2>&1 | grep -q "close.*--demo"`
+  3. **decaying-task-path-ref** (partial, deterministic) @ Verification:line 43
+     - evidence: `T-9999 no longer in active/ — out=$(python3 -c "import json,os; print(json.dumps({'tool_name':'Write','tool_input':{'file_path': os.environ['PROJECT_ROOT']+'/.tasks/active/T-9999-v`
 ### 2026-05-18T07:22:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -210,12 +210,12 @@ T-1575 had previously shipped a related guidance ("UI Verification Needs Eyes") 
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-686a595d
-- **Timestamp:** 2026-06-02T14:59:36Z
+- **Scan ID:** R-1fd48082
+- **Timestamp:** 2026-09-17T05:18:28Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 3
+- **Findings:** 4
 
 **Per-AC findings:**
 
@@ -225,5 +225,10 @@ T-1575 had previously shipped a related guidance ("UI Verification Needs Eyes") 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: **Self-application: T-1766 closure** — T-1766's body references `web/shared.py`/`web/app.py` literal paths (because the task DEFINES those patterns as`
 - **AC#1 (Human)** — [REVIEW] Block-message UX is crisp — a new agent reading the message can act without re-opening T-1766 (wording is self-contained; the three pieces of info are easy to extract under cognitive load)
   - **audience-mismatch** (partial, heuristic) — `agent-subject='agent read' in: Self-contained — fresh agent acts without re-reading the source task.`
+
+**Verification-level findings:**
+
+  1. **decaying-task-path-ref** (partial, deterministic) @ Verification:line 11
+     - evidence: `T-1766 no longer in active/ — bash -c 'source lib/render_surface.sh && task_touches_render_surface .tasks/active/T-1766-render-surface-human-ac-gate--block-work.md && echo FAIL || `
 ### 2026-05-16T08:13:11Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

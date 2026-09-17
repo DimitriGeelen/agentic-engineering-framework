@@ -232,8 +232,8 @@ Three convergent signals justify shipping:
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0b5a6f81
-- **Timestamp:** 2026-06-02T14:59:35Z
+- **Scan ID:** R-4b5f6668
+- **Timestamp:** 2026-09-17T05:18:28Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

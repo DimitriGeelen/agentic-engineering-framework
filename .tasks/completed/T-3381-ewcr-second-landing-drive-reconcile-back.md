@@ -4,10 +4,10 @@ name: "EWCR second landing drive: reconcile backlog, take arc focus, surface D1/
 description: >
   EWCR second landing drive: reconcile backlog, take arc focus, surface D1/D5
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:ewcr-arc0-contract-evidence]
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-17T21:45:30Z
-last_update: 2026-09-17T21:46:44Z
-date_finished: null
+last_update: 2026-09-17T21:47:48Z
+date_finished: 2026-09-17T21:47:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -343,3 +343,20 @@ grep -q 'second landing drive (T-3381)' docs/research/executable-workflow/govern
 grep -q '^status: draft' .context/arcs/ewcr-arc0-contract-evidence.yaml
 # The operator link actually resolves (port resolved, never hard-coded :3000)
 curl -sf -m 45 "$(bin/fw watchtower url)/review/T-3147" >/dev/null
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-601f4cac
+- **Timestamp:** 2026-09-17T21:47:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — TermLink searched for the claimed handover — hub sessions, topics, channels and `.context/inbox.yaml`: no workflow-agent session and no EWCR message exists; logged as an open coordination point, not i
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/inbox.yaml in: TermLink searched for the claimed handover — hub sessions, topics, channels and `.context/inbox.yaml`: no workflow-agent session and no EWCR message e`
+
+### 2026-09-17T21:47:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

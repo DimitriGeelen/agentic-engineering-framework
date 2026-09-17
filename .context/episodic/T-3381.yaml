@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3381: EWCR second landing drive: reconcile backlog, take arc focus, surface D1/D5
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-17T21:48:00Z
+# ============================================================================
+
+task_id: T-3381
+task_name: "EWCR second landing drive: reconcile backlog, take arc focus, surface D1/D5"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-17T21:45:30Z
+completed: 2026-09-17T21:47:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-17T23:47:40+02:00
+last_commit: 2026-09-17T23:47:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  EWCR second landing drive — backlog reconciled, focus taken, D1/D5 surfaced
+
+# Key outcomes
+outcomes:
+  - 'EWCR arc located and disambiguated — exactly one (arc-019 `ewcr-arc0-contract-evidence`); no STOP condition on "no arc found, or two arcs"'
+  - 'Backlog reconciled by `arc_id` AND by broad grep over `.tasks/`: T-3147 (anchor, partial-complete), T-3350, T-3351, T-3352 closed; T-3349 drive closed; T-3146 tangential'
+  - 'TermLink searched for the claimed handover — hub sessions, topics, channels and `.context/inbox.yaml`: no workflow-agent session and no EWCR message exists; logged as an open coordination point, not invented'
+  - 'Arc focus switched `continuous-run` → `ewcr-arc0-contract-evidence` with the prior focus recorded (operator-authorised)'
+  - 'ACK posted to TermLink `aef-operator-notices` carrying the task list, the blocked state, and the coordination gap'
+  - 'BVP `--quadrant hv-lc` and `--quadrant hv-hc` both run; both empty because no task carries confirmed `bvp_scores:` — that is un-ruled D2, reported as such rather than worked around'
+  - 'D1 and D5 surfaced to the operator with the class-correct URL emitted verbatim by `fw task review T-3147`, verified HTTP 200'
+  - 'The arc-0 fence held: arc-019 left `status: draft`, no runtime code written, no `fw arc start`, no `decide go`, no BVP confirmation, no bulk task creation'
+  - 'Drive recorded as a status row in the arc''s living cadence doc, matching the T-3349 precedent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/arc-focus.yaml'
+  - '.context/working/focus.yaml'
+  - 'docs/research/executable-workflow/governance-cadence.md'
+  - '.tasks/active/T-3381-ewcr-second-landing-drive-reconcile-back.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-17T23:47:40'
+    action: 'T-3381: EWCR second landing drive — backlog reconciled, focus taken, D1/D5 surfaced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:ewcr-arc0-contract-evidence]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 361
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3381-ewcr-second-landing-drive-reconcile-back.md
+generated_by: context-agent-hybrid

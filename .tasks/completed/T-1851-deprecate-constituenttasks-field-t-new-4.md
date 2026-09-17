@@ -185,8 +185,8 @@ The Evolution section captures one observability follow-up (audit's T-1813 tag-f
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9f29f033
-- **Timestamp:** 2026-06-02T15:00:01Z
+- **Scan ID:** R-c3ad07d7
+- **Timestamp:** 2026-09-17T05:18:32Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

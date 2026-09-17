@@ -220,8 +220,8 @@ beyond pre-existing baseline.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2e13a2e9
-- **Timestamp:** 2026-06-02T14:59:23Z
+- **Scan ID:** R-4670efae
+- **Timestamp:** 2026-09-17T05:18:27Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

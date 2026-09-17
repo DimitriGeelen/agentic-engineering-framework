@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-16T20:19:23Z
-last_update: '2026-09-16T20:30:21Z'
+last_update: 2026-09-17T16:44:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -121,6 +121,22 @@ call. The standing drift class remains with **T-2698**.
 
 The concurrency itself — two writers in one checkout, no lock — is filed as
 **OBS-429** and is the finding that matters here; the config key is not.
+
+**2026-09-17 — re-checked for the operator's decision; still parked, no AC ticked.**
+An autonomous run selected this task by BVP value (97), reopened it with
+`fw work-on`, ran the checks, and *then* read this note. It restored the task with
+`--horizon later`; the round-trip is visible in Updates. The checks, as evidence
+only:
+
+| AC | Check | Result |
+|---|---|---|
+| 1 | `grep BRANCH_AHEAD_WARN lib/config.sh web/blueprints/config.py` | Present in both, default `20`. The web description condenses lib's and omits the "oldest unpushed commit age" clause and the origin story |
+| 2 | `bats tests/lint/config-registry-parity.bats` | 3/3 ok, 0 skips |
+| 3 | `fw audit --section structure` | `Invariant suite (tests/lint) green — 108`, `fails=0 ref=0` |
+| 4 | `git show --stat d07fa77cd` | 1 file, +1 line, one registry entry |
+
+All four ACs are true. All four were made true by `d07fa77cd` under T-3361. 
+Advisory: **close as a duplicate of T-3361**. That call is the operator's.
 
 ## Acceptance Criteria
 
@@ -401,5 +417,13 @@ The concurrency itself — two writers in one checkout, no lock — is filed as
 - **Context:** Initial task creation
 
 ### 2026-09-16T20:22:46Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-09-17T16:39:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-09-17T16:44:42Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
