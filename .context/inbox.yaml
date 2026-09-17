@@ -4802,3 +4802,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-436
+  text: "parent_dispatch_id is declared in .context/dispatches.jsonl (schema_version 1) and is NULL in all 2394 rows — a lineage field that has never once been populated. Measured 2026-09-17 while answering the 055-agentic-fleet-cockpit session's T-064 topology questions. This is the empty-stub class: a field with the right name reads as support, so a consumer designs against it and only discovers the gap at integration time (that peer was about to). AEF therefore has NO parent-to-child session attribution: dispatches are attributed to a task, never to a spawning session. The only populated lineage datum is terminal_event.session_id (the WORKER's own Claude session id) on 730 of the 744 rows that have a terminal event — the child side only, and only for finished Claude-CLI workers, 744 of 2394 overall. Parent identity is recoverable only indirectly via task_id plus .context/working/session.yaml. Consequences: (1) no live lineage graph is derivable, only a post-hoc task join; (2) any fleet-observability consumer must treat session parentage as absent rather than degraded. Options: populate parent_dispatch_id at dispatch time from the dispatching session, add a parent_session_id, or delete the field so its absence is honest. The peer surfaced this to their operator as Sovereign question SQ-064-a rather than deciding unilaterally; it is a cross-project architectural call, not an agent one. Related: enrichment_ratio 0.688 means ~31% of dispatches never get an outcome joined, so 'done' is missing for a third of them."
+  captured: 2026-09-17T21:14:50Z
+  context_task: T-3363
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-437
+  text: "liveness-check.sh reports watchtower:stopped for a LIVE Watchtower — it probes the heaviest page in the app with a 2-second budget. agents/monitor/liveness-check.sh:63 runs curl -sf -m 2 against the root URL. Measured 2026-09-17 with Watchtower confirmed up (identity endpoint returns project_root=/opt/999-Agentic-Engineering-Framework; review pages HTTP 200): the root page took 4.47s and 2.37s on consecutive requests, so curl exits 28 (timeout) and the rail records stopped. The /api/_identity endpoint — purpose-built, and already used by _watchtower_identity_matches in lib/watchtower.sh from T-3379 — answers in 0.0014s, three orders of magnitude faster. This is a FALSE NEGATIVE and is DISTINCT from T-3380, which fixed why the script could not run at all (committed 100644, exec bit missing). The two bugs were stacked, and this one became visible only because T-3380 fixed the first: the liveness log shows its last running sample on 2026-06-12 followed by 31 consecutive stopped samples through 2026-08-14, while Watchtower was in fact serving — so the probe had been lying for about two months before the exec bit death silenced it entirely. Fix shape: probe /api/_identity and compare project_root, rather than asserting bare reachability of /. Raising the timeout alone would be the wrong fix — it trades a false negative for a slow check that still cannot tell WHOSE server answered, and on this host :3000 belongs to another project (the T-1376/T-2732 wrong-server class). Verified unfixed as of this note: the 23:14:01 cron sample still says stopped while the server is up."
+  captured: 2026-09-17T21:22:56Z
+  context_task: T-3363
+  tags: []
+  status: pending
+  promoted_to: null
