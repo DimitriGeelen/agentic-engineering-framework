@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3379: fw task review hands out localhost:3000 (a foreign Watchtower) when identity handshake fails on the live one
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-17T16:57:18Z
+# ============================================================================
+
+task_id: T-3379
+task_name: "fw task review hands out localhost:3000 (a foreign Watchtower) when identity handshake fails on the live one"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-17T16:45:56Z
+completed: 2026-09-17T16:56:40Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-17T18:56:06+02:00
+last_commit: 2026-09-17T18:56:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  review placeholder never names a port another service holds. register the regression test's fabric card
+
+# Key outcomes
+outcomes:
+  - '**(a) localised by measurement:** the reason Layer 1 rejects the live instance'
+  - '**(a) homed correctly:** if (a)''s cause is independent of (b), it is filed as its'
+  - '**(b) fixed:** when resolution fails, the placeholder never names a port whose'
+  - '**Regression test** for (b) in `tests/unit/`, driving a stub listener that'
+  - '**Control leg:** the same test goes red against the pre-fix'
+  - 'Existing Watchtower URL tests remain green (`tests/unit/` files that source'
+  - '`bin/fw vendor self --check` is clean before close (OBS-250 ordering)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/watchtower.sh'
+  - '.fabric/components/tests-unit-t3379_review_placeholder_foreign_port.yaml'
+  - 'lib/watchtower.sh'
+  - '.tasks/active/T-3379-fw-task-review-hands-out-localhost3000-a.md'
+  - 'tests/unit/t3379_review_placeholder_foreign_port.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-17T18:56:06'
+    action: 'T-3379: review placeholder never names a port another service holds'
+  - time: '2026-09-17T18:56:35'
+    action: 'T-3379: register the regression test''s fabric card'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, review, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 2
+  files_changed: 5
+  lines_added: 705
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3379-fw-task-review-hands-out-localhost3000-a.md
+generated_by: context-agent-hybrid
