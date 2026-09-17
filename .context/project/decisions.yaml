@@ -3950,3 +3950,38 @@ decisions:
     date: 2026-09-16
     task: T-3370
     rationale: "Not specified"
+
+  - id: D-567
+    decision: "`agents/audit/audit.sh`, new `check_dead_negation_lint`, in the STRUCTURE section, scanning the whole `tests/` tree via the linter's own recursive `rglob(\"*.bats\")`."
+    scope: project
+    date: 2026-09-16
+    task: T-3191
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-568
+    decision: "Tick AC#5 + AC#6 now with cited pre-flight evidence; leave AC#1-4 + AC#7 for the operator-gated activation pass."
+    scope: project
+    date: 2026-09-17
+    task: T-2171
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-569
+    decision: "Correct AC#7's verification command from `--F-AUTONOMY 3` to `--override F-AUTONOMY=3` and verify against the real CLI."
+    scope: project
+    date: 2026-09-17
+    task: T-2171
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-570
+    decision: "rewrite AC 4 to target the cron exec-bit gap, keep the original AC text"
+    scope: project
+    date: 2026-09-17
+    task: T-3380
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-571
+    decision: "a new predicate joining from the deployed crontab, beside the T-3317"
+    scope: project
+    date: 2026-09-17
+    task: T-3380
+    rationale: "Auto-captured from task file on completion"

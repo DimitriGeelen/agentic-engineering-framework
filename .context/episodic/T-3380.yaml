@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3380: Watchtower outage ran 5h35m unreported: the 1-minute liveness rail was committed 100644 and had been dying Permission denied for 34 days, invisible to the exec-bit check
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-17T20:58:55Z
+# ============================================================================
+
+task_id: T-3380
+task_name: "Watchtower outage ran 5h35m unreported: the 1-minute liveness rail was committed 100644 and had been dying Permission denied for 34 days, invisible to the exec-bit check"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-17T20:42:51Z
+completed: 2026-09-17T20:58:36Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower died with the 2026-09-17 17:09 reboot and stayed down 5h35m with no rail reporting it. Root cause: agents/monitor/liveness-check.sh is committed 100644, so every cron exec (1-minute + @reboot) died Permission denied — 13,680 of them — and it had produced no output since 2026-08-14. The T-3317 exec-bit check examines only index-100755 files, so it printed PASS throughout. Fixes the bit, and adds a check that joins from the deployed crontab instead of the git index. NOTE: this task was filed under the name "liveness-check records stopped every minute and nothing consumes it" — that framing was wrong and the measurement corrected it; see ## Context. The delivery gap is real but separate, filed as OBS-435.
+
+# Key outcomes
+outcomes:
+  - 'Watchtower is running again and is **this** project''s — an identity probe on the'
+  - 'The outage is **measured, not asserted**, from a rail that was actually running:'
+  - 'Every rail that could report "Watchtower is not running" is enumerated with'
+  - '**AMENDED after the survey** (original text below). A scheduled rail reports a'
+  - 'Regression test pins the new behaviour with a recorded **control leg**:'
+  - '`## RCA` filled: symptom, root cause, why the framework allowed it, and what'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-17 — amending AC 4 after the rail survey'
+    chose: 'rewrite AC 4 to target the cron exec-bit gap, keep the original AC text visible inline, and file the Watchtower-down consumer as separate work.'
+    rationale: 'AC 3 exists precisely to forbid fixing before measuring, and the measurement moved the target. Building the originally-specified consumer would have put a brand-new rail into the same crontab that had been silently killing the last one for 34 days — shipping a detector into a known blind spot.'
+    alternatives_rejected: ['(a) doing both in one task — violates one-task-one-deliverable and couples a generic prevention to a specific consumer; (b) quietly editing AC 4 to match what I built — that is scoring my own work against a moved goalpost, so the original wording stays in the file next to the amendment.']
+  - decision: '2026-09-17 — where the prevention lives'
+    chose: 'a new predicate joining from the deployed crontab, beside the T-3317 check in `fw audit --section structure`.'
+    rationale: 'the crontab is the only source that knows what is *scheduled to exec*. The git index cannot answer it — that is exactly why the existing check was blind. Audit is already scheduled (daily cron) and runs pre-push, so it needs no new delivery channel of its own — which is the failure this task is about.'
+    alternatives_rejected: ['extending `lib/exec-bit-drift.sh` to include 100644 files — it would flag every non-executable tracked script in the repo, most of which are libraries nothing execs. The signal is "cron execs it", not "it ends in .sh".']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3380-watchtower-stayed-down-5h-after-host-reb.md
+generated_by: context-agent-hybrid

@@ -2504,6 +2504,39 @@ if [ -f "$FRAMEWORK_ROOT/lib/exec-bit-drift.sh" ]; then
     fi
 fi
 
+# T-3380: every script the DEPLOYED crontab invokes directly must be executable.
+# Strict complement of the T-3317 check above, and the reason that one can pass
+# while a scheduled job is dead: its candidate set is "files the index marks
+# 100755", so a file committed 100644 is not examined at all. The question this
+# answers is not "did disk drift from index?" but "can the things we schedule
+# actually run?" — which is what a reader hears the PASS above as saying.
+# Origin: agents/monitor/liveness-check.sh, committed 100644, invoked every
+# minute for 34 days with 13,680 "Permission denied" failures and no output.
+# It was the rail sampling Watchtower liveness, so a 5h35m outage went unseen.
+# FAIL, not WARN, on the sibling's reasoning: the job does not run at all.
+# Predicate lives in lib/cron_exec_bit.py (L-332/L-408: python stays in its own
+# file so the bash side remains parse-safe) — never re-derive the parse inline.
+if [ -f "$FRAMEWORK_ROOT/lib/cron_exec_bit.py" ]; then
+    _cxb_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
+    _cxb_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
+    _cxb_target="$_cxb_dir/agentic-audit-${_cxb_slug}"
+    if [ -f "$_cxb_target" ] && ! fw_is_linked_worktree "$PROJECT_ROOT"; then
+        _cxb_broken=$(python3 "$FRAMEWORK_ROOT/lib/cron_exec_bit.py" "$_cxb_target" 2>/dev/null)
+        if [ -n "$_cxb_broken" ]; then
+            _cxb_n=$(printf '%s\n' "$_cxb_broken" | grep -c .)
+            _cxb_sample=$(printf '%s\n' "$_cxb_broken" | head -3 | cut -f2 | tr '\n' ' ')
+            fail "Cron exec-bit: $_cxb_n script(s) in $_cxb_target cannot be executed" \
+                 "${_cxb_sample}— cron execs these directly, so each run dies 'Permission denied' and the job produces nothing; a dead sampling rail is invisible by construction" \
+                 "Run: chmod +x <path> (and git update-index --chmod=+x <path> if tracked, so it does not come back)" \
+                 worktree "host state: $_cxb_dir"
+        else
+            _cxb_seen=$(python3 "$FRAMEWORK_ROOT/lib/cron_exec_bit.py" --count "$_cxb_target" 2>/dev/null)
+            pass_over "${_cxb_seen:-0}" "directly-invoked script(s) in the deployed crontab" \
+                      "Cron exec-bit: every script cron execs directly is executable"
+        fi
+    fi
+fi
+
 # T-1722: cron-misload lint — detect dormant USER-field crontab files.
 # PL-173 case (2): a source-of-truth crontab at .context/cron/*.crontab uses
 # /etc/cron.d/ USER-field syntax ('m h dom mon dow USER cmd') but no matching

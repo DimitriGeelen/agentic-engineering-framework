@@ -4758,3 +4758,47 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-430
+  text: "VERSION has two writers with incompatible semantics and the pre-push stamper always wins, so T-3242's tag-canonical invariant is overwritten on the very next push. MECHANISM (verified): agents/git/lib/hooks.sh:1078-1094 stamps VERSION = <major>.<minor>.<commits-since-nearest-tag> from git describe -- 'v1.6.768-579-g00a2a4767' yields 1.6.579, where 579 is the COMMIT DISTANCE, not a patch number. T-3242's reconcile path instead sets VERSION := the tag (monotonic, 'refuses decreases'); commit 7dbd3ba2d set 1.6.769 that way. The stamper runs on EVERY push, reconcile only at release, so the stamper wins every time -- observed 1.6.769 -> 1.6.571 (f2226c381) -> 1.6.579. CONSEQUENCE A: fw doctor's own printed fix ('echo 1.6.768 > VERSION') cannot hold; the next push reverts it. CONSEQUENCE B: the FAIL is self-clearing for the wrong reason -- once commits-since-tag exceeds 768 the comparison passes with zero change in correctness, a latent false-green. CONSEQUENCE C: VERSION necessarily REGRESSES at every new tag because the counter resets, which is the opposite of a release identity. This is the cause of OBS-426. NOT FIXED HERE: T-3242 is work-completed/owner:human awaiting review (ungated), and which semantics should win is a design decision. SOVEREIGN: is VERSION a release identity (tag-canonical, monotonic) or a build counter (commit distance)? Both are implemented; they cannot both be right. Bears directly on T-2713 (consumer staleness decided by a counter that does not order) and on the T-3242 review decision."
+  captured: 2026-09-16T21:07:26Z
+  context_task: T-3358
+  tags: [bug]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-431
+  text: "check-active-task refused a plain post-close commit THREE times in a row, each for a different reason, and only the third message named the real one. Sequence (T-3362 close, focus null because --status work-completed clears it — the OBS-250 dead end): (1) 'git add ... 2>/dev/null' matched the write-pattern regex on the redirect; (2) 'git commit -m \"...27 node ids >= 22...\"' matched the SAME regex on the '>=' INSIDE A QUOTED COMMIT MESSAGE — a redirect that is not a redirect, a clean false positive; (3) with both removed, 'timeout 300 git commit ...' was refused because the git-commit exemption is PREFIX-ANCHORED and a timeout wrapper defeats it (the T-3221 shape), with the message correctly saying so. Plain 'git commit -m' finally passed with a Tier-1 warning. Three attempts to commit work that had already passed 5/5 ACs and 3/3 verification. The composite failure is that the gate cannot distinguish a redirect operator from the same byte inside a quoted argument, and that its own escape hatch is defeated by any wrapper. Sibling of OBS-422, T-3096 (safe-list is an enumerated allowlist), T-3221 (exemption matches a mention, not a command), OBS-250 (no route back to a just-closed task's trailing work)."
+  captured: 2026-09-16T21:12:58Z
+  context_task: T-3363
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-432
+  text: "An acceptance criterion whose PREMISE is overtaken by events cannot be ticked by the agent that wrote it, and the framework has no verb for re-baselining one. Concrete instance (T-3363 AC5): 'the 6 genuine reds from T-3362 (groups C/D/E/F) are still red after the fix'. Measured today: 4 are still red (E/T-3326, F/T-2219 x3); C and D are GREEN because their owning tasks T-3364 and T-3365 landed and sit in .tasks/completed/. The property the AC exists to test — an isolation fixture must not paper over real failures — is fully demonstrated. But the literal count is wrong, through no fault of the work. The agent's three options are all bad: (1) tick it, asserting something false; (2) edit the AC, which is grading your own work against a standard you just moved — the exact shape T-3363's own Sovereign question names as improper; (3) leave it unticked forever, which blocks a finished task and makes the board lie in the other direction. I took (3) and surfaced it, but (3) is a stall, not a resolution. The gap is structural: P-010 counts checkboxes and cannot represent 'this criterion's premise expired'. Candidate shapes, not decided here: a re-baseline verb that records who authorised the wording change and why (making option 2 auditable instead of forbidden); or an AC annotation like SUPERSEDED-BY that the gate counts as satisfied-with-provenance. Sibling of the producer-not-judge boundary generally, and of T-3326 (verification anchored to mutable state rots) — same disease, one level up: the ANCHOR here is not a corpus count but a sibling task's status."
+  captured: 2026-09-16T21:22:21Z
+  context_task: T-3363
+  tags: [governance]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-433
+  text: "Unowned pre-existing red: tests/unit/t2862_greenfield_first_inception_e2e.bats test 'anti-vacuity — the pre-fix verification line fails the gate it shipped in' fails at line 157 (decide output lacks 'verification(s) failed'). Measured 2026-09-17 on a git-archive export of HEAD 9e8b6f330 (so NOT caused by T-3379's uncommitted lib/watchtower.sh change) and again on the working tree: same line, same failure. No active task owns it; only completed tasks mention the file. Unverified hypothesis: T-2921 (P-011 extractor strips HTML comments) removed the premise that the sed '/<!--/,/-->/d' line fails its own gate, so the anti-vacuity leg now asserts a false premise. Invisible to the nightly unit-suite because that run times out (T-3302)."
+  captured: 2026-09-17T16:53:56Z
+  context_task: T-3379
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-434
+  text: "lib/watchtower.sh:_watchtower_url Layer-3 stderr hint says 'Start one with: fw serve'. On a host whose default/configured port is held by a FOREIGN service, fw serve refuses (bin/watchtower.sh do_start, T-1803 'Port N is held by a FOREIGN service'), while 'fw watchtower restart' comes back on the triple-file port (T-2598). Observed 2026-09-17 after a reboot: this repo's :3002 instance dead, :3000 held by another project's Watchtower. The hint names the one command that fails. Operator-facing wording; not changed under T-3379 (one lock at a time)."
+  captured: 2026-09-17T16:55:28Z
+  context_task: T-3379
+  tags: [usability]
+  status: pending
+  promoted_to: null
+- id: OBS-435
+  text: "Watchtower-down has no consumer: agents/monitor/watchtower-rss-sample.sh correctly recorded state:down every 5 minutes for the entire 5h35m outage of 2026-09-17 (68 contiguous samples, 17:10:01-22:45:01) and nothing reads it. fw doctor does WARN on a stale triple but is on-demand only; fw audit's T-3282 staleness check exits 0 when nothing is running, by design, so the daily rail is silent on a Watchtower that is simply absent. Split out of T-3380, which fixed the reason the 1-minute liveness rail could not run at all (committed 100644). Deliberately NOT folded into T-3380: adding a consumer there would have scheduled a new rail into the same crontab that had been silently killing the previous one for 34 days. Candidate shapes: have fw audit report a not-running Watchtower as WARN (scoped off on headless/CI hosts the way watchtower current already is), or have the RSS sampler call fw_notify on an up->down transition with a cooldown."
+  captured: 2026-09-17T20:57:55Z
+  context_task: T-3380
+  tags: []
+  status: pending
+  promoted_to: null
