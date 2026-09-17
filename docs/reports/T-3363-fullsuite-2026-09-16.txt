@@ -1,0 +1,12 @@
+# T-3363 AC3 evidence — full tests/unit run (persisted from session scratch)
+# Command: pytest tests/unit -q   (default collection order = the ordering that produced T-3362's reds)
+# Finished: 2026-09-16T21:45:27Z, duration 0:31:08, so started ~21:14Z at HEAD aafa877e6
+# conftest fixes in tree: d3ffa892c (cause 1), 6e05eaf1a (cause 3); both 2026-09-15
+# Source file: /root/.claude/jobs/dadae3c3/tmp/fullsuite.txt (244 lines). The section below is copied verbatim from it.
+
+=========================== short test summary info ============================
+FAILED tests/unit/test_corpus_lint.py::test_live_corpus_all_versions_census
+FAILED tests/unit/test_inception_decide_warning_widen.py::test_side_effect_warning_truncation_widened_to_1500
+FAILED tests/unit/test_inception_decide_warning_widen.py::test_side_effect_warning_html_escaped
+FAILED tests/unit/test_inception_decide_warning_widen.py::test_side_effect_warning_uses_pre_wrap_style
+4 failed, 2725 passed, 2 skipped in 1868.26s (0:31:08)

@@ -89,8 +89,14 @@ bvp_scores_proposed:
 - [x] The fix is **suite-level, applied once** — a `tests/unit/conftest.py` autouse
       fixture, not T-1995's per-file fixture copied six more times. A test file added
       tomorrow must be protected without anyone editing it
-- [ ] All 16 previously-contaminated tests pass in the contaminator-first ordering
+- [x] All 16 previously-contaminated tests pass in the contaminator-first ordering
       that reproduced the failure
+      *(Full `pytest tests/unit` run, completed not timed out: `4 failed, 2725 passed,
+      2 skipped` in 31:08, both conftest fixes in tree. All 4 failures are pre-existing
+      genuine reds (E/T-3326, F/T-2219 ×3); no victim appears in the failure output, and
+      no victim is among the 2 skips (the only victim file with runtime skips ran
+      `16 passed, 0 skipped`). Evidence: `docs/reports/T-3363-fullsuite-2026-09-16.txt`.
+      See the 2026-09-17 section below.)*
 - [x] **Control leg:** with the fixture neutralised, that same ordering fails again.
       Without this, a fixture that does nothing is indistinguishable from one that works
 - [ ] **Anti-masking leg:** the 6 genuine reds from T-3362 (groups C/D/E/F) are still
@@ -340,6 +346,23 @@ and a projected ~108 minutes. Left running detached; output at
 the stale `17 failed` above. Until then AC 3 stays unticked — a green reduced run
 is not the criterion as written, and T-3304 already records that measurements
 taken on a loud host are the ones that need re-taking.
+
+### 2026-09-17 — the full-suite run completed; AC 3 ticked on it
+
+The detached run above finished: **`4 failed, 2725 passed, 2 skipped in 1868.26s
+(0:31:08)`**. That is a complete run, not one killed mid-corpus, so it gives a
+verdict rather than a casualty list. It started at ~21:14Z on 2026-09-16, at HEAD
+`aafa877e6`, with both fixes (`d3ffa892c`, `6e05eaf1a`) already a day old. The
+summary is persisted verbatim in `docs/reports/T-3363-fullsuite-2026-09-16.txt`.
+
+| Check | Result |
+|---|---|
+| Any of the 16 victims in the failure output? | **None.** The 4 failures are `test_corpus_lint::test_live_corpus_all_versions_census` (E) and `test_inception_decide_warning_widen` ×3 (F) |
+| Could a victim be one of the 2 skips? | **No.** Only `test_auto_link_root_and_articles.py` among the victim files has runtime skips; alone it runs `16 passed`, with no skips. Its skip conditions depend on file existence, not on test order |
+| AC 5 cross-check | The run independently shows **4 of the 6** genuine reds still red. C and D are absent because T-3364/T-3365 landed. This is the same picture as the hand-run table above, so the anti-masking property holds under full-suite ordering too. AC 5 stays unticked for the wording reason already recorded (OBS-432) |
+
+The stale `17 failed` figure above is superseded by this run and is left in place
+as a record.
 
 **One thing this session could not explain.**
 `test_review_markdown_render.py::test_parse_ac_body_renders_steps_as_html` — the
@@ -646,6 +669,15 @@ that matters:**
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO — read AC 5's "the 6 genuine reds" as naming the set at writing time, tick it, and close.
+**Rationale:** Every agent AC except AC 5 is ticked on recorded checks. AC 5 exists to prove the isolation fixture does not hide real failures. That property holds: every genuine red whose owning task is still open is still red, both in the hand-run table and in the completed full-suite run. The count fell from 6 to 4 because T-3364 and T-3365 fixed C and D, not because the fixture masked them. This is an advisory: re-reading the standard my own work is judged against is the Sovereign call (OBS-432), so I have not ticked it.
+**Evidence:**
+- Full suite `4 failed, 2725 passed, 2 skipped` (0:31:08), completed. The 4 failures are exactly E + F×3: `docs/reports/T-3363-fullsuite-2026-09-16.txt`
+- No contamination victim failed or was skipped in that run (AC 3, ticked 2026-09-17)
+- The control leg with `--noconftest` goes red (AC 4), so the fixture is load-bearing
+- C (`test_file_route_extensions`) and D (`test_render_page_guard`) belong to T-3364/T-3365, both in `.tasks/completed/`
+- Outstanding and not blocking: bisecting the false-green contaminator of `test_review_markdown_render`. The defect it concealed is owned by T-3368
 
 ## Decisions
 
