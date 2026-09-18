@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3385: EWCR Arc 0 cand-2: freeze v1 schemas — procedure, instance, transition envelope, attempt, evidence reference, refusal, deadline events (AEF side)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-18T15:48:27Z
+# ============================================================================
+
+task_id: T-3385
+task_name: "EWCR Arc 0 cand-2: freeze v1 schemas — procedure, instance, transition envelope, attempt, evidence reference, refusal, deadline events (AEF side)"
+workflow_type: specification
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-18T15:38:23Z
+completed: 2026-09-18T15:48:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-18T17:47:53+02:00
+last_commit: 2026-09-18T17:47:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  freeze EWCR contracts v1 — seven draft 2020-12 schemas, worked examples, sha256 manifest, fence
+
+# Key outcomes
+outcomes:
+  - 'Seven JSON Schema (draft 2020-12) files exist under `docs/research/executable-workflow/contracts/v1/`: `procedure`, `instance`, `transition-envelope`, `attempt`, `evidence-reference`, `refusal`, `deadline-event` — each with `$id`, `title`, `version: 1`, and `additionalProperties: false` at the root'
+  - 'Every schema traces to the source: a top-level `description` naming the architecture section (arch `c9070637` §) it freezes, so an operator can pick an invariant and find its contract (headline mechanic) — plus `contracts/v1/README.md` as the operator-facing index'
+  - '`contracts/v1/MANIFEST.yaml` lists each schema with its sha256; `python3 tools/ewcr-contracts-check.py` recomputes and exits 0 on match, non-zero on drift (control leg in the bats test shows it red on a tampered copy); re-bless without `--force` refused'
+  - 'All seven schemas parse and validate at least one worked instance each under `contracts/v1/examples/` (`jsonschema` 4.25.1, draft 2020-12 — missing package is exit 2, never a silent skip), pinned by `tests/unit/t3385_ewcr_contracts_v1.bats` (18 tests, 0 skips)'
+  - 'No runtime code: the task adds only schemas, examples, one check tool and one test — nothing under `lib/`, `agents/`, `bin/`, `web/` (Arc 1 scope stays untouched)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/research/executable-workflow/contracts/v1/attempt.schema.json'
+  - 'docs/research/executable-workflow/contracts/v1/deadline-event.schema.json'
+  - 'docs/research/executable-workflow/contracts/v1/evidence-reference.schema.json'
+  - 'docs/research/executable-workflow/contracts/v1/examples/attempt.json'
+  - 'docs/research/executable-workflow/contracts/v1/examples/deadline-event.json'
+  - 'docs/research/executable-workflow/contracts/v1/examples/evidence-reference.json'
+  - 'docs/research/executable-workflow/contracts/v1/examples/instance.json'
+  - 'docs/research/executable-workflow/contracts/v1/examples/procedure.json'
+  - 'docs/research/executable-workflow/contracts/v1/examples/refusal.json'
+  - 'docs/research/executable-workflow/contracts/v1/examples/transition-envelope.json'
+  - 'docs/research/executable-workflow/contracts/v1/instance.schema.json'
+  - 'docs/research/executable-workflow/contracts/v1/MANIFEST.yaml'
+  - 'docs/research/executable-workflow/contracts/v1/procedure.schema.json'
+  - 'docs/research/executable-workflow/contracts/v1/README.md'
+  - 'docs/research/executable-workflow/contracts/v1/refusal.schema.json'
+  - 'docs/research/executable-workflow/contracts/v1/transition-envelope.schema.json'
+  - '.tasks/active/T-3385-ewcr-arc-0-cand-2-freeze-v1-schemas--pro.md'
+  - 'tests/unit/t3385_ewcr_contracts_v1.bats'
+  - 'tools/ewcr-contracts-check.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-18T17:47:53'
+    action: 'T-3385: freeze EWCR contracts v1 — seven draft 2020-12 schemas, worked examples, sha256 manifest, fence'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ewcr, arc0]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 19
+  lines_added: 2473
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3385-ewcr-arc-0-cand-2-freeze-v1-schemas--pro.md
+generated_by: context-agent-hybrid
