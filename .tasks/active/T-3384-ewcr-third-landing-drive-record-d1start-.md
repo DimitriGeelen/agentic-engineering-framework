@@ -1,6 +1,7 @@
 ---
 id: T-3384
-name: "EWCR third landing drive: record D1=start / D5=accept, start Arc 0, groom and land"
+name: "EWCR third landing drive: record D1=start / D5=accept, start Arc 0, groom and
+  land"
 description: >
   EWCR third landing drive: record D1=start / D5=accept, start Arc 0, groom and land
 
@@ -23,8 +24,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-18T15:33:26Z
-last_update: 2026-09-18T15:33:26Z
-date_finished: null
+last_update: 2026-09-18T15:53:46Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-18T15:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=285,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-18T15:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3384: EWCR third landing drive: record D1=start / D5=accept, start Arc 0, groom and land
@@ -62,9 +91,9 @@ edited, here.
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] D1 and D5 rulings recorded in `docs/research/executable-workflow/governance-cadence.md` with date, direction, the D5 value, and provenance (Watchtower ticks + chat ruling)
 - [x] arc-019 transitioned draft → in-progress via `fw arc start ewcr-arc0-contract-evidence` (verified verb); YAML reads `status: in-progress`
-- [ ] Arc groomed: constituent tasks listed with status; NEW SCOPE tasks for Arc 0 filed with real ACs and `arc_id: ewcr-arc0-contract-evidence`; anything that is a dupe/stale/scope change routed to /approvals rather than acted on
-- [ ] Status report posted on TermLink `aef-operator-notices` (rulings, arc state, next landable task)
-- [ ] Every in-arc task started by this drive is either landed (commit SHA in this file's Updates) or explicitly blocked on operator/workflow agent with the reason recorded
+- [x] Arc groomed: constituent tasks listed with status; NEW SCOPE tasks for Arc 0 filed with real ACs and `arc_id: ewcr-arc0-contract-evidence`; anything that is a dupe/stale/scope change routed to /approvals rather than acted on
+- [x] Status report posted on TermLink `aef-operator-notices` (rulings, arc state, next landable task)
+- [x] Every in-arc task started by this drive is either landed (commit SHA in this file's Updates) or explicitly blocked on operator/workflow agent with the reason recorded
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -225,6 +254,15 @@ edited, here.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-3384 — the rulings are recorded and the arc is in progress
+grep -q 'RULED 2026-09-18: START' docs/research/executable-workflow/governance-cadence.md && grep -q 'third landing drive (T-3384)' docs/research/executable-workflow/governance-cadence.md
+grep -q '^status: in-progress' .context/arcs/ewcr-arc0-contract-evidence.yaml
+# the three slices this drive landed are archived; the two it did not start are still active with their reason on file
+[ -f .tasks/completed/T-3385-*.md ] && [ -f .tasks/completed/T-3386-*.md ] && [ -f .tasks/completed/T-3388-*.md ] && [ -f .tasks/active/T-3387-*.md ] && [ -f .tasks/active/T-3389-*.md ]
+grep -q 'reviews not transferred' .tasks/active/T-3389-*.md
+# the frozen contract fence holds at drive close
+python3 tools/ewcr-contracts-check.py
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -316,6 +354,17 @@ edited, here.
      legacy tasks lacking this section. -->
 
 ## Updates
+
+### 2026-09-18 — landing ledger (drive 3)
+- `7b7c3b86b` D1=start / D5=accept recorded; `fw arc start` → arc-019 in-progress
+- `fbb2a4178` groomed: T-3385..T-3389 filed with real ACs; fence 1 re-measured PASS under the accepted threshold
+- `13b752bd6` + `d84dae7ed` **T-3385 landed** — contracts v1 frozen (7 schemas, examples, manifest, fence, 18-test suite)
+- `518660742` + `ae8ad3a3c` **T-3386 landed** — task lifecycle + revalidation contract (5/5 verification)
+- `d1a354fe0` + `dbe2971dd` **T-3388 landed** — worked human→script→human fixture (6-test suite)
+- **T-3387** filed (horizon next), not started — budget reached warn band; next landable task
+- **T-3389** BLOCKED on operator: the four external reviews were never transferred (Human AC on the task)
+- Operator actions outstanding: finalise T-3147 (`/review/T-3147`); arc `description:` still quotes the superseded draft-only fence (`/arcs/ewcr-arc0-contract-evidence`); transfer reviews for T-3389
+- OBS filed: heredoc-body task-file write evaded the T-3299 gate (agent-observed, switched to Edit)
 
 ### 2026-09-18T15:33:26Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
