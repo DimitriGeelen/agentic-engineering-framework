@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3383: T-3382 follow-up: dead-negation '! grep' in t3382 bats is inert under bats — pre-push audit red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-18T04:52:31Z
+# ============================================================================
+
+task_id: T-3383
+task_name: "T-3382 follow-up: dead-negation '! grep' in t3382 bats is inert under bats — pre-push audit red"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-18T04:47:08Z
+completed: 2026-09-18T04:52:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-18T06:52:07+02:00
+last_commit: 2026-09-18T06:52:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t3382 bats — make the 'old probe is gone' assertion able to fail
+
+# Key outcomes
+outcomes:
+  - 'The inert `! grep` in t3382 test 7 is rewritten as `run grep …; [ "$status" -ne 0 ]` so it can actually fail — and is shown to fail against a fixture containing the old probe line (control leg, new test 8)'
+  - '`tools/bats-dead-negation-lint.py tests/` reports 0 inert assertions; `tests/lint/bats-dead-negation.bats` green'
+  - 't3382 suite now 8/8, 0 skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3383-t-3382-follow-up-dead-negation--grep-in-.md'
+  - 'tests/unit/t3382_liveness_identity_probe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-18T06:52:07'
+    action: 'T-3383: t3382 bats — make the ''old probe is gone'' assertion able to fail'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 2
+  lines_added: 332
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3383-t-3382-follow-up-dead-negation--grep-in-.md
+generated_by: context-agent-hybrid
