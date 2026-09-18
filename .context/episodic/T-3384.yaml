@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3384: EWCR third landing drive: record D1=start / D5=accept, start Arc 0, groom and land
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-18T15:55:27Z
+# ============================================================================
+
+task_id: T-3384
+task_name: "EWCR third landing drive: record D1=start / D5=accept, start Arc 0, groom and land"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-18T15:33:26Z
+completed: 2026-09-18T15:55:13Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-18T17:36:25+02:00
+last_commit: 2026-09-18T17:55:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record D1=start and D5=accept; Arc 0 draft → in-progress. groom Arc 0 — file roadmap candidates 2–6 as T-3385..T-3389 with real ACs. landing ledger — three Arc 0 slices landed, two carried with reasons. evolution entry — the drive changed shape once D1 was ruled
+
+# Key outcomes
+outcomes:
+  - 'D1 and D5 rulings recorded in `docs/research/executable-workflow/governance-cadence.md` with date, direction, the D5 value, and provenance (Watchtower ticks + chat ruling)'
+  - 'arc-019 transitioned draft → in-progress via `fw arc start ewcr-arc0-contract-evidence` (verified verb); YAML reads `status: in-progress`'
+  - 'Arc groomed: constituent tasks listed with status; NEW SCOPE tasks for Arc 0 filed with real ACs and `arc_id: ewcr-arc0-contract-evidence`; anything that is a dupe/stale/scope change routed to /approvals rather than acted on'
+  - 'Status report posted on TermLink `aef-operator-notices` (rulings, arc state, next landable task)'
+  - 'Every in-arc task started by this drive is either landed (commit SHA in this file''s Updates) or explicitly blocked on operator/workflow agent with the reason recorded'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/ewcr-arc0-contract-evidence.yaml'
+  - 'docs/research/executable-workflow/governance-cadence.md'
+  - '.tasks/active/T-3384-ewcr-third-landing-drive-record-d1start-.md'
+  - '.tasks/active/T-3385-ewcr-arc-0-cand-2-freeze-v1-schemas--pro.md'
+  - '.tasks/active/T-3386-ewcr-arc-0-cand-4-define-the-pilot-task-.md'
+  - '.tasks/active/T-3387-ewcr-arc-0-cand-5-specify-evidence-snaps.md'
+  - '.tasks/active/T-3388-ewcr-arc-0-cand-6-worked-human-gate--reg.md'
+  - '.tasks/active/T-3389-ewcr-arc-0-cand-3-consolidated-refusalth.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-18T17:36:25'
+    action: 'T-3384: record D1=start and D5=accept; Arc 0 draft → in-progress'
+  - time: '2026-09-18T17:40:56'
+    action: 'T-3384: groom Arc 0 — file roadmap candidates 2–6 as T-3385..T-3389 with real ACs'
+  - time: '2026-09-18T17:54:41'
+    action: 'T-3384: landing ledger — three Arc 0 slices landed, two carried with reasons'
+  - time: '2026-09-18T17:55:13'
+    action: 'T-3384: evolution entry — the drive changed shape once D1 was ruled'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ewcr]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 21
+  commits: 4
+  files_changed: 8
+  lines_added: 1953
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3384-ewcr-third-landing-drive-record-d1start-.md
+generated_by: context-agent-hybrid
