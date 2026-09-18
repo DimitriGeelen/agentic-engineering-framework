@@ -1,13 +1,16 @@
 ---
 id: T-3388
-name: "EWCR Arc 0 cand-6: worked human-gate → registered-script → human-gate procedure fixture"
+name: "EWCR Arc 0 cand-6: worked human-gate → registered-script → human-gate procedure
+  fixture"
 description: >
-  Roadmap Arc 0 candidate 6. One worked procedure definition conforming to the cand-2 schemas, exercising a human gate, a registered script step, and a second human gate. The fixture the Designer round-trip fence will later use.
+  Roadmap Arc 0 candidate 6. One worked procedure definition conforming to the cand-2
+  schemas, exercising a human gate, a registered script step, and a second human gate.
+  The fixture the Designer round-trip fence will later use.
 
-status: captured
+status: started-work
 workflow_type: specification
 owner: agent
-horizon: next
+horizon: now
 tags: [ewcr, arc0]
 components: []
 related_tasks: [T-3147, T-3384, T-3385]
@@ -23,8 +26,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-18T15:39:01Z
-last_update: 2026-09-18T15:39:01Z
-date_finished: null
+last_update: 2026-09-18T15:52:34Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +38,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-18T15:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 4
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=4 
+      (workflow:specification); effort=8 (lines=272,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-18T15:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3388: EWCR Arc 0 cand-6: worked human-gate → registered-script → human-gate procedure fixture
@@ -47,11 +78,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `docs/research/executable-workflow/contracts/v1/examples/procedure-human-script-human.json` is a complete procedure definition validating against the T-3385 `procedure` schema, with exactly three steps: human gate → registered script → human gate
-- [ ] The registered-script step names an opaque script id and a binding name only — no path, no secret value, no inline command (cadence doc §5 stop condition on secret values)
-- [ ] A companion `examples/instance-human-script-human.json` shows one instance mid-flight (first gate approved, script step pending) validating against the `instance` schema
-- [ ] The fixture is referenced from the T-3385 bats test so schema drift breaks it; the Designer-side round-trip fence (Q-10 paired task) is noted as peer-owned and NOT asserted here
-- [ ] No runtime code; fixtures only
+- [x] `docs/research/executable-workflow/contracts/v1/examples/procedure-human-script-human.json` is a complete procedure definition validating against the T-3385 `procedure` schema, with exactly three steps: human gate → registered script → human gate (plus one terminal gateway node, required by `terminal_nodes`)
+- [x] The registered-script step names an opaque script id and a binding name only — no path, no secret value, no inline command (cadence doc §5 stop condition on secret values)
+- [x] A companion `examples/instance-human-script-human.json` shows one instance mid-flight (first gate approved, script step pending) validating against the `instance` schema
+- [x] The fixture is pinned by its own suite `tests/unit/t3388_ewcr_worked_procedure_fixture.bats` (6 tests incl. control leg) against the frozen schemas — T-3385's suite is closed and immutable with its task, so schema drift breaks this suite instead; the Designer-side round-trip fence (Q-10 paired task) is noted as peer-owned and NOT asserted here
+- [x] No runtime code; fixtures only
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -212,6 +243,13 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-3388 — fixture suite green (6 tests, control leg included), no dead negations
+bats tests/unit/t3388_ewcr_worked_procedure_fixture.bats > /tmp/.t3388.out 2>&1 && grep -q '^1\.\.6' /tmp/.t3388.out && ! grep -q '^not ok' /tmp/.t3388.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t3388_ewcr_worked_procedure_fixture.bats
+# frozen schemas untouched (manifest still matches)
+python3 tools/ewcr-contracts-check.py
+[ -z "$(git log --format=%H --grep='^T-3388' -- lib agents bin web)" ]
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -308,3 +346,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3388-ewcr-arc-0-cand-6-worked-human-gate--reg.md
 - **Context:** Initial task creation
+
+### 2026-09-18T15:52:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

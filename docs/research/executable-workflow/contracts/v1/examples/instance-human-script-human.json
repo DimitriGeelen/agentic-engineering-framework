@@ -1,0 +1,45 @@
+{
+  "id": "wi-hsh-0001",
+  "procedure_ref": {
+    "id": "human-script-human",
+    "version": "1.0.0",
+    "content_hash": "sha256:610c6a72035fd13ce6bdb5cfd27cb92a7f3ccc139378253fea26815f9b97480b"
+  },
+  "task_binding": {
+    "task_id": "T-3388",
+    "task_content_hash": "sha256:075497ccfd240213a33714839955d78a4b6809a218504a94d683f446252475e7",
+    "repository": "999-Agentic-Engineering-Framework",
+    "worktree": "main",
+    "component_scope": [],
+    "scope_measured": false,
+    "bound_at": "2026-09-18T16:01:00Z",
+    "bound_by": {
+      "identity": "user:dimitri",
+      "kind": "human",
+      "auth_ref": "auth.watchtower.session.v1"
+    }
+  },
+  "execution_profile_ref": "exec.deterministic.v1",
+  "capability_profile_ref": "cap.binding.example-script.v1",
+  "state": "ready",
+  "current_node": "run_script",
+  "ledger_position": {
+    "index": 2,
+    "hash": "sha256:26003107822f7e03ea639766629b44cf77167b89e1145cc2ad2a42f61f582991"
+  },
+  "attempt_ids": [],
+  "approvals": [
+    {
+      "node": "gate_in",
+      "decision": "approve",
+      "actor": {
+        "identity": "user:dimitri",
+        "kind": "human",
+        "auth_ref": "auth.watchtower.session.v1"
+      },
+      "ts": "2026-09-18T16:02:00Z",
+      "envelope_id": "env-hsh-0002"
+    }
+  ],
+  "pause": null
+}
