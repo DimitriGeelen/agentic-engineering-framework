@@ -16,7 +16,19 @@ pick any pilot invariant and find its contract (the Arc 0 headline mechanic).
 | `deadline-event.schema.json` | §7.4, §13 #17 | absolute deadline admitted to the ledger; idempotent evaluation |
 
 `examples/` holds one worked instance per schema — the §2.5 `verification-gate`
-pilot (`wi-0142`). `MANIFEST.yaml` carries each schema's sha256.
+pilot (`wi-0142`) — plus the T-3388 human→script→human fixture
+(`procedure-human-script-human.json`, `instance-human-script-human.json`) and
+the T-3387 supersession example (`evidence-reference-superseding.json`:
+`ev-0142-out4` superseding `ev-0142-out3`). `MANIFEST.yaml` carries each
+schema's sha256.
+
+**Contracts written against these schemas** (prose + Given/When/Then
+scenarios, no runtime; each names its responsible Arc 1 component):
+
+| Contract | Freezes | Arc 1 component |
+|---|---|---|
+| `task-lifecycle-contract.md` (T-3386) | §2.4, §7.2, §7.5 steps 1–2, 9–10; §13 #3, 5, 11, 13, 16, 18, 20 | cand 3 — task binding + revalidation |
+| `evidence-and-idempotency.md` (T-3387) | §2.5, §6.6.1, §7.4, §7.5 steps 7–10; §13 #7, 9, 17, 18 | cand 7 — snapshot/hash/immutability; cand 8 — idempotent attempt/result/compensation |
 
 **Fence:** `python3 tools/ewcr-contracts-check.py` — exit 0 only when every
 schema is a valid 2020-12 document with the frozen root shape, every example

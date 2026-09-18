@@ -1,13 +1,16 @@
 ---
 id: T-3387
-name: "EWCR Arc 0 cand-5: specify evidence snapshot/hash ordering and compensation-idempotency rules"
+name: "EWCR Arc 0 cand-5: specify evidence snapshot/hash ordering and compensation-idempotency
+  rules"
 description: >
-  Roadmap Arc 0 candidate 5. Evidence is snapshotted and hashed BEFORE validation; accepted evidence is immutable; compensation and attempt contracts are idempotent. Written as a contract with testable scenarios, no runtime.
+  Roadmap Arc 0 candidate 5. Evidence is snapshotted and hashed BEFORE validation;
+  accepted evidence is immutable; compensation and attempt contracts are idempotent.
+  Written as a contract with testable scenarios, no runtime.
 
-status: captured
+status: started-work
 workflow_type: specification
 owner: agent
-horizon: next
+horizon: now
 tags: [ewcr, arc0]
 components: []
 related_tasks: [T-3147, T-3384, T-3385]
@@ -23,8 +26,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-18T15:38:49Z
-last_update: 2026-09-18T15:38:49Z
-date_finished: null
+last_update: 2026-09-18T18:38:12Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,23 +38,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-18T15:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 4
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=4 
+      (workflow:specification); effort=8 (lines=272,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-18T15:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3387: EWCR Arc 0 cand-5: specify evidence snapshot/hash ordering and compensation-idempotency rules
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Roadmap `5be23719` Arc 0 candidate 5, third contract written against the T-3385 frozen schemas (after T-3386 task lifecycle, T-3388 worked fixture). Deliverable: `docs/research/executable-workflow/contracts/v1/evidence-and-idempotency.md` — the contract Arc 1 candidates 7 (snapshot/hash/immutability) and 8 (idempotent attempt/result/compensation) must satisfy, with ten Given/When/Then scenarios, plus the committed supersession example `examples/evidence-reference-superseding.json` (`ev-0142-out4` superseding the pilot's `ev-0142-out3`) which validates against `evidence-reference.schema.json`. README gains a contracts table. Sources: arch §2.5, §6.6.1, §7.4, §7.5 steps 7–10, §13 #7/#9/#17/#18.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `docs/research/executable-workflow/contracts/v1/evidence-and-idempotency.md` specifies the ordering invariant: snapshot → hash → validate → accept; a hash computed after validation is a contract violation, with the refusal named
-- [ ] Immutability rule: an accepted evidence reference (T-3385 schema) is never rewritten; supersession is a new reference with `supersedes:` — stated with a testable scenario
-- [ ] Idempotency keys for attempt, result and compensation are defined (what fields form the key, what a duplicate delivery must return) with one scenario per contract showing duplicate delivery produces no second effect
-- [ ] Each rule maps to an arch §13 acceptance scenario id and to its responsible Arc 1 component (candidates 7 and 8)
-- [ ] No runtime code; contract text + scenarios only
+- [x] `docs/research/executable-workflow/contracts/v1/evidence-and-idempotency.md` specifies the ordering invariant: snapshot → hash → validate → accept; a hash computed after validation is a contract violation, with the refusal named — §1: four steps with ledger-position invariant; three violation shapes → `unresolved_reference` / `direct_state_mutation` / `missing_typed_input`; scenarios 1.1–1.3
+- [x] Immutability rule: an accepted evidence reference (T-3385 schema) is never rewritten; supersession is a new reference with `supersedes:` — stated with a testable scenario — §2 + scenarios 2.1–2.3; scenario 2.1 is backed by the committed example `examples/evidence-reference-superseding.json` (schema-validated, Verification line 5)
+- [x] Idempotency keys for attempt, result and compensation are defined (what fields form the key, what a duplicate delivery must return) with one scenario per contract showing duplicate delivery produces no second effect — §3 key table (attempt, result, compensation, plus deadline evaluation for §13 #17); scenarios 3.1–3.4
+- [x] Each rule maps to an arch §13 acceptance scenario id and to its responsible Arc 1 component (candidates 7 and 8) — §4 table rows 7, 9, 17, 18, 10 with component column; §5 lists what each candidate must expose; explicit out-of-scope list
+- [x] No runtime code; contract text + scenarios only — only `docs/research/executable-workflow/contracts/v1/` touched (Verification line 7 pins no `lib agents bin web` commits under T-3387)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -212,6 +243,21 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# 1. the five sections the contract promises exist
+D=docs/research/executable-workflow/contracts/v1/evidence-and-idempotency.md; for h in "## 1. Ordering invariant" "## 2. Immutability and supersession" "## 3. Idempotency keys" "## 4. Acceptance-scenario mapping" "## 5. What the responsible components"; do grep -q "^$h" "$D" || exit 1; done
+# 2. every backticked code-shaped token the contract names is in the frozen refusal enum (schema field names excluded); a contract naming a code the schema does not know is a contract nothing can honour
+python3 -c "import json,re,sys,glob; c=set(json.load(open('docs/research/executable-workflow/contracts/v1/refusal.schema.json'))['properties']['reason_code']['enum']); f=set(); [f.update(re.findall(r'\"([a-z_]+)\":', open(g).read())) for g in glob.glob('docs/research/executable-workflow/contracts/v1/*.schema.json')]; d=open('docs/research/executable-workflow/contracts/v1/evidence-and-idempotency.md').read(); n={m for m in re.findall(r'\x60([a-z_]+)\x60', d) if re.search(r'_(reference|mutation|input|position|delivery|mismatch)$', m)}-(f-c); bad=n-c; print('named',sorted(n),'unknown',bad); sys.exit(1 if bad or not n else 0)"
+# 3. §13 mapping rows 7, 9, 17, 18, 10 present, and the out-of-scope list
+for n in 7 9 17 18 10; do grep -qE "^\| $n \|" docs/research/executable-workflow/contracts/v1/evidence-and-idempotency.md || exit 1; done; grep -q "Explicitly out of Arc 0 scope" docs/research/executable-workflow/contracts/v1/evidence-and-idempotency.md
+# 4. every scenario is Given/When/Then, and there are at least eight (three ordering, three immutability, one per idempotency key)
+python3 -c "import re,sys; d=open('docs/research/executable-workflow/contracts/v1/evidence-and-idempotency.md').read(); b=re.split(r'^### Scenario ', d, flags=re.M)[1:]; ok=[all(k in x for k in ('**Given**','**When**','**Then**')) for x in b]; print(len(b),'scenarios,',sum(ok),'complete'); sys.exit(0 if b and all(ok) and len(b)>=8 else 1)"
+# 5. the supersession example validates against the frozen evidence-reference schema and actually supersedes the pilot's accepted reference
+python3 -c "import json,jsonschema,sys; s=json.load(open('docs/research/executable-workflow/contracts/v1/evidence-reference.schema.json')); e=json.load(open('docs/research/executable-workflow/contracts/v1/examples/evidence-reference-superseding.json')); jsonschema.Draft202012Validator(s).validate(e); sys.exit(0 if e['supersedes']=='ev-0142-out3' and e['status']=='accepted' else 1)"
+# 6. the frozen schemas and manifest are untouched
+python3 tools/ewcr-contracts-check.py
+# 7. no runtime code under this task
+[ -z "$(git log --format=%H --grep='^T-3387' -- lib agents bin web)" ]
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -251,6 +297,11 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-18 — the frozen enum is narrower than the evidence contract wants
+- **What changed:** Writing the "hash computed after validation" refusal against the T-3385 enum showed there is no evidence-specific code: the closest honest fits are `unresolved_reference` (a verdict citing a hash the ledger never recorded), `direct_state_mutation` (re-hashing an existing snapshot) and `missing_typed_input` (accepting without a hash-matched verdict). They are correct but coarse — an operator reading `unresolved_reference` on an evidence event has to read `detail` to learn it was a hash mismatch. Also learned: the AC asked for three idempotency keys, but §13 #17 (deadlines fire once, never reset) is the same mechanism and the deadline schema already carries `evaluation_idempotency_key`, so the contract has four keys, not three.
+- **Plan impact:** v1 stays frozen (README fence: change = `contracts/v2/`). A dedicated *evidence_hash_mismatch* code is recorded in the contract as a v2 candidate for Arc 1 cand 7 to propose with evidence from its fixtures, not added now. The reason-code verification line had to learn to exclude schema *field* names (`prior_position`, `expected_position`) from the code-shaped-token scan — the T-3386 regex would have false-failed here.
+- **Triggered:** nothing filed; the v2 candidate lives in the contract text where cand 7's author will read it. Arc 0 now has contracts for cand 3, 7 and 8; cand 5 (deadlines) and 4 (compare-and-append) are *used* by this document (`stale_position`, `evaluation_idempotency_key`) but their admission-order contract is still the ledger contract, unwritten.
 
 ## Recommendation
 
@@ -292,6 +343,21 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-09-18 — what a duplicate delivery returns
+- **Chose:** the original record plus its ledger position (the caller gets the answer it would have got the first time), AND a `duplicate_delivery` refusal appended with `side_effect: false` naming the original — visible, not silent.
+- **Why:** §7.4 says every loser of compare-and-append gets an immutable refusal record; §13 #14 wants hub redelivery operator-visible. Returning the original alone would make a redelivery storm invisible; refusing alone would make a legitimate at-least-once transport look broken to its caller.
+- **Rejected:** (a) silent idempotent success — hides transport faults; (b) refusal only, no original returned — a resumed runner (§13 #9) needs the prior attempt's outcome to continue, and would have to do a second lookup.
+
+### 2026-09-18 — conflicting result for one attempt
+- **Chose:** `stale_position`, with `detail` naming both payload hashes and the position of the consumed one.
+- **Why:** a second, different result for the same `attempt_id` is a compare-and-append conflict against the position at which the first was consumed — the frozen enum's `stale_position` is that exact meaning. It is not `duplicate_delivery` (the payloads differ) and inventing a code breaks the v1 freeze.
+- **Rejected:** `duplicate_delivery` with a "conflicting" flag — the schema has no such flag and the semantics differ (a duplicate is harmless, a conflict is the event an operator must see first).
+
+### 2026-09-18 — `decision_refs` on an accepted reference
+- **Chose:** append-only; the single mutable field after acceptance. Removal is `direct_state_mutation`.
+- **Why:** the schema carries `decision_refs` on the evidence object, and the human gate that reviews accepted evidence (§2.5 step 5) happens *after* acceptance by construction; a fully frozen object would leave that decision with nowhere to attach except a reverse index.
+- **Rejected:** fully immutable after acceptance with decisions pointing at evidence instead — cleaner, but contradicts the frozen schema's shape; a v2 question.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -308,3 +374,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3387-ewcr-arc-0-cand-5-specify-evidence-snaps.md
 - **Context:** Initial task creation
+
+### 2026-09-18T18:38:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
