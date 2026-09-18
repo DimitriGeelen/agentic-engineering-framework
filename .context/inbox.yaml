@@ -4823,3 +4823,10 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-439
+  text: "BVP quadrant view cannot select work: (1) zero confirmed bvp_scores exist in the corpus — every score is estimator-proposed; (2) the hv-lc/hv-hc quadrants (fw bvp --quadrant --include-proposed, 2026-09-18) contain 26 tasks ALL scored exactly 108 = the heuristic's no-signal default (2 on every driver x weight sum 54) — three are blank inception templates; (3) every signal-bearing open task (T-2667 111, T-2268 94, T-1820 87 ...) has NO quadrant because cost needs blast_radius, blast_radius needs components:, and components: resolves only at work-completed (T-3068) — fw bvp estimate-cost returns blast_radius=None for all four tried. Net: the 'high value' quadrant is populated by unreadable tasks and empty of readable ones; a selection rule keyed on quadrant is structurally unsatisfiable before close. Fix lives in arc-006: exclude or flag no-signal-default proposals in the ranking, make cost computable pre-close (tier+effort fallback when blast_radius unmeasured, flagged), and operator-confirm at least the arc-anchor scores."
+  captured: 2026-09-18T19:08:03Z
+  context_task: T-3390
+  tags: [calibration]
+  status: pending
+  promoted_to: null
