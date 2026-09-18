@@ -4816,3 +4816,10 @@ observations:
   tags: []
   status: promoted
   promoted_to: T-3382
+- id: OBS-438
+  text: "check-active-task T-3299 task-file write gate: a python3 heredoc whose BODY names a .tasks/active/*.md path and open(p,'w') it passed the gate — the command line itself carried no .tasks path. Observed 2026-09-18 under T-3386 (unintended; agent switched back to Edit). Gate reads the command string, not heredoc bodies — same scope boundary as Tier 0 (T-2742)."
+  captured: 2026-09-18T15:51:54Z
+  context_task: T-3384
+  tags: [bug]
+  status: pending
+  promoted_to: null

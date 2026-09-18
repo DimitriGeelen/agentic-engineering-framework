@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3386: EWCR Arc 0 cand-4: define the pilot task lifecycle and task-state revalidation contract
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-18T15:51:26Z
+# ============================================================================
+
+task_id: T-3386
+task_name: "EWCR Arc 0 cand-4: define the pilot task lifecycle and task-state revalidation contract"
+workflow_type: specification
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-18T15:38:36Z
+completed: 2026-09-18T15:51:13Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-18T17:51:12+02:00
+last_commit: 2026-09-18T17:51:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pilot task lifecycle + task-state revalidation contract (Arc 0 cand-4)
+
+# Key outcomes
+outcomes:
+  - '`docs/research/executable-workflow/contracts/v1/task-lifecycle-contract.md` states which AEF task states (`captured`, `started-work`, `issues`, `work-completed`, partial-complete) a governed procedure instance may bind to, and which transitions invalidate a binding'
+  - 'The revalidation contract specifies two checkpoints — pre-dispatch and post-attempt — each with the exact fields compared (task id, status, owner, AC digest, last_update) and the refusal emitted on mismatch, referencing the `refusal` schema from T-3385'
+  - 'Every acceptance scenario in arch §13 that concerns task mutation or cancellation is mapped to a row (scenario id → checkpoint → expected refusal); unmapped scenarios are listed explicitly as out of Arc 0 scope'
+  - 'The contract names its responsible future component (Arc 1 candidate 3, task binding + revalidation) so the headline-mechanic trace closes: invariant → contract → refusal scenario → component'
+  - 'No runtime code; contract text + scenario table only'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/research/executable-workflow/contracts/v1/task-lifecycle-contract.md'
+  - '.tasks/active/T-3386-ewcr-arc-0-cand-4-define-the-pilot-task-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-18T17:51:12'
+    action: 'T-3386: pilot task lifecycle + task-state revalidation contract (Arc 0 cand-4)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ewcr, arc0]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 2
+  lines_added: 184
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3386-ewcr-arc-0-cand-4-define-the-pilot-task-.md
+generated_by: context-agent-hybrid
