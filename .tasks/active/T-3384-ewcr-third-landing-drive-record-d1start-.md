@@ -303,6 +303,11 @@ python3 tools/ewcr-contracts-check.py
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-18 — the drive changed shape once D1 was ruled
+- **What changed:** Filed as a fourth "reconcile and surface D1/D5" row; the operator's chat ruling turned it into the first drive with in-arc build work. Grooming found the roadmap's six Arc 0 candidates map cleanly to tasks except candidate 3, whose inputs (four external reviews) were never in the transferred packet — a peer-transfer gap not visible until the arc was actually opened for work.
+- **Plan impact:** The 2026-08-26 draft-only fence text in the arc `description:` is now stale but untouchable by an agent (scope change); the cadence doc §4 needed RULED markers rather than row deletion so the decision register stays complete. Candidate 2 (schemas) had to land first — 4/5/6 all reference its `refusal`/`procedure`/`instance` shapes.
+- **Triggered:** T-3385 (landed), T-3386 (landed), T-3388 (landed), T-3387 (next), T-3389 (operator-blocked, Human AC to transfer reviews). OBS on the T-3299 heredoc-body gap.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
