@@ -7,10 +7,10 @@ description: >
   schemas, exercising a human gate, a registered script step, and a second human gate.
   The fixture the Designer round-trip fence will later use.
 
-status: started-work
+status: work-completed
 workflow_type: specification
 owner: agent
-horizon: now
+horizon: null
 tags: [ewcr, arc0]
 components: []
 related_tasks: [T-3147, T-3384, T-3385]
@@ -26,8 +26,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-18T15:39:01Z
-last_update: 2026-09-18T15:52:34Z
-date_finished:
+last_update: 2026-09-18T15:53:28Z
+date_finished: 2026-09-18T15:53:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -350,3 +350,22 @@ python3 tools/ewcr-contracts-check.py
 ### 2026-09-18T15:52:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-37cc513f
+- **Timestamp:** 2026-09-18T15:53:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `docs/research/executable-workflow/contracts/v1/examples/procedure-human-script-human.json` is a complete procedure definition validating against the T-3385 `procedure` schema, with exactly three step
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=docs/research/executable-workflow/contracts/v1/examples/procedure-human-script-human.json in: `docs/research/executable-workflow/contracts/v1/examples/procedure-human-script-human.json` is a complete procedure definition validating against the `
+- **AC#3 (Agent)** — A companion `examples/instance-human-script-human.json` shows one instance mid-flight (first gate approved, script step pending) validating against the `instance` schema
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=examples/instance-human-script-human.json in: A companion `examples/instance-human-script-human.json` shows one instance mid-flight (first gate approved, script step pending) validating against th`
+
+### 2026-09-18T15:53:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

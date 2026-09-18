@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3388: EWCR Arc 0 cand-6: worked human-gate → registered-script → human-gate procedure fixture
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-18T15:53:43Z
+# ============================================================================
+
+task_id: T-3388
+task_name: "EWCR Arc 0 cand-6: worked human-gate → registered-script → human-gate procedure fixture"
+workflow_type: specification
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-18T15:39:01Z
+completed: 2026-09-18T15:53:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-18T17:53:22+02:00
+last_commit: 2026-09-18T17:53:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  worked human-gate → registered-script → human-gate procedure fixture (Arc 0 cand-6)
+
+# Key outcomes
+outcomes:
+  - '`docs/research/executable-workflow/contracts/v1/examples/procedure-human-script-human.json` is a complete procedure definition validating against the T-3385 `procedure` schema, with exactly three steps: human gate → registered script → human gate (plus one terminal gateway node, required by `terminal_nodes`)'
+  - 'The registered-script step names an opaque script id and a binding name only — no path, no secret value, no inline command (cadence doc §5 stop condition on secret values)'
+  - 'A companion `examples/instance-human-script-human.json` shows one instance mid-flight (first gate approved, script step pending) validating against the `instance` schema'
+  - 'The fixture is pinned by its own suite `tests/unit/t3388_ewcr_worked_procedure_fixture.bats` (6 tests incl. control leg) against the frozen schemas — T-3385''s suite is closed and immutable with its task, so schema drift breaks this suite instead; the Designer-side round-trip fence (Q-10 paired task) is noted as peer-owned and NOT asserted here'
+  - 'No runtime code; fixtures only'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'worked human-gate → registered-script → human-gate procedure fixture (Arc 0 cand-6)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/research/executable-workflow/contracts/v1/examples/instance-human-script-human.json'
+  - 'docs/research/executable-workflow/contracts/v1/examples/procedure-human-script-human.json'
+  - '.tasks/active/T-3388-ewcr-arc-0-cand-6-worked-human-gate--reg.md'
+  - 'tests/unit/t3388_ewcr_worked_procedure_fixture.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-18T17:53:22'
+    action: 'T-3388: worked human-gate → registered-script → human-gate procedure fixture (Arc 0 cand-6)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ewcr, arc0]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 1
+  files_changed: 4
+  lines_added: 261
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3388-ewcr-arc-0-cand-6-worked-human-gate--reg.md
+generated_by: context-agent-hybrid
