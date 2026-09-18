@@ -115,6 +115,15 @@ _recorded_state() {
 }
 
 @test "the old reachability probe is gone from the script" {
-    ! grep -qE 'curl -sf -m 2 "\$\{wt_url%/\}/"' "$SCRIPT"
     grep -q '_watchtower_identity_matches' "$SCRIPT"
+    # T-3383: `! grep` as a non-final statement is inert under bats
+    # (T-3138/T-3191). `run` + status check is the form that can fail.
+    run grep -E 'curl -sf -m 2 "\$\{wt_url%/\}/"' "$SCRIPT"
+    [ "$status" -ne 0 ]
+}
+
+@test "control leg: the same assertion DOES fail against a script that still has the old probe" {
+    printf 'if curl -sf -m 2 "${wt_url%%/}/" >/dev/null 2>&1; then\n' > "$TEST_TEMP_DIR/old.sh"
+    run grep -E 'curl -sf -m 2 "\$\{wt_url%/\}/"' "$TEST_TEMP_DIR/old.sh"
+    [ "$status" -eq 0 ]   # found — so the assertion above is live, not vacuous
 }
