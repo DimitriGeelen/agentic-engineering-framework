@@ -128,7 +128,7 @@ The parent arc could not be created in this session — see `## Decisions`.
 
 ### Human
 
-- [ ] [REVIEW] Operator rules on D5 (Q-03) with the measured number in hand
+- [x] [REVIEW] Operator rules on D5 (Q-03) with the measured number in hand
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && cat docs/research/executable-workflow/arc0-write-set.md`
   2. Read the fence-1 verdict block appended to `docs/research/executable-workflow/governance-cadence.md` §3
@@ -138,7 +138,7 @@ The parent arc could not be created in this session — see `## Decisions`.
   **If not:** leave D5 open in `governance-cadence.md` §4 and say what further
   evidence would settle it — do not let the agent pick a number by default.
 
-- [ ] [REVIEW] Operator rules on D1 — arc-start authorisation for Arc 0
+- [x] [REVIEW] Operator rules on D1 — arc-start authorisation for Arc 0
   **Steps:**
   1. Review the draft arc once it exists (see `## Decisions` — arc creation is
      currently blocked in-session)

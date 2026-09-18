@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3382: liveness-check.sh false negative: probe /api/_identity and match project_root, not root-page reachability (OBS-437)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-18T04:42:34Z
+# ============================================================================
+
+task_id: T-3382
+task_name: "liveness-check.sh false negative: probe /api/_identity and match project_root, not root-page reachability (OBS-437)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-18T04:35:23Z
+completed: 2026-09-18T04:42:13Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-18T06:41:51+02:00
+last_commit: 2026-09-18T06:41:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  liveness rail decides Watchtower by identity, not by a 2s render of the root page
+
+# Key outcomes
+outcomes:
+  - '`liveness-check.sh` decides `watchtower` via `_watchtower_identity_matches` sourced from `lib/watchtower.sh` — no second copy of the identity parse, no `curl … "$wt_url/"` reachability probe left in the file'
+  - 'Three states recorded, not two: `running` (identity matches our `project_root`), `foreign` (something answers `/api/_identity` on our URL but is not ours), `stopped` (nothing answers)'
+  - 'Bats regression suite with a control leg: a fixture server whose `/` is slower than the old 2s budget but whose `/api/_identity` is ours reads `running`; the same server with a different `project_root` reads `foreign`; no server reads `stopped`; and the old probe shape is shown red against the slow fixture so the green proves something (L-668)'
+  - 'Sourcing `lib/watchtower.sh` under the script''s `set -euo pipefail` does not kill the rail: the script exits 0 and writes a sample when the lib is present, and still exits 0 (falling back to `foreign`/`stopped`) when it is absent'
+  - 'Live confirmation: with Watchtower up, one run of the script writes `watchtower: running` to `liveness-latest.yaml`; the next cron sample after deploy agrees'
+  - '`bin/fw vendor self --check` clean (agents/ is a vendored path) and the exec bit from T-3380 preserved (`git ls-files -s agents/monitor/liveness-check.sh` still 100755)'
+  - '`## RCA` written (bug-class gate, T-1550) and OBS-437 marked promoted to this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/monitor/liveness-check.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/monitor/liveness-check.sh'
+  - '.context/inbox.yaml'
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-3382-liveness-checksh-false-negative-probe-ap.md'
+  - 'tests/fixtures/slow_watchtower.py'
+  - 'tests/unit/t3382_liveness_identity_probe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-18T06:41:51'
+    action: 'T-3382: liveness rail decides Watchtower by identity, not by a 2s render of the root page'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [monitor, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 8
+  lines_added: 657
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3382-liveness-checksh-false-negative-probe-ap.md
+generated_by: context-agent-hybrid

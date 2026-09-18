@@ -4,12 +4,12 @@ name: "liveness-check.sh false negative: probe /api/_identity and match project_
 description: >
   liveness-check.sh false negative: probe /api/_identity and match project_root, not root-page reachability (OBS-437)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [monitor, bug]
-components: []
+components: [agents/monitor/liveness-check.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-18T04:35:23Z
-last_update: 2026-09-18T04:41:34Z
-date_finished: null
+last_update: 2026-09-18T04:42:13Z
+date_finished: 2026-09-18T04:42:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -399,3 +399,22 @@ before it and never migrated.
 
 ### 2026-09-18T04:41:34Z — status-update [task-update-agent]
 - **Change:** tags: +bug
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-97dd7ead
+- **Timestamp:** 2026-09-18T04:42:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 135
+     - evidence: `git ls-files -s agents/monitor/liveness-check.sh | grep -q '^100755'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 137
+     - evidence: `PROJECT_ROOT="$PWD" bash agents/monitor/liveness-check.sh && { ! curl -sf -m 5 "$(bin/fw watchtower url)/api/_identity" >/dev/null || grep -q '^watchtower: running' .context/monitors/liveness-latest.y`
+
+### 2026-09-18T04:42:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
