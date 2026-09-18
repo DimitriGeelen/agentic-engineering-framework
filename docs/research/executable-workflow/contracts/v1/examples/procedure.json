@@ -1,0 +1,110 @@
+{
+  "id": "verification-gate",
+  "version": "1.0.0",
+  "status": "ratified",
+  "content_hash": "sha256:a07fa032fad17285f4e55ec81722abcf7d1f408c9224dbfd50d8f2060a63d4d2",
+  "ratification": {
+    "actor": {
+      "identity": "user:dimitri",
+      "kind": "human",
+      "auth_ref": "auth.watchtower.session.v1"
+    },
+    "ts": "2026-09-18T15:00:00Z",
+    "decision_ref": "decision.T-3147.D1"
+  },
+  "start_node": "authorise",
+  "terminal_nodes": [
+    "accept",
+    "reject"
+  ],
+  "nodes": [
+    {
+      "uid": "authorise",
+      "kind": "human_gate",
+      "outcome": "verification_authorised",
+      "inputs": [
+        "task_id"
+      ],
+      "outputs": [
+        "authorisation"
+      ],
+      "human_decision_map": {
+        "approve": "run_tests",
+        "decline": "reject"
+      }
+    },
+    {
+      "uid": "run_tests",
+      "kind": "script",
+      "outcome": "test_report_produced",
+      "inputs": [
+        "task_id",
+        "component_scope"
+      ],
+      "outputs": [
+        "test_report"
+      ],
+      "action_ref": "script.fw-test-unit.v1",
+      "execution_profile_ref": "exec.verification.standard.v1",
+      "capability_profile_ref": "cap.repository.read_test.v1",
+      "timeout": "PT30M",
+      "retry": {
+        "max_attempts": 0
+      }
+    },
+    {
+      "uid": "review",
+      "kind": "human_gate",
+      "outcome": "evidence_reviewed",
+      "inputs": [
+        "test_report"
+      ],
+      "outputs": [
+        "decision"
+      ],
+      "human_decision_map": {
+        "accept": "accept",
+        "reject": "reject"
+      }
+    },
+    {
+      "uid": "accept",
+      "kind": "gateway",
+      "outcome": "verification_accepted"
+    },
+    {
+      "uid": "reject",
+      "kind": "gateway",
+      "outcome": "verification_rejected"
+    }
+  ],
+  "edges": [
+    {
+      "from": "authorise",
+      "to": "run_tests",
+      "required_outputs": [
+        "authorisation"
+      ]
+    },
+    {
+      "from": "authorise",
+      "to": "reject"
+    },
+    {
+      "from": "run_tests",
+      "to": "review",
+      "required_outputs": [
+        "test_report"
+      ],
+      "guard": "output.test_report.status == \"produced\""
+    },
+    {
+      "from": "review",
+      "to": "accept"
+    },
+    {
+      "from": "review",
+      "to": "reject"
+    }
+  ]
+}

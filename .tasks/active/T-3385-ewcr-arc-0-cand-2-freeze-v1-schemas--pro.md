@@ -1,10 +1,13 @@
 ---
 id: T-3385
-name: "EWCR Arc 0 cand-2: freeze v1 schemas — procedure, instance, transition envelope, attempt, evidence reference, refusal, deadline events (AEF side)"
+name: "EWCR Arc 0 cand-2: freeze v1 schemas — procedure, instance, transition envelope,
+  attempt, evidence reference, refusal, deadline events (AEF side)"
 description: >
-  Roadmap 5be23719 Arc 0 candidate 2. Author the AEF-side v1 schemas as versioned, hashed files under docs/research/executable-workflow/contracts/. Designer-side round-trip half is a paired task in the peer repo (Q-10), not here.
+  Roadmap 5be23719 Arc 0 candidate 2. Author the AEF-side v1 schemas as versioned,
+  hashed files under docs/research/executable-workflow/contracts/. Designer-side round-trip
+  half is a paired task in the peer repo (Q-10), not here.
 
-status: captured
+status: started-work
 workflow_type: specification
 owner: agent
 horizon: now
@@ -23,8 +26,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-18T15:38:23Z
-last_update: 2026-09-18T15:38:23Z
-date_finished: null
+last_update: '2026-09-18T15:45:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +38,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-09-18T15:41:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-18T15:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 4
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=4 
+      (workflow:specification); effort=8 (lines=275,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3385: EWCR Arc 0 cand-2: freeze v1 schemas — procedure, instance, transition envelope, attempt, evidence reference, refusal, deadline events (AEF side)
@@ -47,11 +78,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Seven JSON Schema (draft 2020-12) files exist under `docs/research/executable-workflow/contracts/v1/`: `procedure`, `instance`, `transition-envelope`, `attempt`, `evidence-reference`, `refusal`, `deadline-event` — each with `$id`, `title`, `version: 1`, and `additionalProperties: false` at the root
-- [ ] Every schema traces to the source: a top-level `description` naming the architecture section (arch `c9070637` §) it freezes, so an operator can pick an invariant and find its contract (headline mechanic)
-- [ ] `contracts/v1/MANIFEST.yaml` lists each schema with its sha256; `python3 tools/ewcr-contracts-check.py` recomputes and exits 0 on match, non-zero on drift (control leg in the bats test shows it red on a tampered copy)
-- [ ] All seven schemas parse and validate at least one worked instance each under `contracts/v1/examples/` (`jsonschema` or stdlib fallback), pinned by `tests/unit/t3385_ewcr_contracts_v1.bats`
-- [ ] No runtime code: the task adds only schemas, examples, one check tool and one test — nothing under `lib/`, `agents/`, `bin/`, `web/` (Arc 1 scope stays untouched)
+- [x] Seven JSON Schema (draft 2020-12) files exist under `docs/research/executable-workflow/contracts/v1/`: `procedure`, `instance`, `transition-envelope`, `attempt`, `evidence-reference`, `refusal`, `deadline-event` — each with `$id`, `title`, `version: 1`, and `additionalProperties: false` at the root
+- [x] Every schema traces to the source: a top-level `description` naming the architecture section (arch `c9070637` §) it freezes, so an operator can pick an invariant and find its contract (headline mechanic) — plus `contracts/v1/README.md` as the operator-facing index
+- [x] `contracts/v1/MANIFEST.yaml` lists each schema with its sha256; `python3 tools/ewcr-contracts-check.py` recomputes and exits 0 on match, non-zero on drift (control leg in the bats test shows it red on a tampered copy); re-bless without `--force` refused
+- [x] All seven schemas parse and validate at least one worked instance each under `contracts/v1/examples/` (`jsonschema` 4.25.1, draft 2020-12 — missing package is exit 2, never a silent skip), pinned by `tests/unit/t3385_ewcr_contracts_v1.bats` (18 tests, 0 skips)
+- [x] No runtime code: the task adds only schemas, examples, one check tool and one test — nothing under `lib/`, `agents/`, `bin/`, `web/` (Arc 1 scope stays untouched)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -212,6 +243,16 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-3385 — the freeze fence: schemas valid, examples validate, manifest hashes match
+python3 tools/ewcr-contracts-check.py
+# exactly seven frozen schemas + one example each
+[ "$(ls docs/research/executable-workflow/contracts/v1/*.schema.json | wc -l)" -eq 7 ] && [ "$(ls docs/research/executable-workflow/contracts/v1/examples/*.json | wc -l)" -eq 7 ]
+# the suite, with its control legs, is green and has no dead negations
+bats tests/unit/t3385_ewcr_contracts_v1.bats > /tmp/.t3385.out 2>&1 && grep -q '^1\.\.18' /tmp/.t3385.out && ! grep -q '^not ok' /tmp/.t3385.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t3385_ewcr_contracts_v1.bats
+# no runtime code: this task's commits touch nothing under lib/ agents/ bin/ web/
+[ -z "$(git log --format=%H --grep='^T-3385' -- lib agents bin web)" ]
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -308,3 +349,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3385-ewcr-arc-0-cand-2-freeze-v1-schemas--pro.md
 - **Context:** Initial task creation
+
+### 2026-09-18T15:41:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

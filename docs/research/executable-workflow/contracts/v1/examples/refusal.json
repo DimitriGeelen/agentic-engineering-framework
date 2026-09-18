@@ -1,0 +1,24 @@
+{
+  "refusal_id": "ref-0142-001",
+  "ts": "2026-09-18T15:01:30Z",
+  "instance_id": "wi-0142",
+  "envelope_id": "env-0142-001x",
+  "requested_by": {
+    "identity": "agent:claude-master-1141196",
+    "kind": "agent",
+    "auth_ref": "auth.termlink.token.v1"
+  },
+  "refused_by": "runner:ewcr-pilot-1",
+  "reason_code": "human_gate_skipped",
+  "detail": "agent proposed ready->running on node authorise with no admitted human decision for the gate",
+  "scenario_refs": [
+    3,
+    11
+  ],
+  "side_effect": false,
+  "recovery_requirement": "await human decision on node authorise; re-propose against current ledger position",
+  "ledger_position": {
+    "index": 1,
+    "hash": "sha256:b2a4557540d33c4c78a7ae28316afcd3408caf58a80979ff50835e7182baa8e7"
+  }
+}

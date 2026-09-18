@@ -1,0 +1,20 @@
+# EWCR contracts v1 — frozen hashes. Regenerate ONLY with a version bump
+# (tools/ewcr-contracts-check.py --write --force). Drift here is a refusal, not a warning.
+contracts_version: 1
+source: architecture-c9070637.md
+frozen_by: T-3385
+schemas:
+- file: attempt.schema.json
+  sha256: 4312709ae2aa9b97880f4ba8e6daec5d230216d2eb5cd5f3b78d731545c8b518
+- file: deadline-event.schema.json
+  sha256: 0155e5ea24a127f09de98b939896d2c987a3e2e71d6e727502ab178743090338
+- file: evidence-reference.schema.json
+  sha256: 3a853345b656e93b6e6fc6a987b73709013f69d8ea3056e5d3b4613db2ac5a5c
+- file: instance.schema.json
+  sha256: 1bc5c35e53ec78b1eb1544f2980ca190706fab7d2eb819fd7577b57e5361ba12
+- file: procedure.schema.json
+  sha256: ac9aaefc2495b67679c81b77d74cd622a134c82df5503d84e1e31fed5752edf5
+- file: refusal.schema.json
+  sha256: b77a8bc94013c033a816c870cd072ca1b9f4d557871e00f1c4ab2688d014fe2c
+- file: transition-envelope.schema.json
+  sha256: 8e038ac2eca9baa3984f713d92183dd681b2ba63523682d27a591ea6251076df

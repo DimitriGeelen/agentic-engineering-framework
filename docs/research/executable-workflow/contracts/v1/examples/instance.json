@@ -1,0 +1,49 @@
+{
+  "id": "wi-0142",
+  "procedure_ref": {
+    "id": "verification-gate",
+    "version": "1.0.0",
+    "content_hash": "sha256:a07fa032fad17285f4e55ec81722abcf7d1f408c9224dbfd50d8f2060a63d4d2"
+  },
+  "task_binding": {
+    "task_id": "T-123",
+    "task_content_hash": "sha256:a5d917465fe649c83b1d8b521b97e418d531354699cc873ee2b90d3f0c9f1b45",
+    "repository": "999-Agentic-Engineering-Framework",
+    "worktree": "main",
+    "component_scope": [
+      "lib/watchtower.sh"
+    ],
+    "scope_measured": true,
+    "bound_at": "2026-09-18T15:01:00Z",
+    "bound_by": {
+      "identity": "user:dimitri",
+      "kind": "human",
+      "auth_ref": "auth.watchtower.session.v1"
+    }
+  },
+  "execution_profile_ref": "exec.verification.standard.v1",
+  "capability_profile_ref": "cap.repository.read_test.v1",
+  "state": "waiting",
+  "current_node": "review",
+  "ledger_position": {
+    "index": 4,
+    "hash": "sha256:6c0fe582457bf41c5caaff1d905cfbb7639ca8fcdedd57bc546e0f3e13f3d5d6"
+  },
+  "attempt_ids": [
+    "att-0142-003"
+  ],
+  "approvals": [
+    {
+      "node": "authorise",
+      "decision": "approve",
+      "actor": {
+        "identity": "user:dimitri",
+        "kind": "human",
+        "auth_ref": "auth.watchtower.session.v1"
+      },
+      "ts": "2026-09-18T15:02:00Z",
+      "envelope_id": "env-0142-002"
+    }
+  ],
+  "pause": null
+}

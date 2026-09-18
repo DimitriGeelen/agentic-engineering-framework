@@ -1,0 +1,251 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aef.geelenandcompany.com/ewcr/contracts/v1/attempt.schema.json",
+  "title": "EWCR v1 — Action attempt",
+  "version": 1,
+  "description": "Freezes architecture-c9070637.md §2.5 step 4 (attempt identity, procedure/task hashes, policy decision, typed inputs, executor, timestamps, redacted output ref, exit outcome, resulting state), §7.4 (attempt outcome is separate from instance outcome; `refused` = denied before side effect), §7.5 steps 7–10.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "attempt_id",
+    "instance_id",
+    "node",
+    "sequence",
+    "procedure_content_hash",
+    "task_content_hash",
+    "policy_decision",
+    "executor",
+    "started_at",
+    "exit_outcome",
+    "resulting_instance_state"
+  ],
+  "properties": {
+    "attempt_id": {
+      "type": "string",
+      "pattern": "^att-[A-Za-z0-9._-]+$"
+    },
+    "instance_id": {
+      "type": "string",
+      "pattern": "^wi-[A-Za-z0-9._-]+$"
+    },
+    "node": {
+      "type": "string"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "procedure_content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "task_content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "policy_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "policy_ref",
+        "decided_at"
+      ],
+      "properties": {
+        "decision": {
+          "enum": [
+            "allow",
+            "refuse"
+          ]
+        },
+        "policy_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+        },
+        "decided_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+        }
+      }
+    },
+    "action_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+    },
+    "typed_inputs_ref": {
+      "type": "string",
+      "pattern": "^ev-[A-Za-z0-9._-]+$"
+    },
+    "executor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "kind"
+      ],
+      "properties": {
+        "identity": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Per-agent authenticated identity. Host identity alone is refused as ambiguous (arch §7.3, §13 #12)."
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "runner",
+            "watchtower",
+            "external"
+          ]
+        },
+        "auth_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+        }
+      }
+    },
+    "dispatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transport",
+        "correlation_id",
+        "idempotency_key"
+      ],
+      "properties": {
+        "transport": {
+          "enum": [
+            "local",
+            "termlink"
+          ]
+        },
+        "correlation_id": {
+          "type": "string"
+        },
+        "idempotency_key": {
+          "type": "string"
+        }
+      }
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "output_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^ev-[A-Za-z0-9._-]+$"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Redacted output evidence reference; null when refused (no execution)."
+    },
+    "exit_outcome": {
+      "enum": [
+        "succeeded",
+        "failed",
+        "timed_out",
+        "cancelled",
+        "refused"
+      ]
+    },
+    "exit_code": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "outcome_validated": {
+      "type": "boolean",
+      "description": "Declared outcome and evidence validated — not merely exit status (§7.5 step 9)."
+    },
+    "resulting_instance_state": {
+      "enum": [
+        "created",
+        "preflighted",
+        "ready",
+        "running",
+        "waiting",
+        "paused",
+        "failed",
+        "compensating",
+        "completed",
+        "cancelled"
+      ]
+    },
+    "refusal_id": {
+      "type": "string",
+      "pattern": "^ref-[A-Za-z0-9._-]+$"
+    },
+    "recovery_requirement": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "exit_outcome": {
+            "const": "refused"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "refusal_id",
+          "recovery_requirement"
+        ],
+        "properties": {
+          "output_ref": {
+            "type": "null"
+          },
+          "policy_decision": {
+            "properties": {
+              "decision": {
+                "const": "refuse"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "exit_outcome": {
+            "enum": [
+              "succeeded",
+              "failed",
+              "timed_out",
+              "cancelled"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ended_at",
+          "action_ref",
+          "dispatch",
+          "outcome_validated"
+        ]
+      }
+    }
+  ]
+}
