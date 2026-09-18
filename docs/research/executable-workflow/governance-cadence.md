@@ -109,17 +109,28 @@ Unknown today while having no cards at all.
 | **Human decisions needed** | D1 and D5 only — unchanged for the ninth day. `http://192.168.10.107:3002/review/T-3147` (verified 200) |
 | **Next safe action** | Unchanged: operator rules D5 then D1. Until D1 GO there is no in-scope agent work; a third landing drive will reach this same row |
 
+### 2026-09-18 — third landing drive (T-3384): D1 and D5 ruled, Arc 0 started
+
+| Field | Value |
+|-------|-------|
+| **Source revision** | manifest v1, rev 0 — unchanged (`c9070637` / `5be23719`) |
+| **D5 ruling (Q-03)** | **ACCEPTED as proposed** — Fabric coverage ≥95% AND 0 `Unknown` subsystem per CORE write-set root, `tests/` excluded. Ruled by the operator: `[REVIEW]` AC ticked on `/review/T-3147` at 2026-09-18 06:34:21 (`POST /api/task/T-3147/toggle-ac`, LAN host), direction confirmed in chat 2026-09-18 ("2 yes") after the agent declined to infer it from the tick |
+| **D1 ruling** | **START** — Arc 0 authorised draft → in-progress. Same provenance: AC ticked 06:34:23, direction confirmed in chat 2026-09-18 ("1 yes start"). The 2026-08-26 draft-only fence is superseded for Arc 0 by this ruling; the arc YAML `description:` still quotes the old fence wording and needs an operator edit (arc-scope change, not taken by the agent) |
+| **Arc transition** | `fw arc start ewcr-arc0-contract-evidence` executed by T-3384 as the mechanical act of the human decision (the verb carries no `$CLAUDECODE` refusal; the decision was the Sovereign act, now recorded above) |
+| **Current arc / task** | arc-019 `ewcr-arc0-contract-evidence` (**in-progress**). Anchor T-3147: all Agent and Human ACs ticked, still in `active/` — finalisation (`--status work-completed`) is the human's |
+| **Next safe action** | Groom Arc 0 for NEW SCOPE under the headline mechanic; landing loop begins under T-3384. D2/D3/D4/D6 remain un-ruled and blocking their respective arcs |
+
 ## 4. Human decisions required (blocking)
 
 Owner: **dimitri@geelenandcompany.com**. None may be taken by an agent.
 
 | ID | Decision | Blocks |
 |---|---|---|
-| D1 | Arc-start authorisation for a *draft* Arc 0 in AEF | All Arc 0 work |
+| D1 | Arc-start authorisation for a *draft* Arc 0 in AEF — **RULED 2026-09-18: START** (see §3) | All Arc 0 work |
 | D2 | BVP confirmation (`fw bvp confirm`) — estimator proposals only exist today | BVP-based ranking |
 | D3 | Q-04 — two-plane bypass model (task plane bypassable, runner plane not) | Arc 1 refusal design |
 | D4 | Q-05 — disposition of the `--from-watchtower` direct-mutation pattern | Arc 4 projection/admission design |
-| D5 | Q-03 — Component Fabric coverage threshold and limited-mode policy | Arc 0 exit gate |
+| D5 | Q-03 — Component Fabric coverage threshold and limited-mode policy — **RULED 2026-09-18: ≥95% coverage, 0 Unknown per CORE root, `tests/` excluded** (see §3) | Arc 0 exit gate |
 | D6 | Q-14 — runner isolation topology | Arc 2 (hard gate) |
 
 ## 5. Stop conditions

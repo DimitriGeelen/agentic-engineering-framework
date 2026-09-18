@@ -6,7 +6,7 @@ description: "Initiative ewcr-v1; correlation ewcr-v1-aef-arc0. Draft-only Arc 0
   \ Component Fabric Unknown-subsystem overlap only for the proposed runtime write\
   \ set. No runtime implementation, autonomy expansion, BVP confirmation, bulk task\
   \ creation, or supersession of prior DEFER/NO-GO decisions."
-status: draft
+status: in-progress
 anchor_task: T-3147
 headline_mechanic: "operator opens the Arc 0 page, picks any pilot invariant or review finding, and sees\
   \ it traced to a versioned contract, a refusal scenario, a responsible component,\
