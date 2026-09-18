@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3387: EWCR Arc 0 cand-5: specify evidence snapshot/hash ordering and compensation-idempotency rules
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-18T18:44:58Z
+# ============================================================================
+
+task_id: T-3387
+task_name: "EWCR Arc 0 cand-5: specify evidence snapshot/hash ordering and compensation-idempotency rules"
+workflow_type: specification
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-18T15:38:49Z
+completed: 2026-09-18T18:44:43Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-18T20:44:37+02:00
+last_commit: 2026-09-18T20:44:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  evidence snapshot/hash ordering and idempotency contract (Arc 0 cand 5)
+
+# Key outcomes
+outcomes:
+  - '`docs/research/executable-workflow/contracts/v1/evidence-and-idempotency.md` specifies the ordering invariant: snapshot → hash → validate → accept; a hash computed after validation is a contract violation, with the refusal named — §1: four steps with ledger-position invariant; three violation shapes → `unresolved_reference` / `direct_state_mutation` / `missing_typed_input`; scenarios 1.1–1.3'
+  - 'Immutability rule: an accepted evidence reference (T-3385 schema) is never rewritten; supersession is a new reference with `supersedes:` — stated with a testable scenario — §2 + scenarios 2.1–2.3; scenario 2.1 is backed by the committed example `examples/evidence-reference-superseding.json` (schema-validated, Verification line 5)'
+  - 'Idempotency keys for attempt, result and compensation are defined (what fields form the key, what a duplicate delivery must return) with one scenario per contract showing duplicate delivery produces no second effect — §3 key table (attempt, result, compensation, plus deadline evaluation for §13 #17); scenarios 3.1–3.4'
+  - 'Each rule maps to an arch §13 acceptance scenario id and to its responsible Arc 1 component (candidates 7 and 8) — §4 table rows 7, 9, 17, 18, 10 with component column; §5 lists what each candidate must expose; explicit out-of-scope list'
+  - 'No runtime code; contract text + scenarios only — only `docs/research/executable-workflow/contracts/v1/` touched (Verification line 7 pins no `lib agents bin web` commits under T-3387)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-18 — what a duplicate delivery returns'
+    chose: 'the original record plus its ledger position (the caller gets the answer it would have got the first time), AND a `duplicate_delivery` refusal appended with `side_effect: false` naming the original — visible, not silent.'
+    rationale: '§7.4 says every loser of compare-and-append gets an immutable refusal record; §13 #14 wants hub redelivery operator-visible. Returning the original alone would make a redelivery storm invisible; refusing alone would make a legitimate at-least-once transport look broken to its caller.'
+    alternatives_rejected: ['(a) silent idempotent success — hides transport faults; (b) refusal only, no original returned — a resumed runner (§13 #9) needs the prior attempt''s outcome to continue, and would have to do a second lookup.']
+  - decision: '2026-09-18 — conflicting result for one attempt'
+    chose: '`stale_position`, with `detail` naming both payload hashes and the position of the consumed one.'
+    rationale: 'a second, different result for the same `attempt_id` is a compare-and-append conflict against the position at which the first was consumed — the frozen enum''s `stale_position` is that exact meaning. It is not `duplicate_delivery` (the payloads differ) and inventing a code breaks the v1 freeze.'
+    alternatives_rejected: ['`duplicate_delivery` with a "conflicting" flag — the schema has no such flag and the semantics differ (a duplicate is harmless, a conflict is the event an operator must see first).']
+  - decision: '2026-09-18 — `decision_refs` on an accepted reference'
+    chose: 'append-only; the single mutable field after acceptance. Removal is `direct_state_mutation`.'
+    rationale: 'the schema carries `decision_refs` on the evidence object, and the human gate that reviews accepted evidence (§2.5 step 5) happens *after* acceptance by construction; a fully frozen object would leave that decision with nowhere to attach except a reverse index.'
+    alternatives_rejected: ['fully immutable after acceptance with decisions pointing at evidence instead — cleaner, but contradicts the frozen schema''s shape; a v2 question.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/research/executable-workflow/contracts/v1/evidence-and-idempotency.md'
+  - 'docs/research/executable-workflow/contracts/v1/examples/evidence-reference-superseding.json'
+  - 'docs/research/executable-workflow/contracts/v1/README.md'
+  - '.tasks/active/T-3387-ewcr-arc-0-cand-5-specify-evidence-snaps.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-18T20:44:37'
+    action: 'T-3387: evidence snapshot/hash ordering and idempotency contract (Arc 0 cand 5)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 185 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ewcr, arc0]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 185
+  commits: 1
+  files_changed: 4
+  lines_added: 336
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3387-ewcr-arc-0-cand-5-specify-evidence-snaps.md
+generated_by: context-agent-hybrid

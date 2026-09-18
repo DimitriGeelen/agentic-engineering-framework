@@ -7,10 +7,10 @@ description: >
   accepted evidence is immutable; compensation and attempt contracts are idempotent.
   Written as a contract with testable scenarios, no runtime.
 
-status: started-work
+status: work-completed
 workflow_type: specification
 owner: agent
-horizon: now
+horizon: null
 tags: [ewcr, arc0]
 components: []
 related_tasks: [T-3147, T-3384, T-3385]
@@ -26,8 +26,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-18T15:38:49Z
-last_update: 2026-09-18T18:38:12Z
-date_finished:
+last_update: 2026-09-18T18:44:43Z
+date_finished: 2026-09-18T18:44:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -378,3 +378,15 @@ python3 tools/ewcr-contracts-check.py
 ### 2026-09-18T18:38:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8becb2bf
+- **Timestamp:** 2026-09-18T18:44:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-18T18:44:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
