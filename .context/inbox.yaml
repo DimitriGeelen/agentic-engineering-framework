@@ -4814,5 +4814,5 @@ observations:
   captured: 2026-09-17T21:22:56Z
   context_task: T-3363
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: T-3382

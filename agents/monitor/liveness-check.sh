@@ -61,8 +61,41 @@ if [ -z "$wt_url" ]; then
     fi
     wt_url="http://localhost:${wt_port:-3000}"
 fi
-if curl -sf -m 2 "${wt_url%/}/" >/dev/null 2>&1; then
+# OBS-437 / T-3382: probe /api/_identity and require project_root to match OURS.
+# The previous probe was `curl -sf -m 2 "$wt_url/"` — the heaviest page in the
+# app under a 2-second budget. Measured 2026-09-17 with the server confirmed
+# up: the root page took 4.47s and 2.37s on consecutive hits, curl exited 28,
+# and this rail wrote `stopped` — a FALSE NEGATIVE it had been emitting since
+# ~2026-06-12, two months before the exec-bit death (T-3380) silenced it
+# entirely. /api/_identity answers in ~1ms and, unlike `/`, says WHOSE server
+# answered: on this host :3000 belongs to another project (T-1376/T-2732), and
+# a bare 200 from the wrong Watchtower is the false-green class. Raising the
+# timeout alone would have traded a false negative for a slow check that still
+# could not tell the servers apart. The identity handshake lives in one place
+# (lib/watchtower.sh:_watchtower_identity_matches, T-1803/T-3054); it is
+# sourced, not copied, so this rail cannot drift from fw doctor's answer.
+#
+# Three states, not two: `foreign` means something answered on our URL that is
+# not our Watchtower. Under the old probe that read as `running`.
+_wt_lib="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/watchtower.sh"
+if [ -f "$_wt_lib" ]; then
+    export FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$PROJECT_ROOT}" PROJECT_ROOT
+    set +u
+    # shellcheck disable=SC1090
+    . "$_wt_lib" 2>/dev/null || true
+    set -u
+fi
+if command -v _watchtower_identity_matches >/dev/null 2>&1 \
+   && _watchtower_identity_matches "${wt_url%/}" 2>/dev/null; then
     watchtower_state="running"
+else
+    # Not ours (or helper unavailable): is ANYTHING answering there? curl
+    # prints 000 itself on a connection failure — do NOT `|| echo 000` after
+    # it, that yields "000000" and reads as foreign (caught by test 4).
+    _wt_code=$(curl -s -o /dev/null -w '%{http_code}' -m 5 "${wt_url%/}/api/_identity" 2>/dev/null) || true
+    if [ "${_wt_code:-000}" != "000" ]; then
+        watchtower_state="foreign"
+    fi
 fi
 
 printf '{"ts":"%s","host":"%s","boot":%s,"termlink_hub":"%s","termlink_hub_detail":"%s","claude_instances":%d,"fw_agent_session":"%s","fw_agent_id":"%s","watchtower":"%s"}\n' \

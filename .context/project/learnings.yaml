@@ -4978,3 +4978,9 @@ X'` returning empty group."
   task: T-3375
   date: 2026-09-16
   context: Added via context agent
+- id: L-674
+  learning: "A liveness probe must assert the property it reports, on the endpoint built to answer it. liveness-check.sh asked 'does the heaviest page render in 2s?' and reported the answer as 'is Watchtower alive?' — two months of false negatives (OBS-437), invisible because nothing consumed the rail. Bare reachability of / is wrong in both directions: it times out on a healthy busy server AND returns 200 from the wrong project's server on a shared host (T-1376 class). Probe /api/_identity and compare project_root via the ONE canonical handshake (lib/watchtower.sh:_watchtower_identity_matches) — source it, never re-implement it. Also: curl -w '%{http_code}' already prints 000 on connection failure; '|| echo 000' after it yields 000000."
+  source: P-001
+  task: T-3382
+  date: 2026-09-18
+  context: Added via context agent
