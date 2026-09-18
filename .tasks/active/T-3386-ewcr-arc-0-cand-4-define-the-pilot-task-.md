@@ -1,10 +1,13 @@
 ---
 id: T-3386
-name: "EWCR Arc 0 cand-4: define the pilot task lifecycle and task-state revalidation contract"
+name: "EWCR Arc 0 cand-4: define the pilot task lifecycle and task-state revalidation
+  contract"
 description: >
-  Roadmap Arc 0 candidate 4. Specify which task states a governed procedure may bind to, and the pre-dispatch / post-attempt revalidation contract that refuses a mutated or cancelled task. Traces to arch section 13 acceptance scenarios.
+  Roadmap Arc 0 candidate 4. Specify which task states a governed procedure may bind
+  to, and the pre-dispatch / post-attempt revalidation contract that refuses a mutated
+  or cancelled task. Traces to arch section 13 acceptance scenarios.
 
-status: captured
+status: started-work
 workflow_type: specification
 owner: agent
 horizon: now
@@ -23,8 +26,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-18T15:38:36Z
-last_update: 2026-09-18T15:38:36Z
-date_finished: null
+last_update: 2026-09-18T15:49:05Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +38,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-18T15:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 4
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=4 
+      (workflow:specification); effort=8 (lines=272,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-18T15:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3386: EWCR Arc 0 cand-4: define the pilot task lifecycle and task-state revalidation contract
@@ -47,11 +78,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `docs/research/executable-workflow/contracts/v1/task-lifecycle-contract.md` states which AEF task states (`captured`, `started-work`, `issues`, `work-completed`, partial-complete) a governed procedure instance may bind to, and which transitions invalidate a binding
-- [ ] The revalidation contract specifies two checkpoints — pre-dispatch and post-attempt — each with the exact fields compared (task id, status, owner, AC digest, last_update) and the refusal emitted on mismatch, referencing the `refusal` schema from T-3385
-- [ ] Every acceptance scenario in arch §13 that concerns task mutation or cancellation is mapped to a row (scenario id → checkpoint → expected refusal); unmapped scenarios are listed explicitly as out of Arc 0 scope
-- [ ] The contract names its responsible future component (Arc 1 candidate 3, task binding + revalidation) so the headline-mechanic trace closes: invariant → contract → refusal scenario → component
-- [ ] No runtime code; contract text + scenario table only
+- [x] `docs/research/executable-workflow/contracts/v1/task-lifecycle-contract.md` states which AEF task states (`captured`, `started-work`, `issues`, `work-completed`, partial-complete) a governed procedure instance may bind to, and which transitions invalidate a binding
+- [x] The revalidation contract specifies two checkpoints — pre-dispatch and post-attempt — each with the exact fields compared (task id, status, owner, AC digest, last_update) and the refusal emitted on mismatch, referencing the `refusal` schema from T-3385
+- [x] Every acceptance scenario in arch §13 that concerns task mutation or cancellation is mapped to a row (scenario id → checkpoint → expected refusal); unmapped scenarios are listed explicitly as out of Arc 0 scope
+- [x] The contract names its responsible future component (Arc 1 candidate 3, task binding + revalidation) so the headline-mechanic trace closes: invariant → contract → refusal scenario → component
+- [x] No runtime code; contract text + scenario table only
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -212,6 +243,16 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-3386 — the contract exists and carries its five required sections
+D=docs/research/executable-workflow/contracts/v1/task-lifecycle-contract.md; for h in "## 1. Bindable task states" "## 2. Transitions that invalidate" "### 3.1 Pre-dispatch checkpoint" "### 3.2 Post-attempt checkpoint" "## 4. Acceptance-scenario mapping" "## 5. What the responsible component"; do grep -q "^$h" "$D" || exit 1; done
+# every refusal code the contract names is in the frozen refusal.schema.json enum (a contract naming an unknown code is unhonourable)
+python3 -c "import json,re,sys; c=set(json.load(open('docs/research/executable-workflow/contracts/v1/refusal.schema.json'))['properties']['reason_code']['enum']); d=open('docs/research/executable-workflow/contracts/v1/task-lifecycle-contract.md').read(); n={m for m in re.findall(r'\x60([a-z_]+)\x60', d) if re.search(r'_(drift|mismatch|skipped|input|delivery|in_effect)$', m)}; bad=n-c; print('named',sorted(n),'unknown',bad); sys.exit(1 if bad or not n else 0)"
+# all seven mutation/cancellation scenarios are mapped and the out-of-scope list is explicit
+for n in 3 5 11 13 16 18 20; do grep -qE "^\| $n \|" docs/research/executable-workflow/contracts/v1/task-lifecycle-contract.md || exit 1; done; grep -q "Explicitly out of Arc 0 scope" docs/research/executable-workflow/contracts/v1/task-lifecycle-contract.md
+# the frozen schemas were not touched by this task
+python3 tools/ewcr-contracts-check.py
+[ -z "$(git log --format=%H --grep='^T-3386' -- lib agents bin web)" ]
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -308,3 +349,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3386-ewcr-arc-0-cand-4-define-the-pilot-task-.md
 - **Context:** Initial task creation
+
+### 2026-09-18T15:49:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
