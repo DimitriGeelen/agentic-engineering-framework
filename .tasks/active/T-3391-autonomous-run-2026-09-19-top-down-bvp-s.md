@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-19T15:59:56Z
-last_update: 2026-09-19T15:59:56Z
-date_finished: null
+last_update: '2026-09-19T16:15:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-19T16:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=319,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-19T16:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3391: Autonomous run 2026-09-19: top-down BVP selection, second pass — score-through-the-scorer
@@ -93,9 +121,35 @@ observations; T-3390's four Sovereign questions (SQ-1..SQ-4) unanswered.
 - **Task:** T-2670 "workflow fabric: queryable cross-map index (package Lock 4 / SD-15)" — **Q1 (hv-lc, 108)**. Over T-2669 (same score): EWCR §8.3 "Workflow Fabric: the process-topology join" and roadmap Arc 4 ("Operator control and Workflow Fabric projection") / Arc 5 item 3 ("Workflow Fabric derived index, and impact query") name T-2670's deliverable directly, so the same read-only supersession research applies; T-2669 (audience lenses) has no supersession signal and would need design dialogue.
 - **Activities:** the three Agent ACs; `fw task review T-2670`. Self-executed, same reason as Unit 1.
 
+### Unit 2 — execution (T-2670)
+- **Verb:** `fw work-on T-2670`. G-067 handled by filing IW-1..3 before any non-allowlisted read.
+- **Operator event mid-unit:** commit f4a1ee07d (author Dimitri Geelen, "T-2668: inception decision GO (via Watchtower)", 2026-09-19T16:11Z) moved T-2668 to `completed/` with **Decision: GO** — carrying the NO-GO rationale verbatim. Recorded as **SQ-5** below; nothing is built off it. Side effect: the index held a stale reversal of that commit (episodic shown deleted, task file reverted) while the working tree equalled HEAD → re-`git add` of both paths realigned the index without a gated verb; the post-commit footprint refresh of `.context/episodic/T-2668.yaml` remains staged for the handover sweep (see Gate refusals).
+- **Checks recorded:** store census `ls .context/designer/projects` → 16 entries; `grep -rl callActivity|calledElement|handoff` → 10 maps / 29 hits; search of tasks/inbox/concerns for cross-map demand since 2026-07-28 → none filed, two bespoke scans found (`tools/corpus_lint.py:614 cross_map_typed_events`, `tools/corpus_explain.py --search`). `fw assumption` A-057 invalidated, A-058 invalidated, A-059 validated. `fw reviewer T-2670` → **Overall: PASS, Needs Human: no, Findings: none**. Mechanical: artefact present; dispositions 2 answered + 1 dissolved, 0 open; Recommendation NO-GO.
+- **Closed/parked:** three Agent ACs ticked; commit 0f22cac39; `fw task review T-2670` → http://192.168.10.107:3002/inception/T-2670. Go/no-go reserved to the operator; the form text spells out what GO and NO-GO each mean, because of SQ-5.
+- **What changed:** `docs/reports/T-2670-workflow-fabric-supersession-review.md` (new); T-2670 body filled; `assumptions.yaml` +3. No source, no policy.
+- **Cost vs estimate:** estimator `effort=6, tier=4, blast_radius=3`, all no-signal. Actual: ~25 tool calls, 1 commit, zero components. Same finding as Unit 1.
+- **Calibration data point (unsolicited):** the cron `bvp-estimator-sweep-15m` scored this run record at 16:15Z from its filled body — D1=4 (structural-gate), D2=4 (fw-audit-or-doctor), D3=3, D4=2 — so the 108 rows are template bodies the heuristic cannot read, not estimator blindness to prose. Cost still `blast_radius=?` (no components).
+
+### Unit 3 — selection
+- **Objective / arc:** unchanged; arc-014's last Q1 row.
+- **Task:** T-2669 "audience lenses on corpus maps (package P1: functional/logical/technical/pseudocode)" — **Q1 (hv-lc, 108)**. Last remaining Q1/Q2 row in an unblocked in-flight arc. T-2662 §4 already routed SD-14 here with "rec NO-GO — no read-pull yet; operator may override"; no EWCR section names audience lenses, so the research question is narrower: has a read-pull appeared since 2026-07-28, and is anything in arc-019 or elsewhere an owner. Same read-only method; if the evidence needs design dialogue, park with the question stated rather than invent a design.
+- **Activities:** the three Agent ACs; `fw task review T-2669`.
+
 ## Sovereign questions
 
+### SQ-5 — T-2668 was decided GO with a NO-GO rationale (priority: high — it is a recorded decision)
+Commit f4a1ee07d records `Decision: GO` on T-2668 while the stored rationale reads "A GO here would authorise a second procedure runtime beside a ratified one, against a Sovereign sequencing decision." Two readings: (a) GO = "approve the recommendation; close as dissolved" — then the record needs a one-line clarification and nothing is built; (b) GO = "build Lock 6 guided-mode enforcement under arc-014 now" — then it contradicts the 2026-08-20 EWCR decision and needs an explicit reconciliation before any build task is filed. This run did not file build tasks from it. T-2670's form now spells out both verbs' meanings so the same ambiguity cannot recur there.
+
+### SQ-1..SQ-4 — carried from T-3390, still unanswered
+SQ-1 selection rule while BVP is unconfirmed (this run's Unit 0 sharpens it: the value median *is* the no-signal default); SQ-3 arc-019 exit (T-3389 review transfer, T-3147 finalisation); SQ-2 T-2433 hypervisor prerequisites; SQ-4 T-2323 revisit.
+
 ## Gate refusals
+
+| # | Gate | Refused | Route taken |
+|---|---|---|---|
+| 1 | `check-active-task` (focus null) | read pipeline using `xargs … sh -c` | filed T-3391 via `fw work-on`, re-ran reads under it |
+| 2 | G-067 inception Open-Questions readiness (T-2668, then T-2670) | non-allowlisted read before any IW question existed | filed IW-1..3 with Edit first, then plain reads |
+| 3 | Focus-drift gate T-1730 (focus T-2670, target T-2668) | `git commit` of T-2668's post-decision episodic footprint refresh | left staged for the handover sweep — the offered routes (`--switch-focus`, `FW_SWITCH_FOCUS=1`) are Tier-2 logged bypasses the mandate excludes; every later commit names its paths explicitly |
 
 ## Handback
 
