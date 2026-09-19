@@ -94,11 +94,12 @@ rest rather than acting on it.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Status report written to `## Status report` in this file, covering: per-task arc-019 state; what runs end-to-end today vs designed-only; focus drift; and the critical chain to a working EWCR.
-- [ ] T-3389 (last open Arc 0 task) driven to a terminal state this session — landed, or recorded in `## Dispositions` with a one-line blocked reason.
-- [ ] Arc 0 closure surfaced to the operator (never self-closed — `fw arc close` is agent-refused, T-1671), with the absolute Watchtower link recorded in this file.
-- [ ] Arc 1 (semantics kernel) recorded in `## Operator actions` as a Sovereign scope decision with a recommendation — proposed, not created.
-- [ ] Verb mismatches and gate refusals encountered by this drive recorded in `## Verb mismatches and gate refusals`.
+- [x] Status report written to `## Status report` in this file, covering: per-task arc-019 state; what runs end-to-end today vs designed-only; focus drift; and the critical chain to a working EWCR.
+- [x] T-3389 (last open Arc 0 task) driven to a terminal state this session — landed, or recorded in `## Dispositions` with a one-line blocked reason. Parked: blocked on an operator transfer, no agent route.
+- [x] Arc 0 closure surfaced to the operator (never self-closed — `fw arc close` is agent-refused, T-1671), with the absolute Watchtower link recorded in this file.
+- [x] Arc 1 (semantics kernel) recorded in `## Operator actions` as a Sovereign scope decision with a recommendation — proposed, not created.
+- [x] Verb mismatches and gate refusals encountered by this drive recorded in `## Verb mismatches and gate refusals`.
+- [x] At least one unit landed, not merely reported: T-3393 (traceability matrix + fence) closed 6/6 ACs, 7/7 verification, commit `fae092e9c`.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -182,11 +183,31 @@ isolation proof, the hard gate before anything widens.
 
 ## Operator actions
 
-Recorded here; raised in chat with absolute links. Nothing below was acted on.
+Recorded here and raised in chat with absolute links. All three are Sovereign;
+none was acted on. Routes verified live (HTTP 200) at time of writing.
 
-1. **Transfer the four external review findings** → unblocks T-3389, the last open Arc 0 task.
-2. **Close Arc 0** once the matrix lands — `fw arc close` is agent-refused (T-1671); needs `--demo`.
-3. **Create Arc 1 (semantics kernel)** — Sovereign scope act. Recommended; it is the only route to "EWCR works end-to-end", which Arc 0's charter forbids.
+1. **Close Arc 0.** http://192.168.10.107:3002/arcs/ewcr-arc0-contract-evidence/close
+   — `fw arc close` is agent-refused under `$CLAUDECODE=1` (T-1671) and requires
+   `--demo`. **Recommendation: close it**, with `docs/research/executable-workflow/contracts/v1/traceability.yaml`
+   plus `python3 tools/ewcr-trace-check.py` as the demo artefact: the operator can
+   now pick any of the 20 §13 invariants and see contract, section, refusal
+   scenario, component and a fence they run themselves. Caveat to weigh: the
+   headline mechanic says "opens the Arc 0 **page**" and the trace is a file plus
+   a CLI fence, not a Watchtower page. If you read the mechanic strictly, one more
+   task is needed (a `/arcs/…/trace` view or `fw ewcr trace` verb); if you read it
+   as "can reach the trace and run the fence", it is met today.
+2. **Transfer the four external review findings** (Claude, Z.ai, DeepSeek, Mistral)
+   → unblocks T-3389, the last open Arc 0 task. No agent route exists to obtain
+   them; this is the only thing standing between Arc 0 and 11/11.
+3. **Create Arc 1 — semantics-first runtime kernel.** http://192.168.10.107:3002/arcs
+   — arc creation is Sovereign. **Recommendation: create it.** Arc 0's charter
+   forbids runtime implementation, so "EWCR works end-to-end" is unreachable
+   without it. Roadmap §2 scopes it as 9 candidates (registry/validator, ledger +
+   fold, task binding, compare-and-append, durable deadlines, cancellation,
+   evidence snapshot/hash, idempotency, pilot suite) with a hard exit gate before
+   Arc 2's isolation proof. The traceability matrix already names the responsible
+   Arc 1 component for all 11 covered invariants, so the arc has a task spine
+   waiting for it.
 
 ## Verb mismatches and gate refusals
 
@@ -199,7 +220,23 @@ Recorded here; raised in chat with absolute links. Nothing below was acted on.
 | 5 | G-020 build-readiness | Refused work under T-3392 while its ACs were template placeholders. | Wrote real ACs with the Edit tool, as the block message directs. |
 | 6 | `fw approvals` | Has no verb to *create* an approval — only `pending`, `status`, `expire`. Tier-0 blocks create them. STEP 4's "create it on the /approvals route" has no agent-side verb. | Recorded operator actions in-task and surfaced links in chat. |
 
+## Evolution
+
+### 2026-09-19 — the arc's blocker was the mechanic itself, not its backlog
+
+- **What changed:** The drive was filed expecting the remaining work to be T-3389 plus closure paperwork. T-3389 turned out to be blocked on an operator file transfer with no agent route, so the backlog was effectively empty — yet the arc still could not close. The real blocker was the `headline_mechanic`: it promises a traceable invariant surface, `demo_evidence` was null, and `grep -rliE 'ewcr' web/ lib/ bin/fw agents/` returned zero. The arc had ten landed tasks and nothing that demonstrated its own stated outcome.
+- **Plan impact:** "Land T-3389, then close" was unreachable. The drive re-aimed at the mechanic gap and filed T-3393 as NEW SCOPE. Reading §13 against the contracts then corrected the coverage figure the README asserted (11 covered, not 10) and surfaced two holes in the v1 freeze (#6 evidence-without-contract, #14 no `reason_code` in the enum).
+- **Triggered:** T-3393 (landed, `fae092e9c`). Arc 0 closure and Arc 1 creation raised as Sovereign decisions rather than acted on — the mission's stop condition ("EWCR works end-to-end") is unreachable inside an arc whose charter forbids runtime implementation, which is a scope fact, not a blocker to route around.
+
 ## Verification
+
+F=$(ls .tasks/*/T-3392-*.md | head -1); grep -q "^## Status report" "$F"
+F=$(ls .tasks/*/T-3392-*.md | head -1); grep -q "^## Verb mismatches and gate refusals" "$F"
+F=$(ls .tasks/*/T-3392-*.md | head -1); grep -qE "^\| T-3389 \| \*\*parked, blocked on operator\*\*" "$F"
+F=$(ls .tasks/*/T-3392-*.md | head -1); grep -qE "https?://[^ ]+/arcs/ewcr-arc0-contract-evidence/close" "$F"
+ls .tasks/completed/T-3393-*.md
+python3 tools/ewcr-trace-check.py
+python3 tools/ewcr-contracts-check.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
