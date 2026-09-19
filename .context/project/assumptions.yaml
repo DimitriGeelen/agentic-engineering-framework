@@ -522,3 +522,47 @@ assumptions:
   linked_task: T-3278
   created: '2026-09-05'
   resolved_date: null
+- id: A-054
+  statement: SD-1's GO (T-2663) retired guided-mode procedural enforcement outright,
+    so T-2668 has nothing left to decide
+  status: invalidated
+  validation_method: TBD
+  evidence:
+  - outcome: 'T-2663 GO criteria: ''retire guided-mode/YAML-canonical form, OR park
+      it as a named future arc''; T-2662 §4 SD-8 row: ''guided/strict parked in T-2668''.
+      SD-1 parked it, did not retire it.'
+    date: '2026-09-19'
+  linked_task: T-2668
+  created: '2026-09-19'
+  resolved_date: '2026-09-19'
+- id: A-055
+  statement: The P4 falsifiability test (T-2664) shows the tier0-escalation map+rail
+    materially reduced Cluster-A regressions versus the 2026-02..04 baseline
+  status: invalidated
+  validation_method: TBD
+  evidence:
+  - outcome: 'git log agents/context/check-tier0.sh: baseline 2026-02-01..04-30 =
+      20 commits (6 Cluster-A per T-2664); interim 2026-05-01..07-27 (pre-rail) =
+      1; post-rail 2026-07-28..09-19 = 3, none a correctness regression. Rate collapsed
+      BEFORE the rail existed — P4 not disproven but the test cannot attribute the
+      drop to the map (maturity confound).'
+    date: '2026-09-19'
+  linked_task: T-2668
+  created: '2026-09-19'
+  resolved_date: '2026-09-19'
+- id: A-056
+  statement: arc-019 EWCR's ratified architecture already specifies the three mechanisms
+    T-2668 asks about — procedure binding/advance, caged instance state, human-gate
+    protection — so a separate build under T-2668 would duplicate it
+  status: validated
+  validation_method: TBD
+  evidence:
+  - outcome: architecture-c9070637.md §7.2 (bind task → create instance), §7.3 (instance
+      state machine), §9 (authority/isolation), §11 first slice item 4 (human gate,
+      typed I/O, compare-and-append refusal) + mandatory boundary-isolation slice;
+      line 322 says the dossier 'extends' the Process Layer proposal; operator GO
+      2026-08-20; Arc 0 contracts v1 frozen (T-3385–T-3388).
+    date: '2026-09-19'
+  linked_task: T-2668
+  created: '2026-09-19'
+  resolved_date: '2026-09-19'
