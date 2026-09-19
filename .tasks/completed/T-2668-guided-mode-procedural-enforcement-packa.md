@@ -8,17 +8,17 @@ description: >
   central structural promise (P3), wholly unbuilt (T-2662 gap 4). One question, one
   go/no-go.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [process-layer]
 components: []
 related_tasks: [T-2662, T-2663]
 arc_id: designer-corpus
 created: 2026-07-28T16:21:44Z
-last_update: 2026-09-19T16:05:09Z
-date_finished:
+last_update: 2026-09-19T16:11:05Z
+date_finished: 2026-09-19T16:11:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -150,7 +150,7 @@ gets its own supersession check, one task each (artefact §6).
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -204,7 +204,11 @@ gets its own supersession check, one task each (artefact §6).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Dissolved by supersession. Both dependencies the 2026-07-28 DEFER named have landed: SD-1 (T-2663, GO) *parked* guided mode here rather than retiring it, and the P4 test (T-2664) ran but cannot attribute its result — the Tier-0 hook's regression rate had already collapsed before the map/rail existed (baseline 20 commits/6 regressions; interim 1; post-rail 3/0). The decisive fact is newer than both: arc-019 EWCR, operator-ratified 2026-08-20, specifies every mechanism this inception asks about — bind task → create instance (§7.2), runner-owned instance state machine (§7.3), human gate with compare-and-append refusal (§11 slice 1), agent-cannot-edit-ledger proof (§11 slice 2) — names the Process Layer proposal as the thinking it extends (line 322), and has frozen its Arc 0 contracts (T-3385–T-3388). A GO here would authorise a second procedure runtime beside a ratified one, against a Sovereign sequencing decision. DEFER is no longer an evidence gap; it would be a hedge.
+
+**Date**: 2026-09-19T16:11:04Z
 
 ## Updates
 
@@ -217,17 +221,16 @@ gets its own supersession check, one task each (artefact §6).
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d778ef9b
-- **Timestamp:** 2026-09-19T16:10:16Z
+- **Scan ID:** R-e9393844
+- **Timestamp:** 2026-09-19T16:11:05Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-1870220d
-- **Timestamp:** 2026-09-19T16:10:16Z
+- **Scan ID:** RC-13a8de17
+- **Timestamp:** 2026-09-19T16:11:05Z
 - **Overall:** CONFIRMED
 - **Claims:** 9
 
@@ -242,3 +245,11 @@ gets its own supersession check, one task each (artefact §6).
 | `T-2662` | task | ✓ pass |
 | `T-2670` | task | ✓ pass |
 | `T-2669` | task | ✓ pass |
+### 2026-09-19T16:11:04Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Dissolved by supersession. Both dependencies the 2026-07-28 DEFER named have landed: SD-1 (T-2663, GO) *parked* guided mode here rather than retiring it, and the P4 test (T-2664) ran but cannot attribute its result — the Tier-0 hook's regression rate had already collapsed before the map/rail existed (baseline 20 commits/6 regressions; interim 1; post-rail 3/0). The decisive fact is newer than both: arc-019 EWCR, operator-ratified 2026-08-20, specifies every mechanism this inception asks about — bind task → create instance (§7.2), runner-owned instance state machine (§7.3), human gate with compare-and-append refusal (§11 slice 1), agent-cannot-edit-ledger proof (§11 slice 2) — names the Process Layer proposal as the thinking it extends (line 322), and has frozen its Arc 0 contracts (T-3385–T-3388). A GO here would authorise a second procedure runtime beside a ratified one, against a Sovereign sequencing decision. DEFER is no longer an evidence gap; it would be a hedge.
+
+### 2026-09-19T16:11:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2668: guided-mode procedural enforcement (package Lock 6) inside mirror+rails
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-19T16:11:17Z
+# ============================================================================
+
+task_id: T-2668
+task_name: "guided-mode procedural enforcement (package Lock 6) inside mirror+rails"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-28T16:21:44Z
+completed: 2026-09-19T16:11:05Z
+duration_days: 53
+updates_count: 1
+first_commit: 2026-09-19T18:10:25+02:00
+last_commit: 2026-09-19T18:10:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  supersession review — SD-1 parked (not retired) guided mode, P4 test unattributable, arc-019 EWCR owns all three mechanisms; recommend NO-GO (dissolved)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-19 — recommendation shape'
+    chose: 'NO-GO with disposition *dissolved by supersession*, transfers named explicitly.'
+    rationale: 'the mechanisms are owned by a ratified programme; the only honest alternative to NO-GO was a third DEFER, which T-2144 classifies as a hedge once the evidence is walked.'
+    alternatives_rejected: ['GO-folded-into-arc-019 (would imply this inception authorises EWCR slices — it does not; EWCR''s authority is its own 2026-08-20 decision); DEFER pending T-2669/T-2670 (independent questions, one task each).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/assumptions.yaml'
+  - 'docs/reports/T-2668-guided-mode-supersession-review.md'
+  - '.tasks/active/T-2668-guided-mode-procedural-enforcement-packa.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-19T18:10:25'
+    action: 'T-2668: supersession review — SD-1 parked (not retired) guided mode, P4 test unattributable, arc-019 EWCR owns all three mechanisms; recommend NO-GO (dissolved)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 76309 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [process-layer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 76309
+  commits: 1
+  files_changed: 3
+  lines_added: 245
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2668-guided-mode-procedural-enforcement-packa.md
+generated_by: context-agent-hybrid
