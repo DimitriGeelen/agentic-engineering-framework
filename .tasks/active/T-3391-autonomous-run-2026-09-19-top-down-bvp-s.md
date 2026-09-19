@@ -161,6 +161,7 @@ SQ-1 selection rule while BVP is unconfirmed (this run's Unit 0 sharpens it: the
 | 1 | `check-active-task` (focus null) | read pipeline using `xargs … sh -c` | filed T-3391 via `fw work-on`, re-ran reads under it |
 | 2 | G-067 inception Open-Questions readiness (T-2668, then T-2670) | non-allowlisted read before any IW question existed | filed IW-1..3 with Edit first, then plain reads |
 | 3 | Focus-drift gate T-1730 (focus T-2670, target T-2668) | `git commit` of T-2668's post-decision episodic footprint refresh | left staged for the handover sweep — the offered routes (`--switch-focus`, `FW_SWITCH_FOCUS=1`) are Tier-2 logged bypasses the mandate excludes; every later commit names its paths explicitly |
+| 4 | AC-structure check T-2420 (close of this record) | `--status work-completed`: the template's commented `### Human` block sat after the run-log sections, outside `## Acceptance Criteria` | removed the template block (no Human ACs on this record — the template's own instruction), re-ran the close; `FW_ALLOW_AC_STRUCTURE_DRIFT=1` not used |
 
 No `--no-verify`, `--force`, `--skip-*`, or Tier-2 env var used. No direct writes to `focus.yaml` / `arc-focus.yaml` / `.next-directive.yaml` (every focus change via `fw work-on`). No `bvp_scores*` / `cost_estimate` values hand-written; the only scoring event was the cron estimator's own sweep on this record.
 
@@ -202,37 +203,6 @@ See `## Gate refusals` (3 rows). Route in each case was the sanctioned one; no b
 - All three inceptions carried `effort=6, tier=4, blast_radius=3`, every term `(no-signal)`, from 2026-07-28 template bodies. Actual cost per unit: 20–35 read-only tool calls, one commit, zero components. The heuristic cannot see the cost driver that mattered — *the evidence already existed elsewhere*.
 - `effort` is measured from template line/AC counts at filing (`lines=319,acs=7` on this record), not from the task — same finding as T-3390.
 - Positive control: this record, once filled, scored with signal on every constitutional driver within 15 minutes via the cron sweep — the instrument works on prose; it is blind to templates.
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
 
