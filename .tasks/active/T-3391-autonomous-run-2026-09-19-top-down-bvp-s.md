@@ -80,6 +80,19 @@ observations; T-3390's four Sovereign questions (SQ-1..SQ-4) unanswered.
 - **Activities (AC-required only):** problem statement validated; assumptions tested; recommendation written with rationale. Then `fw task review T-2668` — the go/no-go is Sovereign and is NOT taken here.
 - **Execution mode:** self-executed (inception class — "dispatch the review, never the exploration"); TermLink not used for the research, recorded here as the reason. Research artefact first per C-001 (`docs/reports/T-2668-*.md`).
 
+### Unit 1 — execution (T-2668)
+- **Verb:** `fw work-on T-2668` (focus switched, status started-work). **Gate:** G-067 inception Open-Questions readiness refused a non-allowlisted read until an IW question was filed → filed IW-1..3 first (Edit), then researched with plain reads.
+- **Checks recorded:** `fw assumption add` ×3 (A-054/A-055/A-056) → `invalidate A-054` (T-2663 GO "or park it as a named future arc"), `invalidate A-055` (git log windows on `agents/context/check-tier0.sh`: baseline 20/6, interim 1, post-rail 3/0 — unattributable), `validate A-056` (architecture §7.2/§7.3/§9/§11, contracts v1). `fw reviewer T-2668` → **Overall: PASS, Needs Human: no, Findings: none**. Mechanical: artefact present; 3 dispositions (2 answered, 1 dissolved), 0 open; Recommendation NO-GO.
+- **Closed/parked:** three Agent ACs ticked as each landed; `fw task review T-2668` → http://192.168.10.107:3002/inception/T-2668 — go/no-go reserved to the operator. Commit c07504a05 (exploration commit 1/15).
+- **What changed:** `docs/reports/T-2668-guided-mode-supersession-review.md` (new), T-2668 body filled (problem statement, assumptions, IW dispositions, plan, fence, criteria, NO-GO recommendation, decision record), `assumptions.yaml` +3. No source, no policy.
+- **Cost vs estimate:** estimator `effort=6, tier=4, blast_radius=3` — all `(no-signal)`. Actual: read-only research, ~35 tool calls, 1 commit, zero components touched. The estimate carried no information either way; the cost driver that mattered (evidence already existing) is not something the heuristic reads.
+- **Surfaced:** (a) P4's falsifiability test is confounded by maturity — transfers to arc-019's evidence design; (b) T-2670's subject appears in EWCR §8.3 → same supersession check warranted.
+
+### Unit 2 — selection
+- **Objective / arc:** unchanged (D2/D1; arc-014 designer-corpus, still the highest-ranked unblocked arc with Q1 rows).
+- **Task:** T-2670 "workflow fabric: queryable cross-map index (package Lock 4 / SD-15)" — **Q1 (hv-lc, 108)**. Over T-2669 (same score): EWCR §8.3 "Workflow Fabric: the process-topology join" and roadmap Arc 4 ("Operator control and Workflow Fabric projection") / Arc 5 item 3 ("Workflow Fabric derived index, and impact query") name T-2670's deliverable directly, so the same read-only supersession research applies; T-2669 (audience lenses) has no supersession signal and would need design dialogue.
+- **Activities:** the three Agent ACs; `fw task review T-2670`. Self-executed, same reason as Unit 1.
+
 ## Sovereign questions
 
 ## Gate refusals
