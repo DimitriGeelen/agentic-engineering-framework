@@ -1,0 +1,251 @@
+# EWCR Arc 0 — §13 acceptance-invariant traceability matrix (T-3393)
+#
+# The Arc 0 headline mechanic: "operator opens the Arc 0 page, picks any pilot
+# invariant or review finding, and sees it traced to a versioned contract, a
+# refusal scenario, a responsible component, and an executable verification
+# fence they can run."
+#
+# This file is that trace, machine-readable. One row per acceptance scenario in
+# architecture-c9070637.md §13. Twenty scenarios, twenty rows, no exceptions:
+# an invariant with no contract is recorded as `status: gap` with a reason, so
+# the absence is stated rather than inferred from silence.
+#
+# Fence: python3 tools/ewcr-trace-check.py  (exit 0 only when every row resolves)
+# Ratified contracts are immutable — change means contracts/v2/, never an edit here.
+
+contracts_version: 1
+source: architecture-c9070637.md
+section: "13. Initial acceptance scenarios"
+generated_by: T-3393
+
+invariants:
+  - id: 1
+    statement: "A proposed/unratified procedure cannot create an executable instance."
+    status: gap
+    expected_reason_code: unratified_procedure
+    reason: >
+      Procedure ratification lifecycle is frozen as a schema (procedure.schema.json,
+      §7.1) but no contract document states the refusal behaviour. Owner: Arc 1
+      candidate 1 (immutable procedure registry and validator).
+
+  - id: 2
+    statement: "Unresolved action/profile references are refused before dispatch with a useful drift/refusal record."
+    status: gap
+    expected_reason_code: unresolved_reference
+    reason: >
+      Named out of scope by both Arc 0 contracts. Needs the bounded action
+      vocabulary (§6.2) before a reference can be called resolvable. Owner: Arc 3
+      candidate 1, gated behind Arc 1 and Arc 2.
+
+  - id: 3
+    statement: "A human gate cannot be skipped by agent, CLI, worker, or edited state."
+    status: covered
+    contract: task-lifecycle-contract.md
+    section: "## 4. Acceptance-scenario mapping"
+    checkpoint: pre-dispatch
+    refusal_scenario: >
+      Ticking a Human AC in the task file does not satisfy a procedure human gate;
+      the gate needs an admitted envelope with actor.kind: human. Edited state
+      yields human_gate_skipped.
+    reason_code: human_gate_skipped
+    component: "Arc 1 cand 3 — task binding + revalidation"
+    fence: tools/ewcr-contracts-check.py
+
+  - id: 4
+    statement: "A registered script receives typed permitted arguments and cannot execute from another repository/worktree."
+    status: gap
+    expected_reason_code: scope_mismatch
+    reason: >
+      Worktree scope is pinned by the task-lifecycle contract but enforcement
+      belongs to the script contract, which is not written. Owner: Arc 1 candidate
+      1 / Arc 3 candidate 1.
+
+  - id: 5
+    statement: "Missing typed input prevents advancement even if a worker claims success."
+    status: covered
+    contract: task-lifecycle-contract.md
+    section: "### 3.2 Post-attempt checkpoint"
+    checkpoint: post-attempt
+    refusal_scenario: >
+      missing_typed_input raised at §7.5 step 9; a worker's success claim does not
+      satisfy a declared typed output.
+    reason_code: missing_typed_input
+    component: "Arc 1 cand 3 — task binding + revalidation"
+    fence: tools/ewcr-contracts-check.py
+
+  - id: 6
+    statement: "Unmeasured component scope follows visible policy, never zero-impact logic."
+    status: gap
+    expected_reason_code: unmeasured_component_scope
+    partial_evidence: >
+      The policy itself is demonstrated and measured — T-3068 makes blast_radius
+      return None rather than 0 when components are unresolved, and fence-1
+      (tools/ewcr-arc0-unknown-overlap.py, arc0-falsifier1-result.md) measured the
+      Unknown-subsystem overlap at 3 CORE / 4 BROAD components.
+    reason: >
+      No contract document freezes the invariant, so there is no refusal scenario
+      a runtime could be held to. Evidence exists; the contract does not.
+
+  - id: 7
+    statement: "Duplicate remote result is idempotent and cannot double-run or double-advance."
+    status: covered
+    contract: evidence-and-idempotency.md
+    section: "### Scenario 3.1"
+    checkpoint: attempt-and-result
+    refusal_scenario: >
+      Attempt key admits one execution; result key admits one advance; a
+      conflicting payload against a moved head is refused stale_position.
+    reason_code: stale_position
+    component: "Arc 1 cand 8 — idempotent attempt/result/compensation"
+    fence: tools/ewcr-contracts-check.py
+
+  - id: 8
+    statement: "Unsupported provider capability causes governed refusal or human reroute, never silent substitution."
+    status: gap
+    expected_reason_code: capability_unsupported
+    reason: >
+      Provider adapters and capability manifests are Arc 3 (candidates 5 and 6).
+      Explicitly out of scope for both Arc 0 contracts.
+
+  - id: 9
+    statement: "Resume uses a durable, redacted execution envelope with precise provenance."
+    status: covered
+    contract: evidence-and-idempotency.md
+    section: "## 1. Ordering invariant"
+    checkpoint: resume
+    refusal_scenario: >
+      Redaction happens at snapshot; resume re-folds the ledger and dedupes by key,
+      so a resumed instance sees the prior attempt and does not re-invoke it.
+    reason_code: unresolved_reference
+    component: "Arc 1 cand 7 — snapshot/hash/immutability; cand 8 — dedupe"
+    fence: tools/ewcr-contracts-check.py
+
+  - id: 10
+    statement: "A completed instance renders a visual trace plus linked task, evidence, decisions, component facts, and learnings."
+    status: covered
+    contract: evidence-and-idempotency.md
+    section: "## 2. Immutability and supersession"
+    checkpoint: projection
+    refusal_scenario: >
+      Supersession chains are linear and superseded references are retained, so the
+      trace shows every reference in the chain with its status; nothing is deleted.
+    reason_code: stale_position
+    component: "Arc 1 cand 7 (data); Arc 4 (rendering)"
+    fence: tools/ewcr-contracts-check.py
+
+  - id: 11
+    statement: "Agent-user edits cannot mutate instance state or launch a registered action."
+    status: covered
+    contract: task-lifecycle-contract.md
+    section: "## 4. Acceptance-scenario mapping"
+    checkpoint: both
+    refusal_scenario: >
+      Task-file edits are read by the checkpoints, never executed; an edit that
+      changes authority fields yields task_hash_drift, never a transition.
+    reason_code: task_hash_drift
+    component: "Arc 1 cand 3 — task binding + revalidation"
+    fence: tools/ewcr-contracts-check.py
+
+  - id: 12
+    statement: "A request carrying only shared host identity is refused as ambiguous."
+    status: gap
+    expected_reason_code: ambiguous_identity
+    reason: >
+      Service identity is the Arc 2 isolation proof (candidate 1). Cannot be
+      contracted before the boundary it names exists.
+
+  - id: 13
+    statement: "Bound-task mutation between gates records hash drift and requires revalidation or refusal."
+    status: covered
+    contract: task-lifecycle-contract.md
+    section: "## 3. The two revalidation checkpoints"
+    checkpoint: both
+    refusal_scenario: >
+      AC-digest, owner or last_update drift between gates yields task_hash_drift
+      with detail naming the drifted field.
+    reason_code: task_hash_drift
+    component: "Arc 1 cand 3 — task binding + revalidation"
+    fence: tools/ewcr-contracts-check.py
+
+  - id: 14
+    statement: "A reply delivered to the hub but never enumerated by the target becomes operator-visible and cannot deadlock the instance."
+    status: gap
+    expected_reason_code: null
+    reason: >
+      Hub enumeration is a TermLink transport property; no reason_code in the
+      frozen enum covers it, which is itself a finding — the refusal vocabulary may
+      need an entry before this invariant is contractable. Out of scope for both
+      Arc 0 contracts.
+
+  - id: 15
+    statement: "Ratification-to-attempt policy or capability drift follows a dedicated refusal route with versioned evidence."
+    status: gap
+    expected_reason_code: policy_or_capability_drift
+    reason: >
+      The reason_code exists in the frozen enum but no contract defines the route.
+      Owner: Arc 3 (capability profiles) with Arc 1 ledger versioning.
+
+  - id: 16
+    statement: "Environment flags and `--force`-equivalent inputs cannot bypass the runner boundary."
+    status: covered
+    contract: task-lifecycle-contract.md
+    section: "### 3.1 Pre-dispatch checkpoint"
+    checkpoint: pre-dispatch
+    refusal_scenario: >
+      A task closed with --force still reads work-completed, yielding scope_mismatch;
+      no env var is read by either checkpoint, so one presented as input is
+      refused bypass_input.
+    reason_code: bypass_input
+    component: "Arc 1 cand 3 — task binding + revalidation"
+    fence: tools/ewcr-contracts-check.py
+
+  - id: 17
+    statement: "A recorded deadline survives runner restart and cannot fire twice or reset its budget."
+    status: covered
+    contract: evidence-and-idempotency.md
+    section: "### Scenario 3.4"
+    checkpoint: deadline-evaluation
+    refusal_scenario: >
+      Evaluation key admits one firing; an attempt to change due_at is refused
+      direct_state_mutation.
+    reason_code: direct_state_mutation
+    component: "Arc 1 cand 8, with cand 5 (durable deadlines)"
+    fence: tools/ewcr-contracts-check.py
+
+  - id: 18
+    statement: "Cancellation during an in-flight pilot attempt prevents later advancement and routes only through declared reconciliation."
+    status: covered
+    contract: evidence-and-idempotency.md
+    section: "### Scenario 3.3"
+    checkpoint: post-attempt
+    refusal_scenario: >
+      Compensation runs only for a declared action_ref and only against a
+      terminal-failed attempt; otherwise scope_mismatch or unresolved_reference.
+      Advancement after cancellation is refused cancellation_in_effect.
+    reason_code: cancellation_in_effect
+    component: "Arc 1 cand 8, with cand 6 (cancellation)"
+    fence: tools/ewcr-contracts-check.py
+
+  - id: 19
+    statement: "Racing agent and human-gate proposals admit exactly one envelope and preserve a refusal for the loser."
+    status: gap
+    expected_reason_code: stale_position
+    reason: >
+      The evidence contract uses stale_position but explicitly does not define
+      admission order. Owner: Arc 1 candidate 4 (compare-and-append conflict
+      handling) — the ledger contract is unwritten.
+
+  - id: 20
+    statement: "Watchtower cannot mutate state directly; every operator interaction is an authenticated proposal admitted or refused by the runner."
+    status: covered
+    contract: task-lifecycle-contract.md
+    section: "## 4. Acceptance-scenario mapping"
+    checkpoint: both
+    refusal_scenario: >
+      A toggle-ac POST changes tick marks only, which are excluded from the AC
+      digest by design, so it neither advances nor breaks a binding; a human-gate
+      decision still requires its own envelope. Direct mutation is refused
+      direct_state_mutation.
+    reason_code: direct_state_mutation
+    component: "Arc 1 cand 3 — task binding + revalidation"
+    fence: tools/ewcr-contracts-check.py
