@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-06T18:14:56Z
-last_update: 2026-09-08T21:40:35Z
+last_update: 2026-09-19T21:50:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -398,11 +398,19 @@ exit 75 + foreground-message/quiet-silence against a hermetic fixture.
 -->
 
 **Recommendation:** GO
-**Rationale:** The mutual-exclusion defect is fixed at its root: audit.sh's EXIT trap no longer unlinks the flock'd lock path (flock binds to inode, not path), and the timeout watchdog kills its whole subtree so no orphaned `sleep` outlives the audit. The T-2930 contract (contention exits 75) is preserved and pinned as a control leg. All 4 Agent ACs ticked with integration evidence; every red seen during integration was diagnosed to a cause outside this change (self-vendor drift, CTL-030 data defects repaired under T-3314, test-11 latent defect fixed under T-3315).
+**Rationale:** The mutual-exclusion defect is fixed at its root: audit.sh's EXIT trap no longer unlinks the flock'd lock path (flock binds to inode, not path), and the timeout watchdog kills its whole subtree so no orphaned `sleep` outlives the audit. The T-2930 contract (contention exits 75) is preserved and pinned as a control leg. All 5 Agent ACs (A1-A5) ticked with integration evidence; every red seen during integration was diagnosed to a cause outside this change (self-vendor drift, CTL-030 data defects repaired under T-3314, test-11 latent defect fixed under T-3315).
 **Evidence:**
 - `tests/unit/t3298_audit_lock_integrity.bats` — green, 0 skips (double-hold impossible, contention-75 control, no orphaned watchdog sleep)
 - `bash -n agents/audit/audit.sh` clean; audit.bats 10/11 green with test-11 red pre-existing (T-3315, since fixed)
 - Verification re-run clean 2026-09-07 (V1/V2/V3 all pass)
+- Re-verified 2026-09-19 at close-handoff: all 5 Verification lines pass under real
+  gate semantics (`set -o pipefail`, no errexit). `t3298_audit_lock_integrity.bats`
+  10/10 ok, `audit_flock.bats` 5/5 ok, 0 skips in either suite, `bash -n` clean.
+- `bin/fw vendor self --check` clean at handoff (audit.sh is a vendored path).
+- Blocked from agent close by the R-033 sovereignty gate: `owner: human`, 0/0 Human
+  ACs. There are no Human ACs to verify — the `### Human` section contains only the
+  template's commented-out examples. Ownership alone is the boundary, so this needs
+  an operator approval, not further agent work.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
