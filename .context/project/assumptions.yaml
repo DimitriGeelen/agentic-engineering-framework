@@ -609,3 +609,46 @@ assumptions:
   linked_task: T-2670
   created: '2026-09-19'
   resolved_date: '2026-09-19'
+- id: A-060
+  statement: T-2622's retrieval seam has produced no measurable read-pull — the corpus
+    is still write-mostly (T-2669 NO-GO premise)
+  status: invalidated
+  validation_method: TBD
+  evidence:
+  - outcome: 'Read-pull exists: arc-017 onboarding curriculum routes 10 ''fw corpus
+      explain'' calls from its operator sections (T-2877/T-2941; T-2942 vendored the
+      reader because all 10 were dead in consumers); 11 tasks since 2026-07-28 reference
+      the reader; 8 episodics cite it. The consumer is an OPERATOR reading the prose
+      rendering — audience-shaped read-pull, one lens (prose).'
+    date: '2026-09-19'
+  linked_task: T-2669
+  created: '2026-09-19'
+  resolved_date: '2026-09-19'
+- id: A-061
+  statement: An independent business-view / audience-lens need (V8) has been filed
+    since 2026-07-28
+  status: invalidated
+  validation_method: TBD
+  evidence:
+  - outcome: 'grep of tasks/active, tasks/completed, inbox.yaml, concerns.yaml for
+      ''audience lens|business view|pseudocode lens|functional view'' dated 2026-08/09:
+      no filing other than T-2668/T-2669/T-3391 themselves.'
+    date: '2026-09-19'
+  linked_task: T-2669
+  created: '2026-09-19'
+  resolved_date: '2026-09-19'
+- id: A-062
+  statement: arc-019 EWCR owns per-audience rendering (architecture §10 Business/Logical/Technical/Runtime
+    lenses; roadmap Arc 4 read-only projection), so lenses built under T-2669 would
+    be a second copy
+  status: validated
+  validation_method: TBD
+  evidence:
+  - outcome: 'architecture-c9070637.md §10: ''The same procedure should render in
+      distinct lenses: Business … Logical … Technical … Runtime''; roadmap-5be23719.md
+      Arc 4 items 1 (read-only runtime projection and visual trace) and 3; operator
+      GO 2026-08-20. Pseudocode lens (SD-14) is NOT named by EWCR.'
+    date: '2026-09-19'
+  linked_task: T-2669
+  created: '2026-09-19'
+  resolved_date: '2026-09-19'
