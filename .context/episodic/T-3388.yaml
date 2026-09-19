@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 14
-  commits: 1
-  files_changed: 4
-  lines_added: 261
-  lines_removed: 11
+  commits: 2
+  files_changed: 7
+  lines_added: 386
+  lines_removed: 15
+  footprint_refreshed_at: '2026-09-18T15:54:04Z'
+  footprint_refreshed_by_commit: dbe2971dd
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3388-ewcr-arc-0-cand-6-worked-human-gate--reg.md

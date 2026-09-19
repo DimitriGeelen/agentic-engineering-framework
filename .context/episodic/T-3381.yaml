@@ -75,10 +75,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2
-  commits: 1
-  files_changed: 4
-  lines_added: 361
-  lines_removed: 3
+  commits: 2
+  files_changed: 17
+  lines_added: 521
+  lines_removed: 28
+  footprint_refreshed_at: '2026-09-17T21:48:12Z'
+  footprint_refreshed_by_commit: d3b3811fa
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3381-ewcr-second-landing-drive-reconcile-back.md

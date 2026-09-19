@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3393: EWCR Arc 0: §13 invariant traceability matrix + executable fence
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-19T21:07:42Z
+# ============================================================================
+
+task_id: T-3393
+task_name: "EWCR Arc 0: §13 invariant traceability matrix + executable fence"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-19T21:01:49Z
+completed: 2026-09-19T21:07:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-19T23:06:40+02:00
+last_commit: 2026-09-19T23:06:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  EWCR Arc 0 — §13 invariant traceability matrix + executable fence
+
+# Key outcomes
+outcomes:
+  - '`docs/research/executable-workflow/contracts/v1/traceability.yaml` carries exactly 20 rows, ids 1–20 each exactly once, one per architecture §13 acceptance scenario, each row quoting the invariant statement verbatim.'
+  - 'Every row is explicitly `status: covered` or `status: gap`. Covered rows name a contract file, a section reference, a refusal scenario, a responsible Arc 1 component, and a runnable fence. Gap rows name a reason — an uncovered invariant is stated, never silently absent.'
+  - '`tools/ewcr-trace-check.py` exits 0 on the real matrix and resolves every reference: contract files exist, each named section string is present in its file, each fence''s script exists, each gap carries a reason.'
+  - 'The checker bites: run against a mutated copy (a broken section ref, a missing id, a gap with no reason) it exits non-zero with a specific message — proven by control legs, not asserted. Seven tamper legs, each asserting its own message.'
+  - '`tests/unit/t3393_ewcr_traceability.bats` is green with zero skips, covering both the passing matrix and the three control legs. 10/10 ok, 0 skips.'
+  - '`contracts/v1/README.md` points at the matrix and its fence as the Arc 0 trace surface, and states the covered/gap split as measured.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/research/executable-workflow/contracts/v1/README.md'
+  - 'docs/research/executable-workflow/contracts/v1/traceability.yaml'
+  - '.tasks/active/T-3393-ewcr-arc-0-13-invariant-traceability-mat.md'
+  - 'tests/unit/t3393_ewcr_traceability.bats'
+  - 'tools/ewcr-trace-check.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-19T23:06:40'
+    action: 'T-3393: EWCR Arc 0 — §13 invariant traceability matrix + executable fence'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:ewcr-arc0-contract-evidence, ewcr, arc0]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 5
+  lines_added: 916
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3393-ewcr-arc-0-13-invariant-traceability-mat.md
+generated_by: context-agent-hybrid

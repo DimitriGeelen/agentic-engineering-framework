@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2670: workflow fabric: queryable cross-map index (package Lock 4 / SD-15)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-19T20:31:33Z
+# ============================================================================
+
+task_id: T-2670
+task_name: "workflow fabric: queryable cross-map index (package Lock 4 / SD-15)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-28T16:23:14Z
+completed: 2026-09-19T20:31:21Z
+duration_days: 53
+updates_count: 1
+first_commit: 2026-09-19T18:17:00+02:00
+last_commit: 2026-09-19T18:17:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  supersession review — corpus tripled, two bespoke cross-map scans built, EWCR §8.3/Arc 4 owns the derived Workflow Fabric (SD-13+SD-15); recommend NO-GO (dissolved)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-19 — recommendation shape'
+    chose: 'NO-GO, disposition *dissolved by supersession*, with the GO/NO-GO meanings spelled out on the form.'
+    rationale: 'owned by a ratified programme with a stronger design (derived, version-aware); the sibling T-2668 form was answered GO while carrying a NO-GO rationale, so the verbs'' meanings are made explicit here.'
+    alternatives_rejected: ['DEFER (successor exists — hedge per T-2144); GO-as-approval-of-dissolution (would read as authorising a build).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/assumptions.yaml'
+  - 'docs/reports/T-2670-workflow-fabric-supersession-review.md'
+  - '.tasks/active/T-2670-workflow-fabric-queryable-cross-map-inde.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-19T18:17:00'
+    action: 'T-2670: supersession review — corpus tripled, two bespoke cross-map scans built, EWCR §8.3/Arc 4 owns the derived Workflow Fabric (SD-13+SD-15); recommend NO-GO (dissolved)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 76568 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [process-layer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 76568
+  commits: 2
+  files_changed: 5
+  lines_added: 375
+  lines_removed: 40
+  footprint_refreshed_at: '2026-09-19T20:31:42Z'
+  footprint_refreshed_by_commit: f50dcce39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2670-workflow-fabric-queryable-cross-map-inde.md
+generated_by: context-agent-hybrid

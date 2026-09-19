@@ -12,12 +12,12 @@ description: >
   is contract evidence, not runtime: it stays inside the Arc 0 charter and is the
   artefact arc closure needs for --demo.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:ewcr-arc0-contract-evidence, ewcr, arc0]
-components: []
+components: [tests/unit/t3393_ewcr_traceability.bats, tools/ewcr-trace-check.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -30,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-19T21:01:49Z
-last_update: 2026-09-19T21:02:38Z
-date_finished:
+last_update: 2026-09-19T21:07:25Z
+date_finished: 2026-09-19T21:07:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -283,6 +283,12 @@ grep -q "traceability.yaml" docs/research/executable-workflow/contracts/v1/READM
 
 ## Evolution
 
+### 2026-09-19 — the coverage count in the README was wrong, and the trace found a hole in the freeze
+
+- **What changed:** Filing assumed the README's coverage list was authoritative: 10 of 20 invariants covered. Reading the two contracts' own §4 mapping tables showed **11** — the README omits #10, which `evidence-and-idempotency.md` maps to §2 with component split cand 7 (data) / Arc 4 (rendering). Building the trace also surfaced two things no prose had stated: **#6** has measured evidence (fence-1, T-3068's `None`-not-zero blast radius) but no contract freezing it, and **#14** has **no `reason_code` in the frozen v1 enum at all** — there is no vocabulary in which that invariant could be refused.
+- **Plan impact:** "Transcribe the README's coverage into YAML" would have propagated the undercount and silently kept both findings invisible. The matrix had to be derived from the contracts' mapping tables, and the checker had to validate `reason_code` against `refusal.schema.json` rather than accept free text — otherwise a contract can name a code nothing honours, which is the exact failure the contracts' own §5 warns about.
+- **Triggered:** No new sub-task. Both findings are recorded in the matrix (#6 as a gap carrying `partial_evidence`, #14 as a gap with `expected_reason_code: null` and the vocabulary note) and in the README, so they reach Arc 1 rather than dying here. #14 in particular is a question about the v1 freeze itself — a v2 concern, and not an edit this task may make.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -364,3 +370,15 @@ grep -q "traceability.yaml" docs/research/executable-workflow/contracts/v1/READM
 
 ### 2026-09-19T21:02:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-122372de
+- **Timestamp:** 2026-09-19T21:07:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-19T21:07:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

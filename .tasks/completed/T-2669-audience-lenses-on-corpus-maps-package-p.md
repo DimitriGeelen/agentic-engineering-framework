@@ -6,17 +6,17 @@ description: >
   view, one-way pseudocode) per the package's P1 purpose and SD-14? Nothing delivered
   (T-2662 gap 2); the overlay is a live-state lens, not an audience lens.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [process-layer]
 components: []
 related_tasks: [T-2662]
 arc_id: designer-corpus
 created: 2026-07-28T16:22:35Z
-last_update: 2026-09-19T16:17:46Z
-date_finished:
+last_update: 2026-09-19T20:31:52Z
+date_finished: 2026-09-19T20:31:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -34,6 +34,15 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-19T16:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=183,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-07-28T16:30:09Z'
@@ -145,7 +154,7 @@ seam). **OUT:** the EWCR architecture's shape; T-2667; building anything.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -199,7 +208,11 @@ seam). **OUT:** the EWCR architecture's shape; T-2667; building anything.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Dissolved by supersession into arc-019 §10 / Arc 4 — and the July NO-GO's premise is corrected on the record. **On this form, GO means "build P1 lenses under arc-014 now"; NO-GO means "the business/logical/technical lenses are arc-019's; close as dissolved and carry the transfers".** The write-mostly premise no longer holds: the onboarding curriculum (arc-017) routes 10 `fw corpus explain` calls from its operator sections, T-2942 had to vendor the reader because those routes were dead in consumers, and 11 tasks since 2026-07-28 reference the reader — read-pull exists, from the operator, through one prose lens. No V8 need was filed. The decisive fact is ownership: EWCR §10 specifies that "the same procedure should render in distinct lenses: Business / Logical / Technical / Runtime" — P1's triple plus a runtime view — rendered from the ratified procedure and ledger projection, and roadmap Arc 4 builds the projection. A GO here would build the same three lenses over a different source of truth. The pseudocode lens (SD-14) is not in §10 and stays retired on its own evidence.
+
+**Date**: 2026-09-19T20:31:52Z
 
 ## Updates
 
@@ -212,17 +225,16 @@ seam). **OUT:** the EWCR architecture's shape; T-2667; building anything.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-67654561
-- **Timestamp:** 2026-09-19T16:21:02Z
+- **Scan ID:** R-dd89bc0f
+- **Timestamp:** 2026-09-19T20:31:53Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-15260594
-- **Timestamp:** 2026-09-19T16:21:02Z
+- **Scan ID:** RC-ed0bcf87
+- **Timestamp:** 2026-09-19T20:31:53Z
 - **Overall:** CONFIRMED
 - **Claims:** 8
 
@@ -236,3 +248,11 @@ seam). **OUT:** the EWCR architecture's shape; T-2667; building anything.
 | `T-2941` | task | ✓ pass |
 | `T-2662` | task | ✓ pass |
 | `T-2622` | task | ✓ pass |
+### 2026-09-19T20:31:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Dissolved by supersession into arc-019 §10 / Arc 4 — and the July NO-GO's premise is corrected on the record. **On this form, GO means "build P1 lenses under arc-014 now"; NO-GO means "the business/logical/technical lenses are arc-019's; close as dissolved and carry the transfers".** The write-mostly premise no longer holds: the onboarding curriculum (arc-017) routes 10 `fw corpus explain` calls from its operator sections, T-2942 had to vendor the reader because those routes were dead in consumers, and 11 tasks since 2026-07-28 reference the reader — read-pull exists, from the operator, through one prose lens. No V8 need was filed. The decisive fact is ownership: EWCR §10 specifies that "the same procedure should render in distinct lenses: Business / Logical / Technical / Runtime" — P1's triple plus a runtime view — rendered from the ratified procedure and ledger projection, and roadmap Arc 4 builds the projection. A GO here would build the same three lenses over a different source of truth. The pseudocode lens (SD-14) is not in §10 and stays retired on its own evidence.
+
+### 2026-09-19T20:31:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

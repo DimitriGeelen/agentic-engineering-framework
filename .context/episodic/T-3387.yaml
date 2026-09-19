@@ -82,10 +82,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 185
-  commits: 1
-  files_changed: 4
-  lines_added: 336
-  lines_removed: 13
+  commits: 2
+  files_changed: 9
+  lines_added: 482
+  lines_removed: 23
+  footprint_refreshed_at: '2026-09-18T18:45:47Z'
+  footprint_refreshed_by_commit: fa6fd4913
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3387-ewcr-arc-0-cand-5-specify-evidence-snaps.md

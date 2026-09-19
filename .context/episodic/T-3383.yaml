@@ -67,10 +67,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 5
-  commits: 1
-  files_changed: 2
-  lines_added: 332
-  lines_removed: 1
+  commits: 2
+  files_changed: 4
+  lines_added: 425
+  lines_removed: 5
+  footprint_refreshed_at: '2026-09-18T04:52:39Z'
+  footprint_refreshed_by_commit: 5a7f2c489
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3383-t-3382-follow-up-dead-negation--grep-in-.md
