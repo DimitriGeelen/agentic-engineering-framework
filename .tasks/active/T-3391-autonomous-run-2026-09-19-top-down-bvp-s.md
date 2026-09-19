@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-19T15:59:56Z
-last_update: '2026-09-19T16:15:19Z'
+last_update: 2026-09-19T16:21:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,11 +88,11 @@ observations; T-3390's four Sovereign questions (SQ-1..SQ-4) unanswered.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Every unit of work in `## Run log` states its selection (objective → arc → task → quadrant) and rationale BEFORE the execution entry, with the recorded check or verb output that closed it
-- [ ] Every task this run scores or re-scores is scored through the scorer (`fw bvp estimate` / `fw bvp estimate-cost`), never by hand-written `bvp_scores*` or `cost_estimate` values — the run log names each such invocation and its output
-- [ ] Every gate refusal encountered is recorded in `## Gate refusals` with the sanctioned route taken instead (no `--no-verify`, `--force`, `--skip-*`, Tier-2 env vars)
-- [ ] Every Sovereign question raised is recorded in `## Sovereign questions` with options, and no such question is decided by this run
-- [ ] `## Handback` covers the six mandated headings (objectives advanced / arc state / remaining Q1-Q2 per task / Sovereign questions in priority order / gate refusals / cost-vs-estimate deltas)
+- [x] Every unit of work in `## Run log` states its selection (objective → arc → task → quadrant) and rationale BEFORE the execution entry, with the recorded check or verb output that closed it
+- [x] Every task this run scores or re-scores is scored through the scorer (`fw bvp estimate` / `fw bvp estimate-cost`), never by hand-written `bvp_scores*` or `cost_estimate` values — the run log names each such invocation and its output
+- [x] Every gate refusal encountered is recorded in `## Gate refusals` with the sanctioned route taken instead (no `--no-verify`, `--force`, `--skip-*`, Tier-2 env vars)
+- [x] Every Sovereign question raised is recorded in `## Sovereign questions` with options, and no such question is decided by this run
+- [x] `## Handback` covers the six mandated headings (objectives advanced / arc state / remaining Q1-Q2 per task / Sovereign questions in priority order / gate refusals / cost-vs-estimate deltas)
 
 ## Run log
 
@@ -135,6 +135,17 @@ observations; T-3390's four Sovereign questions (SQ-1..SQ-4) unanswered.
 - **Task:** T-2669 "audience lenses on corpus maps (package P1: functional/logical/technical/pseudocode)" — **Q1 (hv-lc, 108)**. Last remaining Q1/Q2 row in an unblocked in-flight arc. T-2662 §4 already routed SD-14 here with "rec NO-GO — no read-pull yet; operator may override"; no EWCR section names audience lenses, so the research question is narrower: has a read-pull appeared since 2026-07-28, and is anything in arc-019 or elsewhere an owner. Same read-only method; if the evidence needs design dialogue, park with the question stated rather than invent a design.
 - **Activities:** the three Agent ACs; `fw task review T-2669`.
 
+### Unit 3 — execution (T-2669)
+- **Verb:** `fw work-on T-2669`; IW-1..3 filed first (G-067).
+- **Checks recorded:** T-2622 closed 2026-07-26; reader references since 2026-07-28 → 11 tasks (grep `corpus explain` ∩ `created: 2026-0[89]`), 8 episodics; `bin/fw:566-572` T-2942 note — arc-017 curriculum carries 10 `fw corpus explain` routes in operator sections; audience-lens vocabulary grep dated 2026-08/09 → only T-2668/T-2669/T-3391; architecture §10 lens list read. `fw assumption` A-060 invalidated, A-061 invalidated, A-062 validated. `fw reviewer T-2669` → **Overall: PASS, Needs Human: no, Findings: none**. Mechanical: artefact present; 2 answered + 1 dissolved, 0 open; Recommendation NO-GO.
+- **Closed/parked:** three Agent ACs ticked; commit 12b19a472; `fw task review T-2669` → http://192.168.10.107:3002/inception/T-2669.
+- **What changed:** `docs/reports/T-2669-audience-lenses-supersession-review.md` (new); T-2669 body filled, July NO-GO premise corrected on the record; `assumptions.yaml` +3. No source, no policy.
+- **Cost vs estimate:** estimator `effort=6, tier=4, blast_radius=3` (no-signal). Actual: ~20 tool calls, 1 commit, zero components.
+- **Surfaced:** the first real read consumer of the corpus is the operator (through the curriculum, via prose) — arc-019 §10's Business lens has a live consumer before it exists.
+
+### Stop — condition 1
+- arc-014's Q1/Q2 rows (T-2668, T-2669, T-2670) are all executed to their Agent ACs and parked on the operator's go/no-go (`/inception/` pages above). Re-entered at level 2: the only other arc-tagged quadrant rows are T-2323 (arc-011, hv-hc — DEFER'd by recorded decision, SQ-4) and T-2137 (arc-008 `inception-review-loop`, **draft** arc — starting an arc is a Sovereign act); the remaining 20 Q1/Q2 rows carry no `arc_id` and fail the arc gate. No other arc has eligible Q1/Q2 work → **stop condition 1**. Not stopped mid-task: T-3391 closes through the verb after this record is complete.
+
 ## Sovereign questions
 
 ### SQ-5 — T-2668 was decided GO with a NO-GO rationale (priority: high — it is a recorded decision)
@@ -151,7 +162,46 @@ SQ-1 selection rule while BVP is unconfirmed (this run's Unit 0 sharpens it: the
 | 2 | G-067 inception Open-Questions readiness (T-2668, then T-2670) | non-allowlisted read before any IW question existed | filed IW-1..3 with Edit first, then plain reads |
 | 3 | Focus-drift gate T-1730 (focus T-2670, target T-2668) | `git commit` of T-2668's post-decision episodic footprint refresh | left staged for the handover sweep — the offered routes (`--switch-focus`, `FW_SWITCH_FOCUS=1`) are Tier-2 logged bypasses the mandate excludes; every later commit names its paths explicitly |
 
+No `--no-verify`, `--force`, `--skip-*`, or Tier-2 env var used. No direct writes to `focus.yaml` / `arc-focus.yaml` / `.next-directive.yaml` (every focus change via `fw work-on`). No `bvp_scores*` / `cost_estimate` values hand-written; the only scoring event was the cron estimator's own sweep on this record.
+
 ## Handback
+
+**Stop condition:** #1 — every Q1/Q2 row in the active arc executed to its Agent ACs and parked on the operator; no other arc has eligible Q1/Q2 work.
+
+### Objectives advanced vs run start
+- **D2 Reliability / D1 Antifragility:** three inceptions that had been carrying superseded decisions since 2026-07-28 (the whole open Q1 set of arc-014) now carry evidence-based recommendations with disposed IW questions and validated/invalidated assumptions, handed to the operator via the class-correct URL. One is already decided (T-2668, GO — see SQ-5). Before the run: three blank template bodies with placeholder DEFER/NO-GO. Verifiable by `fw reviewer` PASS ×3 (recorded per unit), `fw assumption list` A-054..A-062, and the three artefacts in `docs/reports/`.
+- **Instrument (arc-006 objective, unsolicited):** two measured findings for OBS-439 — the value median *is* the no-signal default (Unit 0); a filled body yields signal (this record scored D1=4/D2=4/D3=3/D4=2 by the cron worker at 16:15Z), so the 108 rows are template bodies, not estimator blindness.
+- **Nothing built.** Zero source, policy, web or lib commits (checked in Verification).
+
+### Arc state (arc-014 designer-corpus)
+| Task | Quadrant | Status at run start | Status now |
+|---|---|---|---|
+| T-2668 | Q1 hv-lc 108 | captured, DEFER placeholder | **completed — operator Decision: GO** (f4a1ee07d) with NO-GO rationale → SQ-5 |
+| T-2670 | Q1 hv-lc 108 | captured, DEFER placeholder | started-work, Agent ACs 3/3, awaiting go/no-go at `/inception/T-2670` |
+| T-2669 | Q1 hv-lc 108 | captured, NO-GO placeholder | started-work, Agent ACs 3/3, awaiting go/no-go at `/inception/T-2669` |
+| T-2667 | no quadrant (111, no cost) | captured, operator-gated | unchanged (draft-promotion ceremony) |
+| T-2665 / T-2666 | no quadrant | captured | unchanged |
+Other arcs: arc-019 blocked (SQ-3); arc-013 no Q1/Q2, blocked (SQ-2); arc-011 T-2323 DEFER'd (SQ-4); arc-002 no open agent work; arc-008 draft (T-2137).
+
+### Remaining Q1/Q2, per task, why not done
+- **T-2323** (arc-011, Q2) — DEFER recorded; reopening is SQ-4.
+- **T-2137** (arc-008, Q2) — arc is `draft`; starting an arc is Sovereign.
+- **T-1265, T-1271, T-1309, T-1611, T-1685, T-2321, T-2770, T-2899, T-2963, T-3240, T-3276, T-3331, T-3332, T-3333, T-3334, T-550, T-558, T-682, T-704, T-705, T-844** — no `arc_id`; fail the arc gate (level 2). All are inceptions at the no-signal default.
+
+### Sovereign questions, priority order
+1. **SQ-5** — T-2668 decided GO with a NO-GO rationale: approve-the-dissolution or build-Lock-6? Nothing filed off it until clarified.
+2. **SQ-1** — selection rule while BVP is unconfirmed; now with the measured fact that the value median equals the no-signal default. Cheapest structural fix candidates live in arc-006 (OBS-439).
+3. **SQ-3** — arc-019 exit: T-3389 review transfer, T-3147 finalisation.
+4. **SQ-2** — T-2433 hypervisor prerequisites.
+5. **SQ-4** — T-2323 revisit / close.
+
+### Gates that refused, and what was done instead
+See `## Gate refusals` (3 rows). Route in each case was the sanctioned one; no bypass.
+
+### Cost-vs-estimate deltas for calibration
+- All three inceptions carried `effort=6, tier=4, blast_radius=3`, every term `(no-signal)`, from 2026-07-28 template bodies. Actual cost per unit: 20–35 read-only tool calls, one commit, zero components. The heuristic cannot see the cost driver that mattered — *the evidence already existed elsewhere*.
+- `effort` is measured from template line/AC counts at filing (`lines=319,acs=7` on this record), not from the task — same finding as T-3390.
+- Positive control: this record, once filled, scored with signal on every constitutional driver within 15 minutes via the cron sweep — the instrument works on prose; it is blind to templates.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -185,6 +235,21 @@ SQ-1 selection rule while BVP is unconfirmed (this run's Unit 0 sharpens it: the
 -->
 
 ## Verification
+
+# L1 — every Unit N has a selection block that precedes its execution block, and each execution block records a check
+F=$(ls .tasks/*/T-3391-*.md | head -1); python3 -c "import re,sys; t=open(sys.argv[1]).read(); log=t.split('\n## Run log\n',1)[1].split('\n## Sovereign questions\n',1)[0]; units={1,2,3}; ok=all(log.find(f'### Unit {n} — selection')>=0 and log.find(f'### Unit {n} — selection')<log.find(f'### Unit {n} — execution') for n in units); ex=[log.split(f'### Unit {n} — execution',1)[1].split('\n### ',1)[0] for n in units]; ok=ok and all('**Checks recorded:**' in e for e in ex); sys.exit(0 if ok else 1)" "$F"
+# L2 — no hand-written scores: no confirmed bvp_scores key on this record or the three inceptions; the only scoring event is named as the estimator's own sweep
+F=$(ls .tasks/*/T-3391-*.md | head -1); python3 -c "import re,sys,glob; files=[sys.argv[1]]+[glob.glob(f'.tasks/*/{t}-*.md')[0] for t in ('T-2668','T-2669','T-2670')]; bad=[f for f in files if re.search(r'^bvp_scores:', open(f).read(), re.M)]; t=open(sys.argv[1]).read(); sys.exit(0 if not bad and 'bvp-estimator-sweep-15m' in t and 'estimator: bvp-estimator-v1-heuristic' in t else 1)" "$F"
+# L3 — gate refusals: table has >=3 numbered rows and names the route taken; no bypass named as used
+F=$(ls .tasks/*/T-3391-*.md | head -1); python3 -c "import re,sys; t=open(sys.argv[1]).read(); s=t.split('\n## Gate refusals\n',1)[1].split('\n## Handback\n',1)[0]; rows=re.findall(r'^\| \d+ \|', s, re.M); sys.exit(0 if len(rows)>=3 and 'No \`--no-verify\`' in s else 1)" "$F"
+# L4 — Sovereign questions section names SQ-5 and SQ-1 and contains no decision marker
+F=$(ls .tasks/*/T-3391-*.md | head -1); python3 -c "import re,sys; t=open(sys.argv[1]).read(); s=t.split('\n## Sovereign questions\n',1)[1].split('\n## Gate refusals\n',1)[0]; sys.exit(0 if 'SQ-5' in s and 'SQ-1' in s and not re.search(r'\*\*(Decision|Decided|Chose)[:*]', s) else 1)" "$F"
+# L5 — Handback carries the six mandated headings
+F=$(ls .tasks/*/T-3391-*.md | head -1); python3 -c "import sys; t=open(sys.argv[1]).read(); h=t.split('\n## Handback\n',1)[1]; need=['Objectives advanced','Arc state','Remaining Q1/Q2','Sovereign questions, priority','Gates that refused','Cost-vs-estimate']; sys.exit(0 if all(n in h for n in need) else 1)" "$F"
+# L6 — the three units' deliverables exist and each carries an independent reviewer PASS verdict
+python3 -c "import glob,sys; pairs=(('T-2668','T-2668-guided-mode-supersession-review.md'),('T-2669','T-2669-audience-lenses-supersession-review.md'),('T-2670','T-2670-workflow-fabric-supersession-review.md')); bodies=[open(glob.glob(f'.tasks/*/{t}-*.md')[0]).read() for t,_ in pairs]; reps=[open('docs/reports/'+r).read().strip() for _,r in pairs]; sys.exit(0 if all('**Overall:** PASS' in b and 'disposition: open' not in b for b in bodies) and all(reps) else 1)"
+# L7 — the run wrote no source, policy or web code
+[ -z "$(git log --format=%H 75000e5d8~1..HEAD -- lib agents bin web policy)" ]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
