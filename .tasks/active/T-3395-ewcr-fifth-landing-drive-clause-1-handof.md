@@ -1,21 +1,17 @@
 ---
-id: T-3389
-name: "EWCR Arc 0 cand-3: consolidated refusal/threat matrix from the four external
-  reviews (blocked: reviews not transferred)"
+id: T-3395
+name: "EWCR fifth landing drive: clause 1 handoff, R7 predicate, clause 2 operator
+  actions"
 description: >
-  Roadmap Arc 0 candidate 3. Requires the Claude, Z.ai, DeepSeek and Mistral review
-  findings which were NOT in the transferred packet (questions-and-dispositions.md
-  section 3). Not startable until the operator transfers them. Peer-transfer gap,
-  distinct from Q-15.
+  EWCR fifth landing drive: clause 1 handoff, R7 predicate, clause 2 operator actions
 
-status: captured
-workflow_type: specification
+status: started-work
+workflow_type: design
 owner: agent
-horizon: later
-tags: [ewcr, arc0]
+horizon: now
+tags: []
 components: []
-related_tasks: [T-3147, T-3384, T-3145]
-arc_id: ewcr-arc0-contract-evidence
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -26,8 +22,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-18T15:39:14Z
-last_update: '2026-09-18T15:45:20Z'
+created: 2026-09-19T22:14:48Z
+last_update: '2026-09-19T22:15:20Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,17 +36,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-18T15:45:09Z'
+  - ts: '2026-09-19T22:15:10Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
-      tier: 4
+      tier: 3
       effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=4 
-      (workflow:specification); effort=8 (lines=278,acs=7)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:design); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-18T15:45:20Z'
+  - ts: '2026-09-19T22:15:20Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -69,7 +65,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3389: EWCR Arc 0 cand-3: consolidated refusal/threat matrix from the four external reviews (blocked: reviews not transferred)
+# T-3395: EWCR fifth landing drive: clause 1 handoff, R7 predicate, clause 2 operator actions
 
 ## Context
 
@@ -79,28 +75,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `docs/research/executable-workflow/contracts/v1/refusal-threat-matrix.md` consolidates every blocker finding from the four reviews into rows: finding id → source review → threat → refusal scenario → responsible component → verification fence
-- [ ] Every row's refusal scenario references the T-3385 `refusal` schema and an arch §13 scenario id; rows with no §13 scenario are flagged as NEW scenarios for the operator to accept
-- [ ] The count of arch §13 scenarios the current substrate would already fail is produced (the missing measurement named in questions-and-dispositions.md §3) and recorded in the matrix header
-- [ ] No runtime code
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
-- [ ] [REVIEW] Transfer the four external review findings (Claude, Z.ai, DeepSeek, Mistral — roadmap §4 Arc 0 task 3) into `docs/research/executable-workflow/reviews/` so this task becomes startable
-  **Steps:**
-  1. Locate the four review documents in the sending project (`0503-codex-cli-playground`, same packet as manifest v1 rev 0)
-  2. Copy them as raw files (not Watchtower HTML — G-086) into `cd /opt/999-Agentic-Engineering-Framework && mkdir -p docs/research/executable-workflow/reviews` and commit under this task id
-  3. Add their sha256 to `docs/research/executable-workflow/source-manifest.yaml` as a new revision
-  **Expected:** four files present, hashes in the manifest, `git log --oneline -1 -- docs/research/executable-workflow/reviews` shows the commit
-  **If not:** the agent cannot build the matrix from memory of the reviews; leave this task at horizon later
-
-- [ ] [REVIEW] **OR** rule the DeepSeek and Mistral findings out of Arc-0 scope, recording that ruling as their disposition (the alternative route 832 named at `agent-chat-arc` @643 — either one closes clause 2's arithmetic, and **only one is needed**)
-  **Steps:**
-  1. Decide whether the DeepSeek and Mistral reviews are Arc-0 inputs at all. They were named as requirements in six places (roadmap:64, :139, :229, :358, architecture:857, questions:148) but never transferred here, and 832 confirms no disposition table exists for either on their side.
-  2. If they are out of scope, record the ruling — it becomes their disposition, which is what clause 2 requires: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task update T-3389 --add-tag "scope-ruled"` and state the ruling in this task's `## Decisions` section.
-  3. Post the ruling to 832 on the correlation chain so their register can move: it answers R6 and, per their @1536, R6 and exit-clause 2 move together.
-  **Expected:** the ruling is written down somewhere 832 can cite, and clause 2's "every blocker finding has a disposition" is satisfiable by arithmetic — two families dispositioned as out-of-scope, two by the existing Claude §17 / Z.ai §18 tables.
-  **If not:** clause 2 stays open indefinitely regardless of effort on either side. This is the failure mode 832 named: *"Either closes the arithmetic. Silence does not."*
-  **Note:** this is a scope decision on a draft-authorised arc — arc-019's fence puts it outside agent authority, which is why it is raised rather than taken.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -328,49 +306,6 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** DEFER — pending an operator choice between two named options
-
-**Rationale:** This is a genuine evidence gap, not a confidence hedge. The task cannot
-start: it requires the four external model reviews (Claude, Z.ai, DeepSeek, Mistral) and
-`docs/research/executable-workflow/reviews/` **does not exist in this repository**. The
-reviews were never transferred from the sending project. Building the matrix from
-memory of documents this repo has never held would fabricate exactly the content whose
-purpose is refusal fidelity — and the fabrication would be invisible in the artifact.
-
-832-Workflow-designer independently reached the same arithmetic from their side
-(`agent-chat-arc` @643, R6): their pinned dossier carries disposition tables for Claude
-(§17) and Z.ai (§18) **only**, so two of four model families have no disposition table
-anywhere. Exit-clause 2 requires that *every* blocker finding carry a disposition, so
-clause 2 is unsatisfiable from the packet regardless of how good the two existing tables
-are. Silence does not close it; one of the two options below does.
-
-**The operator choice — both are Sovereign, neither is mine:**
-
-1. **Transfer the reviews.** Copy the four review documents from
-   `0503-codex-cli-playground` into `docs/research/executable-workflow/reviews/` as raw
-   files (not Watchtower HTML — G-086), add their sha256 to `source-manifest.yaml` as a
-   new revision. T-3389 then becomes startable and I build the matrix.
-2. **Rule DeepSeek and Mistral out of Arc-0 scope**, recording that ruling *as* their
-   disposition. This closes clause 2's arithmetic without the transfer. It is a scope
-   decision on a draft-authorised arc, which arc-019's fence
-   (*"No runtime implementation, autonomy expansion, BVP confirmation, bulk task
-   creation, or supersession of prior DEFER/NO-GO decisions"*) places outside agent
-   authority.
-
-**My recommendation between them:** option 1 if the reviews still exist and are
-reachable — a real disposition table is worth more than a scope ruling, and clause 2's
-wording ("every blocker finding") was written expecting four. Option 2 is the correct
-answer only if the DeepSeek/Mistral reviews are genuinely unavailable or were never
-meant to be Arc-0 inputs; in that case recording the ruling is strictly better than
-leaving the arithmetic open indefinitely.
-
-**Evidence:**
-- `ls docs/research/executable-workflow/reviews` → No such file or directory (measured 2026-09-19)
-- Task title records the block verbatim: *"(blocked: reviews not transferred)"*
-- 832's R6 ask, `agent-chat-arc` @643; restated @1536; my confirmation from this side @1539
-- Sibling clause 1 **is** answered and landed: `arc-0-clause-1-attestation.md` (T-3394, commit `174f31777`)
-- Arc-0 exit status: clause 1 answered (pending 832's operator), clause 2 blocked here, clause 3 (2/6) is 832's register
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -394,7 +329,7 @@ leaving the arithmetic open indefinitely.
 
 ## Updates
 
-### 2026-09-18T15:39:14Z — task-created [task-create-agent]
+### 2026-09-19T22:14:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3389-ewcr-arc-0-cand-3-consolidated-refusalth.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3395-ewcr-fifth-landing-drive-clause-1-handof.md
 - **Context:** Initial task creation
