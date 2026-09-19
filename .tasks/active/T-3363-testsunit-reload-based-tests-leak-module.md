@@ -28,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-15T16:56:09Z
-last_update: 2026-09-16T21:12:30Z
+last_update: 2026-09-19T21:31:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -372,6 +372,79 @@ reloads `web.blueprints.tasks`, and it sorts before the victim) was **disproved*
 the pair runs `25 passed`. Its contaminator is still unidentified. The live defect
 it concealed is already owned by **T-3368**; only the bisection is outstanding.
 
+### 2026-09-19 — the outstanding bisection is unreachable, and why that is the right answer
+
+**1. AC 5 anti-masking: the control the table above was missing.** The 2026-09-16
+table reasons that C and D are green "because their fix landed" — a claim about
+cause that was asserted, not measured. It is now measured. If the fixture were
+masking them, disabling it would turn them red:
+
+| Leg | Command | Result |
+|---|---|---|
+| C + D, fixture active | `pytest test_file_route_extensions.py::test_is_viewable_path_rejects_unknown_dir test_render_page_guard.py::test_guard_skipped_on_htmx_request -p no:randomly` | **2 passed** |
+| C + D, fixture neutralised | same, plus `--noconftest` | **2 passed** |
+
+Green with the fixture off ⇒ the fixture is not what makes them green. Combined
+with the four still-red rows above, **the anti-masking property now holds for all
+six**, each by measurement rather than inference. What remains unresolved on AC 5
+is only whether "the 6 … are still red" is read as a literal count or as naming
+the set at writing time — the wording question recorded at OBS-432. Still not
+mine to answer; the evidence side of the AC is complete.
+
+**2. The leak is not four contaminators — it is nearly every reload-based file.**
+Probed 9 files that use `importlib.reload` and sort before the victim, each in a
+fresh process with the unit conftest disabled, inspecting `PROJECT_ROOT` on every
+already-imported `web.*` / `agents.*` / `lib.*` module after the run:
+
+- **8 of 9 leak.** Only `test_file_route_extensions.py` is clean.
+- Most leak *en masse* — a single file leaves 30+ blueprint modules pointing at
+  one tmp dir, because `web.app` imports them all and the reload cascades.
+- `test_arc_membership_web_surfaces.py` leaks to `/tmp/t1879-*` paths that
+  **no longer exist** — the dangling-deleted-dir shape exactly.
+
+This is the strongest evidence yet for the victim-side-at-scale decision recorded
+below: enumerating polluters was never going to terminate.
+
+**3. The bisection cannot be completed, because its subject no longer exists.**
+
+| Leg | Command | Result |
+|---|---|---|
+| Victim alone, fixture off | `pytest --noconftest test_review_markdown_render.py` | **23 passed** |
+| Suspect → victim, fixture off | `pytest --noconftest test_arc_membership_web_surfaces.py test_review_markdown_render.py` | **25 passed** |
+
+The false green was: polluted `PROJECT_ROOT` → file-existence check misses →
+linkifier never fires → assertion sees the plain href it expects → pass. **T-3368
+is `work-completed`**, so the nested-anchor defect is gone: with `PROJECT_ROOT`
+correct the linkifier now fires *and* produces correct output. The victim
+therefore passes under both polluted and clean conditions, for two different
+reasons, and can no longer discriminate between them. There is no longer a red
+leg to bisect toward.
+
+**Why this is not a loose end.** The bisection's only purpose was to prevent this
+false green. That is already delivered twice, neither time requiring the
+polluter's identity: the conftest fixture is O(1) over *all* polluters (the whole
+argument of the Decisions section below), and T-3368 removed the defect being
+concealed. Naming the specific file would be forensics, not prevention.
+
+**4. Residual, not fixed here.** `test_parse_ac_body_renders_steps_as_html` still
+passes vacuously when the linkifier is inert — it asserts the output shape but not
+that the linkifier fired. Under the fixture `PROJECT_ROOT` is always correct so it
+behaves today, but the test is not self-guarding. Out of scope for T-3363 (whose
+subject is the isolation fixture, not this test's assertions); filed as an
+observation rather than silently widened into this task.
+
+**5. A false green inside this session's own instrument.** The first version of
+the probe reported `clean` for all 7 files it examined, including
+`test_decide_commit.py` — which the conftest docstring names as a live leaker. It
+was run as `python3 probe.py`, which puts the *script's* directory on `sys.path`
+rather than the cwd that `python3 -m pytest` inserts, so every test died on
+`ModuleNotFoundError` and leaked nothing because nothing ran. The `rc` was
+discarded and only the leak verdict was printed, so a tool that measured nothing
+was indistinguishable from a clean result. Same class as L-668 and as the
+`failed_count: 0` starvation in T-3359: **an instrument that cannot run its
+subject reports the shape of success.** The fixed probe carries `rc=` in its
+output line for exactly this reason.
+
 
 ## Decisions
 
@@ -432,6 +505,13 @@ o=$(mktemp); timeout 900 python3 -m pytest tests/unit/test_decide_commit.py test
 # has stopped being load-bearing and the one above proves nothing.
 # `;` then grep is intentional here: grep is the verdict, not pytest's exit code.
 c=$(mktemp); timeout 900 python3 -m pytest --noconftest tests/unit/test_decide_commit.py tests/unit/test_auto_link_root_and_articles.py tests/unit/test_cockpit_activity.py tests/unit/test_task_panel.py tests/unit/test_task_panel_edit.py -q -p no:cacheprovider --color=no > "$c" 2>&1; grep -q "failed" "$c"
+# ANTI-MASKING CONTROL (AC 5, added 2026-09-19) — the two genuine reds that went
+# green (C/T-3364, D/T-3365) must stay green with the fixture NEUTRALISED. If the
+# fixture were papering over them, --noconftest would turn them red. Green here is
+# what licenses reading their greenness as "their own fix landed" rather than
+# "the isolation fixture hid the failure". Named tests, fixed count — not live
+# corpus state, so T-3326's mutable-anchor rule is satisfied.
+a=$(mktemp); timeout 300 python3 -m pytest --noconftest tests/unit/test_file_route_extensions.py::test_is_viewable_path_rejects_unknown_dir tests/unit/test_render_page_guard.py::test_guard_skipped_on_htmx_request -q -p no:cacheprovider -p no:randomly --color=no > "$a" 2>&1 && grep -q "2 passed" "$a"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

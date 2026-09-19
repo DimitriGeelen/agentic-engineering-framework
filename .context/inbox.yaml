@@ -4830,3 +4830,10 @@ observations:
   tags: [calibration]
   status: pending
   promoted_to: null
+- id: OBS-440
+  text: "test_review_markdown_render.py::test_parse_ac_body_renders_steps_as_html passes vacuously when the auto-linkifier is inert: it asserts the rendered href shape but never asserts the linkifier actually fired. Under a dangling PROJECT_ROOT the file-existence check misses, the linkifier no-ops, and the plain href the test expects is exactly what it sees — which is how it produced the T-3363 false GREEN that concealed the T-3368 nested-anchor defect. The tests/unit conftest fixture keeps PROJECT_ROOT correct so it behaves today, but the test is not self-guarding: add a positive assertion that linkification occurred, so the test goes red rather than green when its subject is disabled."
+  captured: 2026-09-19T21:37:05Z
+  context_task: T-3363
+  tags: [test]
+  status: pending
+  promoted_to: null
