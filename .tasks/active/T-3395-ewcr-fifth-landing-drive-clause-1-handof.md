@@ -12,6 +12,7 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+arc_id: ewcr-arc0-contract-evidence
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -75,8 +76,28 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1 Backlog reconciled.** The single EWCR arc (arc-019
+      `ewcr-arc0-contract-evidence`) and its task set are confirmed; no second arc, no
+      orphan EWCR task lacking a home. 832's handover chain located and read
+      (`agent-chat-arc` @643 routed R6/R7 + clauses 1-2; @1536 and @1537 the follow-ups).
+- [x] **A2 Clause 1 answered and landed.** T-3394 closed with 6/6 verification,
+      `arc-0-clause-1-attestation.md` committed at `174f31777`, both measurement legs
+      re-run live and the stale `intersection_count: 3` block corrected.
+- [x] **A3 Clause 1 answer transmitted and read back.** Posted to the correlation chain
+      as a reply to @643; lands at `agent-chat-arc` @1539 and reads back complete via
+      `termlink channel snippet agent-chat-arc 1539` (head and tail both intact) — not
+      trusted on the post's own success line.
+- [x] **A4 Clause 2 raised as an operator action with both routes.** T-3389 carries a
+      substantive `## Recommendation` (DEFER on a real evidence gap) and both of 832's
+      named options as Human ACs. Rendered bytes verified — `/review/T-3389` returns
+      28744 bytes carrying Steps×3, Expected×3 and both option texts, per the @599
+      lesson that HTTP 200 does not prove the operator can see the decision.
+- [x] **A5 Arc anchor surfaced.** T-3147 has zero unticked Human ACs and a Recommendation
+      but sits `owner: human` in `active/`; its operator link is emitted rather than
+      left to age.
+- [x] **A6 Sovereign boundaries respected.** No arc scope change, no `decide go`, no arc
+      close, no BVP confirmation, no runtime implementation — each is either arc-019's
+      fence or a Sovereign act, and each is named in the report rather than taken.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -236,6 +257,19 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# T-3326: no live corpus counts pinned here — the fabric numbers move. These lines
+# assert that the drive's artefacts exist and that the handoffs actually render.
+
+test -f docs/research/executable-workflow/arc-0-clause-1-attestation.md
+# A4: the clause-2 operator action carries a real recommendation, not a blank card.
+grep -q 'Recommendation:\*\* DEFER' .tasks/active/T-3389-ewcr-arc-0-cand-3-consolidated-refusalth.md
+# A4: BOTH routes are present as Human ACs, so the operator sees a choice not a single ask.
+out=$(cat .tasks/active/T-3389-ewcr-arc-0-cand-3-consolidated-refusalth.md); echo "$out" | grep -q 'Transfer the four external review findings' && echo "$out" | grep -q 'out of Arc-0 scope'
+# A4: the review page RENDERS the decision — bytes, not HTTP 200 (@599 lesson).
+curl -sf "$(bin/fw watchtower url)/review/T-3389" -o /tmp/.t3395-3389.out && grep -q 'out of Arc-0 scope' /tmp/.t3395-3389.out
+# A2: the clause-1 attestation's own tooling still reproduces.
+timeout 300 python3 tools/ewcr-arc0-coverage-check.py > /tmp/.t3395-cov.out 2>&1 && grep -q 'files on disk' /tmp/.t3395-cov.out
 
 ## RCA
 
@@ -254,6 +288,44 @@ bvp_scores_proposed:
 -->
 
 ## Evolution
+
+### 2026-09-19 — the arc was not short of work; it was short of a transmitted answer
+- **What changed:** The brief was "stop finding, start landing", which presumes a backlog
+  of buildable work. There wasn't one. 13 of 15 EWCR tasks were already complete, and the
+  two open ones were blocked in different ways — T-3389 on a file transfer that never
+  happened, T-3147 on operator ownership. What was actually missing was that clause 1 had
+  been *satisfied* by T-3350/T-3351/T-3352 weeks ago and never *attested* to the party who
+  asked for it. 832 has been waiting on an answer this repo could have given since T-3351.
+- **Plan impact:** The drive became measure-attest-transmit rather than build. The single
+  new build task (T-3394) was documentation and measurement, which is what arc-019's fence
+  permits; no runtime code was written or needed.
+- **Triggered:** T-3394 (landed), the @1539 post on the correlation chain, and both
+  remaining items raised as operator actions rather than left implicit.
+
+### 2026-09-19 — a satisfied clause and a stale document can coexist indefinitely
+- **What changed:** `arc0-write-set.md` asserted `intersection_count: 3` for twelve days
+  after T-3351 drove it to 0/0. Nothing was wrong with either the measurement or the fix;
+  the defect was that no mechanism forced the two to agree, so the repo simultaneously
+  held the right answer and a document contradicting it. Had I attested from the document
+  rather than re-running the tools, I would have transmitted a stale number to 832 under
+  the word "attestation".
+- **Plan impact:** Every number in the attestation is stamped with the commit it was
+  measured at, and both documents now re-run the same two tools in T-3394's verification.
+- **Triggered:** Same class as 832's @1537 self-correction (a suite that reports its own
+  pass rate will happily report a smaller one) and this repo's §Watchtower-Port rail: a
+  check that cannot see its own subject. Worth a learning if it recurs a third time.
+
+### 2026-09-19 — "land it" and "it is not mine to land" are both true here
+- **What changed:** Two of the three remaining EWCR items are structurally outside agent
+  authority — clause 2's second route is a scope ruling on a draft-authorised arc, and the
+  arc close itself is Sovereign (`fw arc close` refuses under `$CLAUDECODE=1`, and G-062
+  requires demo evidence of the headline mechanic). A landing posture cannot dissolve
+  those; pushing through would have been the §ACD violation the arc-completion rule exists
+  to catch.
+- **Plan impact:** Both were raised with a recommendation and an absolute link rather than
+  taken, and the report says plainly that EWCR does **not** work end-to-end and why.
+- **Triggered:** Operator actions at `/review/T-3389` and `/review/T-3147`; arc closure
+  left open with the reason stated.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
