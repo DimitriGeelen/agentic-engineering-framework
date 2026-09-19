@@ -7,16 +7,16 @@ description: >
   decision-surface across all maps), per the package's Workflow Fabric spec? Handoffs
   exist as map content (T-2586/T-2613) but nothing is queryable (T-2662 gap 5).
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [process-layer]
 components: []
 related_tasks: [T-2662]
 arc_id: designer-corpus
 created: 2026-07-28T16:23:14Z
-last_update: '2026-07-28T16:30:09Z'
+last_update: 2026-09-19T16:11:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -59,11 +59,25 @@ bvp_scores_proposed:
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+The 2026-07-02 package's Lock 4 / SD-15 specified a Workflow Fabric: cross-map
+structure (handoffs, sub-process calls, lane/role participation) indexed into a
+queryable registry so role-level questions ("the operator's decision surface
+across all maps") can be answered without walking every map. T-2662 found
+nothing queryable (gap 5) and routed SD-15 here, with SD-13 (component linkage)
+parked "inside T-2670's fabric question". The 2026-07-28 DEFER waited for the
+first real cross-map question the gallery could not answer. **Why now:** the
+corpus has tripled, cross-map links now exist, two bespoke cross-map scans have
+been built, and arc-019 EWCR (operator-ratified 2026-08-20) specifies the
+Workflow Fabric as a derived index in §8.3 and builds it in roadmap Arc 4.
+Research artefact: `docs/reports/T-2670-workflow-fabric-supersession-review.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+Registered and disposed via `fw assumption` (artefact §4):
+
+- **A-057** — corpus still ~5 maps, walkable by eye → **invalidated** (16 store entries; cross-map markers in 10).
+- **A-058** — a concrete operator-level cross-map query need has surfaced → **invalidated** (none filed; two bespoke scans built instead — the need is being met one scan at a time).
+- **A-059** — arc-019 owns the Workflow Fabric derived index → **validated** (§8.3; Arc 4 items 4–6; Arc 5 item 3).
 
 ## Open Questions
 
@@ -83,31 +97,53 @@ bvp_scores_proposed:
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
 
+- **IW-1: Has the DEFER's revisit evidence arrived — has the corpus outgrown "5 maps, walkable by eye", or has a concrete cross-map query need surfaced that the gallery could not answer?**
+  confidence: 3
+  disposition: answered
+  rationale: Scale yes, demand not as specified. `.context/designer/projects/` = 16 entries (8 aef-* + 7 drafts + scratch) vs 5 in July; cross-map markers in 10 maps; no role-level cross-map question filed since 2026-07-28, but two bespoke cross-map scans were built (`corpus_lint` cross-map pass T-2604; `corpus_explain --search` T-2942) — artefact §1.
+
+- **IW-2: Does arc-019 EWCR own the Workflow Fabric derived index (§8.3; roadmap Arc 4 "Workflow Fabric projection", Arc 5 item 3 "derived index and impact query"), such that T-2670 is superseded rather than pending?**
+  confidence: 3
+  disposition: dissolved
+  rationale: Yes. architecture-c9070637.md §8.3 "derived, queryable graph of procedure/step/lane entities and flow, call, handoff, component, context…"; roadmap-5be23719.md Arc 4 items 4 (projection), 5 (Component/Context join = SD-13), 6 (impact queries); Arc 5 item 3; operator GO 2026-08-20 — artefact §2.
+
+- **IW-3: What did SD-1's GO (T-2663) leave SD-15 (Workflow Fabric) as — inherited-retired, parked here, or open?**
+  confidence: 3
+  disposition: answered
+  rationale: Routed here, not inherited: T-2662 §4 "SD-15 Workflow Fabric — routed to T-2670" and "SD-13 — parked, revisit inside T-2670's fabric question"; T-2663's inheritance clause lists SD-3/10/13/14 only. T-2670 is the live holder of SD-15 and SD-13; both now have an arc-019 Arc 4 owner — artefact §3.
+
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+Read-only research, no spikes (executed 2026-09-19):
+
+1. Count the designer store and grep cross-map markers; search tasks/inbox/concerns since 2026-07-28 for a filed cross-map query need → IW-1.
+2. Read architecture-c9070637.md §8.3 and roadmap-5be23719.md Arc 4 / Arc 5 → IW-2.
+3. Read T-2662 §4 SD-13/SD-15 rows and T-2663's inheritance clause → IW-3.
+4. Dispose assumptions through `fw assumption validate|invalidate`; write the artefact; recommend; hand the go/no-go to the operator via `fw task review`.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None for the exploration. For the fabric itself, EWCR §8.3 fixes two
+constraints the package's Lock 4 did not: the index is **derived, never
+hand-maintained**, and its default projection is version-aware
+(`ratified-latest` plus versions bound to live instances).
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** whether T-2670 should authorise a cross-map registry build under
+arc-014; disposition of IW-1..3; what transfers to arc-019 Arc 4 (SD-13, SD-15,
+the two bespoke scans). **OUT:** the EWCR architecture's shape; T-2669 (audience
+lenses, SD-14 — separate task); building anything.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
@@ -123,12 +159,13 @@ bvp_scores_proposed:
 
 <!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- A cross-map registry is unowned by any ratified programme and a bounded slice under arc-014 could deliver it
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- Authorising build slices here would create a second Workflow Fabric beside one a ratified programme already owns
+
+**DEFER if:**
+- The revisit evidence has still not arrived AND no successor owns the question
 
 ## Verification
 
@@ -143,20 +180,24 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** NO-GO
 
-**Rationale:** Genuine evidence gap: no concrete cross-map query need has surfaced yet — corpus is 5 maps with 2-3 handoff pairs, walkable by eye; the fabric pays off at a scale/query demand we have not reached. Revisit evidence: first real occasion someone needs a cross-map answer (e.g. all human gateways across corpus) and cannot get it from the gallery.
+**Rationale:** Dissolved by supersession into arc-019 Arc 4. **On this form, GO means "build a cross-map registry under arc-014 now"; NO-GO means "T-2670's question is owned by arc-019 Arc 4 — close as dissolved and carry the transfers".** The DEFER's premise is gone — the store holds 16 entries (8 canonical `aef-*`, 7 substantive drafts) with cross-map markers in 10, not "5 maps walkable by eye" — but the demand it waited for arrived as scale and as two bespoke scans (`corpus_lint` cross-map pass, `corpus_explain --search`), not as a filed role-level question. The decisive fact is newer: EWCR §8.3 specifies the Workflow Fabric as a *derived, queryable graph of procedure/step/lane entities and flow, call, handoff, component, context* relationships that "must not become a third hand-maintained copy", and roadmap Arc 4 items 4–6 build it (projection, Component/Context join = SD-13, impact queries). A GO here would fork that. DEFER is no longer honest: a successor owns the question, and SD-13/SD-15 would stay formally parked in a task whose question has moved.
+
+**Evidence:**
+- `docs/reports/T-2670-workflow-fabric-supersession-review.md` — §1 store census and scan table, §2 EWCR §8.3 / Arc 4 mapping, §3 SD-13/SD-15 lineage, §5 criteria evaluation
+- Assumptions A-057 invalidated, A-058 invalidated, A-059 validated (`fw assumption list`)
+- `.context/designer/projects/` (16 entries); `tools/corpus_lint.py:614 cross_map_typed_events` (T-2604); `tools/corpus_explain.py --search` (T-2942); T-2891 fixture-hole finding
+- `docs/research/executable-workflow/architecture-c9070637.md` §8.3, §18; `roadmap-5be23719.md` Arc 4 items 4–6, Arc 5 item 3; T-2662 §4 rows SD-13/SD-15
+
+**Transfers to arc-019 Arc 4 (recorded, not decided):** (1) the two bespoke scans are the seed consumers the derived index must subsume; (2) SD-13 rides with SD-15 — zero `components:` refs on any map is the measured start; (3) corpus growth is the demand signal, arriving as scale.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-19 — recommendation shape
+- **Chose:** NO-GO, disposition *dissolved by supersession*, with the GO/NO-GO meanings spelled out on the form.
+- **Why:** owned by a ratified programme with a stronger design (derived, version-aware); the sibling T-2668 form was answered GO while carrying a NO-GO rationale, so the verbs' meanings are made explicit here.
+- **Rejected:** DEFER (successor exists — hedge per T-2144); GO-as-approval-of-dissolution (would read as authorising a build).
 
 ## Decision
 
@@ -166,3 +207,32 @@ bvp_scores_proposed:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-09-19T16:11:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-86f94fc5
+- **Timestamp:** 2026-09-19T16:16:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-b50ac791
+- **Timestamp:** 2026-09-19T16:16:52Z
+- **Overall:** CONFIRMED
+- **Claims:** 6
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2670-workflow-fabric-supersession-review.md` | file | ✓ pass |
+| `docs/research/executable-workflow/architecture-c9070637.md` | file | ✓ pass |
+| `T-2604` | task | ✓ pass |
+| `T-2942` | task | ✓ pass |
+| `T-2891` | task | ✓ pass |
+| `T-2662` | task | ✓ pass |

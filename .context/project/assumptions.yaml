@@ -566,3 +566,46 @@ assumptions:
   linked_task: T-2668
   created: '2026-09-19'
   resolved_date: '2026-09-19'
+- id: A-057
+  statement: The corpus is still ~5 maps with 2-3 handoff pairs, walkable by eye (T-2670
+    DEFER premise)
+  status: invalidated
+  validation_method: TBD
+  evidence:
+  - outcome: '.context/designer/projects: 16 entries — 8 aef-* canonical + 7 substantive
+      drafts + 1 scratch (vs 5 in July); cross-map markers (callActivity/handoff)
+      in 10 of them; typed-event throw/catch pairs and workflowRef links now span
+      maps (T-2604, T-2891).'
+    date: '2026-09-19'
+  linked_task: T-2670
+  created: '2026-09-19'
+  resolved_date: '2026-09-19'
+- id: A-058
+  statement: A concrete operator-level cross-map query need (e.g. decision surface
+    across all maps) has surfaced since 2026-07-28 that the gallery could not answer
+  status: invalidated
+  validation_method: TBD
+  evidence:
+  - outcome: 'No task/observation since 2026-07-28 asks a role-level cross-map question.
+      What did surface were two bespoke cross-map scans: corpus_lint cross-map pass
+      (emitterless-typed-event, T-2604) and corpus_explain --search (T-2942) — needs
+      met ad hoc, not a registry demand.'
+    date: '2026-09-19'
+  linked_task: T-2670
+  created: '2026-09-19'
+  resolved_date: '2026-09-19'
+- id: A-059
+  statement: arc-019 EWCR owns the Workflow Fabric derived index (architecture §8.3;
+    roadmap Arc 4 items 4-6), so a fabric built under T-2670 would be a second copy
+  status: validated
+  validation_method: TBD
+  evidence:
+  - outcome: architecture-c9070637.md §8.3 'derived, queryable graph of procedure/step/lane
+      entities and flow, call, handoff, component, context … must not become a third
+      hand-maintained copy'; roadmap-5be23719.md Arc 4 items 4 (Workflow Fabric projection),
+      5 (join to Component/Context Fabric — SD-13), 6 (impact queries); Arc 5 item
+      3.
+    date: '2026-09-19'
+  linked_task: T-2670
+  created: '2026-09-19'
+  resolved_date: '2026-09-19'
