@@ -7,17 +7,17 @@ description: >
   decision-surface across all maps), per the package's Workflow Fabric spec? Handoffs
   exist as map content (T-2586/T-2613) but nothing is queryable (T-2662 gap 5).
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: null
+horizon: now
 tags: [process-layer]
 components: []
 related_tasks: [T-2662]
 arc_id: designer-corpus
 created: 2026-07-28T16:23:14Z
-last_update: 2026-09-19T20:31:21Z
-date_finished: 2026-09-19T20:31:21Z
+last_update: 2026-09-19T16:11:06Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -35,15 +35,6 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
       (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-09-19T16:30:06Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 4
-      effort: 7
-    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
-      (workflow:inception); effort=7 (lines=182,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-07-28T16:30:09Z'
@@ -156,7 +147,7 @@ lenses, SD-14 — separate task); building anything.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -210,11 +201,7 @@ lenses, SD-14 — separate task); building anything.
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Dissolved by supersession into arc-019 Arc 4. **On this form, GO means "build a cross-map registry under arc-014 now"; NO-GO means "T-2670's question is owned by arc-019 Arc 4 — close as dissolved and carry the transfers".** The DEFER's premise is gone — the store holds 16 entries (8 canonical `aef-*`, 7 substantive drafts) with cross-map markers in 10, not "5 maps walkable by eye" — but the demand it waited for arrived as scale and as two bespoke scans (`corpus_lint` cross-map pass, `corpus_explain --search`), not as a filed role-level question. The decisive fact is newer: EWCR §8.3 specifies the Workflow Fabric as a *derived, queryable graph of procedure/step/lane entities and flow, call, handoff, component, context* relationships that "must not become a third hand-maintained copy", and roadmap Arc 4 items 4–6 build it (projection, Component/Context join = SD-13, impact queries). A GO here would fork that. DEFER is no longer honest: a successor owns the question, and SD-13/SD-15 would stay formally parked in a task whose question has moved.
-
-**Date**: 2026-09-19T20:31:20Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -227,16 +214,17 @@ lenses, SD-14 — separate task); building anything.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5bac3d66
-- **Timestamp:** 2026-09-19T20:31:22Z
+- **Scan ID:** R-86f94fc5
+- **Timestamp:** 2026-09-19T16:16:52Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
 ## Recommendation Verdict (v1.0)
 
-- **Scan ID:** RC-478e8939
-- **Timestamp:** 2026-09-19T20:31:22Z
+- **Scan ID:** RC-b50ac791
+- **Timestamp:** 2026-09-19T16:16:52Z
 - **Overall:** CONFIRMED
 - **Claims:** 6
 
@@ -248,11 +236,3 @@ lenses, SD-14 — separate task); building anything.
 | `T-2942` | task | ✓ pass |
 | `T-2891` | task | ✓ pass |
 | `T-2662` | task | ✓ pass |
-### 2026-09-19T20:31:20Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Dissolved by supersession into arc-019 Arc 4. **On this form, GO means "build a cross-map registry under arc-014 now"; NO-GO means "T-2670's question is owned by arc-019 Arc 4 — close as dissolved and carry the transfers".** The DEFER's premise is gone — the store holds 16 entries (8 canonical `aef-*`, 7 substantive drafts) with cross-map markers in 10, not "5 maps walkable by eye" — but the demand it waited for arrived as scale and as two bespoke scans (`corpus_lint` cross-map pass, `corpus_explain --search`), not as a filed role-level question. The decisive fact is newer: EWCR §8.3 specifies the Workflow Fabric as a *derived, queryable graph of procedure/step/lane entities and flow, call, handoff, component, context* relationships that "must not become a third hand-maintained copy", and roadmap Arc 4 items 4–6 build it (projection, Component/Context join = SD-13, impact queries). A GO here would fork that. DEFER is no longer honest: a successor owns the question, and SD-13/SD-15 would stay formally parked in a task whose question has moved.
-
-### 2026-09-19T20:31:21Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

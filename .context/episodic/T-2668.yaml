@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 76309
-  commits: 1
-  files_changed: 3
-  lines_added: 245
-  lines_removed: 29
+  commits: 2
+  files_changed: 5
+  lines_added: 349
+  lines_removed: 40
+  footprint_refreshed_at: '2026-09-19T16:11:31Z'
+  footprint_refreshed_by_commit: f4a1ee07d
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2668-guided-mode-procedural-enforcement-packa.md
