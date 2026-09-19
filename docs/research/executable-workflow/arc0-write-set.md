@@ -63,15 +63,31 @@ control found exactly this case in `policy/`.
 
 ## Machine-readable summary
 
-Re-derived 2026-09-07 by re-running `tools/ewcr-arc0-unknown-overlap.py` at the
-commit named below (the corpus moves; earlier figures at `ce2987fd` were 519/3 —
-the intersection is stable while Unknown grows). `write_set_component_count` is
-the number of Fabric cards whose location falls under the CORE prefixes above;
-`intersection_count` is the CORE-set overlap the falsifier verdict is based on.
+Re-derived 2026-09-19 (T-3394) by re-running `tools/ewcr-arc0-unknown-overlap.py` at
+the commit named below. The corpus moves — Unknown grows with `tests/`, which is
+outside the write set by construction — so the total climbs while the intersection
+does not. `intersection_count` is the CORE-set overlap the falsifier verdict is based
+on; `intersection_count_broad` is the BROAD equivalent.
 
 ```
-unknown_subsystem_count: 555
-write_set_component_count: 22
-intersection_count: 3
-measured_at_commit: 42cd97a2af98f188075aceb16f8531df0e64d7a6
+unknown_subsystem_count: 544
+cards_enumerated: 1279
+intersection_count: 0
+intersection_count_broad: 0
+measured_at_commit: 996a4f9a5df1b1b76b56ea14bfb2f01df9564740
 ```
+
+**Superseded figures, kept so the change is auditable rather than silent:**
+
+| Commit | Unknown | CORE ∩ | BROAD ∩ |
+|---|---|---|---|
+| `ce2987fd` | 519 | 3 | — |
+| `42cd97a2` (2026-09-07) | 555 | 3 | 4 |
+| `ac9a9d410` (T-3351) | — | **0** | **0** |
+| `996a4f9a5` (T-3394) | 544 | **0** | **0** |
+
+T-3351 reclassified 23 Unknown write-set cards and drove the intersection 3/4 → 0/0,
+but this block was not updated with it and reported `intersection_count: 3` for twelve
+days afterwards. The current figures and their control are attested in
+`arc-0-clause-1-attestation.md`, whose verification lines re-run both tools — so these
+two documents now go red together rather than drifting apart.
