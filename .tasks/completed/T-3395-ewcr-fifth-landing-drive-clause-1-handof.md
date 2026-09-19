@@ -5,10 +5,10 @@ name: "EWCR fifth landing drive: clause 1 handoff, R7 predicate, clause 2 operat
 description: >
   EWCR fifth landing drive: clause 1 handoff, R7 predicate, clause 2 operator actions
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-19T22:14:48Z
-last_update: '2026-09-19T22:15:20Z'
-date_finished:
+last_update: 2026-09-19T22:20:20Z
+date_finished: 2026-09-19T22:20:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -405,3 +405,15 @@ timeout 300 python3 tools/ewcr-arc0-coverage-check.py > /tmp/.t3395-cov.out 2>&1
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3395-ewcr-fifth-landing-drive-clause-1-handof.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f31ee11a
+- **Timestamp:** 2026-09-19T22:20:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-19T22:20:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

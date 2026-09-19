@@ -41580,3 +41580,21 @@ scan_id: R-7b12ce24
 task_id: T-3394
 payload:
   task_file: .tasks/active/T-3394-ewcr-arc-0-clause-1-component-fabric-att.md
+---
+kind: scan_emitted
+timestamp: '2026-09-19T22:20:23Z'
+scan_id: R-f31ee11a
+task_id: T-3395
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T22:20:23Z'
+scan_id: R-f31ee11a
+task_id: T-3395
+payload:
+  task_file: .tasks/active/T-3395-ewcr-fifth-landing-drive-clause-1-handof.md

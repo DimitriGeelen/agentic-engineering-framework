@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3395: EWCR fifth landing drive: clause 1 handoff, R7 predicate, clause 2 operator actions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-19T22:20:36Z
+# ============================================================================
+
+task_id: T-3395
+task_name: "EWCR fifth landing drive: clause 1 handoff, R7 predicate, clause 2 operator actions"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-19T22:14:48Z
+completed: 2026-09-19T22:20:20Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-20T00:18:24+02:00
+last_commit: 2026-09-20T00:20:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  EWCR clause 2 operator action — both routes surfaced on T-3389. ACs, verification and evolution for the fifth landing drive
+
+# Key outcomes
+outcomes:
+  - '**A1 Backlog reconciled.** The single EWCR arc (arc-019'
+  - '**A2 Clause 1 answered and landed.** T-3394 closed with 6/6 verification,'
+  - '**A3 Clause 1 answer transmitted and read back.** Posted to the correlation chain'
+  - '**A4 Clause 2 raised as an operator action with both routes.** T-3389 carries a'
+  - '**A5 Arc anchor surfaced.** T-3147 has zero unticked Human ACs and a Recommendation'
+  - '**A6 Sovereign boundaries respected.** No arc scope change, no `decide go`, no arc'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3389-ewcr-arc-0-cand-3-consolidated-refusalth.md'
+  - '.tasks/active/T-3395-ewcr-fifth-landing-drive-clause-1-handof.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-20T00:18:24'
+    action: 'T-3395: EWCR clause 2 operator action — both routes surfaced on T-3389'
+  - time: '2026-09-20T00:20:19'
+    action: 'T-3395: ACs, verification and evolution for the fifth landing drive'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 7
+  lines_added: 512
+  lines_removed: 40
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3395-ewcr-fifth-landing-drive-clause-1-handof.md
+generated_by: context-agent-hybrid
