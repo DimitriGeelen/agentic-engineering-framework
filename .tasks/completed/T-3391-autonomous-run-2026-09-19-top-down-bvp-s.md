@@ -4,10 +4,10 @@ name: "Autonomous run 2026-09-19: top-down BVP selection, second pass — score-
 description: >
   Autonomous run 2026-09-19: top-down BVP selection, second pass — score-through-the-scorer
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-19T15:59:56Z
-last_update: 2026-09-19T16:21:20Z
-date_finished:
+last_update: 2026-09-19T16:24:08Z
+date_finished: 2026-09-19T16:24:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -443,3 +443,20 @@ python3 -c "import glob,sys; pairs=(('T-2668','T-2668-guided-mode-supersession-r
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3391-autonomous-run-2026-09-19-top-down-bvp-s.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-be56ae37
+- **Timestamp:** 2026-09-19T16:24:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **swallowed-errors** (severe, deterministic) @ Verification:line 6
+     - evidence: `F=$(ls .tasks/*/T-3391-*.md | head -1); python3 -c "import re,sys; t=open(sys.argv[1]).read(); s=t.split('\n## Gate refusals\n',1)[1].split('\n## Handback\n',1)[0]; rows=re.findall(r'^\| \d+ \|', s, r`
+
+### 2026-09-19T16:24:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
