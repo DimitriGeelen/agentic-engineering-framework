@@ -1,0 +1,10 @@
+1..9
+ok 1 the incident: a directly-invoked non-executable script is reported NOEXEC
+ok 2 control leg: the SAME crontab is clean once the exec bit is restored
+ok 3 an interpreter in front means the exec bit is irrelevant — not reported
+ok 4 bash-prefixed invocation is likewise not reported
+ok 5 a relative fragment following a shell variable is not treated as a path
+ok 6 an absolute path that does not exist is reported MISSING
+ok 7 @reboot lines are parsed — their USER field sits in a different column
+ok 8 commented-out lines are ignored
+ok 9 --count reports how many scripts were examined, not how many are broken

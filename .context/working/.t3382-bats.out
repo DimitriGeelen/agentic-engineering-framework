@@ -1,0 +1,9 @@
+1..8
+ok 1 control leg: the OLD probe goes red against a server whose root page is slower than 2s
+ok 2 the incident: a slow-but-ours Watchtower now reads running, not stopped
+ok 3 a server that answers but claims ANOTHER project_root reads foreign, never running
+ok 4 no server at all reads stopped
+ok 5 sourcing lib/watchtower.sh under set -euo pipefail does not kill the rail
+ok 6 with the lib ABSENT the rail still exits 0 and degrades to foreign rather than dying
+ok 7 the old reachability probe is gone from the script
+ok 8 control leg: the same assertion DOES fail against a script that still has the old probe

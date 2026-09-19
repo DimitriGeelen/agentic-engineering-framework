@@ -1,0 +1,14 @@
+1..13
+ok 1 T-3138/AC2: a non-final bang assertion is flagged
+ok 2 T-3138/AC2: a FINAL bang assertion is counted live, not flagged
+ok 3 T-3138/AC2: trailing comments do not move the last statement
+ok 4 T-3138/AC2: every dead site in a multi-test file is reported with its line
+ok 5 T-3138/AC2: a bang inside a heredoc body is data, not an assertion
+ok 6 T-3138/AC2: a here-STRING is not mistaken for a heredoc
+ok 7 T-3138/AC2: != is a comparison operator, not the negation keyword
+ok 8 T-3138/AC2: code outside any @test block is not scanned
+ok 9 T-3138/AC2: a ||-guarded negation is live, not dead
+ok 10 T-3138/AC2: a || inside quotes does not count as a guard
+ok 11 T-3138/AC2: a continued statement is one statement
+ok 12 T-3138/AC3: the live tests/ tree has no dead negations
+ok 13 T-3138/AC3 [regression guard]: the lint exits 2 rather than 0 on an empty scan

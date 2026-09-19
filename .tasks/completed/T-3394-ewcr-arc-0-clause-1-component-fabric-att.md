@@ -4,10 +4,10 @@ name: "EWCR Arc 0 clause 1: Component Fabric attestation with measured numbers"
 description: >
   EWCR Arc 0 clause 1: Component Fabric attestation with measured numbers
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -23,8 +23,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-19T22:08:17Z
-last_update: 2026-09-19T22:08:17Z
-date_finished: null
+last_update: 2026-09-19T22:13:15Z
+date_finished: 2026-09-19T22:13:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -259,6 +259,45 @@ timeout 300 python3 tools/ewcr-arc0-coverage-check.py > /tmp/.t3394-cov.out 2>&1
 
 ## Evolution
 
+### 2026-09-19 — the clause was already satisfiable; the evidence had drifted apart
+- **What changed:** At filing I expected clause 1 to need fabric *work*. It did not — the
+  work had already landed in T-3350/T-3351/T-3352. What was missing was an attestation
+  and a coherent set of numbers. `arc0-write-set.md`'s machine-readable block still read
+  `intersection_count: 3` at `42cd97a2`, twelve days after T-3351 (`ac9a9d410`) drove it
+  to 0/0. So the repo simultaneously held the right answer and a document asserting the
+  wrong one, with nothing to make them disagree out loud.
+- **Plan impact:** The task became "measure, attest, and tie the two documents to the
+  same tools" rather than "improve fabric coverage". A5 (no runtime code) held easily.
+- **Triggered:** Both documents now re-run the same two tools in T-3394's `## Verification`,
+  so they go red together instead of drifting. Superseded figures kept as an audit table
+  rather than overwritten.
+
+### 2026-09-19 — I suspected the zero was vacuous, and was wrong; the control is why
+- **What changed:** `ewcr-arc0-unknown-overlap.json` reports `overlap_core: 0` with
+  `core_paths: []`, which reads exactly like this repo's favourite false-green shape — a
+  zero measured over an empty population. I stopped and checked before attesting. It is
+  not vacuous: `core_paths` lists the *overlapping* paths, so empty is the correct
+  consequence of zero overlap, and `ac9a9d410` records the genuine 3/4 → 0/0 reduction.
+- **Plan impact:** Confirmed that overlap alone still cannot carry the claim — which is
+  the weakness `arc0-write-set.md` names about itself — so the attestation reports the
+  coverage control as a co-equal leg rather than a footnote. `policy/` is the proof the
+  control works: it caught that exact artefact (0 cards) in August.
+- **Triggered:** A2 was written specifically to forbid reporting leg 1 without leg 2.
+
+### 2026-09-19 — clause 2 is blocked on a transfer that never happened
+- **What changed:** T-3389 (the refusal/threat matrix, = clause 2 = 832's R6) cannot be
+  started: its Human AC requires the four external reviews in
+  `docs/research/executable-workflow/reviews/`, and that directory does not exist. This
+  matches 832's @643 arithmetic exactly — two of four model families have no disposition
+  table anywhere, so clause 2 is unsatisfiable from the packet regardless of table quality.
+- **Plan impact:** Clause 2 is out of reach for this task and for any agent effort here.
+  Writing dispositions for findings this repo has never held would fabricate exactly the
+  content whose purpose is refusal fidelity.
+- **Triggered:** Raised to the operator as two named options (transfer the reviews, or
+  rule DeepSeek/Mistral out of Arc-0 scope). Both are scope decisions on a draft-authorised
+  arc, so both sit outside agent authority under arc-019's fence. Recorded in the
+  attestation's `## Clause 2` section rather than acted on.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -337,3 +376,15 @@ timeout 300 python3 tools/ewcr-arc0-coverage-check.py > /tmp/.t3394-cov.out 2>&1
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3394-ewcr-arc-0-clause-1-component-fabric-att.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7b12ce24
+- **Timestamp:** 2026-09-19T22:13:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-19T22:13:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

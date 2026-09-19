@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-16T03:23:03.275698+00:00
-corpus_total: 2886
-bug_class_total: 508
+generated: 2026-09-19T03:23:02.706451+00:00
+corpus_total: 2905
+bug_class_total: 514
 bug_class_pct: 17
-h1_flagged: 366
-h1_pct_of_bug_class: 72
-h2_repeat_patterns: 165
+h1_flagged: 367
+h1_pct_of_bug_class: 71
+h2_repeat_patterns: 167
 h3_flagged: 265
-h3_pct_of_bug_class: 52
-recent_30d_flagged: 7
+h3_pct_of_bug_class: 51
+recent_30d_flagged: 8
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
@@ -26,19 +26,21 @@ recent_sample:
     name: "find is unconditionally safe-listed, so -delete and -exec pass the Bash task"
   - tid: "T-3273-workflowcoverage-fail-false-positive-on-"
     name: "workflow_coverage FAIL false-positive on non-spawning worker_kind ollama-direct"
+  - tid: "T-3382-liveness-checksh-false-negative-probe-ap"
+    name: "liveness-check.sh false negative: probe /api/_identity and match project_root, n"
 h2_top:
   - learning: "P-011"
-    task_count: 2623
+    task_count: 2680
   - learning: "L-387"
-    task_count: 2363
+    task_count: 2420
   - learning: "L-291"
-    task_count: 1175
+    task_count: 1194
   - learning: "L-398"
-    task_count: 918
+    task_count: 937
   - learning: "P-010"
-    task_count: 532
+    task_count: 544
   - learning: "L-399"
-    task_count: 99
+    task_count: 105
   - learning: "L-006"
     task_count: 56
   - learning: "L-001"

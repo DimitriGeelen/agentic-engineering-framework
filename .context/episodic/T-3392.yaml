@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3392: EWCR fourth landing drive: Arc 0 closure path, T-3389, and Arc 1 kernel scoping
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-19T21:10:03Z
+# ============================================================================
+
+task_id: T-3392
+task_name: "EWCR fourth landing drive: Arc 0 closure path, T-3389, and Arc 1 kernel scoping"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-19T20:58:07Z
+completed: 2026-09-19T21:09:48Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-19T23:01:32+02:00
+last_commit: 2026-09-19T23:09:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  EWCR fourth landing drive — orient, status report, dispositions. land T-3393 close artefacts — archive, episodic, fabric cards. operator actions with live links, ACs, evolution, verification
+
+# Key outcomes
+outcomes:
+  - 'Status report written to `## Status report` in this file, covering: per-task arc-019 state; what runs end-to-end today vs designed-only; focus drift; and the critical chain to a working EWCR.'
+  - 'T-3389 (last open Arc 0 task) driven to a terminal state this session — landed, or recorded in `## Dispositions` with a one-line blocked reason. Parked: blocked on an operator transfer, no agent route.'
+  - 'Arc 0 closure surfaced to the operator (never self-closed — `fw arc close` is agent-refused, T-1671), with the absolute Watchtower link recorded in this file.'
+  - 'Arc 1 (semantics kernel) recorded in `## Operator actions` as a Sovereign scope decision with a recommendation — proposed, not created.'
+  - 'Verb mismatches and gate refusals encountered by this drive recorded in `## Verb mismatches and gate refusals`.'
+  - 'At least one unit landed, not merely reported: T-3393 (traceability matrix + fence) closed 6/6 ACs, 7/7 verification, commit `fae092e9c`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-2668.yaml'
+  - '.context/episodic/T-2669.yaml'
+  - '.context/episodic/T-2670.yaml'
+  - '.context/episodic/T-3191.yaml'
+  - '.context/episodic/T-3362.yaml'
+  - '.context/episodic/T-3379.yaml'
+  - '.context/episodic/T-3380.yaml'
+  - '.context/episodic/T-3381.yaml'
+  - '.context/episodic/T-3382.yaml'
+  - '.context/episodic/T-3383.yaml'
+  - '.context/episodic/T-3384.yaml'
+  - '.context/episodic/T-3385.yaml'
+  - '.context/episodic/T-3386.yaml'
+  - '.context/episodic/T-3387.yaml'
+  - '.context/episodic/T-3388.yaml'
+  - '.context/episodic/T-3390.yaml'
+  - '.context/episodic/T-3391.yaml'
+  - '.context/episodic/T-3393.yaml'
+  - '.fabric/components/tests-unit-t3393_ewcr_traceability.yaml'
+  - '.fabric/components/tools-ewcr-trace-check.yaml'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3392-ewcr-fourth-landing-drive-arc-0-closure-.md'
+  - '.tasks/completed/T-2669-audience-lenses-on-corpus-maps-package-p.md'
+  - '.tasks/completed/T-2670-workflow-fabric-queryable-cross-map-inde.md'
+  - '.tasks/completed/T-3393-ewcr-arc-0-13-invariant-traceability-mat.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-19T23:01:32'
+    action: 'T-3392: EWCR fourth landing drive — orient, status report, dispositions'
+  - time: '2026-09-19T23:08:38'
+    action: 'T-3392: land T-3393 close artefacts — archive, episodic, fabric cards'
+  - time: '2026-09-19T23:09:47'
+    action: 'T-3392: operator actions with live links, ACs, evolution, verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:ewcr-arc0-contract-evidence, ewcr, landing-drive]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 3
+  files_changed: 26
+  lines_added: 961
+  lines_removed: 326
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3392-ewcr-fourth-landing-drive-arc-0-closure-.md
+generated_by: context-agent-hybrid

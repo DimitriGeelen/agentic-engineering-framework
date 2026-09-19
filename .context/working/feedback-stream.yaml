@@ -40839,3 +40839,744 @@ scan_id: R-1b592359
 task_id: T-3377
 payload:
   task_file: .tasks/active/T-3377-fw-doctor-hangs-large-file-scan-tree-for.md
+---
+kind: scan_emitted
+timestamp: '2026-09-16T21:10:45Z'
+scan_id: R-0f51e5d6
+task_id: T-3362
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-16T21:10:45Z'
+scan_id: R-0f51e5d6
+task_id: T-3362
+payload:
+  task_file: .tasks/active/T-3362-triage-the-22-pytest-failures-surfaced-b.md
+---
+kind: scan_emitted
+timestamp: '2026-09-16T22:28:41Z'
+scan_id: R-235dde15
+task_id: T-3369
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-16T22:28:41Z'
+scan_id: R-235dde15
+task_id: T-3369
+payload:
+  task_file: .tasks/active/T-3369-human-ac-stepsexpectedif-not-render-esca.md
+---
+kind: scan_emitted
+timestamp: '2026-09-16T23:43:09Z'
+scan_id: R-03cb1134
+task_id: T-3191
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-16T23:43:09Z'
+scan_id: R-03cb1134
+task_id: T-3191
+payload:
+  task_file: .tasks/active/T-3191-bats-dead-negation-lint-is-wired-into-no.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:26Z'
+scan_id: R-2d693a5f
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:26Z'
+scan_id: R-2d693a5f
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:26Z'
+scan_id: R-059ce7a2
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:26Z'
+scan_id: R-059ce7a2
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:27Z'
+scan_id: R-61504047
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:27Z'
+scan_id: R-61504047
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:27Z'
+scan_id: R-4670efae
+task_id: T-1730
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:27Z'
+scan_id: R-4670efae
+task_id: T-1730
+payload:
+  task_file: .tasks/completed/T-1730-bash-matcher--focus-drift-gate-on-check-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:28Z'
+scan_id: R-2477bab2
+task_id: T-1731
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:28Z'
+scan_id: R-2477bab2
+task_id: T-1731
+payload:
+  task_file: .tasks/completed/T-1731-human-ac-tick-guard--block-agent-from-ch.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:28Z'
+scan_id: R-4b5f6668
+task_id: T-1762
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:28Z'
+scan_id: R-4b5f6668
+task_id: T-1762
+payload:
+  task_file: .tasks/completed/T-1762-task-pair-acd-gate-p-012-wire-g-066-pron.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:28Z'
+scan_id: R-1fd48082
+task_id: T-1766
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:28Z'
+scan_id: R-1fd48082
+task_id: T-1766
+payload:
+  task_file: .tasks/completed/T-1766-render-surface-human-ac-gate--block-work.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:29Z'
+scan_id: R-3dc8ad41
+task_id: T-1893
+payload:
+  overall: CONCERN
+  finding_count: 5
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:29Z'
+scan_id: R-3dc8ad41
+task_id: T-1893
+payload:
+  task_file: .tasks/completed/T-1893-arc-005-closure-demo-evidence-capture-g-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:31Z'
+scan_id: R-699e9e10
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:31Z'
+scan_id: R-699e9e10
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:31Z'
+scan_id: R-b6fb7a63
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:31Z'
+scan_id: R-b6fb7a63
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:32Z'
+scan_id: R-3cb6ff8e
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:32Z'
+scan_id: R-3cb6ff8e
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:32Z'
+scan_id: R-c3ad07d7
+task_id: T-1851
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:32Z'
+scan_id: R-c3ad07d7
+task_id: T-1851
+payload:
+  task_file: .tasks/completed/T-1851-deprecate-constituenttasks-field-t-new-4.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T05:18:32Z'
+scan_id: R-a19975cd
+task_id: T-1857
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T05:18:32Z'
+scan_id: R-a19975cd
+task_id: T-1857
+payload:
+  task_file: .tasks/completed/T-1857-012-arcsystemmd--frameworkmd-updates-t-n.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T16:39:03Z'
+scan_id: R-9176e55f
+task_id: T-2171
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T16:39:03Z'
+scan_id: R-9176e55f
+task_id: T-2171
+payload:
+  task_file: .tasks/active/T-2171-bvp-t-new-e-f-autonomy-activation-gate--.md
+---
+kind: override_expired
+timestamp: '2026-09-17T16:39:03Z'
+scan_id: R-9176e55f
+task_id: T-2171
+payload:
+  id: OV-cad6c610
+  pattern_id: AC-verify-mismatch
+  expired_at: '2026-09-09T23:07:55Z'
+---
+kind: scan_emitted
+timestamp: '2026-09-17T16:57:05Z'
+scan_id: R-81abe11e
+task_id: T-3379
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T16:57:05Z'
+scan_id: R-81abe11e
+task_id: T-3379
+payload:
+  task_file: .tasks/active/T-3379-fw-task-review-hands-out-localhost3000-a.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T20:58:42Z'
+scan_id: R-1f88d760
+task_id: T-3380
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T20:58:42Z'
+scan_id: R-1f88d760
+task_id: T-3380
+payload:
+  task_file: .tasks/active/T-3380-watchtower-stayed-down-5h-after-host-reb.md
+---
+kind: scan_emitted
+timestamp: '2026-09-17T21:47:48Z'
+scan_id: R-601f4cac
+task_id: T-3381
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-17T21:47:48Z'
+scan_id: R-601f4cac
+task_id: T-3381
+payload:
+  task_file: .tasks/active/T-3381-ewcr-second-landing-drive-reconcile-back.md
+---
+kind: scan_emitted
+timestamp: '2026-09-18T04:42:21Z'
+scan_id: R-97dd7ead
+task_id: T-3382
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-18T04:42:21Z'
+scan_id: R-97dd7ead
+task_id: T-3382
+payload:
+  task_file: .tasks/active/T-3382-liveness-checksh-false-negative-probe-ap.md
+---
+kind: scan_emitted
+timestamp: '2026-09-18T04:52:19Z'
+scan_id: R-c5be599a
+task_id: T-3383
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-18T04:52:19Z'
+scan_id: R-c5be599a
+task_id: T-3383
+payload:
+  task_file: .tasks/active/T-3383-t-3382-follow-up-dead-negation--grep-in-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-18T15:48:14Z'
+scan_id: R-2989230a
+task_id: T-3385
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-18T15:48:14Z'
+scan_id: R-2989230a
+task_id: T-3385
+payload:
+  task_file: .tasks/active/T-3385-ewcr-arc-0-cand-2-freeze-v1-schemas--pro.md
+---
+kind: scan_emitted
+timestamp: '2026-09-18T15:51:14Z'
+scan_id: R-9966701b
+task_id: T-3386
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-18T15:51:14Z'
+scan_id: R-9966701b
+task_id: T-3386
+payload:
+  task_file: .tasks/active/T-3386-ewcr-arc-0-cand-4-define-the-pilot-task-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-18T15:53:31Z'
+scan_id: R-37cc513f
+task_id: T-3388
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-18T15:53:31Z'
+scan_id: R-37cc513f
+task_id: T-3388
+payload:
+  task_file: .tasks/active/T-3388-ewcr-arc-0-cand-6-worked-human-gate--reg.md
+---
+kind: scan_emitted
+timestamp: '2026-09-18T15:55:15Z'
+scan_id: R-38a455f8
+task_id: T-3384
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-18T15:55:15Z'
+scan_id: R-38a455f8
+task_id: T-3384
+payload:
+  task_file: .tasks/active/T-3384-ewcr-third-landing-drive-record-d1start-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-18T18:44:45Z'
+scan_id: R-8becb2bf
+task_id: T-3387
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-18T18:44:45Z'
+scan_id: R-8becb2bf
+task_id: T-3387
+payload:
+  task_file: .tasks/active/T-3387-ewcr-arc-0-cand-5-specify-evidence-snaps.md
+---
+kind: scan_emitted
+timestamp: '2026-09-18T19:11:00Z'
+scan_id: R-3537ef0f
+task_id: T-3390
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-18T19:11:00Z'
+scan_id: R-3537ef0f
+task_id: T-3390
+payload:
+  task_file: .tasks/active/T-3390-autonomous-run-2026-09-18-top-down-bvp-s.md
+---
+kind: scan_emitted
+timestamp: '2026-09-19T16:10:16Z'
+scan_id: R-d778ef9b
+task_id: T-2668
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T16:10:16Z'
+scan_id: R-d778ef9b
+task_id: T-2668
+payload:
+  task_file: .tasks/active/T-2668-guided-mode-procedural-enforcement-packa.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-19T16:10:16Z'
+scan_id: RC-1870220d
+task_id: T-2668
+payload:
+  overall: CONFIRMED
+  claim_count: 9
+---
+kind: scan_emitted
+timestamp: '2026-09-19T16:11:05Z'
+scan_id: R-e9393844
+task_id: T-2668
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T16:11:05Z'
+scan_id: R-e9393844
+task_id: T-2668
+payload:
+  task_file: .tasks/active/T-2668-guided-mode-procedural-enforcement-packa.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-19T16:11:05Z'
+scan_id: RC-13a8de17
+task_id: T-2668
+payload:
+  overall: CONFIRMED
+  claim_count: 9
+---
+kind: scan_emitted
+timestamp: '2026-09-19T16:16:52Z'
+scan_id: R-86f94fc5
+task_id: T-2670
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T16:16:52Z'
+scan_id: R-86f94fc5
+task_id: T-2670
+payload:
+  task_file: .tasks/active/T-2670-workflow-fabric-queryable-cross-map-inde.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-19T16:16:52Z'
+scan_id: RC-b50ac791
+task_id: T-2670
+payload:
+  overall: CONFIRMED
+  claim_count: 6
+---
+kind: scan_emitted
+timestamp: '2026-09-19T16:21:02Z'
+scan_id: R-67654561
+task_id: T-2669
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T16:21:02Z'
+scan_id: R-67654561
+task_id: T-2669
+payload:
+  task_file: .tasks/active/T-2669-audience-lenses-on-corpus-maps-package-p.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-19T16:21:02Z'
+scan_id: RC-15260594
+task_id: T-2669
+payload:
+  overall: CONFIRMED
+  claim_count: 8
+---
+kind: scan_emitted
+timestamp: '2026-09-19T16:24:10Z'
+scan_id: R-be56ae37
+task_id: T-3391
+payload:
+  overall: FAIL
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T16:24:10Z'
+scan_id: R-be56ae37
+task_id: T-3391
+payload:
+  task_file: .tasks/active/T-3391-autonomous-run-2026-09-19-top-down-bvp-s.md
+---
+kind: scan_emitted
+timestamp: '2026-09-19T20:31:22Z'
+scan_id: R-5bac3d66
+task_id: T-2670
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T20:31:22Z'
+scan_id: R-5bac3d66
+task_id: T-2670
+payload:
+  task_file: .tasks/active/T-2670-workflow-fabric-queryable-cross-map-inde.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-19T20:31:22Z'
+scan_id: RC-478e8939
+task_id: T-2670
+payload:
+  overall: CONFIRMED
+  claim_count: 6
+---
+kind: scan_emitted
+timestamp: '2026-09-19T20:31:53Z'
+scan_id: R-dd89bc0f
+task_id: T-2669
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T20:31:53Z'
+scan_id: R-dd89bc0f
+task_id: T-2669
+payload:
+  task_file: .tasks/active/T-2669-audience-lenses-on-corpus-maps-package-p.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-19T20:31:53Z'
+scan_id: RC-ed0bcf87
+task_id: T-2669
+payload:
+  overall: CONFIRMED
+  claim_count: 8
+---
+kind: scan_emitted
+timestamp: '2026-09-19T21:07:30Z'
+scan_id: R-122372de
+task_id: T-3393
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T21:07:30Z'
+scan_id: R-122372de
+task_id: T-3393
+payload:
+  task_file: .tasks/active/T-3393-ewcr-arc-0-13-invariant-traceability-mat.md
+---
+kind: scan_emitted
+timestamp: '2026-09-19T21:09:50Z'
+scan_id: R-630e0897
+task_id: T-3392
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T21:09:50Z'
+scan_id: R-630e0897
+task_id: T-3392
+payload:
+  task_file: .tasks/active/T-3392-ewcr-fourth-landing-drive-arc-0-closure-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-19T22:13:22Z'
+scan_id: R-7b12ce24
+task_id: T-3394
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-19T22:13:22Z'
+scan_id: R-7b12ce24
+task_id: T-3394
+payload:
+  task_file: .tasks/active/T-3394-ewcr-arc-0-clause-1-component-fabric-att.md
