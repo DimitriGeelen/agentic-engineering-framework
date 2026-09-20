@@ -2228,6 +2228,49 @@ else:
         fi
     fi
 
+    # Check: port-3000 hygiene ratchet (T-2894, set-level sibling of T-2732's
+    # per-item close gate). T-2732's P-011 gate fires once per task close and
+    # says nothing about the population already in the repo, and cannot see a
+    # carrier that never reaches a close (a completed task, a doc, a shell
+    # script). tools/port3000_hygiene.py classifies every localhost:3000 /
+    # 127.0.0.1:3000 literal as `carrier` (true hardcode) or `citation`
+    # (CLAUDE.md's own §Watchtower Port section, a code comment/docstring
+    # explaining the pattern, or a same-line/nearby sanctioned fallback — the
+    # same resolution vocabulary T-2732's own predicate sanctions) and
+    # ratchets the live carrier set against
+    # .context/audits/port3000-baseline.json, keyed by basename (not relpath
+    # — `--status work-completed` moves .tasks/active/ -> .tasks/completed/,
+    # and 832 shipped exactly this bug: a relpath key made a grandfathered
+    # task's carrier look brand new on completion). WARN-only (never a hard
+    # FAIL — doctor doesn't gate the whole tool on this) when at least one
+    # carrier is new since the last baseline refresh; informational
+    # otherwise. Framework-repo-only dev tooling (tools/ is not vendored to
+    # consumers under .agentic-framework/), so absence is a silent SKIP.
+    _p3k_tool="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/tools/port3000_hygiene.py"
+    if [ -f "$_p3k_tool" ]; then
+        _p3k_line=$(python3 "$_p3k_tool" doctor-line \
+            --root "${FRAMEWORK_ROOT:-$PROJECT_ROOT}" \
+            --baseline "$PROJECT_ROOT/.context/audits/port3000-baseline.json" 2>/dev/null)
+        _p3k_verdict="${_p3k_line%%|*}"
+        _p3k_rest="${_p3k_line#*|}"
+        _p3k_msg="${_p3k_rest%%|*}"
+        _p3k_hint="${_p3k_rest#*|}"
+        case "$_p3k_verdict" in
+            OK)
+                echo -e "  ${GREEN}OK${NC}  $_p3k_msg"
+                ;;
+            WARN)
+                echo -e "  ${YELLOW}WARN${NC}  $_p3k_msg"
+                [ -n "$_p3k_hint" ] && echo -e "         $_p3k_hint"
+                warnings=$((warnings + 1))
+                ;;
+            *)
+                echo -e "  ${CYAN}SKIP${NC}  ${_p3k_msg:-port3000 hygiene: unavailable}"
+                [ -n "$_p3k_hint" ] && echo -e "         $_p3k_hint"
+                ;;
+        esac
+    fi
+
     # Check: vector index freshness (T-3013, T-3005 slice 4)
     #
     # Before this the vector substrate had NO doctor coverage at all — which is
