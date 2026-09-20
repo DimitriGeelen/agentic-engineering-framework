@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T11:02:25Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: '2026-09-20T19:15:12Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,6 +75,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=182,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-20T19:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=227,acs=10)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-09T11:15:13Z'
     estimator: bvp-estimator-v1-heuristic
@@ -90,6 +99,23 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-20T19:15:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 3
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
@@ -110,7 +136,7 @@ finding, L-518 gap-homing, their shipped baseline-keying bug to avoid).
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **AC1 Classifier:** a script (e.g. `tools/port3000_hygiene.py`) scans
+- [x] **AC1 Classifier:** a script (e.g. `tools/port3000_hygiene.py`) scans
       `.tasks/` and the repo (excluding worktrees and `.agentic-framework/`
       the vendored mirror) for `localhost:3000` / `127.0.0.1:3000` literals
       and classifies each hit as `carrier` (a true hard-coded anti-pattern
@@ -119,31 +145,31 @@ finding, L-518 gap-homing, their shipped baseline-keying bug to avoid).
       the sanctioned last-resort fallback form the section itself sanctions —
       i.e. `3000` reached only after the triple-file/`fw_config` resolution
       already failed). Output: a count of each class, not a single number.
-- [ ] **AC2 Baseline:** a baseline store (e.g.
+- [x] **AC2 Baseline:** a baseline store (e.g.
       `.context/audits/port3000-baseline.json`) records every current
       `carrier` hit, keyed by **basename** (not relpath — T-2732/832's own
       shipped bug: `work-completed` moves `.tasks/active/` →
       `.tasks/completed/`, and a relpath key makes a grandfathered task's
       carrier look new on completion) plus a per-basename list to guard
       basename collisions across directories.
-- [ ] **AC3 Ratchet:** re-running the classifier against the baseline exits
+- [x] **AC3 Ratchet:** re-running the classifier against the baseline exits
       non-zero (FAIL) only when a carrier exists that is NOT in the baseline
       (a genuinely new carrier). Removing a carrier never fails the ratchet.
       A completely unchanged carrier population exits 0.
-- [ ] **AC4 Lifecycle-move tolerant:** a task file's `work-completed` move
+- [x] **AC4 Lifecycle-move tolerant:** a task file's `work-completed` move
       (`.tasks/active/T-XXX-*.md` → `.tasks/completed/T-XXX-*.md`) does NOT
       register as a new carrier under the basename key (regression test for
       832's exact shipped bug).
-- [ ] **AC5 Stale-entry reporting:** baseline entries whose carrier no longer
+- [x] **AC5 Stale-entry reporting:** baseline entries whose carrier no longer
       exists in the live scan are reported (not silently dropped) as `stale`
       — this is what prevents a cleaned file from silently reacquiring a
       carrier later without the ratchet re-flagging it as new (removing +
       re-baselining is a deliberate, visible pruning step, not automatic).
-- [ ] **AC6 Wired into `fw doctor`:** a new check line reports the current
+- [x] **AC6 Wired into `fw doctor`:** a new check line reports the current
       carrier/citation/new/stale counts (WARN on any new carrier since the
       last baseline refresh; informational otherwise) — set-level visibility
       T-2732's per-close gate structurally cannot provide.
-- [ ] **AC7 Test coverage:** unit tests (bats or pytest, matching the repo's
+- [x] **AC7 Test coverage:** unit tests (bats or pytest, matching the repo's
       existing convention for `tools/`) cover: (a) classifier correctly
       separates a synthetic carrier line from a synthetic citation line
       (using CLAUDE.md's own §Watchtower Port wording as the citation
@@ -151,7 +177,7 @@ finding, L-518 gap-homing, their shipped baseline-keying bug to avoid).
       fails on one new carrier, (d) ratchet does not fail on a removed
       carrier, (e) AC4's lifecycle-move case, (f) a stale baseline entry is
       reported.
-- [ ] **AC8 Reviewer static-scan PASS** (`bin/fw reviewer T-2894 --no-write`).
+- [x] **AC8 Reviewer static-scan PASS** (`bin/fw reviewer T-2894 --no-write`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -251,6 +277,12 @@ finding, L-518 gap-homing, their shipped baseline-keying bug to avoid).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_port3000_hygiene.py -q > /tmp/.t2894_pytest.out 2>&1 && grep -q passed /tmp/.t2894_pytest.out
+python3 -c "import json; json.load(open('.context/audits/port3000-baseline.json'))"
+python3 tools/port3000_hygiene.py ratchet
+bin/fw doctor --quick > /tmp/.t2894_doctor.out 2>&1 || true; grep -q "port3000 hygiene" /tmp/.t2894_doctor.out
+bin/fw reviewer T-2894 --no-write > /tmp/.t2894_reviewer.out 2>&1 || true; grep -q "Overall:.*PASS" /tmp/.t2894_reviewer.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -266,6 +298,50 @@ finding, L-518 gap-homing, their shipped baseline-keying bug to avoid).
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 832's own hard-coded-port carrier count grew from 11 to 17 over 7
+days (rail 495) while the anti-pattern was documented in prose and rated
+severity-medium — the ban held zero of six new instances. On this repo, T-2732
+gave `## Verification` blocks a close-time gate (`find_port_literals`), and
+raw greps at filing time (2026-08-09) still found 334 task files and 497
+non-task files containing a `localhost:3000`/`127.0.0.1:3000` literal, with no
+way to tell how many were genuine anti-pattern carriers versus the sanctioned
+fallback form or the anti-pattern's own documentation.
+
+**Root cause:** T-2732's gate is a per-item checker — it evaluates one task's
+`## Verification` block at the moment `--status work-completed` is requested,
+and only that block. It has no memory of the population: a hard-coded literal
+in a shell script, a doc, a task's `## Context`/`## RCA` prose, or a
+Verification block that never reaches a close (the task stays `started-work`
+or `issues` forever) is invisible to it by construction. A gate that fires
+once per item asserts nothing about the set of items, and 832's field
+evidence shows the gap is not theoretical: the same prose ban, unenforced at
+the set level, produced measurable growth in 7 days.
+
+**Why structurally allowed:** the framework had exactly one control for this
+class (T-2732's close gate) and treated "the anti-pattern is banned in
+CLAUDE.md and gated at close" as equivalent to "the population is bounded."
+Those are different claims. Nothing computed the second one, so a WARN never
+fired when the count grew, and 832's own repo ran for a week without anyone
+re-measuring it — the gap was only found because 832 filed it as a gap (rail
+495) and L-518 swept the finding onto this repo as `.tasks/active/T-2894`
+before the same silent growth had a chance to repeat here.
+
+**Prevention:** `tools/port3000_hygiene.py` adds the set-level counterpart —
+a classifier that separates true carriers from citations (CLAUDE.md's own
+§Watchtower Port section, code comments/docstrings, and the same-line/nearby
+sanctioned-fallback idiom T-2732's own predicate already sanctions), a
+basename-keyed baseline (`.context/audits/port3000-baseline.json`, keyed on
+basename rather than relpath specifically to avoid 832's own shipped bug —
+`work-completed` moves `.tasks/active/` → `.tasks/completed/`, and a
+relpath-keyed baseline would make a grandfathered task's carrier look brand
+new on completion), and a ratchet wired into `fw doctor` (AC6) that WARNs the
+moment a carrier appears that the baseline doesn't already know about —
+turning "re-measure manually and hope someone notices growth" into an
+automatic, every-`doctor`-run comparison. Stale baseline entries (a carrier
+that used to exist and no longer does) are reported, not silently pruned, so
+a cleaned file cannot silently reacquire a carrier later without the next
+ratchet run noticing the reappearance as new.
 
 ## Evolution
 
