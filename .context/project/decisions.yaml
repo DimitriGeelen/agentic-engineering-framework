@@ -4055,3 +4055,10 @@ decisions:
     date: 2026-09-20
     task: T-2918
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-582
+    decision: "one autouse fixture in a new `tests/unit/conftest.py` that snapshots and"
+    scope: project
+    date: 2026-09-20
+    task: T-3363
+    rationale: "Auto-captured from task file on completion"
