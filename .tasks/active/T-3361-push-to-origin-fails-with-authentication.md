@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-11T20:17:04Z
-last_update: 2026-09-20T09:38:06Z
+last_update: 2026-09-20T10:11:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -413,6 +413,16 @@ follow-up task, consistent with "don't file tasks to look thorough." (workflow_t
 -->
 
 ## Recommendation
+
+**Recommendation:** GO — confirm the `BRANCH_AHEAD_WARN` config row renders cleanly; everything else on this task is agent-closed on live evidence.
+
+**Rationale:** The task's actual subject (push-to-origin auth) is fully resolved and proven, not inferred: two separate real (non-dry-run) pushes to `origin/bleeding-edge` succeeded in this session, both surfaced through the real pre-push audit gate. The one open Human AC is unrelated to the auth investigation — it exists only because this task's git history (from a prior session) touched `web/blueprints/config.py`, which trips the render-surface gate (T-1766/P-013) regardless of today's diff. It is a one-row settings-table addition; low risk, quick to eyeball.
+
+**Evidence:**
+- `git push origin bleeding-edge` succeeded twice this session (commits `a83f71577`, `89bbe7509`, `6d805119c`, `8dc16b9d9` all landed on the remote — verify with `git log origin/bleeding-edge -5`)
+- `git push origin bleeding-edge --dry-run` → `Everything up-to-date`, no `Authentication failed`
+- `fw doctor` branch-hygiene rail does not flag `bleeding-edge` as ahead-unpushed
+- Root cause of the original 2026-09-11 failure could not be independently re-derived (operator-only credential state, outside project boundary) but is confirmed no longer live — see RCA section
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
