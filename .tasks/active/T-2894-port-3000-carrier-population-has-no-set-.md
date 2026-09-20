@@ -99,14 +99,59 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2732's P-011 close gate is a per-item checker (fires once per task close);
+this task adds the set-level counterpart — a classifier separating true
+port-3000 anti-pattern carriers from citations/documentation of the
+anti-pattern, plus a ratchet that baselines known carriers and fails only on
+genuinely new ones. See description for full background (832's rail 495
+finding, L-518 gap-homing, their shipped baseline-keying bug to avoid).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **AC1 Classifier:** a script (e.g. `tools/port3000_hygiene.py`) scans
+      `.tasks/` and the repo (excluding worktrees and `.agentic-framework/`
+      the vendored mirror) for `localhost:3000` / `127.0.0.1:3000` literals
+      and classifies each hit as `carrier` (a true hard-coded anti-pattern
+      instance) or `citation` (inside CLAUDE.md's own §Watchtower Port
+      documentation, a code comment/docstring explaining the anti-pattern, or
+      the sanctioned last-resort fallback form the section itself sanctions —
+      i.e. `3000` reached only after the triple-file/`fw_config` resolution
+      already failed). Output: a count of each class, not a single number.
+- [ ] **AC2 Baseline:** a baseline store (e.g.
+      `.context/audits/port3000-baseline.json`) records every current
+      `carrier` hit, keyed by **basename** (not relpath — T-2732/832's own
+      shipped bug: `work-completed` moves `.tasks/active/` →
+      `.tasks/completed/`, and a relpath key makes a grandfathered task's
+      carrier look new on completion) plus a per-basename list to guard
+      basename collisions across directories.
+- [ ] **AC3 Ratchet:** re-running the classifier against the baseline exits
+      non-zero (FAIL) only when a carrier exists that is NOT in the baseline
+      (a genuinely new carrier). Removing a carrier never fails the ratchet.
+      A completely unchanged carrier population exits 0.
+- [ ] **AC4 Lifecycle-move tolerant:** a task file's `work-completed` move
+      (`.tasks/active/T-XXX-*.md` → `.tasks/completed/T-XXX-*.md`) does NOT
+      register as a new carrier under the basename key (regression test for
+      832's exact shipped bug).
+- [ ] **AC5 Stale-entry reporting:** baseline entries whose carrier no longer
+      exists in the live scan are reported (not silently dropped) as `stale`
+      — this is what prevents a cleaned file from silently reacquiring a
+      carrier later without the ratchet re-flagging it as new (removing +
+      re-baselining is a deliberate, visible pruning step, not automatic).
+- [ ] **AC6 Wired into `fw doctor`:** a new check line reports the current
+      carrier/citation/new/stale counts (WARN on any new carrier since the
+      last baseline refresh; informational otherwise) — set-level visibility
+      T-2732's per-close gate structurally cannot provide.
+- [ ] **AC7 Test coverage:** unit tests (bats or pytest, matching the repo's
+      existing convention for `tools/`) cover: (a) classifier correctly
+      separates a synthetic carrier line from a synthetic citation line
+      (using CLAUDE.md's own §Watchtower Port wording as the citation
+      fixture), (b) ratchet passes on an unchanged population, (c) ratchet
+      fails on one new carrier, (d) ratchet does not fail on a removed
+      carrier, (e) AC4's lifecycle-move case, (f) a stale baseline entry is
+      reported.
+- [ ] **AC8 Reviewer static-scan PASS** (`bin/fw reviewer T-2894 --no-write`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
