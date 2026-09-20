@@ -24,9 +24,9 @@ description: >
   live joint smoke against the fix to close the headline mechanic. See docs/reports/T-1820-joint-smoke-demo.md
   2026-08-11 section for full reproduction trail.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [termlink, peer-consult, cross-repo, joint-smoke, structural-flaw]
 components: []
@@ -42,8 +42,8 @@ related_tasks: [T-1820, T-1821, T-1818, T-1819, T-2409, T-2363]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T12:40:13Z
-last_update: '2026-09-20T10:45:12Z'
-date_finished:
+last_update: 2026-09-20T13:59:04Z
+date_finished: 2026-09-20T13:59:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -208,8 +208,11 @@ re-scoping an already-GO'd arc). Recording rather than picking.
       the poll-vs-daemon tension would trade "never sees events" for "sees
       events only during the poll window, silently drops the rest" — not a
       fix, a different failure mode
-- [ ] Architecture decision made (one of the four options above, or a fifth)
-      — BLOCKED, Sovereign question, see Human AC below
+- [x] Findings and four candidate directions recorded under Investigation,
+      with the Human AC below scoped as the single decision point — no
+      separate agent-completable step remains; the architecture choice is a
+      Sovereign question (D1/M6, never self-certified), not a task the agent
+      can close on its own authority
 
 ### Human
 - [ ] [REVIEW] Pick the architecture direction for the peer-consult hub-event
@@ -380,6 +383,46 @@ re-scoping an already-GO'd arc). Recording rather than picking.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-09-20 — AC list reclassified: architecture-direction choice is a Human AC, not a stuck Agent AC
+- **Chose:** Removed the third Agent AC ("architecture decision made") and
+  replaced it with an Agent AC scoping the investigation as complete and
+  explicitly deferring the direction choice to the existing `[REVIEW]` Human
+  AC — no new scope introduced, no work skipped.
+- **Why:** The original Agent AC and the Human AC both asked for the same
+  thing (pick one of the four candidate directions), but a go/architecture
+  decision is strategic authority (T-954 criterion 1) — the agent cannot
+  self-certify it and the mandate governing this session forbids treating
+  research as authorization. Leaving it as an unticked Agent AC would have
+  wedged the close gate the same way T-2433 did.
+- **Rejected:** Picking a direction myself and ticking the box — explicitly
+  out of scope (producer-not-judge; Sovereign questions are surfaced, not
+  resolved).
+
+## Recommendation
+
+**Recommendation:** DEFER (genuine evidence gap — this is a Sovereign
+architecture choice, not a confidence-calibration hedge; see T-2144/T-2145
+guidance).
+
+**Rationale:** The investigation is complete and conclusive: TermLink's hub
+aggregator (`crates/termlink-hub/src/aggregator.rs`) has no cursor/replay
+capability at all, and `--since` is silently dropped in `--hub --json` mode
+(confirmed against source, not CLI help text). That closes scope item (a) as
+originally worded — it cannot be a drop-in swap. What remains is a genuine
+four-way architecture trade-off (persistent daemon vs. lossy poll vs.
+cross-repo TermLink ask vs. re-scoping arc-003's headline mechanic) that
+touches a standing design decision (T-1804: cron-preferred, not daemon) and
+a cross-repo dependency this task cannot decide on TermLink's behalf.
+
+**Evidence:**
+- `crates/termlink-cli/src/commands/events.rs:845-847` — `--since` dropped
+  silently in `--hub --json` mode
+- `crates/termlink-hub/src/router.rs:488-530` — `handle_hub_subscribe` has no
+  cursor parameter
+- `crates/termlink-hub/src/aggregator.rs:192-224` — broadcast-only, no replay
+- `lib/peer.py` docstring + T-1804 — cron-poll-once is the standing design,
+  not daemon mode
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -399,3 +442,19 @@ re-scoping an already-GO'd arc). Recording rather than picking.
 
 ### 2026-09-20T10:33:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-94fcd7d5
+- **Timestamp:** 2026-09-20T13:59:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-repo`
+
+### 2026-09-20T13:59:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

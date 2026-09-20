@@ -3985,3 +3985,73 @@ decisions:
     date: 2026-09-17
     task: T-3380
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-572
+    decision: "the original record plus its ledger position (the caller gets the answer it would have got the first time), AND a `duplicate_delivery` refusal appended with `side_effect: false` naming the original — visible, not silent."
+    scope: project
+    date: 2026-09-18
+    task: T-3387
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-573
+    decision: "`stale_position`, with `detail` naming both payload hashes and the position of the consumed one."
+    scope: project
+    date: 2026-09-18
+    task: T-3387
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-574
+    decision: "append-only; the single mutable field after acceptance. Removal is `direct_state_mutation`."
+    scope: project
+    date: 2026-09-18
+    task: T-3387
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-575
+    decision: "NO-GO with disposition *dissolved by supersession*, transfers named explicitly."
+    scope: project
+    date: 2026-09-19
+    task: T-2668
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-576
+    decision: "NO-GO, disposition *dissolved by supersession*, with the GO/NO-GO meanings spelled out on the form."
+    scope: project
+    date: 2026-09-19
+    task: T-2670
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-577
+    decision: "NO-GO, disposition *dissolved by supersession*, with the July premise explicitly corrected and the verbs' meanings spelled out on the form."
+    scope: project
+    date: 2026-09-19
+    task: T-2669
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-578
+    decision: "Land the tier-independent static floor (systemd unit + nftables + manifest)"
+    scope: project
+    date: 2026-09-20
+    task: T-2433
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-579
+    decision: "Realise the RO substrate with `ProtectSystem=strict` + nested"
+    scope: project
+    date: 2026-09-20
+    task: T-2433
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-580
+    decision: "`fw sandbox install` copies the three artefacts to `/etc/aef-sandbox` and"
+    scope: project
+    date: 2026-09-20
+    task: T-2433
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-581
+    decision: "Removed the third Agent AC (\"architecture decision made\") and"
+    scope: project
+    date: 2026-09-20
+    task: T-2918
+    rationale: "Auto-captured from task file on completion"
