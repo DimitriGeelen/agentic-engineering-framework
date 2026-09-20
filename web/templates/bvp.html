@@ -262,6 +262,21 @@
     </ul>
   {% else %}
     {{ bvp_pager('top') }}
+    {#- T-2346 (T-2170 Slice 2) AC1: facet checkbox row, one per driver. Data-driven
+        over weights.items() so a new driver (e.g. F-AUTONOMY activation) needs zero
+        template change, same pattern as the Slice-1 per-driver table below. -#}
+    {%- if weights %}
+    <div id="bvp-axis-facets" style="margin:0.5rem 0; font-size:0.85rem;">
+      <strong>Y axis:</strong> <code>BVP_norm</code> (default) —
+      {%- for d_id, w in weights.items() %}
+      <label style="margin-left:0.75rem; cursor:pointer;">
+        <input type="checkbox" class="bvp-facet-toggle" data-driver-id="{{ d_id }}">
+        <code>{{ d_id }}</code>{% if driver_names and driver_names[d_id] %} <small class="muted">({{ driver_names[d_id] }})</small>{% endif %}
+      </label>
+      {%- endfor %}
+      <br><small class="muted" id="bvp-facet-hint">Check one driver to swap the Y axis to its raw 0-5 score. Checking another replaces the active one.</small>
+    </div>
+    {%- endif %}
     <div id="scatter-quadrant" data-quadrant="scatter" style="margin:1rem 0;"></div>
     <p><small>
       Quadrant scatter — showing {{ task_range_start }}–{{ task_range_end }} of {{ total_tasks }} task(s) by value, page {{ task_page }} of {{ task_page_count }}; {{ arc_points|length }} arc(s).
@@ -538,16 +553,16 @@
   // Quadrant guides at median
   g.append("line").attr("x1", x(costMedian)).attr("x2", x(costMedian))
     .attr("y1", 0).attr("y2", innerH).attr("stroke", "#888").attr("stroke-dasharray", "3,3");
-  g.append("line").attr("y1", y(bvpMedian)).attr("y2", y(bvpMedian))
+  const yGuideLine = g.append("line").attr("y1", y(bvpMedian)).attr("y2", y(bvpMedian))
     .attr("x1", 0).attr("x2", innerW).attr("stroke", "#888").attr("stroke-dasharray", "3,3");
 
   // Axes
   g.append("g").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x));
-  g.append("g").call(d3.axisLeft(y));
+  const yAxisG = g.append("g").call(d3.axisLeft(y));
   g.append("text").attr("x", innerW/2).attr("y", innerH + 40)
     .attr("text-anchor", "middle").text("Cost composite (F8: 0.6·br + 0.3·tier + 0.1·effort)");
-  g.append("text").attr("transform", "rotate(-90)").attr("x", -innerH/2).attr("y", -45)
-    .attr("text-anchor", "middle").text("BVP_norm");
+  const yAxisLabel = g.append("text").attr("transform", "rotate(-90)").attr("x", -innerH/2).attr("y", -45)
+    .attr("text-anchor", "middle").attr("id", "bvp-y-axis-label").text("BVP_norm");
 
   // Quadrant labels (HV-LC top-left etc.)
   const labelStyle = { "font-size": "0.7rem", "fill": "#999", "pointer-events": "none" };
@@ -598,7 +613,8 @@
     return `<strong>${d.id}</strong> [${d.kind}]${advisory}<br>${d.name}<br>BVP_norm ${d.bvp_norm.toFixed(3)} (raw ${d.bvp_raw})<br>${cost}${provenance}${incExtras}`;
   }
 
-  function drawPoints(taskData, arcData) {
+  function drawPoints(taskData, arcData, yValue) {
+    yValue = yValue || (d => d.bvp_norm);
     // T-1934: split confirmed (filled) from proposed (outlined). Same data
     // shape; the .proposed flag drives the visual style.
     const confirmedTasks = taskData.filter(d => !d.proposed);
@@ -633,7 +649,7 @@
       .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
       .on("mouseout",  function()          { tip.style("opacity", 0); })
       .merge(tCSel)
-      .attr("cx", d => x(d.cost)).attr("cy", d => y(d.bvp_norm));
+      .attr("cx", d => x(d.cost)).attr("cy", d => y(yValue(d)));
 
     // Proposed tasks — outlined; inception purple-stroke / build steelblue-stroke
     const tPSel = g.selectAll(".pt-task-proposed").data(proposedTasks, d => d.id);
@@ -647,7 +663,7 @@
       .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
       .on("mouseout",  function()          { tip.style("opacity", 0); })
       .merge(tPSel)
-      .attr("cx", d => x(d.cost)).attr("cy", d => y(d.bvp_norm));
+      .attr("cx", d => x(d.cost)).attr("cy", d => y(yValue(d)));
 
     // Confirmed arcs — filled orange
     const aCSel = g.selectAll(".pt-arc-confirmed").data(confirmedArcs, d => d.id);
@@ -660,7 +676,7 @@
       .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
       .on("mouseout",  function()          { tip.style("opacity", 0); })
       .merge(aCSel)
-      .attr("cx", d => x(d.cost || 4)).attr("cy", d => y(d.bvp_norm));
+      .attr("cx", d => x(d.cost || 4)).attr("cy", d => y(yValue(d)));
 
     // Proposed arcs — outlined orange
     const aPSel = g.selectAll(".pt-arc-proposed").data(proposedArcs, d => d.id);
@@ -673,15 +689,74 @@
       .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
       .on("mouseout",  function()          { tip.style("opacity", 0); })
       .merge(aPSel)
-      .attr("cx", d => x(d.cost || 4)).attr("cy", d => y(d.bvp_norm));
+      .attr("cx", d => x(d.cost || 4)).attr("cy", d => y(yValue(d)));
   }
 
   // Initial draw
   drawPoints(tasks, arcs);
 
+  // ── T-2346 (T-2170 Slice 2) AC1-AC3: facet axis-swap ──
+  // Single active driver at a time (a 2-axis scatter cannot show more than one
+  // substituted axis — see task Decisions). null = default BVP_norm view.
+  let activeDriver = null;
+  let lastTasks = tasks, lastArcs = arcs;
+  const hiddenCountEl = document.getElementById("bvp-facet-hint");
+  const defaultHint = hiddenCountEl ? hiddenCountEl.textContent : "";
+
+  function driverMedian(driverId, taskData, arcData) {
+    const vals = taskData.concat(arcData)
+      .map(d => d.scores && d.scores[driverId])
+      .filter(v => v !== undefined && v !== null);
+    return vals.length ? d3.median(vals) : 2.5;
+  }
+
+  function applyAxisState(taskData, arcData) {
+    if (activeDriver === null) {
+      y.domain([0, 1]);
+      yAxisG.call(d3.axisLeft(y));
+      yAxisLabel.text("BVP_norm");
+      yGuideLine.attr("y1", y(bvpMedian)).attr("y2", y(bvpMedian));
+      if (hiddenCountEl) hiddenCountEl.textContent = defaultHint;
+      drawPoints(taskData, arcData, d => d.bvp_norm);
+      return;
+    }
+    y.domain([0, 5]);
+    yAxisG.call(d3.axisLeft(y));
+    yAxisLabel.text(activeDriver + " (0-5)");
+    // AC3: points with no score for the active driver are excluded, not
+    // plotted at y=0 (which would misrepresent "unscored" as "scored 0").
+    const scoredTasks = taskData.filter(d => d.scores && d.scores[activeDriver] !== undefined && d.scores[activeDriver] !== null);
+    const scoredArcs  = arcData.filter(d => d.scores && d.scores[activeDriver] !== undefined && d.scores[activeDriver] !== null);
+    const hidden = (taskData.length + arcData.length) - (scoredTasks.length + scoredArcs.length);
+    yGuideLine.attr("y1", y(driverMedian(activeDriver, taskData, arcData))).attr("y2", y(driverMedian(activeDriver, taskData, arcData)));
+    if (hiddenCountEl) {
+      hiddenCountEl.textContent = hidden > 0
+        ? `Y axis: ${activeDriver} (0-5 raw score). ${hidden} point(s) hidden — not scored for ${activeDriver}.`
+        : `Y axis: ${activeDriver} (0-5 raw score). All points scored for ${activeDriver}.`;
+    }
+    drawPoints(scoredTasks, scoredArcs, d => d.scores[activeDriver]);
+  }
+
+  const facetCheckboxes = document.querySelectorAll(".bvp-facet-toggle");
+  facetCheckboxes.forEach(cb => {
+    cb.addEventListener("change", function() {
+      if (this.checked) {
+        // Single-active-facet: un-check every other box in the DOM itself,
+        // not just the model (AC4c pins this from the Playwright side).
+        facetCheckboxes.forEach(other => { if (other !== this) other.checked = false; });
+        activeDriver = this.getAttribute("data-driver-id");
+      } else {
+        activeDriver = null;
+      }
+      applyAxisState(lastTasks, lastArcs);
+    });
+  });
+
   // T-1929 hook: slider live-recompute calls this to redraw without server roundtrip
   window.bvpRedrawScatter = function(newTasks, newArcs) {
-    drawPoints(newTasks || [], newArcs || []);
+    lastTasks = newTasks || [];
+    lastArcs = newArcs || [];
+    applyAxisState(lastTasks, lastArcs);
   };
 })();
 </script>

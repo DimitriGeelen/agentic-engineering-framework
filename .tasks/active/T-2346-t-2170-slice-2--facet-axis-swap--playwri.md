@@ -11,10 +11,10 @@ description: >
   tooltip (template-only changes); Slice 2 needs scatter.js axis swap + Playwright
   wire.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bvp-display, v3-followup-D, arc:value-prioritisation]
 components: []
 related_tasks: [T-2170, T-1928, T-1929]
@@ -29,7 +29,7 @@ related_tasks: [T-2170, T-1928, T-1929]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T06:58:59Z
-last_update: '2026-08-17T12:36:07Z'
+last_update: 2026-09-20T17:19:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -119,45 +119,64 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice 2 of T-2170. The scatter's D3 render lives inline in `web/templates/bvp.html`
+(no separate `scatter.js` — the file doesn't exist; the parent task's "scatter.js"
+mention was aspirational). `drawPoints(taskData, arcData)` closes over `x`/`y` scales
+and re-runs on `window.bvpRedrawScatter` (the T-1929 slider hook); this task adds a
+facet checkbox row that swaps `y`'s domain/accessor between `bvp_norm` and a chosen
+driver's raw score, then calls the same redraw path.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **AC1 Facet row rendered:** `/bvp` scatter gains a checkbox row above `#scatter-quadrant`
+      (`id="bvp-axis-facets"`), one checkbox per driver in `weights` (D1-D4 + active
+      free-drivers, same data-driven iteration as the Slice-1 per-driver table so a new
+      driver needs zero template change). Default state: all unchecked, Y axis = `bvp_norm`
+      (current behaviour byte-identical to pre-Slice-2).
+- [ ] **AC2 Single-active-facet axis swap:** Checking a facet sets Y axis to that driver's
+      raw 0-5 score (rescaled domain `[0,5]`), updates the Y-axis label to the driver id,
+      moves the horizontal quadrant-guide line to that driver's median, and redraws every
+      point's `cy`. Checking a second facet un-checks the first (single active driver at a
+      time — a 2-axis scatter cannot show more than one substituted axis, so "the active-axis
+      set" from the parent task's Context is implemented as a size-≤1 set). Unchecking the
+      active facet reverts Y to `bvp_norm`. X axis (cost composite) is unchanged by any
+      facet state — swapping it away from cost would break the value-vs-cost quadrant
+      framing the whole page exists to show; out of scope, noted in `## Decisions`.
+- [ ] **AC3 Points missing the active driver:** a task/arc whose `scores` map has no entry
+      for the active driver is excluded from the redraw (not plotted at `y=0`, which would
+      misrepresent "unscored" as "scored 0") and the scatter caption reports how many
+      points are hidden for that reason.
+- [ ] **AC4 Playwright pin (L-423 — executed-browser AC, not markup presence):**
+      `tests/playwright/test_bvp_per_driver_display.py` asserts, against a real browser:
+      (a) the facet row and one checkbox per driver in Slice-1's column-header set are
+      present, (b) clicking a facet checkbox changes the rendered Y-axis label text and
+      moves at least one plotted point's `cy`, (c) clicking a second facet un-checks the
+      first (single-active enforced in the DOM, not just the model), (d) zero browser
+      console errors after both clicks. Test registered in `fw test playwright` discovery.
+- [ ] **AC5 No regression:** existing `/bvp` smoke
+      (`grep -q "norm_bvp" `) and the Slice-1 per-driver table (`#bvp-driver-scores-section`,
+      `data-driver-id` headers) are unchanged when no facet is checked.
+- [ ] **AC6 Reviewer static-scan PASS** (`bin/fw reviewer T-2346 --no-write`).
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
+- [ ] [REVIEW] Facet interaction reads clean and matches operator intent
+  **Steps:**
+  1. Open `$(bin/fw watchtower url)/bvp` in a browser (needs scored tasks — if the page
+     shows the empty-state, use a project/host with `bvp_scores_proposed:` populated).
+  2. Tick the `F-RECALL` (or any driver) facet checkbox above the scatter. Confirm the
+     Y axis re-labels and points visibly move.
+  3. Tick a second facet. Confirm the first un-checks itself (only one active at a time).
+  4. Un-check the active facet. Confirm the scatter reverts to the original `BVP_norm` view.
+  5. Check the browser console for errors during all three interactions.
+  **Expected:** Axis swap feels responsive and legible; single-active-facet behaviour
+  matches what an operator would expect from a set of plain checkboxes (if it reads
+  confusingly — e.g. operator expected multi-select — note that for a follow-up); no
+  console errors.
+  **If not:** Note which step felt wrong (visually or behaviourally) and whether the
+  single-active-facet design (AC2) should instead be a real radio group.
 
 ## Verification
 
@@ -259,3 +278,35 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2346-t-2170-slice-2--facet-axis-swap--playwri.md
 - **Context:** Initial task creation
+
+### 2026-09-20 — Session interrupted at budget critical (~95%, 286K tokens)
+- **Action:** Wrote real ACs (AC1-AC6 + Human REVIEW), implemented AC1/AC2/AC3/AC5 in
+  `web/templates/bvp.html`: facet checkbox row (`#bvp-axis-facets`, data-driven over
+  `weights.items()`), `drawPoints(taskData, arcData, yValue)` parametrized Y-accessor,
+  `applyAxisState()` (single-active-facet, domain swap `[0,1]`↔`[0,5]`, axis relabel,
+  guide-line remedian, hidden-point exclusion+count), checkbox wiring, and
+  `bvpRedrawScatter` updated to preserve active-driver state across T-1929 slider redraws.
+- **Verified so far:** `node --check` on the extracted scatter `<script>` block — clean.
+  Jinja `env.get_template('bvp.html')` — parses clean. Watchtower restarted onto the new
+  template (PID 3363215).
+- **NOT yet verified:** the live page was never actually curled/inspected after restart —
+  the session hit budget-critical on the very next command (a `WURL=$(...)` chain the
+  gate correctly refused as a multi-segment Bash call at 95%). So: unknown whether the
+  facet row renders correctly against real data, unknown whether the D3 redraw is
+  visually correct, AC4 (Playwright pin) is **not written at all**, `## Verification`
+  block is still the template's default (no lines added), and AC6 (reviewer PASS) has
+  not been run.
+- **Status:** left at `started-work`, NOT partial-complete — Agent ACs are implemented
+  but unverified, which is not the same as done. Do not read this as "just needs the
+  Human AC" on next pickup; AC4 (Playwright) still needs to be authored, and AC1/2/3/5
+  need a live-page check before any of them can be ticked in good faith (T-1831 C-4:
+  tick on verified completion, not on "wrote the code").
+- **Next session:** `curl -sf "$(bin/fw watchtower url)/bvp" -o /tmp/.bvp.html` and
+  inspect for `#bvp-axis-facets` + `data-driver-id` checkboxes; ideally a Playwright
+  session driving the actual click-and-observe interaction (L-423 — markup presence is
+  not enough for a JS-behaviour AC). Write `tests/playwright/test_bvp_per_driver_display.py`
+  per AC4. Then tick ACs, fill `## Verification`, and run the close flow.
+
+### 2026-09-20T17:19:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
