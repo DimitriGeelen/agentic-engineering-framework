@@ -6,16 +6,16 @@ description: >
   episodic git mining is skipped in worktrees and writes its initialised zeros as
   measurements
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/audit/self-audit.sh, agents/context/lib/episodic.sh, agents/git/lib/hooks.sh, agents/git/lib/large-file-scan.sh, agents/git/lib/secret-scan.sh, agents/termlink/termlink.sh, lib/episodic_footprint.py, lib/init.sh, lib/setup.sh, lib/update.sh, lib/upgrade.sh, lib/upstream.sh, lib/url-credentials.sh, lib/validate-init.sh, tests/unit/episodic_footprint_refresh.bats, tests/unit/episodic_worktree_mining.bats]
 related_tasks: []
 created: 2026-08-25T05:58:02Z
-last_update: '2026-08-26T06:00:18Z'
-date_finished:
+last_update: 2026-09-20T14:05:39Z
+date_finished: 2026-09-20T14:05:39Z
 cost_estimate_proposed:
   - ts: '2026-08-25T06:00:09Z'
     estimator: bvp-estimator-v1-heuristic
@@ -381,3 +381,15 @@ unit` run, which two sessions now have independently found infeasible on this
 host within any practical dispatch budget.
 
 ## Updates
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5617c506
+- **Timestamp:** 2026-09-20T14:05:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-20T14:05:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
