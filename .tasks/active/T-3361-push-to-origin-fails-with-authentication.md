@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-11T20:17:04Z
-last_update: 2026-09-20T09:06:08Z
+last_update: 2026-09-20T09:07:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -161,6 +161,18 @@ scope and not something this task should do to "prove" a stale finding.
       push leaves nothing ahead)
 
 ### Human
+- [ ] [REVIEW] New `BRANCH_AHEAD_WARN` row on the Watchtower `/config` settings
+      table renders correctly (T-1766/P-013: this task's git history carries an
+      earlier, pre-this-session commit — d07fa77cd — that added the row to
+      `web/blueprints/config.py`'s SETTINGS registry; this task's own diff today
+      is task-file-only, but the render-surface gate scopes by any file the
+      task has ever touched, not just today's diff)
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && $(bin/fw watchtower url 2>/dev/null || echo http://localhost:3000)/config` — open in a browser (or run `curl -sf "$(bin/fw watchtower url)/config"` if no browser handy)
+  2. Find the `BRANCH_AHEAD_WARN` row in the settings table
+  **Expected:** Row renders inline with the other config rows — name, default `20`, and the description ("Commits-ahead-of-origin threshold…") — no layout break, no truncation, no stray markup
+  **If not:** Note what's broken here; it's a one-row registry addition so the fix is almost certainly a description-string escaping issue in `web/blueprints/config.py`
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
