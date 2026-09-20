@@ -8,12 +8,12 @@ description: >
   human or agent-unresolvable may sit in the T-532-gated onboarding set. Carries
   the arc's closure Recommendation.
 
-status: started-work
+status: work-completed
 workflow_type: design
-owner: agent
+owner: human
 horizon: now
 tags: [arc:onboarding-curriculum]
-components: []
+components: [tests/unit/t2979_existing_project_onboarding_map.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-02T00:35:02Z
-last_update: 2026-08-23T17:01:14Z
-date_finished:
+last_update: 2026-09-20T15:11:29Z
+date_finished: 2026-09-20T15:11:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -384,3 +384,20 @@ One honest caveat carried forward from T-2941 F2: the prescribed Steps exercise 
 
 ### 2026-08-08T17:35:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bf18a1ed
+- **Timestamp:** 2026-09-20T15:11:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Human)** — [REVIEW] The headline mechanic actually fires: prologue finished with the curriculum alongside
+  - **audience-mismatch** (partial, heuristic) — `agent-subject='the agent or read' in: you reach your own first real task without needing to ask the agent or read   `CLAUDE.md` to understand what just happened. That — not "both`
+
+### 2026-09-20T15:11:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
