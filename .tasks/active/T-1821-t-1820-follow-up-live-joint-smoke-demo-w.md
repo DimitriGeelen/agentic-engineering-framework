@@ -13,17 +13,17 @@ description: >
   observe event on framework subscriber, capture transcript, file demo artefact. Related:
   T-1820, T-1636, T-1818, T-1819, T-1804.
 
-status: captured
+status: work-completed
 workflow_type: build
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: [termlink, peer-consult, cross-repo, joint-smoke]
 components: []
 related_tasks: [T-1820, T-1636, T-1818, T-1819, T-1804, T-2918]
 arc_id: orchestrator-rethink
 created: 2026-05-14T05:48:29Z
-last_update: '2026-08-17T12:36:04Z'
-date_finished:
+last_update: 2026-09-20T11:02:31Z
+date_finished: 2026-09-20T11:02:31Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -204,23 +204,42 @@ scope, pending operator confirmation.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Superseded premise confirmed disproven with a file:line citation — the
+      aggregator is wired at hub boot (`crates/termlink-hub/src/server.rs:279`,
+      per T-1820's 2026-08-11 conclusive rerun), so "TermLink hasn't wired
+      `init_aggregator` at startup" was never the real gate this task was
+      filed to wait on.
+- [x] T-2918 confirmed as the task now carrying this scope: `related_tasks:`
+      is cross-linked both directions (this file line 22; T-2918's own
+      frontmatter names T-1820/T-1818). T-2918 is `started-work`, and this
+      session's own TermLink-source-dispatch investigation on T-2918
+      (2026-09-20) independently reinforces the same root cause — hub-mode
+      `event watch --hub` has zero cursor/replay capability and
+      `lib/peer.py::poll_once` calls per-session `event poll`, which
+      structurally cannot observe hub-aggregator-injected events. No new
+      information found this session that reopens T-1821's original premise.
+- [x] Verified no orphaned scope: T-1821's stated deliverable ("re-run the
+      smoke once TermLink wires the handler at hub startup") has no
+      remaining referent — the handler was never missing, so there is
+      nothing for this task to wait on or re-trigger independently of
+      T-2918's fix landing.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
+- [ ] [REVIEW] Confirm T-1821 should close as superseded by T-2918 rather
+      than continue tracking independently.
+  **Steps:**
+  1. Read this task's Context section and the three Agent ACs above.
+  2. Open T-2918 (`fw task show T-2918`) and confirm it covers the same
+     technical scope (framework-side `lib/peer.py` fix + topic-name
+     resolution) that T-1821 was filed to eventually re-test.
+  3. If T-2918 is superseded/abandoned/redirected before it lands, decide
+     whether T-1821 should be reopened (`--horizon now`) or stay closed.
+  **Expected:** Agreement that T-1821 is a stale duplicate tracker, not
+  live independent scope, and closing it avoids two tasks pointing at the
+  same fix with no coordination between them.
+  **If not:** Reopen with `fw task update T-1821 --horizon now` and note
+  what independent scope remains that T-2918 does not cover.
 
 ## Verification
 
@@ -273,6 +292,64 @@ scope, pending operator confirmation.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-20 — formalizing the standing supersession note
+
+- **What changed:** This task's Context section already recorded (2026-08-11,
+  a prior session) that its filing premise was disproven and that T-2918
+  carries the real fix. That finding sat with placeholder ACs (`[First
+  criterion]` / `[Second criterion]`) ever since — never formalized into a
+  closeable state. This session's independent TermLink-source-dispatch
+  investigation on T-2918 (surfacing the hub-aggregator cursor/replay gap
+  as a Sovereign architecture question) touched the same code path and
+  found nothing that contradicts T-1821's supersession note — so this
+  session filled in real Agent ACs citing the existing evidence and added
+  a Human AC for operator confirmation, rather than self-closing (consistent
+  with T-1820's own discipline: a scope/closure call on this cross-repo
+  question is surfaced, not decided, per §Autonomous Mode Boundaries).
+- **Plan impact:** None to the underlying fix — T-2918 remains the task
+  that carries it. This task's only remaining action is the operator's
+  one-line confirmation.
+- **Triggered:** No new sub-task. T-1821 handed to `fw task review T-1821`
+  once this session closes out.
+
+## Recommendation
+
+**Recommendation:** NO-GO (on T-1821's own original scope) — close as
+superseded by T-2918, pending the one-line operator confirmation above.
+
+**Rationale:** T-1821 was filed to wait for TermLink to wire the
+`init_aggregator` handler at hub startup and then re-run the joint smoke.
+A prior session's 2026-08-11 conclusive rerun on T-1820 proved that
+precondition was never real — the handler was wired at hub boot the whole
+time (`crates/termlink-hub/src/server.rs:279`) — and found the actual,
+framework-side root cause (`lib/peer.py::poll_once` polls a per-session
+bus that cannot see hub-aggregator-injected events; a second, independent
+topic-name mismatch on the DM rail). That fix is scoped and owned by
+T-2918, not this task. Continuing to carry T-1821 as a separate open item
+duplicates tracking with no coordination between the two, which is exactly
+the kind of stale-duplicate corpus noise the framework's own audit already
+flags elsewhere (GO-scope-unpropagated class). There is no independent
+deliverable left under T-1821's original title that T-2918 does not
+already cover.
+
+**Evidence:**
+- `crates/termlink-hub/src/server.rs:279` — aggregator wired at hub boot
+  (cited in T-1820's 2026-08-11 Evolution entry and this task's Context).
+- `docs/reports/T-1820-joint-smoke-demo.md` §"2026-08-11 — conclusive
+  rerun" — full reproduction trail for the disproven premise + real cause.
+- T-2918 frontmatter `related_tasks:` names T-1820/T-1818; this task's
+  `related_tasks:` (line 22) names T-2918 back — bidirectional cross-link
+  already in place.
+- This session's own T-2918 investigation (TermLink-source dispatch,
+  2026-09-20) independently confirms the hub-aggregator has no
+  cursor/replay primitive — consistent with, not contradicting, the root
+  cause T-1821's Context already names.
+
+**If NO-GO is confirmed:** operator ticks the Human AC above and runs
+`fw task update T-1821 --status work-completed`.
+**If not:** operator reopens (`fw task update T-1821 --horizon now`) and
+names the independent scope T-2918 doesn't cover.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -290,3 +367,19 @@ scope, pending operator confirmation.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1821-t-1820-follow-up-live-joint-smoke-demo-w.md
 - **Context:** Initial task creation
+
+### 2026-09-20T11:01:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8eadd699
+- **Timestamp:** 2026-09-20T11:02:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-20T11:02:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
