@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2955: fw arc tag writes the deprecated arc:<slug> tag form, not arc_id: (832 T-467)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-20T18:55:20Z
+# ============================================================================
+
+task_id: T-2955
+task_name: "fw arc tag writes the deprecated arc:<slug> tag form, not arc_id: (832 T-467)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-12T20:35:23Z
+completed: 2026-09-20T18:55:00Z
+duration_days: 39
+updates_count: 4
+first_commit: 2026-09-20T20:22:42+02:00
+last_commit: 2026-09-20T20:49:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc_tag also writes canonical arc_id: — WIP, unverified. refresh vendored copies — lib/arc.sh self-vendor drift (T-2240)
+
+# Key outcomes
+outcomes:
+  - '**AC1 New arc_id write:** `fw arc tag <arc> T-XXX` sets `arc_id: <arc>`'
+  - '**AC2 Idempotent:** running `fw arc tag` twice with the same arc does not'
+  - '**AC3 Conflict refused atomically:** if the task''s `arc_id:` is already'
+  - '**AC4 No regression:** existing legacy-form behavior (deprecated'
+  - '**AC5 Bats coverage:** `tests/unit/arc_dual_identity_verbs.bats` (or a'
+  - '**AC6 Reviewer static-scan PASS** (`bin/fw reviewer T-2955 --no-write`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/VERSION'
+  - 'lib/arc.sh'
+  - '.tasks/active/T-2955-fw-arc-tag-writes-the-deprecated-arcslug.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-20T20:22:42'
+    action: 'T-2955: arc_tag also writes canonical arc_id: — WIP, unverified'
+  - time: '2026-09-20T20:49:25'
+    action: 'T-2955: refresh vendored copies — lib/arc.sh self-vendor drift (T-2240)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 56059 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 56059
+  commits: 2
+  files_changed: 5
+  lines_added: 285
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2955-fw-arc-tag-writes-the-deprecated-arcslug.md
+generated_by: context-agent-hybrid

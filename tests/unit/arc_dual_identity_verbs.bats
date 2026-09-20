@@ -123,6 +123,54 @@ MD
     [ "$status" -eq 0 ]
 }
 
+# --- arc_tag: canonical arc_id: write (T-2955, 832 T-467) ---
+
+@test "T-2955: arc_tag sets arc_id: on a task with no prior arc_id" {
+    run arc_tag "dispatch-safety" "T-9999"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Set arc_id: dispatch-safety on task T-9999"* ]]
+    run grep -qE "^arc_id: dispatch-safety$" "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2955: arc_tag re-run with the same arc is a no-op, no duplicate line" {
+    run arc_tag "dispatch-safety" "T-9999"
+    [ "$status" -eq 0 ]
+    run arc_tag "dispatch-safety" "T-9999"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"already has arc_id: dispatch-safety"* ]]
+    run grep -cE "^arc_id:" "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+    [ "$status" -eq 0 ]
+    [ "$output" -eq 1 ]
+}
+
+@test "T-2955: arc_tag re-run with the arc-NNN form of the same arc is a no-op (normalized compare)" {
+    run arc_tag "dispatch-safety" "T-9999"
+    [ "$status" -eq 0 ]
+    run arc_tag "arc-001" "T-9999"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"already has arc_id"* ]]
+    run grep -cE "^arc_id:" "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+    [ "$output" -eq 1 ]
+}
+
+@test "T-2955: arc_tag refuses when task already belongs to a different arc, file unchanged" {
+    run arc_tag "dispatch-safety" "T-9999"
+    [ "$status" -eq 0 ]
+    run cat "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+    local before="$output"
+
+    run arc_tag "legacy-arc" "T-9999"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"already has arc_id: dispatch-safety"* ]]
+    [[ "$output" == *"legacy-arc"* ]]
+
+    run cat "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+    [ "$output" = "$before" ]
+    run grep -q "arc:legacy-arc" "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+    [ "$status" -ne 0 ]
+}
+
 # --- arc_close (under non-CLAUDECODE mode for test purposes) ---
 
 @test "T-1848: arc_close accepts arc-NNN form (with --i-am-human bypass)" {
