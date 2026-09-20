@@ -26,12 +26,12 @@ description: >
   note: all ten of their teeth mutated file CONTENT and none moved a file, so put
   our own lifecycle moves in the harness vocabulary.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T11:02:25Z
-last_update: '2026-09-20T19:15:12Z'
-date_finished:
+last_update: 2026-09-20T19:35:16Z
+date_finished: 2026-09-20T19:35:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -397,3 +397,15 @@ ratchet run noticing the reappearance as new.
 
 ### 2026-08-09T12:25:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-00181cee
+- **Timestamp:** 2026-09-20T19:36:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-20T19:35:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

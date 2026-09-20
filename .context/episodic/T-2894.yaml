@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2894: port-3000 carrier population has no set-level ratchet — T-2732 gates per-close only
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-20T19:36:34Z
+# ============================================================================
+
+task_id: T-2894
+task_name: "port-3000 carrier population has no set-level ratchet — T-2732 gates per-close only"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-09T11:02:25Z
+completed: 2026-09-20T19:35:16Z
+duration_days: 42
+updates_count: 2
+first_commit: 2026-09-20T21:06:31+02:00
+last_commit: 2026-09-20T21:29:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  write real ACs (classifier + baseline ratchet + doctor wiring). add port-3000 carrier classifier + baseline ratchet
+
+# Key outcomes
+outcomes:
+  - '**AC1 Classifier:** a script (e.g. `tools/port3000_hygiene.py`) scans'
+  - '**AC2 Baseline:** a baseline store (e.g.'
+  - '**AC3 Ratchet:** re-running the classifier against the baseline exits'
+  - '**AC4 Lifecycle-move tolerant:** a task file''s `work-completed` move'
+  - '**AC5 Stale-entry reporting:** baseline entries whose carrier no longer'
+  - '**AC6 Wired into `fw doctor`:** a new check line reports the current'
+  - '**AC7 Test coverage:** unit tests (bats or pytest, matching the repo''s'
+  - '**AC8 Reviewer static-scan PASS** (`bin/fw reviewer T-2894 --no-write`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.context/audits/port3000-baseline.json'
+  - '.tasks/active/T-2894-port-3000-carrier-population-has-no-set-.md'
+  - 'tests/unit/test_port3000_hygiene.py'
+  - 'tools/port3000_hygiene.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-20T21:06:31'
+    action: 'T-2894: write real ACs (classifier + baseline ratchet + doctor wiring)'
+  - time: '2026-09-20T21:29:00'
+    action: 'T-2894: add port-3000 carrier classifier + baseline ratchet'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 60992 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 60992
+  commits: 2
+  files_changed: 5
+  lines_added: 6683
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2894-port-3000-carrier-population-has-no-set-.md
+generated_by: context-agent-hybrid
