@@ -4837,3 +4837,17 @@ observations:
   tags: [test]
   status: pending
   promoted_to: null
+- id: OBS-441
+  text: "Arc-level Q1/Q2 sweep (2026-09-20, Mandate run): across all 18 in-progress arcs, zero now-horizon tasks are both agent-owned and unblocked. Every started-work task in the active/now population is either owner:human (already GO-recommended, awaiting operator review-queue throughput — e.g. T-3298, T-2170, T-1542) or blocked on something outside this session's reach (T-1820 cross-repo TermLink T-1636 dependency, T-3358 broken remote-exec MCP tool + no SSH identity). No captured/now task sat un-started in any in-progress arc either — the corpus's remaining 'now' work has already migrated to started-work. Net: agent execution capacity is not the bottleneck right now; operator review throughput is. Not a call to action by itself, just a structural read worth having on record before the next autonomous run picks arc-level selection again."
+  captured: 2026-09-20T20:32:08Z
+  context_task: T-3358
+  tags: [structural]
+  status: pending
+  promoted_to: null
+- id: OBS-442
+  text: "Re-verified 2026-09-20 (later same day as OBS-441): both prior candidates independently reconfirmed still blocked, not merely stale. T-1820 (orchestrator-rethink) — its blocker T-2918 was investigated today by another session and correctly parked as a genuine Sovereign question (4 candidate architecture directions for the hub-event capability gap, owner:human, unresolved). T-3358 (unassigned) — re-ran the actual failing calls: mcp__skills__remote_exec_test still throws 'unrecognized arguments: --host' (same producer/consumer mismatch), and a fresh ssh proxmox2 still fails at host-key verification (no provisioned identity). Both are hard externally-owned blockers, not confidence gaps. Second consecutive exhaustive sweep of all 18 in-progress arcs (script-driven, not spot-checked) found zero other agent-owned/started-work/horizon-now candidates. Recommend: this is a stable state, not a one-off — worth surfacing to the operator directly rather than re-discovering on every autonomous run."
+  captured: 2026-09-20T20:55:45Z
+  context_task: T-3358
+  tags: [structural]
+  status: pending
+  promoted_to: null
