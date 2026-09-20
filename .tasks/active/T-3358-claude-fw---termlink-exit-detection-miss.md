@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-10T20:31:54Z
-last_update: 2026-09-16T20:22:53Z
+last_update: 2026-09-20T19:00:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -460,3 +460,40 @@ open-ended by construction and every unenumerated prompt is a silent hang.
 
 ### 2026-09-10T20:33:41Z — status-update [task-update-agent]
 - **Change:** tags: +bug
+
+### 2026-09-20 — Fleet forensics (AC1/AC2) blocked by a broken remote-exec tool, not attempted around
+- **Action:** The remaining two Agent ACs need live access to the root-fleet
+  hosts that orphaned `claude-master-1459164` / `claude-master-1747962` on
+  2026-09-10, to record which `claude-fw` copy they execute and (AC2)
+  propagate/implement the marker fix there.
+- **Attempted:** `mcp__skills__remote_exec_test` / `_exec` against the three
+  currently-SSH-reachable Ring20 hosts (`proxmox2`, `traefik-primary`,
+  `traefik-secondary`) — every call failed with
+  `remote_exec.py: error: unrecognized arguments: --host` (exec also flags
+  `--command`). Reproduced identically with real values and with
+  whitespace-only values, and on the argument-light `test` subcommand alone —
+  the MCP wrapper always injects `--host`/`--command` as named flags but the
+  underlying CLI's subparsers don't define them (producer/consumer mismatch
+  in a third-party skill, not this repo). Filed as product feedback
+  (queued locally, not sent).
+- **Also tried:** direct `ssh proxmox2` from this session — refused at
+  `Host key verification failed`; this session has no provisioned identity/
+  known_hosts for the Ring20 fleet outside the (broken) remote-exec skill,
+  and blindly accepting an unverified host key to route around that is not
+  a substitute for real access.
+- **termlink_fleet_status --verbose** was checked as a lower-cost
+  alternative: none of the 4 reachable hubs' current `session_names` match
+  the `claude-master-*` naming pattern from the incident (both orphaned
+  sessions are 10 days old and evidently already cleaned up / no longer
+  listed), so it cannot answer "which host, which claude-fw copy" either.
+- **Not done:** AC1 (record affected hosts' claude-fw provenance) and AC2
+  (make exit detection marker-based on whichever copies are stale) remain
+  unticked — genuinely blocked on fleet access this session does not have
+  a working route to, not a confidence gap. AC3/AC4 (regression test +
+  provenance rail) were already done in a prior session and remain intact.
+- **Status:** left at `started-work`. Not parking as `issues` — this isn't a
+  healing-loop case, it's an external-access blocker documented for the next
+  session (or the operator) with a working remote-exec path, or for whoever
+  has direct fleet SSH access to run the same provenance check by hand:
+  `command -v claude-fw && grep -c '__CLAUDE_FW_EXIT_' "$(readlink -f "$(command -v claude-fw)")"`
+  on each root-fleet host (0 = stale copy, needs the T-3346 marker fix).
