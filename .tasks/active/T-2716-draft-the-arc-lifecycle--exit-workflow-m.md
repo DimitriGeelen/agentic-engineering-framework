@@ -4,12 +4,12 @@ name: "Draft the arc lifecycle + exit workflow map (pair-draft)"
 description: >
   Draft the arc lifecycle + exit workflow map (pair-draft)
 
-status: started-work
+status: work-completed
 workflow_type: design
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/fixtures/832/pair-draft-3.bpmn]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-01T19:41:40Z
-last_update: '2026-08-17T12:36:09Z'
-date_finished:
+last_update: 2026-09-20T15:10:43Z
+date_finished: 2026-09-20T15:10:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -254,7 +254,11 @@ P=.context/designer/projects/draft-arc-lifecycle; F="$P/v$(python3 -c "import js
 python3 -c "import json,os;p='.context/designer/projects/draft-arc-lifecycle';m=json.load(open(p+'/meta.json'));f=p+'/v%d.bpmn'%m['latest'];assert os.path.isfile(f),'meta.json latest points at missing '+f;print('meta OK v%d'%m['latest'])"
 
 # The draft is served by the LIVE designer, not merely committed to disk
-out=$(curl -sf "$(bin/fw watchtower url)/designer" 2>&1); echo "$out" | grep -q "draft-arc-lifecycle"
+# (T-2743: the /designer page exceeds the 65536-byte pipe buffer, so
+# `echo "$out" | grep` SIGPIPEs (exit 141) under P-011's `set -eo pipefail`
+# even though it passes when rehearsed by hand without that flag — redirect
+# to a file instead, per CLAUDE.md's documented safe pattern.)
+curl -sf "$(bin/fw watchtower url)/designer" -o /tmp/.t2716-designer.out && grep -q "draft-arc-lifecycle" /tmp/.t2716-designer.out
 
 ## RCA
 
@@ -296,6 +300,38 @@ out=$(curl -sf "$(bin/fw watchtower url)/designer" 2>&1); echo "$out" | grep -q 
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO — hand v4 to the operator for the pair-draft alignment walk.
+
+**Rationale:** All six Agent ACs are structurally verified live, not asserted from task
+text: v4 lints CLEAN under `fw corpus lint` (the authority, not a hand-rolled checker —
+this task deliberately deleted its own first-cut checker after it disagreed with lint on
+9/11 projects), `meta.json`'s `latest` pointer resolves to an on-disk file, and the live
+Watchtower `/designer` page actually serves `draft-arc-lifecycle` (verified via file
+redirect after the gate's `set -eo pipefail` caught a SIGPIPE in the original inline-capture
+form — T-2743 class, fixed in this Verification block). What remains is exactly the one
+thing no agent can settle: does the drawn workflow match how the operator actually intends
+arcs to run.
+
+**Evidence:**
+- `fw corpus lint --summary` on v4 (17 nodes / 22 flows): `CLEAN`, 0 findings.
+- `meta.json` `latest: 4` resolves to `v4.bpmn` on disk.
+- Live `/designer` page contains `draft-arc-lifecycle`.
+- All four D-6 parts (recalc-then-pick, exit-as-gate, priority flag, bounce-back report)
+  present per Agent AC #2, open decision points carried in `aef:meta` per AC #3.
+
+**Known open conflict, surfaced not resolved:** the Human AC's own Steps note (step 2)
+flags that v3/v4 replaced the driver-approval gate with a decide+inform pattern — the
+agent decides scoped drivers and *informs* the operator, rather than the operator
+approving before drivers take effect. This **conflicts with CLAUDE.md's §Arc-Scoped
+Driver Suggestion Workflow (M6/D8) and with `lib/arc.sh`, which gates `scoped_drivers:`
+behind `fw arc approve-driver`.** This is a real four-way-adjacent design fork (keep the
+approval gate vs. the map's decide+inform), not a confidence hedge — it is precisely the
+sovereignty-scope question §Human AC review Step 2 asks the operator to resolve. If the
+operator ticks the AC as-is, code and CLAUDE.md need to follow the map (a build task); if
+not, the agent restores the approval gate in v5.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -323,3 +359,15 @@ out=$(curl -sf "$(bin/fw watchtower url)/designer" 2>&1); echo "$out" | grep -q 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2716-draft-the-arc-lifecycle--exit-workflow-m.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1dae9330
+- **Timestamp:** 2026-09-20T15:10:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-20T15:10:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
