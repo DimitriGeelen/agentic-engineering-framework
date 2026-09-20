@@ -652,3 +652,32 @@ assumptions:
   linked_task: T-2669
   created: '2026-09-19'
   resolved_date: '2026-09-19'
+- id: A-063
+  statement: A deterministic (non-LLM) sidecar process can hold a live TermLink connection
+    and write a flag+heartbeat file cheaply enough to poll aggressively without meaningful
+    resource cost
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-3396
+  created: '2026-09-20'
+  resolved_date: null
+- id: A-064
+  statement: The agent's own harness can be given a genuine cooperative yield point
+    for peer-consult, distinct from write-collision's before-every-write, without
+    requiring the agent to become a persistent daemon itself
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-3396
+  created: '2026-09-20'
+  resolved_date: null
+- id: A-065
+  statement: TermLink's cleanup cron can be made to exempt a tagged persistent session
+    without requiring changes on the AEF side beyond registration
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-3396
+  created: '2026-09-20'
+  resolved_date: null

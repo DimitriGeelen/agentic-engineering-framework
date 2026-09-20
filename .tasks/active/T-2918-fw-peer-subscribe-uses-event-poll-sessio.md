@@ -383,8 +383,45 @@ re-scoping an already-GO'd arc). Recording rather than picking.
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-09-20 — AC list reclassified: architecture-direction choice is a Human AC, not a stuck Agent AC
-- **Chose:** Removed the third Agent AC ("architecture decision made") and
+### 2026-09-20 — Architecture direction chosen: build the real sidecar (operator decision, via chat dialogue)
+- **Chose:** None of the four candidates as originally framed. Operator chose
+  the long-term-correct route: build a real, always-on, deterministic sidecar
+  listener per agent session (holds the TermLink connection, writes a flag +
+  heartbeat), with `fw peer subscribe`'s harness cooperatively polling that
+  flag/heartbeat at its own safe yield point — not a blind 30s poll, and not
+  interrupt-driven PTY injection.
+- **Why:** This isn't a novel design — it's the *existing, already-reasoned*
+  architecture from arc-011's ADR (`docs/architecture/parallel-execution-aef.md`
+  §5), reviewed under an adversarial "Grill Me" pass
+  (`docs/reports/arc-011-grill-me-responses.md`). That ADR already explicitly
+  considered and rejected PTY-inject-on-apparent-idle (§5: an agent mid-turn
+  is uninterruptible; an external watcher cannot prove a safe yield point;
+  injection corrupts the input stream the agent is actively consuming). It
+  chose a deterministic (non-LLM) sidecar + agent-self-polls-at-its-own-
+  yield-point + heartbeat-based deafness self-check instead — exactly the
+  shape the operator asked for when re-describing the "sidekick" concept from
+  memory, corrected on the delivery mechanism. T-1135 (April 2026) separately
+  negotiated the TermLink-side persistence contract for an always-on session
+  (`tags: persistent,receptionist`, cleanup exemption, `session.needs_restart`
+  event) but neither side of that agreement was ever built.
+- **Rejected (the four narrower fixes originally proposed in Investigation
+  above):** (1) generic persistent daemon with no self-check — superseded by
+  the ADR's heartbeat-checked design, which is safer for the same cost; (2)
+  accept lossy delivery — rejected, this is the option the operator explicitly
+  chose to avoid; (3) ask TermLink for a hub cursor/replay primitive —
+  unnecessary once the sidecar holds its own live connection rather than
+  polling a lossy broadcast after the fact; (4) re-scope the arc away from
+  live polling — rejected, the sidecar makes live delivery achievable without
+  re-opening arc-003/T-1820's already-GO'd scope.
+- **Open sub-question surfaced, not resolved here:** yield-point granularity
+  (T-2323, still `captured`/unstarted) — the ADR's "before every file-write"
+  candidate was chosen for the *write-collision* use case (arc-011); it is
+  not obviously the right yield point for *peer-consult* messages (design
+  questions, escalations). This and the rest of the unbuilt spec (heartbeat
+  timing, priority-byte flag shape, cross-repo persistence wiring) are being
+  captured as a new inception task rather than decided inline here.
+- **Superseded text below (2026-09-20, earlier same day):** Removed the third
+  Agent AC ("architecture decision made") and
   replaced it with an Agent AC scoping the investigation as complete and
   explicitly deferring the direction choice to the existing `[REVIEW]` Human
   AC — no new scope introduced, no work skipped.
