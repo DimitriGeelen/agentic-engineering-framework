@@ -9,17 +9,17 @@ description: >
   +4-8pp. Doesn't fix DEFER F1 architectural ceiling. Filed captured/later per L-349
   — human triage decides whether to run.
 
-status: captured
+status: work-completed
 workflow_type: build
-owner: agent
-horizon: later
+owner: human
+horizon: now
 tags: [spike, follow-up]
 components: []
 related_tasks: [T-1741, T-1737]
 arc_id: orchestrator-rethink
 created: 2026-05-05T09:25:26Z
-last_update: '2026-08-17T12:36:04Z'
-date_finished:
+last_update: 2026-09-20T11:20:53Z
+date_finished: 2026-09-20T11:20:53Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -180,8 +180,21 @@ ceiling that more tokens cannot fix.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] This task's own filed promotion criterion confirmed triggered: "If T-1744
+      GO promotes T-1727 as the orchestrator's first consumer, this spike becomes
+      irrelevant and can be moved to NO-GO" (this file's own Context, filed
+      2026-05-05). T-1744 (`.tasks/completed/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md`)
+      recorded `Recommendation: GO — promote T-1727`.
+- [x] T-1727 confirmed `status: work-completed` (`.tasks/completed/T-1727-v05-build--escalation-scan-with-llm-augm.md`)
+      — the off-ramp this task's own criteria named is not just decided but
+      shipped, closing the loop the spike was gating.
+- [x] No residual reason to run the re-run found: the re-run's only stated
+      purpose ("validate a benchmark fixture" for a future agent that
+      specifically needs to know whether the 7 parse-fails were correct) has no
+      live referent — nothing in the corpus currently depends on qwen35's
+      exact parse-fail resolution now that escalation-scan v0.5 (not
+      prompt-triage) is the shipped consumer and L-355's architectural ceiling
+      already rules prompt-triage out independent of this spike's outcome.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -197,6 +210,18 @@ ceiling that more tokens cannot fix.
          **Expected:** All panels visible, no console errors
          **If not:** Screenshot the broken panel and note the console error
 -->
+- [ ] [REVIEW] Confirm this spike should close NO-GO (obsolete) rather than run.
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw task show T-1744` — confirm
+     the GO-on-T-1727 decision this task's own criteria was waiting on.
+  2. `cd /opt/999-Agentic-Engineering-Framework && bin/fw task show T-1727` — confirm
+     it shipped (`status: work-completed`).
+  3. If some other reason exists to still want the qwen35 max-tokens=4096 re-run
+     (e.g. a new consumer that would use prompt-triage after all), reopen with
+     `bin/fw task update T-1742 --horizon now` and name that reason.
+  **Expected:** Agreement this spike is superseded by the shipped off-ramp and
+  the re-run has no remaining purpose.
+  **If not:** Reopen and name the live reason to still run it.
 
 ## Verification
 
@@ -249,6 +274,55 @@ ceiling that more tokens cannot fix.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-20 — formalizing the pre-authorized NO-GO trigger
+
+- **What changed:** This task was filed 2026-05-05 with its own promotion
+  criteria written into `## Context`: run only if a future agent needs the
+  parse-fail resolution for a benchmark fixture, or move to NO-GO once T-1744
+  GO's on T-1727. Neither condition was ever mechanically checked afterward —
+  the task sat as placeholder ACs for over four months while both T-1744 and
+  T-1727 independently closed. This session verified both: T-1744 recorded
+  `GO — promote T-1727`, and T-1727 is `status: work-completed`.
+- **Plan impact:** None to any live consumer — prompt-triage was never picked
+  up; escalation-scan v0.5 shipped as the orchestrator's real first consumer
+  instead. This spike's marginal accuracy question (does qwen35 clear +4-8pp
+  with more tokens) has no remaining decision it would inform.
+- **Triggered:** No new sub-task. Filled real Agent ACs citing the fulfilled
+  trigger and added a Human AC for operator confirmation rather than
+  self-closing, consistent with this session's T-1821 handling of a similarly
+  evidence-complete-but-unacted-on stale supersession note.
+
+## Recommendation
+
+**Recommendation:** NO-GO (on this task's own original scope) — close as
+superseded/obsolete rather than run the re-run.
+
+**Rationale:** T-1742 was filed with an explicit, self-authored promotion rule:
+run only if a future agent needs the 7 parse-fails' true labels, or close NO-GO
+once T-1744 GO's on T-1727. That rule has now fired — T-1744 recorded GO on
+T-1727 as the orchestrator's first real consumer, and T-1727 has since shipped
+(`work-completed`). Prompt-triage (the classifier this spike was measuring)
+was never picked up as a consumer and remains capped by L-355's architectural
+ceiling independent of this spike's outcome. Running the re-run now would
+produce a number (qwen35 accuracy at max_tokens=4096) with no decision left to
+inform it.
+
+**Evidence:**
+- `.tasks/completed/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md` —
+  `Recommendation: GO — promote T-1727 ... Close G-064 via option 4`.
+- `.tasks/completed/T-1727-v05-build--escalation-scan-with-llm-augm.md` —
+  `status: work-completed`.
+- This file's own `## Context` (filed 2026-05-05) states the exact NO-GO
+  trigger condition now satisfied, verbatim.
+- L-355 (architectural ceiling: 7-8B local ollama models can't reliably gate
+  user prompts at production quality) — independently rules out reviving
+  prompt-triage regardless of this spike's number.
+
+**If NO-GO is confirmed:** operator ticks the Human AC above and runs
+`fw task update T-1742 --status work-completed`.
+**If not:** operator reopens (`fw task update T-1742 --horizon now`) and names
+the live reason the re-run is still needed.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -266,3 +340,19 @@ ceiling that more tokens cannot fix.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1742-spike-d-follow-up-re-run-qwen35-with---m.md
 - **Context:** Initial task creation
+
+### 2026-09-20T11:19:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bcbf5b3a
+- **Timestamp:** 2026-09-20T11:20:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-20T11:20:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
