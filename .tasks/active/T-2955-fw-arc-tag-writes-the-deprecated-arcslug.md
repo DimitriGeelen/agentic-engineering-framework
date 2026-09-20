@@ -11,10 +11,10 @@ description: >
   only because a verification leg named the source-of-truth field rather than asserting
   the render looked right — a leg checking the render would have passed it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-12T20:35:23Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: 2026-09-20T18:19:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,14 +84,36 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`lib/arc.sh:arc_tag()` writes the deprecated `arc:<slug>` tag into the task's
+`tags:` list and appends to the legacy `constituent_tasks:` arc-side list, but
+never writes the canonical `arc_id:` task-frontmatter field the function's own
+neighbouring comment names as the source of truth (T-1849). Fix: write
+`arc_id:` too, checked/written first so a conflict (task already belongs to a
+different arc) aborts before the legacy writes run, rather than leaving the
+task in a partially-tagged state.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **AC1 New arc_id write:** `fw arc tag <arc> T-XXX` sets `arc_id: <arc>`
+      (canonical slug form) on the task's frontmatter when the task previously
+      had no `arc_id:` value.
+- [ ] **AC2 Idempotent:** running `fw arc tag` twice with the same arc does not
+      duplicate the `arc_id:` line or error — second run is a no-op for that leg.
+- [ ] **AC3 Conflict refused atomically:** if the task's `arc_id:` is already
+      set to a DIFFERENT arc (comparing normalized forms via
+      `_arc_normalize_input`, so `arc-001` vs `dispatch-safety` is NOT a
+      conflict), `fw arc tag` exits 1 with a message naming both arcs, and
+      does **not** touch the legacy `tags:`/`constituent_tasks:` writes either
+      — checked before those run, not after.
+- [ ] **AC4 No regression:** existing legacy-form behavior (deprecated
+      `arc:<slug>` tag + `constituent_tasks:` append for legacy arcs) is
+      unchanged for the non-conflicting case.
+- [ ] **AC5 Bats coverage:** `tests/unit/arc_dual_identity_verbs.bats` (or a
+      sibling file) covers: fresh task → arc_id set; re-tag same arc → no-op;
+      task with arc_id for a different arc → refused, file unchanged.
+- [ ] **AC6 Reviewer static-scan PASS** (`bin/fw reviewer T-2955 --no-write`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,3 +309,84 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2955-fw-arc-tag-writes-the-deprecated-arcslug.md
 - **Context:** Initial task creation
+
+### 2026-09-20 — Session interrupted at budget critical (~103%) mid-implementation
+- **Action:** Wrote real ACs (AC1-AC6), implemented the `arc_id:` write in
+  `lib/arc.sh:arc_tag()` — a new step 0 that reads any existing `arc_id:` line
+  from the task's frontmatter before the legacy `tags:`/`constituent_tasks:`
+  writes, and either sets it (fresh), no-ops (already correct, comparing via
+  `_arc_normalize_input` so `arc-001` vs `dispatch-safety` isn't a false
+  conflict), or refuses with exit 1 and leaves the file untouched (conflicting
+  arc). `bash -n lib/arc.sh` — clean.
+- **NOT done:** the bats coverage for AC5 (4 new tests appended to
+  `tests/unit/arc_dual_identity_verbs.bats`: fresh-set, same-arc no-op,
+  arc-NNN-form no-op, conflict-refused-file-unchanged) was **blocked by the
+  budget gate mid-write and did NOT apply** — confirmed via `git status`:
+  `arc_dual_identity_verbs.bats` shows no diff, only `lib/arc.sh` and this task
+  file are modified. So: the implementation exists but is **completely
+  unverified** — the new code path in `arc_tag()` has never actually been run,
+  not even once, let alone against the conflict/idempotency cases it claims to
+  handle. `bash -n` proves only parse-validity, not behaviour.
+- **Status:** left at `started-work`, NOT partial-complete. AC1-AC6 all remain
+  unticked — none of this is verified (T-1831 C-4: tick on confirmed behaviour,
+  not on "wrote the code"). Do not treat AC4's "no regression" claim as safe
+  either — the existing `arc_tag accepts arc-NNN form` test was never re-run
+  against the new code.
+- **Next session:** append the 4 bats tests below (drafted, ready to paste) to
+  `tests/unit/arc_dual_identity_verbs.bats`, then run
+  `bats tests/unit/arc_dual_identity_verbs.bats` (all tests, not just the new
+  ones — must confirm no regression on the existing arc-NNN test). Then tick
+  ACs against real results, fill `## Verification`, run
+  `bin/fw reviewer T-2955 --no-write` for AC6.
+
+  ```bash
+  @test "T-2955: arc_tag sets arc_id: on a task with no prior arc_id" {
+      run arc_tag "dispatch-safety" "T-9999"
+      [ "$status" -eq 0 ]
+      [[ "$output" == *"Set arc_id: dispatch-safety on task T-9999"* ]]
+      run grep -qE "^arc_id: dispatch-safety$" "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+      [ "$status" -eq 0 ]
+  }
+
+  @test "T-2955: arc_tag re-run with the same arc is a no-op, no duplicate line" {
+      run arc_tag "dispatch-safety" "T-9999"
+      [ "$status" -eq 0 ]
+      run arc_tag "dispatch-safety" "T-9999"
+      [ "$status" -eq 0 ]
+      [[ "$output" == *"already has arc_id: dispatch-safety"* ]]
+      run grep -cE "^arc_id:" "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+      [ "$status" -eq 0 ]
+      [ "$output" -eq 1 ]
+  }
+
+  @test "T-2955: arc_tag re-run with the arc-NNN form of the same arc is a no-op (normalized compare)" {
+      run arc_tag "dispatch-safety" "T-9999"
+      [ "$status" -eq 0 ]
+      run arc_tag "arc-001" "T-9999"
+      [ "$status" -eq 0 ]
+      [[ "$output" == *"already has arc_id"* ]]
+      run grep -cE "^arc_id:" "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+      [ "$output" -eq 1 ]
+  }
+
+  @test "T-2955: arc_tag refuses when task already belongs to a different arc, file unchanged" {
+      run arc_tag "dispatch-safety" "T-9999"
+      [ "$status" -eq 0 ]
+      run cat "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+      local before="$output"
+
+      run arc_tag "legacy-arc" "T-9999"
+      [ "$status" -eq 1 ]
+      [[ "$output" == *"already has arc_id: dispatch-safety"* ]]
+      [[ "$output" == *"legacy-arc"* ]]
+
+      run cat "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+      [ "$output" = "$before" ]
+      run grep -q "arc:legacy-arc" "$PROJECT_ROOT/.tasks/active/T-9999-stub.md"
+      [ "$status" -ne 0 ]
+  }
+  ```
+
+### 2026-09-20T18:19:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

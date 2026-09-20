@@ -609,6 +609,58 @@ arc_tag() {
     tf=$({ ls "$PROJECT_ROOT"/.tasks/{active,completed}/"$tid"-*.md 2>/dev/null || true; } | head -1)
     [ -n "$tf" ] || { echo "Error: task $tid not found in .tasks/{active,completed}/" >&2; return 1; }
 
+    # 0. Canonical write: task-side arc_id: (T-1849). Checked/written BEFORE the
+    # legacy tag/constituent_tasks writes below so a conflict aborts atomically —
+    # `fw arc tag` previously wrote only the deprecated `arc:<slug>` tag form and
+    # never this field, despite the neighbouring comment naming arc_id: as the
+    # source of truth (832 T-467 / T-2955).
+    local existing_arc_id
+    existing_arc_id="$(python3 - "$tf" <<'PY'
+import re, sys
+fn = sys.argv[1]
+text = open(fn).read()
+try:
+    fm_end = text.index("\n---", 4)
+except ValueError:
+    fm_end = len(text)
+head = text[:fm_end]
+m = re.search(r'^arc_id:\s*(\S.*?)\s*$', head, re.MULTILINE)
+print(m.group(1).strip().strip('"').strip("'") if m else "")
+PY
+)"
+    if [ -n "$existing_arc_id" ]; then
+        local existing_norm
+        existing_norm="$(_arc_normalize_input "$existing_arc_id")"
+        if [ "$existing_norm" = "$id" ]; then
+            echo "Task $tid already has arc_id: ${existing_arc_id} — skipping arc_id write"
+        else
+            echo "Error: task $tid already has arc_id: ${existing_arc_id} (normalizes to '${existing_norm}'); refusing to overwrite with '${id}'. A task's arc_id: is a single-arc reference (T-1849) — resolve the conflict manually before tagging into a different arc." >&2
+            return 1
+        fi
+    else
+        python3 - "$tf" "$id" <<'PY'
+import re, sys
+fn, new_id = sys.argv[1], sys.argv[2]
+text = open(fn).read()
+try:
+    fm_end = text.index("\n---", 4)
+except ValueError:
+    fm_end = len(text)
+head, tail = text[:fm_end], text[fm_end:]
+cm = re.search(r'^#\s*arc_id:', head, re.MULTILINE)
+if cm:
+    head = head[:cm.start()] + f"arc_id: {new_id}\n" + head[cm.start():]
+else:
+    rm = re.search(r'^related_tasks:.*$', head, re.MULTILINE)
+    if rm:
+        head = head[:rm.end()] + f"\narc_id: {new_id}" + head[rm.end():]
+    else:
+        head = head.replace("---\n", f"---\narc_id: {new_id}\n", 1)
+open(fn, "w").write(head + tail)
+PY
+        echo "Set arc_id: ${id} on task $tid"
+    fi
+
     local arc_tag="arc:${id}"
 
     # 1. Add tag to task file (idempotent).
@@ -640,6 +692,41 @@ PY
         fi
         echo "Tagged task $tid with $arc_tag"
     fi
+
+    # 1.5. Set canonical arc_id: on task frontmatter (T-2955, 832 T-467).
+    # The tag write above (arc:<slug>) is the legacy form; task-side arc_id:
+    # is the actual source-of-truth per T-1849. `fw arc tag` used to write
+    # only the deprecated form, leaving arc_id: unset — silently correct
+    # (fw arc show unions both forms) but drifted from its own documented
+    # canonical field. Never overwrites a DIFFERENT existing arc_id: — a
+    # task belongs to one arc at a time, and a mismatch is a reassignment
+    # decision this command should surface, not make silently.
+    python3 - "$tf" "$id" <<'PY'
+import re, sys
+fn, arc_id = sys.argv[1], sys.argv[2]
+text = open(fn).read()
+m = re.search(r'^arc_id:[ \t]*(.*)$', text, re.MULTILINE)
+if m:
+    cur = m.group(1).strip().strip('"').strip("'")
+    if cur == arc_id:
+        print(f"Task already has arc_id: {arc_id} — skipping")
+    elif cur:
+        print(f"WARNING: task already has arc_id: {cur} (differs from '{arc_id}') "
+              f"— not overwriting. A task belongs to one arc at a time (T-1849); "
+              f"edit arc_id: by hand if reassignment is intended.")
+    else:
+        text = text[:m.start(1)] + arc_id + text[m.end(1):]
+        open(fn, "w").write(text)
+        print(f"Set arc_id: {arc_id} on task frontmatter")
+else:
+    m2 = re.search(r'^(related_tasks:.*)$', text, re.MULTILINE)
+    if m2:
+        text = text[:m2.end(1)] + f"\narc_id: {arc_id}" + text[m2.end(1):]
+    else:
+        text = text.replace("---\n", f"---\narc_id: {arc_id}\n", 1)
+    open(fn, "w").write(text)
+    print(f"Set arc_id: {arc_id} on task frontmatter")
+PY
 
     # 2. Append to arc's constituent_tasks (idempotent).
     # T-1851: field deprecated for new arcs (post-2026-05-16). When the field
