@@ -27,7 +27,7 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T16:19:32Z
-last_update: '2026-08-17T12:36:08Z'
+last_update: 2026-09-20T16:21:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -486,3 +486,11 @@ caution.
   "choose what to work on next" initiative (stop wasted redispatch), not
   a sovereignty action.
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-09-20T16:21:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-09-20T16:21:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: now → later
