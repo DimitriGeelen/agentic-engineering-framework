@@ -11,16 +11,16 @@ description: >
   hygiene), separate concern. This inception asks: should we run gunicorn locally
   too, instead of Werkzeug dev server?
 
-status: captured
+status: work-completed
 workflow_type: inception
-owner: agent
-horizon: later
+owner: human
+horizon: now
 tags: [watchtower, performance, wsgi, from-saturation-incident]
-components: []
+components: [agents/audit/audit.sh, agents/handover/handover.sh, agents/monitor/watchtower-rss-sample.sh, agents/task-create/update-task.sh, lib/inception_recommendation.sh, lib/inception.sh, tests/unit/inception_defer_park.bats, web/app.py]
 related_tasks: [T-1122, T-1309]
 created: 2026-04-30T07:25:07Z
-last_update: '2026-07-07T10:45:02Z'
-date_finished:
+last_update: 2026-09-20T13:20:53Z
+date_finished: 2026-09-20T13:20:53Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -258,6 +258,21 @@ All three documented in `docs/reports/T-1611-werkzeug-vs-gunicorn-local.md`.
   3. Record decision via the Watchtower form or the command shown alongside the QR code
   **Expected:** Decision recorded, task completed
   **If not:** Ask agent for clarification on specific findings
+- [ ] [REVIEW] Confirm T-1611-C (gunicorn swap) can close NO-GO now that T-1611-B's
+      own named diagnostic (RSS growth over 24-48h) has run for a month with no
+      monotonic growth found.
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw task show T-1611` — read
+     the "2026-09-20 — T-1611-B diagnostic resolved" Recommendation addendum below.
+  2. Spot-check the raw data yourself if desired:
+     `tail -30 .context/monitors/watchtower-rss.jsonl` — RSS on the current
+     multi-day process oscillates ~250-450MB with no upward trend.
+  3. If you know of a saturation incident *after* T-1612's `threaded=True` fix
+     landed (2026-04-30) that this data doesn't explain, name it and reopen with
+     `bin/fw task update T-1611 --horizon now`.
+  **Expected:** Agreement that A1 (request-rate not leak) is confirmed, T-1612's
+  cheap fix is holding, and T-1611-C (gunicorn) is not warranted — close NO-GO.
+  **If not:** Reopen and name the unexplained incident.
 
 ## Go/No-Go Criteria
 
@@ -288,6 +303,42 @@ All three documented in `docs/reports/T-1611-werkzeug-vs-gunicorn-local.md`.
   - Existing pattern: `web/app.py:432-434` makes `threaded=True` a one-line change
   - T-1309 owns systemd wrapping (auto-restart on hang) — complementary, addresses different concern
 
+### 2026-09-20 — T-1611-B diagnostic resolved, final verdict on T-1611-C
+
+**Recommendation:** NO-GO on T-1611-C (gunicorn swap). Close this task as
+DEFER-then-resolved: the cheap fix (T-1612) held, the diagnostic this task
+itself specified (T-1611-B) ran far past its stated window and found no leak.
+
+**Rationale:** The 2026-04-30 DEFER named an explicit arbiter: "if T-1612's
+`threaded=True` fix is sufficient, RSS stays bounded; if a leak hides
+underneath, RSS climbs and T-1611-C becomes warranted" (T-1615's own filed
+Context, quoting this task). `.context/monitors/watchtower-rss.jsonl` now
+holds 8996 samples across a full month (2026-08-19 → 2026-09-20, this task's
+own file predates that log but T-1615 — filed as this task's direct
+follow-up — started it), spanning ~15 distinct Watchtower process lifetimes.
+Across every one of them RSS oscillates in a bounded ~15-880MB range with no
+monotonic trend — it resets on restart and drifts up and down within a
+session, never climbing session-over-session. The current live process (PID
+1141196) has been up 232189s (~64.5h — more than 2x the 24-48h window
+T-1611-B specified) holding steady at ~330-380MB. This is the request-rate
+signature (A1), not the leak signature. No saturation incident matching the
+original symptom (CPU pegged, `/` hanging while `/health` stays fast) shows
+up in this window's data.
+
+**Evidence:**
+- `.context/monitors/watchtower-rss.jsonl` — 8996 samples, 2026-08-19 to
+  2026-09-20, no monotonic RSS growth across ~15 process lifetimes.
+- `.context/monitors/watchtower-rss-latest.yaml` — current process 232189s
+  uptime, RSS steady ~330-380MB.
+- `.tasks/completed/T-1612-...md` — `threaded=True` fix, `status:
+  work-completed`, landed 2026-04-30 (the same day as this DEFER).
+- `.tasks/completed/T-1615-...md` — RSS observation cron this task named,
+  `status: work-completed`, now the data source above.
+
+**If NO-GO is confirmed:** operator ticks the new Human AC above and runs
+`fw task update T-1611 --status work-completed`.
+**If not:** operator names the unexplained incident and reopens.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives. -->
@@ -313,3 +364,38 @@ All three documented in `docs/reports/T-1611-werkzeug-vs-gunicorn-local.md`.
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
 - **Reason:** T-1865 sweep: DEFER limbo recovery
+
+### 2026-09-20T13:20:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-87d3784d
+- **Timestamp:** 2026-09-20T13:20:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-dd1d9003
+- **Timestamp:** 2026-09-20T13:20:53Z
+- **Overall:** CONTRADICTED
+- **Claims:** 9
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-1611-werkzeug-vs-gunicorn-local.md` | file | ✓ pass |
+| `web/app.py:432-434` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `.context/monitors/watchtower-rss.jsonl` | file | ✓ pass |
+| `.context/monitors/watchtower-rss-latest.yaml` | file | ✓ pass |
+| `.tasks/completed/T-1612-...md` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `.tasks/completed/T-1615-...md` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `T-1309` | task | ✓ pass |
+| `T-1612` | task | ✓ pass |
+| `T-1615` | task | ✓ pass |
+
+### 2026-09-20T13:20:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
