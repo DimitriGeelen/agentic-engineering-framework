@@ -6882,6 +6882,26 @@ if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -f "$PROJECT_ROOT/agents/mcp/manifest.py" 
     esac
 fi
 
+# T-2433 / arc-013: sandbox profile drift (the OS cage's static floor). Routes
+# `fw sandbox status` exit codes into the audit verdict, sibling of the MCP block:
+#   0 → pass  (emitted matches source; deployed matches emitted — or not installed yet,
+#              which is the human's step and not a failure)
+#   1 → fail  (stale: source edited but not re-emitted — or drift: deployed copy behind)
+#   2 → info  (source present but never emitted)
+# Both legs compare CONTENT (sha256) — touch / checkout / vendor-sync cannot trip it.
+if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -f "$PROJECT_ROOT/policy/sandbox-profile.yaml" ]; then
+    SANDBOX_DRIFT_OUT=$("$PROJECT_ROOT/bin/fw" sandbox status 2>&1)
+    SANDBOX_DRIFT_EXIT=$?
+    case "$SANDBOX_DRIFT_EXIT" in
+        0) pass "sandbox profile: PASS — $(echo "$SANDBOX_DRIFT_OUT" | head -1)" ;;
+        1) fail "sandbox profile: FAIL — $(echo "$SANDBOX_DRIFT_OUT" | head -1)" \
+                "policy/sandbox-profile.yaml, policy/sandbox-profile.d/, /etc/aef-sandbox" \
+                "stale → bin/fw sandbox emit-profile (agent-safe); drift → sudo fw sandbox install (human/root)" ;;
+        2) info "sandbox profile: ABSENT — run \`bin/fw sandbox emit-profile\`" ;;
+        *) info "sandbox profile: status=$SANDBOX_DRIFT_EXIT (unexpected)" ;;
+    esac
+fi
+
 # T-1798: Workflow → dispatcher coverage check.
 # T-1776 surfaced default.yaml → worker_kind: TermLink at *runtime*
 # (NotImplementedError). The structural prevention is to flag the gap at

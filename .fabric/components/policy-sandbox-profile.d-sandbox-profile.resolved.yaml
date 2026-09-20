@@ -1,0 +1,20 @@
+id: policy/sandbox-profile.d/sandbox-profile.resolved.yaml
+name: sandbox-profile.resolved
+type: config
+subsystem: governance
+location: policy/sandbox-profile.d/sandbox-profile.resolved.yaml
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-20
+created_by: unknown

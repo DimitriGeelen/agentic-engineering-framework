@@ -1247,6 +1247,7 @@ show_help() {
     echo -e "  ${GREEN}pause${NC} <cmd>           Paused-dispatch chain (list, resolve)"
     echo -e "  ${GREEN}pending${NC} <cmd>         Blocked cross-project actions (register, list, resolve, remind)"
     echo -e "  ${GREEN}policy${NC} <cmd>          Proxy governance policy (emit, status, install)"
+    echo -e "  ${GREEN}sandbox${NC} <cmd>         OS cage static floor (emit-profile, status, spec, install)"
     echo ""
     echo -e "${BOLD}Trunk flow & release:${NC}"
     echo -e "  ${GREEN}worktree${NC} <cmd>       Isolated worktrees (status, create, gc, remove)"
@@ -2396,6 +2397,30 @@ else:
                            warnings=$((warnings + 1)) ;;
             not_installed) echo -e "  ${CYAN}SKIP${NC}  proxy-policy not installed (install is human/root — fw policy emit)" ;;
             *)             echo -e "  ${CYAN}SKIP${NC}  proxy-policy drift check unavailable" ;;
+        esac
+    fi
+
+    # Check: sandbox profile drift (T-2433, arc-013) — two legs, both by CONTENT.
+    # stale: policy/sandbox-profile.yaml edited but `fw sandbox emit-profile` not re-run
+    #        (registry→generated class). drift: emitted but the deployed copy in
+    #        /etc/aef-sandbox differs (emitted→installed class, install is human/root).
+    local _sb_src="$PROJECT_ROOT/policy/sandbox-profile.yaml"
+    if [ -f "$_sb_src" ]; then
+        local _sb_state
+        _sb_state=$(PYTHONPATH="$FRAMEWORK_ROOT" python3 -c "import lib.govd_sandbox as s; print(s.status('$_sb_src', '$PROJECT_ROOT', '$PROJECT_ROOT/policy/sandbox-profile.d')['state'])" 2>/dev/null || echo "err")
+        case "$_sb_state" in
+            ok)             echo -e "  ${GREEN}OK${NC}  sandbox profile emitted and deployed copies match" ;;
+            stale)          echo -e "  ${YELLOW}WARN${NC}  sandbox-profile.yaml edited but not re-emitted"
+                            echo -e "         Run: bin/fw sandbox emit-profile   (agent-safe)"
+                            warnings=$((warnings + 1)) ;;
+            drift)          echo -e "  ${YELLOW}WARN${NC}  sandbox profile emitted but deployed copy differs"
+                            echo -e "         Run: sudo fw sandbox install   (Lock-1 Part 1, root)"
+                            warnings=$((warnings + 1)) ;;
+            not_installed)  echo -e "  ${CYAN}SKIP${NC}  sandbox profile not installed (install is human/root — fw sandbox spec)" ;;
+            absent_emitted) echo -e "  ${YELLOW}WARN${NC}  sandbox profile source present but never emitted"
+                            echo -e "         Run: bin/fw sandbox emit-profile"
+                            warnings=$((warnings + 1)) ;;
+            *)              echo -e "  ${CYAN}SKIP${NC}  sandbox profile drift check unavailable" ;;
         esac
     fi
 
@@ -4136,6 +4161,49 @@ do_policy() {
             ;;
         *)
             echo "Unknown: fw policy $action (try: emit|status|install)" >&2
+            return 2
+            ;;
+    esac
+}
+
+# --- Sandbox profile emit / status / install (T-2433, arc-013, design §7a) ---
+# The OS cage's STATIC FLOOR (uid demotion + RO substrate + egress pin), derived from
+# policy/sandbox-profile.yaml. emit-profile / status / spec are agent-safe (they write
+# repo files and run nothing on the host); install is human/root (Lock-1 Part 1) and
+# REFUSES under the agent — the agent must not install its own cage. Sibling of
+# `fw policy` (T-2432): same split, one more drift class (source edited but not re-emitted).
+do_sandbox() {
+    local action="${1:-}"; shift || true
+    local _src="${AEF_SANDBOX_PROFILE:-$PROJECT_ROOT/policy/sandbox-profile.yaml}"
+    local _py="$FRAMEWORK_ROOT/lib/govd_sandbox.py"
+    case "$action" in
+        emit-profile|status|spec)
+            PYTHONPATH="$FRAMEWORK_ROOT" python3 "$_py" "$action" --source "$_src" --project-root "$PROJECT_ROOT" "$@"
+            ;;
+        install)
+            if [ "${CLAUDECODE:-}" = "1" ]; then
+                echo -e "${RED}ERROR: 'fw sandbox install' is Lock-1 Part 1 (human/root) — the agent must not install its own cage.${NC}" >&2
+                echo "  The agent emits the profile; the human/root deploys it. Run:" >&2
+                echo "    fw sandbox emit-profile     # render + print the install spec (agent-safe)" >&2
+                echo "    sudo fw sandbox install     # human/root only" >&2
+                return 3
+            fi
+            if [ "$(id -u)" != "0" ]; then
+                echo -e "${RED}ERROR: 'fw sandbox install' must run as root (it deploys the profile RO to the agent uid).${NC}" >&2
+                echo "  Run: sudo fw sandbox install" >&2
+                return 3
+            fi
+            PYTHONPATH="$FRAMEWORK_ROOT" python3 "$_py" install --source "$_src" --project-root "$PROJECT_ROOT" "$@"
+            ;;
+        ""|-h|--help|help)
+            echo "Usage: fw sandbox {emit-profile|status|spec|install}"
+            echo "  emit-profile  Render unit + nftables + manifest into policy/sandbox-profile.d/ and print the install spec (agent-safe)"
+            echo "  status        Drift: source→emitted (stale) and emitted→deployed (drift), by sha256; exit 0 ok/not-installed, 1 stale/drift, 2 never emitted"
+            echo "  spec          Print the install spec only (agent-safe — runs nothing)"
+            echo "  install       Deploy emitted artefacts to /etc/aef-sandbox — human/root only (Lock-1 Part 1)"
+            ;;
+        *)
+            echo "Unknown: fw sandbox $action (try: emit-profile|status|spec|install)" >&2
             return 2
             ;;
     esac
@@ -9217,6 +9285,9 @@ PYSEARCH
         ;;
     policy)
         do_policy "$@"
+        ;;
+    sandbox)
+        do_sandbox "$@"
         ;;
     verify-acs)
         source "$FW_LIB_DIR/verify-acs.sh"

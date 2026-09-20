@@ -1,0 +1,56 @@
+# sandbox-profile.yaml — the OS cage's SOURCE (arc-013 / T-2433, design §7a).
+#
+# Sovereign-authored, agent-reviewable. `fw sandbox emit-profile` derives the
+# tier-independent STATIC FLOOR from this file plus the repo layout:
+#   - a systemd unit    (uid demotion S5 + RO substrate S4)   → policy/sandbox-profile.d/aef-agent.service
+#   - an nftables ruleset (egress pinned to the proxy S3)     → policy/sandbox-profile.d/aef-agent-egress.nft
+#   - the resolved manifest (absolute paths, uid, egress)      → policy/sandbox-profile.d/sandbox-profile.resolved.yaml
+# `sudo fw sandbox install` deploys them (human/root only, Lock-1 Part 1 — refuses
+# under the agent). `fw sandbox status` reports two drift classes: source edited but
+# not re-emitted (stale), and emitted but not installed (drift).
+#
+# This is the FLOOR only. The active per-operation mediation tier (microVM +
+# virtio backends, gVisor fallback — §7a "Mechanism decision") sits on top of it
+# and is NOT emitted here: the host has no VMM yet, and emitting a profile nothing
+# on the host can validate would be config with no check behind it.
+
+version: 1
+
+# S5 — the agent runs as root today; this uid IS the boundary. The install spec
+# creates the user with exactly this uid so the nftables skuid match is stable
+# before the user exists (nft resolves names at parse time; numbers always parse).
+agent_user: aef-agent
+agent_uid: 1999
+
+# S4 — filesystem partition, relative to the project root unless absolute.
+# Nested rule pinned live on this host (systemd 255, ProtectSystem=strict):
+# an RO entry INSIDE an RW tree wins. So the working tree is RW and the
+# governance substrate inside it is RO.
+read_write:
+  - .                       # the working tree
+read_only:
+  - bin                     # framework code
+  - lib
+  - agents                  # hooks live here
+  - policy                  # this file, the proxy policy, the emitted profile
+  - .claude                 # settings.json + hooks
+  - .git                    # commits go through the authority broker (design §4e)
+  - /etc/aef-relay          # deployed proxy policy (T-2432)
+  - /var/lib/aef-relay      # relay audit log
+  - /var/lib/aef-govd       # trusted state store (T-2430)
+# Never visible to the agent at all.
+inaccessible:
+  - /run/aef-govd           # broker socket is reached via the relay, not directly
+
+# S3 — one route out: the proxy. Everything else from the agent uid is dropped
+# at the OUTPUT hook. Loopback to the proxy is the only accept; add further
+# rows here (sovereign edit → re-emit → re-install) if the floor must admit a
+# second destination — the TermLink hub is the obvious candidate and is
+# deliberately NOT pre-admitted.
+egress:
+  proxy_host: 127.0.0.1
+  proxy_port: 4000
+  extra_allow: []           # list of {host: <ip>, port: <n>, why: <text>}
+
+# Where install deploys to (absolute). Overridable for tests via AEF_SANDBOX_DEPLOYED.
+deployed_dir: /etc/aef-sandbox
