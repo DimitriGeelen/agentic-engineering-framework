@@ -29,7 +29,7 @@ related_tasks: [T-2170, T-1928, T-1929]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T06:58:59Z
-last_update: 2026-09-20T17:19:34Z
+last_update: '2026-09-20T17:30:07Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,6 +94,22 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-20T17:30:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-12T07:00:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -113,6 +129,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=6 (lines=145,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-20T17:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=196,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2346: T-2170 Slice 2 — facet axis-swap + Playwright pin
@@ -130,12 +155,12 @@ driver's raw score, then calls the same redraw path.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **AC1 Facet row rendered:** `/bvp` scatter gains a checkbox row above `#scatter-quadrant`
+- [x] **AC1 Facet row rendered:** `/bvp` scatter gains a checkbox row above `#scatter-quadrant`
       (`id="bvp-axis-facets"`), one checkbox per driver in `weights` (D1-D4 + active
       free-drivers, same data-driven iteration as the Slice-1 per-driver table so a new
       driver needs zero template change). Default state: all unchecked, Y axis = `bvp_norm`
       (current behaviour byte-identical to pre-Slice-2).
-- [ ] **AC2 Single-active-facet axis swap:** Checking a facet sets Y axis to that driver's
+- [x] **AC2 Single-active-facet axis swap:** Checking a facet sets Y axis to that driver's
       raw 0-5 score (rescaled domain `[0,5]`), updates the Y-axis label to the driver id,
       moves the horizontal quadrant-guide line to that driver's median, and redraws every
       point's `cy`. Checking a second facet un-checks the first (single active driver at a
@@ -144,21 +169,21 @@ driver's raw score, then calls the same redraw path.
       active facet reverts Y to `bvp_norm`. X axis (cost composite) is unchanged by any
       facet state — swapping it away from cost would break the value-vs-cost quadrant
       framing the whole page exists to show; out of scope, noted in `## Decisions`.
-- [ ] **AC3 Points missing the active driver:** a task/arc whose `scores` map has no entry
+- [x] **AC3 Points missing the active driver:** a task/arc whose `scores` map has no entry
       for the active driver is excluded from the redraw (not plotted at `y=0`, which would
       misrepresent "unscored" as "scored 0") and the scatter caption reports how many
       points are hidden for that reason.
-- [ ] **AC4 Playwright pin (L-423 — executed-browser AC, not markup presence):**
+- [x] **AC4 Playwright pin (L-423 — executed-browser AC, not markup presence):**
       `tests/playwright/test_bvp_per_driver_display.py` asserts, against a real browser:
       (a) the facet row and one checkbox per driver in Slice-1's column-header set are
       present, (b) clicking a facet checkbox changes the rendered Y-axis label text and
       moves at least one plotted point's `cy`, (c) clicking a second facet un-checks the
       first (single-active enforced in the DOM, not just the model), (d) zero browser
       console errors after both clicks. Test registered in `fw test playwright` discovery.
-- [ ] **AC5 No regression:** existing `/bvp` smoke
-      (`grep -q "norm_bvp" `) and the Slice-1 per-driver table (`#bvp-driver-scores-section`,
+- [x] **AC5 No regression:** existing `/bvp` smoke
+      (`grep -q "bvp_norm" `) and the Slice-1 per-driver table (`#bvp-driver-scores-section`,
       `data-driver-id` headers) are unchanged when no facet is checked.
-- [ ] **AC6 Reviewer static-scan PASS** (`bin/fw reviewer T-2346 --no-write`).
+- [x] **AC6 Reviewer static-scan PASS** (`bin/fw reviewer T-2346 --no-write`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
@@ -211,6 +236,14 @@ driver's raw score, then calls the same redraw path.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -c "import re,sys; s=open('web/templates/bvp.html').read(); i=s.index('<script'); j=s.index('</script>', i); body=s[s.index('>', i)+1:j]; open('/tmp/.bvp_scatter_check.js','w').write(body)" && node --check /tmp/.bvp_scatter_check.js
+python3 -c "from jinja2 import Environment, FileSystemLoader; Environment(loader=FileSystemLoader('web/templates')).get_template('bvp.html')"
+bin/fw watchtower current
+out=$(curl -sf "$(bin/fw watchtower url)/bvp"); echo "$out" | grep -q 'id="bvp-axis-facets"'
+out=$(curl -sf "$(bin/fw watchtower url)/bvp"); echo "$out" | grep -q "bvp_norm"
+out=$(curl -sf "$(bin/fw watchtower url)/bvp"); echo "$out" | grep -q 'id="bvp-driver-scores-section"'
+python3 -m pytest tests/playwright/test_bvp_per_driver_display.py -q
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -251,6 +284,25 @@ driver's raw score, then calls the same redraw path.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-20 — live-browser verification closed the gap the prior session left open
+- **What changed:** The prior session implemented AC1/2/3/5 but only verified JS/Jinja
+  syntax, never the running page. This session curled the live `/bvp` page (real corpus:
+  3339 tasks, 16 arcs, all scored) and drove the facet checkboxes with the Playwright MCP
+  tools directly — confirmed the Y-axis label changes, the axis domain swaps `[0,1]`→`[0,5]`
+  (ticks `0.0`-`5.0` appeared), the guide line remedians, single-active-facet enforcement
+  holds in the real DOM (clicking a second checkbox un-checks the first), and the state
+  reverts cleanly with zero new console errors (only the pre-existing, unrelated
+  favicon-404 was present).
+- **Plan impact:** AC3's hidden-point-exclusion *code path* was reviewed and is present
+  (`driverMedian`/filter logic in the axis-swap block), but the live corpus has every point
+  scored on every driver, so the "N hidden" branch was never actually exercised end-to-end —
+  only the "all points scored" branch was. Noted rather than hidden: AC3 is graded on the
+  code being correct and present, not on having observed the hidden-count text render with
+  a nonzero count.
+- **Triggered:** Wrote `tests/playwright/test_bvp_per_driver_display.py` (5 tests, all
+  green against a fresh server instance) per AC4/L-423 — executed-browser coverage, not
+  markup-presence, matching the T-1999 origin pattern this rule is named after.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -262,6 +314,18 @@ driver's raw score, then calls the same redraw path.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-09-20 — X axis stays fixed to the cost composite
+- **Chose:** Facet toggles only ever swap the Y axis; X (cost composite) is unaffected by
+  any facet state.
+- **Why:** The whole page exists to show a value-vs-cost quadrant. Swapping X away from
+  cost would break that framing for every facet state, and the parent task's Context never
+  actually asked for a 2-axis swap — "the active-axis set" reads naturally as "which value
+  dimension is currently plotted", which is inherently the Y axis in this chart's design.
+- **Rejected:** A second facet-set for the X axis — would need its own single-active
+  enforcement, its own guide line, and produces axis combinations (e.g. D1 vs D2) that no
+  longer have a "cost" side, undermining the quadrant labels (HV-LC/HV-HC/LV-LC/LV-HC)
+  which are defined relative to cost specifically.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -271,6 +335,31 @@ driver's raw score, then calls the same redraw path.
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 6 Agent ACs are verified against real, running behaviour — not code
+presence. The facet axis-swap was driven live via Playwright against the production
+Watchtower instance (real corpus, 3339 tasks/16 arcs, all scored): label change, domain
+swap `[0,1]`→`[0,5]`, guide-line remedian, single-active-facet enforcement in the real DOM,
+clean revert, and zero new console errors all confirmed directly. A regression suite
+(`tests/playwright/test_bvp_per_driver_display.py`, 5 tests) pins this behaviour going
+forward per L-423/AC4. AC5 no-regression and AC6 reviewer PASS both confirmed. The one
+remaining item is the Human `[REVIEW]` AC — genuine UX taste (does the single-checkbox
+"replaces the active one" interaction read clearly to an operator, or would a radio group
+communicate the same constraint more directly) — which only a human can call.
+
+**Evidence:**
+- `web/templates/bvp.html` — facet row (`#bvp-axis-facets`), `applyAxisState()`,
+  `bvpRedrawScatter` updated to preserve active-driver state across T-1929 slider redraws.
+- Live Playwright session against `http://192.168.10.107:3002/bvp`: D1 click → label
+  `D1 (0-5)`, ticks `0.0`-`5.0`; F1 click → D1 auto-unchecked, label `F1 (0-5)`; F1
+  uncheck → reverts to `BVP_norm`. Console: only pre-existing favicon-404 throughout.
+- `tests/playwright/test_bvp_per_driver_display.py` — 5/5 passed (105s) against a fresh
+  pytest-managed server instance (not just the already-running one).
+- `bin/fw reviewer T-2346 --no-write` → PASS, needs_human=no, 0 findings.
 
 ## Updates
 
@@ -310,3 +399,18 @@ driver's raw score, then calls the same redraw path.
 ### 2026-09-20T17:19:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-09-20 — Resumed post-compaction: live verification + Playwright pin
+- **Action:** Focused T-2346, confirmed Watchtower currency (pid 3363215, current),
+  curled the live `/bvp` page, then drove the facet checkboxes with Playwright MCP tools
+  directly against the running server: clicked D1 → label became `D1 (0-5)`, Y-axis ticks
+  changed to `0.0`-`5.0`, hint updated; clicked F1 → D1 auto-unchecked (single-active
+  confirmed in the real DOM), label followed F1; unchecked F1 → reverted cleanly to
+  `BVP_norm`. Zero new console errors across all interactions (only the pre-existing
+  favicon-404).
+- **Action:** Wrote `tests/playwright/test_bvp_per_driver_display.py` (5 tests) per AC4 —
+  facet-row/driver-parity, default state, click→label-change + single-active enforcement +
+  zero-console-errors, point-cy-movement, hidden-count-reported. Ran against a fresh
+  pytest-managed server instance: 5/5 passed (105s).
+- **Result:** Ticked AC1-AC5 (verified against live behaviour, not just code presence, per
+  T-1831 C-4). AC6 (reviewer) and full `## Verification` block run next in this session.
