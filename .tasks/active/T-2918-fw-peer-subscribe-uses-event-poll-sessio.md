@@ -24,7 +24,7 @@ description: >
   live joint smoke against the fix to close the headline mechanic. See docs/reports/T-1820-joint-smoke-demo.md
   2026-08-11 section for full reproduction trail.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: [T-1820, T-1821, T-1818, T-1819, T-2409, T-2363]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-11T12:40:13Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: '2026-09-20T10:45:12Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=179,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-20T10:45:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=280,acs=6)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-11T12:45:12Z'
     estimator: bvp-estimator-v1-heuristic
@@ -91,22 +100,138 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-20T10:45:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 3
+      D3: 3
+      D4: 4
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=3 
+      (body:component-silent-failure); D3=3 (body:component-discoverability); 
+      D4=4 (body:cross-machine); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2918: fw peer subscribe uses event poll <session> which never observes hub-aggregator events
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`lib/peer.py::poll_once` calls `termlink event poll <target> --topic inbox.queued`
+(per-session bus), but hub-aggregator-injected events (`inbox.queued`, `dm.queued`)
+live under a synthetic `session_id: "hub"` that per-session poll structurally
+cannot see. Filed 2026-08-11 from T-1820's live joint-smoke reproduction. Scope
+named at filing: (a) switch to consuming the hub aggregator, (b) decide dm.queued
+vs inbox.queued routing, (c) rerun T-1820's smoke to close the headline mechanic.
+
+## Investigation (2026-09-20)
+
+Dispatched a read-only TermLink worker (`t2918-hub-since-check`, cross-project via
+`fw termlink dispatch --project /opt/termlink`, since this repo's project-boundary
+hook correctly refuses direct inspection of `/opt/termlink` source) to confirm,
+against TermLink's actual Rust source rather than CLI help text alone, whether
+`termlink event watch --hub --since N` honors the cursor. **Confirmed it does
+not — this is load-bearing for the task's own scope item (a) and changes what
+"switch to the hub aggregator" can mean:**
+
+- `crates/termlink-cli/src/commands/events.rs:845-847`: `--since` is silently
+  dropped when `--hub` is set. A text-mode warning fires (`eprintln!`); **in
+  `--json` mode (what a scripted subscriber like `lib/peer.py` must use) there
+  is no warning at all** — the flag is accepted by clap and never reaches the
+  RPC call.
+- `crates/termlink-hub/src/router.rs:488-530` (`handle_hub_subscribe`) takes
+  only `timeout_ms` and `topic` — no `since`/cursor parameter exists in its
+  signature at all.
+- `crates/termlink-hub/src/aggregator.rs:192-224` (`EventAggregator::collect`)
+  is a `tokio::sync::broadcast` real-time drain for a timeout window —
+  structurally no replay/history capability. A broadcast channel only has a
+  lagged-receiver window, not addressable history.
+- No hub-aware cursor/replay primitive exists anywhere in TermLink today. The
+  session-level `event.collect`/`watch` (non-`--hub`) path does honor real
+  since-cursors, but that is per-session, not the aggregator this task targets.
+
+**What this means for scope item (a):** the task description's suggested fix —
+"change `lib/peer.py` to consume the hub aggregator instead of per-session
+poll" — cannot be a drop-in swap. `fw peer subscribe` is explicitly designed
+as a **cron-driven 30s `--once` poll** (`lib/peer.py` docstring, T-1804: daemon
+mode "not preferred"). A cron-poll-once caller against a pure broadcast channel
+with no cursor **will lose any event emitted between polls** — there is no way
+to ask "what happened since my last poll" at the hub level. That is not a bug
+in this task's fix; it is a capability TermLink's aggregator does not have.
+
+**This is a Sovereign question, not an implementation detail — surfaced, not
+resolved:**
+
+1. **Switch the subscriber to a persistent watch/daemon** (`termlink event
+   watch --hub`, held open rather than polled) — correctness-preserving
+   (broadcast is real-time, so a listener that's always connected sees
+   everything), but reverses T-1804's explicit "daemon mode not preferred, use
+   cron" design decision. Changes the subscriber's process model and its
+   supervision story (who restarts it, how a crash is detected).
+2. **Accept lossy delivery** — keep cron-poll-once, connect briefly each tick,
+   process whatever arrives in that window, accept that events between ticks
+   are silently missed. Violates D2 (Reliability, no silent failures) as a
+   design choice, not an oversight — the arc's own headline mechanic
+   ("no .tasks/ or .context/audits/ merge conflicts... absence of governance-
+   plane corruption") implicitly assumes no dropped signals.
+3. **Request a TermLink-side feature**: a hub-aware cursor/replay primitive
+   (e.g. persist aggregator events to a ring buffer addressable by seq, the
+   way per-session buses already work). This is the "Gap Homing" case (T-1333)
+   — the fix would live in TermLink, not here, and is real new scope on a
+   sibling-governed repo with its own priorities, not this task's to decide
+   or file on TermLint's behalf without operator sign-off on cross-repo ask.
+4. **Defer arc-003/T-1820's headline mechanic to a design that doesn't need a
+   live cross-session poll at all** (e.g. batch reconciliation instead of
+   real-time consult) — the largest-blast-radius option, effectively
+   re-opening T-1820/T-2303's scoping.
+
+None of these four is "the obvious next move" — each trades a different
+constraint (process-model change, silent data loss, cross-repo dependency,
+re-scoping an already-GO'd arc). Recording rather than picking.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause of "fw peer subscribe never observes hub events" confirmed
+      against TermLink source (not CLI help text, which contradicts itself):
+      `--hub` mode has zero cursor/replay capability, `--since` is a silent
+      no-op (worse: unwarned in `--json` mode) — see Investigation above
+- [x] Task's own suggested fix (a) evaluated and found insufficient as
+      described: switching `lib/peer.py` to `--hub` without also resolving
+      the poll-vs-daemon tension would trade "never sees events" for "sees
+      events only during the poll window, silently drops the rest" — not a
+      fix, a different failure mode
+- [ ] Architecture decision made (one of the four options above, or a fifth)
+      — BLOCKED, Sovereign question, see Human AC below
 
 ### Human
+- [ ] [REVIEW] Pick the architecture direction for the peer-consult hub-event
+      capability gap (see Investigation above)
+  **Steps:**
+  1. Read the Investigation section above — it names four candidate
+     directions and why none is "obviously right": (1) switch to a
+     persistent `event watch --hub` listener, reversing T-1804's
+     cron-preferred design; (2) accept lossy cron-poll delivery as a
+     documented tradeoff; (3) request a TermLink-side hub-aware
+     cursor/replay primitive (cross-repo ask, Gap Homing per T-1333); (4)
+     re-scope T-1820/arc-003's headline mechanic away from live cross-session
+     polling entirely.
+  2. Decide which direction (or a different one) this task should build
+     toward — note it under `## Decisions` below with rationale.
+  **Expected:** one `### [date] — architecture direction` entry under
+  `## Decisions` naming the chosen direction. That unblocks the remaining
+  Agent AC and lets a build task implement it.
+  **If not:** if none of the four is acceptable, say what's wrong with each
+  so a fifth can be scoped — this task should not sit open indefinitely on
+  an unstated objection.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -271,3 +396,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2918-fw-peer-subscribe-uses-event-poll-sessio.md
 - **Context:** Initial task creation
+
+### 2026-09-20T10:33:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
