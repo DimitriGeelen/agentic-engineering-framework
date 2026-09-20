@@ -4062,3 +4062,10 @@ decisions:
     date: 2026-09-20
     task: T-3363
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-583
+    decision: "Facet toggles only ever swap the Y axis; X (cost composite) is unaffected by"
+    scope: project
+    date: 2026-09-20
+    task: T-2346
+    rationale: "Auto-captured from task file on completion"

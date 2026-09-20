@@ -11,12 +11,12 @@ description: >
   tooltip (template-only changes); Slice 2 needs scatter.js axis swap + Playwright
   wire.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bvp-display, v3-followup-D, arc:value-prioritisation]
-components: []
+components: [tests/playwright/test_bvp_per_driver_display.py, web/templates/bvp.html]
 related_tasks: [T-2170, T-1928, T-1929]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -29,8 +29,8 @@ related_tasks: [T-2170, T-1928, T-1929]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T06:58:59Z
-last_update: '2026-09-20T17:30:07Z'
-date_finished:
+last_update: 2026-09-20T18:12:26Z
+date_finished: 2026-09-20T18:12:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -239,9 +239,9 @@ driver's raw score, then calls the same redraw path.
 python3 -c "import re,sys; s=open('web/templates/bvp.html').read(); i=s.index('<script'); j=s.index('</script>', i); body=s[s.index('>', i)+1:j]; open('/tmp/.bvp_scatter_check.js','w').write(body)" && node --check /tmp/.bvp_scatter_check.js
 python3 -c "from jinja2 import Environment, FileSystemLoader; Environment(loader=FileSystemLoader('web/templates')).get_template('bvp.html')"
 bin/fw watchtower current
-out=$(curl -sf "$(bin/fw watchtower url)/bvp"); echo "$out" | grep -q 'id="bvp-axis-facets"'
-out=$(curl -sf "$(bin/fw watchtower url)/bvp"); echo "$out" | grep -q "bvp_norm"
-out=$(curl -sf "$(bin/fw watchtower url)/bvp"); echo "$out" | grep -q 'id="bvp-driver-scores-section"'
+curl -sf "$(bin/fw watchtower url)/bvp" > /tmp/.t2346-bvp-verify.html 2>&1 && grep -q 'id="bvp-axis-facets"' /tmp/.t2346-bvp-verify.html
+grep -q "bvp_norm" /tmp/.t2346-bvp-verify.html
+grep -q 'id="bvp-driver-scores-section"' /tmp/.t2346-bvp-verify.html
 python3 -m pytest tests/playwright/test_bvp_per_driver_display.py -q
 
 ## RCA
@@ -414,3 +414,15 @@ communicate the same constraint more directly) — which only a human can call.
   pytest-managed server instance: 5/5 passed (105s).
 - **Result:** Ticked AC1-AC5 (verified against live behaviour, not just code presence, per
   T-1831 C-4). AC6 (reviewer) and full `## Verification` block run next in this session.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c622f460
+- **Timestamp:** 2026-09-20T18:14:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-20T18:12:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
