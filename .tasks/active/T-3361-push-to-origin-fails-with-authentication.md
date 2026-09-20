@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-11T20:17:04Z
-last_update: 2026-09-20T09:07:12Z
+last_update: 2026-09-20T09:26:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -205,7 +205,18 @@ scope and not something this task should do to "prove" a stale finding.
 
 ## Verification
 
-out=$(git push origin bleeding-edge --dry-run 2>&1); echo "$out" | grep -qE "Everything up-to-date|-> bleeding-edge" && ! echo "$out" | grep -q "Authentication failed"
+# Bounded retry (T-3297-class: cron structural-30m audit can hold audit.lock for
+# minutes, making a single dry-run attempt flaky through no fault of push auth
+# itself — "another audit already running" is a distinct failure from
+# "Authentication failed" and must not be conflated with it).
+out=""; ok=0
+for _i in 1 2 3 4 5 6 7 8; do
+  out=$(git push origin bleeding-edge --dry-run 2>&1)
+  if echo "$out" | grep -qE "Everything up-to-date|-> bleeding-edge"; then ok=1; break; fi
+  echo "$out" | grep -q "Authentication failed" && break
+  sleep 15
+done
+[ "$ok" = "1" ] && ! echo "$out" | grep -q "Authentication failed"
 out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -qi "ahead-unpushed.*bleeding-edge"
 
 # Shell commands that MUST pass before work-completed. One per line.
