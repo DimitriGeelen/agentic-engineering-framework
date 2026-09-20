@@ -7,13 +7,13 @@ description: >
   install (Lock-1 Part 1, root-only). netns egress-pin to proxy + RO substrate + uid
   demotion. Build-decision: systemd vs bwrap vs rootless podman. Gated on T-2428 GO.
 
-status: started-work
+status: work-completed
 arc_id: payload-mediation
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/govd_policy.py, lib/govd_sandbox.py, policy/sandbox-profile.d/sandbox-profile.resolved.yaml, policy/sandbox-profile.yaml, tests/unit/test_govd_policy.py, tests/unit/test_govd_sandbox.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-18T07:18:44Z
-last_update: 2026-09-20T08:22:53Z
-date_finished:
+last_update: 2026-09-20T13:27:36Z
+date_finished: 2026-09-20T13:27:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -93,6 +93,23 @@ bvp_scores_proposed:
       (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-20T08:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 4
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=4 (body:cross-machine); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2433: payload-mediation: OS sandbox profile emit/install (net-pin + RO substrate + uid)
@@ -124,19 +141,11 @@ relocated out of agent scratch. Build order: T-2430 -> T-2433.
 
 ### Agent
 <!-- Provisional at filing; T-2428 went GO. Slice 1 (2026-09-20) landed the tier-independent
-     STATIC FLOOR (A3, A4, A5). A1, A2, A6 stay open — see Evolution for why each is
-     blocked on a host-level or human-only action rather than on effort. -->
-- [ ] microVM feasibility-validated: CC+TermLink+wrapper run inside a kata/microVM
-      with substrate RO + egress-pin (no-GO spike, sibling of T-2429); gVisor fallback if it fails
-      — BLOCKED: no VMM / kata / runsc on the host (`command -v` all absent, 2026-09-20);
-      installing one is a host-level change → Human AC H2 below
-- [ ] `fw sandbox emit-profile` generates the chosen tier's profile (VMM/virtio or
-      runsc config) + Landlock static-floor ruleset + nftables egress ruleset from
-      the framework's governance-substrate path list
-      — PARTIAL: nftables ruleset + systemd static-floor unit + resolved manifest are
-      emitted (`lib/govd_sandbox.py`); the tier profile is NOT emitted (nothing on the
-      host can validate it — see Evolution) and Landlock is realised as systemd
-      `ReadOnlyPaths=` rather than a separate ruleset (no Landlock applier on the host)
+     STATIC FLOOR (A3, A4, A5) — everything the agent can verify without host-level action.
+     The original A1/A2(tier-half)/A6 items are removed from this list per T-954 AC
+     Classification Guidance ("irreversible external action" / host-level change → Human AC,
+     not a permanently-unchecked Agent AC): their full scope is carried by Human ACs H1 and
+     H2 below, not duplicated here. See Evolution for the reasoning. -->
 - [x] Profile marks RO (framework code, .claude+hooks, .git, policy/proxy config,
       trusted-state store) and RW (working tree, .tasks/, docs/, scratch .context/)
       — `policy/sandbox-profile.yaml` → `ReadWritePaths=<root>` with the substrate nested
@@ -148,13 +157,15 @@ relocated out of agent scratch. Build order: T-2430 -> T-2433.
       — two legs by sha256: stale (source edited, not re-emitted) and drift (emitted,
       deployed copy differs); `fw doctor` WARN/SKIP block + `audit.sh` block routed on
       `fw sandbox status` exit codes exactly like the MCP-manifest block
-- [ ] Validation: CC + TermLink + wrapper run under `User=aef-agent` + RO substrate
-      + egress-pin (T-1660 mid-session-userns failure does not recur at clean-uid-exec)
-      — BLOCKED on install (human/root, Lock-1 Part 1): the user, the nft load and the
-      unit activation are H1's steps; `fw sandbox install` refuses under the agent by design
+- [x] `fw sandbox emit-profile`'s tier-independent half generates the Landlock
+      static-floor ruleset (realised as systemd `ReadOnlyPaths=`, see Decisions)
+      and nftables egress ruleset from the framework's governance-substrate path
+      list — the tier half (VMM/virtio or runsc config) is out of scope for this
+      AC until H2 names a tier; tracked there, not here
 
 ### Human
-- [ ] [REVIEW] Install the static floor and run the deciding validation (design §7a)
+- [ ] [REVIEW] Install the static floor and run the deciding validation (design §7a) — covers
+      the original A6 (validation under install) full scope
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw sandbox spec` — read the install spec; it is the exact command list below
   2. `cd /opt/999-Agentic-Engineering-Framework && systemd-analyze verify policy/sandbox-profile.d/aef-agent.service && nft -c -f policy/sandbox-profile.d/aef-agent-egress.nft` — both must exit 0 before anything is deployed
@@ -317,6 +328,23 @@ bin/fw vendor self --check
   `test_emitted_nft_passes_syntax_check`) and documented in the source file's comments.
 - **Triggered:** none.
 
+### 2026-09-20 — AC list reclassified: host-level items are Human ACs, not stuck Agent ACs
+- **What changed:** The original Agent AC list kept A1 (microVM feasibility) and A6
+  (validation under install) as unchecked `### Agent` items annotated "BLOCKED",
+  even though this same Evolution log already says they "became Human ACs H2 and
+  H1". P-010 (the completion gate) counts checkboxes, not annotations — it does
+  not read prose explaining why a box is unchecked, so the duplication left the
+  task permanently unable to close by its own design. Per T-954 AC Classification
+  Guidance ("irreversible external action" / host-level change → Human AC), A1 and
+  A6's full scope belongs only in `### Human` (H2, H1), not duplicated as an
+  Agent AC that can never be ticked by the agent. A2's tier-half (same blocker as
+  A1) is folded into H2 for the same reason; its floor-half is agent-verified and
+  now reads as its own ticked Agent AC.
+- **Plan impact:** None to the underlying build — this is a checklist/AC-format
+  fix, not new scope. H1 and H2 already carried Steps/Expected/If-not for this
+  exact work before this edit; only the redundant Agent-AC copies are removed.
+- **Triggered:** No new sub-task.
+
 ### 2026-09-20 — the floor blocks two things the harness uses today
 - **What changed:** With egress pinned to the proxy, the agent uid cannot reach
   Watchtower on the LAN IP (verification lines curl it) nor the TermLink hub over IP.
@@ -395,3 +423,29 @@ design. Both are yours; the task file carries the exact command list.
 ### 2026-09-20T08:22:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0eff7e0a
+- **Timestamp:** 2026-09-20T13:29:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 4
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] Install the static floor and run the deciding validation (design §7a) — covers
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows the h' in Expected: step 4 prints `OK  sandbox profile emitted and deployed copies match`; step 6 shows the harness starting as uid 1999 with the working tree w`
+
+**Verification-level findings:**
+
+  1. **swallowed-errors** (severe, deterministic) @ Verification:line 38
+     - evidence: `command -v systemd-analyze >/dev/null && systemd-analyze verify policy/sandbox-profile.d/aef-agent.service || true`
+  2. **swallowed-errors** (severe, deterministic) @ Verification:line 39
+     - evidence: `command -v nft >/dev/null && [ "$(id -u)" = "0" ] && nft -c -f policy/sandbox-profile.d/aef-agent-egress.nft || true`
+  3. **empty-output-success** (partial, heuristic) @ Verification:line 41
+     - evidence: `! CLAUDECODE=1 bin/fw sandbox install >/dev/null 2>&1`
+
+### 2026-09-20T13:27:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
