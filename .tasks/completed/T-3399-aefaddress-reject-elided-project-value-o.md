@@ -9,12 +9,12 @@ description: >
   plus a regression test mirroring test_wire_serializer_refuses_elided_project_value.
   Found and verified during T-3398 (arc-020 post-GO cross-check with TermLink).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [termlink, identity, arc-020, hardening]
-components: []
+components: [lib/aef_address.py]
 related_tasks: [T-3398, T-3287, T-3307]
 arc_id: arc-020
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -28,8 +28,8 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-21T11:02:26Z
-last_update: 2026-09-21T11:03:39Z
-date_finished:
+last_update: 2026-09-21T14:24:18Z
+date_finished: 2026-09-21T14:24:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,6 +60,16 @@ bvp_scores_proposed:
       D3=3 (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-21T11:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=260,acs=3)
     rubric_sha: e4a00f38e801
 ---
 
@@ -241,6 +251,16 @@ out=$(python3 -m pytest tests/unit/test_aef_address.py -q 2>&1); echo "$out" | g
 
 ## Evolution
 
+### 2026-09-21 — No drift; fix matched the filed scope exactly
+- **What changed:** Nothing — the parse-side gap (`parse()`/`parse_v9()`/
+  `parse_v4()` accepted an elided project value that `serialize()` already
+  refused) was exactly as scoped at filing. The fix mirrors the existing
+  `serialize()` guard rather than inventing new validation logic.
+- **Plan impact:** None. Single guard added to `_build()` plus 3 regression
+  tests; no scope cut, no new sub-task.
+- **Triggered:** Nothing further — full suite (47/47) green, closing as
+  filed.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -322,3 +342,15 @@ out=$(python3 -m pytest tests/unit/test_aef_address.py -q 2>&1); echo "$out" | g
 
 ### 2026-09-21T11:03:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-487bcaa9
+- **Timestamp:** 2026-09-21T14:24:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-21T14:24:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

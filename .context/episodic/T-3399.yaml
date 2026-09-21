@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3399: aef_address: reject elided project value on parse, not just serialize
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-21T14:24:33Z
+# ============================================================================
+
+task_id: T-3399
+task_name: "aef_address: reject elided project value on parse, not just serialize"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-21T11:02:26Z
+completed: 2026-09-21T14:24:18Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-21T13:04:29+02:00
+last_commit: 2026-09-21T13:05:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  parse-side ELLIPSIS guard for project addresses. refresh vendored copies
+
+# Key outcomes
+outcomes:
+  - '`_build()` raises `AddressError` when the `project` field it would set contains `ELLIPSIS`, mirroring the existing `serialize()` guard'
+  - 'New regression test added (mirroring `test_wire_serializer_refuses_elided_project_value`) covering `parse()`/`parse_v9()`/`parse_v4()` all rejecting an elided project value'
+  - 'Full existing `tests/unit/test_aef_address.py` suite still green (no regression on legal paths, including paths containing 3 segments or fewer, which `elide_path()` leaves unchanged and are legitimately parseable)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/aef_address.py'
+  - '.agentic-framework/VERSION'
+  - '.context/episodic/T-3398.yaml'
+  - 'lib/aef_address.py'
+  - '.tasks/active/T-3399-aefaddress-reject-elided-project-value-o.md'
+  - '.tasks/completed/T-3398-arc-020-post-go-follow-up-g-060-ladder-r.md'
+  - 'tests/unit/test_aef_address.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-21T13:04:29'
+    action: 'T-3399: parse-side ELLIPSIS guard for project addresses'
+  - time: '2026-09-21T13:05:06'
+    action: 'T-3399: refresh vendored copies'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 201 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, identity, arc-020, hardening]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 201
+  commits: 2
+  files_changed: 7
+  lines_added: 363
+  lines_removed: 161
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3399-aefaddress-reject-elided-project-value-o.md
+generated_by: context-agent-hybrid
