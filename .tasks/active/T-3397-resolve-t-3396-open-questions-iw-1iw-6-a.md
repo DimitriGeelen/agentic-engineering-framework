@@ -267,18 +267,36 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
     is separately filing this as their own Sovereign question. Surfacing
     to ours the same way — see chat.
 
+- **Operator correction, 2026-09-21 — the "if a real cross-host need ever
+  appears" condition is already met.** The recommendation above was framed
+  conditionally (defer cross-host until needed). Operator: "We have
+  multiple hosts, so that's not a question." The fleet already spans hosts
+  — cross-host is not a hypothetical future branch, it is a live
+  requirement today. This does **not** mean AEF unilaterally designs the
+  cross-host leg: the joint recommendation's own cross-host branch says
+  *TermLink* is the right host for transport/persistence when the need is
+  real — and the need is now confirmed real. Per the standing instruction
+  (don't decide alone, go back to TermLink, arrive at suggestions jointly),
+  the correct next step is re-engaging termlink-agent [14213e] with this
+  correction: ask them to firm up the cross-host transport proposal
+  (reusing `client_msg_id`+LRU dedupe, `awaiting_ack.sqlite`,
+  `outbound.sqlite` poison-drop→dead-letter) as the near-term design, not
+  a deferred one — not something to build unprompted here.
+
 - **IW-2 (heartbeat/threshold sizing)** — sharpened, not yet resolved: per
   the frozen-husk caution above, needs a liveness check (not just staleness
-  timing) from the start. Spike still pending, now correctly scoped to
-  same-host only (per the ownership recommendation, no live-hub dependency
-  needed for this spike at all if AEF goes standalone).
+  timing) from the start. **Re-scoped again by the operator correction
+  above: same-host-only framing no longer holds — the spike must account
+  for cross-host liveness (the "frozen-husk"/heartbeat-lies caution)
+  from the start, not as a later extension.**
 - **IW-3 (flag/ack shape)** — informed: don't reinvent
   exactly-once/dead-letter/retry-retention from scratch: study TermLink's
-  `client_msg_id`+LRU-dedupe and `awaiting_ack.sqlite` pattern even for an
-  AEF-standalone design, since the same correctness problem (an ack that's
-  never a lie) applies locally too.
-- **IW-6 (DM-rail topic scope)** — unchanged, still leaning "agnostic,"
-  now moot for the near-term same-host-standalone recommendation.
+  `client_msg_id`+LRU-dedupe and `awaiting_ack.sqlite` pattern — now load-
+  bearing, not just informative, since cross-host is confirmed in scope
+  and TermLink's ack primitives are the reuse target for that leg.
+- **IW-6 (DM-rail topic scope)** — unchanged, still leaning "agnostic."
+  **No longer moot** — the same-host-standalone recommendation it was
+  moot *for* no longer describes the near-term target alone.
 - **OBS-445 detail added:** the stalled `dm:3bba15e681b3a078:*` thread is
   confirmed **14 messages, every one outbound from AEF's own identity
   `d1993c2c3ec44c94`, zero replies since 2026-09-17** — this is our own
@@ -297,9 +315,17 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
 - [x] IW-4 resolved with evidence (not guessed); joint ownership
       recommendation received and captured in full, correctly framed as
       advisory pending both operators' sign-off
-- [ ] Remaining Exploration Plan steps (IW-2 liveness-aware heartbeat spike,
-      IW-3 ack-semantics study, flag-shape file-format spec) — unblocked to
-      start once the operator confirms the standalone-same-host direction
+- [ ] Re-engage termlink-agent [14213e] with the operator's cross-host
+      correction (fleet already spans multiple hosts — their own
+      recommendation's cross-host branch is live, not deferred); ask them
+      to firm up the transport/persistence proposal jointly, per the
+      "analysis together, suggestions together" standing instruction —
+      not something to design unilaterally here
+- [ ] Remaining Exploration Plan steps (IW-2 liveness-aware heartbeat spike
+      — now including cross-host liveness from the start, IW-3 ack-
+      semantics study — now load-bearing not just informative, flag-shape
+      file-format spec) — unblocked once the cross-host re-consult above
+      lands
 - [ ] Build task(s) filed once all IW items are `answered` (this task's own
       exit condition, per T-3396 Scope Fence — no sidecar code under this ID)
 
