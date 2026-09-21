@@ -213,6 +213,11 @@ def _build(tokens: list[str]) -> AEFAddress:
             raise AddressError(f"duplicate {label}= token")
         if label == "host":
             value = _unbracket_host(value)
+        if label == "project" and ELLIPSIS in value:
+            raise AddressError(
+                "elided project path is display-only and cannot be parsed as "
+                "an identity value — pass the full path"
+            )
         fields[label] = value
     return AEFAddress(agent=agent, **fields)
 
