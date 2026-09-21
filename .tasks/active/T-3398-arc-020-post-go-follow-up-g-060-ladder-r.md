@@ -1,8 +1,12 @@
 ---
 id: T-3398
-name: "arc-020 post-GO follow-up: G-060 ladder rework, cv_index durability, T-3338 partial-complete, Q-B"
+name: "arc-020 post-GO follow-up: G-060 ladder rework, cv_index durability, T-3338
+  partial-complete, Q-B"
 description: >
-  TermLink cross-check of arc-020's identity/circuit design surfaced a hub-federation defect (G-060), a hub-restart liveness false-negative (cv_index in-memory), confirmed T-3338 is legitimately partial-complete (not stranded), and pushed back on Q-B guessing. Capture findings, register concerns, route decisions to operator.
+  TermLink cross-check of arc-020's identity/circuit design surfaced a hub-federation
+  defect (G-060), a hub-restart liveness false-negative (cv_index in-memory), confirmed
+  T-3338 is legitimately partial-complete (not stranded), and pushed back on Q-B guessing.
+  Capture findings, register concerns, route decisions to operator.
 
 status: captured
 workflow_type: inception
@@ -12,8 +16,8 @@ tags: [termlink, peer-consult, identity, arc-020]
 components: []
 related_tasks: [T-3287, T-3338, T-3309, T-3397]
 created: 2026-09-21T08:52:00Z
-last_update: 2026-09-21T08:52:00Z
-date_finished: null
+last_update: '2026-09-21T09:00:22Z'
+date_finished:
 arc_id: arc-020
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -23,6 +27,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-09-21T09:00:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=8 (lines=230,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-21T09:00:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3398: arc-020 post-GO follow-up: G-060 ladder rework, cv_index durability, T-3338 partial-complete, Q-B
@@ -168,6 +199,76 @@ than self-ticking was the correct instinct, not a gap to close) — noted in
 case this class of ambiguity is worth a structural fix later (a `fw doctor`
 check distinguishing "stalled with unchecked Human AC" from "stalled with
 all ACs checked, never finalized," maybe).
+
+**6. Operator restated the resolution ladder in plain language; TermLink
+confirmed it AND corrected two of their own earlier claims (2026-09-21).**
+
+Operator's restatement: try agent (L5) directly → not there, ask session
+(L4) to (re)instate it → session not there, ask the hub (L2) whether *this
+project* is running here → no hub, ask the host (L1) to stand one up → once
+the hub exists, ask it for the project → once that gives a session, ask the
+session for the agent. **TermLink confirmed: correct, matches D1/D2/D5
+exactly, no rework needed** — every rung addresses a specific,
+address-named entity (this host/hub/project), never an arbitrary one, which
+is precisely the case G-060 permits (a hub answering about its OWN state).
+
+Two follow-up questions were put to TermLink to sanity-check the read
+against their real system, and both produced corrections to *their own*
+earlier statements:
+
+- **Reachability is NOT the open gap — it's solved.** `termlink hub probe
+  <addr>` (TLS handshake, no auth needed), `channel post --hub <addr>`,
+  `termlink_remote_call`, and `fleet` verbs (walk `~/.termlink/hubs.toml`,
+  fan out) all exist today. **The real open question is TRUST BOOTSTRAP,
+  not transport:** doing more than a bare probe requires the target hub
+  already in `hubs.toml` with a valid per-hub secret and a TOFU pin in
+  `known_hubs` — and hub restarts can rotate both the HMAC secret and the
+  TLS cert, which is why TermLink runs a whole rotation/reauth apparatus
+  (fleet doctor, fleet reauth, bootstrap_from anchors, auto-heal, four
+  canaries) to cope with that drift. **Open design question, not yet
+  answered: can our ladder bootstrap trust on the fly when it climbs to a
+  host it's never spoken to, or is the tree only navigable between hubs
+  that already know each other?** This is a real decision point for the
+  ladder's host-level rung, distinct from (and now resolved ahead of) the
+  T-3397 sidecar-transport-ownership question.
+
+- **cv_index finding, self-corrected and narrowed by TermLink — was
+  over-scoped last round.** cv_index is an in-memory index over a
+  *durable* SQLite-backed log — a hub restart loses the index, not the
+  data. Two corrections to the earlier warning: (a) **not permanent** —
+  repopulates within ~30s (one heartbeat cycle), not indefinitely; (b)
+  **path-dependent, not universal** — `agent find-idle` already falls back
+  to walking the durable log when cv_index is empty (T-2109), staying
+  correct (just O(N) instead of O(K)). The paths with **no fallback**:
+  `channel cv-keys` (returns count 0) and `subscribe
+  --include-current-value` (returns empty current_values). **Accurate
+  statement: after a hub restart, a ~30s window exists where O(K)
+  fast-path presence reads return EMPTY; whether that reads as a false
+  negative depends entirely on whether the caller falls back to the
+  durable log or treats empty-index as empty-world.** Sharpened trap,
+  their own words: TermLink's documentation says "empty cv_index is NOT an
+  error (healthy state)" — true at the storage layer, dangerous at the
+  caller layer, since it reassures exactly when a naive reader would
+  misinterpret emptiness as absence. **If our ladder's presence rung uses
+  a cv-keys-style fast-path read without a durable-log fallback, the
+  thundering-reprovision risk from finding 2 above is real but bounded to
+  ~30s, not indefinite** — corrected severity, not a dismissed finding.
+
+- **New finding, bigger than either of the above: the "hub, do you have
+  this project running here?" rung has NO counterpart in TermLink at
+  all.** Hubs have no concept of "project" — no RPC exists to ask one.
+  Sessions, topics, claims, presence — yes. Projects — no. **This isn't a
+  cv_index false-negative risk, it's a question TermLink's hub cannot
+  answer at all.** Project-awareness at that rung has to be built by AEF
+  ourselves, presumably layered on top of the presence rail TermLink does
+  provide. This is a real, undesigned gap in the ladder as currently
+  conceived — bigger than the two questions that were actually asked, and
+  better caught now than at implementation.
+
+TermLink's closing framing: "your model of the ladder is right, the
+cross-host hop is real, my cv_index warning was correct in kind but too
+broad in scope and too long in duration, and the project rung needs
+designing rather than mapping." Still advisory both ways.
 
 ## Exploration Plan
 
