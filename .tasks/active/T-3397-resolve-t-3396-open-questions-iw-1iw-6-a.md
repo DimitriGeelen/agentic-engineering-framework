@@ -449,6 +449,76 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
   - **Still inception-stage joint analysis, not a build authorization** —
     TermLink's own framing, restated on this reply too.
 
+### G-060 resolution decided: direct cross-post — plus a live defect TermLink found in the path (2026-09-21)
+
+- **Operator asked for a decision rather than leaving G-060's cross-post-vs-
+  routing-layer fork open.** Proposed to TermLink: direct cross-post via
+  the existing `channel post --hub <addr>` primitive, no routing layer,
+  rationale being AEF's address grammar already carries `hub=` explicitly
+  so "where to send it" is already solved.
+- **TermLink signed off, with a second, independent reason:** a routing
+  layer is not neutral to the identity plane. It either forwards the
+  signed envelope verbatim (a transport hop, buys nothing) or
+  re-originates it — and re-origination makes `sender_id` the relay's,
+  which either fails TermLink's own sender-binding check (`-32014`,
+  `channel.rs:787`) or launders attribution if it doesn't. Direct
+  cross-post is the only shape that keeps the signature end-to-end.
+- **Correction: the fork just closed was not the expensive one.**
+  TermLink: "your address grammar solves 'where do I send this'... [the]
+  actual precondition is 'may I'." `channel post --hub <addr>` resolves
+  the target hub's HMAC secret from a matching profile in
+  `~/.termlink/hubs.toml`; with no matching profile it hard-bails. Every
+  sender therefore needs a **profile + secret + TOFU pin for every hub it
+  might address** — N×M credential distribution, which is exactly the
+  cost a routing layer would have collapsed to N. TermLink still
+  recommends against building the router, but flags that "the address
+  names the hub" reads as though reachability follows from addressing,
+  and it does not — the credential precondition must be explicit in the
+  spec, not implied.
+- **A live defect, found by source-read, in the direct-cross-post path
+  itself — not hypothetical, squarely in what we're about to spec:**
+  1. `default_queue_path()` (`offline_queue.rs:118`) resolves to ONE file
+     per identity dir — it does not vary with `--hub`.
+  2. The `pending_posts` table (`offline_queue.rs:123-128`) has no
+     target-hub column.
+  3. `BusClient` holds a single fixed `addr` at construction
+     (`bus_client.rs:128`); `flush()` drains **every** queued row to that
+     one address (`bus_client.rs:234,295`).
+  - **Consequence:** a cross-post to hub B that gets queued because B is
+    down sits in one shared queue with everything else. A later post
+    targeting hub A constructs a `BusClient` for A and `flush()` sends
+    B's queued rows to A instead — **a misdelivery that reports success**
+    and pops the row, not a drop.
+  - **Why this isn't an edge case for us specifically:** blast radius
+    depends on whether the topic name exists on the wrong (receiving)
+    hub — if not, it errors, retries, dead-letters. But same-named topics
+    across hubs with no relation between them is literally what G-060
+    describes as the normal case here, and `dm:` topic names are
+    deterministic from fingerprints — so the collision case is the
+    *likely* one for this design, not the unlikely one.
+  - **TermLink's own caveat (PL-367 discipline):** source read only, not
+    reproduced/executed this session. Measure before building on it — and
+    if it reproduces, it is TermLink's defect to fix (Gap Homing, T-1333
+    — the fix lives in their repo), not something AEF's design should
+    silently route around.
+- **Multi-hop is not the argument for a router either:** `hubs.toml` is 5
+  profiles, all flat `192.168.10.x:9100` on one LAN, all directly
+  dialable. The one standing exception (`ring20-dashboard`, `.121`) is
+  capability/floor-exempt, not a topology/routing exception — per
+  TermLink, "the asymmetries in this fleet are capability and
+  credentials, never topology."
+- **What TermLink recommends going into the spec, both adopted below:**
+  (a) sender must hold profile + secret + TOFU pin for the target hub;
+  refuse loudly when absent (the CLI already does this — don't paper over
+  it in AEF's own layer); (b) a queued cross-hub post must never be
+  flushable to a *different* hub than it was queued for — key the queue
+  row by target hub, or refuse to queue cross-hub posts at all and fail
+  loudly at post time instead. Cited: PL-373 — "a fallback that GUESSES
+  is worse than one that refuses," and delivering a queued post to
+  whichever hub happens to be flushed next is exactly that guess.
+- **Still design sign-off, not build authorization** — TermLink's own
+  framing, restated again.
+
 ## Acceptance Criteria
 
 ### Agent
@@ -471,8 +541,22 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
       TermLink signed off, with three correctness-not-performance
       corrections to "degenerate case" captured above (same-host identity
       weakness, ack same-host-only evidence source, hub-scoped offsets)
-- [ ] G-060 resolution: cross-post directly to the peer's hub, or
-      introduce a routing layer — no shared logical bus exists today
+- [x] G-060 resolution: **decided — direct cross-post via `channel post
+      --hub <addr>`, no routing layer.** TermLink signed off with a
+      second reason (routing layer breaks end-to-end signature identity).
+      Surfaced a live defect in the direct path itself (offline-queue
+      cross-hub misdelivery, source-read only, not yet reproduced) that
+      the eventual build task must spec around — see finding above and
+      the two new open items below
+- [ ] Spec the credential precondition explicitly: sender needs
+      profile+secret+TOFU pin per addressable hub (N×M), refuse loudly
+      when absent — not yet written into the design doc
+- [ ] Spec queue-safety for cross-hub posts: a queued post must never be
+      flushable to a different hub than it was queued for (key by target
+      hub, or refuse to queue cross-hub posts and fail loudly at post
+      time) — not yet written into the design doc; TermLink's defect
+      report should be verified (reproduced) before the eventual build
+      task relies on either the bug or its absence
 - [x] Ack semantics amendment: cross-host third state must be explicit
       `UNKNOWN`, never inferred as `DELIVERED`/`UNDELIVERED` — written into
       `docs/reports/T-3396-peer-consult-sidecar-inception.md` §Cross-Host
