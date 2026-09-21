@@ -107,14 +107,21 @@ def list_pending() -> list[str]:
 
 
 def record_ack(client_msg_id: str, target: str, hub: str | None,
-               state: str, deadline: str | None = None) -> None:
-    """Append one row to the ack ledger. Append-only — never rewritten."""
+               state: str, deadline: str | None = None,
+               error: str | None = None) -> None:
+    """Append one row to the ack ledger. Append-only — never rewritten.
+
+    `error` annotates a row without changing its state, so a failed delivery
+    attempt is recorded while the message stays non-terminal and retryable
+    (T-3404). It does not add a fourth state to the three-state machine.
+    """
     row = {
         "client_msg_id": client_msg_id,
         "target": target,
         "hub": hub,
         "state": state,
         "deadline": deadline,
+        "error": error,
         "ts": _now_iso(),
     }
     with open(_ledger_path(), "a", encoding="utf-8") as fh:

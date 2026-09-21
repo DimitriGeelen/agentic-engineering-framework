@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3404: arc-011 sidecar slice 2: uniform delivery transport for the outbox (T-3397 Amendment 5)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-21T20:56:02Z
+# ============================================================================
+
+task_id: T-3404
+task_name: "arc-011 sidecar slice 2: uniform delivery transport for the outbox (T-3397 Amendment 5)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-21T20:49:54Z
+completed: 2026-09-21T20:55:44Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-011 sidecar slice 2: uniform delivery transport for the outbox (T-3397 Amendment 5)
+
+# Key outcomes
+outcomes:
+  - '`deliver()` sends a pending outbox message via an injected transport and records the resulting ack transition in the ledger, leaving slice 1''s `write_message`/`list_pending`/`record_ack` contracts untouched — `lib/sidecar/delivery.py:deliver`; proven by `test_deliver_posts_and_records_terminal_transition` plus slice 1''s own 4 tests still green (the only slice-1 change is an additive optional `error=` kwarg on `record_ack`, backwards-compatible by construction)'
+  - 'Same-host (`hub: null`) and cross-host (`hub: <addr>`) both route through the SAME code path, with `hub: null` as the degenerate case — not a separate branch with its own semantics — `deliver()` has no hub branch at all; `hub` is read from the message and passed through. `test_same_host_and_cross_host_take_the_same_path` asserts the probe gate fires for the local hub too (`seen_hubs == [None, "192.168.10.122:9100"]`) and that both produce an identical outcome shape'
+  - 'A hub that fails the capability/version-floor precondition is refused as a send target BEFORE any post is attempted, and the refusal is recorded, not silently swallowed (Amendment 5 cross-host extension) — `test_failed_precondition_refuses_before_any_post` asserts `sent == []` (transport never invoked) AND a ledger row carrying `hub-refused: below version floor`'
+  - 'A transport failure surfaces loudly: no silent retry, no silent state promotion; the message stays non-terminal so a caller-owned retry with the same `client_msg_id` is the documented recovery (Amendment 4) — `test_transport_failure_is_loud_non_terminal_and_retryable` asserts state stays `STORED`, `state not in TERMINAL_STATES`, a deadline is present (so `resolve_expired` sweeps it to UNKNOWN rather than leaving it stuck), the message is still in `list_pending()`, and a retry with the same id then succeeds'
+  - 'Successful delivery consumes the flag file so the message is no longer `list_pending`, and the ledger''s latest state for it is terminal — `test_successful_delivery_consumes_the_flag`; message file deliberately retained as the durable record, only the dirty-bit is dropped'
+  - 'Unit tests cover all five behaviours above and pass — `tests/unit/test_sidecar_delivery.py`, 6 tests; run with slice 1: **10 passed** in 0.41s'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, peer-consult, sidecar, cross-repo]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3404-arc-011-sidecar-slice-2-uniform-delivery.md
+generated_by: context-agent-hybrid
