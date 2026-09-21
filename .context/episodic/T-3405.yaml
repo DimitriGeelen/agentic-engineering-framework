@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3405: arc-011 sidecar slice 3: real TermLink transport + hub capability probe, verified against the live hub
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-21T22:04:02Z
+# ============================================================================
+
+task_id: T-3405
+task_name: "arc-011 sidecar slice 3: real TermLink transport + hub capability probe, verified against the live hub"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-21T21:41:52Z
+completed: 2026-09-21T22:03:42Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-011 sidecar slice 3: real TermLink transport + hub capability probe, verified against the live hub
+
+# Key outcomes
+outcomes:
+  - 'A real transport builds and runs `termlink channel post`, passing `client_msg_id` as the hub''s idempotency token AND in envelope metadata, with `conversation_id` in metadata, and `--hub` included only when the message names one — same command shape for both cases. *AC wording corrected mid-task:* as first written it said `client_msg_id` is carried "onto the envelope"; live read-back showed `--client-msg-id` is an out-of-band hub-side dedupe key that is **not** echoed into the envelope. The model was wrong, not the code; the id is now also sent as metadata so the envelope is self-describing. `lib/sidecar/termlink_transport.py:build_post_command`; `test_command_carries_identity_and_conversation`, `test_hub_is_appended_only_when_the_message_names_one` (asserts cross-host argv == same-host argv + `["--hub", addr]`)'
+  - 'A non-zero exit or error from the post raises `TransportError`, so slice 2''s loud-failure path is driven by real failures and not only by test fakes — `test_nonzero_exit_raises_transport_error` (exit 1, `-32013 unknown topic` surfaced in the message), `test_timeout_raises_transport_error`'
+  - 'The probe grades what it proved: the local hub is checked against a version floor; a remote hub whose version cannot be established is REFUSED with a reason naming the version floor specifically, not conflated with unreachable — `probe_hub`; `test_local_hub_passes_when_version_meets_floor`, `test_local_hub_refused_below_version_floor`, `test_reachable_remote_is_refused_naming_the_version_floor` (asserts `"unreachable" not in reason`), `test_unreachable_remote_says_unreachable` (asserts `"version floor" not in reason`), and `test_refused_hub_blocks_delivery_end_to_end` (refused hub → transport never invoked). Live: `probe_hub(None)` → `ok=True, "local hub, termlink 0.11.1766 meets floor"`'
+  - '**Live gate:** a message written by `outbox.write_message` and delivered by `deliver()` with the REAL transport lands on the live hub and is read back, with the offset recorded here as evidence — **topic `sidecar:selftest-T-3405`, offset 0, ts 2026-09-21T21:45:56Z**, `client_msg_id 8e2a43b3-96b4-4530-97dc-f1cd6da5a9bc`. Sent via `deliver(cmid, termlink_transport, probe_hub)` from a sandbox `FRAMEWORK_ROOT` → `INJECTED_NOW`, flag consumed (`list_pending() == []`), ledger terminal. Read back independently with `termlink channel state` (payload byte-exact) and `termlink channel subscribe --json` (metadata `conversation_id=T-3405-live`, `from_agent=999-AEF-sidecar`, `msg_type=sidecar.consult`). **Idempotency measured, not assumed:** two re-posts of the same id ~2 min later were absorbed (topic count stayed 1); a re-post at 22:01:35Z, 15m39s later, appended as offset 2 — the hub''s 5-min dedupe TTL. Filed as OBS-447; it bounds Amendment 5''s retry claim and is surfaced as a design question, not decided here'
+  - 'Unit tests cover transport command construction, the `TransportError` path, and both probe verdicts; slice 1 + slice 2 tests still pass unchanged (no regression) — `tests/unit/test_sidecar_termlink_transport.py`, 10 tests; all three sidecar suites together: **20 passed** in 0.67s'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, peer-consult, sidecar, cross-repo]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 21
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3405-arc-011-sidecar-slice-3-real-termlink-tr.md
+generated_by: context-agent-hybrid
