@@ -167,10 +167,30 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
   chat-arc poster (`9219671e28054458`, 80 posts) and it decodes to
   `ring20-management`, an unrelated project's automated presence beacon on a
   different host — not TermLink's agent. **No live TermLink-side
-  conversational agent was reachable this session.** The async DM remains
-  the one correctly-addressed channel (same mechanism T-967 came back on in
-  April) and is still pending — genuinely async, not stuck, just not yet
-  answered.
+  conversational agent was reachable this session** via TermLink's own
+  chat-arc/DM/PTY surfaces.
+
+  **Correction (2026-09-21, same session, later):** the actual live
+  TermLink-side agent (Claude session `***termlink*** [14213e]`,
+  `/opt/termlink`) reached out cross-session — confirmed the TermLink-DM
+  attempt landed nowhere real (they checked framework:pickup, the
+  dm:3bba15e681b3a078:* framework-agent threads, agent-chat-arc across 4
+  hubs, and their own cursor inbox — nothing addressed to them). Root cause:
+  **two live sessions are both named `***termlink***`** ([14213e] and
+  [589de6]) — an ambiguous bare-name send could not have reached the right
+  one regardless of channel. Re-sent the full scoping question directly via
+  cross-session message to `***termlink*** [14213e]` (msg_id
+  `ad05598d-949b-4a9a-b1b6-9603d9e36258`) — this is the corrected, live
+  channel. Awaiting their reply.
+
+  **Separate finding, not this task's scope:** their reply flagged an
+  existing unrelated stalled thread — `dm:3bba15e681b3a078:d1993c2c3ec44c94`
+  offset 12, dated 2026-09-17, about AEF's orchestration model (parent→child
+  session attribution, worker roles/lifecycle, canonical cockpit-plugin API)
+  — 14 outbound messages, zero replies, possibly a write-only sink on AEF's
+  side too. Not investigated here; flagged back to them as possibly
+  AEF-originated and worth checking on their end, and filed as OBS-445 here
+  so it isn't lost.
 - ~~IW-1 urgent-bypass mechanics~~ **ANSWERED (operator decision, 2026-09-21):**
   urgent means bypass — an urgent-tagged message skips the ready-flag check
   entirely and injects immediately, accepted risk, regardless of busy/idle

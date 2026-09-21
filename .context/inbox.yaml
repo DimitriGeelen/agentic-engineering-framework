@@ -4851,3 +4851,24 @@ observations:
   tags: [structural]
   status: pending
   promoted_to: null
+- id: OBS-443
+  text: "bvp-estimator-v1-heuristic's 'no-signal' default (all drivers=4) makes parked/DEFER-decided inception stubs indistinguishable from real Q1 work in 'fw bvp --quadrant hv-lc --include-proposed' — 16 captured+DEFER tasks (T-1265,T-1271,T-1309,T-682,T-704,T-705,T-844,T-1685,T-2321,T-2770,T-2963,T-3276,T-3331-3334) all show identical BVP=108/COST=3.6/hv-lc, same as any genuinely-scored task would. A quadrant scan used for autonomous work-selection can pick backlog noise over real work unless the picker also checks decision-status/rationale-signal, not just the QUAD column. Surfaced during T-3397 Mandate-run selection (2026-09-21), not fixed here — estimator calibration is out of this run's remit."
+  captured: 2026-09-21T07:25:22Z
+  context_task: T-3397
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-444
+  text: "TermLink discover's state:ready / heartbeat-current only proves the PTY process is alive, not that anything conversational is reading it. Injecting into a discovered session by display_name+state alone risks landing on a bare diagnostics shell (confirmed: termlink-agent identity 8e6fd77ec6f74b37 has zero chat-arc posts ever per termlink_agent_who_is, yet discover shows it 'ready' and respawning). Before a live PTY inject aimed at getting a conversational response, check termlink_agent_who_is / termlink_agent_history on the target's identity_fingerprint for real chat-arc post history first — discovery liveness alone is not evidence of a live interlocutor. Surfaced during T-3397 cross-repo outreach (2026-09-21)."
+  captured: 2026-09-21T07:36:30Z
+  context_task: T-3397
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-445
+  text: "Separate/unrelated stalled consult surfaced by the real termlink-agent session [14213e]: dm:3bba15e681b3a078:d1993c2c3ec44c94 offset 12, dated 2026-09-17, re: AEF's orchestration model (parent->child session attribution, worker roles/lifecycle, canonical cockpit-plugin API). 14 outbound messages, zero replies per their report -- may be a write-only sink on the AEF-authoring side, or may simply never have been checked on either end. Not investigated in T-3397 (different question); filed so it surfaces for whoever owns that thread to check."
+  captured: 2026-09-21T07:49:06Z
+  context_task: T-3397
+  tags: []
+  status: pending
+  promoted_to: null
