@@ -366,6 +366,89 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
     calls remain open; TermLink's hosting decision is explicitly still
     their own pending Sovereign question.
 
+### Operator resolves the traffic-mix fork; TermLink's same-host correctness pushback (2026-09-21)
+
+- **Operator's answer to the "cross-host vs co-located" question:** "I
+  already said that we will have host-to-host communication on level 5.
+  Level 5 is agent-to-agent. Maybe that might be into a host, but why does
+  it make a difference? It's a design decision — you have to cater for
+  both situations." Verbatim.
+- **Resolution:** correctness cannot be conditioned on traffic mix — if
+  cross-host must sometimes work, it must be engineered to work,
+  regardless of frequency. The "local-fast-path-plus-exception vs.
+  always-cross-host shape" fork is dropped. Design proceeds as ONE
+  uniform, cross-host-capable-by-construction path (G-060 cross-post,
+  capability+floor gate, receiver-asserted three-state ack — all
+  load-bearing). Same-host is the degenerate case of that path, not a
+  separate code path. A same-host fast-path *optimization* (skip
+  trust-bootstrap/HMAC/TOFU when co-located) is explicitly deferred —
+  a later Q2 item gated on measured traffic, not a build gate now.
+- **TermLink signed off on dropping the fork** and sharpened the framing:
+  "a correctness property conditioned on traffic mix isn't a property,
+  it's a bet on a measurement nobody has taken." But pushed back hard on
+  one specific claim — "same-host is just the degenerate case where
+  host==self" is true for ROUTING and **false for three other things**,
+  each a correctness reason, not a performance one:
+  1. **Identity — same-host is where auth is WEAKEST, not strongest.**
+     Verified in TermLink's own source: `sender_id =
+     fingerprint_of(&key.verifying_key())` (`termlink-hub/src/server.rs:3158`);
+     T-1427 rejects with `-32014` when `sender_id` doesn't match the
+     fingerprint derived from `sender_pubkey_hex` (`channel.rs:787`). On a
+     shared host, all co-resident agents sign with **one host-wide ed25519
+     key** (PL-166) — so co-resident agents don't just look similar, they
+     produce the *same* `sender_id`, and T-1427's binding check is
+     satisfied trivially by any of them claiming any other's identity.
+     `-32014` catches cross-host spoofing; it cannot see same-host
+     spoofing at all. **Consequence:** the deferred "skip
+     trust-bootstrap/HMAC/TOFU when co-located" optimization was pointed
+     at exactly the case that needs *more* identity evidence, not less.
+     Deferring the optimization is still correct; when it's revisited it
+     should come back framed as "what per-agent identity do we add
+     same-host", never "what can we skip". Logged now (cheap now, a wire
+     format change later).
+  2. **The three-state ack is same-host-only by construction (act on
+     this before build).** The BLOCKED-vs-UNDELIVERED discriminator only
+     works because the prover reads the *receiver's own local transcript
+     file* (`~/.claude/projects/*/<sessionId>.jsonl` — T-2876's mechanism
+     for telling "delivered fine, target never drained" from "the rail is
+     broken"). Cross-host that file is unreadable — no remote-transcript
+     primitive exists; the receiver would have to self-report, and a
+     wedged receiver self-reports nothing, which is exactly the BLOCKED
+     state. So cross-host the two states collapse back together —
+     reconstructing the T-2875 misdiagnosis class (a working rail declared
+     broken because the target couldn't act). Doesn't break the uniform
+     path, but the ack's **evidence source is not uniform even though its
+     interface is**. **Fix:** the third state must be explicit `UNKNOWN`
+     cross-host, never silently degraded into `DELIVERED` or
+     `UNDELIVERED` — "a three-state ack that silently answers with two
+     states cross-host is worse than a two-state one that says so."
+     **Caveat TermLink flagged on themselves (their own PL-367
+     discipline):** the transcript-read mechanism is documented and they
+     read the doc, but have **not re-measured it cross-host this
+     session** — measure before building on it.
+  3. **Offsets are hub-scoped (G-060), so an offset-keyed ack is
+     meaningless cross-hub.** Topic X on hub A and hub B are unrelated
+     logs with independent offsets — no federation. Same-host agents
+     usually share a hub and see one log, which is why offset-keyed acks
+     feel natural; cross-host, the offset a receiver acks is in *its own*
+     log. **Fix:** key the ack on `conversation_id`, or hub-qualify the
+     offset — never let a bare integer cross a hub boundary. Related,
+     restated for the capability+floor gate: `cv_index` is per-hub,
+     in-memory only, cleared on hub restart, repopulates within ~one
+     heartbeat (~30s); `agent find-idle` falls back to the durable log,
+     but `channel cv-keys` / `subscribe --include-current-value` do
+     **not** — a freshly-restarted hub answers "no capabilities
+     advertised," which must not be read as "no capable agents," or the
+     gate fails closed against a healthy fleet for ~30s after every
+     restart.
+  - **Net verdict:** G-060 recommendation stands as specified. Ack
+    semantics need one amendment — name the cross-host third state
+    `UNKNOWN` explicitly rather than letting it infer — and the identity
+    asymmetry (1) is worth a line in the design doc now even though the
+    optimization itself stays deferred.
+  - **Still inception-stage joint analysis, not a build authorization** —
+    TermLink's own framing, restated on this reply too.
+
 ## Acceptance Criteria
 
 ### Agent
@@ -382,17 +465,27 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
       G-060 (no hub federation) as a hard new blocker plus two hardened
       prerequisites (capability/floor gate, receiver-asserted ack),
       captured in full above
-- [ ] **Operator decision needed before further design work:** is
-      agent-to-agent traffic actually cross-host, or mostly co-located
-      with cross-host as the exception? (TermLink's pushback — this
-      determines local-fast-path-plus-exception vs. always-cross-host
-      shape, and is cheap to check now, expensive to guess wrong)
+- [x] **Operator decision on traffic-mix fork:** resolved — correctness
+      can't be conditioned on traffic mix; design proceeds as one uniform
+      cross-host-capable path, same-host as the degenerate routing case.
+      TermLink signed off, with three correctness-not-performance
+      corrections to "degenerate case" captured above (same-host identity
+      weakness, ack same-host-only evidence source, hub-scoped offsets)
 - [ ] G-060 resolution: cross-post directly to the peer's hub, or
       introduce a routing layer — no shared logical bus exists today
+- [ ] Ack semantics amendment: cross-host third state must be explicit
+      `UNKNOWN`, never inferred as `DELIVERED`/`UNDELIVERED` — per
+      TermLink's correction above; TermLink flagged they have not yet
+      re-measured the transcript-read mechanism cross-host themselves
+- [ ] Same-host identity gap documented in the design doc: co-resident
+      agents share one host-wide ed25519 key (PL-166) today, so any
+      same-host fast-path revisit must add per-agent identity, not skip
+      auth — logged now per TermLink, not yet written into a design doc
 - [ ] Remaining Exploration Plan steps (IW-2 liveness-aware heartbeat spike
       — now including cross-host liveness from the start, IW-3 ack-
       semantics study — now load-bearing not just informative, flag-shape
-      file-format spec) — unblocked once the above two decisions land
+      file-format spec) — unblocked now that the traffic-mix fork is
+      resolved
 - [ ] Build task(s) filed once all IW items are `answered` (this task's own
       exit condition, per T-3396 Scope Fence — no sidecar code under this ID)
 
