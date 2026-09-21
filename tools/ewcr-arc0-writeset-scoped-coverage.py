@@ -33,17 +33,23 @@ CARDS = os.path.join(ROOT, ".fabric", "components")
 SOURCE_EXT = (".py", ".sh", ".html", ".yaml", ".yml")
 SKIP_DIRS = {".git", "__pycache__", "node_modules", ".agentic-framework", ".claude"}
 
-# Verbatim from docs/research/executable-workflow/arc0-write-set.md.
-# NOTE (measured 2026-09-21): two CORE prefixes match zero files on disk —
-# `lib/orchestrator` and `lib/fabric`. That functionality actually lives at
-# `agents/orchestrator/` and `agents/fabric/` respectively (the latter IS
-# separately listed; the former is not listed under any prefix at all). This
-# is a write-set-DOCUMENT drift, not a coverage-tool gap — agents/orchestrator/
-# is still scanned because "agents" is one of the five roots either tool walks.
+# Verbatim from docs/research/executable-workflow/arc0-write-set.md, PLUS
+# one correction: `agents/orchestrator/` (832 @1601, EWCR-ARC0-ATTEST-832
+# Round 2) — the write-set-document's row 5 names only `lib/orchestrator`,
+# which matches zero files on disk, so the CORE measurement omitted the
+# runner/ledger/actions surface entirely (an empty-population-can't-fail
+# case, per 832's own framing). `lib/orchestrator` is deliberately LEFT in
+# place below — it's real document drift the write-set doc still needs a
+# correction pass on, not a defect to quietly paper over.
+#
+# NOTE (measured 2026-09-21): `lib/fabric` also matches zero files on disk;
+# that functionality lives at `agents/fabric/`, which IS separately listed
+# below (unlike orchestrator, so no coverage gap there — just the same
+# document-drift note).
 CORE = [
-    "lib/resolver", "lib/orchestrator", "lib/outcome", "lib/dispatch",
-    "agents/dispatch/", "lib/termlink", "lib/bus", "lib/corpus", "policy/",
-    "lib/fabric", "agents/fabric/",
+    "lib/resolver", "lib/orchestrator", "agents/orchestrator/", "lib/outcome",
+    "lib/dispatch", "agents/dispatch/", "lib/termlink", "lib/bus",
+    "lib/corpus", "policy/", "lib/fabric", "agents/fabric/",
 ]
 BROAD_ADDS = [
     "agents/task-create/", "lib/inception", "lib/bvp", "lib/review",

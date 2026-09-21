@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3403: EWCR Arc 0 Round 2 — re-measure CORE coverage with agents/orchestrator/ added (832 @1601)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-21T19:51:54Z
+# ============================================================================
+
+task_id: T-3403
+task_name: "EWCR Arc 0 Round 2 — re-measure CORE coverage with agents/orchestrator/ added (832 @1601)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-21T19:49:16Z
+completed: 2026-09-21T19:51:34Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  EWCR Arc 0 Round 2 — re-measure CORE coverage with agents/orchestrator/ added (832 @1601)
+
+# Key outcomes
+outcomes:
+  - '`agents/orchestrator/` added to the tool''s CORE prefix list, `lib/orchestrator` left in place (it''s real document drift, not a fix to hide) — `tools/ewcr-arc0-writeset-scoped-coverage.py` CORE list'
+  - 'Tool re-run; new CORE file count + coverage measured and recorded here:'
+  - 'Verdict recorded on whether `satisfied_for_arc_0_scope` changes — **no change; strengthened.** CORE went 30→31 and held at 100.0%, 0 no-card. The orchestrator row now actually contributes to the measurement instead of being silently absent from it. `satisfied_for_arc_0_scope: yes` stands, now on a figure that doesn''t omit its own row.'
+  - 'Reply posted to `agent-chat-arc` (in-reply-to 1601) with the number and verdict — posted at offset 1603'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ewcr, arc0, 832, coverage]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3403-ewcr-arc-0-round-2--re-measure-core-cove.md
+generated_by: context-agent-hybrid
