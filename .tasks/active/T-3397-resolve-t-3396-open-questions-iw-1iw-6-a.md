@@ -475,8 +475,39 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
   names the hub" reads as though reachability follows from addressing,
   and it does not — the credential precondition must be explicit in the
   spec, not implied.
-- **A live defect, found by source-read, in the direct-cross-post path
-  itself — not hypothetical, squarely in what we're about to spec:**
+- **CORRECTION (2026-09-21, TermLink self-corrected):** the offline-queue
+  defect below is **NOT a fresh source-read finding** — TermLink initially
+  described it to us that way ("I am filing it on our side") and that was
+  wrong. It is **PL-109**, recorded in TermLink's own `learnings.yaml`
+  2026-05-01 (task T-1429), and has sat unfixed at `application: TBD` for
+  **five months**. PL-109 was verified **empirically at the time**,
+  stronger evidence than a source-read: someone opened the live
+  `outbound.sqlite` and confirmed the queued `post_json` envelope has
+  topic + metadata + signature but **no `hub_addr` field**. TermLink's
+  three remediation proposals to us (persist the destination on the row,
+  or refuse to queue cross-hub posts) are, per TermLink, "convergence, not
+  corroboration" with PL-109's own recorded remediations — both independently
+  read the same code and landed on the same two fixes.
+  **Consequence for this spec: treat cross-hub `channel post --hub
+  <remote>` as a STANDING CONSTRAINT (known broken under a hub blip for
+  five months), not a risk to be weighed.** Any design assuming it
+  survives a hub blip is assuming behavior known false.
+  **One thing still explicitly NOT settled — do not treat either shape as
+  confirmed:** PL-109's original text says the flush goes to the
+  **local** hub; TermLink's initial description to us (below, preserved
+  for the record) said it goes to **whichever hub the next post
+  targets**. Different failure shapes, neither yet reproduced against the
+  current shipping verb. TermLink has queued reproduction under their own
+  T-3041 (their PL-367 discipline: a filed defect is measured against the
+  shipping verb before being acted on, not accepted on the filing's
+  say-so) and will report the result either way, including a negative
+  one. **What holds regardless of which shape is right:** the queue row
+  carries no destination column, so a queued cross-hub post cannot be
+  delivered to the hub it was addressed to, and the failure is silent —
+  reports success, pops the row.
+- **Original description as first relayed to us, preserved for the
+  record (see correction above — treat the specific mechanism as
+  unconfirmed, the conclusion as a standing constraint regardless):**
   1. `default_queue_path()` (`offline_queue.rs:118`) resolves to ONE file
      per identity dir — it does not vary with `--hub`.
   2. The `pending_posts` table (`offline_queue.rs:123-128`) has no
@@ -484,11 +515,11 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
   3. `BusClient` holds a single fixed `addr` at construction
      (`bus_client.rs:128`); `flush()` drains **every** queued row to that
      one address (`bus_client.rs:234,295`).
-  - **Consequence:** a cross-post to hub B that gets queued because B is
-    down sits in one shared queue with everything else. A later post
-    targeting hub A constructs a `BusClient` for A and `flush()` sends
-    B's queued rows to A instead — **a misdelivery that reports success**
-    and pops the row, not a drop.
+  - **Consequence as originally described:** a cross-post to hub B that
+    gets queued because B is down sits in one shared queue with
+    everything else. A later post targeting hub A constructs a
+    `BusClient` for A and `flush()` sends B's queued rows to A instead —
+    **a misdelivery that reports success** and pops the row, not a drop.
   - **Why this isn't an edge case for us specifically:** blast radius
     depends on whether the topic name exists on the wrong (receiving)
     hub — if not, it errors, retries, dead-letters. But same-named topics
@@ -496,11 +527,10 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
     describes as the normal case here, and `dm:` topic names are
     deterministic from fingerprints — so the collision case is the
     *likely* one for this design, not the unlikely one.
-  - **TermLink's own caveat (PL-367 discipline):** source read only, not
-    reproduced/executed this session. Measure before building on it — and
-    if it reproduces, it is TermLink's defect to fix (Gap Homing, T-1333
-    — the fix lives in their repo), not something AEF's design should
-    silently route around.
+  - **Gap Homing (T-1333):** the fix lives in TermLink's repo, already
+    tracked there as PL-109 (and reproduction as T-3041) — AEF's task
+    doesn't duplicate the filing, only records the constraint it implies
+    for our own spec.
 - **Multi-hop is not the argument for a router either:** `hubs.toml` is 5
   profiles, all flat `192.168.10.x:9100` on one LAN, all directly
   dialable. The one standing exception (`ring20-dashboard`, `.121`) is
@@ -559,19 +589,22 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
 - [x] G-060 resolution: **decided — direct cross-post via `channel post
       --hub <addr>`, no routing layer.** TermLink signed off with a
       second reason (routing layer breaks end-to-end signature identity).
-      Surfaced a live defect in the direct path itself (offline-queue
-      cross-hub misdelivery, source-read only, not yet reproduced) that
-      the eventual build task must spec around — see finding above and
-      the two new open items below
+      Surfaced a **standing, documented, 5-months-unfixed defect**
+      (PL-109, TermLink's own learnings.yaml, empirically verified
+      2026-05-01, not a fresh finding — corrected above) in the direct
+      path itself that the eventual build task must spec around — see
+      finding above and the two open items below
 - [ ] Spec the credential precondition explicitly: sender needs
       profile+secret+TOFU pin per addressable hub (N×M), refuse loudly
       when absent — not yet written into the design doc
 - [ ] Spec queue-safety for cross-hub posts: a queued post must never be
       flushable to a different hub than it was queued for (key by target
       hub, or refuse to queue cross-hub posts and fail loudly at post
-      time) — not yet written into the design doc; TermLink's defect
-      report should be verified (reproduced) before the eventual build
-      task relies on either the bug or its absence
+      time) — not yet written into the design doc. Per PL-109, this is a
+      **standing constraint, not a hypothesis to verify** — spec against
+      it now; TermLink is separately reproducing the exact failure shape
+      under their own T-3041 and will report back, but the spec item
+      here doesn't wait on that reproduction to be written
 - [x] Ack semantics amendment: cross-host third state must be explicit
       `UNKNOWN`, never inferred as `DELIVERED`/`UNDELIVERED` — written into
       `docs/reports/T-3396-peer-consult-sidecar-inception.md` §Cross-Host
