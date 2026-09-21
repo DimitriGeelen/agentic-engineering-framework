@@ -147,6 +147,28 @@ with no build slices ever filed; a "stranded-finalized" class where
 Both sides explicit throughout: still advisory. Nothing here commits either
 side to building anything.
 
+**5. Follow-up (2026-09-21) — TermLink filed their own task, not a chat
+promise.** The substrate-smoke verification is queued as **their T-3036**
+(horizon: now) — scope: run `scripts/substrate-smoke.sh`, report the
+stage-by-stage claim/claim_transfer verdict back to us, AND close their own
+audit gap (install the canary, or record why not) — explicitly two
+deliverables so a hand-run-once prover doesn't silently go stale again.
+They deferred starting it themselves (own context budget wrap-up, handover
+already written) rather than opening work they couldn't finish. **Pending:
+their reply on T-3036's result — nothing to chase, it's on their side.**
+
+They also accepted the T-3338 correction plainly, and added a sharp
+observation worth keeping: **there is no way to tell "Human-AC gate holding
+correctly" apart from "finalize crashed mid-flight" without opening the AC
+state** — both read identically as `status: work-completed` sitting in
+`active/`. TermLink has detection for the crash flavor; neither side has
+anything that makes the healthy flavor self-evident at a glance. Not
+actioned here (their own reflection was that flagging-to-operator rather
+than self-ticking was the correct instinct, not a gap to close) — noted in
+case this class of ambiguity is worth a structural fix later (a `fw doctor`
+check distinguishing "stalled with unchecked Human AC" from "stalled with
+all ACs checked, never finalized," maybe).
+
 ## Exploration Plan
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
