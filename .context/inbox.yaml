@@ -4508,7 +4508,9 @@ observations:
   captured: 2026-09-09T16:44:28Z
   context_task: T-3328
   tags: [bug]
-  status: pending
+  status: dismissed
+  dismissed_reason: "Resolved: audit now WARNs 'COULD NOT DETERMINE' on timed_out unit-suite reports instead of FAILing (OBS-392's fix landed), and this session's own pushes to bleeding-edge succeeded cleanly (0 ahead/behind origin). The self-sustaining push-blocking loop no longer reproduces."
+  dismissed_at: 2026-09-21T14:15:31Z
   promoted_to: null
   urgent: true
 - id: OBS-395
@@ -4516,7 +4518,9 @@ observations:
   captured: 2026-09-09T16:50:08Z
   context_task: T-3328
   tags: [gap]
-  status: pending
+  status: dismissed
+  dismissed_reason: "Resolved: the requested stale-push/commits-ahead detector was built under T-3360 (FW_BRANCH_AHEAD_WARN, lib/branch-hygiene.sh:176), explicitly citing OBS-394/395 as origin."
+  dismissed_at: 2026-09-21T14:15:31Z
   promoted_to: null
   urgent: true
 - id: OBS-396
@@ -4713,7 +4717,9 @@ observations:
   captured: 2026-09-16T17:20:06Z
   context_task: T-3373
   tags: [bug]
-  status: pending
+  status: dismissed
+  dismissed_reason: "Resolved: T-3374 (completed) added the env-prefix denylist in agents/context/lib/safe-commands.sh (_fw_env_prefix_is_denied, T-3374 marker at line ~131) covering PATH/LD_*/BASH_ENV/IFS exactly as described; T-3375 did broader follow-through."
+  dismissed_at: 2026-09-21T14:15:38Z
   promoted_to: null
   urgent: true
 - id: OBS-424
@@ -4763,7 +4769,9 @@ observations:
   captured: 2026-09-16T21:07:26Z
   context_task: T-3358
   tags: [bug]
-  status: pending
+  status: dismissed
+  dismissed_reason: "Not a fresh gap requiring a new task: the VERSION double-writer / commits-since-tag-resets issue is already fully captured in T-3242 (active, owner:human, awaiting review), which is the Sovereign question this observation bears on. Tracking there, not duplicating."
+  dismissed_at: 2026-09-21T14:15:38Z
   promoted_to: null
   urgent: true
 - id: OBS-431
@@ -4778,8 +4786,8 @@ observations:
   captured: 2026-09-16T21:22:21Z
   context_task: T-3363
   tags: [governance]
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
   urgent: true
 - id: OBS-433
   text: "Unowned pre-existing red: tests/unit/t2862_greenfield_first_inception_e2e.bats test 'anti-vacuity — the pre-fix verification line fails the gate it shipped in' fails at line 157 (decide output lacks 'verification(s) failed'). Measured 2026-09-17 on a git-archive export of HEAD 9e8b6f330 (so NOT caused by T-3379's uncommitted lib/watchtower.sh change) and again on the working tree: same line, same failure. No active task owns it; only completed tasks mention the file. Unverified hypothesis: T-2921 (P-011 extractor strips HTML comments) removed the premise that the sed '/<!--/,/-->/d' line fails its own gate, so the anti-vacuity leg now asserts a false premise. Invisible to the nightly unit-suite because that run times out (T-3302)."
