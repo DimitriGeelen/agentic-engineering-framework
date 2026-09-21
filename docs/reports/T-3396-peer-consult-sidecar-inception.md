@@ -190,6 +190,60 @@ authentication can we skip because the agents are co-located." Recorded now,
 before any build, because it is a cheap doc note today and a wire-format
 change if discovered after the fact.
 
+**Amendment 3 — G-060 resolved: direct cross-post, and the credential
+precondition that decision does not remove.** TermLink hubs do not
+federate — a topic named X on hub A and hub B are unrelated logs with
+independent offsets, so "post to a topic and the peer sees it" is false
+across a hub boundary. Two shapes were weighed: a routing layer, or direct
+client-driven cross-posting via the existing `channel post --hub <addr>`
+primitive. Decided **direct cross-post, no routing layer**, on two
+independent grounds: (1) AEF's own address grammar already carries `hub=`
+explicitly, so "where to send it" is already solved without new
+infrastructure; (2) a routing layer is not neutral to the identity plane —
+it either forwards the signed envelope verbatim (a transport hop that buys
+nothing) or re-originates it, and re-origination makes `sender_id` the
+relay's, which either fails TermLink's own sender-binding check (`-32014`,
+`channel.rs:787`) or launders attribution if it doesn't. Direct cross-post
+is the only shape that keeps the signature end-to-end.
+
+**Spec change — credential precondition must be explicit, not implied.**
+"The address names the hub" reads as though reachability follows from
+addressing; it does not. `channel post --hub <addr>` resolves the target
+hub's HMAC secret from a matching profile in `~/.termlink/hubs.toml` and
+hard-bails with no match. Every sending agent therefore needs a
+**profile + secret + TOFU pin for every hub it may address** — an N×M
+credential-distribution cost, not a one-time setup step, since it scales
+with both the number of senders and the number of hubs. The spec must
+name this explicitly as a deployment precondition (credentials provisioned
+per sender per addressable hub, refused loudly when absent — the CLI
+already refuses; AEF's own layer must not paper over that refusal with a
+retry or a silent skip).
+
+**Amendment 4 — a cross-hub post either succeeds or fails loudly; the
+sidecar owns its own retry.** An earlier finding (relayed, then corrected,
+then retracted across three passes — see T-3397 task history for the full
+audit trail) initially suggested TCP cross-hub posts could silently
+misdeliver via TermLink's offline queue. Reproduced against the shipping
+binary, this does not hold: TCP cross-hub posts bypass the offline queue
+entirely (`termlink-cli/src/commands/channel.rs:1096` — "BusClient is
+Unix-only at the wire level. Direct authed RPC; no queueing on failure").
+Measured: posting to an unreachable address returns `Connection refused`;
+posting to a real, down `hubs.toml` address returns `No route to host`;
+in both cases the queue stayed empty (`pending=0, dead_letters=0`) — no
+silent misdelivery to spec around.
+
+**Spec change.** The contract is simpler and stronger than a
+buffered-queue model would have been, but it supplies no free
+retry-on-blip: a transient network failure is a loud, synchronous,
+non-zero-exit failure with a named cause, full stop. **The sidecar's own
+retry/backoff policy for a failed cross-hub post is therefore part of this
+design, not TermLink's responsibility** — undesigned as of this writing,
+tracked as an open item on T-3397. One residual, not tested either
+direction and irrelevant to AEF's TCP-only cross-host design: two *local*
+hubs addressed by different Unix socket paths on one host would still
+share TermLink's one queue with no destination column, since the queueing
+branch is taken for any non-TCP `--hub`.
+
 ## Cross-references
 
 - T-2918 — fw peer subscribe uses event poll <session>, the task that

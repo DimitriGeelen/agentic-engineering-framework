@@ -593,9 +593,11 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
       (explicit branch, `channel.rs:1096`) and either succeed or fail
       loudly with a non-zero exit; there is no silent misdelivery to spec
       around, but also no built-in retry-on-blip — the caller owns retry
-- [ ] Spec the credential precondition explicitly: sender needs
+- [x] Spec the credential precondition explicitly: sender needs
       profile+secret+TOFU pin per addressable hub (N×M), refuse loudly
-      when absent — not yet written into the design doc
+      when absent — written into
+      `docs/reports/T-3396-peer-consult-sidecar-inception.md` §Cross-Host
+      Design Amendments, Amendment 3
 - [x] Queue-safety spec item **dissolved by retraction** — TCP cross-hub
       posts cannot reach TermLink's offline queue at all (structural
       branch, not a race to guard against), so there is no queue-row
@@ -612,10 +614,13 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
       agents share one host-wide ed25519 key (PL-166) today, so any
       same-host fast-path revisit must add per-agent identity, not skip
       auth — written into the same design-doc section
-- [ ] Spec a caller-owned retry policy for cross-hub post failure: TCP
+- [x] Spec a caller-owned retry policy for cross-hub post failure: TCP
       cross-hub posts either succeed or fail loudly (non-zero exit, named
-      cause) with no buffering across a blip on TermLink's side — the
-      sidecar's own retry/backoff behavior on that failure is undesigned
+      cause) with no buffering across a blip on TermLink's side — named as
+      the sidecar's own open design surface in
+      `docs/reports/T-3396-peer-consult-sidecar-inception.md` §Cross-Host
+      Design Amendments, Amendment 4 (the retry/backoff policy itself is
+      still undesigned — that's IW-3's job, not this AC's)
 - [ ] Remaining Exploration Plan steps (IW-2 liveness-aware heartbeat spike
       — now including cross-host liveness from the start, IW-3 ack-
       semantics study — now load-bearing not just informative, flag-shape
