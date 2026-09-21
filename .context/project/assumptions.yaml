@@ -681,3 +681,14 @@ assumptions:
   linked_task: T-3396
   created: '2026-09-20'
   resolved_date: null
+- id: A-066
+  statement: TermLink's April T-967 persistence contract (cleanup exemption, session.needs_restart)
+    still holds after 5 months and 3+ releases (T-1636/T-1637/T-2363) — unverified,
+    cross-repo scoping ask sent to termlink-agent via termlink_agent_contact 2026-09-21,
+    dm:8e6fd77ec6f74b37:d1993c2c3ec44c94 offset 3, thread T-3397
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-3397
+  created: '2026-09-20'
+  resolved_date: null
