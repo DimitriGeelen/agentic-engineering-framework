@@ -125,6 +125,71 @@ more than 3 files — build must not start before scoping). Operator confirmed
   full rationale and `## Open Questions` for the disposed (deferred,
   evidence-backed) IW-1 through IW-6 items.
 
+## Cross-Host Design Amendments (T-3397, 2026-09-21)
+
+Continuation of this inception's design under T-3397, once cross-host scope
+was confirmed real (the fleet genuinely spans multiple hosts, not a
+single-host deployment). Full joint-analysis dialogue with TermLink in
+`.tasks/active/T-3397-resolve-t-3396-open-questions-iw-1iw-6-a.md`; this
+section records the two amendments that change the buildable spec itself.
+
+**Uniform path, not a fast-path-plus-exception.** Correctness cannot be
+conditioned on traffic mix — if cross-host delivery must sometimes work, it
+must be engineered to work, regardless of what fraction of traffic hits it.
+The sidecar's delivery, ack, and liveness mechanisms are ONE path, built
+cross-host-capable from the start; same-host is the degenerate case of that
+path (same host, same hub), not a separate code path or a later add-on. A
+same-host performance optimization (skipping trust-bootstrap/auth overhead
+for co-located agents) is explicitly deferred — see the identity amendment
+below for why that optimization is more dangerous than it first looks.
+
+**Amendment 1 — the three-state ack must name its cross-host blind spot
+explicitly.** The design's delivered / undelivered / stuck-but-unconfirmed
+ack was originally specified as inferred from local evidence (the sender or
+a supervisor can tell "the message landed but nobody acted on it" from "the
+message never arrived") by reading the receiving agent's own session
+transcript on local disk. That evidence source does not exist across a host
+boundary — there is no remote-transcript primitive, and a wedged receiver
+cannot be expected to self-report (a wedged receiver is precisely what
+"stuck-but-unconfirmed" is trying to detect). Left unamended, the two states
+collapse into each other cross-host and the ack silently degrades from
+three-state to two-state without ever saying so — reconstructing exactly the
+"declared broken while actually just busy" misdiagnosis class this design
+exists to avoid.
+
+**Spec change:** the third ack state is `UNKNOWN` when the evidence source
+that would distinguish delivered-but-idle from actually-stuck is unavailable
+(i.e. whenever sender and receiver are not co-located and no remote
+equivalent has been verified to exist). `UNKNOWN` is a valid, expected,
+non-error terminal state cross-host — never silently promoted to `DELIVERED`
+or demoted to `UNDELIVERED`. Before any cross-host build relies on a
+same-host-style transcript read, that mechanism must be re-verified to work
+(or not) across a host boundary — it has been verified same-host only.
+
+Message offsets are hub-scoped (TermLink hubs do not federate — a topic's
+offset on hub A and hub B are unrelated numbering). Any ack that references
+"offset N" must therefore key on `conversation_id` or an explicitly
+hub-qualified offset, never a bare integer, once the message can cross a
+hub boundary.
+
+**Amendment 2 — same-host is the WEAKER identity case, not the stronger
+one, and the deferred optimization must reflect that.** TermLink confirmed
+against their own source that co-resident agents on a shared host today all
+sign with one host-wide key — so TermLink's own sender-identity check, which
+does catch a cross-host impostor, is structurally unable to distinguish two
+same-host agents claiming each other's identity. Consequence for this
+design: the same-host fast-path optimization named above (skip
+trust-bootstrap/auth for co-located agents) was pointed at exactly the case
+that currently has the *weakest* identity guarantee, not the strongest.
+
+**Spec change:** that optimization stays deferred (still correctly out of
+scope for the initial build — it is a Q2 performance item, not a
+correctness gate), but when it is revisited the framing must be "what
+per-agent identity do we add for the same-host case", never "what
+authentication can we skip because the agents are co-located." Recorded now,
+before any build, because it is a cheap doc note today and a wire-format
+change if discovered after the fact.
+
 ## Cross-references
 
 - T-2918 — fw peer subscribe uses event poll <session>, the task that

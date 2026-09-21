@@ -473,14 +473,15 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
       weakness, ack same-host-only evidence source, hub-scoped offsets)
 - [ ] G-060 resolution: cross-post directly to the peer's hub, or
       introduce a routing layer — no shared logical bus exists today
-- [ ] Ack semantics amendment: cross-host third state must be explicit
-      `UNKNOWN`, never inferred as `DELIVERED`/`UNDELIVERED` — per
-      TermLink's correction above; TermLink flagged they have not yet
-      re-measured the transcript-read mechanism cross-host themselves
-- [ ] Same-host identity gap documented in the design doc: co-resident
+- [x] Ack semantics amendment: cross-host third state must be explicit
+      `UNKNOWN`, never inferred as `DELIVERED`/`UNDELIVERED` — written into
+      `docs/reports/T-3396-peer-consult-sidecar-inception.md` §Cross-Host
+      Design Amendments; TermLink's caveat (not yet re-measured cross-host
+      themselves) carried into the spec note verbatim
+- [x] Same-host identity gap documented in the design doc: co-resident
       agents share one host-wide ed25519 key (PL-166) today, so any
       same-host fast-path revisit must add per-agent identity, not skip
-      auth — logged now per TermLink, not yet written into a design doc
+      auth — written into the same design-doc section
 - [ ] Remaining Exploration Plan steps (IW-2 liveness-aware heartbeat spike
       — now including cross-host liveness from the start, IW-3 ack-
       semantics study — now load-bearing not just informative, flag-shape
