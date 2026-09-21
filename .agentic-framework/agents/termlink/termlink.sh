@@ -618,6 +618,21 @@ cmd_dispatch() {
     local wdir="$DISPATCH_DIR/$name"
     mkdir -p "$wdir"
 
+    # T-3407 / arc-011 slice 5: every dispatched worker is addressable by its
+    # --name and is told, once, how a peer consult reaches it. Workers spawn
+    # --bare (no CLAUDE.md, no hooks), so the prompt is the only channel this
+    # can ride on. Kept short: an empty inbox costs the worker one command.
+    local _consult_stanza="[PEER CONSULTS — arc-011 sidecar, T-3407]
+You are addressable as agent id '$name'. Other agents may send you a consult
+while you work. At each yield point (before a Write/Edit, and before you
+finish), run:  fw sidecar inbox
+If it prints a consult, answer it with:
+  fw sidecar send --to <from> --conversation <conversation_id> --body '<answer>'
+then continue your task. An empty inbox costs nothing; do not poll in a loop."
+    prompt="$_consult_stanza
+
+$prompt"
+
     # Save prompt, task tag, and metadata (from tl-dispatch.sh pattern)
     echo "$prompt" > "$wdir/prompt.md"
     [ -n "$task" ] && echo "$task" > "$wdir/task"
@@ -638,6 +653,11 @@ cmd_dispatch() {
     # from a resolver-loop worker (which arrives with mechanism already set
     # via --env and overrides these lines).
     fw_worker_git_identity_env "termlink-dispatch" "$name" >> "$wdir/env.sh"
+    # T-3407: the worker's sidecar identity IS its dispatch name, so
+    # `fw sidecar send --to $name` lands in this worker's inbox with no
+    # second naming scheme. Written before caller --env pairs so an explicit
+    # --env FW_SIDECAR_AGENT_ID=... still wins (later export overrides).
+    printf 'export FW_SIDECAR_AGENT_ID=%q\n' "$name" >> "$wdir/env.sh"
 
     # T-3038 (OBS-291): give every dispatched worker its own focus file.
     #

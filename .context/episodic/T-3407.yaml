@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3407: arc-011 sidecar slice 5: ambient consults — dispatch preamble + UserPromptSubmit hook surface a pending consult unasked
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-21T22:42:12Z
+# ============================================================================
+
+task_id: T-3407
+task_name: "arc-011 sidecar slice 5: ambient consults — dispatch preamble + UserPromptSubmit hook surface a pending consult unasked"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-21T22:35:06Z
+completed: 2026-09-21T22:41:49Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-011 sidecar slice 5: ambient consults — dispatch preamble + UserPromptSubmit hook surface a pending consult unasked
+
+# Key outcomes
+outcomes:
+  - 'A `fw hook sidecar-inbox` handler exists that runs `fw sidecar inbox --peek --json` and emits `{"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": ...}}` when there are pending consults, and emits NOTHING (empty stdout, exit 0) when there are none — `agents/context/sidecar-inbox.sh`; bats 1 (empty → no stdout) and 2 (pending → additionalContext with sender, conversation, body)'
+  - 'The handler fails open: a hub that is unreachable, a missing `termlink` binary, or a timeout produces empty output and exit 0, never an error the user sees and never a blocked prompt — bats 4 (fw exit 1), 5 (malformed JSON), 6 (hung fw cut by `SIDECAR_INBOX_TIMEOUT`), 7 (no termlink on PATH → fw never even called)'
+  - 'The handler peeks and does not advance the cursor: after it fires, `fw sidecar inbox` still returns the same consult (surfacing ≠ consuming) — bats 3 asserts every `fw` call carried `--peek`; live: after the hook fired on the T-3407-live probe, `fw sidecar inbox --peek` still returned it at @2'
+  - '`UserPromptSubmit` is wired in `.claude/settings.json` to the handler with a short timeout, and `bin/fw enforcement baseline` is refreshed so `fw doctor` does not report a changed baseline (L-398) — wired via the governed verb after B-005 refused a hand-edit (`bin/fw hook-enable --name sidecar-inbox --event UserPromptSubmit --matcher ''''` → `registered: UserPromptSubmit/'''' -> ${CLAUDE_PROJECT_DIR}/bin/fw hook sidecar-inbox`, timeout 8); `bin/fw enforcement baseline` → hash `aed641a399cf431a…` saved'
+  - '`fw termlink dispatch` prepends a short consult-inbox stanza to every worker prompt, and sets `FW_SIDECAR_AGENT_ID` to the worker''s `--name` in the worker''s environment — `agents/termlink/termlink.sh:cmd_dispatch`, `bash -n` clean. Direct evidence from the live worker''s dir: `/tmp/tl-dispatch/ambient-responder/prompt.md` begins `[PEER CONSULTS — arc-011 sidecar, T-3407] You are addressable as agent id ''ambient-responder''…`; `env.sh` contains `export FW_SIDECAR_AGENT_ID=ambient-responder`'
+  - '`agents/dispatch/preamble.md`''s Yield Point section documents the worker contract and how a consult surfaces in an interactive session — new subsection "Peer consults at the yield point (T-3407)", placed under the existing M2 note that anticipated the sidecar'
+  - '**Live gate, interactive:** queued a consult to this agent (`T-3407-live`, @2); `bin/fw hook sidecar-inbox < /dev/null` emitted the `UserPromptSubmit` `additionalContext` JSON carrying it, exit 0; `fw sidecar inbox --peek` afterward still showed @2. **Then the real thing:** on this session''s very next turn, the wired hook fired on its own and injected the *worker''s* answer (below) into my context as `UserPromptSubmit hook additional context` — I did not ask for it. That is the ambient property, demonstrated on the live session rather than by calling the script'
+  - '**Live gate, worker:** queued a consult to `ambient-responder` (`client_msg_id 1f2a23e7-b86b-4fd5-8f66-0cec6f63f9e2`, conversation `T-3407-worker`), then dispatched a worker whose entire prompt was *"print the current UTC date on one line, then stop"* — no mention of an inbox. It found the consult through the dispatch-prepended stanza alone and answered. Received at **`sidecar:999-Agentic-Engineering-Framework` offset 3, from `ambient-responder`**, ~20s after dispatch. Verbatim: *"In ''ambient consult'', ''ambient'' means the consult arrives passively in the background of whatever task the agent is already doing, rather than being explicitly requested or blocking its work."*'
+  - 'Unit tests cover the empty/non-empty/fail-open handler paths and the peek invariant; slices 1-4 suites still pass unchanged — `tests/unit/sidecar_inbox_hook.bats` **7/7** (one test fixed mid-task: it removed the sandbox `termlink` but the real one at `/usr/local/bin` stayed on PATH, so the presence check passed — the test''s fault, not the hook''s; PATH now excludes it); pytest slices 1-4: **28 passed**'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, peer-consult, sidecar, cross-repo, hooks]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3407-arc-011-sidecar-slice-5-ambient-consults.md
+generated_by: context-agent-hybrid

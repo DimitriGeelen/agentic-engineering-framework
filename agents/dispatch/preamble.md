@@ -222,3 +222,24 @@ The orchestrator then either re-dispatches with adjusted scope or escalates.
 Any parse error / malformed content / stale flag → write allowed. The disjoint
 write-set declaration (T-2337) is the primary correctness barrier; this is a
 real-time safety supplement.
+
+### Peer consults at the yield point (T-3407, arc-011 slice 5)
+
+The sidecar the M2 note above anticipates now exists (`fw sidecar`, T-3402–T-3407).
+A dispatched worker is addressable by its `--name`: `fw termlink dispatch` sets
+`FW_SIDECAR_AGENT_ID=<name>` in the worker's environment and prepends a short
+consult stanza to its prompt, so nothing here has to be pasted by hand.
+
+**Worker contract.** At each yield point — the same moment you run
+`yield-point.sh check`, and once more before you finish — run `fw sidecar inbox`.
+If it prints a consult, answer it with
+`fw sidecar send --to <from> --conversation <conversation_id> --body '<answer>'`
+and continue. An empty inbox is one cheap command; do not poll in a loop.
+
+**How a consult reaches an interactive session.** Interactive sessions run hooks;
+workers (`--bare`) do not. A `UserPromptSubmit` hook (`fw hook sidecar-inbox`)
+*peeks* the inbox at the start of each human turn and surfaces pending consults as
+context. It never consumes: the consult stays in `fw sidecar inbox` until read.
+
+**Addressing.** Send to an agent id, never to a TermLink identity fingerprint —
+the fingerprint is machine-wide and names a host, not an agent (T-3405).
