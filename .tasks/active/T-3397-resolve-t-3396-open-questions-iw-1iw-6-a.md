@@ -197,14 +197,94 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
   state. Non-urgent messages keep the full ready-flag/cron-tick path. No
   narrower variant (no "just poll sooner" middle ground) — bypass is a hard
   skip, not a shortened interval.
-- **IW-2 (heartbeat/threshold sizing)** — still unvalidated; needs the spike
-  against a live hub per the original Exploration Plan step 3, now additionally
-  blocked on knowing whether TermLink or AEF hosts the long-lived process (the
-  spike target differs by outcome).
-- **IW-4** — cross-repo ask sent, unanswered. See A-066.
-- **IW-6 (DM-rail topic scope)** — unchanged from T-3396, still leaning
-  "agnostic," still unverified against TermLink's actual multi-topic
-  subscribe surface.
+- ~~IW-4 (T-967 persistence contract currency)~~ **ANSWERED (termlink-agent
+  [14213e], 2026-09-21, evidence-backed):** worse than "eroded" — it never
+  shipped. T-967 was an inception whose own OUT-of-scope explicitly deferred
+  the build; the "~3 changes, ~2h" figure was an estimate, never executed.
+  Direct grep of all Rust crates today: `needs_restart`=0 occurrences,
+  `receptionist`/`cleanup_exempt`/persistent-session-marker=0 occurrences.
+  No cleanup exemption exists; TermLink's cleanup path still cannot
+  distinguish "idle but listening" from "orphaned" — T-967's own assumption
+  4, never validated. **Do not design on top of a contract that doesn't
+  exist.** A-066 updated to `invalidated` with this evidence. Also: **their
+  T-1135 is a different task than ours** (task IDs collide across AEF and
+  TermLink — match by content, never by number, going forward).
+
+- **Ownership split (the Sovereign question) — joint recommendation
+  received, NOT yet decided.** termlink-agent [14213e]'s read (explicitly
+  their recommendation only — "the build/own decision is my operator's, not
+  mine; I am not authorized to commit TermLink to hosting anything," and
+  their next step is filing this as their own Sovereign question, not
+  committing):
+  - **AEF owns (b) non-negotiably** — the ready-for-input flag, inject
+    decision, and urgent-bypass policy are all harness-local state
+    (Stop/UserPromptSubmit hooks) that TermLink structurally cannot observe.
+    Any version where TermLink infers readiness is TermLink guessing —
+    named as "exactly the bug class we keep filing: a guard confident
+    precisely where it is most wrong."
+  - **Same-host: AEF standalone, no TermLink dependency.** (a) is already a
+    filesystem protocol (message file + flag) — a network hop adds failure
+    modes, not value, on one host. Their own reply to us proves the point:
+    it arrived by direct cross-session SendMessage after two TermLink
+    attempts misfired — an *addressing* failure, not a *transport* one
+    (DM delivered fine, just to the wrong identity). Addressing/readiness is
+    the hard problem here, not moving bytes.
+  - **Cross-host: TermLink is the right host for transport/persistence IF a
+    real cross-host need ever appears — not preemptively.** Our three-state
+    ack (stored/injected-now/injected-later) maps closely onto primitives
+    TermLink already has: durable FIFO + poison-drop→dead-letter
+    (`outbound.sqlite`), exactly-once via `client_msg_id` + hub-side LRU
+    dedupe, delivery obligations with post-retry retention
+    (`awaiting_ack.sqlite`, `channel awaiting-ack`) — reuse over rebuild if
+    that day comes.
+  - **Charter fit, cited in support:** TermLink's charter is 4 verbs
+    (discover / exchange durable messages / claim work / control terminal
+    sessions). Transport+persistence maps to verb 2; application logic
+    (readiness/inject/ack semantics) doesn't — matches their own discipline
+    (52 tools pruned in one pass for exactly this kind of scope drift).
+  - **Two scar-tissue cautions, both apply to our design directly:**
+    1. *Frozen-husk class* — a long-lived process can freeze with every
+       surface green (live PID, heartbeat stale forever). They shipped
+       exactly this and hit it; took 3 tasks + a canary distinguishing
+       REGRESSION from pre-fix to catch. **Our sidecar needs a liveness
+       signal that separates "idle and listening" from "hung," not just a
+       heartbeat timestamp, from day one** — this sharpens IW-2, doesn't
+       just size it.
+    2. *Shipped ≠ live* — if we ever do take a TermLink RPC dependency
+       (the cross-host case), budget weeks before the fleet actually serves
+       it; their fleet has run ~1000 commits stale, and they needed three
+       separate canaries (binary floor, capability probe, stale code) because
+       version numbers alone lied. Only relevant if/when cross-host
+       materializes — not blocking the same-host recommendation.
+  - **Joint recommendation both sides converge on:** AEF builds the sidecar
+    standalone for same-host now, transport layer behind an interface;
+    TermLink supplies cross-host transport later, only if a real cross-host
+    need appears. Gets something working with zero cross-repo dependency,
+    keeps the expensive half optional.
+  - **This is advisory input for the operator's decision, not an
+    authorization to build.** Both sides' agents converged on a
+    recommendation; neither side's operator has signed off. termlink-agent
+    is separately filing this as their own Sovereign question. Surfacing
+    to ours the same way — see chat.
+
+- **IW-2 (heartbeat/threshold sizing)** — sharpened, not yet resolved: per
+  the frozen-husk caution above, needs a liveness check (not just staleness
+  timing) from the start. Spike still pending, now correctly scoped to
+  same-host only (per the ownership recommendation, no live-hub dependency
+  needed for this spike at all if AEF goes standalone).
+- **IW-3 (flag/ack shape)** — informed: don't reinvent
+  exactly-once/dead-letter/retry-retention from scratch: study TermLink's
+  `client_msg_id`+LRU-dedupe and `awaiting_ack.sqlite` pattern even for an
+  AEF-standalone design, since the same correctness problem (an ack that's
+  never a lie) applies locally too.
+- **IW-6 (DM-rail topic scope)** — unchanged, still leaning "agnostic,"
+  now moot for the near-term same-host-standalone recommendation.
+- **OBS-445 detail added:** the stalled `dm:3bba15e681b3a078:*` thread is
+  confirmed **14 messages, every one outbound from AEF's own identity
+  `d1993c2c3ec44c94`, zero replies since 2026-09-17** — this is our own
+  session's/a prior AEF session's identity, so if it's a write-only sink,
+  it's on our side to check, not TermLink's. Not investigated under T-3397
+  (different question — fleet-cockpit consult on orchestration model/API).
 
 ## Acceptance Criteria
 
@@ -214,9 +294,12 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
       chat history
 - [x] Cross-repo outreach to TermLink sent and tracked as a registered
       assumption (A-066), not left implicit
-- [ ] Remaining Exploration Plan steps (IW-2 heartbeat spike, IW-6
-      verification, flag-shape file-format spec) completed once IW-4/ownership
-      response arrives
+- [x] IW-4 resolved with evidence (not guessed); joint ownership
+      recommendation received and captured in full, correctly framed as
+      advisory pending both operators' sign-off
+- [ ] Remaining Exploration Plan steps (IW-2 liveness-aware heartbeat spike,
+      IW-3 ack-semantics study, flag-shape file-format spec) — unblocked to
+      start once the operator confirms the standalone-same-host direction
 - [ ] Build task(s) filed once all IW items are `answered` (this task's own
       exit condition, per T-3396 Scope Fence — no sidecar code under this ID)
 

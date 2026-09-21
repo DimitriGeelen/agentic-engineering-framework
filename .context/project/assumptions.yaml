@@ -686,9 +686,18 @@ assumptions:
     still holds after 5 months and 3+ releases (T-1636/T-1637/T-2363) — unverified,
     cross-repo scoping ask sent to termlink-agent via termlink_agent_contact 2026-09-21,
     dm:8e6fd77ec6f74b37:d1993c2c3ec44c94 offset 3, thread T-3397
-  status: untested
+  status: invalidated
   validation_method: TBD
-  evidence: []
+  evidence:
+  - outcome: 'termlink-agent [14213e] confirmed via direct grep of all Rust crates:
+      needs_restart=0 occurrences, receptionist/cleanup_exempt/persistent-session-marker=0
+      occurrences. T-967 was an inception (workflow_type:inception) whose own OUT-of-scope
+      explicitly deferred the build (''Implementing the actual persistent agent process
+      (separate build task)'') -- the 3-change/2h estimate was never executed, not
+      eroded by later releases. No cleanup exemption exists on TermLink''s side; the
+      cleanup path still cannot distinguish idle-but-listening from orphaned (T-967''s
+      own unvalidated assumption 4). Confirmed cross-session 2026-09-21.'
+    date: '2026-09-21'
   linked_task: T-3397
   created: '2026-09-20'
-  resolved_date: null
+  resolved_date: '2026-09-21'
