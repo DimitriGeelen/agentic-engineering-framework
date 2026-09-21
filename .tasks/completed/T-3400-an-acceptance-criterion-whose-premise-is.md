@@ -1,6 +1,7 @@
 ---
 id: T-3400
-name: "AC re-baselining: no verb exists for a criterion whose premise is overtaken by events (OBS-432)"
+name: "AC re-baselining: no verb exists for a criterion whose premise is overtaken
+  by events (OBS-432)"
 description: >
   An acceptance criterion whose literal premise is overtaken by legitimate
   downstream work (a sibling task landing, a count changing) cannot be
@@ -8,16 +9,16 @@ description: >
   stalling a finished task. P-010's checkbox model has no verb for this.
   Promoted from observation OBS-432 (concrete instance: T-3363 AC5).
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [governance, ac-lifecycle, p-010]
 components: []
 related_tasks: [T-3363, T-3326]
 created: 2026-09-21T14:17:53Z
-last_update: 2026-09-21T14:17:53Z
-date_finished: null
+last_update: 2026-09-21T15:04:40Z
+date_finished: 2026-09-21T15:04:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -26,6 +27,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-09-21T14:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=178,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-21T14:30:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3400: AC re-baselining — no verb exists for a criterion whose premise is overtaken by events
@@ -120,15 +148,15 @@ other reason than this specific gap.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -199,9 +227,60 @@ three bad options.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: This isn't an evidence gap (DEFER would be a hedge here, not
+a real disposition) — it's a scoping decision between two already-named
+candidates, which is exactly what an inception exists to resolve. The gap is
+real and demonstrated (T-3363 AC5 hit it this session, not hypothetically),
+the fix is bounded (a task-file convention + a change to
+`update-task.sh`'s checkbox-counting logic, not a redesign of P-010), and
+leaving it unresolved means the next agent to hit this class faces the same
+three bad options.
+
+**Date**: 2026-09-21T15:04:39Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-09-21T15:04:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** This isn't an evidence gap (DEFER would be a hedge here, not
+a real disposition) — it's a scoping decision between two already-named
+candidates, which is exactly what an inception exists to resolve. The gap is
+real and demonstrated (T-3363 AC5 hit it this session, not hypothetically),
+the fix is bounded (a task-file convention + a change to
+`update-task.sh`'s checkbox-counting logic, not a redesign of P-010), and
+leaving it unresolved means the next agent to hit this class faces the same
+three bad options.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b5313643
+- **Timestamp:** 2026-09-21T15:04:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-5e8a6564
+- **Timestamp:** 2026-09-21T15:04:41Z
+- **Overall:** CONFIRMED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-3363` | task | ✓ pass |
+| `T-3364` | task | ✓ pass |
+| `T-3365` | task | ✓ pass |
+| `T-3326` | task | ✓ pass |
+| `T-1985` | task | ✓ pass |
+
+### 2026-09-21T15:04:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
