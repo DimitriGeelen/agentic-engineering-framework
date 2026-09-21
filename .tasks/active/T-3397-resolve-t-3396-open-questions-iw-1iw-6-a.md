@@ -143,18 +143,40 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
 
 ## Open Questions — carried forward, not resolved
 
-- **Sovereign — ownership split (new, raised in dialogue, NOT decided):**
+- **Sovereign — ownership split (raised in dialogue, NOT decided):**
   should the symmetric sidecar layer replace/absorb functions currently
   served by TermLink primitives (chat-arc DM, event emit), or strictly ride
-  on top of them? This is a bigger architectural expansion than T-3396's
-  Scope Fence covers (which explicitly excluded re-opening TermLink-side
-  scope). Blocked on termlink-agent's reply (A-066) and, beyond that, is a
-  genuine Sovereign call the operator should make explicitly once TermLink's
-  architectural preference is known — not something this task should default.
-- **IW-1 urgent-bypass mechanics** — does an urgent-tagged message skip the
-  ready-flag check entirely (accepted risk, inject blind), or does it only
-  shorten the poll interval (check the real flag, just immediately instead of
-  waiting for the next 30s tick)? Not settled in dialogue.
+  on top of them? Bigger than T-3396's Scope Fence covers (which explicitly
+  excluded re-opening TermLink-side scope). **Operator directive
+  (2026-09-21): resolve this jointly with TermLink's own agent, not
+  unilaterally either side — analyze together, arrive at a shared
+  recommendation, bring that back for the operator's actual sign-off rather
+  than AEF pre-deciding and presenting it as settled.**
+
+  Async DM sent (dm:8e6fd77ec6f74b37:d1993c2c3ec44c94 offset 3, thread
+  T-3397) drew no reply. Attempted a live follow-up via direct PTY inject
+  into the `termlink-agent` session (confirmed idle before injecting, same
+  discipline this task itself designed) — **this surfaced a real finding,
+  not a successful contact**: `termlink-agent`'s identity
+  (`8e6fd77ec6f74b37`) has zero chat-arc posts ever (`termlink_agent_who_is`
+  confirmed), and the session is a bare bash PTY TermLink keeps for
+  diagnostics/exec, not a conversational process — the inject landed as a
+  literal shell command and threw a syntax error. `discover`'s `state:
+  ready` describes process liveness, not conversational readiness; do not
+  conflate the two again. Cross-checked the only other recently-active
+  chat-arc poster (`9219671e28054458`, 80 posts) and it decodes to
+  `ring20-management`, an unrelated project's automated presence beacon on a
+  different host — not TermLink's agent. **No live TermLink-side
+  conversational agent was reachable this session.** The async DM remains
+  the one correctly-addressed channel (same mechanism T-967 came back on in
+  April) and is still pending — genuinely async, not stuck, just not yet
+  answered.
+- ~~IW-1 urgent-bypass mechanics~~ **ANSWERED (operator decision, 2026-09-21):**
+  urgent means bypass — an urgent-tagged message skips the ready-flag check
+  entirely and injects immediately, accepted risk, regardless of busy/idle
+  state. Non-urgent messages keep the full ready-flag/cron-tick path. No
+  narrower variant (no "just poll sooner" middle ground) — bypass is a hard
+  skip, not a shortened interval.
 - **IW-2 (heartbeat/threshold sizing)** — still unvalidated; needs the spike
   against a live hub per the original Exploration Plan step 3, now additionally
   blocked on knowing whether TermLink or AEF hosts the long-lived process (the
