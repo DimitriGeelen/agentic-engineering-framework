@@ -150,6 +150,28 @@ def test_display_format_unchanged_for_short_project():
     assert addr.display_format() == DURABLE
 
 
+# ── T-3399: parse side must reject elision, not just serialize() ─────────
+
+
+def test_parse_v9_refuses_elided_project_value():
+    # A collided display string must never re-enter identity via the wire form.
+    elided = "aef::host=h.lan::project=/mnt/…/frontend/042-Web-App::"
+    with pytest.raises(AddressError):
+        parse_v9(elided)
+
+
+def test_parse_v4_refuses_elided_project_value():
+    elided = "host=h.lan project=/mnt/…/frontend/042-Web-App"
+    with pytest.raises(AddressError):
+        parse_v4(elided)
+
+
+def test_parse_refuses_elided_project_value():
+    elided = "aef::host=h.lan::project=/mnt/…/frontend/042-Web-App::"
+    with pytest.raises(AddressError):
+        parse(elided)
+
+
 # ── optional hub= with host-default resolution (D6) ──────────────────────
 
 
