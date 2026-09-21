@@ -621,13 +621,22 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
       `docs/reports/T-3396-peer-consult-sidecar-inception.md` §Cross-Host
       Design Amendments, Amendment 4 (the retry/backoff policy itself is
       still undesigned — that's IW-3's job, not this AC's)
-- [ ] Remaining Exploration Plan steps (IW-2 liveness-aware heartbeat spike
+- [x] Remaining Exploration Plan steps (IW-2 liveness-aware heartbeat spike
       — now including cross-host liveness from the start, IW-3 ack-
       semantics study — now load-bearing not just informative, flag-shape
       file-format spec) — unblocked now that the traffic-mix fork is
-      resolved
-- [ ] Build task(s) filed once all IW items are `answered` (this task's own
-      exit condition, per T-3396 Scope Fence — no sidecar code under this ID)
+      resolved. Written into
+      `docs/reports/T-3396-peer-consult-sidecar-inception.md` Amendment 5:
+      IW-2 as a two-field liveness signal (monotonic seq + self-probe
+      capability canary, not a bare timestamp) plus per-hub capability/
+      floor probe as a cross-host acceptance gate; IW-3 as concrete file
+      shapes (message file, flag-file dirty-bit, awaiting-ack.jsonl
+      delivery-obligation ledger with mandatory deadline) reusing
+      TermLink's client_msg_id dedupe pattern rather than reinventing it
+- [x] Build task(s) filed once all IW items are `answered` (this task's own
+      exit condition, per T-3396 Scope Fence — no sidecar code under this
+      ID) — filed T-3402 (build: sidecar delivery/liveness/ack substrate
+      per Amendment 5 spec)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

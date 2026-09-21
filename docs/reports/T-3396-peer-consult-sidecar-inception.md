@@ -244,6 +244,98 @@ hubs addressed by different Unix socket paths on one host would still
 share TermLink's one queue with no destination column, since the queueing
 branch is taken for any non-TCP `--hub`.
 
+**Amendment 5 — IW-2 (liveness) and IW-3 (ack shape + flag-file format)
+resolved: concrete specs, drawing on TermLink's frozen-husk and
+delivery-obligation primitives rather than reinventing either.**
+
+**IW-2 — liveness must be a capability canary, not a timestamp.** TermLink's
+own frozen-husk incident (their words: "a long-lived process can freeze with
+every surface green — live PID, heartbeat stale forever") took them 3 tasks
+plus a canary that distinguishes REGRESSION from pre-fix to actually catch.
+A bare "last write timestamp" heartbeat has the identical blind spot here: a
+sidecar wedged on a blocked network call still has a recent PID and a stale
+timestamp that *looks* like healthy idle, because "idle" and "hung" both
+present as "not writing right now."
+
+**Spec:** the sidecar's liveness signal is two fields, not one —
+(1) a monotonic sequence counter incremented once per event-loop tick
+(proves the loop is scheduling at all), and (2) the timestamp and outcome of
+the most recent **self-probe** — a synthetic round-trip through the sidecar's
+own inject path (write a loopback message to itself, confirm it was
+processed) run on the same cadence as the cron fallback tick (default 30s).
+A monotonic counter alone catches a fully-stopped loop; the self-probe
+additionally catches a loop that is scheduling but whose actual delivery
+capability is broken — the two failure modes TermLink's incident showed do
+not imply each other. State file: `.context/sidecar/liveness.yaml` —
+`{identity, seq, last_probe_at, last_probe_ok, last_probe_latency_ms}`.
+Stale/hung is `seq` not advancing across two expected ticks, OR
+`last_probe_ok: false` — either alone is sufficient to declare not-live; a
+recent `seq` advance with `last_probe_ok: false` is exactly the frozen-husk
+shape TermLink hit (scheduling fine, delivery broken) and must not be
+masked by only checking one field.
+
+**Cross-host extension (not a later add-on — required from the first build,
+per the uniform-path decision above):** for every hub the sidecar addresses,
+liveness additionally requires a per-hub capability probe + version floor
+check before that hub is treated as a valid send target — reusing TermLink's
+own `arc-live-probe`/fleet capability-canary machinery rather than building
+a parallel one. TermLink's own measurement (~1000-commit fleet staleness,
+T-2415: reachable + authenticating + version-floor-exempt + structurally
+incapable, all at once) is why this is an acceptance gate and not a
+follow-up: a hub can pass every other check and still not serve the RPC the
+sidecar needs.
+
+**IW-3 — ack shape and flag-file format, reusing TermLink's dedupe/
+delivery-obligation pattern rather than reinventing exactly-once.**
+
+*Message identity:* every outbound message carries a caller-generated
+`client_msg_id` (UUID), mirroring TermLink's own `client_msg_id`+LRU-dedupe
+primitive. This makes the sidecar's own retry (Amendment 4 — TermLink
+supplies no retry-on-blip) naturally idempotent: a retried send with the
+same `client_msg_id` is a duplicate to be deduped on the receiving side, not
+a new message, regardless of how many times the caller retries after a loud
+synchronous failure.
+
+*Wire/file shapes:*
+- **Message file** — `.context/sidecar/outbox/<client_msg_id>.json`:
+  `{client_msg_id, from, to, hub, conversation_id, urgent, body, created_at}`.
+  `hub: null` means same-host (degenerate case of the uniform path, per the
+  traffic-mix resolution above). `conversation_id` is mandatory, never a
+  bare offset — offsets are hub-scoped (G-060, no federation) and only
+  meaningful within the log that produced them.
+- **Flag file (dirty-bit)** — `.context/sidecar/outbox/<client_msg_id>.flag`,
+  written by a separate atomic `touch` *after* the message file's write
+  completes, so the flag's existence is itself the durability signal: if the
+  flag exists, the message file is guaranteed fully written (partial writes
+  can only ever produce an orphaned message file with no flag, never a flag
+  pointing at incomplete content).
+- **Delivery-obligation ledger** — `.context/sidecar/awaiting-ack.jsonl`
+  (append-only, one row per state transition — mirrors TermLink's
+  `awaiting_ack.sqlite` role without taking a SQLite dependency AEF doesn't
+  otherwise have): `{client_msg_id, target, hub, state, deadline, ts}`.
+
+*Three-state ack, with the explicit deadline TermLink's own incident
+showed is load-bearing:* `STORED` (message+flag durably on disk — the
+sender's confirmation the moment the API call returns, never contingent on
+anything downstream succeeding) → `INJECTED_NOW` (fast-path fired before
+the caller's return) or `INJECTED_LATER` (cron delivered after a wait) →
+terminal. Cross-host, per Amendment 1, the delivered/stuck distinction
+collapses to `UNKNOWN` when the local-transcript evidence source is
+unavailable. TermLink's own live incident this session (`channel post`
+returning `delivered-unconfirmed`, confirmed only by reading the topic back)
+is the concrete argument for the deadline requirement: **`INJECTED_LATER`
+without an explicit deadline is indistinguishable from hung forever** — the
+husk class wearing a success label. Spec: every `awaiting-ack.jsonl` row
+carries a `deadline`; a row past its deadline with no terminal state
+transitions to `UNKNOWN` (not silently dropped, not silently promoted),
+exactly mirroring the cross-host ack rule from Amendment 1 rather than
+introducing a second timeout semantics alongside it.
+
+**Exit note:** this closes the design-level content of IW-2/IW-3 per
+T-3396's Scope Fence (design only — no sidecar code under either task ID).
+Build task(s) implementing this spec are filed separately once T-3397's own
+Agent ACs are complete.
+
 ## Cross-references
 
 - T-2918 — fw peer subscribe uses event poll <session>, the task that

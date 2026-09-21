@@ -6,17 +6,17 @@ description: >
   Inception: Peer-consult sidecar: real always-on listener per agent session, cooperative
   yield-point delivery
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [termlink, peer-consult, sidecar, cross-repo, architecture]
 components: []
 related_tasks: [T-2918, T-1820, T-1135, T-1140, T-2323, T-1804, T-1818, T-1819, 
       T-2409]
 created: 2026-09-20T21:54:20Z
-last_update: 2026-09-20T21:56:32Z
-date_finished:
+last_update: 2026-09-20T22:19:04Z
+date_finished: 2026-09-20T22:19:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -44,6 +44,16 @@ bvp_scores_proposed:
     rationale: D1=4 (no-signal); D2=4 (no-signal); D3=4 (no-signal); D4=4 
       (no-signal); F-RECALL=4 (no-signal); F-AUTONOMY=4 (no-signal); F3=4 
       (no-signal); F1=4 (no-signal); F2=4 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-20T22:00:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 4
+      effort: 8
+    rationale: blast_radius=5 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=8 (lines=285,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -234,15 +244,15 @@ never decided (only guessed) in either prior pass.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -322,7 +332,11 @@ Operator explicitly chose this direction in dialogue 2026-09-20 (see T-2918 Deci
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Operator explicitly chose this direction in dialogue 2026-09-20 (see T-2918 Decisions), after confirming it is not new design but the unbuilt half of an already-reasoned ADR (docs/architecture/parallel-execution-aef.md §5, arc-011, adversarial-reviewed). Recommending GO on scoping/building it because: the alternative (T-2918's 4 narrower fixes) either accepts silent message loss or asks a sibling repo for scope on their timeline, while this ADR's design is already agreed in principle and partially negotiated cross-repo (T-1135, April 2026) but never implemented. Real open sub-questions remain (yield-point granularity for peer-consult specifically, heartbeat timing, priority-byte flag shape, cross-repo persistence wiring) -- those are the inception's job to resolve with the operator, not reasons to defer starting it.
+
+**Date**: 2026-09-20T22:19:03Z
 
 ## Updates
 
@@ -331,3 +345,39 @@ Operator explicitly chose this direction in dialogue 2026-09-20 (see T-2918 Deci
 
 ### 2026-09-20T21:56:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-20T22:19:03Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Operator explicitly chose this direction in dialogue 2026-09-20 (see T-2918 Decisions), after confirming it is not new design but the unbuilt half of an already-reasoned ADR (docs/architecture/parallel-execution-aef.md §5, arc-011, adversarial-reviewed). Recommending GO on scoping/building it because: the alternative (T-2918's 4 narrower fixes) either accepts silent message loss or asks a sibling repo for scope on their timeline, while this ADR's design is already agreed in principle and partially negotiated cross-repo (T-1135, April 2026) but never implemented. Real open sub-questions remain (yield-point granularity for peer-consult specifically, heartbeat timing, priority-byte flag shape, cross-repo persistence wiring) -- those are the inception's job to resolve with the operator, not reasons to defer starting it.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f86523a6
+- **Timestamp:** 2026-09-20T22:19:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-f7770925
+- **Timestamp:** 2026-09-20T22:19:05Z
+- **Overall:** CONTRADICTED
+- **Claims:** 8
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/architecture/parallel-execution-aef.md:121-211` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `agents/dispatch/yield-point.sh` | file | ✓ pass |
+| `crates/termlink-hub/src/aggregator.rs:192-224` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `crates/termlink-cli/src/commands/events.rs:845-847` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `docs/reports/T-3396-peer-consult-sidecar-inception.md` | file | ✓ pass |
+| `T-2918` | task | ✓ pass |
+| `T-1135` | task | ✓ pass |
+| `T-1140` | task | ✓ pass |
+
+### 2026-09-20T22:19:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
