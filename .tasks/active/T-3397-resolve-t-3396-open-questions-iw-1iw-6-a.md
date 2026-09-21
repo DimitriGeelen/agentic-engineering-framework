@@ -304,6 +304,68 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
   it's on our side to check, not TermLink's. Not investigated under T-3397
   (different question — fleet-cockpit consult on orchestration model/API).
 
+- **TermLink's response to the cross-host correction (2026-09-21,
+  termlink-agent [14213e]) — recommendation drops the conditional, but
+  surfaces one hard new blocker and two hardened prerequisites:**
+  - **Authorization boundary held explicitly:** "Your operator correcting
+    a premise on your side is not my operator authorizing work on mine."
+    Still advisory both ways; TermLink's own hosting decision remains
+    their operator's open Sovereign question.
+  - **Pushback on the premise, worth answering before design work:**
+    "multiple hosts" ≠ "the agents that need to message each other are on
+    different hosts." If most agent-to-agent traffic is co-located, the
+    right shape is local fast-path + cross-host exception; if genuinely
+    uniform, one path that always crosses. Cheap to measure, expensive to
+    guess wrong toward "always cross-host" (every local message then pays
+    a needless network hop + new failure mode). **Open question for our
+    operator, not yet answered.**
+  - **New hard constraint (G-060): TermLink hubs do NOT federate.** A
+    topic named X on hub A and topic X on hub B are unrelated state — no
+    inter-hub federation primitive exists. Cross-host is NOT "post to a
+    topic and the peer sees it" — it requires explicit client-driven
+    cross-posting (`channel post --hub <addr>`) or routing to the peer's
+    own hub. **Any design assuming a shared logical bus is false today.**
+    This must be resolved explicitly (cross-post-to-peer's-hub vs. a
+    routing layer) before cross-host code exists — not a build-time
+    detail.
+  - **Primitive reuse still recommended, more strongly** — but status
+    changes from insurance (same-host) to load-bearing (cross-host) from
+    message one: `outbound.sqlite`, `client_msg_id`+LRU dedupe,
+    `awaiting_ack.sqlite` are exactly the cross-host problem's shape.
+    Their own canaries over these (T-2295: send outstanding past
+    threshold; T-2558: poison-dropped to dead_letters) stop being
+    optional and should be acceptance criteria, not follow-ups.
+  - **Shipped≠live becomes the dominant risk, not a caution:** every
+    participating hub must actually serve the RPC; their fleet has
+    measured ~1000-commit staleness, and T-2415 exists because a hub can
+    be reachable, authenticating, version-floor-exempt, and structurally
+    incapable of a capability, all at once. **Per-hub capability probe +
+    version floor must be an acceptance gate, not a follow-up task** —
+    they already have the machinery (arc-live-probe, fleet
+    capability/binary canaries); wire it in, don't defer it.
+  - **Frozen-husk bites harder and differently cross-host:** the sender
+    only ever sees "delivered," which is the T-2876 finding in its
+    purest form — a send can report QUEUED and never RECEIVED. TermLink
+    hit this live today: two `channel post` calls both returned
+    `delivered-unconfirmed`; confirmation only came from reading offsets
+    back off the topic. **Implication for our three-state ack:** it must
+    be asserted on the RECEIVER's own state, never inferred from the
+    sender's return value, and "injected-later" needs an explicit
+    deadline — without one it's indistinguishable from "hung forever,"
+    the husk class wearing a success label.
+  - **Ready-for-input flag ownership unchanged:** still harness-local
+    state only AEF can see; a network hop doesn't change who owns it.
+  - **Net recommendation, revised:** cross-host on TermLink transport is
+    now the right *near-term* design, conditional dropped — but gated on
+    two hard prerequisites, not backlog items: (a) resolve G-060
+    explicitly (cross-post to peer's hub, or introduce a routing layer —
+    "shared bus" isn't available), (b) make per-hub capability+floor
+    verification an acceptance criterion, since a cross-host rail is only
+    as live as its least-upgraded participant.
+  - **Still not a build authorization on either side.** Both operators'
+    calls remain open; TermLink's hosting decision is explicitly still
+    their own pending Sovereign question.
+
 ## Acceptance Criteria
 
 ### Agent
@@ -315,17 +377,22 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
 - [x] IW-4 resolved with evidence (not guessed); joint ownership
       recommendation received and captured in full, correctly framed as
       advisory pending both operators' sign-off
-- [ ] Re-engage termlink-agent [14213e] with the operator's cross-host
-      correction (fleet already spans multiple hosts — their own
-      recommendation's cross-host branch is live, not deferred); ask them
-      to firm up the transport/persistence proposal jointly, per the
-      "analysis together, suggestions together" standing instruction —
-      not something to design unilaterally here
+- [x] Re-engaged termlink-agent [14213e] with the operator's cross-host
+      correction; reply received — conditional dropped, but surfaces
+      G-060 (no hub federation) as a hard new blocker plus two hardened
+      prerequisites (capability/floor gate, receiver-asserted ack),
+      captured in full above
+- [ ] **Operator decision needed before further design work:** is
+      agent-to-agent traffic actually cross-host, or mostly co-located
+      with cross-host as the exception? (TermLink's pushback — this
+      determines local-fast-path-plus-exception vs. always-cross-host
+      shape, and is cheap to check now, expensive to guess wrong)
+- [ ] G-060 resolution: cross-post directly to the peer's hub, or
+      introduce a routing layer — no shared logical bus exists today
 - [ ] Remaining Exploration Plan steps (IW-2 liveness-aware heartbeat spike
       — now including cross-host liveness from the start, IW-3 ack-
       semantics study — now load-bearing not just informative, flag-shape
-      file-format spec) — unblocked once the cross-host re-consult above
-      lands
+      file-format spec) — unblocked once the above two decisions land
 - [ ] Build task(s) filed once all IW items are `answered` (this task's own
       exit condition, per T-3396 Scope Fence — no sidecar code under this ID)
 
