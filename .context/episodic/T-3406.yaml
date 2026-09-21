@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3406: arc-011 sidecar slice 4: receive + surface — a live AEF session sees a pending peer consult
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-21T22:23:57Z
+# ============================================================================
+
+task_id: T-3406
+task_name: "arc-011 sidecar slice 4: receive + surface — a live AEF session sees a pending peer consult"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-21T22:17:34Z
+completed: 2026-09-21T22:23:37Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-011 sidecar slice 4: receive + surface — a live AEF session sees a pending peer consult
+
+# Key outcomes
+outcomes:
+  - '`fw sidecar send --to <agent> --body <text> [--hub <addr>] [--conversation <id>]` writes through `outbox.write_message` and delivers via the slice-3 transport, reporting the resulting ack state — no new delivery path, it calls slices 1-3 — `lib/sidecar_cli.py:cmd_send`, routed from `bin/fw` beside `peer)`. Live: `delivered: INJECTED_NOW -> sidecar:consult-responder`, `client_msg_id 1c6722a7-1a5c-4ded-ac2a-a64dccdd0983`. Exit code is 1 on a non-delivery so a caller can branch on it'
+  - '`fw sidecar inbox [--json]` lists consults addressed to this agent, reading the recipient''s topic from the hub — `lib/sidecar/inbox.py:pending` + `cmd_inbox`; live output below'
+  - 'The inbox advances a durable cursor so an already-seen message is not shown twice across two consecutive calls — live: first call printed the consult at `@0`, second call printed `no pending consults on sidecar:999-Agentic-Engineering-Framework`. Cursor is ours under `.context/sidecar/inbox-state.json`, deliberately NOT `channel subscribe --resume`, whose cursor is keyed by the machine-wide identity (measured T-3405) and would be shared between two AEF projects on one host. Tests: `test_cursor_advances_so_a_message_is_shown_once`, `test_peek_does_not_advance_the_cursor`, `test_state_survives_a_reload`'
+  - 'The inbox dedupes on the `client_msg_id` envelope metadata, so a duplicate appended past the hub''s 5-minute dedupe TTL (the OBS-447 case, measured in T-3405) is shown once — `test_duplicate_past_the_hub_ttl_is_shown_once` replays exactly that shape (same id, later offset) and asserts suppression; `test_envelope_without_client_msg_id_is_not_suppressed` asserts we show rather than silently drop when there is no key; `test_seen_set_is_bounded` pins the state file against unbounded growth'
+  - '`fw sidecar whoami` reports the resolved agent id, so a caller can discover what to address — live: `agent_id: 999-Agentic-Engineering-Framework`, `inbox topic: sidecar:999-Agentic-Engineering-Framework`. `test_agent_id_defaults_to_project_dir_and_is_overridable`'
+  - '**Live round trip:** a message sent with `fw sidecar send` is read back by `fw sidecar inbox` from the recipient''s topic, with the topic and offset recorded here as evidence — done twice, the second being the one that matters:'
+  - 'Unit tests cover cursor advance, client_msg_id dedupe and id resolution; slices 1-3 suites still pass unchanged — `tests/unit/test_sidecar_inbox.py`, 8 tests; all four sidecar suites together: **28 passed** in 0.82s'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, peer-consult, sidecar, cross-repo]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3406-arc-011-sidecar-slice-4-receive--surface.md
+generated_by: context-agent-hybrid

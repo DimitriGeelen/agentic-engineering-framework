@@ -7018,6 +7018,12 @@ EOF
         # Pairs with TermLink T-1636 (inbox.queued emitter, hub-side).
         exec python3 "$FW_LIB_DIR/peer.py" "$@"
         ;;
+    sidecar)
+        # T-3406 / arc-011 peer-consult sidecar: send a consult to a peer
+        # agent and read consults addressed to this one. Wraps the outbox
+        # (T-3402), delivery leg (T-3404) and TermLink transport (T-3405).
+        exec python3 "$FW_LIB_DIR/sidecar_cli.py" "$@"
+        ;;
     promote)
         source "$FW_LIB_DIR/promote.sh"
         do_promote "$@"
