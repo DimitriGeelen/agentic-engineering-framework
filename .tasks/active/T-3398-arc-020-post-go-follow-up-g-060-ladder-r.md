@@ -84,6 +84,94 @@ bvp_scores_proposed:
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
 
+- **IW-1: Does the restated resolution ladder (host→hub→project→session→agent)
+  hold up against G-060 (hubs don't federate)?**
+  confidence: 3
+  disposition: answered
+  rationale: TermLink confirmed directly — every rung addresses a specific,
+  address-named entity, never an arbitrary one; that is exactly the case
+  G-060 permits. No rework needed. (Finding 6, this file.)
+
+- **IW-2: Does TermLink's cv_index (in-memory presence index) make the
+  3-state circuit lifecycle unsound on hub restart?**
+  confidence: 3
+  disposition: answered
+  rationale: TermLink self-corrected an earlier over-broad claim — cv_index
+  sits over a durable SQLite log, repopulates in ~30s, and one lookup path
+  already falls back to the log. Only fast-path reads (`cv-keys`,
+  `subscribe --include-current-value`) are exposed, and only for that
+  bounded window. Real but small, not a blocking defect. (Finding 6.)
+
+- **IW-3: Is cross-host reachability (actually connecting to a remote hub)
+  an open transport gap?**
+  confidence: 3
+  disposition: dissolved
+  rationale: Solved primitive on TermLink's side (`hub probe`, `channel
+  post --hub`, fleet fan-out). The real open item underneath is TRUST
+  BOOTSTRAP (can the ladder trust an unpinned hub on the fly, or only
+  navigate between hubs that already know each other) — a genuine design
+  decision, not a gap in what exists. Deferred to whenever cross-host work
+  is actually scheduled; not blocking this inception's closure. (Finding 6.)
+
+- **IW-4: Does the ladder's "hub, do you have this project running here?"
+  rung have a real counterpart in TermLink?**
+  confidence: 3
+  disposition: answered
+  rationale: No — TermLink hubs have no concept of "project," no RPC to
+  ask one. Real, undesigned gap: AEF must build project-awareness itself,
+  presumably on TermLink's presence rail. Deferred as future design work,
+  not blocking arc-020's already-shipped slices. (Finding 6.)
+
+- **IW-5: Q-B — the operator's incomplete "termlink or termlink" question
+  from the original T-3287 dialogue.**
+  confidence: 0
+  disposition: deferred
+  rationale: Explicitly the operator's unfinished sentence to complete;
+  TermLink declined to guess on principle and only confirmed the one
+  sub-guess (hub-vs-fleet) that's a load-bearing architectural fact
+  regardless of intent. Needs the operator, not further agent inference.
+
+- **IW-6: Is agent-to-agent traffic in this fleet actually cross-host, or
+  mostly co-located with cross-host as the exception?**
+  confidence: 0
+  disposition: deferred
+  rationale: Unmeasured. Determines the ladder's real-world shape
+  (local-fast-path-plus-exception vs. always-cross-host). Needs operator
+  input or fleet telemetry, not something to guess at.
+
+- **IW-7: Is AEF's project-path model (D2/D3 — bound absolute path as
+  identity, display-only elision) sound against a real-world failure
+  class?**
+  confidence: 3
+  disposition: answered
+  rationale: TermLink independently adopted it for addressing after it
+  resolved a live bug on their side (11 misattributed filings from a
+  `basename $PWD` inference). Confirmed sound for the addressing/
+  provisioning question; TermLink correctly scoped it as NOT answering
+  their separate attribution question (worktrees). (Finding 7.)
+
+- **IW-8: Does `lib/aef_address.py` structurally enforce "elision is never
+  a wire/identity value," or only by convention?**
+  confidence: 3
+  disposition: answered
+  rationale: Verified directly — `serialize()` refuses an elided project
+  value (tested), but `parse()`/`_build()` has no matching guard, so an
+  elided string parses successfully today. Real, small, bounded gap.
+  Recommended fix: parser-level rejection of any token containing
+  `ELLIPSIS`, mirroring the existing serializer test. Not fixed under this
+  inception task (Inception Discipline forbids production-code writes
+  pre-GO) — candidate for a small standalone build task against arc-020.
+  (Finding 7.)
+
+- **IW-9 (T-3338 verification): is T-3338's `status: work-completed`
+  while sitting in `active/` a stranded-finalized bug?**
+  confidence: 3
+  disposition: answered
+  rationale: Verified directly — 1 of 6 ACs is a genuinely unchecked
+  `[REVIEW]` Human AC (re-run a smoke test, tick the box). Ordinary
+  partial-complete gate working as designed, not a crash-before-finalize
+  bug. Flagged to the operator, not auto-ticked. (Finding 4.)
+
 ## Context
 
 Arose as a tangent inside T-3397 (sidecar design consult) — the operator recalled
@@ -401,9 +489,52 @@ concerns, and conflating them is exactly where TermLink's bug came from.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — close this exploration; file the one small bounded
+build task it identified; leave two items correctly as open Sovereign
+questions rather than blockers
 
-**Rationale:** Real evidence gaps, not a confidence hedge: (1) whether agent-to-agent traffic is actually cross-host or mostly co-located is unmeasured and determines the ladder's shape; (2) TermLink's own claim/claim_transfer primitives are unverified on their side (smoke-test canary not installed, offered but not yet run); (3) the operator's half-dictated Q-B question was never completed, so its intent is unknown, not guessable; (4) G-060 ladder rework and cv_index durability are joint architectural decisions needing both operators, not something to resolve unilaterally here. GO/NO-GO would be premature against these gaps.
+**Rationale:** Originally filed DEFER on genuine evidence gaps (2026-09-21,
+same day). Those gaps have since been resolved through direct TermLink
+dialogue, verified rather than taken on faith, not just asserted away:
+
+- The resolution ladder itself was restated by the operator and **confirmed
+  correct against G-060** by TermLink — no design rework needed (IW-1).
+- The cv_index liveness concern was **narrowed from "indefinite false-dead"
+  to "≤30s window, most paths already fall back"** by TermLink's own
+  self-correction (IW-2) — real, but not a blocking defect.
+- Cross-host reachability, originally suspected as an open transport gap,
+  **turned out to be solved** — the actual open item is a scoped design
+  decision (trust bootstrap) rather than missing capability (IW-3).
+- AEF's own project-path model was cross-checked against a real production
+  bug class and **independently adopted by TermLink** (IW-7) — validates
+  D2/D3 rather than leaving them as an unverified assumption.
+- One concrete, small, bounded hardening gap was found and verified
+  directly against the source (`lib/aef_address.py`): `parse()` lacks the
+  guard `serialize()` already has against elided project values (IW-8).
+  This has a clear, narrow fix and a template to follow (existing
+  serializer test) — GO-appropriate under the criterion "root cause
+  identified with bounded fix path."
+- One new, real, but non-blocking design gap was found: the ladder's
+  project-rung has no TermLink counterpart (IW-4) — correctly scoped as
+  future design work, not something blocking arc-020's already-shipped
+  slices or this inception's closure.
+- T-3338's ambiguous `work-completed`-in-`active/` state was verified as
+  the ordinary partial-complete gate working correctly, not a hidden bug
+  (IW-9).
+
+**What remains open is not evidence-thin, it's Sovereign** — Q-B (IW-5)
+and the traffic-shape question (IW-6) are the operator's to answer, per
+this Mandate's own "Sovereign-questions-surfaced-not-resolved" binding,
+not gaps this inception can or should resolve by guessing. DEFER would now
+be a confidence hedge against decided evidence, not a genuine evidence gap
+— exactly the failure mode CLAUDE.md's DEFER guidance warns against.
+
+**Evidence:**
+- IW-1 through IW-9 above, each with confidence and rationale.
+- `lib/aef_address.py:233-239` (`serialize()` guard) vs. `lib/aef_address.py:191-217`
+  (`_build()`, no guard) — read directly, not inferred.
+- 144/144 arc-020 tests passing today (Finding 4, this file).
+- Full TermLink dialogue captured verbatim across Findings 1-7.
 
 ## Decisions
 
