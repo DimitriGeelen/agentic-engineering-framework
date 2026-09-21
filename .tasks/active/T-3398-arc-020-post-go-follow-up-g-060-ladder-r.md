@@ -270,6 +270,75 @@ cross-host hop is real, my cv_index warning was correct in kind but too
 broad in scope and too long in duration, and the project rung needs
 designing rather than mapping." Still advisory both ways.
 
+**7. Our project-path model shared with TermLink; adopted for addressing,
+plus one real, verified hardening gap (2026-09-21).** Operator suggested
+sharing our D2/D3 project-path approach (full absolute root path = wire
+identity, `elide_path()` = display-only, never emitted on the wire) as
+input to TermLink's own project-identity problem, framed as something we'd
+discussed together, not a request.
+
+**TermLink's reply — this independently resolved a live bug class on
+their side.** They had 11 of their own upstream filings misattributed as
+project `"root"` instead of `"010-termlink"`, root-caused to a label
+helper that falls back to `basename ${PROJECT_ROOT:-$PWD}` when no label
+is declared — run from `/`, basename yields `"root"`. Their own learning:
+"a fallback that GUESSES an identity is worse than one that refuses."
+Our `serialize()`'s hard refusal to emit anything but the full unelided
+path is exactly that guard. The distinction that mattered, in their words:
+**our path is BOUND (D2: declared, the root the project is bound to), not
+INFERRED at call time** — `basename $PWD` is an inference, a declared
+absolute path is a declaration. "Declared, not derived" doesn't rule out
+paths, it rules out inference.
+
+**Hardening note, and a REAL gap it surfaced — verified directly, not
+taken on faith.** TermLink's caution: relying on "elision is forbidden as
+identity" as a *documented convention* is the same shape as their own
+PL-166 ("payload-level fingerprints are advisory labels only — never
+identity claims"), which was documented and still misused as identity for
+6+ weeks by readers who had read the doc. Their fix there was making the
+real identity structurally unforgeable (T-1427 binds `sender_id` to the
+actual signing pubkey, rejects a mismatch with -32014) rather than
+depending on every future reader remembering a rule. Their suggestion:
+since `"…"` is not a legal path segment, an elided string literally
+**cannot parse** as a valid address — that's already a type-level
+guarantee if the parser enforces it, not merely a convention, so the
+parser should explicitly reject any address containing the ellipsis
+(with a comment explaining elision is safe *because* it's unparseable),
+not just rely on a docstring warning.
+
+**Checked `lib/aef_address.py` directly: the gap is real.** `serialize()`
+refuses to emit a project value containing `ELLIPSIS` — confirmed,
+tested (`test_wire_serializer_refuses_elided_project_value`). But
+`parse()`/`parse_v9()`/`parse_v4()` → `_build()` has **no equivalent
+check** — an elided display string (e.g. copy-pasted from a chat message
+or a `termlink list` line into an address field) would parse
+successfully today, with nothing catching it on the receiving side. Only
+the emit path is guarded; the read path is convention-only, exactly the
+PL-166 shape TermLink warned about. **Not yet fixed** — this is a
+production-code change to already-`work-completed` arc-020 slices, which
+Inception Discipline (CLAUDE.md) forbids writing under this inception
+task without a GO. Recommend: a small, bounded, below-the-floor build
+task (`_build()` or `parse()` rejects any token value containing
+`ELLIPSIS`, one new test alongside the existing serializer test) —
+scoped narrowly enough not to need this inception's own GO cycle if filed
+as its own build task against arc-020.
+
+**Where TermLink lands on adoption — two separate fields, not one merged
+concept.** They adopt our path model for **addressing/provisioning**
+as-is: host+hub already pin the address, so the path only needs
+uniqueness *within* a host (which a filesystem path has by construction),
+and a ladder that starts things needs a real path — "you cannot cd to a
+label." But they keep a separate **declared stable label** for
+**attribution**: a git worktree is a different absolute path for the same
+logical project, so under pure path-identity their two checkouts of one
+project would attribute as two different projects, and their
+upstream-self-filter (which matches a constant label) would stop
+recognizing one of them as theirs — the same 11-filings bug in a new
+costume. Explicitly not a flaw in our design — a different question ours
+isn't trying to answer. Worth remembering if AEF ever grows worktree-aware
+identity: path-as-identity and attribution-label are two different
+concerns, and conflating them is exactly where TermLink's bug came from.
+
 ## Exploration Plan
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
