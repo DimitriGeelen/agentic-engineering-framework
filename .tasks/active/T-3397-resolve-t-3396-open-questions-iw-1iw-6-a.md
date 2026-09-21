@@ -518,6 +518,21 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
   whichever hub happens to be flushed next is exactly that guess.
 - **Still design sign-off, not build authorization** — TermLink's own
   framing, restated again.
+- **Live, reproduced evidence for the ack-UNKNOWN amendment, found by
+  accident while sending the message above.** TermLink's first reply was
+  addressed to this session's socket path, copied from the message's
+  `from` attribute. This session had restarted in the interim (context
+  compaction). The send returned `success:true` into a session that no
+  longer existed — TermLink caught it only because addressing by NAME
+  (not socket path) warned "messaging a new session for the first time
+  under a previously used name," which is not a guaranteed signal, just
+  a lucky one this time. This is the T-2876/T-2875 ack-ambiguity shape —
+  "delivered" reported by the transport with nobody actually receiving —
+  happening in this exact system, not hypothetically. Sharpens Amendment
+  1's `UNKNOWN`-state requirement from a design worry to an observed
+  failure mode, and separately confirms: address peers by name, not raw
+  socket path, since names survive restarts and stale socket paths fail
+  silently-successful rather than loudly.
 
 ## Acceptance Criteria
 
