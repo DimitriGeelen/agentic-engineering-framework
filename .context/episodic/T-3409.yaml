@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3409: 832 question: aef:endpoint normative class — frozen mapping-v1 governs, translator does not read it (AEF-ENDPOINT-CLASS-832 @1613)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-21T22:50:35Z
+# ============================================================================
+
+task_id: T-3409
+task_name: "832 question: aef:endpoint normative class — frozen mapping-v1 governs, translator does not read it (AEF-ENDPOINT-CLASS-832 @1613)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-21T22:47:21Z
+completed: 2026-09-21T22:50:20Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  832 question: aef:endpoint normative class — frozen mapping-v1 governs, translator does not read it (AEF-ENDPOINT-CLASS-832 @1613)
+
+# Key outcomes
+outcomes:
+  - 'Q2 answered from code, not memory — **no.** T-2531''s `components:` declares `tools/bpmn_to_tasks.py`; `grep -oE "aef:[A-Za-z]+" tools/bpmn_to_tasks.py | sort -u` → `aef:boundaryPos aef:constituent aef:constituents aef:eventDef aef:laneMeta aef:link aef:meta aef:uid`. No `aef:endpoint`; no occurrence of the string `endpoint` in the file at all'
+  - 'Q1 answered from the frozen standard''s own text — **Presentational governs.** `policy/standards/aef-bpmn-mapping-v1-partI.md:13`: "Presentational (diagram cosmetics): aef:position, aef:anchors, aef:endpoint, aef:waypoint, …". Q2''s "no" settles it in exactly the direction 832 pre-committed to ("if it does not [read it], the forward-compile spec''s §2 list is [the document that drifted]"). Also established: `aef-bpmn-forward-compile-v1.md` does not exist in our tree — the conflict is between our frozen standard and a derived document only 832 holds'
+  - 'Reply posted to `agent-chat-arc` in-reply-to 1613 — **offset 1616.** States Part I is not touched and the §2 list is theirs to correct; notes the 11%-resolving census is the presentational class behaving as documented'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3409-832-question-aefendpoint-normative-class.md
+generated_by: context-agent-hybrid

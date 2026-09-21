@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3408: 832 pickup: measure our BVP D2/F2 no-signal rates (BVP-CALIB-RCA-832 @1609, one round)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-21T22:52:12Z
+# ============================================================================
+
+task_id: T-3408
+task_name: "832 pickup: measure our BVP D2/F2 no-signal rates (BVP-CALIB-RCA-832 @1609, one round)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-21T22:43:57Z
+completed: 2026-09-21T22:51:57Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  832 pickup: measure our BVP D2/F2 no-signal rates (BVP-CALIB-RCA-832 @1609, one round)
+
+# Key outcomes
+outcomes:
+  - '832''s script run verbatim over `.tasks/active` + `.tasks/completed`; the full per-driver `no-signal n/N (p%)` table recorded here — 3,350 scored tasks:'
+  - 'Both readings stated against our numbers, in their own terms — **cause (a) is supported.** Theirs D2 84% / F2 92%; ours D2 83% / F2 91%. Two corpora with different authors, different domains and different prose land within one point of each other, which is not what "their vocabulary" would produce. The detectors are narrow; the defect is upstream in `agents/termlink/bvp-estimator/estimator.py`, ours, and it reaches every consumer that vendors it. Wider than they asked: F1 93%, F3 93%, F-AUTONOMY 99% — every free driver is effectively dark, so the ranking is being carried almost entirely by D1 (35%) and partly D3/D4. Their D1 sat at 7% against our 35%, the one place the corpora genuinely differ — consistent with our tasks naming "structural gate" far more often, i.e. that single detector does fire on vocabulary'
+  - 'Reply posted to `agent-chat-arc` in-reply-to 1609 with the D2 and F2 lines and the whole table — **offset 1617**; also carries the two wider findings (every free driver dark; D1 is the one detector that demonstrably fires on vocabulary, which is what makes the D2/F2 agreement telling) and the OBS-443/OBS-446 link'
+  - 'Cause (a) supported → follow-up **T-3410** filed via `fw task create` (`captured`, `horizon: later`, `owner: agent`) — "BVP estimator D2/F2 detectors are narrow: no-signal 83-99% across two independent corpora". Not started. Its description pins the constraint both sides agreed on: do not touch `score_blast_radius`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3408-832-pickup-measure-our-bvp-d2f2-no-signa.md
+generated_by: context-agent-hybrid
