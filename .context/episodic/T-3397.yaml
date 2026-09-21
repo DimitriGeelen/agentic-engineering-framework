@@ -1,0 +1,112 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3397: Resolve T-3396 open questions (IW-1..IW-6) and write buildable sidecar spec
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-21T15:13:02Z
+# ============================================================================
+
+task_id: T-3397
+task_name: "Resolve T-3396 open questions (IW-1..IW-6) and write buildable sidecar spec"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-20T22:20:44Z
+completed: 2026-09-21T15:12:44Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-09-21T09:23:57+02:00
+last_commit: 2026-09-21T16:09:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture dialogue-resolved sidecar design; arc + outreach tracked. record urgent-bypass decision; correct cross-repo outreach finding. correct cross-repo channel — reach the real termlink agent. IW-4 resolved with evidence; joint ownership recommendation captured, advisory pending operator sign-off. operator correction — cross-host is live not hypothetical; re-engage TermLink jointly. capture TermLink's cross-host reply — G-060 blocker, hardened prerequisites. operator resolves traffic-mix fork; TermLink's same-host correctness pushback. write cross-host ack UNKNOWN-state and same-host identity amendments into design doc. G-060 decided (direct cross-post); TermLink surfaces live offline-queue misdelivery defect. capture live reproduced evidence for the ack-UNKNOWN amendment. correct offline-queue defect — it's PL-109 (5mo standing), not a fresh finding. TermLink retracts PL-109 standing-constraint claim after reproduction. sync G-060 credential precondition + caller-owned retry policy into design doc
+
+# Key outcomes
+outcomes:
+  - 'Today''s dialogue-resolved design (delivery model, injection-safety'
+  - 'Cross-repo outreach to TermLink sent and tracked as a registered'
+  - 'IW-4 resolved with evidence (not guessed); joint ownership'
+  - 'Re-engaged termlink-agent [14213e] with the operator''s cross-host'
+  - '**Operator decision on traffic-mix fork:** resolved — correctness'
+  - 'G-060 resolution: **decided — direct cross-post via `channel post'
+  - 'Spec the credential precondition explicitly: sender needs'
+  - 'Queue-safety spec item **dissolved by retraction** — TCP cross-hub'
+  - 'Ack semantics amendment: cross-host third state must be explicit'
+  - 'Same-host identity gap documented in the design doc: co-resident'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-3396.yaml'
+  - '.context/inbox.yaml'
+  - '.context/project/assumptions.yaml'
+  - 'docs/reports/T-3396-peer-consult-sidecar-inception.md'
+  - '.tasks/active/T-3397-resolve-t-3396-open-questions-iw-1iw-6-a.md'
+  - '.tasks/completed/T-3396-peer-consult-sidecar-real-always-on-list.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-21T09:23:57'
+    action: 'T-3397: capture dialogue-resolved sidecar design; arc + outreach tracked'
+  - time: '2026-09-21T09:36:34'
+    action: 'T-3397: record urgent-bypass decision; correct cross-repo outreach finding'
+  - time: '2026-09-21T09:49:12'
+    action: 'T-3397: correct cross-repo channel — reach the real termlink agent'
+  - time: '2026-09-21T10:12:19'
+    action: 'T-3397: IW-4 resolved with evidence; joint ownership recommendation captured, advisory pending operator sign-off'
+  - time: '2026-09-21T10:19:15'
+    action: 'T-3397: operator correction — cross-host is live not hypothetical; re-engage TermLink jointly'
+  - time: '2026-09-21T10:24:02'
+    action: 'T-3397: capture TermLink''s cross-host reply — G-060 blocker, hardened prerequisites'
+  - time: '2026-09-21T13:59:00'
+    action: 'T-3397: operator resolves traffic-mix fork; TermLink''s same-host correctness pushback'
+  - time: '2026-09-21T14:05:00'
+    action: 'T-3397: write cross-host ack UNKNOWN-state and same-host identity amendments into design doc'
+  - time: '2026-09-21T14:21:11'
+    action: 'T-3397: G-060 decided (direct cross-post); TermLink surfaces live offline-queue misdelivery defect'
+  - time: '2026-09-21T14:30:06'
+    action: 'T-3397: capture live reproduced evidence for the ack-UNKNOWN amendment'
+  - time: '2026-09-21T15:51:27'
+    action: 'T-3397: correct offline-queue defect — it''s PL-109 (5mo standing), not a fresh finding'
+  - time: '2026-09-21T15:54:42'
+    action: 'T-3397: TermLink retracts PL-109 standing-constraint claim after reproduction'
+  - time: '2026-09-21T16:09:52'
+    action: 'T-3397: sync G-060 credential precondition + caller-owned retry policy into design doc'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 13 commit(s), 1012 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, peer-consult, sidecar, cross-repo]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1012
+  commits: 13
+  files_changed: 6
+  lines_added: 1222
+  lines_removed: 294
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3397-resolve-t-3396-open-questions-iw-1iw-6-a.md
+generated_by: context-agent-hybrid

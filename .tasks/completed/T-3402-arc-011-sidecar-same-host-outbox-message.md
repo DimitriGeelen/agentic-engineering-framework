@@ -4,12 +4,12 @@ name: "arc-011 sidecar: same-host outbox message/flag/ack substrate (T-3397 Amen
 description: >
   arc-011 sidecar: same-host outbox message/flag/ack substrate (T-3397 Amendment 5, slice 1)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [termlink, peer-consult, sidecar, cross-repo]
-components: []
+components: [lib/sidecar/__init__.py, lib/sidecar/outbox.py, tests/unit/test_sidecar_outbox.py]
 related_tasks: [T-3397, T-3396, T-2918]
 arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,8 +23,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-21T15:07:47Z
-last_update: 2026-09-21T15:07:47Z
-date_finished: null
+last_update: 2026-09-21T15:11:43Z
+date_finished: 2026-09-21T15:11:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -357,3 +357,15 @@ out=$(python3 -m pytest tests/unit/test_sidecar_outbox.py -q 2>&1); echo "$out" 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3402-arc-011-sidecar-same-host-outbox-message.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5c492582
+- **Timestamp:** 2026-09-21T15:11:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-21T15:11:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

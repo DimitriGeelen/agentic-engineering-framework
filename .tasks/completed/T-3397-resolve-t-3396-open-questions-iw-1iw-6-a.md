@@ -4,12 +4,12 @@ name: "Resolve T-3396 open questions (IW-1..IW-6) and write buildable sidecar sp
 description: >
   Resolve T-3396 open questions (IW-1..IW-6) and write buildable sidecar spec
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: [termlink, peer-consult, sidecar, cross-repo]
-components: []
+components: [lib/sidecar/__init__.py, lib/sidecar/outbox.py, tests/unit/test_sidecar_outbox.py]
 related_tasks: [T-3396, T-2918, T-1135, T-1140, T-2323]
 arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,8 +23,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-20T22:20:44Z
-last_update: '2026-09-20T22:30:20Z'
-date_finished:
+last_update: 2026-09-21T15:12:44Z
+date_finished: 2026-09-21T15:12:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -866,6 +866,44 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO — design is resolved and ready for build; slice 1 of
+the build already landed (T-3402).
+
+**Rationale:** All six IW open questions from T-3396 are now `answered` (or
+explicitly, evidence-backed `deferred` for the one — IW-6, DM-rail topic
+scope — that stays genuinely open and doesn't block building). The design
+went through joint cross-repo dialogue with TermLink's own agent rather than
+being decided unilaterally, per the operator's standing instruction, and
+every amendment that changed the buildable spec (5 of them) is captured in
+`docs/reports/T-3396-peer-consult-sidecar-inception.md`. This task's own
+exit condition — "build task(s) filed once all IW items are answered" — is
+met: T-3402 (same-host outbox substrate) is filed, built, and closed as the
+first slice.
+
+**Evidence:**
+- IW-1 (injection safety): resolved in dialogue — Stop/UserPromptSubmit
+  hook-owned ready-flag, urgent-bypass is a hard skip (operator decision).
+- IW-2 (liveness): resolved as Amendment 5 — two-field signal (monotonic
+  seq + self-probe capability canary), not a bare timestamp, informed by
+  TermLink's own frozen-husk incident.
+- IW-3 (ack/flag shape): resolved as Amendment 5 — three-state ack
+  (STORED → INJECTED_NOW/INJECTED_LATER/UNKNOWN), file shapes, reusing
+  TermLink's `client_msg_id` dedupe pattern. Implemented and tested in
+  T-3402 (`lib/sidecar/outbox.py`, 4/4 unit tests pass).
+- IW-4 (T-967 persistence contract): resolved with evidence — grepped
+  TermLink's Rust crates directly, confirmed the contract never shipped.
+- IW-5 (symmetric API): resolved — same API, sender/target swapped.
+- IW-6 (DM-rail topic scope): still `deferred`, "leaning agnostic" — does
+  not block same-host build (T-3402 doesn't touch DM-rail topic routing at
+  all); left open for the cross-host slice.
+- G-060 (hub federation, raised mid-dialogue, load-bearing for the spec):
+  resolved — direct cross-post, no routing layer, TermLink signed off with
+  an independent identity-plane reason.
+- Ownership split (Sovereign question): joint recommendation received
+  (AEF standalone same-host now, TermLink transport if/when cross-host is
+  real) — correctly left as advisory, neither operator has ratified it;
+  this task does not decide it, only records it for the operator.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -896,8 +934,8 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6a054d89
-- **Timestamp:** 2026-09-21T07:23:41Z
+- **Scan ID:** R-7ec7b9ee
+- **Timestamp:** 2026-09-21T15:12:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -906,3 +944,6 @@ AEF owning it standalone. No reply as of this session. Tracked as **A-066**
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `Cross-repo`
+
+### 2026-09-21T15:12:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
