@@ -1,0 +1,51 @@
+# policy/driver-scoring-example.yaml — T-3428 (OBS-463 leg 2), arc-006.
+#
+# A worked, VALID declarative scoring spec for a BVP value driver. This file is
+# reference material and starter clay: nothing reads it at runtime. Copy it,
+# adapt it, then run the three authoring verbs against your copy.
+#
+#   fw bvp driver --validate-scoring policy/driver-scoring-example.yaml
+#   fw bvp driver --explain F-RECALL T-3428 --scoring-file policy/driver-scoring-example.yaml
+#   fw bvp driver --add "Evidence Quality" --weight 4 --rationale "..." \
+#       --scoring-file policy/driver-scoring-example.yaml
+#
+# The second command is the one worth reaching for first: it scores a REAL task
+# against the draft and prints the level ladder, without writing anything to
+# policy/value-drivers.yaml. That is how you find out a level never fires, or
+# fires on every task, before you spend one of the five free driver slots.
+#
+# Schema, semantics, and the template trap: policy/value-drivers.yaml header,
+# §DECLARATIVE SCORING SPECS. Design: docs/reports/T-3428-declarative-scoring.md
+#
+# Either shape loads: a bare spec (as below) or a file wrapping it under a
+# top-level `scoring:` key. `scoring:` is not a valid spec key, so the two
+# cannot be confused.
+
+kind: signals
+
+# Line-exact stripping of .tasks/templates/default.md before keyword and path
+# matching. Leave it true unless you are deliberately scoring template
+# conformance — template guidance prose is present in every task file, so a
+# keyword drawn from it matches the whole corpus uniformly and ranks nothing.
+strip_template: true
+
+levels:
+  # A level matches when ANY of its signals matches. The score is the highest
+  # matching level. Nothing matching is a measured 0 (`L0: no signal`), which
+  # is NOT the same as UNSCORED — the mechanism exists, it just did not fire.
+  1:
+    keywords: ["finding", "observed", "noticed"]
+
+  3:
+    keywords: ["evidence", "cited", "measured", "re-derive"]
+    # fnmatch globs, checked against the task's `components:` and against every
+    # path-shaped token in the body — which is where ACs and Verification name
+    # the files a task actually touched.
+    paths: ["docs/reports/*.md", "tools/*.py"]
+
+  5:
+    keywords: ["pinned by", "committed fixture", "regression test"]
+    paths: ["tests/unit/*.py", "tests/unit/*.bats"]
+    # Frontmatter equality is a case-insensitive string compare.
+    frontmatter: {workflow_type: build}
+    tags: ["audit"]

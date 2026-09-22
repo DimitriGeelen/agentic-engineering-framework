@@ -91,6 +91,83 @@ protected_drivers:
 # arc-012 continuous-run landing — see §CANDIDATE block below for the activation
 # trail and retirement gate (now: L5/L6 autonomy criteria green, not arc landing).
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# DECLARATIVE SCORING SPECS  (`scoring:`) -- T-3428, OBS-463 leg 2
+# ---------------------------------------------------------------------------
+# The `rubric:` map below each driver is PROSE. The estimator does not read it.
+# Scoring is dispatched in agents/termlink/bvp-estimator/estimator.py in this
+# order:
+#
+#     inception VoI  ->  handler by id  ->  handler by name alias
+#                    ->  declarative `scoring:` spec  ->  UNSCORED
+#
+# A driver with none of those is only a NAME: T-3427 omits it from the scores
+# map, which keeps it out of the normalisation denominator, and it contributes
+# nothing to any ranking. `fw audit` and `fw doctor` WARN per such driver
+# (lib/bvp-scorability.sh), naming the id.
+#
+# A `scoring:` block is how a project or an arc gives a driver a mechanism
+# WITHOUT a framework code change. It sits beside `weight:`/`rubric:` on any
+# free-driver entry here, or on an arc's `scoped_drivers[]` entry in
+# .context/arcs/<slug>.yaml.
+#
+# SCHEMA
+#   scoring:
+#     kind: signals            # the only kind shipped today; required
+#     strip_template: true     # default true -- see THE TEMPLATE TRAP below
+#     levels:                  # int 1..5 -> signals; 0 is the no-match floor
+#       1: {keywords: [...]}
+#       3: {keywords: [...], paths: [...]}
+#       5: {frontmatter: {k: v}, tags: [...]}
+#
+#   Four signal kinds:
+#     keywords:    case-insensitive substrings matched against the task's
+#                  name + description + body + tags
+#     paths:       fnmatch globs matched against the task's `components:` AND
+#                  every path-shaped token in the body (which is where ACs and
+#                  Verification name files)
+#     frontmatter: equality on frontmatter keys; compared as strings,
+#                  case-insensitively (`{workflow_type: build}`)
+#     tags:        any tag equal (case-insensitive)
+#
+#   SEMANTICS
+#     - A level matches when ANY of its signals matches (any-of, not all-of).
+#     - The score is the HIGHEST matching level. Lower levels matching too is
+#       normal and is reported, not penalised.
+#     - No level matching is a MEASURED 0, with evidence `L0: no signal`. That
+#       is NOT the same as UNSCORED: the driver has a mechanism, it just did
+#       not fire on this task, so it stays in the denominator as a real 0.
+#     - Evidence lists every matched signal as `L<level>:<kind>=<value>`.
+#     - A handler ALWAYS wins over a spec. Attaching a spec to a driver that
+#       already has a handler is inert; `--explain` says so.
+#     - An INVALID spec is treated as UNSCORED and WARNed as its own class --
+#       it reads as a mechanism here and is none to the estimator.
+#
+# THE TEMPLATE TRAP  (why `strip_template` defaults to true)
+#   Every task file is created from .tasks/templates/default.md, which carries
+#   several hundred lines of guidance prose -- REHEARSING, PRODUCING,
+#   CLAUDE.md, .claude/settings.json and so on. A keyword drawn from that prose
+#   matches EVERY task in the corpus uniformly, so the driver ranks nothing
+#   while appearing to work. Measured on consumer 1409-sprind. With
+#   `strip_template: true` (the default) every line that appears VERBATIM in
+#   the template is dropped before matching -- line-exact, so a line the
+#   author actually wrote survives even when it quotes a template word.
+#   Set it false only when you are deliberately scoring template conformance.
+#
+# AUTHORING (never hand-edit a spec into this file -- the verbs validate)
+#   1. Draft it:     $EDITOR my-driver-scoring.yaml
+#   2. Check shape:  fw bvp driver --validate-scoring my-driver-scoring.yaml
+#   3. Try it on a real task, WITHOUT attaching it to policy:
+#                    fw bvp driver --explain F-RECALL T-3428 \
+#                        --scoring-file my-driver-scoring.yaml
+#   4. Attach it:    fw bvp driver --add "My Driver" --weight 5 \
+#                        --rationale "..." --scoring-file my-driver-scoring.yaml
+#   5. Explain it later: fw bvp driver --explain <id> T-XXXX
+#
+#   A valid spec IS a scorer, so step 4 does not need --allow-unscored.
+#   Worked example file: policy/driver-scoring-example.yaml
+#   Design + what stays hand-written: docs/reports/T-3428-declarative-scoring.md
+# ---------------------------------------------------------------------------
 free_drivers:
 
   - id: F-RECALL
@@ -287,6 +364,51 @@ free_drivers:
       Fabric substrate (edges, drift, blast-radius, audit integration) is
       pervasive across the codebase and incremental registration no longer
       surfaces meaningful signal.
+
+  # -------------------------------------------------------------------------
+  # WORKED EXAMPLE (INACTIVE -- commented, consumes no slot). T-3428.
+  #
+  # This is what a driver with a DECLARATIVE mechanism looks like. Every
+  # active free driver above is scored by a hand-written handler in
+  # agents/termlink/bvp-estimator/estimator.py, so none of them can carry a
+  # live spec without the handler silently outranking it (dispatch is
+  # handler -> alias -> spec). The example is therefore inert on purpose:
+  # copy it, adapt it, validate it, attach it with --scoring-file.
+  #
+  # Try it against a real task before adopting anything:
+  #   fw bvp driver --explain F-RECALL T-3428 \
+  #       --scoring-file policy/driver-scoring-example.yaml
+  #
+  # - id: F-EXAMPLE
+  #   name: Evidence Quality
+  #   weight: 4
+  #   rationale: >
+  #     Illustrative only. Scores how much of a task's claim is backed by a
+  #     citable artefact rather than assertion -- an axis D2 (Reliability)
+  #     does not carry, because D2 asks whether the thing works, not whether
+  #     the claim that it works is checkable.
+  #   polarity: positive
+  #   rubric:
+  #     0: Asserted with nothing to check.
+  #     1: Names a finding without citing where it came from.
+  #     3: Cites a file or a command a reader can re-run.
+  #     5: Ships the measurement itself -- a test, a rail, a committed fixture.
+  #   scoring:
+  #     kind: signals
+  #     strip_template: true
+  #     levels:
+  #       1:
+  #         keywords: ["finding", "observed", "noticed"]
+  #       3:
+  #         keywords: ["evidence", "cited", "measured", "re-derive"]
+  #         paths: ["docs/reports/*.md", "tools/*.py"]
+  #       5:
+  #         keywords: ["pinned by", "committed fixture", "regression test"]
+  #         paths: ["tests/**", "tests/unit/*.py", "tests/unit/*.bats"]
+  #         tags: ["audit"]
+  #   retire_when: >
+  #     Illustrative -- never active, never retired.
+  # -------------------------------------------------------------------------
 auto_promote:
   enabled: false
   bvp_norm_min: 0.85    # only top-band value

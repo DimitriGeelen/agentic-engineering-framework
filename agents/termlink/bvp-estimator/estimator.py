@@ -2434,7 +2434,15 @@ def _candidate_paths(fm: dict, body: str) -> list[str]:
     if isinstance(comps, list):
         out.extend(str(c).strip() for c in comps if str(c).strip())
     for tok in _PATH_TOKEN_RE.findall(body):
-        out.append(tok.strip("`'\"(),;:"))
+        tok = tok.strip("`'\"(),;:")
+        # A token carrying glob metacharacters is a PATTERN, not a path — it
+        # only ever self-matches. Task bodies quote their own spec (this one
+        # does), so without this filter `paths: ["docs/reports/*.md"]` matches
+        # the sentence that declares it and reports `docs/reports/*.md` as the
+        # file it found. Concrete `components:` entries are unaffected.
+        if any(ch in tok for ch in "*?["):
+            continue
+        out.append(tok)
     # de-dup, order-stable
     seen: set[str] = set()
     uniq: list[str] = []
