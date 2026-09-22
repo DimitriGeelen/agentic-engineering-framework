@@ -854,9 +854,40 @@ HANDOVER_DIGEST="$HANDOVER_DIGEST" DIGEST_TOP_N="$DIGEST_TOP_N" python3 << 'PYEO
 # `==` as bash (SC2284 false-positive). Shell vars now come in via env; no \$
 # escapes needed inside the body.
 import os, re, glob
+import yaml
 
 tasks_dir = os.environ["TASKS_DIR_PY"] + "/active"
 WT_URL = os.environ.get("WT_URL_PY", "")  # T-1461: empty → plain task ID, no link
+
+
+def extract_frontmatter_name(content):
+    """T-3211: parse the YAML frontmatter for `name:` rather than a
+    first-physical-line regex, which truncated folded/quoted multi-line
+    name: values mid-sentence with an unclosed quote. Falls back to joining
+    indented continuation lines when the frontmatter doesn't parse as YAML."""
+    fm = re.search(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
+    if fm:
+        try:
+            data = yaml.safe_load(fm.group(1))
+            if isinstance(data, dict) and data.get('name'):
+                return str(data['name']).strip()
+        except Exception:
+            pass
+    lines = content.split('\n')
+    for i, line in enumerate(lines):
+        m = re.match(r'^name:\s*(.*)', line)
+        if not m:
+            continue
+        parts = [m.group(1)]
+        for cont in lines[i + 1:]:
+            if cont[:1] in (' ', '\t') and cont.strip():
+                parts.append(cont.strip())
+            else:
+                break
+        joined = ' '.join(p.strip() for p in parts).strip()
+        return joined.strip('"\'')
+    return ''
+
 
 def review_link(tid, name):
     """Render a [T-XXX](URL) link to /review/T-XXX, or plain bold ID if no WT_URL."""
@@ -890,7 +921,7 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
     with open(f) as fh:
         content = fh.read()
     tid = re.search(r'^id:\s*(.+)', content, re.M)
-    tname = re.search(r'^name:\s*(.+)', content, re.M)
+    tname = extract_frontmatter_name(content)
     tstatus = re.search(r'^status:\s*(.+)', content, re.M)
     thoriz = re.search(r'^horizon:\s*(.+)', content, re.M)
     twf = re.search(r'^workflow_type:\s*(.+)', content, re.M)
@@ -912,7 +943,7 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
     tlu = re.search(r'^last_update:\s*[\'"]?([^\'"\s]+)', content, re.M)
     lu = tlu.group(1) if tlu else ''
     tasks.append((horizon_order.get(h, 0), tid.group(1).strip(),
-                  tname.group(1).strip() if tname else '',
+                  tname,
                   tstatus.group(1).strip() if tstatus else '',
                   h, verdict, wf, dec, lu))
 
@@ -1082,9 +1113,40 @@ fi
 PARTIAL_COMPLETE_SECTION=$(WT_URL_FOR_PYTHON="$WT_URL" \
     HANDOVER_DIGEST="$HANDOVER_DIGEST" DIGEST_TOP_N="$DIGEST_TOP_N" python3 << 'PCEOF'
 import glob, re, os
+import yaml
 
 tasks_dir = os.environ.get("TASKS_DIR", ".tasks")
 WT_URL = os.environ.get("WT_URL_FOR_PYTHON", "")
+
+
+def extract_frontmatter_name(content):
+    """T-3211: parse the YAML frontmatter for `name:` rather than a
+    first-physical-line regex, which truncated folded/quoted multi-line
+    name: values mid-sentence with an unclosed quote. Falls back to joining
+    indented continuation lines when the frontmatter doesn't parse as YAML."""
+    fm = re.search(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
+    if fm:
+        try:
+            data = yaml.safe_load(fm.group(1))
+            if isinstance(data, dict) and data.get('name'):
+                return str(data['name']).strip()
+        except Exception:
+            pass
+    lines = content.split('\n')
+    for i, line in enumerate(lines):
+        m = re.match(r'^name:\s*(.*)', line)
+        if not m:
+            continue
+        parts = [m.group(1)]
+        for cont in lines[i + 1:]:
+            if cont[:1] in (' ', '\t') and cont.strip():
+                parts.append(cont.strip())
+            else:
+                break
+        joined = ' '.join(p.strip() for p in parts).strip()
+        return joined.strip('"\'')
+    return ''
+
 
 def extract_verdict(content):
     """T-1530: Extract GO/DEFER/NO-GO from ## Recommendation. H2+ terminator (L-293).
@@ -1123,13 +1185,13 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, "active", "*.md"))):
     if unchecked == 0:
         continue
     tid = re.search(r'^id:\s*(\S+)', content, re.M)
-    tname = re.search(r'^name:\s*"?(.+?)"?\s*$', content, re.M)
+    tname = extract_frontmatter_name(content)
     if tid:
         # Extract first unchecked AC text (truncated)
         first_ac = re.search(r'^\s*-\s*\[ \]\s*(.+)', human_section, re.M)
         ac_preview = first_ac.group(1)[:60] if first_ac else "?"
         verdict = extract_verdict(content)
-        partial.append((tid.group(1), tname.group(1) if tname else "?", unchecked, ac_preview, verdict))
+        partial.append((tid.group(1), tname if tname else "?", unchecked, ac_preview, verdict))
 
 if partial:
     print("## Awaiting Your Action (Human)")
@@ -1316,7 +1378,37 @@ ${MERGEBACK_NUDGE}
 
 $(python3 -c "
 import glob, re, os
+import yaml
 tasks_dir = '$TASKS_DIR/active'
+
+
+def extract_frontmatter_name(content):
+    # T-3211: parse the YAML frontmatter for name: rather than a
+    # first-physical-line regex, which truncated folded/quoted multi-line
+    # name: values mid-sentence with an unclosed quote. Falls back to
+    # joining indented continuation lines when frontmatter does not parse.
+    fm = re.search(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
+    if fm:
+        try:
+            data = yaml.safe_load(fm.group(1))
+            if isinstance(data, dict) and data.get('name'):
+                return str(data['name']).strip()
+        except Exception:
+            pass
+    lines = content.split('\n')
+    for i, line in enumerate(lines):
+        m = re.match(r'^name:\s*(.*)', line)
+        if not m:
+            continue
+        parts = [m.group(1)]
+        for cont in lines[i + 1:]:
+            if cont[:1] in (' ', '\t') and cont.strip():
+                parts.append(cont.strip())
+            else:
+                break
+        joined = ' '.join(p.strip() for p in parts).strip()
+        return joined.strip(chr(39) + chr(34))
+    return ''
 # Find first started-work task in horizon:now/next, prefer agent-owned.
 # T-1724: skip inception tasks with a recorded DEFER decision — those are
 # parked under 'Watching for Recurrence', not actionable. Without this
@@ -1337,13 +1429,13 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
     if re.search(r'^\*\*Decision\*\*:\s*DEFER', content, re.M):
         continue
     tid = re.search(r'^id:\s*(.+)', content, re.M)
-    tname = re.search(r'^name:\s*(.+)', content, re.M)
+    tname = extract_frontmatter_name(content)
     owner = re.search(r'^owner:\s*(.+)', content, re.M)
     is_human = owner and owner.group(1).strip() == 'human'
     hval = 0 if h.group(1).strip() == 'now' else 1
     lu = re.search(r'^last_update:\s*(.+)', content, re.M)
     lu = lu.group(1).strip() if lu else ''
-    candidates.append((is_human, hval, lu, tid.group(1).strip() if tid else '', tname.group(1).strip() if tname else ''))
+    candidates.append((is_human, hval, lu, tid.group(1).strip() if tid else '', tname))
 # T-3210: the session's OWN focus outranks every heuristic below. The handover
 # already prints '## Current Focus:' a few sections up; a suggestion that names a
 # different task contradicts it in the same document, and the reader has no way to

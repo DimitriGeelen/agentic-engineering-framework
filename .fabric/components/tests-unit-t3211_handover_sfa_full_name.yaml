@@ -1,0 +1,21 @@
+id: tests/unit/t3211_handover_sfa_full_name.bats
+name: t3211_handover_sfa_full_name
+type: script
+subsystem: tests
+location: tests/unit/t3211_handover_sfa_full_name.bats
+tags: []
+
+purpose: "T-3211 — handover's \"Suggested First Action\" truncated the task name at the first physical line of a folded/quoted multi-line YAML `name:` scalar (the template's normal shape for long names), leaving an unclosed opening quote."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-22
+created_by: unknown
