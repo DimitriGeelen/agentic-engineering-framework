@@ -15,7 +15,7 @@ description: >
   an unescaped quote inside that python3 -c block - see T-3210 Evolution, mutation
   M3.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-29T10:06:43Z
-last_update: 2026-09-22T14:42:26Z
+last_update: 2026-09-22T18:20:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -79,14 +79,34 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The handover's Suggested First Action prints `Continue <id>: <name>` but the name is
+extracted with a single-line regex over the raw task file, so any task whose YAML `name:`
+folds over several lines (the template's normal shape for long names) is cut at the first
+physical line, mid-sentence, with its opening quote left unclosed. Localised 2026-09-22
+(parent session, autonomous run) at `agents/handover/handover.sh` ~line 1341; a fresh
+example is `S-2026-0922-1642.md`. Scored before start: BVP 69 proposed (median 61).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Root cause pinned: `agents/handover/handover.sh` (Suggested First Action block, ~line 1341)
+      reads the task name with `re.search(r'^name:\s*(.+)', content, re.M)`, which returns only
+      the first physical line of a folded or double-quoted multi-line YAML `name:` — so
+      S-2026-0922-1642's line reads `Continue T-3435: "Fabric card quality, second pass: header
+      comments for the 32 files that describe` (cut mid-sentence, opening quote unclosed).
+- [ ] The Suggested First Action line carries the full task name: the name is read by parsing the
+      frontmatter as YAML (`yaml.safe_load` on the block between the `---` fences) with a fallback
+      that joins continuation lines when the frontmatter does not parse; the same extraction is
+      used for the `## Work in Progress` task headers if they share the defect (check, and record
+      which in `## Decisions`).
+- [ ] A bats test builds a fixture project with one started-work task whose `name:` folds over
+      three lines and asserts the generated handover's Suggested First Action contains the last
+      words of the name and no dangling opening quote; a control task with a one-line name is
+      unchanged. `TEST_TEMP_DIR` set in setup.
+- [ ] `bin/fw handover` (non-commit) regenerated once on the live corpus and the resulting
+      `LATEST.md` Suggested First Action line is complete; `tests/unit/*handover*` stay green;
+      vendored copy synced (`bin/fw vendor self --check` clean).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -120,6 +140,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+# T-3211 seed (parent): the fixed extraction must not be the one-line regex, and the live line must be whole.
+[ "$(grep -c "re.search(r'^name:" agents/handover/handover.sh)" -eq 0 ]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -309,3 +332,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3211-handover-suggested-first-action-truncate.md
 - **Context:** Initial task creation
+
+### 2026-09-22T18:20:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
