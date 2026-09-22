@@ -5062,3 +5062,10 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-472
+  text: "T-3434: fw pickup process dedupes on a SHA256 content hash with a 7-day cooldown (lib/pickup.sh:119 pickup_dedup_check), but the universal retry ladder (D-600) runs to ~76 days with rungs at 1 week and 1 month. A ladder re-post of an identical pickup at day 8+ would fall outside the cooldown and be processed twice. Not a live defect today — the ladder's only producer is the sidecar, and pickup is not yet a ladder consumer — but it must be closed before pickup adopts the ladder. Widening the cooldown is a governance change, not a chore: the 7-day window exists so a concern re-raised later reads as a NEW signal."
+  captured: 2026-09-22T16:02:48Z
+  context_task: T-3434
+  tags: [sidecar]
+  status: pending
+  promoted_to: null

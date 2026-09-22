@@ -191,3 +191,58 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"0 results"* ]]
 }
+
+# ── T-3434 / D-600: receiver-side dedupe on the message id ───────────────────
+#
+# The universal retry ladder deliberately outlives the hub's ~5-minute dedupe
+# TTL (measured T-3405), so from the 15-minute rung onward a re-post reaches
+# the receiver as a genuinely new delivery. Only the receiver can collapse it.
+# These pin the bus leg of that guarantee.
+
+@test "bus: receive dedupes a re-post carrying the same client_msg_id" {
+    envelope='{"task_id":"T-900","agent_type":"explore","client_msg_id":"cmid-1","summary":"first","payload":"","source_host":"h1"}'
+
+    run do_bus_receive <<< "$envelope"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Posted"* ]]
+
+    run do_bus_receive <<< "$envelope"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"DEDUP"* ]]
+
+    # Exactly one result landed, not two.
+    [ "$(find "$PROJECT_ROOT/.context/bus/results/T-900" -name '*.yaml' | wc -l)" -eq 1 ]
+}
+
+@test "bus: two different message ids are two different deliveries" {
+    run do_bus_receive <<< '{"task_id":"T-901","agent_type":"explore","client_msg_id":"a","summary":"one","payload":"","source_host":"h1"}'
+    [ "$status" -eq 0 ]
+    run do_bus_receive <<< '{"task_id":"T-901","agent_type":"explore","client_msg_id":"b","summary":"two","payload":"","source_host":"h1"}'
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"DEDUP"* ]]
+    [ "$(find "$PROJECT_ROOT/.context/bus/results/T-901" -name '*.yaml' | wc -l)" -eq 2 ]
+}
+
+@test "bus: an envelope with no client_msg_id is not deduped (nothing to key on)" {
+    envelope='{"task_id":"T-902","agent_type":"explore","summary":"legacy","payload":"","source_host":"h1"}'
+    run do_bus_receive <<< "$envelope"
+    [ "$status" -eq 0 ]
+    run do_bus_receive <<< "$envelope"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"DEDUP"* ]]
+    [ "$(find "$PROJECT_ROOT/.context/bus/results/T-902" -name '*.yaml' | wc -l)" -eq 2 ]
+}
+
+@test "bus: the seen-set is bounded by BUS_SEEN_CAP" {
+    BUS_SEEN_CAP=3
+    for i in 1 2 3 4 5; do
+        do_bus_receive >/dev/null <<< "{\"task_id\":\"T-903\",\"agent_type\":\"explore\",\"client_msg_id\":\"m$i\",\"summary\":\"s\",\"payload\":\"\",\"source_host\":\"h1\"}"
+    done
+    [ "$(wc -l < "$PROJECT_ROOT/.context/bus/.seen-msg-ids")" -le 3 ]
+}
+
+@test "bus: fw dispatch send puts a client_msg_id on the envelope" {
+    # The producer half of the contract: a receiver cannot dedupe an envelope
+    # that carries no id, so the id must be minted at send time.
+    grep -q '"client_msg_id": "\$client_msg_id"' "$FRAMEWORK_ROOT/lib/dispatch.sh"
+}

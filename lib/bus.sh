@@ -19,6 +19,11 @@
 # Size gate threshold (bytes). Payloads >= this are auto-moved to blobs.
 BUS_SIZE_GATE=2048
 
+# T-3434: how many received client_msg_ids to remember for receiver-side
+# dedupe. Sized like the sidecar inbox's SEEN_CAP — bounded so the file cannot
+# grow without limit, generous relative to the retry ladder it must outlast.
+BUS_SEEN_CAP="${BUS_SEEN_CAP:-500}"
+
 do_bus() {
     local subcmd="${1:-}"
     shift 2>/dev/null || true
@@ -406,6 +411,31 @@ do_bus_receive() {
     if [ -z "$envelope" ]; then
         echo -e "${RED}ERROR: No envelope received on stdin${NC}" >&2
         return 1
+    fi
+
+    # T-3434 / D-600: receiver-side dedupe on the message id, MANDATORY for
+    # every message kind that the universal retry ladder can re-post. The
+    # ladder deliberately outlives the hub's ~5-minute dedupe TTL (measured
+    # T-3405), so from its 15-minute rung onward a re-post arrives as a
+    # genuinely new delivery and only the receiver can collapse it. An
+    # envelope with no client_msg_id is not deduped — there is nothing to key
+    # on — which is the same rule lib/sidecar/inbox.py:pending() follows.
+    local client_msg_id
+    client_msg_id=$(echo "$envelope" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('client_msg_id',''))" 2>/dev/null)
+    if [ -n "$client_msg_id" ]; then
+        local seen_file="$PROJECT_ROOT/.context/bus/.seen-msg-ids"
+        mkdir -p "$(dirname "$seen_file")"
+        if [ -f "$seen_file" ] && grep -qxF "$client_msg_id" "$seen_file"; then
+            echo -e "${YELLOW}DEDUP${NC} envelope $client_msg_id already received — ignoring re-post"
+            return 0
+        fi
+        echo "$client_msg_id" >> "$seen_file"
+        # Bounded like the sidecar's per-topic seen-set (SEEN_CAP=500): the
+        # file must not grow without limit, and the cap only has to outlast
+        # the ladder, not the project.
+        if [ "$(wc -l < "$seen_file")" -gt "$BUS_SEEN_CAP" ]; then
+            tail -n "$BUS_SEEN_CAP" "$seen_file" > "$seen_file.tmp" && mv "$seen_file.tmp" "$seen_file"
+        fi
     fi
 
     # Parse JSON envelope and post locally
