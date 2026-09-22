@@ -15,7 +15,11 @@ PATHS_LIB="$FRAMEWORK_ROOT/lib/paths.sh"
 TERMLINK="$FRAMEWORK_ROOT/agents/termlink/termlink.sh"
 
 setup() {
-    TESTROOT="$BATS_TEST_TMPDIR/proj"
+    # test_helper's teardown removes TEST_TEMP_DIR and FAILS the test when it is
+    # unset (`[ -d "" ] && rm -rf` returns 1) — so every suite that loads it
+    # must set the variable. Measured: 7/7 red on teardown without this line.
+    TEST_TEMP_DIR="$(mktemp -d)"
+    TESTROOT="$TEST_TEMP_DIR/proj"
     mkdir -p "$TESTROOT/.context/working"
     printf 'current_task: T-9999\nfocus_session: parent-session\n' > "$TESTROOT/.context/working/focus.yaml"
     SHARED_BEFORE="$(cat "$TESTROOT/.context/working/focus.yaml")"
@@ -55,7 +59,8 @@ _seed() {
     _seed "" worker-a T-1234
     [ "$status" -eq 2 ]
     [ "$(cat "$TESTROOT/.context/working/focus.yaml")" = "$SHARED_BEFORE" ]
-    [ "$(ls "$TESTROOT/.context/working" | grep -c '^focus\.')" -eq 0 ]
+    # scoped files are focus.<key>.yaml; the shared focus.yaml must not be counted
+    [ "$(ls "$TESTROOT/.context/working" | grep -c '^focus\..*\.yaml$')" -eq 0 ]
 }
 
 @test "t3422: refuses (rc 2) with no task — an empty seed would be worse than the fallback" {
