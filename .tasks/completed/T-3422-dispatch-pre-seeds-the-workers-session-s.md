@@ -7,12 +7,12 @@ description: >
   dispatch pre-seeds the worker's session-scoped focus file with its --task, so a
   worker never inherits a foreign task from the shared focus.yaml (SEQ Δ8, 4 occurrences)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, lib/paths.sh, tests/unit/t3422_dispatch_seeds_focus.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T08:31:27Z
-last_update: '2026-09-22T08:45:21Z'
-date_finished:
+last_update: 2026-09-22T09:27:24Z
+date_finished: 2026-09-22T09:27:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -106,7 +106,7 @@ already left behind by `fw work-on` today; a separate hygiene concern).
 - [x] `lib/paths.sh:fw_focus_seed <root> <task>` (next to `fw_focus_file`, resolving through it — one resolver, L-399 parity) writes `focus.<sanitised-key>.yaml` with `current_task: <task>` and `focus_session: null`; refuses (rc 2) outside scoped mode and never touches `focus.yaml`. `agents/termlink/termlink.sh:cmd_dispatch` calls it with `"$project_dir" "$task"` right after exporting the worker's scoped-focus env, sourcing `lib/paths.sh` on demand, and prints `Focus seeded: focus.<name>.yaml -> T-XXX`
 - [x] An existing scoped file is left byte-identical (rc 1, path printed) — bats test 2
 - [x] `tests/unit/t3422_dispatch_seeds_focus.bats` — 6 tests: seed + shared untouched; existing untouched; refuse outside scoped mode; key sanitised via the shared resolver; the reader picks the seeded file over the shared one (foreign task not visible); dispatch wiring order pinned. **6/6 ok**; `t3038` + `t3141` suites **14/14** still green
-- [ ] Live: the next SEQ-T3411 worker dispatch (round 4 procasfit or round 5) has a `focus.<name>.yaml` whose `current_task` is T-3411 before the worker's first `fw work-on`
+- [x] Live: round-5 dispatch `seq-t3411-r5-review` at 09:26:33Z — driver log line `Focus seeded: focus.seq-t3411-r5-review.yaml -> T-3411`; the file (mtime 11:26:33 local, written by `fw_focus_seed` at dispatch) reads `current_task: T-3411`, `focus_session: null`, header `# Seeded by dispatch (T-3422)`; the worker's own `fw work-on` came later in its transcript. Fifth consecutive fresh worker, and the first whose focus was its own task from its first instant (Δ8 broken at 4 occurrences)
 - [x] Vendored copies of `lib/paths.sh` + `agents/termlink/termlink.sh` synced (`FW_VENDOR_ONLY`, VERSION 1.6.766); `bin/fw vendor self --check` → "in sync with source"; bats file registered in the fabric
 
 ### Human
@@ -372,3 +372,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3422-dispatch-pre-seeds-the-workers-session-s.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5d1554df
+- **Timestamp:** 2026-09-22T09:27:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-22T09:27:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

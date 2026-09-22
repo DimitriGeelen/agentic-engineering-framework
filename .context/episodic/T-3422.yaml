@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3422: dispatch pre-seeds the worker's session-scoped focus file with its --task, so a worker never inherits a foreign task from the shared focus.yaml (SEQ Δ8, 4 occurrences)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T09:27:43Z
+# ============================================================================
+
+task_id: T-3422
+task_name: "dispatch pre-seeds the worker's session-scoped focus file with its --task, so a worker never inherits a foreign task from the shared focus.yaml (SEQ Δ8, 4 occurrences)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T08:31:27Z
+completed: 2026-09-22T09:27:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T10:35:12+02:00
+last_commit: 2026-09-22T10:36:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  dispatch pre-seeds the worker's scoped focus file with its --task. test harness fix — set TEST_TEMP_DIR for test_helper's teardown, count only scoped focus files
+
+# Key outcomes
+outcomes:
+  - '`lib/paths.sh:fw_focus_seed <root> <task>` (next to `fw_focus_file`, resolving through it — one resolver, L-399 parity) writes `focus.<sanitised-key>.yaml` with `current_task: <task>` and `focus_session: null`; refuses (rc 2) outside scoped mode and never touches `focus.yaml`. `agents/termlink/termlink.sh:cmd_dispatch` calls it with `"$project_dir" "$task"` right after exporting the worker''s scoped-focus env, sourcing `lib/paths.sh` on demand, and prints `Focus seeded: focus.<name>.yaml -> T-XXX`'
+  - 'An existing scoped file is left byte-identical (rc 1, path printed) — bats test 2'
+  - '`tests/unit/t3422_dispatch_seeds_focus.bats` — 6 tests: seed + shared untouched; existing untouched; refuse outside scoped mode; key sanitised via the shared resolver; the reader picks the seeded file over the shared one (foreign task not visible); dispatch wiring order pinned. **6/6 ok**; `t3038` + `t3141` suites **14/14** still green'
+  - 'Live: round-5 dispatch `seq-t3411-r5-review` at 09:26:33Z — driver log line `Focus seeded: focus.seq-t3411-r5-review.yaml -> T-3411`; the file (mtime 11:26:33 local, written by `fw_focus_seed` at dispatch) reads `current_task: T-3411`, `focus_session: null`, header `# Seeded by dispatch (T-3422)`; the worker''s own `fw work-on` came later in its transcript. Fifth consecutive fresh worker, and the first whose focus was its own task from its first instant (Δ8 broken at 4 occurrences)'
+  - 'Vendored copies of `lib/paths.sh` + `agents/termlink/termlink.sh` synced (`FW_VENDOR_ONLY`, VERSION 1.6.766); `bin/fw vendor self --check` → "in sync with source"; bats file registered in the fabric'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'test harness fix — set TEST_TEMP_DIR for test_helper''s teardown, count only scoped focus files'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/paths.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/termlink/termlink.sh'
+  - '.fabric/components/tests-unit-sidecar_audit_rail.yaml'
+  - '.fabric/components/tests-unit-t3422_dispatch_seeds_focus.yaml'
+  - 'lib/paths.sh'
+  - '.tasks/active/T-3422-dispatch-pre-seeds-the-workers-session-s.md'
+  - 'tests/unit/t3422_dispatch_seeds_focus.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T10:35:12'
+    action: 'T-3422: dispatch pre-seeds the worker''s scoped focus file with its --task'
+  - time: '2026-09-22T10:36:48'
+    action: 'T-3422: test harness fix — set TEST_TEMP_DIR for test_helper''s teardown, count only scoped focus files'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 55 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 55
+  commits: 2
+  files_changed: 10
+  lines_added: 610
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3422-dispatch-pre-seeds-the-workers-session-s.md
+generated_by: context-agent-hybrid
