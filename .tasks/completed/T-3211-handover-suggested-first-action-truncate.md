@@ -15,12 +15,12 @@ description: >
   an unescaped quote inside that python3 -c block - see T-3210 Evolution, mutation
   M3.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/handover/handover.sh, tests/unit/t3211_handover_sfa_full_name.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -33,8 +33,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-29T10:06:43Z
-last_update: 2026-09-22T18:20:38Z
-date_finished:
+last_update: 2026-09-22T20:45:44Z
+date_finished: 2026-09-22T20:45:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -90,23 +90,34 @@ example is `S-2026-0922-1642.md`. Scored before start: BVP 69 proposed (median 6
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Root cause pinned: `agents/handover/handover.sh` (Suggested First Action block, ~line 1341)
+- [x] Root cause pinned: `agents/handover/handover.sh` (Suggested First Action block, ~line 1341)
       reads the task name with `re.search(r'^name:\s*(.+)', content, re.M)`, which returns only
       the first physical line of a folded or double-quoted multi-line YAML `name:` — so
       S-2026-0922-1642's line reads `Continue T-3435: "Fabric card quality, second pass: header
       comments for the 32 files that describe` (cut mid-sentence, opening quote unclosed).
-- [ ] The Suggested First Action line carries the full task name: the name is read by parsing the
+      (Evidence: `## RCA`; the regex is gone — `grep -c "re.search(r'^name:"` = 0.)
+- [x] The Suggested First Action line carries the full task name: the name is read by parsing the
       frontmatter as YAML (`yaml.safe_load` on the block between the `---` fences) with a fallback
       that joins continuation lines when the frontmatter does not parse; the same extraction is
       used for the `## Work in Progress` task headers if they share the defect (check, and record
-      which in `## Decisions`).
-- [ ] A bats test builds a fixture project with one started-work task whose `name:` folds over
+      which in `## Decisions`). (Evidence: `extract_frontmatter_name()` added to both python
+      blocks — the Work in Progress block shared the defect; see `## Decisions`. Worker diff
+      98+/6−; `tests/unit/t3211_handover_sfa_full_name.bats` 4/4 ok, incl. the one-line control.)
+- [x] A bats test builds a fixture project with one started-work task whose `name:` folds over
       three lines and asserts the generated handover's Suggested First Action contains the last
       words of the name and no dangling opening quote; a control task with a one-line name is
-      unchanged. `TEST_TEMP_DIR` set in setup.
-- [ ] `bin/fw handover` (non-commit) regenerated once on the live corpus and the resulting
+      unchanged. `TEST_TEMP_DIR` set in setup. (Evidence:
+      `tests/unit/t3211_handover_sfa_full_name.bats` — 4/4 ok on 2026-09-22 19:25Z: folded name
+      in full, one-line control unchanged, regex absent, `bash -n` clean.)
+- [x] `bin/fw handover` (non-commit) regenerated once on the live corpus and the resulting
       `LATEST.md` Suggested First Action line is complete; `tests/unit/*handover*` stay green;
-      vendored copy synced (`bin/fw vendor self --check` clean).
+      vendored copy synced (`bin/fw vendor self --check` clean). (Evidence: regenerated
+      `S-2026-0922-2118.md`; line now reads `Continue T-3211: handover Suggested First Action
+      truncates the task name at the first line of a folded YAML scalar` — whole, no quote.
+      Suite: no regression — see `## Decisions` for the exact accounting: the fixed commit's
+      archive runs `handover.bats` + `handover_digest.bats` 20/20; every red in the live-tree
+      sweep is pre-existing at the parent commit or a live-tree timeout. Vendored copy
+      byte-identical (`cmp -s`).)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -143,6 +154,11 @@ example is `S-2026-0922-1642.md`. Scored before start: BVP 69 proposed (median 6
 
 # T-3211 seed (parent): the fixed extraction must not be the one-line regex, and the live line must be whole.
 [ "$(grep -c "re.search(r'^name:" agents/handover/handover.sh)" -eq 0 ]
+[ "$(grep -c "def extract_frontmatter_name" agents/handover/handover.sh)" -ge 1 ]
+bash -n agents/handover/handover.sh
+timeout 600 bats tests/unit/t3211_handover_sfa_full_name.bats > /tmp/.t3211-bats.out 2>&1 && [ "$(grep -c '^not ok' /tmp/.t3211-bats.out)" -eq 0 ] && [ "$(grep -c '^ok' /tmp/.t3211-bats.out)" -eq 4 ]
+sfa=$(sed -n '/^## Suggested First Action/,/^## /p' .context/handovers/LATEST.md | grep -m1 '^Continue'); [ -n "$sfa" ] && [ "$(printf '%s' "$sfa" | grep -c '"$')" -eq 0 ] && [ "$(printf '%s' "$sfa" | tr -cd '"' | wc -c)" -ne 1 ]
+cmp -s agents/handover/handover.sh .agentic-framework/agents/handover/handover.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -252,6 +268,27 @@ example is `S-2026-0922-1642.md`. Scored before start: BVP 69 proposed (median 6
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** the handover's Suggested First Action printed
+`Continue T-3435: "Fabric card quality, second pass: header comments for the 32 files that describe`
+— cut mid-sentence with the opening quote unclosed. Both T-3181 cold-resume arms had already
+flagged it as blocking: the reader cannot tell what the task is.
+
+**Root cause:** two python blocks in `agents/handover/handover.sh` (Suggested First Action, and
+the Work in Progress headers) read the task name with `re.search(r'^name:\s*(.+)', content,
+re.M)` over the raw file — the first physical line only. The template writes long names as
+folded or quoted multi-line YAML scalars, so most names have a second line the regex never saw.
+
+**Why structurally allowed:** the handover is generated text nobody parses back; no test built
+a fixture with a multi-line name, and the truncation looked like a style quirk rather than a
+defect until a cold reader had to act on it. T-3210 fixed WHICH task is named and left HOW its
+name is rendered untouched (different root cause, split out here).
+
+**Prevention:** `extract_frontmatter_name()` parses the frontmatter as YAML with a
+continuation-joining fallback and is the only name reader in both blocks;
+`tests/unit/t3211_handover_sfa_full_name.bats` pins a three-line folded name against a one-line
+control, and asserts the truncating regex is absent from the script. The handover-suite bats
+files run the same generator, so a regression re-opens red there too.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -316,6 +353,37 @@ example is `S-2026-0922-1642.md`. Scored before start: BVP 69 proposed (median 6
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-09-22 — both python blocks shared the defect; one helper, added to each
+- **Chose:** the Work in Progress header block used the same one-line regex, so the worker added
+  the same `extract_frontmatter_name()` helper to both embedded python blocks (they are separate
+  `python3 -c` programs and cannot import each other) rather than fixing only the Suggested
+  First Action.
+- **Why:** the AC asked to check and record; the check said "shared". Two copies of a 25-line
+  helper beat two behaviours for the same field.
+- **Rejected:** a shared python module under `lib/` — a larger change to a script the operator
+  reads at every session start, for a helper with exactly two callers.
+
+### 2026-09-22 — "stay green" accounted for exactly, not asserted
+- **Measured:** the 14-file `tests/unit/*handover*` sweep in the live tree: 101 ok, 7 not ok
+  (598 s). The 7: (a) `handover_push_timeout.bats` 64/65/68 grep for strings
+  (`timed out after`, `FW_HANDOVER_PUSH_TIMEOUT:-60`, `timeout "$_ah_total_timeout"`) that are
+  absent from `handover.sh` at the parent commit AND now — stale tests, red before this task,
+  filed as an observation; (b) `t100144_handover_divergence.bats` 90 — red at the parent commit
+  too (archive of `0eddfe08e~1`: 25 ok / 1 not ok, that one); (c) `handover.bats` 3/5 and
+  `handover_digest.bats` 27 — green in an archive of the fixed commit (20/20, 17 s) and
+  green-so-far in the live tree until the 300 s ceiling (10 ok, 0 not ok, then timeout): the
+  live tree's generator is slow under its runtime state, not wrong.
+- **Chose:** tick AC 4 on the archive evidence and the pre-existence proofs; do not touch the
+  four stale/pre-existing tests here (one bug, one task).
+- **Rejected:** widening this task to repair `handover_push_timeout.bats`; asserting "green"
+  from the fixture test alone.
+
+### 2026-09-22 — worker cut off before its close; parent finished it (third instance today)
+- **What happened:** the Sonnet worker made the fix and wrote the test, then ended its turn
+  "waiting for the background test run to notify me". A `claude -p` worker has no next turn.
+  Filed as an observation under this task (the background-wait pattern, three workers on
+  2026-09-22); the parent ran the tests inline, ticked the ACs with the evidence, and closed.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -335,3 +403,15 @@ example is `S-2026-0922-1642.md`. Scored before start: BVP 69 proposed (median 6
 
 ### 2026-09-22T18:20:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d450eff0
+- **Timestamp:** 2026-09-22T20:45:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-22T20:45:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -5106,3 +5106,46 @@ observations:
   tags: [concurrency]
   status: pending
   promoted_to: null
+- id: OBS-478
+  text: "T-3437 drive-6 commits (f8c73e1a7, 1a0c386ed) are committed on bleeding-edge but UNPUSHED: the pre-push self-vendor gate (T-2240/T-3125) blocks both origin and github on files this worker never touched — lib/arc.sh, agents/audit/audit.sh, web/blueprints/arcs.py, bin/fw, web/templates/arc_detail.html, all landed by the concurrent T-3429 worker, which closed without running fw vendor self. Per the dispatch stanza this worker stopped and recorded rather than vendoring another worker's files or using --no-verify; FW_SKIP_SELF_VENDOR_CHECK and --no-verify both refused under T-3437 AC A5. Unblocks the moment anyone runs: bin/fw vendor self && git add .agentic-framework/ && git commit. Separately: origin returned HTTP 403 on the first push attempt at 18:19Z before the gate engaged — a recurrence of the origin-403 watch item that SEQ-T3411 r5-review.md §12 Question 19 had downgraded to 'no action needed unless it recurs'. It recurred."
+  captured: 2026-09-22T18:26:43Z
+  context_task: T-3437
+  tags: [blocked]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-479
+  text: "OBS-250 dead-end hit twice in one drive, on DIFFERENT trailing work: after 'fw task update T-3437 --status work-completed' cleared focus, the Tier-1 gate (check-active-task.sh) refused BOTH 'bin/fw push' AND 'termlink agent post --thread T-3437' — the latter being the finish status line the dispatch stanza itself requires. CLAUDE.md documents this class for 'fw vendor self' only; the surface is wider. Every close-time handoff a worker owes AFTER the close transition is unreachable: push, fleet status post, mirror sync. The routes are (a) file a new task whose only content is one command, (b) a logged Tier-2 bypass, or (c) leave the handoff undone — this worker chose (c) and recorded it rather than manufacturing a task or bypassing. Candidate fix shapes already named in OBS-250: grace window on focus after close, narrow allowlist, or auto-run at close. Add to that list: 'termlink agent post' and 'fw push' are read-adjacent handoffs, not writes to governed state, and are the natural allowlist candidates (agents/context/lib/safe-commands.sh)."
+  captured: 2026-09-22T18:27:12Z
+  context_task: T-3437
+  tags: [governance]
+  status: pending
+  promoted_to: null
+- id: OBS-480
+  text: "CORRECTION to OBS-478: the T-3437 drive-6 commits ARE pushed. f8c73e1a7 and 1a0c386ed reached origin/bleeding-edge carried by a sibling worker's later push (T-3211, b80403e6a); verified live with 'git ls-remote origin refs/heads/bleeding-edge' returning b80403e6a016db8908d374b1c779d05c2fcfaeb8, which contains both. OBS-478's gate-refusal facts stand (this worker's own push WAS blocked by the self-vendor gate on T-3429's files, and origin did 403 once at 18:19Z) but its 'UNPUSHED, data-loss risk' framing is wrong and should not be actioned as such. The wider point survives and is arguably worse: a worker that correctly refuses to bypass a gate has its work land anyway, silently, on another worker's push, so the gate neither stopped the push nor told anyone the vendored drift shipped. Sibling to OBS-477 (cross-worker git-add sweep); same shared-checkout concurrency class."
+  captured: 2026-09-22T18:27:50Z
+  context_task: T-3437
+  tags: [concurrency]
+  status: pending
+  promoted_to: null
+- id: OBS-481
+  text: "Dispatched claude -p workers end their turn while 'waiting' on a run_in_background Bash job, and the process exits before the notification can arrive — the close is never run. Seen three times on 2026-09-22: T-3433 (push + peer e2e detached, turn ended), T-3435/T-3431 earlier, T-3211 ('The background bash test run will notify me on completion — no need to poll.' as the final message, task left started-work with the work done). In a claude -p worker there is no next turn: a background job is a fire-and-forget. Structural fix candidates: (1) agents/dispatch/preamble.md states 'never use run_in_background; run tests inline with a timeout' for workers; (2) the dispatch stanza sets a marker the harness reads to disable background jobs; (3) the driver treats 'exit_code=0 but task still started-work' as a failed step and reports it. The parent has been finishing these closes by hand."
+  captured: 2026-09-22T19:18:09Z
+  context_task: T-3211
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-482
+  text: "EWCR clause-2: the six 'independent' searches in drive 6 §3 shared one blind spot — termlink agent search does not cover DM channels, and 832's substantive clause-2 response was sitting in one. Measured control: the phrase 'consolidated AEF-owned per-finding' is verbatim in dm:3bba15e681b3a078:d1993c2c3ec44c94 offset [2] and 'termlink agent search \"consolidated AEF-owned per-finding\"' returns 0 posts of 1002 envelopes scanned. That DM states DeepSeek and Mistral raw reviews DO exist in the governed 0503 dossier at named paths with verified sha256 (T-032-deepseek-review-response.md = 4dae4098...; T-032-mistral-review-response.md = 0eecb8af...), and that what is missing is AEF's consolidated per-finding disposition tables, not the artefacts. Drives 2-6 all reported clause 2 as 'artefacts absent' on a search method that structurally could not see the reply. 832 offset [7] independently diagnosed the mailbox as having no reader. Sovereign question S1 changes shape as a result; surfaced in docs/reports/EWCR/drive-7-procasfit-handback.md, not decided here."
+  captured: 2026-09-22T19:40:03Z
+  context_task: T-3439
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-483
+  text: "tests/unit/handover_push_timeout.bats tests 64/65/68 grep agents/handover/handover.sh and agents/context/checkpoint.sh for strings that no longer exist ('timed out after', 'FW_HANDOVER_PUSH_TIMEOUT:-60', 'timeout \"$_ah_total_timeout\"') — absent at 0eddfe08e~1 and at HEAD, so red since whichever refactor removed them; tests/unit/t100144_handover_divergence.bats test 'wires divergence + nudge into the document' is red at the parent commit as well. Same class as T-3436 (fabric_globstar.bats, red 130 days): nothing runs tests/unit to completion (OBS-392), so tests that pin a removed mechanism stay red unseen until a task close happens to bundle the file. Found 2026-09-22 closing T-3211. Fix: re-pin each to the current mechanism or delete with reason; one task."
+  captured: 2026-09-22T20:45:34Z
+  context_task: T-3211
+  tags: [bug]
+  status: pending
+  promoted_to: null

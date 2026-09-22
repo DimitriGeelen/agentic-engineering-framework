@@ -4359,3 +4359,17 @@ decisions:
     date: 2026-09-22
     task: T-3429
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-624
+    decision: "the Work in Progress header block used the same one-line regex, so the worker added"
+    scope: project
+    date: 2026-09-22
+    task: T-3211
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-625
+    decision: "tick AC 4 on the archive evidence and the pre-existence proofs; do not touch the"
+    scope: project
+    date: 2026-09-22
+    task: T-3211
+    rationale: "Auto-captured from task file on completion"

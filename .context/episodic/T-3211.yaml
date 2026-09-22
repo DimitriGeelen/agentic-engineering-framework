@@ -1,0 +1,205 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3211: handover Suggested First Action truncates the task name at the first line of a folded YAML scalar
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T20:46:00Z
+# ============================================================================
+
+task_id: T-3211
+task_name: "handover Suggested First Action truncates the task name at the first line of a folded YAML scalar"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-29T10:06:43Z
+completed: 2026-09-22T20:45:44Z
+duration_days: 24
+updates_count: 2
+first_commit: 2026-08-29T15:54:15+02:00
+last_commit: 2026-09-22T21:20:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Session handover S-2026-0829-1553. Session handover S-2026-0830-0027. Session handover S-2026-0831-1410. Session handover S-2026-0831-1658. Session handover S-2026-0901-1116. Session handover S-2026-0901-2209. Session handover S-2026-0903-1102. Session handover S-2026-0903-1633. Session handover S-2026-0903-1812. Session handover S-2026-0904-0008. Session handover S-2026-0904-1044. Session handover S-2026-0905-1001. Session handover S-2026-0905-1554. Session handover S-2026-0906-1750. Session handover S-2026-0906-2354. Session handover S-2026-0907-0758. Session handover S-2026-0907-1228. Session handover S-2026-0907-1806. Session handover S-2026-0907-2211. Session handover S-2026-0908-2219. Session handover S-2026-0911-2214. Session handover S-2026-0915-2020. Session handover S-2026-0916-0549. Session handover S-2026-0916-2121. Session handover S-2026-0916-2328. Session handover S-2026-0917-2151. Session handover S-2026-0918-1802. Session handover S-2026-0919-2310. Session handover S-2026-0920-1044. Session handover S-2026-0920-1307. Session handover S-2026-0920-1859. Session handover S-2026-0920-2022. Session handover S-2026-0920-2158. Session handover S-2026-0921-0002. Session handover S-2026-0921-1555. Session handover S-2026-0921-2302. Session handover S-2026-0922-1149. Session handover S-2026-0922-1642. real ACs — root cause localised to the one-line name regex in handover.sh; scored (BVP 69 proposed). handover reads the task name from parsed frontmatter, not a first-line regex — Suggested First Action and Work in Progress headers render folded names in full; bats 4/4
+
+# Key outcomes
+outcomes:
+  - 'Root cause pinned: `agents/handover/handover.sh` (Suggested First Action block, ~line 1341)'
+  - 'The Suggested First Action line carries the full task name: the name is read by parsing the'
+  - 'A bats test builds a fixture project with one started-work task whose `name:` folds over'
+  - '`bin/fw handover` (non-commit) regenerated once on the live corpus and the resulting'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-22 — both python blocks shared the defect; one helper, added to each'
+    chose: 'the Work in Progress header block used the same one-line regex, so the worker added the same `extract_frontmatter_name()` helper to both embedded python blocks (they are separate `python3 -c` programs and cannot import each other) rather than fixing only the Suggested First Action.'
+    rationale: 'the AC asked to check and record; the check said "shared". Two copies of a 25-line helper beat two behaviours for the same field.'
+    alternatives_rejected: ['a shared python module under `lib/` — a larger change to a script the operator reads at every session start, for a helper with exactly two callers.']
+  - decision: '2026-09-22 — "stay green" accounted for exactly, not asserted'
+    chose: 'tick AC 4 on the archive evidence and the pre-existence proofs; do not touch the four stale/pre-existing tests here (one bug, one task).'
+    alternatives_rejected: ['widening this task to repair `handover_push_timeout.bats`; asserting "green" from the fixture test alone.']
+  - decision: '2026-09-22 — worker cut off before its close; parent finished it (third instance today)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - 'agents/handover/handover.sh'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0829-1553.md'
+  - '.context/handovers/S-2026-0830-0027.md'
+  - '.context/handovers/S-2026-0831-1410.md'
+  - '.context/handovers/S-2026-0831-1658.md'
+  - '.context/handovers/S-2026-0901-1116.md'
+  - '.context/handovers/S-2026-0901-2209.md'
+  - '.context/handovers/S-2026-0903-1102.md'
+  - '.context/handovers/S-2026-0903-1633.md'
+  - '.context/handovers/S-2026-0903-1812.md'
+  - '.context/handovers/S-2026-0904-0008.md'
+  - '.context/handovers/S-2026-0904-1044.md'
+  - '.context/handovers/S-2026-0905-1001.md'
+  - '.context/handovers/S-2026-0905-1554.md'
+  - '.context/handovers/S-2026-0906-1750.md'
+  - '.context/handovers/S-2026-0906-2354.md'
+  - '.context/handovers/S-2026-0907-0758.md'
+  - '.context/handovers/S-2026-0907-1228.md'
+  - '.context/handovers/S-2026-0907-1806.md'
+  - '.context/handovers/S-2026-0907-2211.md'
+  - '.context/handovers/S-2026-0908-2219.md'
+  - '.context/handovers/S-2026-0911-2214.md'
+  - '.context/handovers/S-2026-0915-2020.md'
+  - '.context/handovers/S-2026-0916-0549.md'
+  - '.context/handovers/S-2026-0916-2121.md'
+  - '.context/handovers/S-2026-0916-2328.md'
+  - '.context/handovers/S-2026-0917-2151.md'
+  - '.context/handovers/S-2026-0918-1802.md'
+  - '.context/handovers/S-2026-0919-2310.md'
+  - '.context/handovers/S-2026-0920-1044.md'
+  - '.context/handovers/S-2026-0920-1307.md'
+  - '.context/handovers/S-2026-0920-1859.md'
+  - '.context/handovers/S-2026-0920-2022.md'
+  - '.context/handovers/S-2026-0920-2158.md'
+  - '.context/handovers/S-2026-0921-0002.md'
+  - '.context/handovers/S-2026-0921-1555.md'
+  - '.context/handovers/S-2026-0921-2302.md'
+  - '.context/handovers/S-2026-0922-1149.md'
+  - '.context/handovers/S-2026-0922-1642.md'
+  - '.fabric/components/tests-unit-t3211_handover_sfa_full_name.yaml'
+  - '.tasks/active/T-3211-handover-suggested-first-action-truncate.md'
+  - 'tests/unit/t3211_handover_sfa_full_name.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-08-29T15:54:15'
+    action: 'T-3211: Session handover S-2026-0829-1553'
+  - time: '2026-08-30T00:28:10'
+    action: 'T-3211: Session handover S-2026-0830-0027'
+  - time: '2026-08-31T14:11:07'
+    action: 'T-3211: Session handover S-2026-0831-1410'
+  - time: '2026-08-31T16:59:22'
+    action: 'T-3211: Session handover S-2026-0831-1658'
+  - time: '2026-09-01T11:16:44'
+    action: 'T-3211: Session handover S-2026-0901-1116'
+  - time: '2026-09-01T22:09:52'
+    action: 'T-3211: Session handover S-2026-0901-2209'
+  - time: '2026-09-03T11:03:16'
+    action: 'T-3211: Session handover S-2026-0903-1102'
+  - time: '2026-09-03T16:33:49'
+    action: 'T-3211: Session handover S-2026-0903-1633'
+  - time: '2026-09-03T18:13:16'
+    action: 'T-3211: Session handover S-2026-0903-1812'
+  - time: '2026-09-04T00:08:47'
+    action: 'T-3211: Session handover S-2026-0904-0008'
+  - time: '2026-09-04T10:44:29'
+    action: 'T-3211: Session handover S-2026-0904-1044'
+  - time: '2026-09-05T10:02:13'
+    action: 'T-3211: Session handover S-2026-0905-1001'
+  - time: '2026-09-05T15:55:07'
+    action: 'T-3211: Session handover S-2026-0905-1554'
+  - time: '2026-09-06T17:50:48'
+    action: 'T-3211: Session handover S-2026-0906-1750'
+  - time: '2026-09-06T23:55:26'
+    action: 'T-3211: Session handover S-2026-0906-2354'
+  - time: '2026-09-07T07:59:09'
+    action: 'T-3211: Session handover S-2026-0907-0758'
+  - time: '2026-09-07T12:29:14'
+    action: 'T-3211: Session handover S-2026-0907-1228'
+  - time: '2026-09-07T18:07:22'
+    action: 'T-3211: Session handover S-2026-0907-1806'
+  - time: '2026-09-07T22:12:22'
+    action: 'T-3211: Session handover S-2026-0907-2211'
+  - time: '2026-09-08T22:19:35'
+    action: 'T-3211: Session handover S-2026-0908-2219'
+  - time: '2026-09-11T22:14:35'
+    action: 'T-3211: Session handover S-2026-0911-2214'
+  - time: '2026-09-15T20:21:03'
+    action: 'T-3211: Session handover S-2026-0915-2020'
+  - time: '2026-09-16T05:49:29'
+    action: 'T-3211: Session handover S-2026-0916-0549'
+  - time: '2026-09-16T21:21:48'
+    action: 'T-3211: Session handover S-2026-0916-2121'
+  - time: '2026-09-16T23:28:42'
+    action: 'T-3211: Session handover S-2026-0916-2328'
+  - time: '2026-09-17T21:52:13'
+    action: 'T-3211: Session handover S-2026-0917-2151'
+  - time: '2026-09-18T18:02:41'
+    action: 'T-3211: Session handover S-2026-0918-1802'
+  - time: '2026-09-19T23:10:42'
+    action: 'T-3211: Session handover S-2026-0919-2310'
+  - time: '2026-09-20T10:45:13'
+    action: 'T-3211: Session handover S-2026-0920-1044'
+  - time: '2026-09-20T13:08:06'
+    action: 'T-3211: Session handover S-2026-0920-1307'
+  - time: '2026-09-20T18:59:40'
+    action: 'T-3211: Session handover S-2026-0920-1859'
+  - time: '2026-09-20T20:23:10'
+    action: 'T-3211: Session handover S-2026-0920-2022'
+  - time: '2026-09-20T21:59:08'
+    action: 'T-3211: Session handover S-2026-0920-2158'
+  - time: '2026-09-21T00:03:13'
+    action: 'T-3211: Session handover S-2026-0921-0002'
+  - time: '2026-09-21T15:55:29'
+    action: 'T-3211: Session handover S-2026-0921-1555'
+  - time: '2026-09-21T23:03:21'
+    action: 'T-3211: Session handover S-2026-0921-2302'
+  - time: '2026-09-22T11:49:51'
+    action: 'T-3211: Session handover S-2026-0922-1149'
+  - time: '2026-09-22T16:42:26'
+    action: 'T-3211: Session handover S-2026-0922-1642'
+  - time: '2026-09-22T20:21:02'
+    action: 'T-3211: real ACs — root cause localised to the one-line name regex in handover.sh; scored (BVP 69 proposed)'
+  - time: '2026-09-22T21:20:20'
+    action: 'T-3211: handover reads the task name from parsed frontmatter, not a first-line regex — Suggested First Action and Work in Progress headers render folded names in full; bats 4/4'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 40 commit(s), 35199 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 35199
+  commits: 40
+  files_changed: 44
+  lines_added: 10388
+  lines_removed: 55
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3211-handover-suggested-first-action-truncate.md
+generated_by: context-agent-hybrid
