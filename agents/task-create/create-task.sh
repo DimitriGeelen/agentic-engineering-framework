@@ -329,12 +329,18 @@ _log_recommendation_bypass() {
     local _log_file="$_log_dir/.gate-bypass-log.yaml"
     local _ts
     _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    # T-3412: ${NAME} is free text (task title) and can contain a single quote,
+    # which is the YAML escape character for this single-quoted scalar. Double
+    # it per the YAML single-quoted-scalar rule (same idiom as T-1861 in
+    # check-active-task.sh) instead of interpolating it raw.
+    local _t3412_esc_name="${NAME//\'/\'\'}"
+    local _t3412_esc_reason="${_reason//\'/\'\'}"
     {
         echo "- timestamp: '$_ts'"
-        echo "  task: '<filing: ${NAME}>'"
+        echo "  task: '<filing: ${_t3412_esc_name}>'"
         echo "  flag: '$_flag'"
         echo "  caller: 'create-task.sh'"
-        echo "  reason: '$_reason'"
+        echo "  reason: '$_t3412_esc_reason'"
     } >> "$_log_file" 2>/dev/null || true
 }
 
