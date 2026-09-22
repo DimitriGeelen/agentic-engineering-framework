@@ -4244,3 +4244,38 @@ decisions:
     date: 2026-09-22
     task: T-3434
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-609
+    decision: "topic addresses start at the hub (`<hub>/<project>[/…]`). The host"
+    scope: project
+    date: 2026-09-22
+    task: T-3433
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-610
+    decision: "RFC 3986 authority marker; `parse_circuit` keys on it."
+    scope: project
+    date: 2026-09-22
+    task: T-3433
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-611
+    decision: "emit `<hub>/<project>/<agent>` when the session key and the agent id"
+    scope: project
+    date: 2026-09-22
+    task: T-3433
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-612
+    decision: "three signals (it is us / a sibling project dir with"
+    scope: project
+    date: 2026-09-22
+    task: T-3433
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-613
+    decision: "`## Verification` asserts that each of the six sidecar files is"
+    scope: project
+    date: 2026-09-22
+    task: T-3433
+    rationale: "Auto-captured from task file on completion"

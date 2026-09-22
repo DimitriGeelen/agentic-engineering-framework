@@ -8,12 +8,12 @@ description: >
   exact), sender circuit in metadata, sidecar:* read alias; e2e re-proven (OBS-453
   ruling)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/circuit.py, lib/sidecar_cli.py, lib/sidecar/e2e.py, lib/sidecar/inbox.py, lib/sidecar/status.py, lib/sidecar/termlink_transport.py, tests/unit/test_sidecar_circuit.py, tests/unit/test_sidecar_e2e.py, tests/unit/test_sidecar_inbox.py, tests/unit/test_sidecar_status.py, tests/unit/test_sidecar_termlink_transport.py]
 related_tasks: []
 arc_id: arc-011
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -27,8 +27,8 @@ arc_id: arc-011
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T12:42:41Z
-last_update: 2026-09-22T16:36:13Z
-date_finished:
+last_update: 2026-09-22T16:36:40Z
+date_finished: 2026-09-22T16:36:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -520,8 +520,8 @@ python3 -c "import yaml; d=yaml.safe_load(open('.context/inbox.yaml')); e=[x for
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f65813bd
-- **Timestamp:** 2026-09-22T16:07:22Z
+- **Scan ID:** R-ea8fc9af
+- **Timestamp:** 2026-09-22T16:36:47Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -531,7 +531,6 @@ python3 -c "import yaml; d=yaml.safe_load(open('.context/inbox.yaml')); e=[x for
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_sidecar_circuit.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_termlink_transport.py tests/unit/test_sidecar_status.py tests/unit/test_sidecar_e2e.py -q `
-
 ### 2026-09-22T16:07Z — reviewer static scan
 
 - **Action:** `bin/fw reviewer T-3433`, twice.
@@ -606,3 +605,6 @@ python3 -c "import yaml; d=yaml.safe_load(open('.context/inbox.yaml')); e=[x for
   which is incidental confirmation that the metadata stamp works on the
   ladder's path too.
 
+
+### 2026-09-22T16:36:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

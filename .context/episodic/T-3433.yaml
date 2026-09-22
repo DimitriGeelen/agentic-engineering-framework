@@ -1,0 +1,150 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3433: sidecar addressing: inbox:<circuit-id> topics (project-level durable + agent-level exact), sender circuit in metadata, sidecar:* read alias; e2e re-proven (OBS-453 ruling)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T16:37:05Z
+# ============================================================================
+
+task_id: T-3433
+task_name: "sidecar addressing: inbox:<circuit-id> topics (project-level durable + agent-level exact), sender circuit in metadata, sidecar:* read alias; e2e re-proven (OBS-453 ruling)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-22T12:42:41Z
+completed: 2026-09-22T16:36:40Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T14:45:40+02:00
+last_commit: 2026-09-22T18:36:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file circuit addressing (inbox:<circuit-id>) and T-3434 retry ladder — operator rulings 2026-09-22 recorded as decisions, resolving OBS-453 and OBS-447. circuit.py — hub-anchored circuit ids, four emitted forms, positional parse. transport posts to inbox:<circuit-id> and stamps from_circuit. inbox drains inbox:<circuit-id> AND the sidecar: read alias. whoami/status name the circuit and both topics; send resolves the address. e2e records the topics under test and accepts the alias. two live e2e PASS records on inbox:<circuit-id>. circuit-addressing report; OBS-453 resolved. ACs ticked with evidence, Verification, Decisions, Evolution. refresh vendored copies of the six sidecar files. three live verification lines from the reviewer's AC-verify-mismatch. vendor-sync lib/sidecar/retry.py to unblock the shared push. record the live cross-worker round trip and the seen-set constraint. peer e2e record 8dbad116 on the inbox: address committed (H1/H2 PASS, their hops H4/H5 open); AC6 ticked
+
+# Key outcomes
+outcomes:
+  - '`lib/sidecar/circuit.py`: `circuit_id(level="agent"|"project") -> str`, `topic_for_circuit(cid) -> "inbox:<cid>"`, `parse_circuit(cid) -> dict` (host, hub, project, session, agent — missing levels None); unit tests for full/agent, project-only, and truncation; project id uses the existing derivation (cite the function)'
+  - '`termlink_transport.topic_for(msg)` returns `inbox:<circuit>` (project-level when `to` is a bare project id, agent-level when `to` is a full circuit or a dispatched worker name resolvable to one); `build_post_command` adds `--metadata from_circuit=<sender circuit>`; existing transport tests updated, new ones for both forms'
+  - '`inbox.inbox_topic()` returns the new topic for this agent AND `inbox.legacy_topics()` returns the `sidecar:` alias; `pending()` drains both (cursor per topic, shared seen-set) — test: a consult on the legacy topic and one on the new topic both surface once'
+  - 'Dispatch stanza (`agents/termlink/termlink.sh`) and `FW_SIDECAR_AGENT_ID` unchanged for workers; `fw sidecar whoami` prints agent id, circuit id, and both topics; `fw sidecar status` lists cursors for both'
+  - '`fw sidecar e2e` (explicit + ambient) passes on the new topics — two live PASS records with `mode` and topic names in the JSON; then `fw sidecar e2e --peer 010-termlink` re-issued on the new address and its record committed (PASS or their-hops-open, per T-3426''s rule)'
+  - 'Docs: `docs/reports/T-3433-circuit-addressing.md` (the two forms, the derivation, the transition, what the hub now does for us); OBS-453 marked resolved; vendored copies synced, `bin/fw vendor self --check` clean; all sidecar suites green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-22 — the address is hub-anchored; the host rides in metadata'
+    chose: 'topic addresses start at the hub (`<hub>/<project>[/…]`). The host appears only in the `//`-marked full form used for `metadata.from_circuit`.'
+    rationale: 'a topic is an object on a hub, and the one peer we actually consult (010-termlink) is on a different host on the same hub. An address containing our fqdn is underivable by them and asserts a level we do not have.'
+    alternatives_rejected: ['host-first 5-segment addresses (`//` unnecessary, ladder literal) — they make the durable role address underivable by a peer, which is the one job that address has. Also rejected: dropping the host from the model entirely — it is a real level and `parse_circuit` must be able to report it.']
+  - decision: '2026-09-22 — `//` marks the host rather than a label or a segment count'
+    chose: 'RFC 3986 authority marker; `parse_circuit` keys on it.'
+    rationale: 'the forms are positional and two of them are three segments (`host/hub/project` vs `hub/project/agent`), so counting cannot disambiguate.'
+    alternatives_rejected: ['T-3287''s V9 `label=value::` grammar — correct, and heavier than this seam needs; the ruling''s concrete forms are slash-separated. Also rejected: always emitting five segments with blanks — that invents levels.']
+  - decision: '2026-09-22 — `session == agent` collapses to the 3-form'
+    chose: 'emit `<hub>/<project>/<agent>` when the session key and the agent id are the same string (every dispatched worker).'
+    rationale: 'it makes sender-derived and receiver-derived addresses identical, with no shared state. Proven live in run `f12fa93d`.'
+    alternatives_rejected: ['emitting the name twice (honest, but a peer holding the worker''s name cannot reproduce it); changing the stanza to mint a separate session id (AC4 requires the stanza unchanged, and a second naming scheme is the thing T-3407 removed).']
+  - decision: '2026-09-22 — a bare `--to` is classified by `is_project_id`, with an override'
+    chose: 'three signals (it is us / a sibling project dir with `.framework.yaml` / the fleet''s `NNN-Name` numbering), plus `fw sidecar send --level project|agent` to override, plus verbatim use of any `--to` containing `/`.'
+    rationale: 'the peer projects we address are not local directories (`010-termlink` is at `/opt/termlink` on another host), so a filesystem lookup alone cannot classify them; the numbering convention covers the fleet and no agent name in this corpus matches it.'
+    alternatives_rejected: ['a live `termlink list` lookup (makes `topic_for` impure, slow and untestable); requiring an explicit flag always (breaks every existing caller, including the e2e harness).']
+  - decision: '2026-09-22 — the binding vendor check is scoped to this task''s files'
+    chose: '`## Verification` asserts that each of the six sidecar files is byte-identical to its vendored copy, rather than running the global `bin/fw vendor self --check`.'
+    rationale: 'the global check also covers `lib/bus.sh` and `lib/dispatch.sh`, which the concurrent T-3434 worker holds uncommitted; the self-vendor guard withholds them by design ("withholding uncommitted file(s) not named by this caller"), so the global check reports DRIFT for another task''s in-flight work. A line whose colour depends on a second task''s working tree is exactly the mutable-corpus anchor T-3326 forbids. The global check was still run by hand and its state is reported in the handback.'
+    alternatives_rejected: ['`FW_VENDOR_ALL=1` (ships another task''s unfinished work to consumers under my commit — the precise hazard the guard exists to stop); waiting on T-3434 (couples two independent closes).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/circuit.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/e2e.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - '.agentic-framework/lib/sidecar/retry.py'
+  - '.agentic-framework/lib/sidecar/status.py'
+  - '.agentic-framework/lib/sidecar/termlink_transport.py'
+  - '.context/inbox.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/sidecar/e2e/60867b67.json'
+  - '.context/sidecar/e2e/8dbad116.json'
+  - '.context/sidecar/e2e/f12fa93d.json'
+  - '.context/sidecar/hub-id'
+  - 'docs/reports/T-3433-circuit-addressing.md'
+  - 'lib/sidecar/circuit.py'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/e2e.py'
+  - 'lib/sidecar/inbox.py'
+  - 'lib/sidecar/status.py'
+  - 'lib/sidecar/termlink_transport.py'
+  - '.tasks/active/T-3433-sidecar-addressing-inboxcircuit-id-topic.md'
+  - '.tasks/active/T-3434-universal-message-retry-ladder-shared-li.md'
+  - 'tests/unit/test_sidecar_circuit.py'
+  - 'tests/unit/test_sidecar_e2e.py'
+  - 'tests/unit/test_sidecar_inbox.py'
+  - 'tests/unit/test_sidecar_status.py'
+  - 'tests/unit/test_sidecar_termlink_transport.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T14:45:40'
+    action: 'T-3433: file circuit addressing (inbox:<circuit-id>) and T-3434 retry ladder — operator rulings 2026-09-22 recorded as decisions, resolving OBS-453 and OBS-447'
+  - time: '2026-09-22T17:52:18'
+    action: 'T-3433: circuit.py — hub-anchored circuit ids, four emitted forms, positional parse'
+  - time: '2026-09-22T17:53:30'
+    action: 'T-3433: transport posts to inbox:<circuit-id> and stamps from_circuit'
+  - time: '2026-09-22T17:55:14'
+    action: 'T-3433: inbox drains inbox:<circuit-id> AND the sidecar: read alias'
+  - time: '2026-09-22T17:56:56'
+    action: 'T-3433: whoami/status name the circuit and both topics; send resolves the address'
+  - time: '2026-09-22T17:58:24'
+    action: 'T-3433: e2e records the topics under test and accepts the alias'
+  - time: '2026-09-22T17:59:32'
+    action: 'T-3433: two live e2e PASS records on inbox:<circuit-id>'
+  - time: '2026-09-22T18:01:41'
+    action: 'T-3433: circuit-addressing report; OBS-453 resolved'
+  - time: '2026-09-22T18:04:37'
+    action: 'T-3433: ACs ticked with evidence, Verification, Decisions, Evolution'
+  - time: '2026-09-22T18:05:37'
+    action: 'T-3433: refresh vendored copies of the six sidecar files'
+  - time: '2026-09-22T18:07:45'
+    action: 'T-3433: three live verification lines from the reviewer''s AC-verify-mismatch'
+  - time: '2026-09-22T18:10:54'
+    action: 'T-3433: vendor-sync lib/sidecar/retry.py to unblock the shared push'
+  - time: '2026-09-22T18:14:10'
+    action: 'T-3433: record the live cross-worker round trip and the seen-set constraint'
+  - time: '2026-09-22T18:36:39'
+    action: 'T-3433: peer e2e record 8dbad116 on the inbox: address committed (H1/H2 PASS, their hops H4/H5 open); AC6 ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 14 commit(s), 233 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 233
+  commits: 14
+  files_changed: 27
+  lines_added: 3013
+  lines_removed: 175
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3433-sidecar-addressing-inboxcircuit-id-topic.md
+generated_by: context-agent-hybrid
