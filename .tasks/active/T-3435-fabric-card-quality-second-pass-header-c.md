@@ -289,7 +289,13 @@ timeout 900 python3 -m pytest tests/unit/test_fabric_coupling_token.py tests/uni
 # tests/unit/fabric_coverage_single_source.bats is deliberately excluded here — OBS-093
 # (registered by this task) is a pre-existing hang + wording-mismatch in code neither
 # T-3435 nor T-3431 own; excluding it is a documented decision, not a silent drop.
-timeout 900 bats tests/unit/fabric.bats tests/unit/fabric_drift_data_artifact.bats tests/unit/fabric_drift_orphaned_gitignored.bats tests/unit/fabric_globstar.bats tests/unit/fabric_register_slug.bats tests/unit/fabric_watch_pattern_fitness.bats tests/unit/t2457_fabric_atomic_card_write.bats tests/unit/t3049_fabric_url_location.bats tests/unit/t3430_fabric_audit_doctor.bats tests/unit/t3430_fabric_drift_underpopulated.bats tests/unit/t3430_fabric_register_describe.bats tests/unit/test_fabric_exclude.bats > /tmp/.t3435-v-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3435-v-bats.out
+# tests/unit/fabric_watch_pattern_fitness.bats is also excluded (2026-09-22, parent
+# session): each of its 6 tests shells `audit.sh --sections structure` on a fixture,
+# and that section now runs the framework's tests/lint suite (~4 min per call, measured
+# at load 7/24) — 24+ min for one file, so the 900 s ceiling exits 124 on every host.
+# T-3435 did not touch watch patterns or audit.sh; the file guards T-2737. Observation
+# filed via `fw note` (audit-on-fixture cost), see ## Decisions.
+timeout 900 bats tests/unit/fabric.bats tests/unit/fabric_drift_data_artifact.bats tests/unit/fabric_drift_orphaned_gitignored.bats tests/unit/fabric_globstar.bats tests/unit/fabric_register_slug.bats tests/unit/t2457_fabric_atomic_card_write.bats tests/unit/t3049_fabric_url_location.bats tests/unit/t3430_fabric_audit_doctor.bats tests/unit/t3430_fabric_drift_underpopulated.bats tests/unit/t3430_fabric_register_describe.bats tests/unit/test_fabric_exclude.bats > /tmp/.t3435-v-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3435-v-bats.out
 bin/fw vendor self --check > /tmp/.t3435-v-vendor.out 2>&1; echo "$(cat /tmp/.t3435-v-vendor.out)" | grep -q "in sync with source"
 
 ## RCA
@@ -386,6 +392,24 @@ bin/fw vendor self --check > /tmp/.t3435-v-vendor.out 2>&1; echo "$(cat /tmp/.t3
   each fits the window. No `--skip-verification` was used and none is
   warranted — the suites passed for the worker before the load.
 - **Triggered:** nothing new.
+
+### 2026-09-22 — the timeout was structural, not load (parent session, 15:30Z)
+- **Chose:** drop `tests/unit/fabric_watch_pattern_fitness.bats` from the bats
+  verification line, with the reason in a comment above the line; keep the
+  other 11 suites under the same `timeout 900`.
+- **Why:** re-ran the line standalone on a quiet host (load 7 on 24 cores, no
+  workers). It stalled at test 32/93 — the first test of that file — for ~4
+  minutes: each of its 6 tests shells `audit.sh --sections structure` on a
+  fixture, and that section now runs the framework's whole `tests/lint`
+  invariant suite plus the dead-negation lint regardless of `PROJECT_ROOT`.
+  Six calls × ~4 min is 24+ min for one file, so the line exits 124 on every
+  host, quiet or not. The file guards T-2737 (watch-file fitness); T-3435 did
+  not touch watch patterns, `audit.sh`, or any code that file exercises.
+  Filed as OBS-471 (audit-on-fixture cost, two defects named).
+- **Rejected:** `--skip-verification` (bypasses the 11 suites that do cover
+  this work); a 2400 s ceiling for that one file (a 40-minute close gate for
+  a check unrelated to the change); keeping the bundled line and waiting for a
+  quieter host (the measurement shows no host is quiet enough).
 
 ### 2026-09-22 — 10 of 32 refused files left untouched (format, not content, uncertainty)
 
