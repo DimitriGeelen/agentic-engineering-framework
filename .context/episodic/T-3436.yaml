@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3436: fabric_globstar.bats: two source-level tests assert 'shopt -s globstar' that T-1842 removed on 2026-05-15 — red for 130 days, blocking T-3435's close
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T15:33:01Z
+# ============================================================================
+
+task_id: T-3436
+task_name: "fabric_globstar.bats: two source-level tests assert 'shopt -s globstar' that T-1842 removed on 2026-05-15 — red for 130 days, blocking T-3435's close"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T15:28:39Z
+completed: 2026-09-22T15:32:45Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T17:32:41+02:00
+last_commit: 2026-09-22T17:32:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric_globstar.bats pins the T-1842 mechanism (expand_patterns.py, recursive=True) instead of the bash line T-1842 removed — red 130 days unseen (OBS-392)
+
+# Key outcomes
+outcomes:
+  - 'The two source-level tests are replaced by tests that pin the current mechanism: `do_drift`'
+  - 'The file header comment names T-1842 as the mechanism change so the next reader does not'
+  - '`bats tests/unit/fabric_globstar.bats` is fully green (0 `not ok`), and T-3435''s fabric'
+  - '`## RCA` records why the framework was blind for 130 days and points at the existing'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3436-fabricglobstarbats-two-source-level-test.md'
+  - 'tests/unit/fabric_globstar.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T17:32:41'
+    action: 'T-3436: fabric_globstar.bats pins the T-1842 mechanism (expand_patterns.py, recursive=True) instead of the bash line T-1842 removed — red 130 days unseen (OBS-392)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 2
+  lines_added: 406
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3436-fabricglobstarbats-two-source-level-test.md
+generated_by: context-agent-hybrid
