@@ -1,0 +1,82 @@
+{
+  "blocking_hops": [
+    "H1",
+    "H2",
+    "H6"
+  ],
+  "client_msg_id": "d6336d2f-523e-4fe8-a790-a04fe1326477",
+  "conversation_id": "e2e-60867b67",
+  "dispatch": {
+    "rc": 0,
+    "tail": "  Focus seeded: focus.e2e-60867b67-responder.yaml -> T-3433\nSpawned session 'e2e-60867b67-responder' via tmux backend\nWaiting for session to register (timeout: 30s)...\nSession 'e2e-60867b67-responder' is ready\nOK  Session 'e2e-60867b67-responder' registered\n  Tagged: T-3433\n  Task-type: build\nWorker spawned: e2e-60867b67-responder (wdir: /tmp/tl-dispatch/e2e-60867b67-responder)\n"
+  },
+  "finished_at": "2026-09-22T15:59:17.617794+00:00",
+  "hops": {
+    "A1": {
+      "detail": "worker read inbox, answered, and the answer arrived \u2014 with no consult instruction",
+      "ok": true,
+      "title": "ambient: worker answered with NO consult instruction in its prompt"
+    },
+    "H1": {
+      "detail": "state=INJECTED_NOW delivered=True",
+      "ok": true,
+      "title": "ledger: consult row INJECTED_* (our side)"
+    },
+    "H2": {
+      "detail": "1 envelope(s) with our client_msg_id on inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework/e2e-60867b67-responder or sidecar:e2e-60867b67-responder @0",
+      "ok": true,
+      "title": "hub: responder topic holds our client_msg_id"
+    },
+    "H3": {
+      "detail": "inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework/e2e-60867b67-responder cursor=1",
+      "ok": true,
+      "title": "worker read its inbox (responder cursor advanced)"
+    },
+    "H4": {
+      "detail": "1 ACK envelope(s) on inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework/e2e-60867b67-sender or sidecar:e2e-60867b67-sender from_agent=e2e-60867b67-responder",
+      "ok": true,
+      "title": "hub: sender topic holds the responder's ACK on our conversation"
+    },
+    "H5": {
+      "detail": "reply from e2e-60867b67-responder @0",
+      "ok": true,
+      "title": "inbox: sender's inbox surfaces the ACK"
+    },
+    "H6": {
+      "detail": "wait rc=0 DONE=yes",
+      "ok": true,
+      "title": "worker exited 0 and its result carries DONE"
+    }
+  },
+  "mode": "ambient",
+  "peer": null,
+  "polls": 4,
+  "responder": "e2e-60867b67-responder",
+  "run_id": "60867b67",
+  "sender": "e2e-60867b67-sender",
+  "started_at": "2026-09-22T15:59:00.580470+00:00",
+  "task": "T-3433",
+  "timings": {
+    "dispatched": 1.62,
+    "reply_seen": 16.74,
+    "sent": 0.07,
+    "total": 17.04,
+    "worker_exit": 16.93
+  },
+  "topics": {
+    "responder": [
+      "inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework/e2e-60867b67-responder",
+      "sidecar:e2e-60867b67-responder"
+    ],
+    "sender": [
+      "inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework/e2e-60867b67-sender",
+      "sidecar:e2e-60867b67-sender"
+    ]
+  },
+  "verdict": "PASS",
+  "worker": {
+    "result_tail": "`date -u` output: `Tue Sep 22 03:59:13 PM UTC 2026`\n\nDONE\n",
+    "wait_rc": 0,
+    "wait_tail": "Worker e2e-60867b67-responder finished (exit: 0)\n"
+  }
+}
