@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3417: arc-011 sidecar slice 6: fw sidecar status — out-of-band observer for the consult channel (round-1 review Δ4)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T08:10:53Z
+# ============================================================================
+
+task_id: T-3417
+task_name: "arc-011 sidecar slice 6: fw sidecar status — out-of-band observer for the consult channel (round-1 review Δ4)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T07:29:53Z
+completed: 2026-09-22T08:10:34Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T09:33:46+02:00
+last_commit: 2026-09-22T09:33:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar status — out-of-band observer for the consult channel
+
+# Key outcomes
+outcomes:
+  - '`lib/sidecar/status.py:snapshot()` — derives every number from `outbox/*.json`, the append-only ledger (latest row per id) and `inbox-state.json`; imports neither the transport nor the probe. `test_snapshot_never_touches_the_hub` monkeypatches `subprocess.run`/`Popen` to raise and asserts `snapshot()` still returns'
+  - '`fw sidecar status [--json] [--probe]` — `lib/sidecar_cli.py:cmd_status`; `--probe` result is emitted as a separate `hub_probe` key / trailing line and never merged into the ledger counts. Live `--probe --json`: file counts unchanged, `"hub_probe": {"ok": true, …}` beside them'
+  - 'Failure is visible — `test_silent_drop_becomes_visible_once_its_deadline_passes`: one `TransportError` send → `STORED 1`, `expired_unswept 0`; at `now+5min` → `expired_unswept 1`; after `resolve_expired()` → `expired_unswept 0, UNKNOWN 1`. The drop is on the record at every stage'
+  - 'Unit tests: `tests/unit/test_sidecar_status.py`, 5 tests; all six sidecar suites together **33 passed** in 1.08s'
+  - 'Live, against this agent''s real state:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/status.py'
+  - '.agentic-framework/VERSION'
+  - '.fabric/components/lib-sidecar-status.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_status.yaml'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/status.py'
+  - '.tasks/active/T-3414-worker-t-3412-skipped-the-vendored-path-.md'
+  - '.tasks/active/T-3417-arc-011-sidecar-slice-6-fw-sidecar-statu.md'
+  - 'tests/unit/test_sidecar_status.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T09:33:46'
+    action: 'T-3417: fw sidecar status — out-of-band observer for the consult channel'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 40 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, peer-consult, sidecar, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 40
+  commits: 1
+  files_changed: 11
+  lines_added: 840
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3417-arc-011-sidecar-slice-6-fw-sidecar-statu.md
+generated_by: context-agent-hybrid
