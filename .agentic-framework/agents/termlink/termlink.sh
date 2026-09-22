@@ -675,6 +675,23 @@ $prompt"
     printf 'export FW_SESSION_SCOPED_FOCUS=%q\n' "1" >> "$wdir/env.sh"
     printf 'export FW_FOCUS_SESSION_KEY=%q\n' "$name" >> "$wdir/env.sh"
 
+    # T-3422: seed that scoped file NOW, with the worker's own --task. Without
+    # this the gate's read-side fallback (T-3038) hands the worker whatever task
+    # the SHARED focus.yaml happens to hold until its first `fw work-on` —
+    # observed as a different, unrelated, real task in four consecutive
+    # SEQ-T3411 rounds (Δ8). Same resolver as the reader (lib/paths.sh), same
+    # env the worker will run under, never overwrites an existing file.
+    if ! declare -F fw_focus_seed >/dev/null 2>&1; then
+        # shellcheck source=/dev/null
+        source "$FRAMEWORK_ROOT/lib/paths.sh" 2>/dev/null || true
+    fi
+    if declare -F fw_focus_seed >/dev/null 2>&1; then
+        local _seeded
+        _seeded=$(FW_SESSION_SCOPED_FOCUS=1 FW_FOCUS_SESSION_KEY="$name" \
+                  fw_focus_seed "$project_dir" "$task") && \
+            echo "  Focus seeded: $(basename "$_seeded") -> $task"
+    fi
+
     local env_keys_json="[]"
     if [ "${#envs[@]}" -gt 0 ]; then
         local _key_list=""
