@@ -5071,3 +5071,31 @@ observations:
   tags: [sidecar]
   status: pending
   promoted_to: null
+- id: OBS-473
+  text: "audit.sh pre-push FAIL 'Self-vendor drift: libs class — 2 file(s) out of sync (T-2244)' prints the FABRIC mitigation ('Run: bin/fw fabric enrich --describe-only ... bin/fw fabric drift') instead of the vendor remedy ('bin/fw vendor self' / FW_VENDOR_ONLY=...). Seen 2026-09-22 16:59Z in a push refused while T-3429's worker had committed lib files not yet vendored. The remedy line is the one thing an agent reads under a blocked push; a wrong one sends it to the wrong verb. Likely a shared mitigation variable not reset between the fabric under-populated check and check_self_vendor_drift."
+  captured: 2026-09-22T16:45:43Z
+  context_task: T-3429
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-474
+  text: "tests/unit/audit_stale_arc_warning.bats is RED and pre-dates T-3429: all 7 legs assert audit exit <= 1, but the test sets FW_AUDIT_TIMEOUT=120 while the structure section runs check_invariant_suite -> 'timeout 300 bats tests/lint/' (110 tests, ~3-5 min). The audit blows its own budget and exits 124. Proven not-a-T-3429-regression two ways: (1) same fixture, same hang point (Branch hygiene -> check_invariant_suite) with the T-3429 rail disabled; (2) same fixture against a git-archive of commit 2c2315768 (pre-T-3429) -> BASELINE_AUDITRC=124, identical stop point. It is timing-flaky, not deterministically red: the same suite passed earlier in the same session under lighter load, which is why it sat unnoticed. Fix is a scope call, not a one-liner: raise FW_AUDIT_TIMEOUT in the test, or move check_invariant_suite out of the structure section (it was wired in by T-3191), or give the lint sub-run its own budget."
+  captured: 2026-09-22T17:55:52Z
+  context_task: T-3429
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-475
+  text: "tests/unit/t2230_bvp_driver_init.bats is RED and pre-dates T-3429: 11 of 15 legs fail. The tests set PROJECT_ROOT=$TEST_TEMP_DIR and invoke bin/fw bvp driver --init, but fw resolves the project root by walking UP from cwd — and bats runs from the framework repo — so --init sees /opt/999-Agentic-Engineering-Framework/policy/value-drivers.yaml, reports 'already exists', exits 0, and never writes into TEST_TEMP_DIR. Every leg then fails on the file-exists assertion. Proven not-a-T-3429-regression: bats against a git-archive of 2c2315768 (pre-T-3429) gives the identical 4 ok / 11 not ok. Discovered only now because the earlier full-suite sweeps hit their own 1200s timeout before reaching this file — two red sibling suites (this and audit_stale_arc_warning, OBS-474) were sitting behind a truncated sweep. Fix is a scope call: either honour PROJECT_ROOT in fw's resolution for this verb, or have the test cd into TEST_TEMP_DIR before invoking fw."
+  captured: 2026-09-22T18:06:21Z
+  context_task: T-3437
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-476
+  text: "EWCR Arc-0 leg-1 measurement tool refuses on success: tools/ewcr-arc0-unknown-overlap.py exits 2 REFUSED because it reads 0 Unknown-subsystem cards as proof its predicate is broken. Premise is now false — 0 of 1332 .fabric cards carry subsystem: Unknown (544 were reclassified, 524 to 'tests'). T-3394's pinned verification line 4 is red as a result; the clause-1 attestation's own reproduction command no longer runs. Mutable-corpus-anchor class (T-3326): the guard hard-codes a corpus fact as an invariant, and total-cards-enumerated (1332, non-zero) is the discriminator it should read instead."
+  captured: 2026-09-22T18:10:13Z
+  context_task: T-3437
+  tags: [bug]
+  status: pending
+  promoted_to: null

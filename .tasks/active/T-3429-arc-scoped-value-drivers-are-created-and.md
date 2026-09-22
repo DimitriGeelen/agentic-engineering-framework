@@ -21,6 +21,7 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+arc_id: arc-006
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -121,40 +122,40 @@ Verdict written back onto the proposed entry as `reviewer: {verdict, checks, ts,
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw arc review-driver <arc> "<name>"` runs checks (a)(b)(c), prints one line per check
+- [x] `fw arc review-driver <arc> "<name>"` runs checks (a)(b)(c), prints one line per check
       with PASS/FAIL and the reason, exits 0 on all-pass and 1 otherwise, and writes the
       `reviewer:` block onto the matching `proposed_scoped_drivers[]` entry (`--dry-run`
       writes nothing). `--all` reviews every proposed entry on the arc.
-- [ ] `fw arc approve-driver <arc> "<name>"` with neither `--i-am-human` nor
+- [x] `fw arc approve-driver <arc> "<name>"` with neither `--i-am-human` nor
       `--from-watchtower` no longer refuses: it runs the reviewer and, on PASS, appends the
       entry to `scoped_drivers[]` with `approved_by: reviewer:<reviewer_id>` and the
       `reviewer:` block copied in; on FAIL it refuses naming the failed check(s). Cap 3 and
       weight ≤ 6 (M2) and the T-1979 dedup still apply on this path. `--i-am-human` /
       `--from-watchtower` still approve without the reviewer, recording `approved_by: human`.
-- [ ] `fw arc approve-driver <arc> --all-reviewed` approves every proposed entry that passes
+- [x] `fw arc approve-driver <arc> --all-reviewed` approves every proposed entry that passes
       review, in proposal order, stopping at the cap with a message naming what it skipped;
       `--none` keeps its existing human gate unchanged (a negative ruling stays sovereign).
-- [ ] The estimator/agent path that writes `proposed_scoped_drivers:` (Workflow A step 3,
+- [x] The estimator/agent path that writes `proposed_scoped_drivers:` (Workflow A step 3,
       `policy/prompts/bvp-driver-session.md` and CLAUDE.md §Arc-Scoped Driver Suggestion
       Workflow steps 4–5) is rewritten so the default next step is `--all-reviewed`, not
       "surface to the human"; §Arc Action Handoffs table gains the reviewer row.
-- [ ] Audit rail `check_arc_driver_reviewer_record` in `agents/audit/audit.sh`: WARN for any
+- [x] Audit rail `check_arc_driver_reviewer_record` in `agents/audit/audit.sh`: WARN for any
       in-progress arc `scoped_drivers[]` entry whose `approved_by` starts with `reviewer:` but
       has no `reviewer:` block or whose block says `verdict: fail`; PASS line with the count
       otherwise; silent when no arc has scoped drivers. Mirrored in `fw doctor`.
-- [ ] Watchtower `/arcs/<slug>` proposed-driver table shows the reviewer verdict per row
+- [x] Watchtower `/arcs/<slug>` proposed-driver table shows the reviewer verdict per row
       (PASS / FAIL with failed check names / not reviewed) and the Approve button posts through
       the reviewer path; `bin/fw watchtower restart` run and `bin/fw watchtower current` exits 0.
-- [ ] Tests: bats covering (a)(b)(c) each failing on a crafted fixture and passing on a valid
+- [x] Tests: bats covering (a)(b)(c) each failing on a crafted fixture and passing on a valid
       one, the default approve path, `--all-reviewed` stopping at the cap, `--none` still
       gated, and the audit rail WARN/PASS/silent legs; `TEST_TEMP_DIR` set in setup;
       `tests/unit/*arc*` and `tests/unit/*bvp*` stay green.
-- [ ] The six drivers the audit names as unscorable (identity-fidelity, provisioning-safety,
+- [x] The six drivers the audit names as unscorable (identity-fidelity, provisioning-safety,
       Discard fidelity, Loop closure (conditional), unknown-input-safety,
       first-run-recoverability) are run through `review-driver --dry-run`; each FAILs check (a)
       as expected, and the task's `## Decisions` records that writing their scoring specs is
       per-arc follow-up work, one task per arc, not done here.
-- [ ] `FW_VENDOR_ONLY=... bin/fw vendor self` run for every touched file under lib/ agents/
+- [x] `FW_VENDOR_ONLY=... bin/fw vendor self` run for every touched file under lib/ agents/
       web/ policy/ and `bin/fw vendor self --check` clean; new files registered with
       `fw fabric register`; `arc_id: arc-006` set in this task's frontmatter.
 
@@ -202,131 +203,34 @@ Verdict written back onto the proposed entry as `reviewer: {verdict, checks, ts,
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
-# Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
-# state — an exact live count, or a grep of live `fw audit`/`fw doctor` output
-# for a specific corpus entity (a named arc, a task count, a census number).
-# The corpus moves under the check, and the line rots: it goes red (or vanishes
-# its pattern) for reasons unrelated to the code under test, blocking closes.
-# Pin the INVARIANT (categories sum, count > 0, property holds) or run the code
-# against a COMMITTED FIXTURE — never the live count or a live-audit line.
-# Origin: T-2969 line grepping live audit for one arc's status; T-2871's census
-# test pinning exact live counts (56→74 files) — both blocked closes (OBS-377).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line with PIPEFAIL LIVE
-# (errexit is not — see below). When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# ── A SKIPPED BATS TEST REPORTS `ok` (T-3217) ─────────────────────────────────
-#
-# `! grep -q "^not ok"` does NOT mean the suite ran. Bats emits a skip as
-#     ok 6 <name> # skip <reason>
-# which is not a `not ok`, so the gate passes and the report says ok while the
-# thing the test covers was measured NOWHERE. Origin: T-3213 guarded a test with
-# `[ "$(id -u)" -eq 0 ] && skip` — the suite runs as root here and in CI, so it
-# skipped on every run that mattered, for as long as it existed.
-#
-# Add a skip clause to any bats verification line. `# skip` is the marker bats
-# writes; counting it is the whole check:
-#     timeout 300 bats <file> > /tmp/.out 2>&1 && ! grep -q "^not ok" /tmp/.out
-#     test "$(grep -c '# skip' /tmp/.out)" -eq 0
-# Two lines, because they answer different questions — "did anything fail" and
-# "did everything run". If some skips are legitimate on your host (an optional
-# dependency is genuinely absent), assert the COUNT you expect rather than zero,
-# and say in the task why that number is right.
-#
-# Corpus-wide, the same check runs from `bin/fw test lint`
-# (tools/bats-silent-skip-lint.py): static mode flags guards that are fixed for
-# a deployment rather than probing an optional dependency, and `--tap FILE`
-# reports the skips a real run actually fired.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
-# the same directory, the same second. To rehearse for real:
-#     bash -c 'set -o pipefail; <your verification line>'
-#
-# NOTE THE MISSING `-e` — it is not a typo (T-3203). This file used to prescribe
-# `set -eo pipefail` here, which is NOT the gate: it adds errexit the gate does
-# not have, so it FAILS lines the gate PASSES. Measured, 10 lines, 3 diverged:
-#     line                            gate    set -eo (old)   set -o (this)
-#     false; true                     PASS    FAIL  wrong     PASS  ok
-#     cd /nonexistent; echo ok        PASS    FAIL  wrong     PASS  ok
-#     grep -q MISS file; true         PASS    FAIL  wrong     PASS  ok
-# The divergence is one-directional and that is the trap: the old rehearsal only
-# ever fails lines the gate accepts, so it produces false REDS, and an author
-# who "fixes" a line to satisfy it is fixing something that was never broken —
-# while the line that actually is broken (`cmd1; cmd2` where cmd1 fails) passes
-# both. Re-derive rather than trust this table — it is pinned, not asserted:
-#     bats tests/unit/t3203_p011_gate_semantics.bats
-#
-# ── `cmd1; cmd2` IS JUDGED ONLY ON cmd2 (T-3203) ──────────────────────────────
-#
-# The gate runs each line as the CONDITION of an `if` (update-task.sh:1215), and
-# POSIX suppresses errexit for a compound command in an `if` condition — through
-# the subshell. So pipefail applies and `set -e` does not, and in a sequence only
-# the LAST command's status reaches the verdict. `cd /nonexistent; echo ok` passes.
-# 2,644 of 10,997 verification lines in this corpus contain `;` (re-derive with
-# the query in docs/reports/T-3203-p011-gate-semantics.md).
-#
-# SAFE SHAPES — both verified biting, each against a passing control:
-#   A. one command whose own status is the verdict (prefer this):
-#        out=$(cmd 2>&1); echo "$out" | grep -q PAT && ! echo "$out" | grep -q BAD
-#      the leading assignments are setup; the trailing `&&` chain is the verdict.
-#   B. an explicit sub-shell, whose errexit the outer `if` cannot reach into:
-#        bash -c 'set -eo pipefail; cmd1; cmd2'
-#      use when you genuinely need every command in the sequence to count.
-#
-# The rule of thumb: put the assertion LAST, and make sure it is an assertion.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3429_arc_driver_review.bats > /tmp/.t3429a.out 2>&1 && ! grep -q "^not ok" /tmp/.t3429a.out
+test "$(grep -c '# skip' /tmp/.t3429a.out)" -eq 0
+timeout 300 bats tests/unit/t3429_arc_approve_driver_default_path.bats > /tmp/.t3429p.out 2>&1 && ! grep -q "^not ok" /tmp/.t3429p.out
+test "$(grep -c '# skip' /tmp/.t3429p.out)" -eq 0
+timeout 300 bats tests/unit/t3429_arc_driver_reviewer_record_rail.bats > /tmp/.t3429r.out 2>&1 && ! grep -q "^not ok" /tmp/.t3429r.out
+test "$(grep -c '# skip' /tmp/.t3429r.out)" -eq 0
+# The reviewer verb exists and its help names all three checks.
+bin/fw arc review-driver --help > /tmp/.t3429h.out 2>&1 && grep -q "distinguishes" /tmp/.t3429h.out
+# Check (a) FAILs on a driver the T-3428 audit already names as unscorable. `;` not
+# `&&`: review-driver exits 1 on FAIL, and the grep IS the assertion (T-3203).
+bin/fw arc review-driver arc-020 identity-fidelity --dry-run > /tmp/.t3429six.out 2>&1; grep -q "(a) scorable       FAIL" /tmp/.t3429six.out
+# --dry-run wrote nothing to the live arc.
+test "$(git diff --name-only .context/arcs/arc-020.yaml | grep -c .)" -eq 0
+# Audit rail and its fw doctor mirror both shipped.
+grep -q "check_arc_driver_reviewer_record" agents/audit/audit.sh
+grep -q "Arc driver reviewer records" bin/fw
+# Watchtower: the running process is current with web/ (G-104), and all three
+# verdict states render.
+bin/fw watchtower current
+curl -sf "$(bin/fw watchtower url)/arcs/arc-011" -o /tmp/.t3429arc.html && grep -q "Reviewer: PASS" /tmp/.t3429arc.html
+curl -sf "$(bin/fw watchtower url)/arcs/arc-006" -o /tmp/.t3429arc6.html && grep -q "Reviewer: FAIL" /tmp/.t3429arc6.html
+curl -sf "$(bin/fw watchtower url)/arcs/arc-014" -o /tmp/.t3429arc14.html && grep -q "Reviewer: not reviewed" /tmp/.t3429arc14.html
+# The Approve button posts the DEFAULT (reviewer) path — no --from-watchtower.
+grep -q 'approve-driver", slug, name\]' web/blueprints/arcs.py
+# Docs name the new default next step.
+grep -q -- "--all-reviewed" CLAUDE.md
+grep -q -- "--all-reviewed" policy/prompts/bvp-driver-session.md
+bin/fw vendor self --check
 
 ## RCA
 
@@ -346,67 +250,163 @@ Verdict written back onto the proposed entry as `reviewer: {verdict, checks, ts,
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-09-22 — the reviewer has to be able to judge things that are not proposals
+- **What changed:** the spec describes the reviewer as operating on `proposed_scoped_drivers[]`.
+  Two real call shapes are not proposals: the six already-approved unscorable drivers the AC
+  demands a verdict on, and an ad-hoc `fw arc approve-driver <arc> "<new name>" --rationale …`
+  with no proposal behind it. A reviewer that only reads proposals would have refused the second
+  shape outright — the new default path would have worked only for estimator output.
+- **Plan impact:** the selector falls back to `scoped_drivers[]` (read-only), and
+  `FW_ARC_REVIEW_INLINE_ENTRY` lets the approve path hand the reviewer an entry built from the
+  command line. Neither writes.
+- **Triggered:** a `where:` field on every verdict, so the report says which list it judged.
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+### 2026-09-22 — a red sibling suite that is not this task's (OBS-474)
+- **What changed:** `tests/unit/audit_stale_arc_warning.bats` went red during the closing sweep.
+  The AC asks for `tests/unit/*arc*` and `*bvp*` to stay green, so this had to be settled before
+  close rather than waved past.
+- **Finding:** not a T-3429 regression. The test sets `FW_AUDIT_TIMEOUT=120`, while the audit's
+  structure section runs `check_invariant_suite` → `timeout 300 bats tests/lint/` (110 tests,
+  ~3-5 min, wired in by T-3191). The audit blows its own budget and exits 124, so the
+  `[ "$status" -le 1 ]` assertion fails. Proven twice: with the T-3429 rail disabled the audit
+  hangs at the identical point, and a `git archive` of the pre-T-3429 commit (2c2315768) returns
+  `BASELINE_AUDITRC=124` on the identical fixture at the identical point.
+- **Why it looked like mine:** it is timing-flaky, not deterministically red — the same suite
+  passed earlier in this session under lighter load. A test sitting on a self-timeout boundary
+  reads as "the change you just made broke it" every time the machine is busy.
+- **Triggered:** OBS-474. Not fixed here — the remedy is a scope call (raise the test's budget,
+  move `check_invariant_suite` out of `structure`, or give the lint sub-run its own budget), and
+  one-bug-one-task applies.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+### 2026-09-22 — a truncated sweep was hiding a second red suite (OBS-475)
+- **What changed:** running the sibling sweep to completion (excluding the OBS-474 file) surfaced
+  `tests/unit/t2230_bvp_driver_init.bats` at 4 ok / 11 not ok. Every earlier sweep in this
+  session hit its own 1200s wall before reaching that file, so the suite *looked* green.
+- **Finding:** also pre-existing. The tests set `PROJECT_ROOT=$TEST_TEMP_DIR`, but `fw` resolves
+  the project root by walking up from cwd — and bats runs from the framework repo — so
+  `--init` sees the repo's own `policy/value-drivers.yaml`, says "already exists", exits 0, and
+  never writes into the temp dir. `bats` against a `git archive` of 2c2315768 gives the identical
+  4 ok / 11 not ok.
+- **Why this matters beyond the two files:** "the suite stayed green" was an artefact of the
+  sweep being cut short, not a measurement. A timed-out test run reports the tests it reached and
+  says nothing about the rest — the same false-green shape this task's own audit rail exists to
+  catch, one level up.
+- **Triggered:** OBS-475. Not fixed here.
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-09-22 — the audit rail's subject is the CLAIM, not the driver
+- **What changed:** the obvious rail would WARN on any scoped driver without a `reviewer:` block.
+  That fires on every driver approved before today — 7 of them — which trains the rail out on
+  day one.
+- **Plan impact:** the rail fires only on `approved_by: reviewer:…` (a certification claim) with
+  no usable verdict behind it. A human-approved or legacy entry never claimed a reviewer, so it
+  is out of scope by construction rather than by an allowlist that would need maintaining.
+- **Triggered:** a dedicated test leg for the legacy shape, since "does not fire" is the
+  assertion most likely to rot silently.
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** Every Agent AC is met and verified against the live corpus, not only fixtures. The
+default path through `fw arc approve-driver` now runs the static reviewer and approves on PASS;
+the §ACD refusal survives as the override, and `--none` is untouched. The structural limits the
+ruling did *not* change — cap 3, weight ≤6, T-1979 dedup — each have a test proving they still
+bite on the path that no longer asks a human, because that is the half of this change most likely
+to have been loosened by accident. 29 new bats tests, 0 failures, 0 skips. The sibling `*arc*` /
+`*bvp*` sweep is 274 ok / 0 not ok / 0 skip **excluding two files that were already red before
+this task** — `audit_stale_arc_warning.bats` (OBS-474) and `t2230_bvp_driver_init.bats`
+(OBS-475). Both were proven pre-existing by running the same fixtures against a `git archive` of
+commit 2c2315768, which fails identically; neither is fixed here, and both are filed. Stating
+that plainly rather than reporting a green number that quietly drops two files. What remains is a
+render-surface judgement — whether the verdict column reads at a glance and the Approve outcome
+is understandable without the CLI — which is a Human AC by P-013 and the one thing I cannot
+verify on the operator's behalf.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
-
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Evidence:**
+- `fw arc review-driver` ships with three static checks. All six drivers the T-3428 audit names
+  as unscorable FAIL check (a) as predicted, and `--dry-run` left their arc YAMLs untouched.
+- Default approve on a fixture arc records `approved_by: reviewer:static-v1` with the full
+  verdict block copied onto the entry; a FAIL refuses and names `FAILED (a) scorable` /
+  `FAILED (c) distinguishes` rather than only a headline.
+- `--all-reviewed` on a 5-proposal arc: 3 approved, 2 skipped, naming both skipped drivers and
+  the remedy (`fw arc remove-driver`).
+- `check_arc_driver_reviewer_record` WARNs on a claim with no block and on `verdict: fail`
+  (naming the failed checks), PASSes with the count, stays silent with no scoped drivers, and
+  never fires on a human-approved entry. Mirrored in `fw doctor` — live run prints
+  `OK  Arc driver reviewer records: 7 scoped driver(s), every reviewer-approved one carries its verdict`.
+- Watchtower renders all three states live: `Reviewer: PASS` on `/arcs/arc-011` (2 rows),
+  `Reviewer: FAIL — scorable` on `/arcs/arc-006`, `Reviewer: not reviewed` on `/arcs/arc-014`.
+  `bin/fw watchtower restart` run; `bin/fw watchtower current` exits 0.
+- `bin/fw vendor self --check` clean; `lib/arc-driver-review.sh` registered in the fabric.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-22 — Check (a) accepts a handler, not only a `scoring:` spec
+- **Chose:** reuse `lib/bvp-scorability.sh`'s predicate verbatim — a driver is scorable when a
+  hand-written handler exists for its id/name/alias **or** when it carries a `scoring:` /
+  `scoring_file:` spec that passes the T-3428 validator.
+- **Why:** the Context words check (a) as "carries a valid `scoring:` spec". Read literally that
+  would refuse `D-DISJOINT` and `D-WIRE-EVIDENCE` on arc-011, which the estimator can already
+  score through a handler — and it would make the reviewer and `check_bvp_driver_scorability`
+  disagree about the word "scorable" while both WARN at the same operator. The honest question
+  is "can the estimator score this at all", which is what the audit rail measures. None of the
+  six unscorable drivers pass either reading, so the AC's expected outcome is unchanged.
+- **Rejected:** a spec-only reading — it would have manufactured a disagreement between two
+  rails that are supposed to be the same measurement.
+
+### 2026-09-22 — Check (b) skips the entry under review by identity, not by name
+- **Chose:** `if s is entry: continue` when scanning `scoped_drivers[]`.
+- **Why:** an already-approved driver is reviewable (that is how the six get a verdict at all),
+  and a name comparison makes every such driver a duplicate of itself. Identity is the only test
+  that separates "this very entry" from "a second entry that happens to carry the same name",
+  which IS a real collision. Caught by running the six before writing the test, not by the test.
+
+### 2026-09-22 — The six unscorable drivers get a verdict here, not a scoring spec
+- **Chose:** run all six through `review-driver --dry-run`, record that each FAILs check (a),
+  and leave spec-writing as per-arc follow-up — one task per arc (arc-020, arc-012, arc-015).
+- **Why:** a scoring spec is a per-arc authoring judgement about what that arc actually values;
+  writing six from outside their arcs would produce six specs nobody owns. The task brief says
+  so explicitly, and one-bug-one-task applies to authoring gaps too.
+- **Rejected:** drafting placeholder specs to clear the audit WARN — that converts a visible gap
+  into an invisible one, which is the exact inversion T-3428 was filed to undo.
+
+### 2026-09-22 — the reviewer gates on the default path for humans too, not only agents
+- **Chose:** the reviewer runs whenever neither `--i-am-human` nor `--from-watchtower` is given,
+  regardless of `$CLAUDECODE`. Added `--scoring-file PATH` so an ad-hoc driver named on the
+  command line — which has no proposal to carry an inline `scoring:` block — can reach check (a)
+  at all.
+- **Why:** the old §ACD gate only fired under `$CLAUDECODE=1`, so a human at a terminal passed
+  straight through. Keeping that shape would mean a human could still add an unscorable driver
+  silently, which is the exact gap T-3428 named. The reviewer is a QUALITY gate, not an
+  AUTHORITY gate, and quality does not depend on who is typing.
+- **Consequence, handled:** five existing tests in `tests/unit/arc_remove_driver_verb.bats`
+  (T-1976 ×3, T-1979 ×2) approved spec-less drivers on the unflagged path and went red. Their
+  subjects are preserved — only the fixtures' quality moved to what the reviewer now requires;
+  the genuine back-compat case (approval with no rationale at all, which cannot pass check (c)
+  by construction) moved to the `--i-am-human` override, which is where that behaviour now
+  lives. One new leg pins that an ad-hoc driver with no mechanism is refused.
+- **Rejected:** scoping the reviewer to `$CLAUDECODE=1` to keep the five tests untouched — that
+  would have made the framework's quality bar depend on the terminal it was typed into.
+
+### 2026-09-22 — `--all-reviewed` is serial, and re-reads the arc between approvals
+- **Chose:** review-then-approve one driver at a time, re-reading `scoped_drivers[]` each pass.
+- **Why:** each approval changes both the cap headroom and the dedup set the NEXT review reads.
+  Batching the reviews up front would judge driver 2 against the arc as it was before driver 1
+  landed, so a self-colliding pair could both pass.
+
+### 2026-09-22 — The Watchtower page renders the stored verdict; it never runs the reviewer
+- **Chose:** `/arcs/<slug>` reads the persisted `reviewer:` block and shows PASS / FAIL (with the
+  failed check names) / "not reviewed"; refreshing verdicts is `fw arc review-driver <arc> --all`.
+- **Why:** a GET that mutates arc YAML is a worse bug than a stale verdict, and it would race
+  every other writer of the same file. "Not reviewed" is an honest third state, not a gap.
+
+### 2026-09-22 — ruamel reformats unrelated scalars when the reviewer writes
+- **Chose:** accept it, and verify rather than assert. `closed_at: null` becomes `closed_at:` and
+  long strings re-wrap on the first write to an arc YAML.
+- **Why:** verified semantically identical (`yaml.safe_load` compare against `git show HEAD:`,
+  both arcs) and one-shot — a second run changes only the `ts`. It is the same round-trip
+  `lib/arc.sh:arc_approve_driver` has always used, so surgical text insertion would have made the
+  reviewer's write behave *differently* from the approve path writing the same file.
 
 ## Decision
 
