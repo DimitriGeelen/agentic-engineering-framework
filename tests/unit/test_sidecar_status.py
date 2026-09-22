@@ -9,13 +9,20 @@ import pytest
 
 @pytest.fixture()
 def sc(tmp_path, monkeypatch):
-    monkeypatch.setenv("FRAMEWORK_ROOT", str(tmp_path))
+    project = tmp_path / "999-Agentic-Engineering-Framework"
+    project.mkdir(exist_ok=True)
+    monkeypatch.setenv("FRAMEWORK_ROOT", str(project))
     monkeypatch.setenv("FW_SIDECAR_AGENT_ID", "agent-under-test")
+    monkeypatch.setenv("FW_SIDECAR_HUB_ID", "cacc73ea32b121dd")
+    monkeypatch.setenv("FW_SIDECAR_HOST", "host107.ring20.lan")
+    monkeypatch.delenv("FW_FOCUS_SESSION_KEY", raising=False)
+    monkeypatch.delenv("TERMLINK_SESSION", raising=False)
     import lib.sidecar.outbox as outbox
+    import lib.sidecar.circuit as circuit
     import lib.sidecar.delivery as delivery
     import lib.sidecar.inbox as inbox
     import lib.sidecar.status as status
-    for m in (outbox, delivery, inbox, status):
+    for m in (outbox, circuit, delivery, inbox, status):
         importlib.reload(m)
     return status, delivery, outbox, inbox
 
@@ -98,3 +105,65 @@ def test_inbox_cursor_is_reported_per_topic(sc):
     snap = status.snapshot()
     assert snap["inbox_cursors"] == {"sidecar:agent-under-test": 7}
     assert "sidecar:agent-under-test@7" in status.render(snap)
+
+
+# ── T-3433: the status names both addresses ─────────────────────────────────
+
+HUB = "cacc73ea32b121dd"
+PROJ = "999-Agentic-Engineering-Framework"
+
+
+def test_snapshot_reports_the_circuit_and_both_topics(sc):
+    status, _, _, _ = sc
+    snap = status.snapshot()
+    assert snap["circuit_id"] == f"{HUB}/{PROJ}/agent-under-test"
+    assert snap["inbox_topics"] == [f"inbox:{HUB}/{PROJ}/agent-under-test",
+                                    "sidecar:agent-under-test"]
+    assert snap["inbox_topic"] == snap["inbox_topics"][0]
+
+
+def test_render_lists_a_cursor_for_every_drained_topic_even_unread(sc):
+    """A topic missing from the cursor map is a topic nobody is watching —
+    so both are listed at 0 rather than omitted."""
+    status, _, _, _ = sc
+    text = status.render(status.snapshot())
+    assert f"inbox:{HUB}/{PROJ}/agent-under-test@0" in text
+    assert "sidecar:agent-under-test@0" in text
+
+
+def test_status_still_renders_when_the_hub_anchor_is_unestablished(sc, monkeypatch):
+    """The unreachable-hub case IS the state status exists to report; raising
+    would hide every other number on the page."""
+    status, _, _, _ = sc
+    import lib.sidecar.circuit as circuit
+    monkeypatch.delenv("FW_SIDECAR_HUB_ID", raising=False)
+    monkeypatch.setattr(circuit, "_hub_cache", None)
+    monkeypatch.setattr(circuit, "hub_id",
+                        lambda **kw: (_ for _ in ()).throw(circuit.CircuitError("no hub")))
+    snap = status.snapshot()
+    assert snap["circuit_id"] is None
+    assert "hub anchor unestablished" in status.render(snap)
+
+
+def test_whoami_prints_the_circuit_and_both_topics(sc, capsys):
+    import lib.sidecar_cli as cli
+    import importlib
+    importlib.reload(cli)
+    assert cli.main(["whoami"]) == 0
+    out = capsys.readouterr().out
+    assert f"circuit:       {HUB}/{PROJ}/agent-under-test" in out
+    assert f"//host107.ring20.lan/{HUB}/{PROJ}/agent-under-test" in out
+    assert f"inbox topic:   inbox:{HUB}/{PROJ}/agent-under-test" in out
+    assert "legacy (read): sidecar:agent-under-test" in out
+
+
+def test_whoami_json_carries_every_form(sc, capsys):
+    import json as _json
+    import importlib
+    import lib.sidecar_cli as cli
+    importlib.reload(cli)
+    assert cli.main(["whoami", "--json"]) == 0
+    payload = _json.loads(capsys.readouterr().out)
+    assert payload["project_circuit"] == f"{HUB}/{PROJ}"
+    assert payload["circuit_id_full"].startswith("//host107.ring20.lan/")
+    assert payload["legacy_topics"] == ["sidecar:agent-under-test"]

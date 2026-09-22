@@ -23,23 +23,54 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lib.sidecar import delivery, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
+from lib.sidecar import circuit, delivery, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
 from lib.sidecar import termlink_transport as transport  # noqa: E402
 
 
 def cmd_whoami(args) -> int:
-    payload = {"agent_id": inbox.agent_id(), "inbox_topic": inbox.inbox_topic()}
+    """Who this agent is and where a consult for it lands (T-3433).
+
+    Both topics are printed, not just the current one: during the transition
+    the legacy `sidecar:` alias is still drained, so an operator debugging a
+    consult that "went missing" needs to see both addresses at once.
+    """
+    try:
+        payload = {
+            "agent_id": inbox.agent_id(),
+            "circuit_id": circuit.circuit_id("agent"),
+            "circuit_id_full": circuit.circuit_id("full"),
+            "project_circuit": circuit.circuit_id("project"),
+            "inbox_topic": inbox.inbox_topic(),
+            "legacy_topics": inbox.legacy_topics(),
+        }
+    except circuit.CircuitError as exc:
+        print(f"whoami: no address can be derived — {exc}", file=sys.stderr)
+        return 2
     if args.json:
         print(json.dumps(payload))
     else:
-        print(f"agent_id:    {payload['agent_id']}")
-        print(f"inbox topic: {payload['inbox_topic']}")
+        print(f"agent_id:      {payload['agent_id']}")
+        print(f"circuit:       {payload['circuit_id']}")
+        print(f"  full:        {payload['circuit_id_full']}")
+        print(f"  project:     {payload['project_circuit']}   (durable role address)")
+        print(f"inbox topic:   {payload['inbox_topic']}")
+        for topic in payload["legacy_topics"]:
+            print(f"legacy (read): {topic}")
     return 0
 
 
 def cmd_send(args) -> int:
+    # Resolve the address HERE rather than carrying a level flag through the
+    # outbox: a resolved circuit is used verbatim by transport.topic_for, so
+    # the ledger records the exact address the post went to (T-3433).
+    try:
+        target = circuit.resolve_address(args.to, level=args.level)
+    except circuit.CircuitError as exc:
+        print(f"send: {exc}", file=sys.stderr)
+        return 2
+
     client_msg_id = outbox.write_message(
-        from_id=inbox.agent_id(), to=args.to, body=args.body,
+        from_id=inbox.agent_id(), to=target, body=args.body,
         conversation_id=args.conversation or f"consult-{args.to}",
         urgent=args.urgent, hub=args.hub)
 
@@ -51,7 +82,7 @@ def cmd_send(args) -> int:
         "state": result.state,
         "delivered": result.delivered,
         "reason": result.reason,
-        "topic": f"sidecar:{args.to}",
+        "topic": circuit.topic_for_circuit(target),
     }
     if args.json:
         print(json.dumps(payload))
@@ -191,6 +222,9 @@ def build_parser() -> argparse.ArgumentParser:
                       help="target hub host:port (omit for same-host)")
     send.add_argument("--conversation", default=None,
                       help="conversation id to thread on")
+    send.add_argument("--level", choices=("auto", "project", "agent"), default="auto",
+                      help="address form for a bare --to: project (durable role "
+                           "address) or agent. Default auto — see circuit.is_project_id")
     send.add_argument("--urgent", action="store_true")
     send.add_argument("--json", action="store_true")
     send.set_defaults(func=cmd_send)

@@ -13,8 +13,14 @@ What each number is derived from:
   messages_total     outbox/*.json          — every write_message() ever
   pending            outbox flag ∩ message   — written, not yet delivered
   ledger[state]      latest ledger row/id    — the current ack state of each
-  expired_unswept    STORED + deadline<now   — the silent-drop shape: failed
-                                                or stuck, and nothing swept it
+  expired_unswept    next_retry_at < now     — the silent-drop shape: a rung
+                                                came due and no sweep worked
+                                                it (T-3434; legacy rows with
+                                                no ladder fields fall back to
+                                                STORED + deadline < now)
+  dead_letters       UNKNOWN + ladder-* error — the ladder gave up: 16
+                                                attempts spent, or the
+                                                message file went missing
   last_send          max created_at          — from the message files
   last_delivery      max ts of INJECTED_*    — from the ledger
   inbox_cursors      inbox-state.json        — what we have read, per topic
@@ -25,7 +31,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 
-from . import inbox, outbox
+from . import circuit, inbox, outbox
 
 
 def _iso(dt: datetime | None) -> str | None:
@@ -38,6 +44,16 @@ def _parse(ts: str | None) -> datetime | None:
     try:
         return datetime.fromisoformat(ts)
     except ValueError:
+        return None
+
+
+def _circuit_or_none(level: str) -> str | None:
+    """A circuit, or None when the hub anchor cannot be established. Status
+    must still render on a host with no reachable hub — that IS the state it
+    exists to report, and raising here would hide every other number."""
+    try:
+        return circuit.circuit_id(level)
+    except circuit.CircuitError:
         return None
 
 
@@ -72,28 +88,51 @@ def snapshot(now: datetime | None = None) -> dict:
     per_state = {s: 0 for s in (outbox.STORED, outbox.INJECTED_NOW,
                                 outbox.INJECTED_LATER, outbox.UNKNOWN)}
     expired_unswept = 0
+    dead_letters = 0
     last_delivery: datetime | None = None
     for row in latest.values():
         state = row.get("state")
+        error = row.get("error") or ""
         if state in per_state:
             per_state[state] += 1
         if state in (outbox.INJECTED_NOW, outbox.INJECTED_LATER):
             last_delivery = _max(last_delivery, _parse(row.get("ts")))
-        if state == outbox.STORED:
-            deadline = _parse(row.get("deadline"))
-            if deadline and now_dt > deadline:
-                expired_unswept += 1
+        if state == outbox.UNKNOWN and error.startswith("ladder-"):
+            dead_letters += 1
+            continue
+        if error.startswith("answered") or state == outbox.UNKNOWN:
+            continue  # the ladder is finished with this row
+        # T-3434: the ladder, not the 30-second transport deadline, is what a
+        # sweep is late against. Before the ladder the deadline WAS the retry
+        # trigger; now a STORED row is legitimately held for a rung's worth of
+        # time with its deadline long past, so testing the deadline here would
+        # report every in-flight message as a missed sweep.
+        due = _parse(row.get("next_retry_at"))
+        if due is None and row.get("attempts") is None:
+            due = _parse(row.get("deadline")) if state == outbox.STORED else None
+        if due and now_dt > due:
+            expired_unswept += 1
 
     cursors = {topic: entry.get("cursor", 0)
                for topic, entry in inbox.load_state().get("topics", {}).items()}
 
+    # Same reason as _circuit_or_none: an unreachable hub is the state this
+    # observer exists to report, so it degrades to the legacy alias rather
+    # than raising and hiding every other number.
+    try:
+        topics = [inbox.inbox_topic()] + inbox.legacy_topics()
+    except circuit.CircuitError:
+        topics = inbox.legacy_topics()
     return {
         "agent_id": inbox.agent_id(),
-        "inbox_topic": inbox.inbox_topic(),
+        "circuit_id": _circuit_or_none("agent"),
+        "inbox_topic": topics[0],
+        "inbox_topics": topics,
         "messages_total": len(messages),
         "pending": len(outbox.list_pending()),
         "ledger": per_state,
         "expired_unswept": expired_unswept,
+        "dead_letters": dead_letters,
         "last_send": _iso(last_send),
         "last_delivery": _iso(last_delivery),
         "inbox_cursors": cursors,
@@ -104,16 +143,27 @@ def snapshot(now: datetime | None = None) -> dict:
 def render(snap: dict) -> str:
     led = snap["ledger"]
     lines = [
-        f"agent:            {snap['agent_id']}   (inbox {snap['inbox_topic']})",
+        f"agent:            {snap['agent_id']}",
+        f"circuit:          {snap.get('circuit_id') or '- (hub anchor unestablished)'}",
+        "inbox topics:     " + "\n                  ".join(
+            snap.get("inbox_topics") or [snap["inbox_topic"]]),
         f"messages total:   {snap['messages_total']}   pending: {snap['pending']}",
         f"ack ledger:       STORED {led[outbox.STORED]}  INJECTED_NOW {led[outbox.INJECTED_NOW]}"
         f"  INJECTED_LATER {led[outbox.INJECTED_LATER]}  UNKNOWN {led[outbox.UNKNOWN]}",
         f"expired unswept:  {snap['expired_unswept']}"
-        + ("   <-- failed or stuck, and nothing has swept them" if snap["expired_unswept"] else ""),
+        + ("   <-- a rung came due and no sweep worked it" if snap["expired_unswept"] else ""),
+        f"dead letters:     {snap.get('dead_letters', 0)}"
+        + ("   <-- the ladder gave up; these reached nobody"
+           if snap.get("dead_letters") else ""),
         f"last send:        {snap['last_send'] or '-'}",
         f"last delivery:    {snap['last_delivery'] or '-'}",
     ]
-    if snap["inbox_cursors"]:
+    # Every drained topic is listed, at cursor 0 if it has never been read —
+    # a topic missing from the cursor map is a topic nobody is watching.
+    cursors = snap["inbox_cursors"]
+    listed = {t: cursors.get(t, 0) for t in (snap.get("inbox_topics") or [])}
+    listed.update(cursors)
+    if listed:
         lines.append("inbox cursors:    " + ", ".join(
-            f"{t}@{c}" for t, c in sorted(snap["inbox_cursors"].items())))
+            f"{t}@{c}" for t, c in sorted(listed.items())))
     return "\n".join(lines)
