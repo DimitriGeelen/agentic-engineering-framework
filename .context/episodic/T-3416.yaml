@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3416: unit-suite pytest leg timed_out=true on 4 consecutive nightlies — root cause: subprocess-heavy audit.sh tests exhaust the reserved budget
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T07:38:53Z
+# ============================================================================
+
+task_id: T-3416
+task_name: "unit-suite pytest leg timed_out=true on 4 consecutive nightlies — root cause: subprocess-heavy audit.sh tests exhaust the reserved budget"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T07:26:34Z
+completed: 2026-09-22T07:35:12Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unit-suite pytest leg timed_out=true on 4 consecutive nightlies — root cause: subprocess-heavy audit.sh tests exhaust the reserved budget
+
+# Key outcomes
+outcomes:
+  - 'Root cause reproduced independently: a single `bash agents/audit/audit.sh --section structure` invocation against a near-empty scratch `PROJECT_ROOT` (the exact harness `test_audit_frontmatter_variants.py` uses) measured at >120s wall-clock, confirming the per-call cost that makes 5 sequential calls in one pytest file consume the majority of the 1800s pytest reserve'
+  - 'Confirmed this is additive to (not a duplicate of) T-3083/T-3324/T-3127: those measure `fw doctor`/full-`fw audit` wall time; this is the same slowness surfacing as a second, previously-unconnected symptom inside the pytest test corpus, root-caused here for the first time (round 1 of SEQ-T3411 left Δ2 "not yet traced")'
+  - 'Confirmed the naive single-leg fix (raise `FW_UNIT_SUITE_PY_RESERVE` alone) is insufficient: the CURRENT `LATEST.yaml` shows the **bats** leg also exits 124 at its full 5400s budget (398/~2706+ bats tests done, not the ~5000+ a completed run would show) — both legs are underprovisioned against `TOTAL_TIMEOUT=7200`, not just pytest''s carve-out, so a real fix needs a `TOTAL_TIMEOUT` increase whose correct size is not yet measured and touches nightly-cron scheduling policy (how long the nightly slot may run before conflicting with the next scheduled job) — out of this task''s scope, surfaced as a Sovereign question below rather than decided here'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3416-unit-suite-pytest-leg-timedouttrue-on-4-.md
+generated_by: context-agent-hybrid
