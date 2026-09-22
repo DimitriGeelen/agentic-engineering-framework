@@ -6,12 +6,12 @@ description: >
   arc-011 sidecar slice 7: fw sidecar sweep — cron cadence for resolve_expired so
   stuck rows stop being invisible
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [termlink, peer-consult, sidecar, cron]
-components: []
+components: [lib/sidecar_cli.py, tests/unit/test_sidecar_sweep.py]
 related_tasks: [T-3417, T-3404, T-3402]
 arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -25,8 +25,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T07:39:29Z
-last_update: '2026-09-22T07:41:12Z'
-date_finished:
+last_update: 2026-09-22T08:51:38Z
+date_finished: 2026-09-22T08:51:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -376,3 +376,20 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3418-arc-011-sidecar-slice-7-fw-sidecar-sweep.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-32ca32bb
+- **Timestamp:** 2026-09-22T08:53:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Cron entry `sidecar-sweep-5m` added (`:03/:08/…` offset off the audit slots per T-3070, own `flock`, `origin_task: T-3418`); `fw cron generate` → "26 active, 3 paused"; `fw cron install` → `/etc/cron.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: Cron entry `sidecar-sweep-5m` added (`:03/:08/…` offset off the audit slots per T-3070, own `flock`, `origin_task: T-3418`); `fw cron generate` → "26 `
+
+### 2026-09-22T08:51:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
