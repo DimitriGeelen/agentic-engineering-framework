@@ -1,0 +1,113 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3411: Drive 5 rounds of Review → procAsFit through TermLink, each round fed the previous result
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T09:47:26Z
+# ============================================================================
+
+task_id: T-3411
+task_name: "Drive 5 rounds of Review → procAsFit through TermLink, each round fed the previous result"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T05:35:10Z
+completed: 2026-09-22T09:47:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T07:42:34+02:00
+last_commit: 2026-09-22T11:44:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  TermLink driver for the 5-round Review -> procAsFit sequence. SEQ round 1 artifacts — review + procAsFit handback. SEQ round 2 review — prediction re-check + two new findings. SEQ round 2 procAsFit handback — 3 tasks closed, 2 commits blocked on push contention. SEQ round 3 review — prediction re-check + Δ8 3rd occurrence + two new findings. SEQ round 3 procAsFit handback — 2 tasks closed, push root-caused not landed. SEQ round 4 review + procAsFit handback. SEQ round 5 review + procAsFit handback — sequence complete, rounds 1..5
+
+# Key outcomes
+outcomes:
+  - '`tools/prompt-sequence/01-value-review.prompt.md` and `02-procasfit.prompt.md` are the verbatim prompts (tracked); `run-sequence.sh` substitutes `{{SCOPE}}`/`{{PURPOSE_SOURCE}}`/`{{EXTERNAL_DATA}}`/`{{BUDGET}}` in `compose_review`/`compose_fit` at dispatch time'
+  - '`run-sequence.sh` ran rounds 1..5 strictly sequentially (dispatch review → wait → dispatch procasfit → wait); `prior_context(round)` fed r(N-1)''s review, evidence and handback paths into round N''s review prompt — every round from 2 on opens with a prediction re-check of the previous round (r2–r5 reviews §5 "Prediction-recheck counts")'
+  - 'Workers wrote `docs/reports/SEQ-T3411/r<N>-review.md`, `r<N>-review-evidence.md`, `r<N>-procasfit-handback.md` (15 files, all committed); `run_step` fails the step when the result file is missing or empty — exercised live in round 4: the driver waited on a worker whose dispatch dir had been removed rather than proceeding on nothing (OBS-455)'
+  - '`compose_review` carries the [ASK]→record-and-proceed-on-defaults rule (recorded as PROPOSED-UNCONFIRMED), STOP at end of Phase 5, no Phase 6/7 — every round''s review ends at Phase 5 with an open-questions list'
+  - 'Topic `seq:T-3411` holds the run record: 20 messages — 10 `status=dispatched` + 10 `status=complete`, one pair per step, each with round/step/worker/result path'
+  - '`--dry-run` prints all ten dispatches with prompt byte sizes (e.g. `round 1 review worker=seq-t3411-r1-review prompt= 27786 bytes`) and result paths and dispatches nothing'
+  - 'Launched for real 06:30Z; round 1''s review worker observed on `termlink list` (tl-vyotn355, task:T-3411); first completed step recorded on `seq:T-3411` at 06:39Z (`round=1 step=review status=complete`); sequence completed 09:37Z — `sequence complete: rounds 1..5`; 10 workers, 15 reports, 8 tasks closed by workers across the rounds (T-3412, T-3415, T-3416, T-3419, T-3414, T-3417, T-3418, T-3420)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/SEQ-T3411/r1-procasfit-handback.md'
+  - 'docs/reports/SEQ-T3411/r1-review-evidence.md'
+  - 'docs/reports/SEQ-T3411/r1-review.md'
+  - 'docs/reports/SEQ-T3411/r2-procasfit-handback.md'
+  - 'docs/reports/SEQ-T3411/r2-review-evidence.md'
+  - 'docs/reports/SEQ-T3411/r2-review.md'
+  - 'docs/reports/SEQ-T3411/r3-procasfit-handback.md'
+  - 'docs/reports/SEQ-T3411/r3-review-evidence.md'
+  - 'docs/reports/SEQ-T3411/r3-review.md'
+  - 'docs/reports/SEQ-T3411/r4-procasfit-handback.md'
+  - 'docs/reports/SEQ-T3411/r4-review-evidence.md'
+  - 'docs/reports/SEQ-T3411/r4-review.md'
+  - 'docs/reports/SEQ-T3411/r5-procasfit-handback.md'
+  - 'docs/reports/SEQ-T3411/r5-review-evidence.md'
+  - 'docs/reports/SEQ-T3411/r5-review.md'
+  - '.fabric/components/tools-prompt-sequence-run-sequence.yaml'
+  - 'tools/prompt-sequence/01-value-review.prompt.md'
+  - 'tools/prompt-sequence/02-procasfit.md'
+  - 'tools/prompt-sequence/02-procasfit.prompt.md'
+  - 'tools/prompt-sequence/run-sequence.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T07:42:34'
+    action: 'T-3411: TermLink driver for the 5-round Review -> procAsFit sequence'
+  - time: '2026-09-22T09:00:39'
+    action: 'T-3411: SEQ round 1 artifacts — review + procAsFit handback'
+  - time: '2026-09-22T09:09:14'
+    action: 'T-3411: SEQ round 2 review — prediction re-check + two new findings'
+  - time: '2026-09-22T09:57:30'
+    action: 'T-3411: SEQ round 2 procAsFit handback — 3 tasks closed, 2 commits blocked on push contention'
+  - time: '2026-09-22T10:05:01'
+    action: 'T-3411: SEQ round 3 review — prediction re-check + Δ8 3rd occurrence + two new findings'
+  - time: '2026-09-22T10:17:00'
+    action: 'T-3411: SEQ round 3 procAsFit handback — 2 tasks closed, push root-caused not landed'
+  - time: '2026-09-22T11:04:35'
+    action: 'T-3411: SEQ round 4 review + procAsFit handback'
+  - time: '2026-09-22T11:44:42'
+    action: 'T-3411: SEQ round 5 review + procAsFit handback — sequence complete, rounds 1..5'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 252 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, dispatch, value-review, sequence]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 252
+  commits: 8
+  files_changed: 20
+  lines_added: 3243
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3411-drive-5-rounds-of-review--procasfit-thro.md
+generated_by: context-agent-hybrid

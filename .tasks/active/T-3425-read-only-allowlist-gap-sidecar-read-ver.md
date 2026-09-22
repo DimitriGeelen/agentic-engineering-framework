@@ -1,18 +1,16 @@
 ---
-id: T-3411
-name: "Drive 5 rounds of Review → procAsFit through TermLink, each round fed the previous
-  result"
+id: T-3425
+name: "read-only allowlist gap: sidecar read verbs and termlink channel reads are blocked under captured/partial-complete focus (OBS-461); lands the staged T-3411 close"
 description: >
-  Drive 5 rounds of Review → procAsFit through TermLink, each round fed the previous
-  result
+  read-only allowlist gap: sidecar read verbs and termlink channel reads are blocked under captured/partial-complete focus (OBS-461); lands the staged T-3411 close
 
 status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [termlink, dispatch, value-review, sequence]
+tags: []
 components: []
-related_tasks: [T-3407, T-3406]
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -23,9 +21,9 @@ related_tasks: [T-3407, T-3406]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-22T05:35:10Z
-last_update: '2026-09-22T05:37:39Z'
-date_finished:
+created: 2026-09-22T09:54:41Z
+last_update: 2026-09-22T09:54:41Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,76 +34,37 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-22T05:37:39Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=297,acs=9)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-22T05:37:39Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3411: Drive 5 rounds of Review → procAsFit through TermLink, each round fed the previous result
+# T-3425: read-only allowlist gap: sidecar read verbs and termlink channel reads are blocked under captured/partial-complete focus (OBS-461); lands the staged T-3411 close
 
 ## Context
 
-Operator instruction: use TermLink to run a two-prompt sequence — (1) the
-Project Value Review prompt, (2) the procAsFit Mandate — five times, in order,
-each prompt acting on the previous result, and **not** executed by this
-session outside the sequence. This session is the driver; TermLink workers
-run the prompts.
+After a task close nulls `focus.yaml`, the only focusable tasks may be
+captured or partial-complete ones, and under either the task gate refuses
+every Bash command it cannot prove is a read. Today that set includes the
+sidecar's own read verbs — `fw sidecar whoami`, `fw sidecar inbox --peek`,
+`fw sidecar status` (without `--probe`) — and TermLink's channel reads
+(`termlink channel list|state|subscribe|cv-keys`, `termlink list`). Observed
+2026-09-22 right after closing T-3411: with focus on partial-complete
+T-3090, `bin/fw sidecar inbox --peek` was refused, so the session could not
+even see whether a peer consult was waiting (OBS-461). The allowlist lives
+in `agents/context/lib/safe-commands.sh:is_bash_safe_command`.
 
-**Constraints carried in from tonight's own findings.** Sequential, one worker
-at a time: two autonomous writers on one tree is the live G-083 instance
-recorded earlier. Workers write results to repo paths, never `/tmp` (T-818).
-The run record rides on TermLink so it survives a context reset (Mandate
-binding). The Review prompt has `[ASK]` gates and a Phase 6 that executes only
-human-approved items; with no human in the loop the worker must record each
-question in its report and proceed on stated defaults, and must **stop at
-Phase 5** — Phase 6 is human-approved execution and is not delegable to an
-autonomous run ("Research is not authorization"). The procAsFit round then
-does governed work *informed by* the review's report (its evidence, ADD
-candidates, Sovereign questions), selecting through the Mandate's own arc/BVP
-gates — it does not execute the review's unapproved DELETE/REFACTOR list.
-
-**Prior art found, not reused.** `/tmp/tl-dispatch/vr24-g*…vr27-g5` are an
-external driver's workers reviewing a different repo in 27 rounds with five
-parallel gatherers, later rounds re-checking earlier rounds' "Expected
-effect" predictions. Right shape for feeding results forward; not this repo's
-code. This driver is sequential by instruction and by G-083.
+**Trailing close.** The T-3411 close (task move + episodic) was staged when
+the gate closed over it; the handover commit (by design, T-3090) did not
+sweep it. It lands under this task, which is the honest route the OBS-250
+gap leaves open: a new task for trailing work, not a bypass.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `tools/prompt-sequence/01-value-review.prompt.md` and `02-procasfit.prompt.md` are the verbatim prompts (tracked); `run-sequence.sh` substitutes `{{SCOPE}}`/`{{PURPOSE_SOURCE}}`/`{{EXTERNAL_DATA}}`/`{{BUDGET}}` in `compose_review`/`compose_fit` at dispatch time
-- [x] `run-sequence.sh` ran rounds 1..5 strictly sequentially (dispatch review → wait → dispatch procasfit → wait); `prior_context(round)` fed r(N-1)'s review, evidence and handback paths into round N's review prompt — every round from 2 on opens with a prediction re-check of the previous round (r2–r5 reviews §5 "Prediction-recheck counts")
-- [x] Workers wrote `docs/reports/SEQ-T3411/r<N>-review.md`, `r<N>-review-evidence.md`, `r<N>-procasfit-handback.md` (15 files, all committed); `run_step` fails the step when the result file is missing or empty — exercised live in round 4: the driver waited on a worker whose dispatch dir had been removed rather than proceeding on nothing (OBS-455)
-- [x] `compose_review` carries the [ASK]→record-and-proceed-on-defaults rule (recorded as PROPOSED-UNCONFIRMED), STOP at end of Phase 5, no Phase 6/7 — every round's review ends at Phase 5 with an open-questions list
-- [x] Topic `seq:T-3411` holds the run record: 20 messages — 10 `status=dispatched` + 10 `status=complete`, one pair per step, each with round/step/worker/result path
-- [x] `--dry-run` prints all ten dispatches with prompt byte sizes (e.g. `round 1 review worker=seq-t3411-r1-review prompt= 27786 bytes`) and result paths and dispatches nothing
-- [x] Launched for real 06:30Z; round 1's review worker observed on `termlink list` (tl-vyotn355, task:T-3411); first completed step recorded on `seq:T-3411` at 06:39Z (`round=1 step=review status=complete`); sequence completed 09:37Z — `sequence complete: rounds 1..5`; 10 workers, 15 reports, 8 tasks closed by workers across the rounds (T-3412, T-3415, T-3416, T-3419, T-3414, T-3417, T-3418, T-3420)
+- [x] `agents/context/lib/safe-commands.sh`: new `sidecar)` arm under the `fw|bin/fw` case — `whoami` safe; `inbox` safe only when `--peek` is present; `status` safe unless `--probe` — and `subscribe|cv-keys|ack-status|ack-history` added to the `termlink channel` read arm. `send`, plain `inbox`, `sweep`, `e2e`, `channel post|ack|create` remain gated (verified directly: SAFE/GATED table in the task's Updates)
+- [x] `tests/unit/t3425_sidecar_read_allowlist.bats` — 8 tests, 4 accepted forms (incl. bare `fw` and vendored path) and 4 refused forms; **8/8 ok**; the seven existing safe-commands suites still green (133 ok, 0 not ok, 0 skips across the set)
+- [x] Live: focus set to T-3090 (partial-complete, the exact state that refused it), `bin/fw sidecar inbox --peek` ran and printed a waiting consult (`@10 from 1409-sprind`, the PL-037 supersession) — before this task the same command under the same focus returned the G-020/T-3174 BLOCK
+- [ ] The staged T-3411 close (`.tasks/completed/T-3411-…`, `.context/episodic/T-3411.yaml`) is committed and pushed
+- [x] Vendored `agents/context/lib/safe-commands.sh` synced (`FW_VENDOR_ONLY`, VERSION 1.6.780); `bin/fw vendor self --check` → "in sync with source"; bats file registered in the fabric
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,15 +99,15 @@ code. This driver is sequential by instruction and by G-083.
 
 ## Verification
 
-test -f tools/prompt-sequence/01-value-review.prompt.md && test -f tools/prompt-sequence/02-procasfit.prompt.md && test -x tools/prompt-sequence/run-sequence.sh
-bash -n tools/prompt-sequence/run-sequence.sh
-# Dry run composes ten dispatches and dispatches nothing.
-./tools/prompt-sequence/run-sequence.sh --dry-run > /tmp/.t3411-dry 2>&1 && test "$(grep -c 'worker=seq-t3411-r' /tmp/.t3411-dry)" -eq 10
-# All fifteen result files exist and are non-empty (invariant of a completed 5-round run).
-test "$(ls docs/reports/SEQ-T3411/r{1,2,3,4,5}-review.md docs/reports/SEQ-T3411/r{1,2,3,4,5}-review-evidence.md docs/reports/SEQ-T3411/r{1,2,3,4,5}-procasfit-handback.md 2>/dev/null | wc -l)" -eq 15
-# Run record on the hub: one dispatched + one complete per step (pinned as a property: completes == dispatched == 10).
-termlink channel state seq:T-3411 --json > /tmp/.t3411-topic 2>&1 && test "$(grep -o 'status=complete' /tmp/.t3411-topic | wc -l)" -eq 10 && test "$(grep -o 'status=dispatched' /tmp/.t3411-topic | wc -l)" -eq 10
-grep -q "sequence complete: rounds 1..5" .context/working/seq-t3411/driver.log
+timeout 120 bats tests/unit/t3425_sidecar_read_allowlist.bats > /tmp/.t3425-bats 2>&1 && ! grep -q "^not ok" /tmp/.t3425-bats
+test "$(grep -c '# skip' /tmp/.t3425-bats)" -eq 0
+timeout 300 bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats tests/unit/safe_commands_env_prefix.bats tests/unit/test_safe_commands_git_commit.bats > /tmp/.t3425-siblings 2>&1 && ! grep -q "^not ok" /tmp/.t3425-siblings
+bash -n agents/context/lib/safe-commands.sh
+# The predicate itself, on the exact command that was refused (OBS-461), and on its write-side twin.
+bash -c 'source agents/context/lib/safe-commands.sh; is_bash_safe_command "bin/fw sidecar inbox --peek" && ! is_bash_safe_command "bin/fw sidecar inbox"'
+# The trailing T-3411 close is in history, not just staged.
+git log --oneline -1 -- .tasks/completed/T-3411-drive-5-rounds-of-review--procasfit-thro.md > /tmp/.t3425-t3411 2>&1 && grep -q "T-3411" /tmp/.t3425-t3411
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -316,26 +275,6 @@ grep -q "sequence complete: rounds 1..5" .context/working/seq-t3411/driver.log
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-09-22 — what five rounds taught that the driver could not know
-- **What changed:** the sequence was specified as a pipeline of two prompts;
-  what it turned out to be was an instrument. Each round's review re-checked
-  the previous round's predictions, and that loop found things no single
-  review would: the shared-focus fallback recurring in every fresh worker
-  (Δ8, fixed by T-3422 while the sequence ran), the pre-push lock window
-  shorter than the audit it waits for (Δ7 → T-3421), five closed-but-unmoved
-  tasks (Δ11), the vendor-sync scope gap for docs/generated (Δ10).
-- **Plan impact:** the driver itself needed nothing after launch, but its
-  wait contract depends on `/tmp/tl-dispatch/<worker>/exit_code` surviving
-  until consumed — a parent-session `fw termlink cleanup` deleted it mid-run
-  and the driver would have waited its full 6-hour timeout (OBS-455).
-  Restored by hand; the fix belongs in cleanup, not the driver.
-- **Triggered:** T-3421, T-3422 (from findings); OBS-455 (cleanup hazard);
-  the reviews' Δ4 ask — an out-of-band hub-side delivery counter — was
-  answered mid-sequence by T-3417/T-3418/T-3420 and the e2e harness T-3423,
-  which the reviews could see only partially because their observation was
-  "did any of OUR ten workers receive an organic consult" (none did; the
-  parent address received four from three peers the same morning).
-
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -388,7 +327,7 @@ grep -q "sequence complete: rounds 1..5" .context/working/seq-t3411/driver.log
 
 ## Updates
 
-### 2026-09-22T05:35:10Z — task-created [task-create-agent]
+### 2026-09-22T09:54:41Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3411-drive-5-rounds-of-review--procasfit-thro.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3425-read-only-allowlist-gap-sidecar-read-ver.md
 - **Context:** Initial task creation

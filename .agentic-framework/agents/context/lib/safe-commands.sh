@@ -590,9 +590,14 @@ _fw_single_command_is_safe() {
                     esac
                     ;;
                 channel)
+                    # T-3425: `subscribe` is a cursor-bounded read of a topic (the
+                    # sidecar inbox's own primitive) and `cv-keys` reads the hub's
+                    # in-memory client_msg_id index; neither writes. `post`, `ack`,
+                    # `create`, `claim`, `release`, `react`, `reply` stay absent.
                     case "$tl_sub2" in
                         list|info|members|search|thread|threads|unread|state|pinned|\
-                        digest|snippet|receipts|describe|claims)
+                        digest|snippet|receipts|describe|claims|subscribe|cv-keys|\
+                        ack-status|ack-history)
                             return 0
                             ;;
                     esac
@@ -743,6 +748,22 @@ _fw_single_command_is_safe() {
                     ;;
                 termlink)
                     case "$fw_sub3" in check|status|result) return 0 ;; esac
+                    ;;
+                sidecar)
+                    # T-3425 (OBS-461): the peer-consult sidecar's read surface.
+                    # `whoami` prints ids; `inbox --peek` reads the topic without
+                    # advancing the cursor (plain `inbox` ADVANCES it and is absent);
+                    # `status` reads our own outbox/ledger files — unless `--probe`,
+                    # which calls the hub, so that form stays gated. `send`, `sweep`
+                    # and `e2e` all write (ledger rows, a dispatched worker) and are
+                    # deliberately absent. Without this arm a session whose focus
+                    # is captured or partial-complete could not even see whether a
+                    # consult was waiting for it.
+                    case "$fw_sub3" in
+                        whoami) return 0 ;;
+                        inbox)  case " $cmd " in *" --peek "*) return 0 ;; esac ;;
+                        status) case " $cmd " in *" --probe "*) ;; *) return 0 ;; esac ;;
+                    esac
                     ;;
                 cron)
                     case "$fw_sub3" in status|list) return 0 ;; esac
