@@ -935,6 +935,27 @@ def cmd_confirm(args):
     return 0
 
 
+def _has_scorer(driver_id, name):
+    """T-3427: ask the estimator whether a driver can be scored at all.
+
+    Imports agents/termlink/bvp-estimator/estimator.py by path (it is not a
+    package) and calls has_scorer(). If the estimator cannot be imported the
+    answer is unknown, not "no": say so on stderr and let the add proceed,
+    because refusing on our own tooling fault would be a false block.
+    """
+    import importlib.util
+    est_path = FRAMEWORK_ROOT / 'agents' / 'termlink' / 'bvp-estimator' / 'estimator.py'
+    try:
+        spec = importlib.util.spec_from_file_location('bvp_estimator_for_add', est_path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return bool(mod.has_scorer(driver_id, name))
+    except Exception as exc:  # pragma: no cover - tooling fault, not a verdict
+        print(f"WARN: could not consult the estimator for a scorer ({exc}); "
+              f"proceeding without the T-3427 check", file=sys.stderr)
+        return True
+
+
 def _driver_add(args):
     if not acd_gate('driver --add', args,
                     refusal_hint="Adding a driver is a policy-edit; the human approves the framing."):
@@ -1031,6 +1052,27 @@ def _driver_add(args):
         next_n += 1
     new_id = f'F{next_n}'
 
+    # T-3427 (OBS-463): a free driver is only a name unless the estimator has a
+    # scorer for it — without one it scores 0 on every non-inception task and
+    # STILL enters the ranking denominator, so adding it ranks every real task
+    # lower. Measured on a consumer (1409-sprind): weight 8, 46/50 tasks at 0,
+    # the flagship "rising to #1" was 2×58 vs 2×54 arithmetic. A gated, capped,
+    # deliberate verb must not produce that silently. Refuse, name the
+    # consequence, and offer the bypass for an operator reserving the slot.
+    unscored = not _has_scorer(new_id, name)
+    if unscored and '--allow-unscored' not in args:
+        print(f"Error: '{name}' has no scorer in the estimator (would be {new_id}) — refused (T-3427).", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("  Scoring is dispatched from a handler table in agents/termlink/bvp-estimator/estimator.py;", file=sys.stderr)
+        print("  a driver with no handler scores 0 on every non-inception task, and its weight still", file=sys.stderr)
+        print("  enters the normalisation denominator — every real task ranks LOWER for adding it.", file=sys.stderr)
+        print("  Writing levels: into policy/value-drivers.yaml changes nothing; the estimator does", file=sys.stderr)
+        print("  not read rubric text (OBS-463; the data-driven ladder is the open design item).", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("  To reserve the slot anyway (it will be listed UNSCORED and left out of ranking sums):", file=sys.stderr)
+        print(f"    fw bvp driver --add \"{name}\" --weight {weight} --allow-unscored ...", file=sys.stderr)
+        return 2
+
     if drop_id:
         if drop_id.startswith('D'):
             print(f"Error: cannot drop protected driver {drop_id}", file=sys.stderr)
@@ -1100,9 +1142,9 @@ def _driver_add(args):
         'ts': _utc_now(),
     })
     if drop_id:
-        print(f"OK: added {new_id} '{name}' weight={weight}; dropped {drop_id} '{drop_name}' (M1 add-one-drop-one)")
+        print(f"OK: added {new_id} '{name}' weight={weight}{' UNSCORED' if unscored else ''}; dropped {drop_id} '{drop_name}' (M1 add-one-drop-one)")
     else:
-        print(f"OK: added {new_id} '{name}' weight={weight}")
+        print(f"OK: added {new_id} '{name}' weight={weight}{' UNSCORED' if unscored else ''}")
     return 0
 
 

@@ -2241,6 +2241,55 @@ def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> t
 
 # ---- top-level orchestration ------------------------------------------------
 
+def _handler_table() -> dict:
+    """The one table that decides whether a driver CAN be scored (T-3427).
+
+    Hoisted out of the scoring loop so `has_scorer()` — and through it
+    `fw bvp driver --add` — consults the same table the loop dispatches on.
+    Keys are canonical handler names; policy ids that differ (F3/F1/F2) reach
+    them through _load_driver_aliases(). Everything else is unscorable today.
+    """
+    return {
+        "D1": score_d1_antifragility,
+        "D2": score_d2_reliability,
+        "D3": score_d3_usability,
+        "D4": score_d4_portability,
+        "F-RECALL": score_f_recall,
+        "F-ORCH": score_f_orch,
+        "V_PROMPT_QUALITY": score_v_prompt_quality,
+        "V_CONTEXT_FABRIC": score_v_context_fabric,
+        "V_COMPONENT_FABRIC": score_v_component_fabric,
+        "F-AUTONOMY": score_f_autonomy,
+        "D-DISJOINT": score_d_disjoint,
+        "D-WIRE-EVIDENCE": score_d_wire_evidence,
+        "uncertainty-recognition": score_uncertainty_recognition,
+        "severity-likelihood-calibration": score_severity_likelihood_calibration,
+        "sovereignty-preservation": score_sovereignty_preservation,
+        "aesthetic-cohesion": score_aesthetic_cohesion,
+        "render-fidelity": score_render_fidelity,
+        "theme-portability": score_theme_portability,
+        "feedback-loop-completeness": score_feedback_loop_completeness,
+        "estimator-fidelity": score_estimator_fidelity,
+    }
+
+
+def has_scorer(driver_id: str, name: str | None = None) -> bool:
+    """Can this driver be scored by anything but a grep for its own id?
+
+    True when the id, the name, or the id's policy alias is a handler key.
+    `fw bvp driver --add` asks this before it lets a Sovereign spend the one
+    free slot on a driver that would score 0 everywhere (OBS-463).
+    """
+    table = _handler_table()
+    if driver_id in table or (name and name in table):
+        return True
+    try:
+        alias = _load_driver_aliases().get(driver_id)
+    except Exception:
+        alias = None
+    return bool(alias and alias in table)
+
+
 def _score_inception_voi(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     """T-2189 inception scoring exception (050-Inceptions.md §Scoring Exception).
 
@@ -2292,57 +2341,12 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
     scores: dict[str, int] = {}
     evidence: dict[str, list[str]] = {}
 
-    handlers = {
-        "D1": score_d1_antifragility,
-        "D2": score_d2_reliability,
-        "D3": score_d3_usability,
-        "D4": score_d4_portability,
-        # T-2168 — dedicated free-driver heuristics. Generic score_free_driver
-        # remains the fallback for any other active free driver.
-        "F-RECALL": score_f_recall,
-        "F-ORCH": score_f_orch,
-        # T-2328 + T-2343 — dedicated handlers for the V_* batch. Active under
-        # the current policy: T-2336 added the drivers with `id: F3 / F1 / F2`
-        # and `name: V_PROMPT_QUALITY / V_CONTEXT_FABRIC / V_COMPONENT_FABRIC`.
-        # T-2343 wired the dispatch to consult both id and name via
-        # _load_driver_aliases() — so these handlers fire under the F3/F1/F2
-        # ids without requiring a Sovereign --add to re-canonicalise.
-        "V_PROMPT_QUALITY": score_v_prompt_quality,
-        "V_CONTEXT_FABRIC": score_v_context_fabric,
-        "V_COMPONENT_FABRIC": score_v_component_fabric,
-        # T-2329 — sibling of T-2171 AC#5. Latent until T-2171 uncomments
-        # the F-AUTONOMY carve in policy/value-drivers.yaml (Sovereign,
-        # gated by T-2158 continuous-run cycle + L5/L6 milestone). Carries
-        # the Sovereignty refuse-rule (level 0 on Tier-0 / safety-critical
-        # gate removal without at-least-as-safe replacement).
-        "F-AUTONOMY": score_f_autonomy,
-        # T-2356 — arc-011 scoped drivers (proposed via T-2344 batch_propose).
-        # Latent in two ways: (1) _load_drivers() reads only global policy, so
-        # arc-scoped drivers never reach `drivers:` here today; (2) even after
-        # operator approval via Watchtower, dispatch wiring for arc-scoped
-        # drivers is a separate slice. Keys match the IDs in arc-011.yaml.
-        "D-DISJOINT": score_d_disjoint,
-        "D-WIRE-EVIDENCE": score_d_wire_evidence,
-        # T-2359 — arc-001 (dispatch-safety) + arc-006 (value-prioritisation)
-        # scoped drivers. Latent until operator approves the proposed_scoped_drivers
-        # via Watchtower. T-2357 dispatch wiring + T-2358 name-form widening
-        # make activation immediate on approval. Keys match canonical name-form
-        # per T-2358 / lib/arc.sh:1258.
-        "uncertainty-recognition": score_uncertainty_recognition,
-        "severity-likelihood-calibration": score_severity_likelihood_calibration,
-        "sovereignty-preservation": score_sovereignty_preservation,
-        # T-2360 — arc-007 (watchtower-redesign) scoped drivers. Latent until
-        # operator approves the proposed_scoped_drivers via Watchtower.
-        "aesthetic-cohesion": score_aesthetic_cohesion,
-        "render-fidelity": score_render_fidelity,
-        "theme-portability": score_theme_portability,
-        # T-2361 — arc-005 (inception-review-loop) feedback-loop-completeness:
-        # LATENT until operator approves. arc-006 (value-prioritisation)
-        # estimator-fidelity: ALREADY APPROVED 2026-05-21 — this handler swaps
-        # the score_free_driver keyword fallback for rubric-anchored scoring.
-        "feedback-loop-completeness": score_feedback_loop_completeness,
-        "estimator-fidelity": score_estimator_fidelity,
-    }
+    # T-3427: the table lives in _handler_table() so `has_scorer()` and
+    # `fw bvp driver --add` consult exactly what this loop dispatches on. The
+    # per-handler provenance (T-2168 free-driver heuristics; T-2328/T-2343 V_*
+    # batch reached via id aliases; T-2329 F-AUTONOMY; T-2356/T-2359/T-2360/
+    # T-2361 arc-scoped drivers, latent until approved) moved with it.
+    handlers = _handler_table()
     # T-2343: name-alias map for drivers whose policy id differs from their
     # canonical name (e.g. policy id F3, handler key V_PROMPT_QUALITY).
     name_aliases = _load_driver_aliases()
@@ -2354,7 +2358,17 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         elif name_aliases.get(driver_id) in handlers:
             sc, ev = handlers[name_aliases[driver_id]](fm, body, tags)
         else:
-            sc, ev = score_free_driver(driver_id, fm, body, tags)
+            # T-3427 (OBS-463): a driver with no scorer is UNSCORED, not 0.
+            # score_free_driver grepped the task for the driver's own id —
+            # measured on a consumer: a weight-8 driver scored 0 on 46/50
+            # tasks, entered the ranking denominator (5×54 → 5×58) and ranked
+            # every real task lower; the one task scoring 1 contained the
+            # literal "F4". Omitting the key keeps it out of compute_bvp's
+            # weight_sum (lib/bvp.sh — drivers present in BOTH scores and
+            # weights), the same 0-vs-None distinction T-3068 drew for
+            # blast_radius. The evidence line says so in words.
+            evidence[driver_id] = [f"unscored (no scorer for {driver_id}; not counted)"]
+            continue
         scores[driver_id] = sc
         evidence[driver_id] = ev
 

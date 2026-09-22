@@ -207,15 +207,20 @@ def test_estimate_task_routes_f_recall_to_dedicated_scorer(tmp_path):
     assert any("instruction-sync" in e for e in result["evidence"]["F-RECALL"])
 
 
-def test_unknown_free_driver_falls_back_to_generic_score_free_driver(tmp_path):
-    """Generic fallback retained for any active free driver without dedicated scorer."""
+def test_unknown_free_driver_is_unscored_not_grepped_for_its_own_id(tmp_path):
+    """T-3427 (OBS-463): a driver with no scorer is OMITTED from scores, not
+    scored by grepping the task for its own id. The old contract ("body says
+    F-NEWHYPOTHETICAL once → 1") is exactly the defect: a weight-8 driver on a
+    consumer scored 0 on 46/50 tasks, 1 on the one task containing its literal
+    id, and diluted the ranking denominator for every real task."""
     body = "A task mentioning F-NEWHYPOTHETICAL once in its body."
     path = _make_task(tmp_path, body)
     drivers = {"D1": 9, "F-NEWHYPOTHETICAL": 3}
     result = estimator.estimate_task(path, drivers)
-    # Body says "F-NEWHYPOTHETICAL" once → generic scores 1.
-    assert result["scores"]["F-NEWHYPOTHETICAL"] in (1, 2)
-    assert any("F-NEWHYPOTHETICAL" in e for e in result["evidence"]["F-NEWHYPOTHETICAL"])
+    assert "D1" in result["scores"]
+    assert "F-NEWHYPOTHETICAL" not in result["scores"]
+    assert any("unscored" in e for e in result["evidence"]["F-NEWHYPOTHETICAL"])
+    assert not estimator.has_scorer("F-NEWHYPOTHETICAL")
 
 
 def test_f_recall_rationale_is_informative_not_naive_count():
