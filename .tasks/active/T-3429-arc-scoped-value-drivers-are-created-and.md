@@ -1,8 +1,18 @@
 ---
 id: T-3429
-name: "arc-scoped value drivers are created and added by default; an external value-driver reviewer replaces the operator-approval step (operator ruling 2026-09-22; depends on T-3428 scoring specs)"
+name: "arc-scoped value drivers are created and added by default; an external value-driver
+  reviewer replaces the operator-approval step (operator ruling 2026-09-22; depends
+  on T-3428 scoring specs)"
 description: >
-  Operator ruling 2026-09-22: 'per default just create them and add them; if needed institute an external value driver reviewer'. Replace the fw arc approve-driver human step (T-1926, M6/D8 §ACD gate) with a default path that writes proposed_scoped_drivers straight into scoped_drivers when an external reviewer certifies them. Reviewer: a dispatched or static check that a proposed driver (1) carries a valid scoring: spec (T-3428), (2) does not duplicate D1-D4 or an existing driver, (3) states in one line what it distinguishes (D6). Keep --none and remove-driver; keep the cap of 3 and weight <=6 (M2). Watchtower and CLI surfaces updated; audit rail for auto-added drivers without a reviewer record. Depends on T-3428.
+  Operator ruling 2026-09-22: 'per default just create them and add them; if needed
+  institute an external value driver reviewer'. Replace the fw arc approve-driver
+  human step (T-1926, M6/D8 §ACD gate) with a default path that writes proposed_scoped_drivers
+  straight into scoped_drivers when an external reviewer certifies them. Reviewer:
+  a dispatched or static check that a proposed driver (1) carries a valid scoring:
+  spec (T-3428), (2) does not duplicate D1-D4 or an existing driver, (3) states in
+  one line what it distinguishes (D6). Keep --none and remove-driver; keep the cap
+  of 3 and weight <=6 (M2). Watchtower and CLI surfaces updated; audit rail for auto-added
+  drivers without a reviewer record. Depends on T-3428.
 
 status: captured
 workflow_type: build
@@ -22,8 +32,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T10:41:00Z
-last_update: 2026-09-22T10:41:00Z
-date_finished: null
+last_update: '2026-09-22T10:45:18Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +44,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-22T10:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-22T10:45:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3429: arc-scoped value drivers are created and added by default; an external value-driver reviewer replaces the operator-approval step (operator ruling 2026-09-22; depends on T-3428 scoring specs)

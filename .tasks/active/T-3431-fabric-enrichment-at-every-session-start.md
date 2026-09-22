@@ -1,8 +1,18 @@
 ---
 id: T-3431
-name: "Fabric enrichment at every session start: SessionStart/resume runs a bounded fw fabric enrich --describe and the resume statement carries the fabric quality line (operator ruling 2026-09-22; depends on T-3430)"
+name: "Fabric enrichment at every session start: SessionStart/resume runs a bounded
+  fw fabric enrich --describe and the resume statement carries the fabric quality
+  line (operator ruling 2026-09-22; depends on T-3430)"
 description: >
-  Structural counterpart to T-3430's daily cron: the SessionStart hook (post-compact-resume, all three matchers) and fw resume run 'fw fabric enrich --describe' under a hard timeout (target <10s on 1,314 cards: only cards still carrying a placeholder are visited; heavy work deferred to the cron), and the injected resume context gains one line — 'Fabric: N cards, T with TODO purpose, U unknown subsystem, R refused (see drift)' — so the agent sees fabric quality on every start and the refusal list when it can still act. Never blocks the session: on timeout or error it prints the last known counts and moves on. Depends on T-3430 shipping --describe and the under-populated drift class.
+  Structural counterpart to T-3430's daily cron: the SessionStart hook (post-compact-resume,
+  all three matchers) and fw resume run 'fw fabric enrich --describe' under a hard
+  timeout (target <10s on 1,314 cards: only cards still carrying a placeholder are
+  visited; heavy work deferred to the cron), and the injected resume context gains
+  one line — 'Fabric: N cards, T with TODO purpose, U unknown subsystem, R refused
+  (see drift)' — so the agent sees fabric quality on every start and the refusal list
+  when it can still act. Never blocks the session: on timeout or error it prints the
+  last known counts and moves on. Depends on T-3430 shipping --describe and the under-populated
+  drift class.
 
 status: captured
 workflow_type: build
@@ -22,8 +32,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T12:00:48Z
-last_update: 2026-09-22T12:00:48Z
-date_finished: null
+last_update: '2026-09-22T12:15:25Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +44,35 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-22T12:15:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=273,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-22T12:15:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3431: Fabric enrichment at every session start: SessionStart/resume runs a bounded fw fabric enrich --describe and the resume statement carries the fabric quality line (operator ruling 2026-09-22; depends on T-3430)

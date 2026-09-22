@@ -8,16 +8,16 @@ description: >
   T-3338 is legitimately partial-complete (not stranded), and pushed back on Q-B guessing.
   Capture findings, register concerns, route decisions to operator.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [termlink, peer-consult, identity, arc-020]
 components: []
 related_tasks: [T-3287, T-3338, T-3309, T-3397]
 created: 2026-09-21T08:52:00Z
-last_update: '2026-09-21T09:00:22Z'
-date_finished:
+last_update: 2026-09-21T10:42:54Z
+date_finished: 2026-09-21T10:42:54Z
 arc_id: arc-020
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -457,7 +457,7 @@ concerns, and conflating them is exactly where TermLink's bug came from.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -549,9 +549,78 @@ be a confidence hedge against decided evidence, not a genuine evidence gap
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Originally filed DEFER on genuine evidence gaps (2026-09-21,
+same day). Those gaps have since been resolved through direct TermLink
+dialogue, verified rather than taken on faith, not just asserted away:
+
+- The resolution ladder itself was restated by the operator and **confirmed
+  correct against G-060** by TermLink — no design rework needed (IW-1).
+- The cv_index liveness concern was **narrowed from "indefinite false-dead"
+  to "≤30s window, most paths already fall back"** by TermLink's own
+  self-correction (IW-2) — real, but not a blocking defect.
+- Cross-host reachability, originally suspected as an open transport gap,
+
+**Date**: 2026-09-21T10:42:51Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-09-21T10:42:51Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Originally filed DEFER on genuine evidence gaps (2026-09-21,
+same day). Those gaps have since been resolved through direct TermLink
+dialogue, verified rather than taken on faith, not just asserted away:
+
+- The resolution ladder itself was restated by the operator and **confirmed
+  correct against G-060** by TermLink — no design rework needed (IW-1).
+- The cv_index liveness concern was **narrowed from "indefinite false-dead"
+  to "≤30s window, most paths already fall back"** by TermLink's own
+  self-correction (IW-2) — real, but not a blocking defect.
+- Cross-host reachability, originally suspected as an open transport gap,
+
+### 2026-09-21T10:42:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-50d71218
+- **Timestamp:** 2026-09-21T10:42:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-7
+     - evidence: `IW-7 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-8
+     - evidence: `IW-8 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-86ed0f19
+- **Timestamp:** 2026-09-21T10:42:55Z
+- **Overall:** CONTRADICTED
+- **Claims:** 4
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `lib/aef_address.py` | file | ✓ pass |
+| `lib/aef_address.py:233-239` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `lib/aef_address.py:191-217` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `T-3338` | task | ✓ pass |
+
+### 2026-09-21T10:42:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
