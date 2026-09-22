@@ -1,13 +1,14 @@
 id: tests/unit/approvals_close_ready_arcs.bats
 name: approvals_close_ready_arcs
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/approvals_close_ready_arcs.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1961: _load_close_ready_arcs() filter logic.'
 depends_on:
 - target: web/blueprints/approvals.py
   type: tests
 depended_by: []
 last_verified: '2026-07-22'
 created_by: unknown
+purpose_source: header-comment

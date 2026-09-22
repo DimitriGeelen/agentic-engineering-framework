@@ -1,10 +1,11 @@
 id: tests/unit/reviewer_human_ac_mechanical_signal.bats
 name: reviewer_human_ac_mechanical_signal
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/reviewer_human_ac_mechanical_signal.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1896 (T-1878 B): integration coverage for the new reviewer pattern `human-ac-mechanical-signal` — runs `bin/fw
+  reviewer` end-to-end against synthetic task files, asserts the pattern fires (or doesn''t) per design.'
 depends_on:
 - target: bin/fw
   type: tests
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-05-18
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

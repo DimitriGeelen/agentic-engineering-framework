@@ -1,10 +1,10 @@
 id: tests/unit/test_reviewer_overrides.py
 name: test_reviewer_overrides
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_reviewer_overrides.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for lib/reviewer/overrides.py (T-1443 v1.4).
 depends_on:
 - target: lib/reviewer/overrides.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

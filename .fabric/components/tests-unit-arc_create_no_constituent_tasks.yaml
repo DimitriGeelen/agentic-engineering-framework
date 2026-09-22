@@ -1,10 +1,10 @@
 id: tests/unit/arc_create_no_constituent_tasks.bats
 name: arc_create_no_constituent_tasks
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/arc_create_no_constituent_tasks.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1851 (T-NEW-4): constituent_tasks: field deprecated for new arcs.'
 depends_on:
 - target: lib/arc.sh
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-05-16
 created_by: unknown
 last_enriched: '2026-05-18'
+purpose_source: header-comment

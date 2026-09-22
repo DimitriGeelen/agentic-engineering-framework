@@ -1,20 +1,12 @@
 id: tools/ewcr-contracts-check.py
 name: ewcr-contracts-check
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/ewcr-contracts-check.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: EWCR contracts v1 — freeze check (T-3385, Arc 0 candidate 2).
+depends_on: []
+depended_by: []
 last_verified: 2026-09-18
 created_by: unknown
+purpose_source: docstring

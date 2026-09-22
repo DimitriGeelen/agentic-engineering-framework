@@ -1,10 +1,11 @@
 id: tests/unit/pickup_type_routing.bats
 name: pickup_type_routing
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/pickup_type_routing.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Unit tests for T-1465 — pickup envelope type → task workflow_type routing. Constrained Option A (T-1455 GO): bug-report
+  → build feature-proposal → inception'
 depends_on:
 - target: lib/pickup.sh
   type: calls
@@ -16,3 +17,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

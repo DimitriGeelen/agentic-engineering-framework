@@ -1,10 +1,10 @@
 id: tests/unit/test_arcs_pages_tokens.py
 name: test_arcs_pages_tokens
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_arcs_pages_tokens.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2027 (arc-007 S5a): Arcs section templates use semantic --wt-* tokens.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

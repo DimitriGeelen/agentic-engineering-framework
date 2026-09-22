@@ -1,20 +1,12 @@
 id: tests/unit/test_sidecar_outbox.py
 name: test_sidecar_outbox
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_sidecar_outbox.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3402 — arc-011 sidecar outbox substrate (T-3397 Amendment 5, slice 1).
+depends_on: []
+depended_by: []
 last_verified: 2026-09-21
 created_by: unknown
+purpose_source: docstring

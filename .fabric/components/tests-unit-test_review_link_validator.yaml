@@ -1,10 +1,10 @@
 id: tests/unit/test_review_link_validator.py
 name: test_review_link_validator
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_review_link_validator.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2050 — unit tests for lib/review_link_validator.py.
 depends_on:
 - target: lib/review_link_validator.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-25
 created_by: unknown
 last_enriched: '2026-06-02'
+purpose_source: docstring

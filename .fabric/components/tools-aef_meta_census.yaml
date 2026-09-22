@@ -1,10 +1,10 @@
 id: tools/aef_meta_census.py
 name: aef_meta_census
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/aef_meta_census.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: aef:meta key census — T-2871.
 depends_on:
 - target: tools/corpus_conformance.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

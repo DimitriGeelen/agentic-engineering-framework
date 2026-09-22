@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: bin/migrate-horizon-null-completed.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2161 (arc-009 horizon-axis-hardening, Slice 2): Null the stored `horizon:` field on every file under .tasks/completed/.'
 depends_on: []
 depended_by:
 - target: tests/unit/update_task_horizon_null_on_close.bats
@@ -16,3 +16,4 @@ depended_by:
 last_verified: 2026-06-01
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

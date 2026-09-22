@@ -4,10 +4,11 @@ type: script
 subsystem: unknown
 location: 012-ArcSystem.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: An **arc** is a multi-task workspace grouping work by theme.
 depends_on: []
 depended_by: []
 last_verified: 2026-05-16
 created_by: unknown
 standalone: true
 standalone_reason: frontend asset / documentation leaf — no code-dependency edges (T-2511)
+purpose_source: markdown

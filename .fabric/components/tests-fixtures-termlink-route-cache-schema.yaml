@@ -1,7 +1,7 @@
 id: tests/fixtures/termlink-route-cache-schema.json
 name: termlink-route-cache-schema
 type: config
-subsystem: unknown
+subsystem: tests
 location: tests/fixtures/termlink-route-cache-schema.json
 tags: []
 purpose: 'TODO: describe what this component does'

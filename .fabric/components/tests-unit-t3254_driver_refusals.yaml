@@ -1,10 +1,10 @@
 id: tests/unit/t3254_driver_refusals.bats
 name: t3254_driver_refusals
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3254_driver_refusals.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3254 (arc-012) — the outside driver must refuse on every armed condition.
 depends_on:
 - target: agents/context/continuous-driver.sh
   type: tests
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

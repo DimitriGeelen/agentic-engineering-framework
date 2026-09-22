@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: bin/integrate-go-live.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: integrate-go-live.sh — safe zone-3 host go-live (T-2483; OBS-086).
 depends_on: []
 depended_by:
 - target: bin/fw
@@ -14,3 +14,4 @@ depended_by:
 last_verified: '2026-07-22'
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

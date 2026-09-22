@@ -4,7 +4,8 @@ type: template
 subsystem: watchtower
 location: web/templates/embeddings.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Embeddings panel — T-1719 A4. Tri-state rendering is load-bearing: a None value MUST read as "unknown", never as
+  a dash or a zero. A five-month-old index passing for current (T-3004) is the failure this whole surface exists to make visible.'
 depends_on: []
 depended_by:
 - target: web/blueprints/embeddings.py
@@ -12,3 +13,4 @@ depended_by:
 last_verified: 2026-08-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

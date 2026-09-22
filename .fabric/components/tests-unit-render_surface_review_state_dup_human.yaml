@@ -1,13 +1,15 @@
 id: tests/unit/render_surface_review_state_dup_human.bats
 name: render_surface_review_state_dup_human
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/render_surface_review_state_dup_human.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1901: render-surface gate''s review-state detector reads ALL `### Human` blocks, not just the first. Backward-compatible
+  with single-header tasks.'
 depends_on:
 - target: agents/task-create/update-task.sh
   type: tests
 depended_by: []
 last_verified: '2026-07-22'
 created_by: unknown
+purpose_source: header-comment

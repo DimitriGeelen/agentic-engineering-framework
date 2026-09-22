@@ -1,20 +1,13 @@
 id: tests/unit/t3425_sidecar_read_allowlist.bats
 name: t3425_sidecar_read_allowlist
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3425_sidecar_read_allowlist.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3425 (OBS-461) — the sidecar's read verbs and TermLink's channel reads are on the task gate's read-only allowlist;
+  their write forms are not.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
+purpose_source: header-comment

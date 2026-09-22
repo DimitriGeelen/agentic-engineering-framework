@@ -1,10 +1,10 @@
 id: tests/unit/test_bvp_blueprint_cost.py
 name: test_bvp_blueprint_cost
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_bvp_blueprint_cost.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1934: pin the `_compute_cost(default_when_absent=...)` contract.'
 depends_on:
 - target: web/blueprints/__init__.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-19
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

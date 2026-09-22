@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/qa_feedback.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Q&A feedback storage — SQLite-backed thumbs up/down tracking (T-267).
 depends_on:
 - target: web/shared.py
   type: calls
@@ -22,3 +22,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

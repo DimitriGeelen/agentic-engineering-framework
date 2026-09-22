@@ -1,10 +1,10 @@
 id: tests/unit/test_termlink_list_contract.py
 name: test_termlink_list_contract
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_termlink_list_contract.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1651 — TermLink `list --json` schema contract test.
 depends_on:
 - target: tests/fixtures/termlink-list-schema.json
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: docstring

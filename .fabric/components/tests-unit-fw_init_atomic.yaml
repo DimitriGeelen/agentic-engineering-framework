@@ -1,10 +1,10 @@
 id: tests/unit/fw_init_atomic.bats
 name: fw_init_atomic
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/fw_init_atomic.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2801 — fw init must leave either nothing or a working project.
 depends_on:
 - target: bin/fw
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-04
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

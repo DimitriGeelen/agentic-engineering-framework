@@ -1,10 +1,10 @@
 id: tests/unit/check_task_ac_structure.bats
 name: check_task_ac_structure
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/check_task_ac_structure.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2420: check-task-ac-structure PreToolUse hook — unit tests.'
 depends_on:
 - target: agents/context/check-task-ac-structure.sh
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-06-16
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

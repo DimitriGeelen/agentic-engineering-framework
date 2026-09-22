@@ -1,10 +1,11 @@
 id: tests/unit/upgrade_dedupe_user_hooks.bats
 name: upgrade_dedupe_user_hooks
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/upgrade_dedupe_user_hooks.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1481 — `fw upgrade --dedupe-user-hooks` opt-in remediation. Removes framework hooks from $HOME/.claude/settings.json
+  that duplicate the project-level config; always backs up first.
 depends_on:
 - target: lib/upgrade.sh
   type: calls
@@ -18,3 +19,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

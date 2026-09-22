@@ -1,14 +1,14 @@
 id: tools/migrate-inception-schema.py
 name: migrate-inception-schema
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/migrate-inception-schema.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2193: One-shot migration — backfill target_blast_radius + voi_score on existing inceptions.'
 depends_on: []
 depended_by: []
 last_verified: 2026-06-02
 created_by: unknown
 standalone: true
-standalone_reason: "one-shot schema-migration utility \u2014 invoked manually, no\
-  \ code imports it (T-2511)"
+standalone_reason: one-shot schema-migration utility — invoked manually, no code imports it (T-2511)
+purpose_source: docstring

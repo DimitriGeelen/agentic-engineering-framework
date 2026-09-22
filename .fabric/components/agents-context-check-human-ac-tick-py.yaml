@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/check-human-ac-tick.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1731: Human-AC tick guard hook.'
 depends_on:
 - target: lib/verification-port.sh
   type: calls
@@ -20,3 +20,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

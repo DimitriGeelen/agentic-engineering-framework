@@ -1,10 +1,10 @@
 id: tests/unit/t3245_trailer_quote_strip.bats
 name: t3245_trailer_quote_strip
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3245_trailer_quote_strip.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3245 — the mandated Co-Authored-By trailer voided the partial-complete bare-commit allowance.
 depends_on:
 - target: agents/context/check-active-task.sh
   type: tests
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

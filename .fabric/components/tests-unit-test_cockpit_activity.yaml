@@ -1,10 +1,10 @@
 id: tests/unit/test_cockpit_activity.py
 name: test_cockpit_activity
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_cockpit_activity.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2020 (arc-007 S6d): cockpit live activity feed — recent commits via htmx poll.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

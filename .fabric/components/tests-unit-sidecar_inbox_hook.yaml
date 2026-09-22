@@ -1,20 +1,13 @@
 id: tests/unit/sidecar_inbox_hook.bats
 name: sidecar_inbox_hook
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/sidecar_inbox_hook.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-3407 — sidecar-inbox UserPromptSubmit hook: silent-when-empty, surfaces when pending, peeks (never consumes),
+  fails open.'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-21
 created_by: unknown
+purpose_source: header-comment

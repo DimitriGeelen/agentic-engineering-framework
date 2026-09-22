@@ -1,10 +1,10 @@
 id: tests/unit/handover_push_no_origin.bats
 name: handover_push_no_origin
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/handover_push_no_origin.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1474 — handover.sh mirror-skip must guard on origin presence.
 depends_on:
 - target: agents/handover/handover.sh
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

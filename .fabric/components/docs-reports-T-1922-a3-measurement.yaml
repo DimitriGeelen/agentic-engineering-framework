@@ -1,13 +1,15 @@
 id: docs/reports/T-1922-a3-measurement.md
 name: T-1922-a3-measurement
 type: script
-subsystem: unknown
+subsystem: docs
 location: docs/reports/T-1922-a3-measurement.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: '**Filed under:** T-1922 (arc-006, value-prioritisation) **Estimator version:** `bvp-estimator-v1-heuristic` **Rubric
+  SHA:** `e4a00f38e801` (`policy/bvp-scoring-rubric.md`) **Measurement date:** 2026-05-19 **A3 raw data:**…'
 depends_on: []
 depended_by: []
 last_verified: 2026-05-19
 created_by: unknown
 standalone: true
 standalone_reason: documentation/data artifact — no code-dependency edges (T-2511)
+purpose_source: markdown

@@ -4,7 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/bvp.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: BVP scatter blueprint — T-1928 (arc-006, value-prioritisation, T-NEW-12a).
 depends_on:
 - target: web/shared.py
   type: calls
@@ -50,3 +50,4 @@ depended_by:
 last_verified: 2026-05-19
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

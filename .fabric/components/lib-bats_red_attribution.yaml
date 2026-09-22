@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/bats_red_attribution.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3126 — attribute each RED bats test to the paths it is about.
 depends_on: []
 depended_by:
 - target: C-004
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-08-24
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: docstring

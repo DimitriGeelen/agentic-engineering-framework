@@ -4,17 +4,9 @@ type: config
 subsystem: governance
 location: policy/sandbox-profile.yaml
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: sandbox-profile.yaml — the OS cage's SOURCE (arc-013 / T-2433, design §7a).
+depends_on: []
+depended_by: []
 last_verified: 2026-09-20
 created_by: unknown
+purpose_source: header-comment

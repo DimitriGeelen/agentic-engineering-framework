@@ -1,10 +1,11 @@
 id: tests/unit/t3053_multiref_traceability.bats
 name: t3053_multiref_traceability
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3053_multiref_traceability.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3053 — a commit subject may name more than one task. The traceability check read only the first ref, so a commit
+  whose leading ref did not resolve was reported orphaned even when a later ref named a real task.
 depends_on:
 - target: C-004
   type: calls
@@ -16,3 +17,4 @@ depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/hook-threshold.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1631 (B-3b of T-1626) — hook-failure threshold rule.
 depends_on:
 - target: lib/hook-telemetry.sh
   type: calls
@@ -26,3 +26,4 @@ depended_by:
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: docstring

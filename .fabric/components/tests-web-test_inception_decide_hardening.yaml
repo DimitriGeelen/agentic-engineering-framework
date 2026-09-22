@@ -1,10 +1,10 @@
 id: tests/web/test_inception_decide_hardening.py
 name: test_inception_decide_hardening
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/web/test_inception_decide_hardening.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1470: Watchtower /inception/decide hardens against side-effect failure.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -20,3 +20,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

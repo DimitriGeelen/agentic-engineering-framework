@@ -1,13 +1,14 @@
 id: tests/unit/test_bvp_estimator_v_alias.py
 name: test_bvp_estimator_v_alias
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_bvp_estimator_v_alias.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2343 — BVP estimator dispatch name-alias fallback.
 depends_on:
 - target: agents/termlink/bvp-estimator/estimator.py
   type: tests
 depended_by: []
 last_verified: '2026-07-22'
 created_by: unknown
+purpose_source: docstring

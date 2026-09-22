@@ -1,10 +1,10 @@
 id: tests/unit/test_orchestrator_mcp_classify.py
 name: test_orchestrator_mcp_classify
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_orchestrator_mcp_classify.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2154 (T-1761 build): pin classify_by_convention behaviour.'
 depends_on:
 - target: agents/audit/orchestrator-mcp-scan.sh
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-06-01
 created_by: unknown
 last_enriched: '2026-06-02'
+purpose_source: docstring

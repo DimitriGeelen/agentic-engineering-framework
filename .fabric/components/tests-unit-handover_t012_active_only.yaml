@@ -1,10 +1,11 @@
 id: tests/unit/handover_t012_active_only.bats
 name: handover_t012_active_only
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/handover_t012_active_only.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1477 — handover.sh's COMMIT_TASK lookup must only match T-012 when it is in .tasks/active/. Matching completed/
+  caused recurring "task is closed" warnings on every session handover commit because T-012 was completed long
 depends_on:
 - target: agents/handover/handover.sh
   type: calls
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

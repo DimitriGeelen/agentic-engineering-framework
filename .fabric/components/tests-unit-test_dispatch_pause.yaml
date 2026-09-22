@@ -1,10 +1,10 @@
 id: tests/unit/test_dispatch_pause.py
 name: test_dispatch_pause
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_dispatch_pause.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Tests for lib/dispatch_pause.py — operator review-queue surface for paused
 depends_on:
 - target: lib/dispatch_pause.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-13
 created_by: unknown
 last_enriched: '2026-05-15'
+purpose_source: docstring

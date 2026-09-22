@@ -1,10 +1,10 @@
 id: tests/unit/test_orchestrator_parallel_view.py
 name: test_orchestrator_parallel_view
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_orchestrator_parallel_view.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2342 (arc-011 M1 §5) — /orchestrator/parallel view.
 depends_on:
 - target: web/blueprints/orchestrator.py
   type: calls
@@ -20,3 +20,4 @@ depended_by: []
 last_verified: 2026-06-11
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

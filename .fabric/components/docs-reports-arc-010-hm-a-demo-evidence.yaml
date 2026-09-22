@@ -1,13 +1,15 @@
 id: docs/reports/arc-010-hm-a-demo-evidence.md
 name: arc-010-hm-a-demo-evidence
 type: script
-subsystem: unknown
+subsystem: docs
 location: docs/reports/arc-010-hm-a-demo-evidence.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: '**Arc:** arc-010 (slug: capability-overlay) **Anchor task:** T-2209 **Demo task:** T-2268 (Slice 3 — HM-A demo agent)
+  **Demo target:** T-2273 (the task the demo agent drove) **Worker prompt:**…'
 depends_on: []
 depended_by: []
 last_verified: 2026-06-08
 created_by: unknown
 standalone: true
 standalone_reason: documentation/data artifact — no code-dependency edges (T-2511)
+purpose_source: markdown

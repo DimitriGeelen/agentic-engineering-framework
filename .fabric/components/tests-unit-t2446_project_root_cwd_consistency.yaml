@@ -1,10 +1,10 @@
 id: tests/unit/t2446_project_root_cwd_consistency.bats
 name: t2446_project_root_cwd_consistency
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2446_project_root_cwd_consistency.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2446: bin/fw trusts CLAUDE_PROJECT_DIR ONLY when the cwd is not genuinely inside a *different* real project.'
 depends_on:
 - target: bin/fw
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-06-21
 created_by: unknown
 last_enriched: '2026-06-22'
+purpose_source: header-comment

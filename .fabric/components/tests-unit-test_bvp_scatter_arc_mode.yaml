@@ -1,10 +1,10 @@
 id: tests/unit/test_bvp_scatter_arc_mode.py
 name: test_bvp_scatter_arc_mode
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_bvp_scatter_arc_mode.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1941: pin `bvp_mode` field in /bvp scatter arc payload.'
 depends_on:
 - target: web/blueprints/__init__.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-19
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

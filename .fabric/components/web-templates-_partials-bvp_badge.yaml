@@ -4,10 +4,11 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_partials/bvp_badge.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1982: render a compact BVP_norm chip for a task.'
 depends_on: []
 depended_by: []
 last_verified: 2026-05-21
 created_by: unknown
 standalone: true
 standalone_reason: documentation/data artifact — no code-dependency edges (T-2511)
+purpose_source: header-comment

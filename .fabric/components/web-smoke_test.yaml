@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/smoke_test.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Watchtower smoke test — runtime route discovery + content validation.
 depends_on:
 - target: web/app.py
   type: calls
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

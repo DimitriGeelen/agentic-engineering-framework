@@ -1,13 +1,14 @@
 id: tests/unit/check_inception_schema.bats
 name: check_inception_schema
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/check_inception_schema.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for check-inception-schema hook (T-2188).
 depends_on:
 - target: agents/context/check-inception-schema.py
   type: tests
 depended_by: []
 last_verified: '2026-07-22'
 created_by: unknown
+purpose_source: header-comment

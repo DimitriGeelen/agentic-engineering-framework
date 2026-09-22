@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/push-state.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/push-state.sh — T-3063 (leg 2 of T-3062)
 depends_on: []
 depended_by:
 - target: agents/handover/handover.sh
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

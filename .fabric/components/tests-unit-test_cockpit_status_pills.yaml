@@ -1,10 +1,10 @@
 id: tests/unit/test_cockpit_status_pills.py
 name: test_cockpit_status_pills
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_cockpit_status_pills.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2023 (arc-007 S3a): cockpit status colours use per-palette semantic tokens.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

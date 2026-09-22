@@ -1,10 +1,10 @@
 id: tests/unit/test_reviewer_audit_pass_a.py
 name: test_reviewer_audit_pass_a
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_reviewer_audit_pass_a.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for lib/reviewer/audit.py --pass-a corpus drift mode (T-1485 v1.5c).
 depends_on:
 - target: lib/reviewer/audit.py
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-04-26
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

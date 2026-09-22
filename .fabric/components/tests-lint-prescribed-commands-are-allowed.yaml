@@ -1,10 +1,10 @@
 id: tests/lint/prescribed-commands-are-allowed.bats
 name: prescribed-commands-are-allowed
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/lint/prescribed-commands-are-allowed.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2702 — a command one gate PRESCRIBES must be one the budget gate ALLOWS.
 depends_on:
 - target: lib/cmd_classify.py
   type: tests
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-07-31
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

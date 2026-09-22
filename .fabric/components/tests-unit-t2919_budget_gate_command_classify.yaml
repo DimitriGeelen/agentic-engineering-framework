@@ -1,10 +1,10 @@
 id: tests/unit/t2919_budget_gate_command_classify.bats
 name: t2919_budget_gate_command_classify
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2919_budget_gate_command_classify.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2919 — the budget gate must judge the command's STRUCTURE, not scan it for a substring.
 depends_on:
 - target: C-007
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-08-11
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

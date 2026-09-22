@@ -1,10 +1,10 @@
 id: tests/unit/test_doctor_scope_tags.bats
 name: test_doctor_scope_tags
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_doctor_scope_tags.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1707 / G-065 Stream 2 — fw doctor scope tagging.
 depends_on:
 - target: bin/fw
   type: tests
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-05-03
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

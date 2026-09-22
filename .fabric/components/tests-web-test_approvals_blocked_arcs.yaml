@@ -1,10 +1,10 @@
 id: tests/web/test_approvals_blocked_arcs.py
 name: test_approvals_blocked_arcs
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/web/test_approvals_blocked_arcs.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2986: an arc that meets the closure threshold but is not reviewable says so.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -20,3 +20,4 @@ depended_by: []
 last_verified: 2026-08-14
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

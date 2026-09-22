@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/ollama_loop.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: OllamaLoopWorker — subprocess wrapper for `claude -p` with redirected env vars.
 depends_on:
 - target: agents/termlink/termlink.sh
   type: calls
@@ -20,3 +20,4 @@ depended_by:
 last_verified: 2026-05-09
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

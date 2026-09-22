@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/task_satisfaction.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Find active tasks whose acceptance criteria are all satisfied but which were never closed (T-3061).
 depends_on:
 - target: agents/audit/active-task-scan.py
   type: calls
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

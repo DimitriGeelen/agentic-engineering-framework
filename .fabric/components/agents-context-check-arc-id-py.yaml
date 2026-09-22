@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/check-arc-id.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1849: arc_id task-frontmatter validation hook (T-NEW-2).'
 depends_on:
 - target: lib/hook_paths.py
   type: calls
@@ -24,3 +24,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

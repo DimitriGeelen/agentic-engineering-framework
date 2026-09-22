@@ -1,20 +1,12 @@
 id: tests/playwright/test_embeddings_panel.py
 name: test_embeddings_panel
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_embeddings_panel.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: Playwright tests for the /embeddings panel (T-1719 A4).
+depends_on: []
+depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
+purpose_source: docstring

@@ -1,10 +1,10 @@
 id: tests/unit/audit_arc_progress_arc_id.bats
 name: audit_arc_progress_arc_id
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/audit_arc_progress_arc_id.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1875 (T-NEW-11): audit arc-progress fallback unions arc_id frontmatter with legacy arc:<slug> tag scan.'
 depends_on:
 - target: C-004
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-17
 created_by: unknown
 last_enriched: '2026-05-18'
+purpose_source: header-comment

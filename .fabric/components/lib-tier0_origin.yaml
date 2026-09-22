@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/tier0_origin.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Derive the provenance of a Tier 0 approval request (T-3078).
 depends_on:
 - target: agents/context/check-tier0.sh
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-19
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

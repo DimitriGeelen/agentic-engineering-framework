@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/govd_holder.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: govd_holder — the privileged state-holder daemon `aef-govd` (arc-013 / T-2430).
 depends_on:
 - target: lib/govd_envelope.py
   type: calls
@@ -20,3 +20,4 @@ depended_by:
 last_verified: 2026-06-20
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

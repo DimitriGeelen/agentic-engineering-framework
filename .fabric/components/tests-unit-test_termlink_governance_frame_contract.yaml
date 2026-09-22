@@ -1,10 +1,10 @@
 id: tests/unit/test_termlink_governance_frame_contract.py
 name: test_termlink_governance_frame_contract
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_termlink_governance_frame_contract.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1648 — Governance frame 0x8 protocol regression test.
 depends_on:
 - target: tests/fixtures/termlink-protocol-frame-types.json
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: docstring

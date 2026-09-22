@@ -1,10 +1,10 @@
 id: tests/unit/revisit_signal_untracked.bats
 name: revisit_signal_untracked
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/revisit_signal_untracked.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2866 — the revisit signal files must never be tracked by git.
 depends_on:
 - target: agents/context/revisit-due-scan.sh
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-08
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

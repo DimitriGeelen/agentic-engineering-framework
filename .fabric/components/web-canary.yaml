@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/canary.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Synthetic canary documents — a positive control for the whole retrieval path.
 depends_on: []
 depended_by:
 - target: tests/unit/test_canary_manifest.py
@@ -16,3 +16,4 @@ depended_by:
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

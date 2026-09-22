@@ -1,10 +1,11 @@
 id: tests/unit/harvest_indent_agnostic.bats
 name: harvest_indent_agnostic
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/harvest_indent_agnostic.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2676 — harvest.sh indent-agnostic entry greps (dead learnings/patterns sub-stages). Third instance of the indentation-assumption
+  class (T-2672 resolve.sh emit-indent, 832 T-295 field report).
 depends_on:
 - target: lib/paths.sh
   type: calls
@@ -18,3 +19,4 @@ depended_by: []
 last_verified: 2026-07-29
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

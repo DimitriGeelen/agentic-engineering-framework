@@ -4,7 +4,8 @@ type: script
 subsystem: context-fabric
 location: agents/context/checkpoint.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Context Checkpoint Agent — Token-aware context budget monitor Reads actual token usage from Claude Code JSONL transcript
+  to warn before automatic compaction causes context loss.
 depends_on:
 - target: lib/paths.sh
   type: calls
@@ -28,3 +29,4 @@ depended_by:
 last_verified: 2026-09-05
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

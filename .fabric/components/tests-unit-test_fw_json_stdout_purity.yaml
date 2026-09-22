@@ -1,10 +1,10 @@
 id: tests/unit/test_fw_json_stdout_purity.py
 name: test_fw_json_stdout_purity
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_fw_json_stdout_purity.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2769 — `fw <cmd> --json` must emit only JSON on stdout.
 depends_on:
 - target: bin/fw
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-03
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

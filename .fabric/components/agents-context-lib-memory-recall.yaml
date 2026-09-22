@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/lib/memory-recall.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Memory recall — query project knowledge for relevant prior learnings, patterns, and decisions.
 depends_on:
 - target: web/embeddings.py
   type: calls
@@ -26,3 +26,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

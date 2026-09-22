@@ -1,10 +1,10 @@
 id: tests/integration/test_arc010_hm_a_demo_evidence.bats
 name: test_arc010_hm_a_demo_evidence
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/integration/test_arc010_hm_a_demo_evidence.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2268 (arc-010 Slice 3 HM-A): integration contract test for the demo evidence README + traceability shape.'
 depends_on:
 - target: bin/fw
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-06-08
 created_by: unknown
 last_enriched: '2026-06-09'
+purpose_source: header-comment

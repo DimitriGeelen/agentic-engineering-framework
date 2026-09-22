@@ -1,10 +1,10 @@
 id: tests/unit/test_session_cookie_port.py
 name: test_session_cookie_port
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_session_cookie_port.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3065: the session cookie is named for the port actually being served.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-17
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

@@ -1,10 +1,10 @@
 id: tests/playwright/test_graduation_height.py
 name: test_graduation_height
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_graduation_height.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Playwright regression test for /graduation rendered height (T-2046).
 depends_on:
 - target: agents/ux-review/ux-review.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-25
 created_by: unknown
 last_enriched: '2026-05-27'
+purpose_source: docstring

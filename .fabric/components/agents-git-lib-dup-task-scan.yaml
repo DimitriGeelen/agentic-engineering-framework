@@ -4,7 +4,7 @@ type: script
 subsystem: git-traceability
 location: agents/git/lib/dup-task-scan.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1863: Duplicate task-ID scanner (G-052 prevention).'
 depends_on: []
 depended_by:
 - target: agents/git/lib/hooks.sh
@@ -16,3 +16,4 @@ depended_by:
 last_verified: 2026-05-15
 created_by: unknown
 last_enriched: '2026-05-15'
+purpose_source: header-comment

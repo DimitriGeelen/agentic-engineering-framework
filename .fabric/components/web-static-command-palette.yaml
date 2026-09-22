@@ -4,10 +4,11 @@ type: script
 subsystem: watchtower
 location: web/static/command-palette.js
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: ⌘K Command Palette — T-2012, arc-007 S6a.
 depends_on: []
 depended_by: []
 last_verified: 2026-05-23
 created_by: unknown
 standalone: true
 standalone_reason: frontend asset / documentation leaf — no code-dependency edges (T-2511)
+purpose_source: header-comment

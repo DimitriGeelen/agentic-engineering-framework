@@ -1,10 +1,10 @@
 id: tests/unit/test_task_create_description_yaml.py
 name: test_task_create_description_yaml
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_task_create_description_yaml.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2778: `fw task create` must emit parseable frontmatter for multi-line descriptions.'
 depends_on:
 - target: agents/task-create/create-task.sh
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-03
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

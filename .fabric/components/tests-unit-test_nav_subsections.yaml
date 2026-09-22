@@ -1,10 +1,10 @@
 id: tests/unit/test_nav_subsections.py
 name: test_nav_subsections
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_nav_subsections.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2008 (arc-007 S2a): nav IA regroup + Govern sub-grouping guard.'
 depends_on:
 - target: web/shared.py
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-05-23
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

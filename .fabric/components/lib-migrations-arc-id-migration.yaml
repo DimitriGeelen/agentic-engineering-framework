@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/migrations/arc-id-migration.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1850 (T-NEW-3): one-shot, idempotent migration `tags:[arc:X] → arc_id: X`.'
 depends_on: []
 depended_by:
 - target: tests/unit/audit_ctl_arc_tag_only_pattern.bats
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-05-16
 created_by: unknown
 last_enriched: '2026-05-18'
+purpose_source: header-comment

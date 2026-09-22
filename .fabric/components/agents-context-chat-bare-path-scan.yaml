@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/chat-bare-path-scan.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Stop hook — chat bare-path scanner (T-2183, Slice 2 of T-2181)
 depends_on: []
 depended_by:
 - target: agents/context/chat-bare-path-warn.sh
@@ -13,3 +13,4 @@ depended_by:
   type: called_by
 last_verified: '2026-07-22'
 created_by: unknown
+purpose_source: header-comment

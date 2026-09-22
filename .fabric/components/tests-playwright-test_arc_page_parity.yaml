@@ -1,10 +1,10 @@
 id: tests/playwright/test_arc_page_parity.py
 name: test_arc_page_parity
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_arc_page_parity.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Playwright tests for T-1910 — arc page parity (Slices 1+2+4 of T-1905).
 depends_on:
 - target: tests/playwright/target.py
   type: uses
@@ -14,3 +14,4 @@ created_by: unknown
 standalone: true
 standalone_reason: playwright black-box HTTP test — no code-import edges (T-2511)
 last_enriched: '2026-08-23'
+purpose_source: docstring

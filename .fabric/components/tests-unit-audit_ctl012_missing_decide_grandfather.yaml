@@ -1,10 +1,10 @@
 id: tests/unit/audit_ctl012_missing_decide_grandfather.bats
 name: audit_ctl012_missing_decide_grandfather
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/audit_ctl012_missing_decide_grandfather.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2385: CTL-012-MISSING-DECIDE grandfather cutoff regression.'
 depends_on:
 - target: agents/audit/completed-task-scan.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-12
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

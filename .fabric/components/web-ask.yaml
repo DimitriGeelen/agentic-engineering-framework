@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/ask.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: LLM-assisted Q&A for Watchtower search.
 depends_on:
 - target: web/config.py
   type: calls
@@ -36,3 +36,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

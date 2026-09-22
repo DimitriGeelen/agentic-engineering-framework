@@ -1,10 +1,10 @@
 id: tests/unit/t2391_project_root_inherited_stale.bats
 name: t2391_project_root_inherited_stale
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2391_project_root_inherited_stale.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2391: bin/fw validates an INHERITED (non-empty) PROJECT_ROOT and re-resolves when stale, instead of using it verbatim.'
 depends_on:
 - target: bin/fw
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-06-14
 created_by: unknown
 last_enriched: '2026-06-16'
+purpose_source: header-comment

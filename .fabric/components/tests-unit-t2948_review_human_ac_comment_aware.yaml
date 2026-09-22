@@ -1,10 +1,10 @@
 id: tests/unit/t2948_review_human_ac_comment_aware.bats
 name: t2948_review_human_ac_comment_aware
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2948_review_human_ac_comment_aware.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2948 — lib/review.sh's Human-AC counter was comment-immune BY ACCIDENT.
 depends_on:
 - target: lib/review.sh
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-08-12
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

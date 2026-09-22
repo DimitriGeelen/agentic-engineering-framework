@@ -1,10 +1,10 @@
 id: tools/corpus_spec.py
 name: corpus_spec
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/corpus_spec.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: corpus_spec — declarative spec ⇄ designer-corpus BPMN (T-2603, arc T-2602 GO).
 depends_on:
 - target: bin/fw
   type: calls
@@ -26,3 +26,4 @@ depended_by:
 last_verified: 2026-07-22
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

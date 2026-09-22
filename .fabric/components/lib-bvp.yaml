@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/bvp.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/bvp.sh — Business Value Points (BVP) read-only CLI
 depends_on:
 - target: agents/termlink/bvp-estimator/estimator.py
   type: calls
@@ -24,3 +24,4 @@ depended_by:
 last_verified: 2026-05-19
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

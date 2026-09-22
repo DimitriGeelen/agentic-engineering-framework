@@ -1,10 +1,10 @@
 id: tests/unit/t2762_upgrade_foreign_source_sha.bats
 name: t2762_upgrade_foreign_source_sha
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2762_upgrade_foreign_source_sha.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2762: a source repo that cannot resolve the consumer''s recorded commit is not a valid upgrade source.'
 depends_on:
 - target: lib/version-relation.sh
   type: tests
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-08-03
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

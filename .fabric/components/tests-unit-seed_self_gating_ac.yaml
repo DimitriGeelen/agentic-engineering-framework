@@ -1,20 +1,12 @@
 id: tests/unit/seed_self_gating_ac.bats
 name: seed_self_gating_ac
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/seed_self_gating_ac.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-2862 — no seeded Agent AC may name the command that closes its own task.
+depends_on: []
+depended_by: []
 last_verified: 2026-08-08
 created_by: unknown
+purpose_source: header-comment

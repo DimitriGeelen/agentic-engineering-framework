@@ -1,14 +1,14 @@
 id: tools/check_task_yamls.py
 name: check_task_yamls
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/check_task_yamls.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Parse the YAML frontmatter of every task file in .tasks/{active,completed}/.
 depends_on: []
 depended_by: []
 last_verified: 2026-05-31
 created_by: unknown
 standalone: true
-standalone_reason: "standalone task-YAML validator \u2014 leaf utility, no code imports\
-  \ it (T-2511)"
+standalone_reason: standalone task-YAML validator — leaf utility, no code imports it (T-2511)
+purpose_source: docstring

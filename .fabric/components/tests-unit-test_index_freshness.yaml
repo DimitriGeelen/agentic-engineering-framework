@@ -1,10 +1,10 @@
 id: tests/unit/test_index_freshness.py
 name: test_index_freshness
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_index_freshness.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Index freshness is a property of the index, not of the handle — T-3012.
 depends_on:
 - target: web/corpus_manifest.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

@@ -1,20 +1,12 @@
 id: tests/lint/mcp-termlink-runtime-dir.bats
 name: mcp-termlink-runtime-dir
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/lint/mcp-termlink-runtime-dir.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3424 — the MCP termlink server must be pinned to the canonical hub store.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
+purpose_source: header-comment

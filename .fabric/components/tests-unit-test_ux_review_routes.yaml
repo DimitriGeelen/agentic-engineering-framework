@@ -1,10 +1,10 @@
 id: tests/unit/test_ux_review_routes.py
 name: test_ux_review_routes
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_ux_review_routes.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit test for ux-review route discovery (T-2042).
 depends_on:
 - target: agents/ux-review/ux-review.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-25
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: docstring

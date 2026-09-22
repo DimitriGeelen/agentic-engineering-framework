@@ -1,10 +1,10 @@
 id: tests/unit/reviewer_verdict_replacement_escape.bats
 name: reviewer_verdict_replacement_escape
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/reviewer_verdict_replacement_escape.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2730 — a rendered verdict is DATA, and must never reach `re.sub` as a replacement *template*.
 depends_on:
 - target: bin/fw
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-02
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

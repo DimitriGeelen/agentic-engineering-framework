@@ -1,10 +1,11 @@
 id: tests/unit/fabric_coverage_single_source.bats
 name: fabric_coverage_single_source
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/fabric_coverage_single_source.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2735 — "which watched source files have no fabric card?" must have exactly ONE answer in audit.sh, and it must
+  be the canonical expander's.
 depends_on:
 - target: C-004
   type: calls
@@ -16,3 +17,4 @@ depended_by: []
 last_verified: 2026-08-02
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

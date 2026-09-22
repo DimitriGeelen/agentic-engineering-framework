@@ -1,10 +1,10 @@
 id: tests/unit/safe_commands_env_prefix.bats
 name: safe_commands_env_prefix
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/safe_commands_env_prefix.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1908: pin env-var prefix stripping in is_bash_safe_command.'
 depends_on:
 - target: agents/context/lib/safe-commands.sh
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-05-18
 created_by: unknown
 last_enriched: '2026-05-20'
+purpose_source: header-comment

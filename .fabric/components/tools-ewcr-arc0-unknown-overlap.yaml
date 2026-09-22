@@ -1,10 +1,10 @@
 id: tools/ewcr-arc0-unknown-overlap.py
 name: ewcr-arc0-unknown-overlap
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/ewcr-arc0-unknown-overlap.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: EWCR Arc 0, falsifier 1 — do the Unknown-subsystem Fabric entries intersect the runtime write set?
 depends_on:
 - target: bin/fw
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-26
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

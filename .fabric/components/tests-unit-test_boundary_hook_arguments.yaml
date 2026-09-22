@@ -1,10 +1,10 @@
 id: tests/unit/test_boundary_hook_arguments.bats
 name: test_boundary_hook_arguments
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_boundary_hook_arguments.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1702 / G-065 — Pattern 4 (read-side outside-path arguments).
 depends_on:
 - target: agents/context/check-project-boundary.sh
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-05-03
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

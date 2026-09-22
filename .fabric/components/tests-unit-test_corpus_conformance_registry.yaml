@@ -1,10 +1,10 @@
 id: tests/unit/test_corpus_conformance_registry.py
 name: test_corpus_conformance_registry
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_corpus_conformance_registry.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2654 (T-2652 GO slice 1): registry-driven conformance checker mechanics.'
 depends_on:
 - target: tools/corpus_conformance.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-07-28
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

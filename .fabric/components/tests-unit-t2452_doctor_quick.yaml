@@ -1,10 +1,10 @@
 id: tests/unit/t2452_doctor_quick.bats
 name: t2452_doctor_quick
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2452_doctor_quick.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2452 / F6 (T-2441 dogfood) — `fw doctor --quick` project-only fast mode.
 depends_on:
 - target: bin/fw
   type: tests
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-06-21
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

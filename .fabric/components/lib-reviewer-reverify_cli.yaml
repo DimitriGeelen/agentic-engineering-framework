@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/reviewer/reverify_cli.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: CLI shim for re-verification (T-1483 v1.5 Pass B).
 depends_on:
 - target: lib/reviewer/reverify.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

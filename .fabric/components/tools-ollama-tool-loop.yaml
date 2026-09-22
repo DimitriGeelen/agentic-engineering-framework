@@ -1,10 +1,10 @@
 id: tools/ollama-tool-loop.py
 name: ollama-tool-loop
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/ollama-tool-loop.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1706 — thin tool-execution loop for ollama-research workflow.
 depends_on: []
 depended_by:
 - target: agents/termlink/termlink.sh
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-05-03
 created_by: unknown
 last_enriched: '2026-07-27'
+purpose_source: docstring

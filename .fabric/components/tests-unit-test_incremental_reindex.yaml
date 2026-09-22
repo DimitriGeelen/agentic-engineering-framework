@@ -1,10 +1,10 @@
 id: tests/unit/test_incremental_reindex.py
 name: test_incremental_reindex
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_incremental_reindex.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Incremental reindex — T-3014, slice 5 of T-3005.
 depends_on:
 - target: web/corpus_manifest.py
   type: calls
@@ -20,3 +20,4 @@ depended_by: []
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

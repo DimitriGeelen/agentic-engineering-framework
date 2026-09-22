@@ -1,10 +1,10 @@
 id: tests/unit/lib_config.bats
 name: lib_config
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/lib_config.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Unit tests for lib/config.sh — 3-tier configuration resolution Origin: T-819'
 depends_on:
 - target: lib/config.sh
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-04-03
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

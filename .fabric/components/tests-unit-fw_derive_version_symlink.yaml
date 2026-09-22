@@ -1,10 +1,10 @@
 id: tests/unit/fw_derive_version_symlink.bats
 name: fw_derive_version_symlink
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/fw_derive_version_symlink.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2450 / F3: bin/fw _derive_version must resolve symlinks before deriving fw_dir.'
 depends_on:
 - target: bin/fw
   type: tests
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-06-21
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

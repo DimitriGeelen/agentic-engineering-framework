@@ -4,7 +4,8 @@ type: script
 subsystem: context-fabric
 location: agents/context/check-onboarding-gate.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2815: refuse Write/Edit that adds an agent-unresolvable task to the gated onboarding set (T-532''s check-active-task.sh
+  onboarding block).'
 depends_on:
 - target: lib/hook_paths.py
   type: calls
@@ -20,3 +21,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

@@ -1,10 +1,10 @@
 id: tests/unit/t2990_root_pollution.bats
 name: t2990_root_pollution
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2990_root_pollution.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2990: the root-pollution rail, proven in BOTH directions.'
 depends_on:
 - target: lib/root-pollution.sh
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-08-14
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

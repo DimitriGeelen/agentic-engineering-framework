@@ -1,10 +1,10 @@
 id: tests/unit/test_frontmatter_loader_equivalence.py
 name: test_frontmatter_loader_equivalence
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_frontmatter_loader_equivalence.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2774: the fast YAML loader must parse identically to the pure-Python one.'
 depends_on:
 - target: web/shared.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-03
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

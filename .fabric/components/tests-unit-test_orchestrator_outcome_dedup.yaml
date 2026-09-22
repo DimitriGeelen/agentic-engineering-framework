@@ -1,10 +1,10 @@
 id: tests/unit/test_orchestrator_outcome_dedup.py
 name: test_orchestrator_outcome_dedup
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_orchestrator_outcome_dedup.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1757 — Regression test for orchestrator status outcome dedup.
 depends_on:
 - target: bin/fw
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-05
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: docstring

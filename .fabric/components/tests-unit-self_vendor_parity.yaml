@@ -1,10 +1,10 @@
 id: tests/unit/self_vendor_parity.bats
 name: self_vendor_parity
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/self_vendor_parity.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2711: the self-vendor PRODUCER and the audit GATE must cover the same files.'
 depends_on:
 - target: lib/upgrade.sh
   type: calls
@@ -28,3 +28,4 @@ depended_by: []
 last_verified: 2026-08-01
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

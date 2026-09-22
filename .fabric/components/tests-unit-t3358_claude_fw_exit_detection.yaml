@@ -1,20 +1,13 @@
 id: tests/unit/t3358_claude_fw_exit_detection.bats
 name: t3358_claude_fw_exit_detection
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3358_claude_fw_exit_detection.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3358 — claude-fw --termlink exit-detection must fire under a ROOT prompt, not only a `user@` one, and must trigger
+  termlink_cleanup so no session is
+depends_on: []
+depended_by: []
 last_verified: 2026-09-16
 created_by: unknown
+purpose_source: header-comment

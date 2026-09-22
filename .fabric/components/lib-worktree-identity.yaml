@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/worktree-identity.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/worktree-identity.sh — "is this checkout a replica?" (T-3111, R7)
 depends_on: []
 depended_by:
 - target: bin/fw
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-08-22
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

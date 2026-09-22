@@ -1,10 +1,10 @@
 id: tests/unit/test_inception_commit_rename_paths.py
 name: test_inception_commit_rename_paths
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_inception_commit_rename_paths.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2864 — the Watchtower decision commit must stage BOTH sides of a rename.
 depends_on:
 - target: web/shared.py
   type: uses
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-08
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

@@ -1,13 +1,14 @@
 id: tools/escalation-scan-v0.py
 name: escalation-scan-v0
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/escalation-scan-v0.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1549 — Layer B v0 spike: scan completed tasks for symptom-fix candidates.'
 depends_on: []
 depended_by:
 - target: bin/fw
   type: called_by
 last_verified: '2026-07-22'
 created_by: unknown
+purpose_source: docstring

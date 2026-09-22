@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/corpus_manifest.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: What the index actually contains, recorded at build time.
 depends_on: []
 depended_by:
 - target: tests/unit/test_canary_manifest.py
@@ -20,3 +20,4 @@ depended_by:
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

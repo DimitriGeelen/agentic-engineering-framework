@@ -1,10 +1,10 @@
 id: tests/integration/continuous_loop.bats
 name: continuous_loop
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/integration/continuous_loop.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2368 (arc-012 S-test): end-to-end continuous-loop integration test.'
 depends_on:
 - target: agents/context/post-compact-resume.sh
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-06-13
 created_by: unknown
 last_enriched: '2026-06-16'
+purpose_source: header-comment

@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/embed_health.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Typed liveness classification for the embedding provider (T-3006, slice 1 of T-3005).
 depends_on:
 - target: agents/context/lib/focus.sh
   type: calls
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

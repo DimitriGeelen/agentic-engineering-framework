@@ -1,10 +1,11 @@
 id: tests/unit/inception_tick_decision_recorded.bats
 name: inception_tick_decision_recorded
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/inception_tick_decision_recorded.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Unit tests for T-1466 — tick_inception_decide_acs recognizes `[Inception decision recorded]` AC wording when ##
+  Recommendation exists.'
 depends_on:
 - target: lib/colors.sh
   type: calls
@@ -26,3 +27,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

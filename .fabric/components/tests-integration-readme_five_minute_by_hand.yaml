@@ -1,10 +1,11 @@
 id: tests/integration/readme_five_minute_by_hand.bats
 name: readme_five_minute_by_hand
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/integration/readme_five_minute_by_hand.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2719 (arc-016) — the README''s five-minute walkthrough, run as the BY-HAND persona: a person at a terminal with
+  no AI agent attached.'
 depends_on:
 - target: agents/task-create/create-task.sh
   type: tests
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-08-05
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

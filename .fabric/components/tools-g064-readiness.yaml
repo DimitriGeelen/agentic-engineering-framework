@@ -1,10 +1,10 @@
 id: tools/g064-readiness.py
 name: g064-readiness
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/g064-readiness.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: G-064 closure-readiness gauge — substrate-aware check.
 depends_on:
 - target: tools/escalation-scan-v0.5.py
   type: calls
@@ -20,3 +20,4 @@ depended_by:
 last_verified: 2026-05-05
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: docstring

@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/resolver.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Resolver — workflow lookup, prompt assembly, variant selection, telemetry.
 depends_on:
 - target: F-002
   type: calls
@@ -66,3 +66,4 @@ depended_by:
 last_verified: 2026-05-03
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: docstring

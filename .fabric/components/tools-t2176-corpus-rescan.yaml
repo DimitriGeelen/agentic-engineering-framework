@@ -1,10 +1,11 @@
 id: tools/t2176-corpus-rescan.sh
 name: t2176-corpus-rescan
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/t2176-corpus-rescan.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2176: Fresh fw reviewer scan over .tasks/completed/ to refresh stale verdict cache. Writes back ## Reviewer Verdict
+  block per task; logs JSON per task; aggregates FAIL list.'
 depends_on:
 - target: bin/fw
   type: calls
@@ -12,3 +13,4 @@ depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

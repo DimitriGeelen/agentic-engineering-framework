@@ -1,10 +1,11 @@
 id: tests/unit/upgrade_marked_region.bats
 name: upgrade_marked_region
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/upgrade_marked_region.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3150 — `fw upgrade` step [1/10] rebuilt a consumer's CLAUDE.md as (everything above `## Core Principle`) + (framework
+  governance).
 depends_on:
 - target: lib/upgrade.sh
   type: tests
@@ -16,3 +17,4 @@ depended_by: []
 last_verified: 2026-08-26
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

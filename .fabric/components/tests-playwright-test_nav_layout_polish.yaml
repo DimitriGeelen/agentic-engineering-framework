@@ -1,13 +1,14 @@
 id: tests/playwright/test_nav_layout_polish.py
 name: test_nav_layout_polish
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_nav_layout_polish.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2033: arc-007 nav-layout polish — computed-layout guards for sidebar + icon rail.'
 depends_on: []
 depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 standalone: true
 standalone_reason: playwright black-box HTTP test — no code-import edges (T-2511)
+purpose_source: docstring

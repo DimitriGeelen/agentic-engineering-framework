@@ -1,13 +1,14 @@
 id: docs/reports/T-2371-arc-011-wire-evidence-demo.md
 name: T-2371-arc-011-wire-evidence-demo
 type: script
-subsystem: unknown
+subsystem: docs
 location: docs/reports/T-2371-arc-011-wire-evidence-demo.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: '**Task:** T-2371 · **Arc:** arc-011 (parallel-execution-aef) · **Date:** 2026-06-13'
 depends_on: []
 depended_by: []
 last_verified: 2026-06-13
 created_by: unknown
 standalone: true
 standalone_reason: documentation/data artifact — no code-dependency edges (T-2511)
+purpose_source: markdown

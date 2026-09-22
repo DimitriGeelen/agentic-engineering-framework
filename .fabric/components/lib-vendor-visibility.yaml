@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/vendor-visibility.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3144: after vendoring, assert the target''s git can SEE what we just wrote.'
 depends_on: []
 depended_by:
 - target: bin/fw
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-08-25
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

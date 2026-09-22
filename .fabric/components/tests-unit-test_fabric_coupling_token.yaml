@@ -1,10 +1,10 @@
 id: tests/unit/test_fabric_coupling_token.py
 name: test_fabric_coupling_token
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_fabric_coupling_token.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2028 (arc-007 S5b): fabric coupling-note uses --wt-danger; categorical map stays fixed.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

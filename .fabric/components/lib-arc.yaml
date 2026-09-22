@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/arc.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848)
 depends_on:
 - target: agents/task-create/update-task.sh
   type: calls
@@ -76,3 +76,4 @@ depended_by:
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

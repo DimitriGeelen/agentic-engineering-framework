@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/settings_merge.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2710 — carry non-template config forward across a settings.json regenerate.
 depends_on:
 - target: lib/init.sh
   type: calls
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-08-01
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

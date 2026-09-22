@@ -4,10 +4,12 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_task_panel.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'arc-007 S4a/S4b (T-2015, T-2017): task fragment for the slide-in side panel. Loaded via htmx GET /tasks/<id>/panel
+  into #wt-task-panel-body.'
 depends_on: []
 depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 standalone: true
 standalone_reason: documentation/data artifact — no code-dependency edges (T-2511)
+purpose_source: header-comment

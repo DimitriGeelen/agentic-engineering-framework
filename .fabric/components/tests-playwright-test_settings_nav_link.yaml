@@ -1,10 +1,10 @@
 id: tests/playwright/test_settings_nav_link.py
 name: test_settings_nav_link
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_settings_nav_link.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Playwright guard for T-2032 — the settings gear is visible and navigates to the page.
 depends_on:
 - target: tests/playwright/target.py
   type: uses
@@ -14,3 +14,4 @@ created_by: unknown
 standalone: true
 standalone_reason: playwright black-box HTTP test — no code-import edges (T-2511)
 last_enriched: '2026-08-23'
+purpose_source: docstring

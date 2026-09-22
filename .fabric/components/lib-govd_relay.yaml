@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/govd_relay.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: govd_relay — the governance mediation relay / proxy brain (arc-013 / T-2431).
 depends_on:
 - target: lib/govd_holder.py
   type: calls
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-06-20
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

@@ -1,10 +1,10 @@
 id: tests/unit/watchtower_url_no_guess.bats
 name: watchtower_url_no_guess
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/watchtower_url_no_guess.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2802 — `fw watchtower url` must not answer with a guess.
 depends_on:
 - target: lib/watchtower.sh
   type: tests
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-04
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

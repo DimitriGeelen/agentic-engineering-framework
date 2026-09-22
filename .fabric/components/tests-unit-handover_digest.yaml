@@ -1,10 +1,11 @@
 id: tests/unit/handover_digest.bats
 name: handover_digest
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/handover_digest.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3028 (T-3025 GO, option 3): the three state dumps digest to count + regenerating command + top-N; the narrative
+  does not change.'
 depends_on:
 - target: lib/paths.sh
   type: tests
@@ -20,3 +21,4 @@ depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

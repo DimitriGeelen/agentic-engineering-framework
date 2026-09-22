@@ -1,10 +1,10 @@
 id: tests/integration/test_recall_miss_live.py
 name: test_recall_miss_live
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/integration/test_recall_miss_live.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Live-retriever integration pin for the T-3021 miss classifier.
 depends_on:
 - target: web/embeddings.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

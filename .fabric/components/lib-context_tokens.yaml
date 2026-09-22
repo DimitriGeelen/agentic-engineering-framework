@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/context_tokens.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Shared "how many tokens does THIS conversation currently hold" scan.
 depends_on:
 - target: C-007
   type: calls
@@ -26,3 +26,4 @@ depended_by:
 last_verified: 2026-08-09
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: docstring

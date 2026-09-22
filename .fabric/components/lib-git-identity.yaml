@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/git-identity.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/git-identity.sh — one answer to "can this machine commit?" (T-2883)
 depends_on: []
 depended_by:
 - target: agents/termlink/termlink.sh
@@ -30,3 +30,4 @@ depended_by:
 last_verified: 2026-08-09
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

@@ -1,10 +1,10 @@
 id: tools/escalation-scan-v0.5.py
 name: escalation-scan-v0.5
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/escalation-scan-v0.5.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1727 — Layer B v0.5: per-candidate LLM augmentation of escalation-scan v0.'
 depends_on:
 - target: lib/resolver.py
   type: calls
@@ -26,3 +26,4 @@ depended_by:
 last_verified: 2026-05-05
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: docstring

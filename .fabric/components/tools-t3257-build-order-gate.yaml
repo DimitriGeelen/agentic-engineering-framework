@@ -1,10 +1,10 @@
 id: tools/t3257-build-order-gate.py
 name: t3257-build-order-gate
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/t3257-build-order-gate.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3257 build-order gate: may real live-fire work proceed?'
 depends_on:
 - target: .context/project/concerns.yaml
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-09-05
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: docstring

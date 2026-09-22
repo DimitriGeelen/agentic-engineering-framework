@@ -1,12 +1,14 @@
 id: docs/reports/T-1688-candidate-consumer-survey.md
 name: T-1688-candidate-consumer-survey
 type: script
-subsystem: unknown
+subsystem: docs
 location: docs/reports/T-1688-candidate-consumer-survey.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: '**Date:** 2026-05-02 **Question:** Of every autonomous workload running in the framework today, which is the strongest
+  candidate for retrofit through `fw termlink dispatch` (the orchestrator) to close G-064?'
 depends_on: []
 depended_by: []
 last_verified: 2026-05-02
 created_by: unknown
 standalone: true
+purpose_source: markdown

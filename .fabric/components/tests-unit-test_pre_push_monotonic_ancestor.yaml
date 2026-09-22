@@ -1,10 +1,10 @@
 id: tests/unit/test_pre_push_monotonic_ancestor.bats
 name: test_pre_push_monotonic_ancestor
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_pre_push_monotonic_ancestor.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1843 / T-1829 — pre-push monotonicity gate, ancestor refinement.
 depends_on:
 - target: C-004
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-14
 created_by: unknown
 last_enriched: '2026-05-15'
+purpose_source: header-comment

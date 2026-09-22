@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/termlink_worker.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: TermLinkWorker — subprocess wrapper for `fw termlink dispatch`.
 depends_on:
 - target: bin/fw
   type: calls
@@ -22,3 +22,4 @@ depended_by:
 last_verified: 2026-05-12
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

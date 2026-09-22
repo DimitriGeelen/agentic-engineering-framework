@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/designer_registry.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Pending-ref registry for off-page workflow connectors (T-2574, T-2571 S2).
 depends_on:
 - target: web/blueprints/designer_api.py
   type: calls
@@ -34,3 +34,4 @@ depended_by:
 last_verified: 2026-07-20
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

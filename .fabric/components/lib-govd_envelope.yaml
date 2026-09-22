@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/govd_envelope.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: govd_envelope — the authority-broker decision evaluator (arc-013 / T-2430).
 depends_on: []
 depended_by:
 - target: agents/govd/govd.sh
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-06-20
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: docstring

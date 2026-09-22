@@ -1,20 +1,12 @@
 id: tools/ewcr-trace-check.py
 name: ewcr-trace-check
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/ewcr-trace-check.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: EWCR Arc 0 — fence for the §13 invariant traceability matrix (T-3393).
+depends_on: []
+depended_by: []
 last_verified: 2026-09-19
 created_by: unknown
+purpose_source: docstring

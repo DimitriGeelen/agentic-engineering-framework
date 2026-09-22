@@ -1,20 +1,13 @@
 id: tests/unit/test_t3428_declarative_scoring.py
 name: test_t3428_declarative_scoring
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_t3428_declarative_scoring.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3428 (OBS-463 leg 2) — a driver scores from a declarative `scoring:` spec, not only from the hardcoded handler
+  table.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
+purpose_source: docstring

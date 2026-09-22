@@ -1,10 +1,10 @@
 id: tests/unit/block_task_tools.bats
 name: block_task_tools
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/block_task_tools.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for agents/context/block-task-tools.sh (T-1117)
 depends_on:
 - agents/context/block-task-tools.sh
 - target: agents/context/block-task-tools.sh
@@ -17,3 +17,4 @@ depended_by: []
 last_verified: 2026-04-12
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

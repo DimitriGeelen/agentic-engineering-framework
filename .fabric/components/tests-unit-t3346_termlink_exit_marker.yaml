@@ -1,20 +1,12 @@
 id: tests/unit/t3346_termlink_exit_marker.bats
 name: t3346_termlink_exit_marker
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3346_termlink_exit_marker.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3346 — claude-fw --termlink must not tear down its own live claude.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-07
 created_by: unknown
+purpose_source: header-comment

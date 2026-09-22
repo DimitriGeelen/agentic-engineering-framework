@@ -4,7 +4,8 @@ type: script
 subsystem: audit
 location: agents/audit/orchestrator-mcp-scan.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: orchestrator-mcp-scan.sh — drift defense for MCP-tool task_id enforcement T-1646 (Arc C drift defense, parented under
+  T-1644, originating in T-1641)
 depends_on: []
 depended_by:
 - target: tests/unit/test_termlink_list_contract.py
@@ -32,3 +33,4 @@ depended_by:
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

@@ -1,10 +1,10 @@
 id: tests/web/test_designer_api_uuid_identity.py
 name: test_designer_api_uuid_identity
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/web/test_designer_api_uuid_identity.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2573 (T-2571 S1): immutable workflow uuid in the designer store.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-07-20
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

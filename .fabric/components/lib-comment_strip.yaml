@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/comment_strip.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Structural HTML-comment stripping — the single canonical rule (T-2954).
 depends_on:
 - target: lib/review.sh
   type: calls
@@ -20,3 +20,4 @@ depended_by:
 last_verified: 2026-08-12
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

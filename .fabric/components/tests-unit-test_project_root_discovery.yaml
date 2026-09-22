@@ -1,10 +1,10 @@
 id: tests/unit/test_project_root_discovery.py
 name: test_project_root_discovery
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_project_root_discovery.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1747 / G-069 — Regression tests for web.shared._discover_project_root.
 depends_on:
 - target: web/shared.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-05
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

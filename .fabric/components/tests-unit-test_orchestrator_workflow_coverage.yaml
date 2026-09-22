@@ -1,10 +1,10 @@
 id: tests/unit/test_orchestrator_workflow_coverage.py
 name: test_orchestrator_workflow_coverage
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_orchestrator_workflow_coverage.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1799: /orchestrator surfaces Workflow coverage panel.'
 depends_on:
 - target: web/blueprints/orchestrator.py
   type: calls
@@ -22,3 +22,4 @@ depended_by: []
 last_verified: 2026-05-12
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

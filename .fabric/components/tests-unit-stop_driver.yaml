@@ -1,10 +1,10 @@
 id: tests/unit/stop_driver.bats
 name: stop_driver
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/stop_driver.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3164 (arc-012 S1) — the continuous-run turn driver.
 depends_on:
 - target: agents/context/stop-driver.sh
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-26
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

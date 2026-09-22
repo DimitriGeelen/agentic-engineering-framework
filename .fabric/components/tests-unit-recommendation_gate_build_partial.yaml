@@ -1,10 +1,10 @@
 id: tests/unit/recommendation_gate_build_partial.bats
 name: recommendation_gate_build_partial
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/recommendation_gate_build_partial.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2421 (T-2419 GO): Recommendation gate for partial-complete BUILD-class tasks.'
 depends_on:
 - target: agents/task-create/update-task.sh
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-06-16
 created_by: unknown
 last_enriched: '2026-06-16'
+purpose_source: header-comment

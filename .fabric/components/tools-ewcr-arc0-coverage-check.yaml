@@ -1,20 +1,12 @@
 id: tools/ewcr-arc0-coverage-check.py
 name: ewcr-arc0-coverage-check
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/ewcr-arc0-coverage-check.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: EWCR Arc 0 — the control for falsifier 1.
+depends_on: []
+depended_by: []
 last_verified: 2026-08-26
 created_by: unknown
+purpose_source: docstring

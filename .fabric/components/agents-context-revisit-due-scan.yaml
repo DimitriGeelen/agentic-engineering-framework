@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/revisit-due-scan.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: revisit-due-scan.sh — Daily scan for ripe revisit_at deferrals (T-1452 / G-053)
 depends_on: []
 depended_by:
 - target: agents/handover/handover.sh
@@ -22,3 +22,4 @@ depended_by:
 last_verified: '2026-07-22'
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

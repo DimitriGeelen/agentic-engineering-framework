@@ -1,10 +1,11 @@
 id: tests/lint/no-bare-fw-in-gate-scripts.bats
 name: no-bare-fw-in-gate-scripts
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/lint/no-bare-fw-in-gate-scripts.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Invariant: gate scripts must not emit bare ''fw'' COMMANDS — use bin/fw, or the _emit_user_command/_fw_cmd helpers
+  that resolve the right path per project. Origin: T-1146 GO / T-1203 — bare commands are not copy-pasteable and violate PL-007.'
 depends_on:
 - agents/context/check-tier0.sh
 - target: agents/task-create/update-task.sh
@@ -33,3 +34,4 @@ depended_by: []
 last_verified: 2026-04-13
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

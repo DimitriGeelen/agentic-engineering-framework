@@ -1,10 +1,10 @@
 id: tools/bpmn_to_tasks.py
 name: bpmn_to_tasks
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/bpmn_to_tasks.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Child-2 forward compiler (first slice): BPMN process diagram -> AEF task skeletons.'
 depends_on: []
 depended_by:
 - target: tools/bpmn_promote.py
@@ -22,3 +22,4 @@ depended_by:
 last_verified: 2026-07-11
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

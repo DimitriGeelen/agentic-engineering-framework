@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/doctor-hook-exercise.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1629 (B-3a of T-1626) & T-070 — `fw doctor` active hook probe.
 depends_on:
 - target: bin/fw
   type: calls
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: docstring

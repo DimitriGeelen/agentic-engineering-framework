@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/inception_recommendation.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Detection helper for the T-679 rule decay pattern (T-1715 meta-RCA, T-1716 implementation). Used by: - agents/audit/audit.sh
+  — C-006 detective check - lib/inception.sh — Stream C sweep (do_inception_sweep --recommendation-fix)'
 depends_on: []
 depended_by:
 - target: C-004
@@ -20,3 +21,4 @@ depended_by:
 last_verified: 2026-05-04
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/render_surface.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Render-surface predicate (T-1766, P-013). Decides whether a task touches the human-review rendering surface — surfaces
+  where what the human sees depends on layout/CSS/template choices that no deterministic test can fully capture.
 depends_on: []
 depended_by:
 - target: agents/task-create/update-task.sh
@@ -20,3 +21,4 @@ depended_by:
 last_verified: 2026-05-09
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

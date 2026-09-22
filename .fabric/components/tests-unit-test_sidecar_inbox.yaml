@@ -1,20 +1,12 @@
 id: tests/unit/test_sidecar_inbox.py
 name: test_sidecar_inbox
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_sidecar_inbox.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-3406 — arc-011 sidecar inbox: cursor, dedupe, identity (slice 4).'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-21
 created_by: unknown
+purpose_source: docstring

@@ -1,10 +1,10 @@
 id: tests/unit/lib_init.bats
 name: lib_init
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/lib_init.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for lib/init.sh
 depends_on:
 - target: lib/init.sh
   type: calls
@@ -22,3 +22,4 @@ depended_by: []
 last_verified: 2026-03-30
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

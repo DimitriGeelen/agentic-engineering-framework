@@ -1,10 +1,10 @@
 id: tests/unit/test_workflow_coverage.py
 name: test_workflow_coverage
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_workflow_coverage.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1798: Unit tests for lib/workflow_coverage.py.'
 depends_on:
 - target: lib/workflow_coverage.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-12
 created_by: unknown
 last_enriched: '2026-05-15'
+purpose_source: docstring

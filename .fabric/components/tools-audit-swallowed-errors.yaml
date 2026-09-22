@@ -1,10 +1,11 @@
 id: tools/audit-swallowed-errors.py
 name: audit-swallowed-errors
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/audit-swallowed-errors.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'L-369 corpus audit: scan all task ## Verification blocks for swallowed-errors findings using the reviewer''s deterministic
+  detector.'
 depends_on:
 - target: lib/reviewer/static_scan.py
   type: calls
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-05-13
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

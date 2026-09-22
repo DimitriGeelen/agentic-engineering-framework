@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/worker_identity.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: worker_identity — the git identity a dispatch-spawned worker commits under (T-2917).
 depends_on:
 - target: lib/init.sh
   type: calls
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

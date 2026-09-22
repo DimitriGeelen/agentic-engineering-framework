@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/gitignore-register.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2994 (build slice of T-2992) — .gitignore rules that defer without a register.
 depends_on: []
 depended_by:
 - target: C-004
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-08-14
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

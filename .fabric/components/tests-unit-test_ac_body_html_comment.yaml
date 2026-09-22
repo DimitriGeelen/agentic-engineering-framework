@@ -1,10 +1,10 @@
 id: tests/unit/test_ac_body_html_comment.py
 name: test_ac_body_html_comment
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_ac_body_html_comment.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1763: Regression tests for HTML-comment leakage in AC body parser.'
 depends_on:
 - target: web/blueprints/tasks.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

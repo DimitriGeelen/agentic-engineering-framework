@@ -1,12 +1,13 @@
 id: prompts/escalation-triage.md
 name: escalation-triage
 type: script
-subsystem: unknown
+subsystem: docs
 location: prompts/escalation-triage.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: You are a triage classifier dispatched by the Agentic Engineering Framework.
 depends_on: []
 depended_by: []
 last_verified: 2026-05-05
 created_by: unknown
 standalone: true
+purpose_source: markdown

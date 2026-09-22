@@ -1,10 +1,10 @@
 id: tests/unit/test_embed_health.py
 name: test_embed_health
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_embed_health.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3006: the embed-path liveness classifier and the bounded retry.'
 depends_on:
 - target: web/embed_health.py
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

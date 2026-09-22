@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/integrate.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: fw integrate — Layer 2 serialized-integration preflight (T-2399, T-2397 slice 1).
 depends_on:
 - target: bin/fw
   type: calls
@@ -22,3 +22,4 @@ depended_by:
 last_verified: 2026-06-14
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

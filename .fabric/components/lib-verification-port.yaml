@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/verification-port.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/verification-port.sh — hard-coded Watchtower port detection (T-2732)
 depends_on: []
 depended_by:
 - target: lib/comment_strip.py
@@ -28,3 +28,4 @@ depended_by:
 last_verified: 2026-08-02
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

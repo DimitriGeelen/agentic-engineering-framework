@@ -1,20 +1,12 @@
 id: tools/dispatch_outcome_table.py
 name: dispatch_outcome_table
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/dispatch_outcome_table.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: Regenerate the dispatch-outcome table cited in CLAUDE.md §Execution Model.
+depends_on: []
+depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
+purpose_source: docstring

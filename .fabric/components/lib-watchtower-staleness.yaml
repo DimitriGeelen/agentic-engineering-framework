@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/watchtower-staleness.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2938: does the RUNNING Watchtower actually run the code on disk?'
 depends_on: []
 depended_by:
 - target: bin/fw
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-08-12
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

@@ -1,10 +1,11 @@
 id: docs/runbooks/arc-012-continuous-mode-live-fire.md
 name: arc-012-continuous-mode-live-fire
 type: script
-subsystem: unknown
+subsystem: docs
 location: docs/runbooks/arc-012-continuous-mode-live-fire.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: '**Purpose:** run the continuous-run loop end-to-end and observe the `headline_mechanic` firing — an agent that crosses
+  the context-budget threshold *without operator relay*, self-checkpoints, hands over, auto-restarts via `claude-fw`…'
 depends_on:
 - target: C-008
   type: calls
@@ -14,3 +15,4 @@ created_by: unknown
 standalone: true
 standalone_reason: frontend asset / documentation leaf — no code-dependency edges (T-2511)
 last_enriched: '2026-07-07'
+purpose_source: markdown

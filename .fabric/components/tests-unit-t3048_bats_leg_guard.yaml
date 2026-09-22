@@ -1,10 +1,10 @@
 id: tests/unit/t3048_bats_leg_guard.bats
 name: t3048_bats_leg_guard
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3048_bats_leg_guard.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3048 — `fw test unit` and `fw test all` must skip, not hard-error, when the install ships no tests/unit/.
 depends_on:
 - target: bin/fw
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

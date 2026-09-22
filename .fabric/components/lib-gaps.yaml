@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/gaps.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Gap-register closure helpers.
 depends_on:
 - target: tools/g064-readiness.py
   type: calls
@@ -22,3 +22,4 @@ depended_by:
 last_verified: 2026-06-03
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

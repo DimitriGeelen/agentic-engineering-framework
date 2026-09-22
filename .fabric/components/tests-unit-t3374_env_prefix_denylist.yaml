@@ -1,20 +1,13 @@
 id: tests/unit/t3374_env_prefix_denylist.bats
 name: t3374_env_prefix_denylist
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3374_env_prefix_denylist.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3374 (OBS-423) — the env-prefix stripper must refuse names that decide what the command it strips them from actually
+  RESOLVES to.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-16
 created_by: unknown
+purpose_source: header-comment

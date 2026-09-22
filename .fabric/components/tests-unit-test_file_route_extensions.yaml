@@ -1,10 +1,10 @@
 id: tests/unit/test_file_route_extensions.py
 name: test_file_route_extensions
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_file_route_extensions.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1764: Regression tests for the /file/<path> route.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -24,3 +24,4 @@ depended_by: []
 last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

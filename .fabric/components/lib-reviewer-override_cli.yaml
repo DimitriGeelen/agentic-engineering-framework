@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/reviewer/override_cli.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: CLI for reviewer overrides (T-1443 v1.4).
 depends_on:
 - target: lib/reviewer/overrides.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

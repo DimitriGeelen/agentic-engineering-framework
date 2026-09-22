@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/task_pair_acd.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Task-pair §ACD gate (P-012). G-066 prong 2 — detect substrate-vs- deliverable conflation at work-completed time.
+  Mirror of T-1668/T-1671's arc-level gate at the per-task level.
 depends_on: []
 depended_by:
 - target: agents/task-create/update-task.sh
@@ -24,3 +25,4 @@ depended_by:
 last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-05-09'
+purpose_source: header-comment

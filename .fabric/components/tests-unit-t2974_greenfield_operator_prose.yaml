@@ -1,20 +1,12 @@
 id: tests/unit/t2974_greenfield_operator_prose.py
 name: t2974_greenfield_operator_prose
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2974_greenfield_operator_prose.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-2974: the greenfield onboarding map''s operator prose must actually reach a reader.'
+depends_on: []
+depended_by: []
 last_verified: 2026-08-13
 created_by: unknown
+purpose_source: docstring

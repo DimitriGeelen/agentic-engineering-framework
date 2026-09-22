@@ -1,10 +1,12 @@
 id: tests/unit/rail_mcp_label_guard.bats
 name: rail_mcp_label_guard
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/rail_mcp_label_guard.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2908: the MCP producer surface (mcp__termlink__termlink_channel_post) reaches the same rail topics as `fw rail
+  post` with neither the T-2904 identity gate nor the T-2905 label gate in scope, because both live inside `do_rail post`
+  in…'
 depends_on:
 - target: agents/context/check-rail-mcp-label.sh
   type: calls
@@ -16,3 +18,4 @@ depended_by: []
 last_verified: 2026-08-10
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

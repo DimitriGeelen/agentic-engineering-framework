@@ -1,20 +1,12 @@
 id: tests/unit/t3247_restart_headless_prompt.bats
 name: t3247_restart_headless_prompt
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3247_restart_headless_prompt.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3247 — the budget-critical RESTART relaunch must carry a prompt under --print.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-02
 created_by: unknown
+purpose_source: header-comment

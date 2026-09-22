@@ -1,10 +1,10 @@
 id: tests/unit/test_escalation_v05_parser.py
 name: test_escalation_v05_parser
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_escalation_v05_parser.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1748 / T-1727 forward work — parse_verdict_envelope hardening.
 depends_on:
 - target: tools/escalation-scan-v0.5.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-05
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: docstring

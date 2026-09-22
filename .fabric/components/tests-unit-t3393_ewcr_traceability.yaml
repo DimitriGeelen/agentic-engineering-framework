@@ -1,20 +1,12 @@
 id: tests/unit/t3393_ewcr_traceability.bats
 name: t3393_ewcr_traceability
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3393_ewcr_traceability.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3393 — the §13 invariant traceability matrix resolves, and its fence bites.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-19
 created_by: unknown
+purpose_source: header-comment

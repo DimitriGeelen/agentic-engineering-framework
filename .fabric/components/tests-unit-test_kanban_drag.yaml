@@ -1,10 +1,10 @@
 id: tests/unit/test_kanban_drag.py
 name: test_kanban_drag
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_kanban_drag.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2019 (arc-007 S4d): drag-to-reorder kanban — cross-column status change.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

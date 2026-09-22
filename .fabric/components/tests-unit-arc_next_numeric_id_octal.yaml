@@ -1,10 +1,10 @@
 id: tests/unit/arc_next_numeric_id_octal.bats
 name: arc_next_numeric_id_octal
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/arc_next_numeric_id_octal.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1877 (T-NEW-13): _arc_next_numeric_id must allocate IDs across the 008/009 boundary without bash octal-parse errors.'
 depends_on:
 - target: lib/arc.sh
   type: tests
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-17
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

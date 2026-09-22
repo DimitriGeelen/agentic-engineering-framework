@@ -1,13 +1,14 @@
 id: tests/playwright/test_appearance_presets.py
 name: test_appearance_presets
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_appearance_presets.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1999: regression guard for the /settings/appearance preset JS (arc-007 S1).'
 depends_on: []
 depended_by: []
 last_verified: 2026-05-23
 created_by: unknown
 standalone: true
 standalone_reason: playwright black-box HTTP test — no code-import edges (T-2511)
+purpose_source: docstring

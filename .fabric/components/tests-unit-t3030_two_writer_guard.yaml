@@ -1,10 +1,11 @@
 id: tests/unit/t3030_two_writer_guard.bats
 name: t3030_two_writer_guard
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3030_two_writer_guard.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3030 / G-083: the autonomous dispatch loop and an interactive session share one working tree. These tests pin
+  the guard that separates them, and the provenance record that makes a worker''s writes attributable afterwards.'
 depends_on:
 - target: lib/resolver.py
   type: calls
@@ -16,3 +17,4 @@ depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

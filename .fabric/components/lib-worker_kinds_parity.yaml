@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/worker_kinds_parity.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1946 — Worker-kinds parity check helper.
 depends_on:
 - target: lib/resolver.py
   type: calls
@@ -24,3 +24,4 @@ depended_by:
 last_verified: 2026-05-20
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

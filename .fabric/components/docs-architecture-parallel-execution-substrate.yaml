@@ -1,13 +1,15 @@
 id: docs/architecture/parallel-execution-substrate.md
 name: parallel-execution-substrate
 type: script
-subsystem: unknown
+subsystem: docs
 location: docs/architecture/parallel-execution-substrate.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Status: design captured, pre-build. Companion: *Architecture — Parallel Execution: AEF Orchestration Layer*. This
+  document is the authoritative record for the **substrate (TermLink/Rust)** half and **owns the collaboration seam** (§9).'
 depends_on: []
 depended_by: []
 last_verified: 2026-06-10
 created_by: unknown
 standalone: true
 standalone_reason: documentation/data artifact — no code-dependency edges (T-2511)
+purpose_source: markdown

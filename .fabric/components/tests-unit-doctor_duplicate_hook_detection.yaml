@@ -1,10 +1,11 @@
 id: tests/unit/doctor_duplicate_hook_detection.bats
 name: doctor_duplicate_hook_detection
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/doctor_duplicate_hook_detection.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1480 — `fw doctor` surfaces the same duplicate-hook scan as T-1479's `fw upgrade` check. Read-only diagnostic so
+  users see the overlap on every health check, not only when upgrading.
 depends_on:
 - target: bin/fw
   type: tests
@@ -16,3 +17,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

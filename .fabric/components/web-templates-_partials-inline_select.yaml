@@ -4,17 +4,9 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_partials/inline_select.html
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: Inline select form macro (T-429/H4) — replaces 12+ duplicated htmx select patterns
+depends_on: []
+depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
+purpose_source: header-comment

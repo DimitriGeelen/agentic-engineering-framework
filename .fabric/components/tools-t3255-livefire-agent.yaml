@@ -1,20 +1,12 @@
 id: tools/t3255-livefire-agent.sh
 name: t3255-livefire-agent
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/t3255-livefire-agent.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3255 — live-fire with a REAL Claude agent (the AC5 claim T-3254 did not prove).
+depends_on: []
+depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
+purpose_source: header-comment

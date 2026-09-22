@@ -4,7 +4,8 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_star.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Pin/unpin toggle for the current page (T-2010, arc-007 S2c). Rendered in the breadcrumb bar (_breadcrumb.html) only
+  when the page is a pinnable nav destination (wt_pinnable set; None on home/detail/off-nav pages → no toggle).
 depends_on: []
 depended_by:
 - target: web/templates/_breadcrumb.html
@@ -12,3 +13,4 @@ depended_by:
 last_verified: 2026-05-23
 created_by: unknown
 last_enriched: '2026-05-27'
+purpose_source: header-comment

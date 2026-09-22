@@ -1,10 +1,10 @@
 id: tools/probe_handover_recall.py
 name: probe_handover_recall
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/probe_handover_recall.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Probe: when the index is queried, which handovers come back, and how old are they?'
 depends_on:
 - target: web/embeddings.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

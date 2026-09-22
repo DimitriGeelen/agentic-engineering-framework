@@ -1,10 +1,10 @@
 id: tests/unit/fw_vendor_completeness.bats
 name: fw_vendor_completeness
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/fw_vendor_completeness.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2805 — a partial vendor must not capture the router, and FRAMEWORK.md must be the last thing a vendor writes.
 depends_on:
 - target: bin/fw
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-05
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

@@ -1,10 +1,10 @@
 id: tests/unit/t2473_union_resolve.bats
 name: t2473_union_resolve
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2473_union_resolve.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2473 — fw integrate run: true per-class UNION at both-sided conflicts.'
 depends_on:
 - target: lib/integrate.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-06-24
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

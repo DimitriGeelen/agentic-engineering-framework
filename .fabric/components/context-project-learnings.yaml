@@ -1,10 +1,11 @@
 id: .context/project/learnings.yaml
 name: learnings
 type: data
-subsystem: unknown
+subsystem: context-fabric
 location: .context/project/learnings.yaml
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Project Learnings - Knowledge gained during development Added via: fw context add-learning "description" --task
+  T-XXX'
 depends_on: []
 depended_by:
 - target: tests/unit/add_learning_id_allocator.bats
@@ -12,3 +13,4 @@ depended_by:
 last_verified: 2026-09-04
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

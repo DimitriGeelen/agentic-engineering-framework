@@ -1,10 +1,10 @@
 id: tests/unit/test_settings_nav_link.py
 name: test_settings_nav_link
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_settings_nav_link.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2032: the top-bar action cluster has a gear link to the settings/appearance page.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

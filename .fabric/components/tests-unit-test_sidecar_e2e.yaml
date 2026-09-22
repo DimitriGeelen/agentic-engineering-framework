@@ -1,20 +1,12 @@
 id: tests/unit/test_sidecar_e2e.py
 name: test_sidecar_e2e
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_sidecar_e2e.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-3423 — arc-011 sidecar slice 9: the end-to-end harness state machine.'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
+purpose_source: docstring

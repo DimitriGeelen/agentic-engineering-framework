@@ -4,7 +4,7 @@ type: script
 subsystem: audit
 location: agents/audit/audit.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Audit Agent - Mechanical Compliance Checks Evaluates framework compliance against specifications
 depends_on:
 - target: lib/paths.sh
   type: calls
@@ -74,3 +74,4 @@ depended_by:
 last_verified: 2026-09-04
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

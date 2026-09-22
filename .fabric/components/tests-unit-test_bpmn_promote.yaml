@@ -1,10 +1,10 @@
 id: tests/unit/test_bpmn_promote.py
 name: test_bpmn_promote
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_bpmn_promote.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for `fw bpmn promote` (tools/bpmn_promote.py, T-2542).
 depends_on:
 - target: tools/bpmn_promote.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-07-18
 created_by: unknown
 last_enriched: '2026-07-21'
+purpose_source: docstring

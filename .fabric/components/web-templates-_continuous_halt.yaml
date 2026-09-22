@@ -4,7 +4,7 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_continuous_halt.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3200 — continuous-run brake.
 depends_on: []
 depended_by:
 - target: web/templates/approvals.html
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-08-27
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

@@ -1,13 +1,15 @@
 id: docs/reports/arc-010-hm-a-demo-prompt.md
 name: arc-010-hm-a-demo-prompt
 type: script
-subsystem: unknown
+subsystem: docs
 location: docs/reports/arc-010-hm-a-demo-prompt.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: You are a fresh Claude Code worker spawned in `/opt/999-Agentic-Engineering-Framework` with `.mcp.json` configured
+  for the framework MCP server (see `agents/mcp/framework-mcp.mcp-fragment.json` for the wiring contract).
 depends_on: []
 depended_by: []
 last_verified: 2026-06-08
 created_by: unknown
 standalone: true
 standalone_reason: documentation/data artifact — no code-dependency edges (T-2511)
+purpose_source: markdown

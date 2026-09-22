@@ -1,10 +1,11 @@
 id: tests/unit/test_audit_retire_when.bats
 name: test_audit_retire_when
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_audit_retire_when.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2169 — Pin audit.sh retire_when advisory. Origin: value-drivers.yaml v3 free drivers (F-RECALL, F-ORCH) carry
+  retire_when: text describing when the driver stops being relevant. Without an advisory rail nothing nudges the operator.'
 depends_on:
 - target: bin/fw
   type: tests
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-06-03
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

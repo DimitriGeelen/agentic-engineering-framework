@@ -1,10 +1,10 @@
 id: tests/unit/t2921_verification_comment_strip.bats
 name: t2921_verification_comment_strip
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2921_verification_comment_strip.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2921 — the P-011 verification extractor must strip comments STRUCTURALLY.
 depends_on:
 - target: lib/verification-port.sh
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-08-12
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

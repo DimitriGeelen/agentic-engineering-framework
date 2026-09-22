@@ -1,10 +1,10 @@
 id: tests/unit/test_playwright_server_adoption.py
 name: test_playwright_server_adoption
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_playwright_server_adoption.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Adoption decision for the shared Playwright test server (T-2782).
 depends_on:
 - target: tests/playwright/conftest.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-04
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

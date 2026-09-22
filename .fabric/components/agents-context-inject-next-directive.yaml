@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/inject-next-directive.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2364/T-2365 (T-2158 S2+S3) — next-directive injector for post-compact resume.
 depends_on:
 - target: bin/fw
   type: calls
@@ -28,3 +28,4 @@ depended_by:
 last_verified: 2026-06-13
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/static/css/foundations.css
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Watchtower Foundation Tokens — arc-007 (watchtower-redesign) slice S0, T-1991 Source: docs/design/watchtower-redesign-2026-05-13/project/foundations.jsx'
 depends_on: []
 depended_by:
 - target: agents/ux-review/ux-review.py
@@ -14,3 +14,4 @@ created_by: unknown
 standalone: true
 standalone_reason: frontend asset / documentation leaf — no code-dependency edges (T-2511)
 last_enriched: '2026-07-07'
+purpose_source: header-comment

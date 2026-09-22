@@ -1,10 +1,10 @@
 id: tests/web/test_api_overlay.py
 name: test_api_overlay
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/web/test_api_overlay.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2629: /api/overlay endpoint contract — status codes + payload shape.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-07-27
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

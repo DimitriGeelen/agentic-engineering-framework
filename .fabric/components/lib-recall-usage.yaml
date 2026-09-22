@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/recall-usage.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Recall-usage verdict — T-3019 (T-3005 slice 6a, the "Used" signal).
 depends_on: []
 depended_by:
 - target: bin/fw
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

@@ -1,10 +1,10 @@
 id: tests/unit/test_task_panel.py
 name: test_task_panel
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_task_panel.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2015 (arc-007 S4a): slide-in dockable task side-panel — server-side guarantees.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

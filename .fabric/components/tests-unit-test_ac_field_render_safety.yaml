@@ -1,20 +1,12 @@
 id: tests/unit/test_ac_field_render_safety.py
 name: test_ac_field_render_safety
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_ac_field_render_safety.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-3369: AC field rendering — escaped input, un-escaped output.'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-15
 created_by: unknown
+purpose_source: docstring

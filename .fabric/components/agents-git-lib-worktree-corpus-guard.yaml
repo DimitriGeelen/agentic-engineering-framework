@@ -4,7 +4,7 @@ type: script
 subsystem: git-traceability
 location: agents/git/lib/worktree-corpus-guard.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3110 — L1 of R7: task-corpus commit guard for the SHARED pre-commit hook.'
 depends_on:
 - target: lib/paths.sh
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-20
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

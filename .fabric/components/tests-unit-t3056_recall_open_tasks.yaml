@@ -1,10 +1,10 @@
 id: tests/unit/t3056_recall_open_tasks.bats
 name: t3056_recall_open_tasks
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3056_recall_open_tasks.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3056 — memory recall must see the OPEN task corpus, not only knowledge harvested from closed work.
 depends_on:
 - target: agents/context/lib/memory-recall.py
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-17
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

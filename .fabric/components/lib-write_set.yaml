@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/write_set.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Disjoint write-set policy validator (T-2337, arc-011 M1 §3).
 depends_on:
 - target: lib/hook-threshold.py
   type: calls
@@ -26,3 +26,4 @@ depended_by:
 last_verified: 2026-06-11
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

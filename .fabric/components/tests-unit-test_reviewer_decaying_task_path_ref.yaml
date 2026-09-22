@@ -1,10 +1,10 @@
 id: tests/unit/test_reviewer_decaying_task_path_ref.py
 name: test_reviewer_decaying_task_path_ref
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_reviewer_decaying_task_path_ref.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3274: pin the decaying-`.tasks/active/` verification-reference detector.'
 depends_on:
 - target: lib/reviewer/__init__.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-09-04
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: docstring

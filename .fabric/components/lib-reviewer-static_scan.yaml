@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/reviewer/static_scan.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Static-scan reviewer (T-1443 v1.0 → v1.5).
 depends_on:
 - target: lib/reviewer/overrides.py
   type: calls
@@ -42,3 +42,4 @@ depended_by:
 last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

@@ -1,10 +1,10 @@
 id: tests/unit/test_audit_frontmatter_variants.py
 name: test_audit_frontmatter_variants
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_audit_frontmatter_variants.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2779: the audit''s task-frontmatter check must see BOTH halves of the T-2069 class.'
 depends_on:
 - target: C-004
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-03
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

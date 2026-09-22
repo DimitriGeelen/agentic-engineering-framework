@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/workflow_lint.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Workflow schema linter for `.context/project/workflows/*.yaml`.
 depends_on:
 - target: lib/resolver.py
   type: calls
@@ -26,3 +26,4 @@ depended_by:
 last_verified: 2026-05-13
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

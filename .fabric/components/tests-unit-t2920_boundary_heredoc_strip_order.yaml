@@ -1,10 +1,10 @@
 id: tests/unit/t2920_boundary_heredoc_strip_order.bats
 name: t2920_boundary_heredoc_strip_order
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2920_boundary_heredoc_strip_order.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2920 — the project-boundary hook must not read a heredoc BODY as a command.
 depends_on:
 - target: agents/context/check-project-boundary.sh
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-08-11
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

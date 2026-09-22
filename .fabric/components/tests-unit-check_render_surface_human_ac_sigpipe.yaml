@@ -1,10 +1,11 @@
 id: tests/unit/check_render_surface_human_ac_sigpipe.bats
 name: check_render_surface_human_ac_sigpipe
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/check_render_surface_human_ac_sigpipe.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1900: render-surface gate error path used to die with SIGPIPE (exit 141) under set -eo pipefail when `render_surface_files_in
+  | head -N` produced more lines than head consumed.'
 depends_on:
 - target: web/shared.py
   type: tests
@@ -20,3 +21,4 @@ depended_by: []
 last_verified: 2026-05-18
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

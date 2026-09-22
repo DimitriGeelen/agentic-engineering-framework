@@ -1,10 +1,10 @@
 id: tests/unit/test_gaps_missing_title_defaults.bats
 name: test_gaps_missing_title_defaults
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_gaps_missing_title_defaults.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1840 — fw gaps defensive .get() for missing 'title' / 'id' fields.
 depends_on:
 - target: bin/fw
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-14
 created_by: unknown
 last_enriched: '2026-05-15'
+purpose_source: header-comment

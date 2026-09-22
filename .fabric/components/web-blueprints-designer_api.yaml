@@ -4,7 +4,8 @@ type: route
 subsystem: watchtower
 location: web/blueprints/designer_api.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Designer gallery-server API (T-2529) — the ``/api/*`` endpoints that 832's shipped 0.2.0 Workflow Designer client
+  already calls.
 depends_on:
 - target: web/designer_registry.py
   type: calls
@@ -44,3 +45,4 @@ depended_by:
 last_verified: 2026-07-11
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

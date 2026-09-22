@@ -1,10 +1,10 @@
 id: tests/playwright/test_arcs_kanban.py
 name: test_arcs_kanban
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_arcs_kanban.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1904: /arcs kanban — 4-column lifecycle layout replacing T-1853 tabs.'
 depends_on:
 - target: web/blueprints/arcs.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-18
 created_by: unknown
 last_enriched: '2026-05-20'
+purpose_source: docstring

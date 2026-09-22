@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/corpus-id.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/corpus-id.sh — serialisation-independent max-id lookup for the YAML memory corpus
 depends_on: []
 depended_by:
 - target: tests/unit/corpus_id_allocator.bats
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-08-10
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

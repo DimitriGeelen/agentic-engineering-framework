@@ -1,10 +1,11 @@
 id: tests/unit/g066_readiness.bats
 name: g066_readiness
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/g066_readiness.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2198: G-066 closure-readiness gauge — covers READY against live repo, NOT_READY when each wiring leg is absent,
+  and --strict exit-code semantics.'
 depends_on:
 - target: tools/g066-readiness.py
   type: tests
@@ -20,3 +21,4 @@ depended_by: []
 last_verified: 2026-06-04
 created_by: unknown
 last_enriched: '2026-06-04'
+purpose_source: header-comment

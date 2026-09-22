@@ -4,17 +4,9 @@ type: script
 subsystem: framework-core
 location: lib/cron_exec_bit.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-3380: scripts a deployed crontab invokes DIRECTLY must be executable.'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-17
 created_by: unknown
+purpose_source: docstring

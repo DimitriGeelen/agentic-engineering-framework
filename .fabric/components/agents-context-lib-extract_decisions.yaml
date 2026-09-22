@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/lib/extract_decisions.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Extract the `## Decisions` section of a task file as YAML — T-3015.
 depends_on: []
 depended_by:
 - target: tests/unit/episodic_yaml_decision_escape.bats
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

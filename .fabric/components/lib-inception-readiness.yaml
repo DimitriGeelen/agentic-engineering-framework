@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/inception-readiness.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/inception-readiness.sh — SHARED decision-readiness predicates for inception tasks.
 depends_on: []
 depended_by:
 - target: agents/task-create/update-task.sh
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-09-05
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

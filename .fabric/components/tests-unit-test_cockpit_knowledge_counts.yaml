@@ -1,10 +1,10 @@
 id: tests/unit/test_cockpit_knowledge_counts.py
 name: test_cockpit_knowledge_counts
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_cockpit_knowledge_counts.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2022: Cockpit System Health Knowledge counts come from live helpers, not a missing scan key.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

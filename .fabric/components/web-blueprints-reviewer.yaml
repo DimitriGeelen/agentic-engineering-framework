@@ -4,7 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/reviewer.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Reviewer blueprint — machine-reviewer system state (T-1443 v1.5a).
 depends_on:
 - target: web/shared.py
   type: calls
@@ -30,3 +30,4 @@ depended_by:
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

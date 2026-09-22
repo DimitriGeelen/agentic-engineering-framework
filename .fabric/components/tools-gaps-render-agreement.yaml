@@ -1,10 +1,10 @@
 id: tools/gaps-render-agreement.py
 name: gaps-render-agreement
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/gaps-render-agreement.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3140: assert `fw gaps` renders exactly the non-terminal half of the register.'
 depends_on:
 - target: bin/fw
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-25
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

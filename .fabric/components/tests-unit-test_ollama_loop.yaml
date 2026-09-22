@@ -1,10 +1,10 @@
 id: tests/unit/test_ollama_loop.py
 name: test_ollama_loop
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_ollama_loop.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1775: Unit tests for OllamaLoopWorker (mocked subprocess).'
 depends_on:
 - target: lib/ollama_loop.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-09
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: docstring

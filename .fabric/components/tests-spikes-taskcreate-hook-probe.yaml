@@ -1,12 +1,13 @@
 id: tests/spikes/taskcreate-hook-probe.sh
 name: taskcreate-hook-probe
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/spikes/taskcreate-hook-probe.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: tests/spikes/taskcreate-hook-probe.sh (T-1115/T-1116)
 depends_on:
 - agents/context/block-task-tools.sh
 depended_by: []
 last_verified: 2026-04-11
 created_by: unknown
+purpose_source: header-comment

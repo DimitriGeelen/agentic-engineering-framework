@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/static/kanban-drag.js
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Drag-to-reorder kanban (cross-column status change) — arc-007 S4d (T-2019).
 depends_on: []
 depended_by:
 - target: tests/unit/test_kanban_drag.py
@@ -14,3 +14,4 @@ created_by: unknown
 standalone: true
 standalone_reason: frontend asset / documentation leaf — no code-dependency edges (T-2511)
 last_enriched: '2026-07-07'
+purpose_source: header-comment

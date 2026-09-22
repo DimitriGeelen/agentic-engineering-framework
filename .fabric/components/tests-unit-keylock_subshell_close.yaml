@@ -1,10 +1,11 @@
 id: tests/unit/keylock_subshell_close.bats
 name: keylock_subshell_close
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/keylock_subshell_close.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1493: keylock_subshell_close_cmd emits FD-close commands so verification subshells don''t leak lock FDs to long-lived
+  daemons (e.g., .NET VBCSCompiler). Origin: 003-NTB-ATC-Plugin pickup envelope P-015 / T-146'
 depends_on:
 - target: lib/keylock.sh
   type: calls
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-04-26
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

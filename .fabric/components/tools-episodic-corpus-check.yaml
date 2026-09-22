@@ -1,14 +1,14 @@
 id: tools/episodic-corpus-check.py
 name: episodic-corpus-check
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/episodic-corpus-check.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1873 — episodic corpus parse-check.
 depends_on: []
 depended_by: []
 last_verified: 2026-05-16
 created_by: unknown
 standalone: true
-standalone_reason: "standalone episodic-corpus checker \u2014 leaf utility, no code\
-  \ imports it (T-2511)"
+standalone_reason: standalone episodic-corpus checker — leaf utility, no code imports it (T-2511)
+purpose_source: docstring

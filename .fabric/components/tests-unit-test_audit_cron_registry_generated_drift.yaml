@@ -1,10 +1,10 @@
 id: tests/unit/test_audit_cron_registry_generated_drift.bats
 name: test_audit_cron_registry_generated_drift
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_audit_cron_registry_generated_drift.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1943 — Pin fw audit registry → generated cron drift FAIL (audit-side sibling to T-1942's doctor-side WARN).
 depends_on:
 - target: bin/fw
   type: tests
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-19
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

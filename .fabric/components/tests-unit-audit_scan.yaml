@@ -1,10 +1,10 @@
 id: tests/unit/audit_scan.bats
 name: audit_scan
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/audit_scan.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for audit scan scripts (T-961)
 depends_on:
 - agents/audit/self-audit.sh
 - target: agents/audit/active-task-scan.py
@@ -19,3 +19,4 @@ depended_by: []
 last_verified: 2026-04-06
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

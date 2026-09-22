@@ -1,10 +1,10 @@
 id: tests/unit/test_reviewer_audit_blueprint.py
 name: test_reviewer_audit_blueprint
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_reviewer_audit_blueprint.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for /reviewer/audit Watchtower route (T-1486).
 depends_on:
 - target: web/blueprints/reviewer.py
   type: calls
@@ -22,3 +22,4 @@ depended_by: []
 last_verified: 2026-04-26
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

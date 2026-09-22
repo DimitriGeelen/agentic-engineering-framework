@@ -1,10 +1,10 @@
 id: tests/web/test_designer_overlay.py
 name: test_designer_overlay
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/web/test_designer_overlay.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2630: /designer/overlay wrapper page + landing overlay-link contract.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-07-27
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

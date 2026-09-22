@@ -1,10 +1,10 @@
 id: tests/web/test_designer_registry_ghosts.py
 name: test_designer_registry_ghosts
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/web/test_designer_registry_ghosts.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2574 (T-2571 S2): pending-ref registry — ghost capture at save.'
 depends_on:
 - target: web/designer_registry.py
   type: calls
@@ -30,3 +30,4 @@ depended_by:
 last_verified: 2026-07-20
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

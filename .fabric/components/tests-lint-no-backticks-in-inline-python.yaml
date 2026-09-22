@@ -1,10 +1,11 @@
 id: tests/lint/no-backticks-in-inline-python.bats
 name: no-backticks-in-inline-python
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/lint/no-backticks-in-inline-python.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2707: backticks inside a double-quoted `python3 -c "..."` block are COMMAND SUBSTITUTION performed by bash before
+  python ever sees the source.'
 depends_on:
 - target: C-007
   type: tests
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-07-31
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

@@ -1,10 +1,10 @@
 id: tests/unit/tier0_scope_boundary.bats
 name: tier0_scope_boundary
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/tier0_scope_boundary.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2742: Tier 0 inspects the command STRING only — characterization test.'
 depends_on:
 - target: agents/context/check-tier0.sh
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-02
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

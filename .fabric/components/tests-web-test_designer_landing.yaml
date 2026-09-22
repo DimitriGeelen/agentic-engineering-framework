@@ -1,10 +1,10 @@
 id: tests/web/test_designer_landing.py
 name: test_designer_landing
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/web/test_designer_landing.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2589: /designer corpus landing page — server truth first, editor at /designer/app.'
 depends_on:
 - target: web/app.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-07-21
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

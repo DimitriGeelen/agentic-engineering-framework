@@ -1,7 +1,7 @@
 id: docs/reports/T-1922-a3-measurement-raw.json
 name: T-1922-a3-measurement-raw
 type: config
-subsystem: unknown
+subsystem: docs
 location: docs/reports/T-1922-a3-measurement-raw.json
 tags: []
 purpose: 'TODO: describe what this component does'

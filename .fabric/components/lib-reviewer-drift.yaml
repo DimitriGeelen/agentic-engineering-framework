@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/reviewer/drift.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Pass A drift detection (T-1483 v1.5).
 depends_on:
 - target: bin/fw
   type: calls
@@ -26,3 +26,4 @@ depended_by:
 last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/reviewer/audit.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Layer 3 audit cron (T-1443 v1.2, T-1484 v1.5b).
 depends_on:
 - target: lib/reviewer/__init__.py
   type: calls
@@ -38,3 +38,4 @@ depended_by:
 last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

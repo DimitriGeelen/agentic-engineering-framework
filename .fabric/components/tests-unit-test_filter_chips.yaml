@@ -1,10 +1,10 @@
 id: tests/unit/test_filter_chips.py
 name: test_filter_chips
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_filter_chips.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2016 (arc-007 S4c): active-filter chips on the tasks board.'
 depends_on:
 - target: web/blueprints/tasks.py
   type: calls
@@ -20,3 +20,4 @@ depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

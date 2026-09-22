@@ -1,10 +1,10 @@
 id: tests/unit/test_reviewer_prose_mismatch.bats
 name: test_reviewer_prose_mismatch
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_reviewer_prose_mismatch.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1947 (L-409): integration coverage for `reviewer-prose-mismatch` — the inverse of `human-ac-mechanical-signal`.'
 depends_on:
 - target: bin/fw
   type: tests
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-20
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

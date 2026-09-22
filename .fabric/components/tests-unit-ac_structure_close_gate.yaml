@@ -1,10 +1,11 @@
 id: tests/unit/ac_structure_close_gate.bats
 name: ac_structure_close_gate
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/ac_structure_close_gate.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3029 -- Regression: update-task.sh''s close-time AC gate must not silently report zero Human ACs when a `### Human`
+  heading is separated from `## Acceptance Criteria` by an intervening `## ` heading.'
 depends_on:
 - target: agents/task-create/update-task.sh
   type: calls
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

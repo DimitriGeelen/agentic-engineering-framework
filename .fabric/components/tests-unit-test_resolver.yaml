@@ -1,10 +1,10 @@
 id: tests/unit/test_resolver.py
 name: test_resolver
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_resolver.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1696: Unit tests for lib/resolver.py.'
 depends_on:
 - target: lib/resolver.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-03
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: docstring

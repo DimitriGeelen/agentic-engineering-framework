@@ -1,10 +1,10 @@
 id: tests/unit/episodic_frontmatter_extraction.bats
 name: episodic_frontmatter_extraction
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/episodic_frontmatter_extraction.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2731 — frontmatter extraction must be scoped to the frontmatter and must not truncate multi-line scalars.
 depends_on:
 - target: lib/yaml.sh
   type: calls
@@ -20,3 +20,4 @@ depended_by: []
 last_verified: 2026-08-02
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

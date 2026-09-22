@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/episodic_footprint.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Re-mine an episodic's git footprint AFTER the completion commit exists (T-3130).
 depends_on:
 - target: agents/context/lib/episodic.sh
   type: calls
@@ -16,3 +16,4 @@ depended_by:
 last_verified: 2026-08-25
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

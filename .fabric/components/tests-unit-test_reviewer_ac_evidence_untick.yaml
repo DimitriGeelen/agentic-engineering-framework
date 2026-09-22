@@ -1,10 +1,10 @@
 id: tests/unit/test_reviewer_ac_evidence_untick.py
 name: test_reviewer_ac_evidence_untick
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_reviewer_ac_evidence_untick.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2155 (T-1761 prevention): tests for detect_ac_evidence_untick.'
 depends_on:
 - target: lib/reviewer/__init__.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-06-01
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

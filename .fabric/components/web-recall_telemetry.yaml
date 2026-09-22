@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/recall_telemetry.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Append-only recall telemetry — the "Used" signal (T-3019, T-3005 slice 6a).
 depends_on:
 - target: web/embeddings.py
   type: calls
@@ -24,3 +24,4 @@ depended_by:
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

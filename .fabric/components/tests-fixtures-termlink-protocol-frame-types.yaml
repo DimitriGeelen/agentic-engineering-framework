@@ -1,7 +1,7 @@
 id: tests/fixtures/termlink-protocol-frame-types.json
 name: termlink-protocol-frame-types
 type: config
-subsystem: unknown
+subsystem: tests
 location: tests/fixtures/termlink-protocol-frame-types.json
 tags: []
 purpose: 'TODO: describe what this component does'

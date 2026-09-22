@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/evolution_log.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Detection helper for the T-1717 Q4 rigidity-vs-evolution pattern (T-1718 implementation). Mirrors lib/inception_recommendation.sh
+  (T-1716) shape exactly: detection helper extracted so it can be tested without spinning up update-task.sh.'
 depends_on:
 - target: lib/arc_membership.sh
   type: calls
@@ -22,3 +23,4 @@ depended_by:
 last_verified: 2026-05-04
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

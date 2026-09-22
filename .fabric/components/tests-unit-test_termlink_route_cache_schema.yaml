@@ -1,10 +1,10 @@
 id: tests/unit/test_termlink_route_cache_schema.py
 name: test_termlink_route_cache_schema
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_termlink_route_cache_schema.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1650 — route_cache.json persistence schema regression test.
 depends_on:
 - target: tests/fixtures/termlink-route-cache-schema.json
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: docstring

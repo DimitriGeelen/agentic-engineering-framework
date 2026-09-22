@@ -4,7 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/orchestrator.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1647 (W10 #2 of T-1641 Arc C) — Watchtower /orchestrator page.'
 depends_on:
 - target: web/shared.py
   type: calls
@@ -44,3 +44,4 @@ depended_by:
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

@@ -1,10 +1,10 @@
 id: tests/unit/t2988_grouped_command_classification.bats
 name: t2988_grouped_command_classification
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2988_grouped_command_classification.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2988: shell grouping punctuation defeated safe-command classification.'
 depends_on:
 - target: agents/context/check-active-task.sh
   type: calls
@@ -20,3 +20,4 @@ depended_by: []
 last_verified: 2026-08-14
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

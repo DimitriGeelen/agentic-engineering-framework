@@ -1,10 +1,10 @@
 id: tests/unit/test_canary_manifest.py
 name: test_canary_manifest
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_canary_manifest.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Canary + corpus manifest — T-3011 (slice 2 of T-3005).
 depends_on:
 - target: web/search_utils.py
   type: calls
@@ -20,3 +20,4 @@ depended_by: []
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

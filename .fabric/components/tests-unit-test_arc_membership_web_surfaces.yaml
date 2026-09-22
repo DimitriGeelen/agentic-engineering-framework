@@ -1,10 +1,11 @@
 id: tests/unit/test_arc_membership_web_surfaces.py
 name: test_arc_membership_web_surfaces
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_arc_membership_web_surfaces.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1879 (T-NEW-14): silent-corpus #2 sweep — web surfaces must read both `arc_id:` frontmatter (T-1849 canonical,
+  T-1850 migrated) AND legacy `arc:<slug>` tag.'
 depends_on:
 - target: web/blueprints/core.py
   type: calls
@@ -28,3 +29,4 @@ depended_by: []
 last_verified: 2026-05-17
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

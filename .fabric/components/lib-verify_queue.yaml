@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/verify_queue.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2765: re-run stored ## Verification for the human review queue.'
 depends_on:
 - target: lib/verification-port.sh
   type: calls
@@ -24,3 +24,4 @@ depended_by:
 last_verified: 2026-08-03
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: docstring

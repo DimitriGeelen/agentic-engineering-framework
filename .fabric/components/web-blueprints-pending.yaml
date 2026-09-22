@@ -4,7 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/pending.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Pending-updates registry blueprint — Watchtower UI for T-1268 B3.
 depends_on:
 - target: web/shared.py
   type: calls
@@ -22,3 +22,4 @@ depended_by:
 last_verified: 2026-04-23
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

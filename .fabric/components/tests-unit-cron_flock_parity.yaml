@@ -1,10 +1,11 @@
 id: tests/unit/cron_flock_parity.bats
 name: cron_flock_parity
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/cron_flock_parity.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1558 — Regression: fw doctor must warn when the cron registry declares more flock-wrapped jobs than the deployed
+  crontab carries (T-1556 prevention #5).'
 depends_on:
 - target: bin/fw
   type: tests
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-04-27
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

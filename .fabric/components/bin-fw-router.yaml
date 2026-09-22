@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: bin/fw-router
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: fw-router — the `fw` entry point on PATH (T-2793, operator decision D-377).
 depends_on: []
 depended_by:
 - target: tests/unit/router_no_global_fallback.bats
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-08-04
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

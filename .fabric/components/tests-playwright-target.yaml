@@ -1,10 +1,10 @@
 id: tests/playwright/target.py
 name: target
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/target.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: The one place the Playwright suite decides what it is talking to (T-2784).
 depends_on: []
 depended_by:
 - target: tests/playwright/conftest.py
@@ -160,3 +160,4 @@ depended_by:
 last_verified: 2026-08-04
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

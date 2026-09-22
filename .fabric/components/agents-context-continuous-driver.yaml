@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/continuous-driver.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3254 (arc-012) — drive the loop from OUTSIDE when the agent stops early.
 depends_on: []
 depended_by:
 - target: tests/unit/t3254_driver_refusals.bats
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

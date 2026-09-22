@@ -1,20 +1,12 @@
 id: tests/unit/test_govd_sandbox.py
 name: test_govd_sandbox
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_govd_sandbox.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-2433 (arc-013): sandbox profile emit / status / install — the static floor.'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-20
 created_by: unknown
+purpose_source: docstring

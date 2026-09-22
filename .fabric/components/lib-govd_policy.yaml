@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/govd_policy.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: govd_policy — proxy-policy emit / install / drift (arc-013 / T-2432, design §4c).
 depends_on:
 - target: lib/govd_relay.py
   type: calls
@@ -20,3 +20,4 @@ depended_by:
 last_verified: 2026-06-18
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

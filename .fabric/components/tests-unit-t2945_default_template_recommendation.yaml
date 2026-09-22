@@ -1,10 +1,11 @@
 id: tests/unit/t2945_default_template_recommendation.bats
 name: t2945_default_template_recommendation
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2945_default_template_recommendation.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2945 — default.md shipped no `## Recommendation`, so the section the review gate demands existed in only one of
+  the two templates that reach it.
 depends_on:
 - target: lib/task-audit.sh
   type: calls
@@ -20,3 +21,4 @@ depended_by: []
 last_verified: 2026-08-12
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

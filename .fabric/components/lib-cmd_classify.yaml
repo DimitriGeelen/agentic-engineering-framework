@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/cmd_classify.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Decompose-then-judge classifier for the budget gate's at-critical allowlist.
 depends_on:
 - target: bin/fw
   type: calls
@@ -20,3 +20,4 @@ depended_by:
 last_verified: 2026-08-11
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

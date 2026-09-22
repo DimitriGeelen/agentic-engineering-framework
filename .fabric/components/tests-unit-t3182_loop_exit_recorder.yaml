@@ -1,20 +1,12 @@
 id: tests/unit/t3182_loop_exit_recorder.bats
 name: t3182_loop_exit_recorder
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3182_loop_exit_recorder.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3182 (arc-012) — the continuous-run loop must say why it stopped.
+depends_on: []
+depended_by: []
 last_verified: 2026-08-26
 created_by: unknown
+purpose_source: header-comment

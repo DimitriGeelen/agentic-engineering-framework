@@ -1,20 +1,12 @@
 id: tools/t3257-livefire-backlog.sh
 name: t3257-livefire-backlog
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/t3257-livefire-backlog.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3257 — the backlog proof T-3255 designed, on a substrate that can actually run it.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-05
 created_by: unknown
+purpose_source: header-comment

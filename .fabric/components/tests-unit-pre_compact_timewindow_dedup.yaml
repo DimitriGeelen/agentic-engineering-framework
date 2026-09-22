@@ -1,10 +1,11 @@
 id: tests/unit/pre_compact_timewindow_dedup.bats
 name: pre_compact_timewindow_dedup
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/pre_compact_timewindow_dedup.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1478 — pre-compact.sh layers a time-window dedup on top of flock to catch SEQUENTIAL dual-fires that flock alone
+  cannot stop.
 depends_on:
 - target: agents/context/pre-compact.sh
   type: calls
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

@@ -1,10 +1,10 @@
 id: tests/unit/watchtower_url_refresh.bats
 name: watchtower_url_refresh
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/watchtower_url_refresh.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1622 — `do_url` in `bin/watchtower.sh` MUST refresh the LAN URL from `detect_lan_ip` when Watchtower is running.
 depends_on:
 - target: bin/watchtower.sh
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-04-30
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

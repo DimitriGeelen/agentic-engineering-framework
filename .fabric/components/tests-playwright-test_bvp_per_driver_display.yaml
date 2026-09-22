@@ -1,20 +1,12 @@
 id: tests/playwright/test_bvp_per_driver_display.py
 name: test_bvp_per_driver_display
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_bvp_per_driver_display.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-2170 Slice 2 (T-2346): /bvp facet axis-swap — executed-browser guards.'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-20
 created_by: unknown
+purpose_source: docstring

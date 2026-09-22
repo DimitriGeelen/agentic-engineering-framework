@@ -1,20 +1,12 @@
 id: tools/t3257-livefire-driver.sh
 name: t3257-livefire-driver
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/t3257-livefire-driver.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-3257 — live-fire: does the continuous-driver actually hand a turn to a REAL agent?'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-05
 created_by: unknown
+purpose_source: header-comment

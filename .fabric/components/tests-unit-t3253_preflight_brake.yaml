@@ -1,10 +1,10 @@
 id: tests/unit/t3253_preflight_brake.bats
 name: t3253_preflight_brake
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3253_preflight_brake.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3253 AC3 — the breaching session is never launched.
 depends_on:
 - target: agents/context/inject-next-directive.py
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

@@ -1,10 +1,10 @@
 id: tests/unit/inception_commit_counter.bats
 name: inception_commit_counter
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/inception_commit_counter.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for _count_inception_exploration_commits (T-2195)
 depends_on:
 - target: agents/git/lib/hooks.sh
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-06-02
 created_by: unknown
 last_enriched: '2026-06-03'
+purpose_source: header-comment

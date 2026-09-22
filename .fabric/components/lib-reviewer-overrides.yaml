@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/reviewer/overrides.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Reviewer override mechanism (T-1443 v1.4).
 depends_on: []
 depended_by:
 - target: tests/unit/test_reviewer_overrides.py
@@ -28,3 +28,4 @@ depended_by:
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

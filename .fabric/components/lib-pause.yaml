@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/pause.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Thin shim — routes `fw pause` to lib/pause_cli.py. Origin: T-1809 (dispatch-safety slice 5).'
 depends_on: []
 depended_by:
 - target: bin/fw
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-05-13
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

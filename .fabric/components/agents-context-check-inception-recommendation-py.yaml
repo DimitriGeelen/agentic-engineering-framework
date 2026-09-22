@@ -4,7 +4,8 @@ type: script
 subsystem: context-fabric
 location: agents/context/check-inception-recommendation.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2205 (T-2204 Slice B): PreToolUse Write/Edit hook — refuse save when an inception task has a template-only `##
+  Recommendation` block under'
 depends_on:
 - target: lib/hook_paths.py
   type: calls
@@ -22,3 +23,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

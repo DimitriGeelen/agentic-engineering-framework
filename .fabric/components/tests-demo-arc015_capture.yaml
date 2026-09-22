@@ -1,10 +1,10 @@
 id: tests/demo/arc015_capture.sh
 name: arc015_capture
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/demo/arc015_capture.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: arc-015 (onboarding-shape-detection) — capture the headline mechanic firing.
 depends_on:
 - target: bin/fw
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-10
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/spawn.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'spawn — dispatch driver: read resolver envelope, spawn worker, finalise outcome.'
 depends_on:
 - target: lib/pi_worker.py
   type: calls
@@ -36,3 +36,4 @@ depended_by:
 last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

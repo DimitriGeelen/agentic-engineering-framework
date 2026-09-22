@@ -1,13 +1,15 @@
 id: docs/architecture/parallel-execution-aef.md
 name: parallel-execution-aef
 type: script
-subsystem: unknown
+subsystem: docs
 location: docs/architecture/parallel-execution-aef.md
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Status: design captured, pre-build. Companion: *Architecture — Parallel Execution: TermLink Substrate Layer*, which
+  owns the collaboration seam and supplies the primitives this layer depends on.'
 depends_on: []
 depended_by: []
 last_verified: 2026-06-10
 created_by: unknown
 standalone: true
 standalone_reason: documentation/data artifact — no code-dependency edges (T-2511)
+purpose_source: markdown

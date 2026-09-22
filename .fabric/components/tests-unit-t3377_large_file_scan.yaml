@@ -1,20 +1,12 @@
 id: tests/unit/t3377_large_file_scan.bats
 name: t3377_large_file_scan
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3377_large_file_scan.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-3377 — large-file scan_tree: behaviour pinned against a FIXTURE repo.'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-16
 created_by: unknown
+purpose_source: header-comment

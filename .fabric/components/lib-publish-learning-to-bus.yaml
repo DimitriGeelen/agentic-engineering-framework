@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/publish-learning-to-bus.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: publish-learning-to-bus.sh — one-way publisher for T-1155 channel:learnings topic.
 depends_on: []
 depended_by:
 - target: lib/subscribe-learnings-from-bus.sh
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-04-24
 created_by: unknown
 last_enriched: '2026-04-24'
+purpose_source: header-comment

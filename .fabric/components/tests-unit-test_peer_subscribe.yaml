@@ -1,10 +1,10 @@
 id: tests/unit/test_peer_subscribe.py
 name: test_peer_subscribe
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_peer_subscribe.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for lib/peer.py — v2 peer-consult subscriber + responder spawn.
 depends_on:
 - target: lib/peer.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-13
 created_by: unknown
 last_enriched: '2026-05-15'
+purpose_source: docstring

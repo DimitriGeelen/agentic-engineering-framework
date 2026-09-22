@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/stop-driver.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Stop hook — the continuous-run turn driver (T-3164, arc-012 S1).
 depends_on: []
 depended_by:
 - target: tests/unit/stop_driver.bats
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-08-26
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

@@ -1,10 +1,11 @@
 id: tests/unit/test_safe_commands_git_commit.bats
 name: test_safe_commands_git_commit
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_safe_commands_git_commit.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2054 — post-completion commit deadlock: `git commit` must be allowed when focus is null, WITHOUT breaking the
+  focus-drift gate (T-1730) when focus exists.'
 depends_on:
 - target: agents/context/check-active-task.sh
   type: calls
@@ -18,3 +19,4 @@ depended_by: []
 last_verified: 2026-05-25
 created_by: unknown
 last_enriched: '2026-05-27'
+purpose_source: header-comment

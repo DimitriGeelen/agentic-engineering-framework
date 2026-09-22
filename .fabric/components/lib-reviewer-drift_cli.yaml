@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/reviewer/drift_cli.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: CLI shim for drift detection (T-1483 v1.5 Pass A).
 depends_on:
 - target: lib/reviewer/drift.py
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

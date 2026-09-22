@@ -1,10 +1,11 @@
 id: tests/unit/t2318_retrofit_injector_append_missing.bats
 name: t2318_retrofit_injector_append_missing
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2318_retrofit_injector_append_missing.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2318: retrofit injector must handle missing-Recommendation-section case (pre-T-1716 backlog inceptions). Pins
+  detector↔corrector symmetry per RCA.'
 depends_on:
 - target: lib/inception_recommendation.sh
   type: calls
@@ -18,3 +19,4 @@ depended_by: []
 last_verified: 2026-06-10
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

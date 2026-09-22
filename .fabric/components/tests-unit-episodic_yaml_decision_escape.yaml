@@ -1,10 +1,11 @@
 id: tests/unit/episodic_yaml_decision_escape.bats
 name: episodic_yaml_decision_escape
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/episodic_yaml_decision_escape.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1871 — episodic generator must emit valid YAML when ## Decisions content contains YAML-double-quote-hostile characters
+  (backticks, backslashes, embedded quotes, escape sequences).'
 depends_on:
 - target: agents/context/lib/episodic.sh
   type: calls
@@ -20,3 +21,4 @@ depended_by: []
 last_verified: 2026-05-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

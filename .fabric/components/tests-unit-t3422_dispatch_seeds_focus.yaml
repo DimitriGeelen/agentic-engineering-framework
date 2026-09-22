@@ -1,20 +1,12 @@
 id: tests/unit/t3422_dispatch_seeds_focus.bats
 name: t3422_dispatch_seeds_focus
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3422_dispatch_seeds_focus.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3422 — dispatch pre-seeds the worker's session-scoped focus file.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
+purpose_source: header-comment

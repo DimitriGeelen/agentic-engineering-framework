@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/worktree.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/worktree.sh — fw worktree topology observability.
 depends_on:
 - target: bin/fw
   type: calls
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-06-23
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

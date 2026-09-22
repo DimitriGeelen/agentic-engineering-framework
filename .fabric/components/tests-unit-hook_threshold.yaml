@@ -1,10 +1,10 @@
 id: tests/unit/hook_threshold.bats
 name: hook_threshold
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/hook_threshold.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1631 (B-3b of T-1626) — hook-failure threshold rule.
 depends_on:
 - target: lib/hook-threshold.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

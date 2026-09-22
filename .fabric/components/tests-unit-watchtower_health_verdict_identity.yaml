@@ -1,10 +1,11 @@
 id: tests/unit/watchtower_health_verdict_identity.bats
 name: watchtower_health_verdict_identity
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/watchtower_health_verdict_identity.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2445 (F9, T-2442 batch): Watchtower HEALTH-VERDICT call-sites must gate on the identity-verified resolver, never
+  on a default-port `/health` curl.'
 depends_on:
 - target: C-004
   type: calls
@@ -22,3 +23,4 @@ depended_by: []
 last_verified: 2026-06-21
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

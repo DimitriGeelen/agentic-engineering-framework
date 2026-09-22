@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/reviewer/recommendation_claims.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-100187: Recommendation-claims validator (T-100186 GO slice A).'
 depends_on:
 - target: lib/inception_decisions.py
   type: calls
@@ -24,3 +24,4 @@ depended_by:
 last_verified: 2026-07-04
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

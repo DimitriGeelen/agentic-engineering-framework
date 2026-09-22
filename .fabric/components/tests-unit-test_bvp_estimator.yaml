@@ -1,10 +1,10 @@
 id: tests/unit/test_bvp_estimator.py
 name: test_bvp_estimator
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_bvp_estimator.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for the BVP estimator (T-1922, arc-006).
 depends_on:
 - target: agents/termlink/bvp-estimator/estimator.py
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-05-19
 created_by: unknown
 last_enriched: '2026-06-16'
+purpose_source: docstring

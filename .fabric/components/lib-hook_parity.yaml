@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/hook_parity.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Hook-set extraction and comparison — ONE definition, every caller (T-3112/T-3113).
 depends_on:
 - target: lib/hook-parity.sh
   type: calls
@@ -26,3 +26,4 @@ depended_by:
 last_verified: 2026-08-20
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

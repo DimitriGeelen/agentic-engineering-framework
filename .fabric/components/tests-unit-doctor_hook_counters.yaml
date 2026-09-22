@@ -1,10 +1,10 @@
 id: tests/unit/doctor_hook_counters.bats
 name: doctor_hook_counters
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/doctor_hook_counters.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2714 (OBS-110): every hook counter in `fw doctor` must state its denominator.'
 depends_on:
 - target: bin/fw
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-01
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

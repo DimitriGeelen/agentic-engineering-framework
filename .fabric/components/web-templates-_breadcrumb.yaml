@@ -4,7 +4,8 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_breadcrumb.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Breadcrumb trail (T-2009, arc-007 S2b). Rendered inside #content (full loads via _wrapper.html, htmx loads via render_page
+  prepend) so it stays fresh on every navigation.'
 depends_on:
 - target: web/templates/_star.html
   type: includes
@@ -14,3 +15,4 @@ depended_by:
 last_verified: 2026-05-23
 created_by: unknown
 last_enriched: '2026-05-27'
+purpose_source: header-comment

@@ -1,10 +1,11 @@
 id: tests/unit/audit_flock.bats
 name: audit_flock
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/audit_flock.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for agents/audit/audit.sh flock guard (T-1464) Verifies foreground audits also flock-protect (lifted T-1162's
+  QUIET-only guard).
 depends_on:
 - target: C-004
   type: calls
@@ -14,3 +15,4 @@ depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
 last_enriched: '2026-05-06'
+purpose_source: header-comment

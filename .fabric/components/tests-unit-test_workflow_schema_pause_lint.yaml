@@ -1,10 +1,10 @@
 id: tests/unit/test_workflow_schema_pause_lint.py
 name: test_workflow_schema_pause_lint
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_workflow_schema_pause_lint.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Tests for the workflow schema linter (lib/workflow_lint.py).
 depends_on:
 - target: bin/fw
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-13
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: docstring

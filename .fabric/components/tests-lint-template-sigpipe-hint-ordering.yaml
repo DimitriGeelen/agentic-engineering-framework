@@ -1,20 +1,13 @@
 id: tests/lint/template-sigpipe-hint-ordering.bats
 name: template-sigpipe-hint-ordering
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/lint/template-sigpipe-hint-ordering.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-3000: the SIGPIPE hint block in .tasks/templates/default.md must lead with the form that is correct at any output
+  size.'
+depends_on: []
+depended_by: []
 last_verified: 2026-08-14
 created_by: unknown
+purpose_source: header-comment

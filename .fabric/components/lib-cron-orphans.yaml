@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/cron-orphans.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/cron-orphans.sh — detect deployed cron entries whose declared PROJECT_ROOT is gone (T-3281).
 depends_on: []
 depended_by:
 - target: bin/fw
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-09-05
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

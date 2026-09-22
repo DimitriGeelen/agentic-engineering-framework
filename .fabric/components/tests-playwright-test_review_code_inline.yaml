@@ -1,10 +1,11 @@
 id: tests/playwright/test_review_code_inline.py
 name: test_review_code_inline
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_review_code_inline.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1765: Pin the visual contract that prose-context `<code>` elements flow inline (not as atomic inline-blocks) so
+  long backticked paths break gracefully with surrounding text rather than dropping wholesale to the next line.'
 depends_on:
 - target: lib/task_pair_acd.sh
   type: calls
@@ -12,3 +13,4 @@ depended_by: []
 last_verified: 2026-05-06
 created_by: unknown
 last_enriched: '2026-05-09'
+purpose_source: docstring

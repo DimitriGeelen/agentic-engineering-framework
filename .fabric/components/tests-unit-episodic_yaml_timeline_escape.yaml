@@ -1,10 +1,10 @@
 id: tests/unit/episodic_yaml_timeline_escape.bats
 name: episodic_yaml_timeline_escape
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/episodic_yaml_timeline_escape.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2729 — the episodic generator's git-timeline rows must survive a commit subject containing YAML-hostile characters.
 depends_on:
 - target: agents/context/lib/episodic.sh
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-08-02
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

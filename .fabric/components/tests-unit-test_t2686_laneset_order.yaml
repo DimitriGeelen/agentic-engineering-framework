@@ -1,20 +1,12 @@
 id: tests/unit/test_t2686_laneset_order.py
 name: test_t2686_laneset_order
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_t2686_laneset_order.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-2686: the two repaired drafts must keep declared lane order == drawn order.'
+depends_on: []
+depended_by: []
 last_verified: 2026-07-29
 created_by: unknown
+purpose_source: docstring

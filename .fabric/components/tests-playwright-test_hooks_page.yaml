@@ -1,13 +1,14 @@
 id: tests/playwright/test_hooks_page.py
 name: test_hooks_page
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_hooks_page.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1632 (B-3c of T-1626) — Playwright: /hooks page renders correctly.'
 depends_on: []
 depended_by: []
 last_verified: 2026-05-01
 created_by: unknown
 standalone: true
 standalone_reason: playwright black-box HTTP test — no code-import edges (T-2511)
+purpose_source: docstring

@@ -1,10 +1,10 @@
 id: tests/unit/audit_ctl028_completed_status_consistency.bats
 name: audit_ctl028_completed_status_consistency
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/audit_ctl028_completed_status_consistency.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1870 / CTL-028: completed/ frontmatter status consistency'
 depends_on:
 - target: C-004
   type: calls
@@ -22,3 +22,4 @@ depended_by: []
 last_verified: 2026-05-15
 created_by: unknown
 last_enriched: '2026-05-16'
+purpose_source: header-comment

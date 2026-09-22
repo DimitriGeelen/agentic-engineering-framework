@@ -1,10 +1,10 @@
 id: tests/unit/test_nav_layout_polish.py
 name: test_nav_layout_polish
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_nav_layout_polish.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2033: arc-007 nav-layout polish — static guards for the sidebar/rail fixes.'
 depends_on:
 - target: web/blueprints/settings.py
   type: calls
@@ -28,3 +28,4 @@ depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

@@ -1,10 +1,10 @@
 id: tests/web/test_approvals_origin.py
 name: test_approvals_origin
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/web/test_approvals_origin.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3078: /approvals must not assert an agent asked when none did.'
 depends_on:
 - target: web/blueprints/approvals.py
   type: calls
@@ -20,3 +20,4 @@ depended_by: []
 last_verified: 2026-08-19
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

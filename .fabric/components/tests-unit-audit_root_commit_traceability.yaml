@@ -1,10 +1,10 @@
 id: tests/unit/audit_root_commit_traceability.bats
 name: audit_root_commit_traceability
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/audit_root_commit_traceability.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2851 — the audit's commit-traceability check must exempt ROOT commits.
 depends_on:
 - target: lib/traceability.sh
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-08-07
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

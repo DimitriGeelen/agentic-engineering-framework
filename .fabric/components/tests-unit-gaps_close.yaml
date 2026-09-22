@@ -1,10 +1,10 @@
 id: tests/unit/gaps_close.bats
 name: gaps_close
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/gaps_close.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2185 — `fw gaps close <id>` flips gauge-READY gaps to status:closed.
 depends_on:
 - target: bin/fw
   type: tests
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-06-03
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

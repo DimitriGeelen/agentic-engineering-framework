@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/pause_resolve.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Pause re-dispatch chain — capture operator's answer + fire a retry via Resolver.
 depends_on:
 - target: lib/resolver.py
   type: uses
@@ -16,3 +16,4 @@ depended_by:
 last_verified: 2026-05-13
 created_by: unknown
 last_enriched: '2026-05-15'
+purpose_source: docstring

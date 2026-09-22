@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/branch-hygiene.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/branch-hygiene.sh — T-100143 (C2 of T-100139 branch/worktree lifecycle GO)
 depends_on: []
 depended_by:
 - target: agents/handover/handover.sh
@@ -22,3 +22,4 @@ depended_by:
 last_verified: 2026-07-07
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

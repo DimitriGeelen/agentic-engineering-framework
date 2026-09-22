@@ -1,10 +1,11 @@
 id: tests/unit/doctor_designer_pin_drift.bats
 name: doctor_designer_pin_drift
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/doctor_designer_pin_drift.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2524 (T-2521 integration hardening): fw doctor content-compares (sha256, never mtime) the vendored Workflow Designer
+  build against policy/designer-pin.yaml. Sibling of the MCP manifest + cron registry→generated drift checks.'
 depends_on:
 - target: bin/fw
   type: tests
@@ -12,3 +13,4 @@ depended_by: []
 last_verified: 2026-07-10
 created_by: unknown
 last_enriched: '2026-07-21'
+purpose_source: header-comment

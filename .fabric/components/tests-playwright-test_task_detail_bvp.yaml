@@ -1,13 +1,14 @@
 id: tests/playwright/test_task_detail_bvp.py
 name: test_task_detail_bvp
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_task_detail_bvp.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1980: /tasks/T-XXX BVP block — DOM-content assertions.'
 depends_on: []
 depended_by: []
 last_verified: 2026-05-21
 created_by: unknown
 standalone: true
 standalone_reason: playwright black-box HTTP test — no code-import edges (T-2511)
+purpose_source: docstring

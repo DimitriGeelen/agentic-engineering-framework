@@ -1,10 +1,11 @@
 id: tests/unit/vendor_visibility.bats
 name: vendor_visibility
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/vendor_visibility.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3144 — `fw vendor` writes executable code into a consumer tree and never checked that the consumer's git could
+  see it. Reported by 010-termlink for `tools/`; the measured set is wider.
 depends_on:
 - target: lib/vendor-visibility.sh
   type: tests
@@ -16,3 +17,4 @@ depended_by: []
 last_verified: 2026-08-25
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

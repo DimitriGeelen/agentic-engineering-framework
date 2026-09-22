@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/root-pollution.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2990 — root-level pollution detector.
 depends_on: []
 depended_by:
 - target: bin/fw
@@ -16,3 +16,4 @@ depended_by:
 last_verified: 2026-08-14
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

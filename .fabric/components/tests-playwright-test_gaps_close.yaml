@@ -1,13 +1,14 @@
 id: tests/playwright/test_gaps_close.py
 name: test_gaps_close
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_gaps_close.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Playwright regression tests for /gaps Close action (T-2185).
 depends_on: []
 depended_by: []
 last_verified: 2026-06-03
 created_by: unknown
 standalone: true
 standalone_reason: playwright black-box HTTP test — no code-import edges (T-2511)
+purpose_source: docstring

@@ -1,10 +1,10 @@
 id: tests/unit/test_govd_policy.py
 name: test_govd_policy
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_govd_policy.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2432 — pin proxy-policy emit/install/drift (arc-013, design §4c).
 depends_on:
 - target: lib/govd_policy.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-06-18
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: docstring

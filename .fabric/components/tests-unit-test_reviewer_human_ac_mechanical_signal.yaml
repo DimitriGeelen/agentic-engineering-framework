@@ -1,10 +1,10 @@
 id: tests/unit/test_reviewer_human_ac_mechanical_signal.py
 name: test_reviewer_human_ac_mechanical_signal
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_reviewer_human_ac_mechanical_signal.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1896 (T-1878 B): tests for detect_human_ac_mechanical_signal.'
 depends_on:
 - target: lib/reviewer/__init__.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-18
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

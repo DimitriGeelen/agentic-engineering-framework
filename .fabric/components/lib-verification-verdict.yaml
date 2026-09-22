@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/verification-verdict.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: lib/verification-verdict.sh — unjudged-test-run detection (T-2738)
 depends_on: []
 depended_by:
 - target: agents/task-create/update-task.sh
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-08-02
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

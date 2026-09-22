@@ -1,10 +1,10 @@
 id: tools/corpus_lint.py
 name: corpus_lint
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/corpus_lint.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: corpus_lint — per-map + cross-map lint for the designer corpus (T-2604).
 depends_on:
 - target: tools/corpus_spec.py
   type: uses
@@ -22,3 +22,4 @@ depended_by:
 last_verified: 2026-07-22
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: docstring

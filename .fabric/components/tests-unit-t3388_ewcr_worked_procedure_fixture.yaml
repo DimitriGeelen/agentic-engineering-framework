@@ -1,20 +1,13 @@
 id: tests/unit/t3388_ewcr_worked_procedure_fixture.bats
 name: t3388_ewcr_worked_procedure_fixture
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3388_ewcr_worked_procedure_fixture.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3388 — the worked human-gate → registered-script → human-gate fixture validates against the FROZEN v1 schemas (T-3385)
+  and carries no path, shell string or secret — only opaque catalogue refs (arch §6.2.1, cadence §5).
+depends_on: []
+depended_by: []
 last_verified: 2026-09-18
 created_by: unknown
+purpose_source: header-comment

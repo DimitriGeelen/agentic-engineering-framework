@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/inception_decisions.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1984: inception_decisions / unlocks_inception_decision frontmatter parser.'
 depends_on: []
 depended_by:
 - target: agents/task-create/update-task.sh
@@ -20,3 +20,4 @@ depended_by:
 last_verified: 2026-05-22
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

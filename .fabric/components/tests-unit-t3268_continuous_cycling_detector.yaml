@@ -1,10 +1,11 @@
 id: tests/unit/t3268_continuous_cycling_detector.bats
 name: t3268_continuous_cycling_detector
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3268_continuous_cycling_detector.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3268 (G-099 what_remains) — G-099 fixed the "wrapper says armed but turn driver isn''t" drift class and named,
+  but did not build, the detector for a sibling class: `last_terminated_reason` (bin/claude-fw:388) is a one-way latch that…'
 depends_on:
 - target: lib/continuous-mode.sh
   type: tests
@@ -12,3 +13,4 @@ depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

@@ -1,10 +1,10 @@
 id: tests/unit/test_enrich_unresolved_targets.py
 name: test_enrich_unresolved_targets
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_enrich_unresolved_targets.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2736 — enrich must not drop unresolvable and ignorable edges through one silent branch.
 depends_on:
 - target: agents/fabric/lib/enrich.py
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-02
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

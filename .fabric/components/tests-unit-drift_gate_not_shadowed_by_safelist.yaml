@@ -1,10 +1,10 @@
 id: tests/unit/drift_gate_not_shadowed_by_safelist.bats
 name: drift_gate_not_shadowed_by_safelist
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/drift_gate_not_shadowed_by_safelist.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2880 — the safe-list early return must not shadow the focus-drift gate.
 depends_on:
 - target: agents/context/check-active-task.sh
   type: calls
@@ -18,3 +18,4 @@ depended_by: []
 last_verified: 2026-08-08
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

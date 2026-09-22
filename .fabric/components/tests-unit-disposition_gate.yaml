@@ -1,10 +1,10 @@
 id: tests/unit/disposition_gate.bats
 name: disposition_gate
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/disposition_gate.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Unit tests for check_disposition_gate (T-2190).
 depends_on:
 - target: agents/task-create/update-task.sh
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-06-02
 created_by: unknown
 last_enriched: '2026-06-03'
+purpose_source: header-comment

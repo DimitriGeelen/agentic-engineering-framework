@@ -1,21 +1,14 @@
 id: tools/t1706-tool-loop-probe.sh
 name: t1706-tool-loop-probe
 type: script
-standalone: true  # T-1754 — by-design orphan, no framework imports
-subsystem: unknown
+standalone: true
+standalone_reason: T-1754 — by-design orphan, no framework imports
+subsystem: framework-core
 location: tools/t1706-tool-loop-probe.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-1706 — Spike A probe for the thin tool-loop worker.
+depends_on: []
+depended_by: []
 last_verified: 2026-05-03
 created_by: unknown
+purpose_source: header-comment

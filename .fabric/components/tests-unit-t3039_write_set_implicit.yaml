@@ -1,10 +1,10 @@
 id: tests/unit/t3039_write_set_implicit.bats
 name: t3039_write_set_implicit
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3039_write_set_implicit.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3039 — the implicit framework write-set, and the false green it closes.
 depends_on:
 - target: lib/write_set.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

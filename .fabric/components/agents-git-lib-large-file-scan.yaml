@@ -4,7 +4,7 @@ type: script
 subsystem: git-traceability
 location: agents/git/lib/large-file-scan.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: agents/git/lib/large-file-scan.sh — Large-file gate for the pre-commit hook (T-1845).
 depends_on: []
 depended_by:
 - target: agents/git/lib/hooks.sh
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-05-15
 created_by: unknown
 last_enriched: '2026-09-05'
+purpose_source: header-comment

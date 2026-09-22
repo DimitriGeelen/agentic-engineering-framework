@@ -2,10 +2,11 @@ id: tools/t1703-probe-matrix.sh
 name: t1703-probe-matrix
 type: script
 standalone: true
-subsystem: unknown
+subsystem: framework-core
 location: tools/t1703-probe-matrix.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1703 probe matrix — gemma4 + qwen3.5 against 3 tool catalogues. Uses simple-read prompts only (Read tool sufficient)
+  so the Read-only catalogue cell isn't penalised for prompts that need Bash.
 depends_on:
 - target: bin/fw
   type: calls
@@ -13,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

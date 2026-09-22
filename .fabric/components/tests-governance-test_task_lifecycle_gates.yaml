@@ -1,10 +1,10 @@
 id: tests/governance/test_task_lifecycle_gates.bats
 name: test_task_lifecycle_gates
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/governance/test_task_lifecycle_gates.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1608 (T-1601 GO follow-up, Phase 3): red-team harness for task-lifecycle gates.'
 depends_on:
 - target: bin/fw
   type: tests
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-04-29
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

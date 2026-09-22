@@ -1,10 +1,10 @@
 id: tests/unit/audit_ctl030_completed_horizon_drift.bats
 name: audit_ctl030_completed_horizon_drift
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/audit_ctl030_completed_horizon_drift.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2162 / CTL-030: completed/ stored-horizon drift detection'
 depends_on:
 - target: C-004
   type: calls
@@ -22,3 +22,4 @@ depended_by: []
 last_verified: 2026-06-01
 created_by: unknown
 last_enriched: '2026-06-02'
+purpose_source: header-comment

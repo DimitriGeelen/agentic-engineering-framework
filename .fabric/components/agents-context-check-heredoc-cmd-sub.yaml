@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/check-heredoc-cmd-sub.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1945 — Heredoc-in-command-substitution edit-time guard.
 depends_on:
 - target: lib/heredoc_guard.py
   type: calls
@@ -22,3 +22,4 @@ depended_by:
 last_verified: 2026-05-20
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

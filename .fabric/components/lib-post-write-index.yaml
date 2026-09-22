@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/post-write-index.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Post-write vector-index hook — T-1719 A1.
 depends_on: []
 depended_by:
 - target: agents/context/lib/episodic.sh
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-08-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

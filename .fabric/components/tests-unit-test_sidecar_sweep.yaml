@@ -1,20 +1,12 @@
 id: tests/unit/test_sidecar_sweep.py
 name: test_sidecar_sweep
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_sidecar_sweep.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-3418 — arc-011 sidecar sweep: the cron cadence for resolve_expired (slice 7).'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
+purpose_source: docstring

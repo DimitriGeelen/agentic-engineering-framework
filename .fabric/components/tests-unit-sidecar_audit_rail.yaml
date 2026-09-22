@@ -1,20 +1,12 @@
 id: tests/unit/sidecar_audit_rail.bats
 name: sidecar_audit_rail
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/sidecar_audit_rail.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'T-3420 — arc-011 sidecar slice 8: the audit rail over the consult ledger.'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
+purpose_source: header-comment

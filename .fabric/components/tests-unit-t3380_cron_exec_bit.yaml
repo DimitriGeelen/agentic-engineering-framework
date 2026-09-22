@@ -1,20 +1,12 @@
 id: tests/unit/t3380_cron_exec_bit.bats
 name: t3380_cron_exec_bit
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t3380_cron_exec_bit.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-3380 — a script the deployed crontab execs DIRECTLY must be executable.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-17
 created_by: unknown
+purpose_source: header-comment

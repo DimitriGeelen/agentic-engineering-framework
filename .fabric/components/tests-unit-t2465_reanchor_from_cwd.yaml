@@ -1,10 +1,10 @@
 id: tests/unit/t2465_reanchor_from_cwd.bats
 name: t2465_reanchor_from_cwd
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2465_reanchor_from_cwd.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2465 — unit tests for lib/paths.sh:fw_reanchor_from_cwd (+ the hook-stdin wrapper).
 depends_on:
 - target: lib/paths.sh
   type: calls
@@ -16,3 +16,4 @@ depended_by: []
 last_verified: 2026-06-23
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

@@ -4,17 +4,10 @@ type: script
 subsystem: framework-core
 location: lib/audit-anchor-task.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: T-1856 anchor_task existence detection — extracted from agents/audit/audit.sh by T-3356 so the check is reachable
+  without running the whole `--section structure` block.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-09
 created_by: unknown
+purpose_source: header-comment

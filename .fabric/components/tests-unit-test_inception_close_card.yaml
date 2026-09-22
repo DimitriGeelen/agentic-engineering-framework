@@ -1,10 +1,10 @@
 id: tests/unit/test_inception_close_card.py
 name: test_inception_close_card
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_inception_close_card.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-3180: a decided inception must have a way to close it.'
 depends_on:
 - target: web/blueprints/inception.py
   type: calls
@@ -22,3 +22,4 @@ depended_by: []
 last_verified: 2026-08-26
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: docstring

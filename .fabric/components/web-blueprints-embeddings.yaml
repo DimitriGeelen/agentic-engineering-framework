@@ -4,7 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/embeddings.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Embeddings blueprint — the recall substrate's own instrument panel (T-1719 A4).
 depends_on:
 - target: web/shared.py
   type: calls
@@ -32,3 +32,4 @@ depended_by:
 last_verified: 2026-08-16
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

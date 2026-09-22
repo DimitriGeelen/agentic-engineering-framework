@@ -1,10 +1,10 @@
 id: tests/unit/audit_stale_arc_warning.bats
 name: audit_stale_arc_warning
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/audit_stale_arc_warning.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1855 (T-NEW-7): stale-arc audit warning.'
 depends_on:
 - target: C-004
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-16
 created_by: unknown
 last_enriched: '2026-05-18'
+purpose_source: header-comment

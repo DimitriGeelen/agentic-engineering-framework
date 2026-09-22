@@ -1,10 +1,10 @@
 id: tests/unit/tier0_grant_ttl.bats
 name: tier0_grant_ttl
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/tier0_grant_ttl.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3080 — the Tier 0 grant TTL is one window, resolved once, for BOTH approval legs.
 depends_on:
 - target: bin/fw
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-19
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

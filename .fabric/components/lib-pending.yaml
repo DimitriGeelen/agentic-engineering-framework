@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/pending.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: fw pending - Pending-updates registry (T-1268 B1) Append-only ledger of cross-project / cross-machine actions an
+  agent could not complete in-session. Resolved entries are flagged, not deleted.
 depends_on:
 - target: lib/notify.sh
   type: calls
@@ -14,3 +15,4 @@ depended_by:
 last_verified: 2026-04-23
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

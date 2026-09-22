@@ -1,20 +1,12 @@
 id: tools/ewcr-arc0-writeset-scoped-coverage.py
 name: ewcr-arc0-writeset-scoped-coverage
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/ewcr-arc0-writeset-scoped-coverage.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: EWCR Arc 0 — write-set-SCOPED fabric coverage (T-3401, EWCR-ARC0-ATTEST-832 Round 1).
+depends_on: []
+depended_by: []
 last_verified: 2026-09-21
 created_by: unknown
+purpose_source: docstring

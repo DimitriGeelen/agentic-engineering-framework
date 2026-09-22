@@ -1,10 +1,12 @@
 id: tests/unit/t2813_install_hooks_write_failure.bats
 name: t2813_install_hooks_write_failure
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2813_install_hooks_write_failure.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2813: `fw git install-hooks` printed "=== Hooks Installed ===" and exited 0 even when every hook write failed
+  (cat > "$hook" << ''EOF'' fails silently at the redirect, before the heredoc body runs; the subsequent chmod failure was
+  likewise…'
 depends_on:
 - target: agents/git/git.sh
   type: calls
@@ -14,3 +16,4 @@ depended_by: []
 last_verified: 2026-08-05
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

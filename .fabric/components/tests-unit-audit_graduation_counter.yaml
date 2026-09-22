@@ -1,10 +1,10 @@
 id: tests/unit/audit_graduation_counter.bats
 name: audit_graduation_counter
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/audit_graduation_counter.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2677 — audit graduation counter shape-agnostic (dead >=20 branch).
 depends_on:
 - target: C-004
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-07-29
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

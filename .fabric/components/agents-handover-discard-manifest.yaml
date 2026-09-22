@@ -4,7 +4,7 @@ type: script
 subsystem: handover
 location: agents/handover/discard-manifest.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: discard-manifest.sh — Category-level compaction discard manifest (T-2366, arc-012 S4)
 depends_on:
 - target: lib/paths.sh
   type: calls
@@ -18,3 +18,4 @@ depended_by:
 last_verified: 2026-06-13
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

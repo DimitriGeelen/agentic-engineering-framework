@@ -1,10 +1,10 @@
 id: tests/integration/fw_onboarding_greenfield.bats
 name: fw_onboarding_greenfield
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/integration/fw_onboarding_greenfield.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-2850 — greenfield onboarding integration coverage.
 depends_on:
 - target: bin/fw
   type: tests
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-08-07
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

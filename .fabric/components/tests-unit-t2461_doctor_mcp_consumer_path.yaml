@@ -1,10 +1,11 @@
 id: tests/unit/t2461_doctor_mcp_consumer_path.bats
 name: t2461_doctor_mcp_consumer_path
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/t2461_doctor_mcp_consumer_path.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-2461: fw doctor''s framework-MCP-manifest check resolved its asset paths against $PROJECT_ROOT, which is the CONSUMER
+  root in a vendored install — the manifest actually lives under $FRAMEWORK_ROOT (.agentic-framework/agents/mcp/).'
 depends_on:
 - target: agents/mcp/manifest.py
   type: tests
@@ -16,3 +17,4 @@ depended_by: []
 last_verified: 2026-06-22
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

@@ -1,10 +1,10 @@
 id: tests/unit/test_chunk_cap.py
 name: test_chunk_cap
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_chunk_cap.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: The chunker must never emit a chunk the embedder cannot swallow whole.
 depends_on:
 - target: web/embeddings.py
   type: calls
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-08-15
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: docstring

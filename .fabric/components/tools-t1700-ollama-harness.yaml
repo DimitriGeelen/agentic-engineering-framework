@@ -2,10 +2,11 @@ id: tools/t1700-ollama-harness.sh
 name: t1700-ollama-harness
 type: script
 standalone: true
-subsystem: unknown
+subsystem: framework-core
 location: tools/t1700-ollama-harness.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-1700 ollama-research harness (v2, T-2408) — exercises the v1 dispatch substrate end-to-end through `fw resolver
+  run` onto litellm/ollama.
 depends_on:
 - target: bin/fw
   type: calls
@@ -13,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

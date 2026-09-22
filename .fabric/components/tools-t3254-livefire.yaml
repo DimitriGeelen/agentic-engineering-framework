@@ -1,10 +1,10 @@
 id: tools/t3254-livefire.sh
 name: t3254-livefire
 type: script
-subsystem: unknown
+subsystem: framework-core
 location: tools/t3254-livefire.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: T-3254 (arc-012) AC5 + AC6 — live-fire and its negative control.
 depends_on:
 - target: bin/fw
   type: calls
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

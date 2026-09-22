@@ -1,10 +1,10 @@
 id: tests/unit/test_doctor_litellm_ollama.bats
 name: test_doctor_litellm_ollama
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/unit/test_doctor_litellm_ollama.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'T-1700 — fw doctor: litellm-proxy + ollama reachability checks.'
 depends_on:
 - target: bin/fw
   type: tests
@@ -14,3 +14,4 @@ depended_by: []
 last_verified: 2026-05-04
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment

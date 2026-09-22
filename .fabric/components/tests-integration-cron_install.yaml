@@ -1,10 +1,10 @@
 id: tests/integration/cron_install.bats
 name: cron_install
 type: script
-subsystem: unknown
+subsystem: tests
 location: tests/integration/cron_install.bats
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Integration tests for fw cron install + fw doctor cron drift check (T-1112/T-1114)
 depends_on:
 - bin/fw
 - target: bin/fw
@@ -15,3 +15,4 @@ depended_by: []
 last_verified: 2026-04-11
 created_by: unknown
 last_enriched: '2026-07-07'
+purpose_source: header-comment
