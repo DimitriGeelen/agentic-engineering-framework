@@ -102,10 +102,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 1012
-  commits: 13
-  files_changed: 6
-  lines_added: 1222
-  lines_removed: 294
+  commits: 14
+  files_changed: 10
+  lines_added: 1487
+  lines_removed: 306
+  footprint_refreshed_at: '2026-09-21T15:13:56Z'
+  footprint_refreshed_by_commit: 41c95e51a
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3397-resolve-t-3396-open-questions-iw-1iw-6-a.md

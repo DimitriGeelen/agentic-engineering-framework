@@ -75,10 +75,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 56059
-  commits: 2
-  files_changed: 5
-  lines_added: 285
-  lines_removed: 8
+  commits: 3
+  files_changed: 8
+  lines_added: 462
+  lines_removed: 19
+  footprint_refreshed_at: '2026-09-20T18:55:49Z'
+  footprint_refreshed_by_commit: da05c3426
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2955-fw-arc-tag-writes-the-deprecated-arcslug.md

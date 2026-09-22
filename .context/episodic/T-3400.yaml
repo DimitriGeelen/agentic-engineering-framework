@@ -1,33 +1,34 @@
 # ============================================================================
-# EPISODIC MEMORY - T-3412: gate-bypass-log command field: head -c 200 splits multi-byte UTF-8 at truncation boundary, corrupting YAML parse
+# EPISODIC MEMORY - T-3400: AC re-baselining: no verb exists for a criterion whose premise is overtaken by events (OBS-432)
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-09-22T06:57:56Z
+# Generated: 2026-09-21T15:04:53Z
 # ============================================================================
 
-task_id: T-3412
-task_name: "gate-bypass-log command field: head -c 200 splits multi-byte UTF-8 at truncation boundary, corrupting YAML parse"
-workflow_type: build
+task_id: T-3400
+task_name: "AC re-baselining: no verb exists for a criterion whose premise is overtaken by events (OBS-432)"
+workflow_type: inception
 enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
 
 # Timeline
-created: 2026-09-22T06:48:23Z
-completed: 2026-09-22T06:57:36Z
+created: 2026-09-21T14:17:53Z
+completed: 2026-09-21T15:04:40Z
 duration_days: 0
 updates_count: 1
+first_commit: 2026-09-21T16:19:10+02:00
+last_commit: 2026-09-21T16:19:10+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  gate-bypass-log command field: head -c 200 splits multi-byte UTF-8 at truncation boundary, corrupting YAML parse
+  triage 5 urgent observations — dismiss 4 resolved, file+scope OBS-432 as inception
 
 # Key outcomes
 outcomes:
-  - 'Both `head -c 200` call sites in `agents/context/check-active-task.sh`'
-  - 'The existing corrupted entry in `.context/working/.gate-bypass-log.yaml`'
-  - 'A regression test pins: a `BASH_CMD` containing a multi-byte UTF-8'
-  - '`python3 -c "import yaml; yaml.safe_load(open(''.context/working/.gate-bypass-log.yaml''))"`'
-  - '(Scope grew during investigation, see Evolution below) A second,'
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
@@ -39,15 +40,17 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-3400-an-acceptance-criterion-whose-premise-is.md'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: '2026-09-21T16:19:10'
+    action: 'T-3400: triage 5 urgent observations — dismiss 4 resolved, file+scope OBS-432 as inception'
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 9 min
+  # Completed successfully in 1 commit(s), 46 min
 
 # Related tasks
 related_tasks:
@@ -56,7 +59,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: []
+tags: [governance, ac-lifecycle, p-010]
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
@@ -64,14 +67,14 @@ metrics:
   #             skipped = git could not be reached from PROJECT_ROOT; the
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
-  wall_clock_minutes: 9
-  commits: 1
-  files_changed: 7
-  lines_added: 774
-  lines_removed: 6
-  footprint_refreshed_at: '2026-09-22T06:58:48Z'
-  footprint_refreshed_by_commit: 0ec223c1e
+  wall_clock_minutes: 46
+  commits: 2
+  files_changed: 4
+  lines_added: 388
+  lines_removed: 16
+  footprint_refreshed_at: '2026-09-21T15:05:00Z'
+  footprint_refreshed_by_commit: b5e3c3f85
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3412-gate-bypass-log-command-field-head--c-20.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3400-an-acceptance-criterion-whose-premise-is.md
 generated_by: context-agent-hybrid

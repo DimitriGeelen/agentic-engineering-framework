@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3398: arc-020 post-GO follow-up: G-060 ladder rework, cv_index durability, T-3338 partial-complete, Q-B
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-21T10:43:09Z
+# ============================================================================
+
+task_id: T-3398
+task_name: "arc-020 post-GO follow-up: G-060 ladder rework, cv_index durability, T-3338 partial-complete, Q-B"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-21T08:52:00Z
+completed: 2026-09-21T10:42:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-21T10:53:24+02:00
+last_commit: 2026-09-21T12:37:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture TermLink's arc-020 cross-check — G-060 ladder gap, cv_index restart defect, T-3338 verified. TermLink queued T-3036 for primitive verification; accepted T-3338 correction. ladder confirmed correct; TermLink narrows cv_index claim, finds hub has no project concept. TermLink adopts project-path model; verified real parse-side elision gap. dispose all IW questions, upgrade recommendation DEFER to GO with evidence
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated — arc-020 located in own repo, TermLink'
+  - 'Assumptions tested — 144 arc-020 tests re-run green; T-3338''s'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3398-arc-020-post-go-follow-up-g-060-ladder-r.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-21T10:53:24'
+    action: 'T-3398: capture TermLink''s arc-020 cross-check — G-060 ladder gap, cv_index restart defect, T-3338 verified'
+  - time: '2026-09-21T10:59:23'
+    action: 'T-3398: TermLink queued T-3036 for primitive verification; accepted T-3338 correction'
+  - time: '2026-09-21T11:25:35'
+    action: 'T-3398: ladder confirmed correct; TermLink narrows cv_index claim, finds hub has no project concept'
+  - time: '2026-09-21T12:31:48'
+    action: 'T-3398: TermLink adopts project-path model; verified real parse-side elision gap'
+  - time: '2026-09-21T12:37:08'
+    action: 'T-3398: dispose all IW questions, upgrade recommendation DEFER to GO with evidence'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 110 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, peer-consult, identity, arc-020]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 110
+  commits: 6
+  files_changed: 3
+  lines_added: 724
+  lines_removed: 13
+  footprint_refreshed_at: '2026-09-21T10:43:16Z'
+  footprint_refreshed_by_commit: 32733907e
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3398-arc-020-post-go-follow-up-g-060-ladder-r.md
+generated_by: context-agent-hybrid

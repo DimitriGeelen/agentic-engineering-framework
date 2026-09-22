@@ -79,10 +79,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 26
-  commits: 5
-  files_changed: 5
-  lines_added: 875
-  lines_removed: 11
+  commits: 7
+  files_changed: 14
+  lines_added: 1245
+  lines_removed: 43
+  footprint_refreshed_at: '2026-09-22T12:31:46Z'
+  footprint_refreshed_by_commit: 26770a6c3
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3432-close-commit-deadlock-under-session-scop.md

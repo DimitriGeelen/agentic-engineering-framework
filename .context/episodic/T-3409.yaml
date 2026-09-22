@@ -63,10 +63,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2
-  commits: 0
-  files_changed: 0
-  lines_added: 0
+  commits: 1
+  files_changed: 5
+  lines_added: 1257
   lines_removed: 0
+  footprint_refreshed_at: '2026-09-21T22:53:10Z'
+  footprint_refreshed_by_commit: da0bd3851
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3409-832-question-aefendpoint-normative-class.md

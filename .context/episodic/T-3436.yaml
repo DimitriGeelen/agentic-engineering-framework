@@ -68,10 +68,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 4
-  commits: 1
-  files_changed: 2
-  lines_added: 406
-  lines_removed: 8
+  commits: 2
+  files_changed: 4
+  lines_added: 500
+  lines_removed: 12
+  footprint_refreshed_at: '2026-09-22T15:33:30Z'
+  footprint_refreshed_by_commit: ac597aae7
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3436-fabricglobstarbats-two-source-level-test.md

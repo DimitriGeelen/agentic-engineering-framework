@@ -76,10 +76,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 9
-  commits: 1
-  files_changed: 9
-  lines_added: 598
-  lines_removed: 9
+  commits: 3
+  files_changed: 13
+  lines_added: 760
+  lines_removed: 20
+  footprint_refreshed_at: '2026-09-22T10:35:54Z'
+  footprint_refreshed_by_commit: ea216c8c4
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3425-read-only-allowlist-gap-sidecar-read-ver.md

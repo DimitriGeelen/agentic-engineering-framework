@@ -78,10 +78,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 40
-  commits: 1
-  files_changed: 11
-  lines_added: 840
-  lines_removed: 5
+  commits: 2
+  files_changed: 13
+  lines_added: 945
+  lines_removed: 10
+  footprint_refreshed_at: '2026-09-22T08:11:29Z'
+  footprint_refreshed_by_commit: 9d121ed8f
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3417-arc-011-sidecar-slice-6-fw-sidecar-statu.md

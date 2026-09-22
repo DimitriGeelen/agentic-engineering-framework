@@ -14,12 +14,12 @@ description: >
   of 3 and weight <=6 (M2). Watchtower and CLI surfaces updated; audit rail for auto-added
   drivers without a reviewer record. Depends on T-3428.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/arc-driver-review.sh, lib/arc.sh, tests/unit/arc_remove_driver_verb.bats, tests/unit/t3429_arc_approve_driver_default_path.bats, tests/unit/t3429_arc_driver_review.bats, tests/unit/t3429_arc_driver_reviewer_record_rail.bats, web/blueprints/arcs.py, web/templates/arc_detail.html]
 related_tasks: []
 arc_id: arc-006
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -33,8 +33,8 @@ arc_id: arc-006
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T10:41:00Z
-last_update: 2026-09-22T15:44:04Z
-date_finished:
+last_update: 2026-09-22T18:15:42Z
+date_finished: 2026-09-22T18:15:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -427,3 +427,20 @@ verify on the operator's behalf.
 
 ### 2026-09-22T15:44:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b479689b
+- **Timestamp:** 2026-09-22T18:16:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **skip-as-pass** (severe, deterministic) @ Verification:line 11
+     - evidence: `bin/fw arc review-driver arc-020 identity-fidelity --dry-run > /tmp/.t3429six.out 2>&1; grep -q "(a) scorable       FAIL" /tmp/.t3429six.out`
+
+### 2026-09-22T18:15:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

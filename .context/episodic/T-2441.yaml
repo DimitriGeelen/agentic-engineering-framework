@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 131871
-  commits: 2
-  files_changed: 6
-  lines_added: 504
-  lines_removed: 1
+  commits: 3
+  files_changed: 8
+  lines_added: 671
+  lines_removed: 9
+  footprint_refreshed_at: '2026-09-20T20:20:33Z'
+  footprint_refreshed_by_commit: ef0f28f86
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2441-onboard-opt505-ring20-site-to-aef--boots.md

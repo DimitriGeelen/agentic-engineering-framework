@@ -4279,3 +4279,83 @@ decisions:
     date: 2026-09-22
     task: T-3433
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-614
+    decision: "EWCR §3 Q-01 — Arc 0 belongs in the AEF repository. Answered, no longer a proposal."
+    scope: project
+    date: 2026-09-22
+    task: T-3437
+    rationale: "The register's proposed disposition was 'Yes, recommend confirming at arc-start'. Arc-019 has now run to 16-of-17 work-completed, and every landed member wrote only to AEF-owned surfaces named in architecture §5.1: .fabric cards (T-3350/T-3351/T-3352), docs/research/executable-workflow/ contracts and attestations (T-3385/T-3386/T-3387/T-3388/T-3393/T-3394), and .tasks/. No member required an edit to the Workflow Designer repository, which §5.1 forbids. The question is closed by execution, not by argument."
+    alternatives_rejected:
+      - "Leaving Q-01 open until arc close: the evidence that answers it is already complete and re-openable only by a scope change"
+      - "which is a Sovereign act and would be recorded as such."
+
+  - id: D-615
+    decision: "EWCR §3 Q-02 — the Component Fabric now supports the stated boundaries for Arc-0 scope; fence 1 passes. The register's 'Not yet, 45.8% unclassified' is superseded by measurement."
+    scope: project
+    date: 2026-09-22
+    task: T-3437
+    rationale: "Measured live 2026-09-22 against .fabric/components (1332 cards): 0 cards carry subsystem: Unknown. At ingestion (2026-08-25) the figure was 512 of 1117 (45.8%); at the T-3394 attestation (2026-09-19) it was 544 with a 0/0 write-set intersection. The 544 were reclassified corpus-wide — 524 now read subsystem: tests, 129 tests-playwright. The discriminating control (tools/ewcr-arc0-coverage-check.py, the leg that exists because a zero overlap is meaningless if the write set has no cards at all) runs green today: lib 183/186 98.4%, web 162/164 98.8%, agents 143/143, bin 9/9, policy 11/11, with 0 Unknown on every row. High coverage plus zero Unknown is the shape that makes the zero a measured clear rather than an empty scan. Caveat recorded rather than hidden: the leg-1 script itself now exits 2 REFUSED on that same zero (OBS-476, T-3438), so this decision rests on a direct re-derivation from the cards plus the leg-2 control, not on the leg-1 tool's own output."
+    alternatives_rejected:
+      - "Holding Q-02 at 'not yet' on the strength of the tool's refusal: the refusal is a stale guard premise"
+      - "not a measurement"
+      - "and treating a false red as evidence would be the mirror of the false green the programme exists to eliminate."
+
+  - id: D-616
+    decision: "EWCR §3 Q-07 (AEF half) — .context/dispatches.jsonl is a reusable ledger SHAPE, not a ledger, and AEF will not adopt it as one without the Sovereign policy half."
+    scope: project
+    date: 2026-09-22
+    task: T-3437
+    rationale: "C2 measured the substrate: dispatches.jsonl and dispatch-outcomes.jsonl are append-only JSONL joined by fw outcome read, today at 1339 dispatch rows and 1838 outcome events per CLAUDE.md §Execution Model. What the architecture (§7.3) asks for and this substrate does not have: signing, retention policy, redaction policy, deterministic fold. Those four are not implementation detail — signing and redaction are operator policy about what is provable and what is erasable, so the AEF half of Q-07 cannot close on its own. The AEF-decidable part is decided here: the row shape and the two-file dispatch/outcome join are the reuse candidate, and any Arc-1 ledger design starts from them rather than green-field. The policy half stays a Sovereign question (see handback). Falsifier 4 of §6 also makes part of this a PEER question — if 0503-codex-cli-playground intends this substrate to BE the ledger, Q-07 narrows sharply; that has never been asked and is recorded as an outbound peer question."
+    alternatives_rejected:
+      - "Closing Q-07 entirely by declaring dispatches.jsonl the ledger: that is the reuse-must-not-be-assumed error the register names in its own C2 verdict"
+      - "and it would silently decide retention and redaction policy on an agent's authority."
+
+  - id: D-617
+    decision: "reuse `lib/bvp-scorability.sh`'s predicate verbatim — a driver is scorable when a"
+    scope: project
+    date: 2026-09-22
+    task: T-3429
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-618
+    decision: "`if s is entry: continue` when scanning `scoped_drivers[]`."
+    scope: project
+    date: 2026-09-22
+    task: T-3429
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-619
+    decision: "run all six through `review-driver --dry-run`, record that each FAILs check (a),"
+    scope: project
+    date: 2026-09-22
+    task: T-3429
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-620
+    decision: "the reviewer runs whenever neither `--i-am-human` nor `--from-watchtower` is given,"
+    scope: project
+    date: 2026-09-22
+    task: T-3429
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-621
+    decision: "review-then-approve one driver at a time, re-reading `scoped_drivers[]` each pass."
+    scope: project
+    date: 2026-09-22
+    task: T-3429
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-622
+    decision: "`/arcs/<slug>` reads the persisted `reviewer:` block and shows PASS / FAIL (with the"
+    scope: project
+    date: 2026-09-22
+    task: T-3429
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-623
+    decision: "accept it, and verify rather than assert. `closed_at: null` becomes `closed_at:` and"
+    scope: project
+    date: 2026-09-22
+    task: T-3429
+    rationale: "Auto-captured from task file on completion"
