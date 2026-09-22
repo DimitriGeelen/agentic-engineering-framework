@@ -150,7 +150,9 @@ _run_push_hook() {
     _hold_lock_for 60
     FW_PREPUSH_LOCK_WAIT=2 _run_push_hook
     [ "$status" -eq 1 ]
-    [[ "$output" == *"FW_PREPUSH_LOCK_WAIT=300 git push"* ]]
+    # T-3421: the suggested longer wait moved 300 -> 600 once the default itself
+    # became ~365s (derived from the measured structure audit).
+    [[ "$output" == *"FW_PREPUSH_LOCK_WAIT=600 git push"* ]]
     [[ "$output" == *"FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1 git push"* ]]
     # and the Tier-0 last resort is still named, but as last resort
     [[ "$output" == *"--no-verify"* ]]
@@ -228,8 +230,13 @@ _run_push_hook() {
 
 # ── 6. source pins ───────────────────────────────────────────────────────────
 
-@test "t3297 (i) the default window is 90s and lives in the hook source" {
-    grep -q 'FW_PREPUSH_LOCK_WAIT:-90' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh"
+@test "t3297 (i) the default window is derived from the measured audit (T-3421); 90s survives only as the floor" {
+    # T-3421 replaced the asserted 90s constant with a measurement-derived default
+    # (lib/prepush-lock-wait.sh). The pin moves with it: the hook must source the
+    # derivation, and 90 must remain the floor, not the default.
+    grep -q 'prepush-lock-wait.sh' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh"
+    ! grep -q 'FW_PREPUSH_LOCK_WAIT:-90' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh"
+    grep -q '^FW_PREPUSH_LOCK_WAIT_FLOOR=90$' "$FRAMEWORK_ROOT/lib/prepush-lock-wait.sh"
 }
 
 @test "t3297 (j) the bypass check lives INSIDE the exit-75 branch only" {

@@ -1134,8 +1134,30 @@ _t3297_run_audit
 # project). Waiting a bounded window converts most contention hits into a short
 # pause instead of a failed push, without weakening the no-false-pass rule:
 # window exhausted → the same BLOCK as before, verbatim in effect.
-_t3297_wait="${FW_PREPUSH_LOCK_WAIT:-90}"
-case "$_t3297_wait" in ''|*[!0-9]*) _t3297_wait=90 ;; esac
+# T-3421: the 90s default decayed the same way T-3297's "minute or two" did —
+# the structure audit this gate runs measures ~292s in the timing ledger, so a
+# 90s window expired before the audit it waited for could finish, and every
+# contended push failed and re-ran a fresh 292s audit against the next pusher.
+# The default is now DERIVED from the last measured structure duration
+# (lib/prepush-lock-wait.sh: 1.25x, clamped [90,600], 360 without a ledger).
+# An explicit FW_PREPUSH_LOCK_WAIT still wins, exactly as before.
+_t3297_wait_source="FW_PREPUSH_LOCK_WAIT"
+if [ -n "${FW_PREPUSH_LOCK_WAIT:-}" ]; then
+    _t3297_wait="$FW_PREPUSH_LOCK_WAIT"
+else
+    _t3297_wait=""
+    if [ -f "$FRAMEWORK_ROOT/lib/prepush-lock-wait.sh" ]; then
+        # shellcheck source=/dev/null
+        . "$FRAMEWORK_ROOT/lib/prepush-lock-wait.sh"
+        _t3297_wait="$(fw_prepush_lock_wait_default "$PROJECT_ROOT" 2>/dev/null)"
+        _t3297_wait_source="derived from .context/audits/full-audit-timing.yaml (T-3421)"
+    fi
+    if [ -z "$_t3297_wait" ]; then
+        _t3297_wait=360
+        _t3297_wait_source="fallback default (T-3421)"
+    fi
+fi
+case "$_t3297_wait" in ''|*[!0-9]*) _t3297_wait=360; _t3297_wait_source="fallback default (T-3421)" ;; esac
 _t3297_lock_file="$PROJECT_ROOT/.context/locks/audit.lock"
 # Probe mirrors audit.sh's own arm selection: flock when available, else the
 # fallback lock file's existence. The flock arm never unlinks the lock file
@@ -1237,14 +1259,16 @@ if [ $audit_exit -eq 75 ]; then
         echo "This is not an audit failure. No verdict was produced, so the gate has"
         echo "nothing to pass you on."
         echo ""
-        echo "The gate waited ${_t3297_waited:-0}s of its ${_t3297_wait:-0}s window (FW_PREPUSH_LOCK_WAIT)"
+        echo "The gate waited ${_t3297_waited:-0}s of its ${_t3297_wait:-0}s window (${_t3297_wait_source:-FW_PREPUSH_LOCK_WAIT})"
         echo "for the lock to free. Cron audits can stack when a run overlaps the next"
-        echo "trigger, so the lock may stay held for many minutes (T-3297)."
+        echo "trigger, so the lock may stay held for many minutes (T-3297); the window"
+        echo "is sized from the last measured structure audit, so more than one queued"
+        echo "pusher can still outlast it (T-3421)."
         echo "  Check: ls -l $PROJECT_ROOT/.context/locks/audit.lock; pgrep -af audit.sh"
         echo ""
         echo "What to do — each command works as-is from this blocked state:"
         echo "  1. Wait for the running audit(s) to finish, then push again."
-        echo "  2. Wait longer in-gate:  FW_PREPUSH_LOCK_WAIT=300 git push"
+        echo "  2. Wait longer in-gate:  FW_PREPUSH_LOCK_WAIT=600 git push"
         echo "       (seconds to wait for the lock; 0 disables the wait)"
         echo "  3. Tier-2 bypass, CONTENTION ONLY:  FW_PUSH_SKIP_AUDIT_ON_CONTENTION=1 git push"
         echo "       Applies only when the audit could not run (exit 75) — a real audit"
