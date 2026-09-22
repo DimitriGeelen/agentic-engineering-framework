@@ -15,12 +15,20 @@ import pytest
 
 @pytest.fixture()
 def mods(tmp_path, monkeypatch):
-    monkeypatch.setenv("FRAMEWORK_ROOT", str(tmp_path))
+    project = tmp_path / "999-Agentic-Engineering-Framework"
+    project.mkdir(exist_ok=True)
+    monkeypatch.setenv("FRAMEWORK_ROOT", str(project))
+    monkeypatch.setenv("FW_SIDECAR_HUB_ID", "cacc73ea32b121dd")
+    monkeypatch.setenv("FW_SIDECAR_HOST", "host107.ring20.lan")
+    monkeypatch.delenv("FW_SIDECAR_AGENT_ID", raising=False)
+    monkeypatch.delenv("FW_FOCUS_SESSION_KEY", raising=False)
+    monkeypatch.delenv("TERMLINK_SESSION", raising=False)
     import lib.sidecar.outbox as outbox
+    import lib.sidecar.circuit as circuit
     import lib.sidecar.delivery as delivery
     import lib.sidecar.inbox as inbox
     import lib.sidecar.e2e as e2e
-    for m in (outbox, delivery, inbox, e2e):
+    for m in (outbox, circuit, delivery, inbox, e2e):
         importlib.reload(m)
     return e2e, outbox, inbox
 
@@ -248,3 +256,46 @@ def test_report_round_trips_and_renders(mods, tmp_path):
     assert back["verdict"] == "PASS" and back["run_id"] == "abc12345"
     text = e2e.render(back)
     assert "[PASS] H1" in text and "[PASS] H6" in text and "verdict: PASS" in text
+
+
+# ── T-3433: the record names the addresses, and the alias still counts ──────
+
+def test_report_records_every_topic_the_run_touched(mods):
+    e2e, outbox, inbox = mods
+    cfg = _cfg(e2e)
+    report = Fakes(e2e, outbox, inbox, cfg).run()
+
+    topics = report["topics"]
+    assert topics["responder"][0] == inbox.inbox_topic(cfg.responder)
+    assert topics["responder"][0].startswith("inbox:cacc73ea32b121dd/")
+    assert topics["sender"][1] == f"sidecar:{cfg.sender}"   # the read alias
+    assert cfg.run_id in topics["sender"][0]
+
+
+def test_an_answer_on_the_legacy_alias_still_satisfies_h4(mods):
+    """A peer that has not switched yet replies on sidecar:<sender>; the
+    transition alias is exactly what makes that reply arrive rather than
+    vanish, so the hop must see it."""
+    e2e, outbox, inbox = mods
+    cfg = _cfg(e2e, peer="010-termlink")
+    fakes = Fakes(e2e, outbox, inbox, cfg)
+
+    def legacy_only(topic, cursor=0, limit=200):
+        if topic == f"sidecar:{cfg.sender}":
+            return [fakes._env(0, cfg.responder, cfg.conversation_id, cfg.ack, "ack-1")]
+        if topic == inbox.inbox_topic(cfg.responder):
+            return [fakes._env(0, cfg.sender, cfg.conversation_id, cfg.nonce, fakes.cmid)]
+        return []
+
+    fakes.hub_messages = legacy_only
+    report = fakes.run()
+    assert report["hops"]["H4"]["ok"]
+    assert f"sidecar:{cfg.sender}" in report["hops"]["H4"]["detail"]
+
+
+def test_peer_consult_body_names_the_new_topic_and_the_alias(mods):
+    e2e, outbox, inbox = mods
+    cfg = _cfg(e2e, peer="010-termlink")
+    body = cfg.consult_body()
+    assert inbox.inbox_topic(cfg.sender) in body
+    assert f"sidecar:{cfg.sender}" in body
