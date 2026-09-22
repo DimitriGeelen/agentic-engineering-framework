@@ -14,7 +14,7 @@ description: >
   of 3 and weight <=6 (M2). Watchtower and CLI surfaces updated; audit rail for auto-added
   drivers without a reviewer record. Depends on T-3428.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -32,7 +32,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T10:41:00Z
-last_update: '2026-09-22T10:45:18Z'
+last_update: 2026-09-22T15:44:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,22 +72,104 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-22T15:44:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3429: arc-scoped value drivers are created and added by default; an external value-driver reviewer replaces the operator-approval step (operator ruling 2026-09-22; depends on T-3428 scoring specs)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Operator ruling 2026-09-22 (given twice, verbatim): "When we add it, I want us per default
+take out the restriction that user operator has to approve the Arc value drivers. Per default
+just create them and add them. If needed let's institute an external value driver reviewer if
+we don't have it, to ensure we have enough quality." This is a Sovereign decision on the M6/D8
+§ACD gate in `lib/arc.sh:arc_approve_driver` (`_arc_approve_driver_acd_gate`): the gate stops
+being the default path and becomes the override path. Quality moves from the operator to a
+mechanical reviewer that can be audited.
+
+Surfaces today: `lib/arc.sh:1234` (`arc_approve_driver`, dedup at :1306, cap 3 / weight ≤6),
+`web/blueprints/arcs.py:959` (`/api/arc/<id>/approve-driver` shells `--from-watchtower`),
+`agents/audit/audit.sh:3396` (`check_bvp_driver_scorability`, T-3428),
+`fw bvp driver --validate-scoring FILE` (T-3428), `policy/driver-scoring-example.yaml`,
+CLAUDE.md §Arc-Scoped Driver Suggestion Workflow steps 4–5 and §Arc Action Handoffs table.
+
+Reviewer = static check, no model call, so its verdict is reproducible and re-runnable:
+(a) the proposed entry carries a `scoring:` spec (inline under the entry, or a
+`scoring_file:` path) that passes the T-3428 validator; (b) its name/id does not duplicate
+D1–D4, any `free_drivers[]` entry in `policy/value-drivers.yaml`, or an existing
+`scoped_drivers[]` entry on the arc (case-insensitive, whitespace/hyphen-normalised);
+(c) the rationale names at least one of D1–D4 it distinguishes from and is ≥ 60 chars (D6).
+Verdict written back onto the proposed entry as `reviewer: {verdict, checks, ts, reviewer_id}`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw arc review-driver <arc> "<name>"` runs checks (a)(b)(c), prints one line per check
+      with PASS/FAIL and the reason, exits 0 on all-pass and 1 otherwise, and writes the
+      `reviewer:` block onto the matching `proposed_scoped_drivers[]` entry (`--dry-run`
+      writes nothing). `--all` reviews every proposed entry on the arc.
+- [ ] `fw arc approve-driver <arc> "<name>"` with neither `--i-am-human` nor
+      `--from-watchtower` no longer refuses: it runs the reviewer and, on PASS, appends the
+      entry to `scoped_drivers[]` with `approved_by: reviewer:<reviewer_id>` and the
+      `reviewer:` block copied in; on FAIL it refuses naming the failed check(s). Cap 3 and
+      weight ≤ 6 (M2) and the T-1979 dedup still apply on this path. `--i-am-human` /
+      `--from-watchtower` still approve without the reviewer, recording `approved_by: human`.
+- [ ] `fw arc approve-driver <arc> --all-reviewed` approves every proposed entry that passes
+      review, in proposal order, stopping at the cap with a message naming what it skipped;
+      `--none` keeps its existing human gate unchanged (a negative ruling stays sovereign).
+- [ ] The estimator/agent path that writes `proposed_scoped_drivers:` (Workflow A step 3,
+      `policy/prompts/bvp-driver-session.md` and CLAUDE.md §Arc-Scoped Driver Suggestion
+      Workflow steps 4–5) is rewritten so the default next step is `--all-reviewed`, not
+      "surface to the human"; §Arc Action Handoffs table gains the reviewer row.
+- [ ] Audit rail `check_arc_driver_reviewer_record` in `agents/audit/audit.sh`: WARN for any
+      in-progress arc `scoped_drivers[]` entry whose `approved_by` starts with `reviewer:` but
+      has no `reviewer:` block or whose block says `verdict: fail`; PASS line with the count
+      otherwise; silent when no arc has scoped drivers. Mirrored in `fw doctor`.
+- [ ] Watchtower `/arcs/<slug>` proposed-driver table shows the reviewer verdict per row
+      (PASS / FAIL with failed check names / not reviewed) and the Approve button posts through
+      the reviewer path; `bin/fw watchtower restart` run and `bin/fw watchtower current` exits 0.
+- [ ] Tests: bats covering (a)(b)(c) each failing on a crafted fixture and passing on a valid
+      one, the default approve path, `--all-reviewed` stopping at the cap, `--none` still
+      gated, and the audit rail WARN/PASS/silent legs; `TEST_TEMP_DIR` set in setup;
+      `tests/unit/*arc*` and `tests/unit/*bvp*` stay green.
+- [ ] The six drivers the audit names as unscorable (identity-fidelity, provisioning-safety,
+      Discard fidelity, Loop closure (conditional), unknown-input-safety,
+      first-run-recoverability) are run through `review-driver --dry-run`; each FAILs check (a)
+      as expected, and the task's `## Decisions` records that writing their scoring specs is
+      per-arc follow-up work, one task per arc, not done here.
+- [ ] `FW_VENDOR_ONLY=... bin/fw vendor self` run for every touched file under lib/ agents/
+      web/ policy/ and `bin/fw vendor self --check` clean; new files registered with
+      `fw fabric register`; `arc_id: arc-006` set in this task's frontmatter.
 
 ### Human
+- [ ] [REVIEW] The reviewer verdict column on `/arcs/<slug>` reads at a glance and the Approve
+      button's post-review outcome is understandable without opening the CLI
+      **Steps:**
+      1. Open `$(cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url)/arcs/arc-011`
+      2. Look at the proposed-driver table: each row shows PASS, FAIL (with the failed check
+         names) or "not reviewed"
+      3. Click Approve on a PASS row, then on a FAIL row
+      **Expected:** the PASS row moves to scoped drivers with `approved_by: reviewer:…`; the
+      FAIL row stays proposed and the page names the failed check(s)
+      **If not:** note which row and what the page said; the CLI equivalent is
+      `cd /opt/999-Agentic-Engineering-Framework && bin/fw arc review-driver arc-011 "<name>"`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -342,3 +424,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3429-arc-scoped-value-drivers-are-created-and.md
 - **Context:** Initial task creation
+
+### 2026-09-22T15:44:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
