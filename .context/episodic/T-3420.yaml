@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3420: arc-011 sidecar slice 8: fw audit rail — WARN on stuck or UNKNOWN sidecar deliveries
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T08:27:43Z
+# ============================================================================
+
+task_id: T-3420
+task_name: "arc-011 sidecar slice 8: fw audit rail — WARN on stuck or UNKNOWN sidecar deliveries"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T08:01:51Z
+completed: 2026-09-22T08:27:25Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T10:08:34+02:00
+last_commit: 2026-09-22T10:08:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw audit rail — WARN on UNKNOWN or expired-unswept sidecar deliveries
+
+# Key outcomes
+outcomes:
+  - '`check_sidecar_ledger` in `agents/audit/audit.sh` (structure section, after `check_gitignore_register`): WARNs when `UNKNOWN > 0` (remedy: OBS-447 ruling, sidecar never re-sends), WARNs when `expired_unswept > 0` (remedy: `fw cron status sidecar-sweep-5m` + `fw sidecar sweep`), PASS line when both are zero; silent when `.context/sidecar/outbox/` does not exist (rc 1 from the fact function); a present-but-unreadable ledger is its own WARN, not a zero'
+  - 'The check reads our own ledger only, via `lib/sidecar-audit.sh:fw_sidecar_ledger_facts` → `fw sidecar status --json` — no hub call; pinned by bats test 5 (`awk`-extracted function body contains zero `termlink` tokens; the lib''s code lines likewise)'
+  - '`tests/unit/sidecar_audit_rail.bats` — 5 tests against a fixture ledger under a temp root: never-used (silent, rc 1, **and the call does not create the outbox** — `status` mkdirs it, so the existence test must run first), clean (zeros), UNKNOWN>0 with latest-row-wins, expired>0 with a fresh STORED left alone, no-termlink token. **5/5 ok, 0 skips**'
+  - 'Live: `bin/fw audit --section structure` (attempt 10 — the first nine hit the audit lock, see T-3421) emitted `[PASS] Sidecar ledger: 6 consult(s), 6 delivered, 0 in flight, 0 UNKNOWN, 0 expired-unswept`; `AUDIT-SCOPE: fails=0 ref=0 worktree=0`, rc 1 (pre-existing WARNs, unchanged class — this slice adds a PASS line only)'
+  - '`lib/sidecar-audit.sh` registered in the fabric (`.fabric/components/lib-sidecar-audit.yaml`, type script, subsystem framework-core); vendored copies synced via `FW_VENDOR_ONLY="agents/audit/audit.sh lib/sidecar-audit.sh" bin/fw vendor self` (VERSION 1.6.757); `bin/fw vendor self --check` → "in sync with source"'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/sidecar-audit.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - '.fabric/components/lib-sidecar-audit.yaml'
+  - 'lib/sidecar-audit.sh'
+  - '.tasks/active/T-3420-arc-011-sidecar-slice-8-fw-audit-rail--w.md'
+  - 'tests/unit/sidecar_audit_rail.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T10:08:34'
+    action: 'T-3420: fw audit rail — WARN on UNKNOWN or expired-unswept sidecar deliveries'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, peer-consult, sidecar, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25
+  commits: 1
+  files_changed: 9
+  lines_added: 697
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3420-arc-011-sidecar-slice-8-fw-audit-rail--w.md
+generated_by: context-agent-hybrid
