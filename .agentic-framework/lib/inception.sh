@@ -130,9 +130,15 @@ do_inception_start() {
         local _log_file="${PROJECT_ROOT}/.context/working/.gate-bypass-log.yaml"
         local _ts
         _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        # T-3412: $name is free text (inception title) and can contain a single
+        # quote, the escape character for this single-quoted YAML scalar. Double
+        # it per the YAML rule (same idiom as T-1861 / create-task.sh's sibling
+        # logger) instead of interpolating raw — sibling bug found while fixing
+        # agents/task-create/create-task.sh:_log_recommendation_bypass.
+        local _t3412_esc_name="${name//\'/\'\'}"
         {
             echo "- timestamp: '$_ts'"
-            echo "  task: '<filing: $name>'"
+            echo "  task: '<filing: $_t3412_esc_name>'"
             echo "  flag: '--i-am-human'"
             echo "  caller: 'do_inception_start'"
             echo "  reason: 'filing-time recommendation gate (T-1715/T-1716)'"

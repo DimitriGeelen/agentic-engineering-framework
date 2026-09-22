@@ -690,7 +690,11 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
                 echo "  flag: '$_bypass_mechanism'"
                 echo "  caller: 'check-active-task focus-drift'"
                 echo "  target: '$_t1861_esc_target'"
-                echo "  command: '$(echo "$BASH_CMD" | head -c 200 | tr -d "'")'"
+                # T-3412: head -c 200 truncates on a raw BYTE offset, which can split
+                # a multi-byte UTF-8 sequence (e.g. a smart quote in a commit -m
+                # message) in half and corrupt this file's YAML parse. Re-decode with
+                # errors="ignore" so an incomplete trailing sequence is dropped, not kept.
+                echo "  command: '$(printf '%s' "$BASH_CMD" | head -c 200 | python3 -c 'import sys; sys.stdout.write(sys.stdin.buffer.read().decode("utf-8", "ignore"))' 2>/dev/null | tr -d "'")'"
             } >> "$BYPASS_LOG" 2>/dev/null || true
             echo "NOTE: focus-drift override ($_bypass_mechanism) — target $TARGET_TASK ≠ focus $CURRENT_TASK. Logged." >&2
         elif _under_agent_control; then
@@ -857,7 +861,9 @@ case "$TASK_STATUS" in
                 echo "  flag: 'FW_ALLOW_PARTIAL_COMPLETE_EDIT'"
                 echo "  caller: 'check-active-task:partial-complete-edit'"
                 if [ -n "${BASH_CMD:-}" ]; then
-                    echo "  command: '$(printf '%s' "$BASH_CMD" | head -c 200 | tr -d "'")'"
+                    # T-3412: see the matching comment at the focus-drift logger above —
+                    # same fixed-byte-truncation corruption, same fix.
+                    echo "  command: '$(printf '%s' "$BASH_CMD" | head -c 200 | python3 -c 'import sys; sys.stdout.write(sys.stdin.buffer.read().decode("utf-8", "ignore"))' 2>/dev/null | tr -d "'")'"
                 else
                     echo "  file: '${FILE_PATH:-}'"
                 fi
