@@ -1,18 +1,18 @@
 ---
-id: T-3421
-name: "pre-push audit lock wait (90s) is shorter than the structure audit it waits
-  for (~292s): every contended push fails and re-runs the audit"
+id: T-3411
+name: "Drive 5 rounds of Review → procAsFit through TermLink, each round fed the previous
+  result"
 description: >
-  pre-push audit lock wait (90s) is shorter than the structure audit it waits for
-  (~292s): every contended push fails and re-runs the audit
+  Drive 5 rounds of Review → procAsFit through TermLink, each round fed the previous
+  result
 
 status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [termlink, dispatch, value-review, sequence]
 components: []
-related_tasks: []
+related_tasks: [T-3407, T-3406]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-22T08:14:13Z
-last_update: '2026-09-22T08:15:20Z'
+created: 2026-09-22T05:35:10Z
+last_update: '2026-09-22T05:37:39Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -37,17 +37,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-22T08:15:11Z'
+  - ts: '2026-09-22T05:37:39Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
+      (workflow:build); effort=8 (lines=297,acs=9)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-22T08:15:20Z'
+  - ts: '2026-09-22T05:37:39Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -56,57 +56,56 @@ bvp_scores_proposed:
       D4: 2
       F-RECALL: 2
       F-AUTONOMY: 0
-      F3: 0
+      F3: 1
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3421: pre-push audit lock wait (90s) is shorter than the structure audit it waits for (~292s): every contended push fails and re-runs the audit
+# T-3411: Drive 5 rounds of Review → procAsFit through TermLink, each round fed the previous result
 
 ## Context
 
-T-3297 added a bounded wait to the pre-push audit gate so that lock contention
-becomes "a short pause instead of a failed push". Its default is 90 seconds
-(`FW_PREPUSH_LOCK_WAIT`, `agents/git/lib/hooks.sh:1137`). The audit it waits
-for is `--section structure`, which the framework's own timing ledger
-(`.context/audits/full-audit-timing.yaml`, T-3127) measures at **292 seconds**.
-So the wait is shorter than the thing it waits for by a factor of three, and
-the same premise decay T-3297 corrected ("finishes within a minute or two")
-has happened again one level down.
+Operator instruction: use TermLink to run a two-prompt sequence — (1) the
+Project Value Review prompt, (2) the procAsFit Mandate — five times, in order,
+each prompt acting on the previous result, and **not** executed by this
+session outside the sequence. This session is the driver; TermLink workers
+run the prompts.
 
-**Measured today, 2026-09-22.** Five concurrent writers (this session, the
-SEQ-T3411 driver's workers, the 30-minute cron audit). The r2-procasfit worker
-hit "another audit holds the lock" 10 times; r3-procasfit 8 times; this
-session's own push loops 9, 7, and 9 times across three pushes. Each hit is a
-90 s wait, a failed push, and — on retry — a fresh 292 s structure audit that
-itself holds the lock against everyone else. The queue is self-amplifying:
-every retry lengthens the lock for the next pusher.
+**Constraints carried in from tonight's own findings.** Sequential, one worker
+at a time: two autonomous writers on one tree is the live G-083 instance
+recorded earlier. Workers write results to repo paths, never `/tmp` (T-818).
+The run record rides on TermLink so it survives a context reset (Mandate
+binding). The Review prompt has `[ASK]` gates and a Phase 6 that executes only
+human-approved items; with no human in the loop the worker must record each
+question in its report and proceed on stated defaults, and must **stop at
+Phase 5** — Phase 6 is human-approved execution and is not delegable to an
+autonomous run ("Research is not authorization"). The procAsFit round then
+does governed work *informed by* the review's report (its evidence, ADD
+candidates, Sovereign questions), selecting through the Mandate's own arc/BVP
+gates — it does not execute the review's unapproved DELETE/REFACTOR list.
 
-**Fix shape.** Make the wait long enough to outlast one structure audit, and
-derive it from the measurement rather than asserting it: default =
-1.25 × the last measured `structure` seconds from the timing ledger, clamped
-to [90, 600]; 360 s when no ledger exists. An explicit `FW_PREPUSH_LOCK_WAIT`
-still wins. The block message quotes the derived number. Nothing about the
-no-false-pass rule changes: window exhausted → the same BLOCK.
-
-**Not in scope.** Reusing a recent verdict instead of re-running (a cache keyed
-on tree hash) — a larger change with its own correctness questions; named in
-Evolution as the next step if queueing alone is not enough.
+**Prior art found, not reused.** `/tmp/tl-dispatch/vr24-g*…vr27-g5` are an
+external driver's workers reviewing a different repo in 27 rounds with five
+parallel gatherers, later rounds re-checking earlier rounds' "Expected
+effect" predictions. Right shape for feeding results forward; not this repo's
+code. This driver is sequential by instruction and by G-083.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/prepush-lock-wait.sh:fw_prepush_lock_wait_default <project_root>` prints the derived wait: ceil(1.25 × `structure` seconds) from `.context/audits/full-audit-timing.yaml`, clamped to [90, 600]; 360 when the ledger is absent, non-numeric, or has no `structure` entry. Live on this repo: **365** (from 292)
-- [x] `agents/git/lib/hooks.sh` sources the lib and uses the derived default when `FW_PREPUSH_LOCK_WAIT` is unset; an explicit value still overrides; the block message quotes the window and its source (`derived from .context/audits/full-audit-timing.yaml (T-3421)` / `fallback default` / `FW_PREPUSH_LOCK_WAIT`); the "wait longer" suggestion moved 300 → 600. Live hook reinstalled (`fw git install-hooks --force`), `.git/hooks/pre-push` carries the derivation (3 references)
-- [x] `tests/unit/t3421_prepush_lock_wait.bats` — 7 tests: 292→365, absent→360, 10→90 (floor), 1000→600 (cap), non-numeric→360, no-structure-entry→360 (does not borrow another section's number), and a source pin that the hook wires the derivation and keeps the env override. **7/7 ok, 0 skips**
-- [x] `tests/unit/t3297_prepush_lock_wait.bats` still green — **11/11** — with two deliberate pin updates: (b) suggestion literal 300→600, (i) "default is 90" → "default is derived; 90 is the floor"
-- [x] RCA filled (bug-class: title matches "fails"), including the round-3 worker's counter-evidence on what a longer window does *not* fix; `lib/prepush-lock-wait.sh` + the bats file registered in the fabric; vendored copies synced via `FW_VENDOR_ONLY` (VERSION 1.6.762), `bin/fw vendor self --check` clean
+- [ ] The two prompts are stored verbatim as tracked files under `tools/prompt-sequence/`; the driver fills `{{SCOPE}}`/`{{PURPOSE_SOURCE}}`/`{{EXTERNAL_DATA}}`/`{{BUDGET}}` at dispatch time — the stored text is not hand-edited
+- [ ] A driver script runs round r = 1..5 as: dispatch Review worker → wait → dispatch procAsFit worker → wait, strictly sequential, and feeds round r's Review report path and procAsFit handback path into round r+1's Review prompt as prior context
+- [ ] Each worker is told to write its result to a repo path — `docs/reports/SEQ-T3411/r<N>-review.md` and `r<N>-procasfit-handback.md` — and the driver refuses to start the next step if that file is absent (a missing result is a failed step, not an empty input)
+- [ ] The Review worker's prompt explicitly instructs: answer every `[ASK]` by recording the question and proceeding on the stated defaults; stop at Phase 5; do not execute Phase 6
+- [ ] The run record is posted per step to TermLink topic `seq:T-3411` (round, step, worker, result path, status), so sequence state is recoverable from the hub after a context reset
+- [ ] `--dry-run` prints the ten dispatches with prompt byte sizes and result paths and dispatches nothing
+- [ ] The sequence is launched for real; round 1's Review worker is observed via `termlink list`, and the first completed step appears on `seq:T-3411` — recorded here
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,18 +139,6 @@ Evolution as the next step if queueing alone is not enough.
 -->
 
 ## Verification
-
-timeout 300 bats tests/unit/t3421_prepush_lock_wait.bats > /tmp/.t3421-bats 2>&1 && ! grep -q "^not ok" /tmp/.t3421-bats
-test "$(grep -c '# skip' /tmp/.t3421-bats)" -eq 0
-timeout 600 bats tests/unit/t3297_prepush_lock_wait.bats > /tmp/.t3421-t3297 2>&1 && ! grep -q "^not ok" /tmp/.t3421-t3297
-test "$(grep -c '# skip' /tmp/.t3421-t3297)" -eq 0
-bash -n agents/git/lib/hooks.sh && bash -n lib/prepush-lock-wait.sh
-# The derived default on this repo is an integer in [90,600] (invariant, not the live number — T-3326).
-bash -c 'source lib/prepush-lock-wait.sh; fw_prepush_lock_wait_default "$PWD"' > /tmp/.t3421-wait 2>&1 && grep -qE '^[0-9]+$' /tmp/.t3421-wait && test "$(cat /tmp/.t3421-wait)" -ge 90 && test "$(cat /tmp/.t3421-wait)" -le 600
-# The LIVE hook (not just the source) carries the derivation — install-hooks was re-run.
-grep -q "prepush-lock-wait.sh" .git/hooks/pre-push
-test -f .fabric/components/lib-prepush-lock-wait.yaml
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -281,48 +268,6 @@ bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** With several concurrent writers (this session, the SEQ-T3411
-workers, the 30-minute cron audit), `git push` fails with "audit COULD NOT
-RUN (another audit holds the lock)" — 10 and 8 hits in two workers'
-transcripts, 25 across this session's three pushes, on one morning. Each
-retry re-runs a full structure audit and holds the lock against the next
-pusher, so the queue amplifies itself.
-
-**Root cause:** T-3297's bounded wait defaults to 90 s (`FW_PREPUSH_LOCK_WAIT`)
-while the audit it waits for — `--section structure`, the one the gate
-itself runs — measures 292 s in the framework's own timing ledger. The
-window is shorter than the event it waits for by ~3×, so under any real
-contention the wait always expires and the push always blocks. The constant
-was asserted from a premise ("a minute or two") that the ledger already
-contradicted.
-
-**Why structurally allowed:** the timing ledger (T-3127) and the wait
-default (T-3297) were written two weeks apart by two tasks that never
-referenced each other; nothing compares a wait to the duration it waits for.
-T-3297's own pin — test (i) asserted the literal `90` in the hook source —
-made the constant look load-bearing rather than measured, so the next reader
-saw a pinned design decision and not a decayed premise. This is the second
-decay of the same premise (T-3297 corrected "finishes within a minute or
-two"), one level down.
-
-**Prevention:** the default is now derived from the ledger at push time
-(`lib/prepush-lock-wait.sh`, 1.25× measured structure seconds, clamped
-[90, 600]), so the wait tracks the audit as the audit grows, and the pin in
-`t3297 (i)` now asserts the derivation is wired rather than the number.
-
-**Not prevented by this task, with evidence.** The SEQ-T3411 round-3 worker
-(`docs/reports/SEQ-T3411/r3-procasfit-handback.md`, Selection 1) verified
-this task's premise independently and then reported that its own
-`FW_PREPUSH_LOCK_WAIT=320` push still failed: with several pushers plus the
-30-minute cron, the lock is re-acquired by a new entrant the moment it
-frees, and the T-3297 poll loop has no queue fairness — each waiter's window
-is spent racing, not queueing. A longer window therefore converts *some*
-contention into a pause, not all of it. The structural next step is to stop
-re-running the audit at all when a fresh verdict exists for the same tree
-(a tree-hash-keyed verdict cache, or a `flock -w` blocking acquire that the
-kernel serialises instead of a poll race). Named here, not built; it is a
-gate-semantics change and warrants its own task.
-
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -413,7 +358,7 @@ gate-semantics change and warrants its own task.
 
 ## Updates
 
-### 2026-09-22T08:14:13Z — task-created [task-create-agent]
+### 2026-09-22T05:35:10Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3421-pre-push-audit-lock-wait-90s-is-shorter-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3411-drive-5-rounds-of-review--procasfit-thro.md
 - **Context:** Initial task creation

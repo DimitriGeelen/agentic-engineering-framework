@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3421: pre-push audit lock wait (90s) is shorter than the structure audit it waits for (~292s): every contended push fails and re-runs the audit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T08:28:56Z
+# ============================================================================
+
+task_id: T-3421
+task_name: "pre-push audit lock wait (90s) is shorter than the structure audit it waits for (~292s): every contended push fails and re-runs the audit"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T08:14:13Z
+completed: 2026-09-22T08:27:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T10:21:19+02:00
+last_commit: 2026-09-22T10:27:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  derive the pre-push audit-lock wait from the measured audit. count-based pins — a bare '! grep' never fails a bats test (T-3138/T-3191 lint)
+
+# Key outcomes
+outcomes:
+  - '`lib/prepush-lock-wait.sh:fw_prepush_lock_wait_default <project_root>` prints the derived wait: ceil(1.25 × `structure` seconds) from `.context/audits/full-audit-timing.yaml`, clamped to [90, 600]; 360 when the ledger is absent, non-numeric, or has no `structure` entry. Live on this repo: **365** (from 292)'
+  - '`agents/git/lib/hooks.sh` sources the lib and uses the derived default when `FW_PREPUSH_LOCK_WAIT` is unset; an explicit value still overrides; the block message quotes the window and its source (`derived from .context/audits/full-audit-timing.yaml (T-3421)` / `fallback default` / `FW_PREPUSH_LOCK_WAIT`); the "wait longer" suggestion moved 300 → 600. Live hook reinstalled (`fw git install-hooks --force`), `.git/hooks/pre-push` carries the derivation (3 references)'
+  - '`tests/unit/t3421_prepush_lock_wait.bats` — 7 tests: 292→365, absent→360, 10→90 (floor), 1000→600 (cap), non-numeric→360, no-structure-entry→360 (does not borrow another section''s number), and a source pin that the hook wires the derivation and keeps the env override. **7/7 ok, 0 skips**'
+  - '`tests/unit/t3297_prepush_lock_wait.bats` still green — **11/11** — with two deliberate pin updates: (b) suggestion literal 300→600, (i) "default is 90" → "default is derived; 90 is the floor"'
+  - 'RCA filled (bug-class: title matches "fails"), including the round-3 worker''s counter-evidence on what a longer window does *not* fix; `lib/prepush-lock-wait.sh` + the bats file registered in the fabric; vendored copies synced via `FW_VENDOR_ONLY` (VERSION 1.6.762), `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/lib/prepush-lock-wait.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/git/lib/hooks.sh'
+  - '.fabric/components/lib-prepush-lock-wait.yaml'
+  - '.fabric/components/tests-unit-t3421_prepush_lock_wait.yaml'
+  - 'lib/prepush-lock-wait.sh'
+  - '.tasks/active/T-3421-pre-push-audit-lock-wait-90s-is-shorter-.md'
+  - 'tests/unit/t3297_prepush_lock_wait.bats'
+  - 'tests/unit/t3421_prepush_lock_wait.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T10:21:19'
+    action: 'T-3421: derive the pre-push audit-lock wait from the measured audit'
+  - time: '2026-09-22T10:27:11'
+    action: 'T-3421: count-based pins — a bare ''! grep'' never fails a bats test (T-3138/T-3191 lint)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 13
+  commits: 2
+  files_changed: 11
+  lines_added: 756
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3421-pre-push-audit-lock-wait-90s-is-shorter-.md
+generated_by: context-agent-hybrid

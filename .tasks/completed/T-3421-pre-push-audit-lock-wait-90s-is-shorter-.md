@@ -1,17 +1,18 @@
 ---
-id: T-3420
-name: "arc-011 sidecar slice 8: fw audit rail — WARN on stuck or UNKNOWN sidecar deliveries"
+id: T-3421
+name: "pre-push audit lock wait (90s) is shorter than the structure audit it waits
+  for (~292s): every contended push fails and re-runs the audit"
 description: >
-  arc-011 sidecar slice 8: fw audit rail — WARN on stuck or UNKNOWN sidecar deliveries
+  pre-push audit lock wait (90s) is shorter than the structure audit it waits for
+  (~292s): every contended push fails and re-runs the audit
 
 status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
-tags: [termlink, peer-consult, sidecar, audit]
-components: [agents/audit/audit.sh, lib/sidecar-audit.sh, tests/unit/sidecar_audit_rail.bats]
-related_tasks: [T-3418, T-3417, T-3404]
-arc_id: parallel-execution-aef
+tags: []
+components: [agents/git/lib/hooks.sh, lib/prepush-lock-wait.sh, tests/unit/t3421_prepush_lock_wait.bats]
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -22,9 +23,9 @@ arc_id: parallel-execution-aef
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-22T08:01:51Z
-last_update: 2026-09-22T08:27:25Z
-date_finished: 2026-09-22T08:27:25Z
+created: 2026-09-22T08:14:13Z
+last_update: 2026-09-22T08:27:28Z
+date_finished: 2026-09-22T08:27:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,17 +37,17 @@ date_finished: 2026-09-22T08:27:25Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-22T08:07:47Z'
+  - ts: '2026-09-22T08:15:11Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=321,acs=7)
+      (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-22T08:07:47Z'
+  - ts: '2026-09-22T08:15:20Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -57,50 +58,55 @@ bvp_scores_proposed:
       F-AUTONOMY: 0
       F3: 0
       F1: 0
-      F2: 1
+      F2: 0
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=1 
-      (body/components:component-fabric-incidental)
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3420: arc-011 sidecar slice 8: fw audit rail — WARN on stuck or UNKNOWN sidecar deliveries
+# T-3421: pre-push audit lock wait (90s) is shorter than the structure audit it waits for (~292s): every contended push fails and re-runs the audit
 
 ## Context
 
-Slice 8 of the arc-011 sidecar. Slice 6 (T-3417) made two numbers visible
-in `fw sidecar status`: `expired_unswept` (STORED rows past their deadline
-that nothing has swept) and the `UNKNOWN` ledger count (deliveries the sweep
-has already recorded as failed). Slice 7 (T-3418) put the sweep on a 5-minute
-cron. Both numbers are now *readable* — but only by someone who runs the verb.
-Nothing watches them. A non-zero `UNKNOWN` is a consult that a peer never
-received and that nobody has been told about; a non-zero `expired_unswept`
-means the cron sweep itself has stopped running. Both are exactly the "silent
-failure" D2 forbids, and the pattern this repo uses for every other
-counter-that-must-not-climb is a WARN in the cron'd `fw audit --section
-structure` run (every 30 minutes).
+T-3297 added a bounded wait to the pre-push audit gate so that lock contention
+becomes "a short pause instead of a failed push". Its default is 90 seconds
+(`FW_PREPUSH_LOCK_WAIT`, `agents/git/lib/hooks.sh:1137`). The audit it waits
+for is `--section structure`, which the framework's own timing ledger
+(`.context/audits/full-audit-timing.yaml`, T-3127) measures at **292 seconds**.
+So the wait is shorter than the thing it waits for by a factor of three, and
+the same premise decay T-3297 corrected ("finishes within a minute or two")
+has happened again one level down.
 
-**Shape.** One check function in `agents/audit/audit.sh`, reading
-`fw sidecar status --json` (our own ledger, never the hub — it inherits
-slice 6's out-of-band guarantee). WARN, never FAIL: the remedy for `UNKNOWN`
-is the OBS-447 retry ruling, which is the operator's; the remedy for
-`expired_unswept` is "check the cron", which the WARN names. Silent when the
-sidecar has never been used (no outbox dir) so consumer projects without a
-hub are not nagged.
+**Measured today, 2026-09-22.** Five concurrent writers (this session, the
+SEQ-T3411 driver's workers, the 30-minute cron audit). The r2-procasfit worker
+hit "another audit holds the lock" 10 times; r3-procasfit 8 times; this
+session's own push loops 9, 7, and 9 times across three pushes. Each hit is a
+90 s wait, a failed push, and — on retry — a fresh 292 s structure audit that
+itself holds the lock against everyone else. The queue is self-amplifying:
+every retry lengthens the lock for the next pusher.
 
-**Not in scope.** Retry (OBS-447). Cross-host. Any change to the ledger.
+**Fix shape.** Make the wait long enough to outlast one structure audit, and
+derive it from the measurement rather than asserting it: default =
+1.25 × the last measured `structure` seconds from the timing ledger, clamped
+to [90, 600]; 360 s when no ledger exists. An explicit `FW_PREPUSH_LOCK_WAIT`
+still wins. The block message quotes the derived number. Nothing about the
+no-false-pass rule changes: window exhausted → the same BLOCK.
+
+**Not in scope.** Reusing a recent verdict instead of re-running (a cache keyed
+on tree hash) — a larger change with its own correctness questions; named in
+Evolution as the next step if queueing alone is not enough.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `check_sidecar_ledger` in `agents/audit/audit.sh` (structure section, after `check_gitignore_register`): WARNs when `UNKNOWN > 0` (remedy: OBS-447 ruling, sidecar never re-sends), WARNs when `expired_unswept > 0` (remedy: `fw cron status sidecar-sweep-5m` + `fw sidecar sweep`), PASS line when both are zero; silent when `.context/sidecar/outbox/` does not exist (rc 1 from the fact function); a present-but-unreadable ledger is its own WARN, not a zero
-- [x] The check reads our own ledger only, via `lib/sidecar-audit.sh:fw_sidecar_ledger_facts` → `fw sidecar status --json` — no hub call; pinned by bats test 5 (`awk`-extracted function body contains zero `termlink` tokens; the lib's code lines likewise)
-- [x] `tests/unit/sidecar_audit_rail.bats` — 5 tests against a fixture ledger under a temp root: never-used (silent, rc 1, **and the call does not create the outbox** — `status` mkdirs it, so the existence test must run first), clean (zeros), UNKNOWN>0 with latest-row-wins, expired>0 with a fresh STORED left alone, no-termlink token. **5/5 ok, 0 skips**
-- [x] Live: `bin/fw audit --section structure` (attempt 10 — the first nine hit the audit lock, see T-3421) emitted `[PASS] Sidecar ledger: 6 consult(s), 6 delivered, 0 in flight, 0 UNKNOWN, 0 expired-unswept`; `AUDIT-SCOPE: fails=0 ref=0 worktree=0`, rc 1 (pre-existing WARNs, unchanged class — this slice adds a PASS line only)
-- [x] `lib/sidecar-audit.sh` registered in the fabric (`.fabric/components/lib-sidecar-audit.yaml`, type script, subsystem framework-core); vendored copies synced via `FW_VENDOR_ONLY="agents/audit/audit.sh lib/sidecar-audit.sh" bin/fw vendor self` (VERSION 1.6.757); `bin/fw vendor self --check` → "in sync with source"
+- [x] `lib/prepush-lock-wait.sh:fw_prepush_lock_wait_default <project_root>` prints the derived wait: ceil(1.25 × `structure` seconds) from `.context/audits/full-audit-timing.yaml`, clamped to [90, 600]; 360 when the ledger is absent, non-numeric, or has no `structure` entry. Live on this repo: **365** (from 292)
+- [x] `agents/git/lib/hooks.sh` sources the lib and uses the derived default when `FW_PREPUSH_LOCK_WAIT` is unset; an explicit value still overrides; the block message quotes the window and its source (`derived from .context/audits/full-audit-timing.yaml (T-3421)` / `fallback default` / `FW_PREPUSH_LOCK_WAIT`); the "wait longer" suggestion moved 300 → 600. Live hook reinstalled (`fw git install-hooks --force`), `.git/hooks/pre-push` carries the derivation (3 references)
+- [x] `tests/unit/t3421_prepush_lock_wait.bats` — 7 tests: 292→365, absent→360, 10→90 (floor), 1000→600 (cap), non-numeric→360, no-structure-entry→360 (does not borrow another section's number), and a source pin that the hook wires the derivation and keeps the env override. **7/7 ok, 0 skips**
+- [x] `tests/unit/t3297_prepush_lock_wait.bats` still green — **11/11** — with two deliberate pin updates: (b) suggestion literal 300→600, (i) "default is 90" → "default is derived; 90 is the floor"
+- [x] RCA filled (bug-class: title matches "fails"), including the round-3 worker's counter-evidence on what a longer window does *not* fix; `lib/prepush-lock-wait.sh` + the bats file registered in the fabric; vendored copies synced via `FW_VENDOR_ONLY` (VERSION 1.6.762), `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -135,14 +141,16 @@ hub are not nagged.
 
 ## Verification
 
-timeout 300 bats tests/unit/sidecar_audit_rail.bats > /tmp/.t3420-bats 2>&1 && ! grep -q "^not ok" /tmp/.t3420-bats
-test "$(grep -c '# skip' /tmp/.t3420-bats)" -eq 0
-bash -n agents/audit/audit.sh && bash -n lib/sidecar-audit.sh
-# The check function exists and is called once (invariant, not a live count — T-3326).
-test "$(grep -c '^check_sidecar_ledger$' agents/audit/audit.sh)" -eq 1
-# Fact function against THIS repo's ledger: prints five tab-separated integers (values may move; shape may not).
-bash -c 'source lib/sidecar-audit.sh; fw_sidecar_ledger_facts "$PWD"' > /tmp/.t3420-facts 2>&1 && grep -qE '^[0-9]+	[0-9]+	[0-9]+	[0-9]+	[0-9]+$' /tmp/.t3420-facts
-test -f .fabric/components/lib-sidecar-audit.yaml
+timeout 300 bats tests/unit/t3421_prepush_lock_wait.bats > /tmp/.t3421-bats 2>&1 && ! grep -q "^not ok" /tmp/.t3421-bats
+test "$(grep -c '# skip' /tmp/.t3421-bats)" -eq 0
+timeout 600 bats tests/unit/t3297_prepush_lock_wait.bats > /tmp/.t3421-t3297 2>&1 && ! grep -q "^not ok" /tmp/.t3421-t3297
+test "$(grep -c '# skip' /tmp/.t3421-t3297)" -eq 0
+bash -n agents/git/lib/hooks.sh && bash -n lib/prepush-lock-wait.sh
+# The derived default on this repo is an integer in [90,600] (invariant, not the live number — T-3326).
+bash -c 'source lib/prepush-lock-wait.sh; fw_prepush_lock_wait_default "$PWD"' > /tmp/.t3421-wait 2>&1 && grep -qE '^[0-9]+$' /tmp/.t3421-wait && test "$(cat /tmp/.t3421-wait)" -ge 90 && test "$(cat /tmp/.t3421-wait)" -le 600
+# The LIVE hook (not just the source) carries the derivation — install-hooks was re-run.
+grep -q "prepush-lock-wait.sh" .git/hooks/pre-push
+test -f .fabric/components/lib-prepush-lock-wait.yaml
 bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -273,6 +281,48 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** With several concurrent writers (this session, the SEQ-T3411
+workers, the 30-minute cron audit), `git push` fails with "audit COULD NOT
+RUN (another audit holds the lock)" — 10 and 8 hits in two workers'
+transcripts, 25 across this session's three pushes, on one morning. Each
+retry re-runs a full structure audit and holds the lock against the next
+pusher, so the queue amplifies itself.
+
+**Root cause:** T-3297's bounded wait defaults to 90 s (`FW_PREPUSH_LOCK_WAIT`)
+while the audit it waits for — `--section structure`, the one the gate
+itself runs — measures 292 s in the framework's own timing ledger. The
+window is shorter than the event it waits for by ~3×, so under any real
+contention the wait always expires and the push always blocks. The constant
+was asserted from a premise ("a minute or two") that the ledger already
+contradicted.
+
+**Why structurally allowed:** the timing ledger (T-3127) and the wait
+default (T-3297) were written two weeks apart by two tasks that never
+referenced each other; nothing compares a wait to the duration it waits for.
+T-3297's own pin — test (i) asserted the literal `90` in the hook source —
+made the constant look load-bearing rather than measured, so the next reader
+saw a pinned design decision and not a decayed premise. This is the second
+decay of the same premise (T-3297 corrected "finishes within a minute or
+two"), one level down.
+
+**Prevention:** the default is now derived from the ledger at push time
+(`lib/prepush-lock-wait.sh`, 1.25× measured structure seconds, clamped
+[90, 600]), so the wait tracks the audit as the audit grows, and the pin in
+`t3297 (i)` now asserts the derivation is wired rather than the number.
+
+**Not prevented by this task, with evidence.** The SEQ-T3411 round-3 worker
+(`docs/reports/SEQ-T3411/r3-procasfit-handback.md`, Selection 1) verified
+this task's premise independently and then reported that its own
+`FW_PREPUSH_LOCK_WAIT=320` push still failed: with several pushers plus the
+30-minute cron, the lock is re-acquired by a new entrant the moment it
+frees, and the T-3297 poll loop has no queue fairness — each waiter's window
+is spent racing, not queueing. A longer window therefore converts *some*
+contention into a pause, not all of it. The structural next step is to stop
+re-running the audit at all when a fresh verdict exists for the same tree
+(a tree-hash-keyed verdict cache, or a `flock -w` blocking acquire that the
+kernel serialises instead of a poll race). Named here, not built; it is a
+gate-semantics change and warrants its own task.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -310,25 +360,6 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-### 2026-09-22 — the follow-on slice 7 named, built as named
-- **What changed:** one thing the plan did not say. `fw sidecar status`
-  mkdirs the outbox on first call, so an audit that simply ran the verb
-  would *create* the sidecar on every consumer project it audited and then
-  PASS it for a channel that had never carried a message. The fact function
-  therefore tests for the outbox directory before it calls anything, and
-  bats test 1 pins that the never-used call leaves no directory behind.
-- **Plan impact:** none. WARN not FAIL, as slice 7's Evolution predicted:
-  both remedies are the operator's (OBS-447) or a cron check, neither a
-  property of a commit.
-- **Split, deliberately:** the fact function lives in `lib/sidecar-audit.sh`
-  rather than inline in audit.sh, so it is testable without running the
-  4,000-line audit script — the same shape T-3268 used for
-  `fw_continuous_cycling_facts`. audit.sh's check is a thin consumer.
-- **Triggered:** nothing new. With slices 6, 7 and 8 the channel now
-  reports, sweeps, and is watched; what remains in arc-011 is the retry
-  ruling (OBS-447, Sovereign), cross-host credential wiring, and TermLink's
-  answer to @1611 on whether they already ship the receiving half.
 
 ## Recommendation
 
@@ -382,19 +413,25 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-09-22T08:01:51Z — task-created [task-create-agent]
+### 2026-09-22T08:14:13Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3420-arc-011-sidecar-slice-8-fw-audit-rail--w.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3421-pre-push-audit-lock-wait-90s-is-shorter-.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d6040a5a
-- **Timestamp:** 2026-09-22T08:27:30Z
+- **Scan ID:** R-cdb33e80
+- **Timestamp:** 2026-09-22T08:29:51Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
 
-### 2026-09-22T08:27:25Z — status-update [task-update-agent]
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/prepush-lock-wait.sh:fw_prepush_lock_wait_default <project_root>` prints the derived wait: ceil(1.25 × `structure` seconds) from `.context/audits/full-audit-timing.yaml`, clamped to [90, 600]; 36
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/full-audit-timing.yaml in: `lib/prepush-lock-wait.sh:fw_prepush_lock_wait_default <project_root>` prints the derived wait: ceil(1.25 × `structure` seconds) from `.context/audits`
+- **AC#2 (Agent)** — `agents/git/lib/hooks.sh` sources the lib and uses the derived default when `FW_PREPUSH_LOCK_WAIT` is unset; an explicit value still overrides; the block message quotes the window and its source (`der
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/full-audit-timing.yaml in: `agents/git/lib/hooks.sh` sources the lib and uses the derived default when `FW_PREPUSH_LOCK_WAIT` is unset; an explicit value still overrides; the bl`
+### 2026-09-22T08:27:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
