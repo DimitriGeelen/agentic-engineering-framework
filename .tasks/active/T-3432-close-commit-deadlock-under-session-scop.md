@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T12:03:48Z
-last_update: '2026-09-22T12:15:25Z'
+last_update: 2026-09-22T12:18:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,10 +86,14 @@ the reader uses (L-399 producer/consumer parity); default mode unchanged.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `agents/task-create/update-task.sh:2266` resolves the focus file through `fw_focus_file "$PROJECT_ROOT"` (honouring `FW_SESSION_SCOPED_FOCUS`) instead of hard-coding `$CONTEXT_DIR/working/focus.yaml`, so a full close clears the SAME file the gate reads
-- [ ] A regression test pins the deadlock: with `FW_SESSION_SCOPED_FOCUS=1` and a session-scoped focus naming task X, `update-task.sh X --status work-completed` leaves `current_task: null` in `focus.<key>.yaml` — red before the fix, green after
-- [ ] The unscoped path still clears correctly when `FW_SESSION_SCOPED_FOCUS` is unset (no regression for interactive sessions)
-- [ ] Concern registered in `.context/concerns.yaml` describing the class: close clears one focus file, the PreToolUse gate reads another, and the T-2054 null-focus commit allowance is therefore unreachable for every session-scoped worker
+- [x] `agents/task-create/update-task.sh:2266` resolves the focus file through `fw_focus_file "$PROJECT_ROOT"` (honouring `FW_SESSION_SCOPED_FOCUS`) instead of hard-coding `$CONTEXT_DIR/working/focus.yaml`, so a full close clears the SAME file the gate reads
+  - Evidence: `update-task.sh:2279` now reads `FOCUS_FILE="$(fw_focus_file "$PROJECT_ROOT")"`; `lib/paths.sh` was already sourced at line 18, so no new dependency. `fw_focus_file` honours `CONTEXT_DIR` itself (`lib/paths.sh:187`).
+- [x] A regression test pins the deadlock: with `FW_SESSION_SCOPED_FOCUS=1` and a session-scoped focus naming task X, `update-task.sh X --status work-completed` leaves `current_task: null` in `focus.<key>.yaml` — red before the fix, green after
+  - Evidence: `tests/unit/t3432_scoped_close_clears_scoped_focus.bats`, 7/7 ok. Measured red-before by `git stash`-ing only the fix: tests 1 and 7 flipped to `not ok`, the other five stayed green — i.e. exactly the two legs that pin the defect.
+- [x] The unscoped path still clears correctly when `FW_SESSION_SCOPED_FOCUS` is unset (no regression for interactive sessions)
+  - Evidence: tests 4 and 5 (shared file nulled; no scoped file written), both green before AND after the fix. `fw_focus_file` returns `${CONTEXT_DIR}/working/focus.yaml` verbatim outside scoped mode, so the default path is byte-for-byte the previous expression.
+- [x] Concern registered in `.context/concerns.yaml` describing the class: close clears one focus file, the PreToolUse gate reads another, and the T-2054 null-focus commit allowance is therefore unreachable for every session-scoped worker
+  - Evidence: OBS-255, commit `501389397`. Names the sharper form of the class — the split did not merely misroute a write, it silently disarmed T-2054, the escape hatch built for this exact deadlock — and names the residual (nothing enumerates the writers of `focus.yaml`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -250,6 +254,25 @@ the reader uses (L-399 producer/consumer parity); default mode unchanged.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# --- The regression suite. Two lines: "did anything fail" and "did everything run".
+timeout 300 bats tests/unit/t3432_scoped_close_clears_scoped_focus.bats > /tmp/.t3432.out 2>&1 && ! grep -q "^not ok" /tmp/.t3432.out
+test "$(grep -c "# skip" /tmp/.t3432.out)" -eq 0 && grep -q "^ok 7 " /tmp/.t3432.out
+
+# --- The two suites this change sits between: the reader (T-3038) and the seeder (T-3422).
+timeout 300 bats tests/unit/t3038_session_scoped_focus.bats > /tmp/.t3432-3038.out 2>&1 && ! grep -q "^not ok" /tmp/.t3432-3038.out
+timeout 300 bats tests/unit/t3422_dispatch_seeds_focus.bats > /tmp/.t3432-3422.out 2>&1 && ! grep -q "^not ok" /tmp/.t3432-3422.out
+
+# --- The fix itself: one resolver, and no surviving hard-coded shared path.
+grep -q 'FOCUS_FILE="$(fw_focus_file "$PROJECT_ROOT")"' agents/task-create/update-task.sh
+! grep -q "CONTEXT_DIR/working/focus.yaml" agents/task-create/update-task.sh
+
+# --- Vendor parity, scoped to THIS task's file. A repo-wide `vendor self --check`
+# would fold in a concurrent worker's in-flight files and say nothing about mine.
+cmp -s agents/task-create/update-task.sh .agentic-framework/agents/task-create/update-task.sh
+
+# --- The concern exists and names the mechanism, not just the symptom.
+python3 -c "import yaml; c=yaml.safe_load(open('.context/concerns.yaml')); e=[x for x in c if x['id']=='OBS-255']; assert len(e)==1 and 'T-2054' in e[0]['root_cause']"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -265,6 +288,66 @@ the reader uses (L-399 producer/consumer parity); default mode unchanged.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** A dispatched worker that closes its own task cannot commit that
+close. `bin/fw task update T-XXXX --status work-completed` succeeds cleanly —
+exit 0, "Focus cleared (task completed)" printed — and then every subsequent
+Bash and every Write is refused by the PreToolUse gate with `BLOCKED: Task
+T-XXXX is not active (may be completed or missing)`. The task's file move and
+episodic sit uncommitted with no stated remedy in the block message. Found live
+by the T-3428 worker mid-close (OBS-468 → OBS-255).
+
+**Root cause:** T-3038 split focus into per-session files. `fw_focus_file`
+(`lib/paths.sh:185`) returns `focus.<key>.yaml` under
+`FW_SESSION_SCOPED_FOCUS=1` and the shared `focus.yaml` otherwise; the reader
+(`agents/context/check-active-task.sh`) and `fw context focus` were both moved
+onto it. `update-task.sh`'s close path — a *third* writer — kept the literal
+`FOCUS_FILE="$CONTEXT_DIR/working/focus.yaml"`. So the close nulled a file
+nobody was reading and left the file the gate reads still naming a task that had
+just moved to `.tasks/completed/`. A producer/consumer split of the L-399 class.
+
+The sharper form, and the part worth carrying: **the defect disarmed the escape
+hatch built for this exact deadlock.** T-2054 allows a bare `git commit` when
+focus is NULL, precisely so a just-closed task can checkpoint itself. That
+allowance is predicated on the close having nulled the focus *the gate reads*.
+It had not — so the gate saw a non-null focus naming an archived task, took the
+"not active" branch, and the remedy never fired. Not a misrouted write; a safety
+valve silently disarmed by a file split it was never told about.
+
+**Why structurally allowed:** Three things had to line up, and each is ordinary
+on its own.
+
+1. **Nothing enumerates the writers of focus.yaml.** T-3038 moved the reader and
+   the obvious writer onto the helper and had no way to discover there was a
+   third. Grep for the literal path is the only instrument, and it is not run.
+2. **The gate's silence is indistinguishable from correctness at close time.**
+   The close prints "Focus cleared" and exits 0. The lockout only manifests on
+   the *next* tool call, in a different process, attributed to a different-looking
+   failure ("task is not active"). Nothing connects the two.
+3. **`FW_SESSION_SCOPED_FOCUS=1` is a worker-only env.** Every interactive
+   session — where a human would have noticed within seconds — resolves to the
+   same shared file as before and is entirely unaffected. The bug was only ever
+   visible to workers, which are precisely the sessions nobody is watching. T-3422
+   then seeded a scoped focus file for *every* dispatched worker, converting an
+   opt-in latency into a universal one.
+
+**Prevention:** The fix is one resolver on both sides. Prevention is
+`tests/unit/t3432_scoped_close_clears_scoped_focus.bats`, and specifically the
+shape of it: it runs **the command that deadlocked** — after a scoped close, the
+gate must ALLOW `git commit -m "<id>: close"` — rather than only asserting
+`current_task: null`. A contents-only assertion would pass on a fix that cleared
+the wrong key. It is paired with a control leg pinning the gate REFUSING that
+same command in the reconstructed pre-fix state, so a green suite cannot come
+from a gate that allows `git commit` unconditionally. Red-before was measured,
+not assumed: stashing the one-line fix flips exactly tests 1 and 7.
+
+Honest residual, filed in OBS-255 rather than fixed here: a *fourth* writer added
+later reintroduces this the same way, because item 1 above is untouched. The
+candidate is a lint refusing a literal `working/focus.yaml` outside
+`lib/paths.sh`. Worth noting that T-3179 is the same class one layer over — the
+partial-complete half of the same T-2054 deadlock — which makes this the second
+recorded instance of "a focus-predicated allowance stops being reachable when the
+focus state it reads changes shape", and is the argument for the lint.
 
 ## Evolution
 
@@ -346,3 +429,27 @@ the reader uses (L-399 producer/consumer parity); default mode unchanged.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3432-close-commit-deadlock-under-session-scop.md
 - **Context:** Initial task creation
+
+### 2026-09-22 — control leg corrected a wrong assumption about where the gate blocks
+- **Action:** The first draft of the control leg reproduced the pre-fix state by
+  flipping the task's status to `work-completed` while leaving the file in
+  `.tasks/active/`. It went green — the gate ALLOWED the commit.
+- **Finding:** That state reaches T-3179's partial-complete allowance, which lets
+  `git commit` through on purpose. The deadlock needs the file ARCHIVED to
+  `.tasks/completed/` *and* a stale scoped focus; the block is then "not active
+  (may be completed or missing)", not the `work-completed` branch. Verified by
+  reproducing both states against the gate directly before rewriting the leg.
+- **Why it matters:** without the control the suite would still have been 7/7
+  green and would still have gone red-before-fix on the right two legs — the
+  wrong control was invisible, not noisy. It is the leg that distinguishes a
+  working fix from a gate that allows `git commit` unconditionally, so a control
+  that passes for the wrong reason is worse than none.
+
+### 2026-09-22 — vendor sync
+- **Action:** `FW_VENDOR_ONLY="agents/task-create/update-task.sh" bin/fw vendor self`,
+  then `bin/fw vendor self --check`.
+- **Output:** "vendored .agentic-framework/ in sync with source", rc 0 — clean
+  repo-wide at the time of running, so the anticipated T-3430 in-flight drift in
+  `agents/fabric/*` did not appear and nothing outside this task's file was
+  touched or vendored. The P-011 line is still scoped to this file by `cmp`, so
+  the gate's verdict does not depend on another worker's timing either way.
