@@ -2210,6 +2210,64 @@ else:
         fi
     fi
 
+    # Check: arc driver reviewer records (T-3429, D-586)
+    # Mirrors agents/audit/audit.sh:check_arc_driver_reviewer_record. Arc-scoped
+    # drivers are added by DEFAULT now, on a static reviewer's word rather than
+    # an operator click — so an `approved_by: reviewer:...` entry that carries no
+    # `reviewer:` block (or a failing one) is a certification claim with nothing
+    # behind it. WARN-only. Silent when no in-progress arc has scoped drivers.
+    if [ -d "$PROJECT_ROOT/.context/arcs" ]; then
+        local _adr_out _adr_total _adr_rows
+        _adr_out=$(python3 - "$PROJECT_ROOT/.context/arcs" <<'PY' 2>/dev/null
+import sys
+from pathlib import Path
+
+import yaml
+
+total = 0
+bad = []
+for f in sorted(Path(sys.argv[1]).glob("*.yaml")):
+    try:
+        arc = yaml.safe_load(f.read_text()) or {}
+    except Exception:
+        continue
+    if str(arc.get("status") or "").lower() != "in-progress":
+        continue
+    for sd in (arc.get("scoped_drivers") or []):
+        if not isinstance(sd, dict):
+            continue
+        total += 1
+        if not str(sd.get("approved_by") or "").startswith("reviewer:"):
+            continue
+        rv = sd.get("reviewer")
+        name = sd.get("name") or sd.get("id") or "?"
+        if not isinstance(rv, dict) or not rv:
+            bad.append((f.name, name, "no reviewer: block"))
+        elif str(rv.get("verdict") or "").lower() == "fail":
+            bad.append((f.name, name, "verdict: fail"))
+print(total)
+for row in bad:
+    print("\t".join(str(x) for x in row))
+PY
+)
+        if [ -n "$_adr_out" ]; then
+            _adr_total=$(printf '%s\n' "$_adr_out" | head -1)
+            _adr_rows=$(printf '%s\n' "$_adr_out" | tail -n +2 | grep . || true)
+            if [ "${_adr_total:-0}" -gt 0 ] 2>/dev/null; then
+                if [ -n "$_adr_rows" ]; then
+                    echo -e "  ${YELLOW}WARN${NC}  $(printf '%s\n' "$_adr_rows" | grep -c .) arc scoped driver(s) claim reviewer approval without a usable verdict"
+                    printf '%s\n' "$_adr_rows" | while IFS=$'\t' read -r _adr_f _adr_name _adr_why; do
+                        [ -n "$_adr_name" ] && echo -e "         $_adr_name (.context/arcs/$_adr_f) — $_adr_why"
+                    done
+                    echo -e "         Run: bin/fw arc review-driver <arc> \"<name>\" --dry-run  (T-3429, D-586)"
+                    warnings=$((warnings + 1))
+                else
+                    echo -e "  ${GREEN}OK${NC}  Arc driver reviewer records: $_adr_total scoped driver(s), every reviewer-approved one carries its verdict"
+                fi
+            fi
+        fi
+    fi
+
     # Check: fabric card quality (T-3430, OBS-464)
     # Mirrors agents/audit/audit.sh:check_fabric_underpopulated. A card that
     # says nothing is invisible to every other fabric check — it IS registered,

@@ -1,0 +1,21 @@
+id: lib/arc-driver-review.sh
+name: arc-driver-review
+type: script
+subsystem: framework-core
+location: lib/arc-driver-review.sh
+tags: []
+
+purpose: "lib/arc-driver-review.sh — T-3429 (arc-006), D-586."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-22
+created_by: unknown
