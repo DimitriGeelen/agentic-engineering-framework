@@ -8,12 +8,12 @@ description: >
   themselves nowhere (one honest line each, refuse if unclear), edge enrichment over
   the 189 zero-edge cards, describe re-run, counts recorded
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/templates/arc_close.html, web/templates/arc_review.html, web/templates/bvp.html, web/templates/designer_ghosts.html, web/templates/designer_landing.html, web/templates/_error_csrf.html, web/templates/escalation_drift.html, web/templates/hooks.html, web/templates/orchestrator.html, web/templates/_partials/ask_answer_card.html, web/templates/_partials/search_input.html, web/templates/_partials/search_results.html, web/templates/pending.html, web/templates/_project_docs_list.html, web/templates/prompt_detail.html, web/templates/prompts_list.html, web/templates/reviewer_audit.html, web/templates/reviewer_overrides.html, web/templates/_stale_tasks_items.html, web/templates/timeline_session.html, web/templates/_work_queue_items.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T12:58:22Z
-last_update: '2026-09-22T13:36:39Z'
-date_finished:
+last_update: 2026-09-22T15:40:08Z
+date_finished: 2026-09-22T15:40:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -120,7 +120,28 @@ run and the re-run are mechanical.
 - [x] Every touched source file still passes its own toolchain check (`python3 -m py_compile` for `.py`, `bash -n` for `.sh`); the fabric suites (`tests/unit/*fabric*`, `tests/unit/*t3430*`) green; the header-line commits are separate from the card commits (mechanism/effect kept apart, as T-3430 did). No `.py`/`.sh` files touched (all edits were `.yaml`/`.html`) — YAML parses, Jinja templates parse (see `## Verification`). 116 fabric/t3430 pytest tests pass. bats fabric suite green **except** `tests/unit/fabric_coverage_single_source.bats`, which has a pre-existing, unrelated hang + wording-mismatch bug registered as `OBS-093` (see `## Decisions`) — excluded from the Verification bats line with that pointer, not silently dropped. Header-line commit (`e2d89ded4`) kept separate from the card-enrichment commit (`4c61a6d29`).
 - [x] Vendored copies synced for any file under `agents/`, `lib/`, `bin/`, `policy/` that gained a header line; `bin/fw vendor self --check` clean. 0 files under those 4 directories gained a header line (all 22 were `.context/`/`web/templates/`); `fw vendor self` synced the 21 committed `web/templates/` files (correctly withholding T-3431's 3 concurrently-dirty, unrelated `agents/` files); `bin/fw vendor self --check` reports clean.
 
+- [x] Render-surface leak check (added 2026-09-22 when the T-1766 gate fired on the 21
+      template header lines): every touched template compiles through the Flask app's Jinja
+      environment with its `{# … #}` header as the first line, and none of the 14 live
+      Watchtower routes that render them emits a literal `{#` — the comment is stripped at
+      render, so the rendered bytes are unchanged by this task. (Evidence: both verification
+      lines rc=0 on 2026-09-22 15:50Z — 21 compile, header first; 14 routes 200, `{#` count 0;
+      Watchtower restarted at 15:36Z and `watchtower current` rc=0.)
+
 ### Human
+- [ ] [REVIEW] The 21 templates that gained a `{# … #}` header line render exactly as before —
+      no stray comment text, no extra blank line at the top of a partial, no layout shift
+      **Steps:**
+      1. Open `http://192.168.10.107:3002/bvp`, `/arcs`, `/hooks`, `/orchestrator`, `/pending`,
+         `/prompts`, `/reviewer/audit`, `/reviewer/overrides`, `/designer`, `/escalation-drift`,
+         `/timeline` (the URL prefix is `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`)
+      2. On `/` use the search box once so `_partials/search_input.html` and
+         `_partials/search_results.html` render; open one task page so `_work_queue_items.html`
+         and `_stale_tasks_items.html` render
+      3. View source on any one page and search for `{#`
+      **Expected:** every page looks as it did before 2026-09-22; view-source finds no `{#`
+      **If not:** note the page and the stray text; the header is the first line of the
+      matching file under `web/templates/` and can be removed with no other effect
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -152,6 +173,10 @@ run and the re-run are mechanical.
 -->
 
 ## Verification
+
+# Render-surface leak check (T-1766 gate, 2026-09-22): all 21 touched templates compile, header first, no `{#` in rendered pages.
+python3 -c "import sys; sys.path.insert(0,'.'); import web.app as m; env=m.app.jinja_env; ts=['arc_close.html','arc_review.html','bvp.html','designer_ghosts.html','designer_landing.html','_error_csrf.html','escalation_drift.html','hooks.html','orchestrator.html','_partials/ask_answer_card.html','_partials/search_input.html','_partials/search_results.html','pending.html','_project_docs_list.html','prompt_detail.html','prompts_list.html','reviewer_audit.html','reviewer_overrides.html','_stale_tasks_items.html','timeline_session.html','_work_queue_items.html']; [env.get_template(t) for t in ts]; bad=[t for t in ts if not open('web/templates/'+t).readline().startswith('{#')]; assert not bad, bad; print('21 templates compile, header first')"
+U=$(bin/fw watchtower url); n=0; for p in / /bvp /arcs /fabric /tasks /hooks /orchestrator /pending /prompts /reviewer/audit /reviewer/overrides /designer /escalation-drift /timeline; do c=$(curl -s -o /tmp/.t3435-pg -w '%{http_code}' "$U$p"); [ "$c" = 200 ] || n=$((n+1000)); n=$((n + $(grep -c '{#' /tmp/.t3435-pg))); done; [ "$n" -eq 0 ]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -366,6 +391,30 @@ bin/fw vendor self --check > /tmp/.t3435-v-vendor.out 2>&1; echo "$(cat /tmp/.t3
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** The only thing left for a human is the render check, and the mechanical
+evidence says the rendered bytes did not change: the 21 template edits are one Jinja
+`{# … #}` comment line each, the comment is stripped at render (14 live routes return 200
+with zero `{#` occurrences), every template compiles in the app's own environment, and
+Watchtower was restarted so the served process is newer than every file under `web/`.
+The substantive work — header lines on 22 files, 351 edges, TODO purposes 32 → 10 (the 10
+that remain are listed with a reason each), unknown subsystems 3 → 0 — is closed by the
+seven ticked Agent ACs and 10/10 verification lines. Nothing about the fabric result depends
+on the human's answer; the review exists because the T-1766 gate is right that eyes beat
+curl for layout, and a two-minute look at three pages settles it.
+**Evidence:**
+- Verification 10/10 on 2026-09-22 15:52Z, including the 11-suite fabric bats line (87 ok, 61 s)
+  after T-3436 replaced two tests red since T-1842.
+- Render: `web.app.app.jinja_env.get_template` over all 21 templates OK; 14 routes 200, `{#`
+  count 0; `bin/fw watchtower current` rc=0 after the 15:36Z restart.
+- Fabric counts before/after in AC 4 (`/tmp/.t3435-before`, `/tmp/.t3435-after`, recorded
+  inline): TODO purpose 32 → 10, unknown subsystem 3 → 0, no edges 195 → 122, under-populated
+  215 → 126.
+- Refusals: 10 files left without a header, each with a reason in `## Decisions`
+  (9 format-blocked, 1 vendored DO-NOT-EDIT); no invented descriptions.
+- Excluded from the bats line with reason: `fabric_watch_pattern_fitness.bats` (OBS-471,
+  6 fixture audits × ~4 min); `fabric_coverage_single_source.bats` (earlier, same class).
 
 ## Decisions
 
@@ -585,3 +634,22 @@ and a test before moving on, not because it blocked anything.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3435-fabric-card-quality-second-pass-header-c.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6e5ca563
+- **Timestamp:** 2026-09-22T15:41:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 133
+     - evidence: `out=$(for f in .context/project/workflows/ask.yaml web/templates/_error_csrf.html web/templates/_partials/ask_answer_card.html web/templates/_partials/search_input.html web/templates/_partials/search_`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 134
+     - evidence: `out=$(python3 agents/fabric/lib/describe.py 012-ArcSystem.md; python3 agents/fabric/lib/describe.py vendor/designer/aef-workflow-designer-0.11.0.html; python3 agents/fabric/lib/describe.py vendor/desi`
+
+### 2026-09-22T15:40:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

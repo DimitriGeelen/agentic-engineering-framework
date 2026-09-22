@@ -4188,3 +4188,24 @@ decisions:
     date: 2026-09-22
     task: T-3433
     rationale: "Not specified"
+
+  - id: D-601
+    decision: "`resume.sh:cmd_status` reads `.context/working/.fabric-describe.last` (the same cache file the hook writes) instead of invoking `fw fabric enrich --describe --quiet` itself."
+    scope: project
+    date: 2026-09-22
+    task: T-3431
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-602
+    decision: "drop `tests/unit/fabric_watch_pattern_fitness.bats` from the bats"
+    scope: project
+    date: 2026-09-22
+    task: T-3435
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-603
+    decision: "register it (`OBS-093`, `.context/project/concerns.yaml`) and"
+    scope: project
+    date: 2026-09-22
+    task: T-3435
+    rationale: "Auto-captured from task file on completion"

@@ -5041,3 +5041,24 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-469
+  text: "PROPOSAL Watchtower UX (1409-sprind T-1165, sidecar @14, origin their operator reading enriched fabric cards): every identifier Watchtower renders — T-XXXX, OBS-NNN, G-NNN, PL-NNN, arc ids, component card ids, project module ids — is bare text; the reader pays a lookup tax on every glance, heaviest for whoever knows least. Proposal: (1) render known ids as hoverable — name, one-line description, status, 'go to' button; (2) resolve from data the framework already holds (task frontmatter, inbox.yaml, concerns.yaml, learnings.yaml, .context/arcs/*.yaml), never a hand-maintained map (G-003: a second copy drifts); (3) a small {pattern -> resolver} registry so a consumer project contributes its own vocabulary (their tools/module_glossary.py parses docs/architecture.md headings into {id,name,status,anchor}); (4) REFUSE rather than guess — leave unknown ids untouched and report them; never expand inside a longer token (M6b-1 is not M6b); (5) do not stutter — skip the name when the author already supplied it. Points 1+2 need no project involvement. Two regressions they hit are worth pinning as tests: inside-token expansion and stuttering. Related: T-1575 (rendered T-NNNN already links to /tasks/T-NNNN — the anchor half exists, the card half does not). Sovereign: UX scope; recommend GO for (1)+(2)+(4)+(5) as one Watchtower slice."
+  captured: 2026-09-22T12:09:49Z
+  context_task: T-3430
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-470
+  text: "Model selection for fabric card work (operator, 2026-09-22): use the model the work needs, not the default — structural/hook code fully specified: Sonnet; one-line header descriptions with a refuse-if-unsure rule: Sonnet, not Opus (Opus tripped the account session limit twice today); the RECURRING mechanical describe/edge passes (T-3430 cron, T-3431 session-start) are candidates for a LOCAL model: Ollama is live on this host (:11434; gemma4, dolphin-llama3:8b present) and fw termlink dispatch already supports --worker-kind ollama-loop (tools/ollama-tool-loop.py) and an ANTHROPIC_BASE_URL litellm-proxy override (termlink.sh:538). Not tried today; the deriver itself is deterministic (no model), so the only model-bearing step is writing header lines for refused files — worth one measured trial on gemma4 against the refuse-rule before making it the cron's default. Also: DISPATCH_MODEL_FOR_<TASK_TYPE> config exists for per-type defaults."
+  captured: 2026-09-22T13:01:14Z
+  context_task: T-3435
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-471
+  text: "audit.sh --sections structure runs the framework's own tests/lint invariant suite (timeout 300 bats tests/lint/, 110 tests) and the dead-negation lint even when PROJECT_ROOT is a synthetic fixture project. Measured 2026-09-22: one fixture audit in tests/unit/fabric_watch_pattern_fitness.bats took ~4 min (control test, load 7/24 cores); that file runs 6 such audits, so it alone needs 24+ min and any verification line bundling it under timeout 900 exits 124 regardless of host load (T-3435 close blocked twice on this). Two defects: (1) the invariant suite is a framework-repo property and should be skipped when PROJECT_ROOT != FRAMEWORK_ROOT; (2) every bats test that shells audit.sh on a fixture pays the full structure cost — a --sections structure run on a 3-file fixture should be seconds. Sibling of the fabric_coverage_single_source.bats exclusion noted in T-3435."
+  captured: 2026-09-22T15:24:59Z
+  context_task: T-3435
+  tags: [bug]
+  status: pending
+  promoted_to: null
