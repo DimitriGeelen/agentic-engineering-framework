@@ -4984,3 +4984,15 @@ X'` returning empty group."
   task: T-3382
   date: 2026-09-18
   context: Added via context agent
+- id: L-675
+  learning: "A read-side fallback that inherits shared state is a defect for any consumer that already knows the right value: T-3038's focus fallback let every dispatched worker read a foreign task until its first work-on (four consecutive SEQ rounds). When the producer (dispatch) knows the value (--task), seed the consumer's own file at dispatch time through the same resolver the reader uses; keep the fallback only for callers that genuinely have nothing to seed."
+  source: P-001
+  task: T-3422
+  date: 2026-09-22
+  context: Added via context agent
+- id: L-676
+  learning: "After --status work-completed nulls focus, the trailing close commit is reachable without a bypass: stage with a separate bare 'git add <paths>' (safe-listed) and then run 'git commit -m ...' bare (T-2054 post-completion checkpoint). The compound 'git add … && git commit' form is judged as a write pattern and refused; a captured-status or partial-complete task cannot serve as a stand-in focus either. Costs one session ~40 minutes and two failed routes before it was found (T-3411/T-3425 closes, 2026-09-22)."
+  source: P-002
+  task: T-3425
+  date: 2026-09-22
+  context: Added via context agent
