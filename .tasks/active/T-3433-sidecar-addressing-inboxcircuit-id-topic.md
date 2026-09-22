@@ -27,7 +27,7 @@ arc_id: arc-011
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T12:42:41Z
-last_update: 2026-09-22T15:43:20Z
+last_update: 2026-09-22T16:36:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -120,7 +120,8 @@ Per-agent signing keys (follow-on; noted in Evolution).
   - Evidence: `test_a_consult_on_each_topic_both_surface_once`, plus dual-post collapse, per-topic cursors, and a seeding test so pre-T-3433 per-topic seen-sets are honoured. 15 inbox tests green.
 - [x] Dispatch stanza (`agents/termlink/termlink.sh`) and `FW_SIDECAR_AGENT_ID` unchanged for workers; `fw sidecar whoami` prints agent id, circuit id, and both topics; `fw sidecar status` lists cursors for both
   - Evidence: stanza NOT edited — it names only agent ids and `fw sidecar` verbs, so it was already address-agnostic (verified by reading `_consult_stanza` in `agents/termlink/termlink.sh`). `whoami` prints agent id, exact circuit, host-qualified full id, durable project address, inbox topic and legacy read alias; `status` lists a cursor for every drained topic, at 0 when unread.
-- [ ] `fw sidecar e2e` (explicit + ambient) passes on the new topics — two live PASS records with `mode` and topic names in the JSON; then `fw sidecar e2e --peer 010-termlink` re-issued on the new address and its record committed (PASS or their-hops-open, per T-3426's rule)
+- [x] `fw sidecar e2e` (explicit + ambient) passes on the new topics — two live PASS records with `mode` and topic names in the JSON; then `fw sidecar e2e --peer 010-termlink` re-issued on the new address and its record committed (PASS or their-hops-open, per T-3426's rule)
+  - Evidence: `f12fa93d` explicit PASS 6/6 and `60867b67` ambient PASS with A1, both on `inbox:` topics (verification lines 8–9). Peer run `8dbad116` on `inbox:cacc73ea32b121dd/010-termlink`: H1/H2 PASS (3 envelopes with our client_msg_id on their inbox — the ladder re-posted twice inside the window), H4/H5 FAIL (no ACK on our `inbox:…/e2e-8dbad116-…` conversation within 30 min) — their hops open, verdict FAIL recorded verbatim (line 10 prints it). Committed by the parent session after the worker's turn ended with the run still live; TermLink was told on agent-chat-arc @1671 that the address changed.
 - [x] Docs: `docs/reports/T-3433-circuit-addressing.md` (the two forms, the derivation, the transition, what the hub now does for us); OBS-453 marked resolved; vendored copies synced, `bin/fw vendor self --check` clean; all sidecar suites green
   - Evidence: report written (172 lines) incl. the unmeasured-wake caveat; OBS-453 `status: resolved, promoted_to: T-3433` in `.context/inbox.yaml`. Vendor: all six sidecar files byte-identical to their vendored copies (scoped check in `## Verification`). The GLOBAL `fw vendor self --check` additionally covers `lib/bus.sh` + `lib/dispatch.sh`, which T-3434 holds uncommitted — the self-vendor guard withholds them by design ("withholding uncommitted file(s) not named by this caller"). See `## Decisions` for why the scoped check is the binding line.
 
