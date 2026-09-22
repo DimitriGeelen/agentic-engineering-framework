@@ -1,6 +1,8 @@
 #!/usr/bin/env bats
-# Regression: fabric drift/scan must enable shopt -s globstar so recursive
-# `**` patterns from .fabric/watch-patterns.yaml match nested files (T-1320).
+# Regression: fabric drift/scan must expand recursive `**` patterns from
+# .fabric/watch-patterns.yaml so nested files match (T-1320). Originally via
+# `shopt -s globstar` in bash; since T-1842 via expand_patterns.py
+# (glob.glob(..., recursive=True)) — see the source-level section (T-3436).
 #
 # Origin: termlink T-1130 pickup (P-037) → T-1319 inception (GO) → T-1320 build.
 #
@@ -13,17 +15,33 @@ load ../test_helper
 FABRIC="$FRAMEWORK_ROOT/agents/fabric/fabric.sh"
 
 # --- Source-level invariants (cheap; catch reverts) ---
+# T-1842 (4a1c95d0c, 2026-05-15) replaced the bash `shopt -s globstar` + glob
+# loop in do_drift and do_scan with a delegation to expand_patterns.py, which
+# globs with recursive=True. Same invariant (`**` recurses), different mechanism.
+# T-3436: the two tests here used to grep for the bash line and were red for
+# 130 days after T-1842 without anyone noticing (OBS-392: the nightly unit suite
+# never completes). Pin the mechanism that exists, not the one that was removed —
+# and pin it over the whole function body, not an -A<N> window that the next
+# insertion above the call silently pushes the line out of.
 
-@test "drift.sh enables shopt -s globstar before its glob loop" {
-    run grep -A20 '^do_drift' "$FRAMEWORK_ROOT/agents/fabric/lib/drift.sh"
+@test "drift.sh do_drift delegates pattern expansion to expand_patterns.py (T-1842)" {
+    run sed -n '/^do_drift()/,/^}/p' "$FRAMEWORK_ROOT/agents/fabric/lib/drift.sh"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"shopt -s globstar"* ]]
+    [[ "$output" == *"expand_patterns.py"* ]]
+    [[ "$output" != *"shopt -s globstar"* ]]
 }
 
-@test "register.sh enables shopt -s globstar before its glob loop" {
-    run grep -A30 '^do_scan' "$FRAMEWORK_ROOT/agents/fabric/lib/register.sh"
+@test "register.sh do_scan delegates pattern expansion to expand_patterns.py (T-1842)" {
+    run sed -n '/^do_scan()/,/^}/p' "$FRAMEWORK_ROOT/agents/fabric/lib/register.sh"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"shopt -s globstar"* ]]
+    [[ "$output" == *"expand_patterns.py"* ]]
+    [[ "$output" != *"shopt -s globstar"* ]]
+}
+
+@test "expand_patterns.py globs with recursive=True so ** reaches nested files" {
+    run grep -c 'glob.glob(.*recursive=True' "$FRAMEWORK_ROOT/agents/fabric/lib/expand_patterns.py"
+    [ "$status" -eq 0 ]
+    [ "$output" -ge 1 ]
 }
 
 # --- Behavior contract: what shopt -s globstar actually does ---
