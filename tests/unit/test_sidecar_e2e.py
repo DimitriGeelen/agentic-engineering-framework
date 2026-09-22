@@ -186,6 +186,21 @@ def test_ambient_mode_folds_h3_h5_into_a1_and_never_blocks_on_them(mods, tmp_pat
     assert r2["hops"]["A1"]["ok"] and r2["verdict"] == "PASS"
 
 
+def test_free_form_answer_from_the_responder_counts_but_strangers_and_other_threads_do_not(mods):
+    e2e, outbox, inbox = mods
+    cfg = _cfg(e2e)
+    # live run 0153e35a: un-instructed worker phrased its own ack
+    assert e2e.is_ack(cfg, sender=cfg.responder, conversation_id=cfg.conversation_id,
+                      body="ack SIDECAR-E2E abc12345")
+    assert e2e.is_ack(cfg, sender=cfg.responder, conversation_id=cfg.conversation_id, body=cfg.ack)
+    # hub envelopes without a from_agent are still accepted on the right thread
+    assert e2e.is_ack(cfg, sender=None, conversation_id=cfg.conversation_id, body=cfg.ack)
+    # wrong thread, wrong sender, or no run id: not an answer
+    assert not e2e.is_ack(cfg, sender=cfg.responder, conversation_id="other", body=cfg.ack)
+    assert not e2e.is_ack(cfg, sender="someone-else", conversation_id=cfg.conversation_id, body=cfg.ack)
+    assert not e2e.is_ack(cfg, sender=cfg.responder, conversation_id=cfg.conversation_id, body="hello")
+
+
 def test_report_round_trips_and_renders(mods, tmp_path):
     e2e, outbox, inbox = mods
     f = Fakes(e2e, outbox, inbox, _cfg(e2e))

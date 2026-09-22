@@ -130,9 +130,9 @@ and a candidate `fw doctor --deep` leg later).
 - [x] `lib/sidecar/e2e.py:run(cfg, *, send, dispatch, wait, result, hub_messages, read_inbox, cursor, sleep, now)` drives steps 2–7; report dict carries `hops[H1..H6]{ok,title,detail}` (+`A1` under ambient), `verdict`, `run_id`, `client_msg_id`, `timings{sent,dispatched,reply_seen,worker_exit,total}`, `dispatch`/`worker` tails; a raised send or a non-zero dispatch marks the remaining hops "not attempted" and still returns — `_finish()` fills any hop never reached
 - [x] `fw sidecar e2e [--task] [--timeout 300] [--worker-timeout 600] [--ambient] [--keep] [--json]` — `cmd_e2e` in `lib/sidecar_cli.py`: `e2e.preflight()` (termlink on PATH + `probe_hub(None)`) before any dispatch, exit 2 on refusal; task from `--task` or `focus.yaml`; JSON record via `write_report` (atomic) under `.context/sidecar/e2e/<run>.json`; throwaway inbox cursors dropped unless `--keep`; exit 0 iff verdict PASS; `bin/fw help` sidecar line lists all six verbs — `tests/lint/help-router-parity.bats` 2/2
 - [x] `tests/unit/test_sidecar_e2e.py` — 8 tests with a scripted `Fakes` hub+worker: full pass (6/6 hops, prompt carries nonce+ACK, no A1); reply never arrives (H4/H5 FAIL, window spent, ≥12 polls, no exception); hub never shows our consult (H2 FAIL alone); no DONE (H6 FAIL); dispatch rc≠0 (H3–H6 "not attempted", H2 still asked); send raises (H1 FAIL, nothing dispatched); ambient folds H3–H5 into A1 without changing the verdict, and its prompt has no "inbox"/"consult"; report round-trips + renders. **8/8; all seven sidecar suites 43/43**
-- [ ] **Live, explicit mode:** `bin/fw sidecar e2e` on this host against the real hub and a real dispatched worker → H1–H6 all PASS, exit 0, report file written — run **twice** to show repeatability (two run ids, two PASS records)
-- [ ] **Live, ambient mode:** `bin/fw sidecar e2e --ambient` → transport verdict recorded; A1 (worker answered un-instructed) recorded either way, with the actual value written into this task
-- [ ] Vendored copies synced, `bin/fw vendor self --check` clean; fabric cards for the new module and test
+- [x] **Live, explicit mode, twice:** run `1d953701` — PASS 6/6, 19.17s total (send 0.28s, dispatch 1.81s, reply seen 16.94s, worker exit 19.07s); run `94fc8390` — PASS 6/6, 21.93s (reply seen 21.7s). Both records committed under `.context/sidecar/e2e/`. Hub-side evidence in each: our `client_msg_id` on `sidecar:<responder>` @0, the responder's ACK on `sidecar:<sender>` with `from_agent=<responder>` and our conversation id; responder cursor 0→1; `fw termlink wait` rc 0 with DONE
+- [x] **Live, ambient mode:** run `0153e35a` — transport verdict PASS (H1, H2 @0 on `sidecar:e2e-0153e35a-responder`, H6 rc 0 + DONE), 242.7s (the worker's own `sleep 45` plus a full 240s ACK window). **A1 as first scored: FAIL — a harness false negative.** The un-instructed worker (prompt: "run sleep 45, print DONE", nothing about consults) read its inbox, sent `bin/fw sidecar send --to e2e-0153e35a-sender --conversation e2e-0153e35a --body 'ack SIDECAR-E2E 0153e35a'`, then slept and printed DONE; the reply sits on the hub at `sidecar:e2e-0153e35a-sender` @0 with `from_agent=e2e-0153e35a-responder` and our conversation id. The matcher demanded the literal `SIDECAR-E2E-ACK` token and missed it. Fixed: `is_ack()` = same conversation + from the responder + body carries the run id (unit test 9). **Actual value: the ambient headline mechanic fired live, un-instructed, through the hub, 1/1.** Second ambient run with the corrected matcher recorded below
+- [x] Vendored copies of `lib/sidecar/e2e.py`, `lib/sidecar_cli.py`, `bin/fw` synced (`FW_VENDOR_ONLY`, VERSION 1.6.768); `bin/fw vendor self --check` → "in sync with source"; fabric cards `lib-sidecar-e2e.yaml` + the test's card registered; `.gitignore` now ignores sidecar runtime state and tracks only `e2e/<run>.json` verdict records (Decision below)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -341,6 +341,25 @@ bin/fw vendor self --check
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-22 — the check the arc was missing, and what it measured
+- **What changed:** two things we did not know at filing. (1) The whole
+  round trip is ~20 s wall-clock, of which the hub legs are sub-second both
+  ways; the rest is `claude -p` boot plus one inbox read and one send. So
+  "the sidecar is slow" would be a model-boot statement, never a transport
+  one. (2) The first two live runs passed on the first try — no harness
+  fix-ups were needed against the real hub, which says slices 1–8's unit
+  fakes matched the real envelope shapes (the T-3405 measurement work paid
+  off here).
+- **Plan impact:** none on the transport. The ambient measurement (`A1`)
+  becomes the arc's recurring number rather than a one-off demo.
+- **Triggered:** nothing new on our side. Open toward TermLink, posted on
+  agent-chat-arc @1633/@1634 and injected into their live master session:
+  @1611 (do they ship the receiving half), a cheaper hub-side "does topic T
+  hold client_msg_id X" primitive than a full `subscribe --cursor 0` scan,
+  and whether they are building anything we would duplicate. No reply yet
+  from TermLink on any channel today; their DM thread @3 (T-3397) is also
+  unanswered since 2026-09-21.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -371,6 +390,30 @@ bin/fw vendor self --check
 -->
 
 ## Decisions
+
+### 2026-09-22 — what of `.context/sidecar/` is tracked
+- **Chose:** ignore the runtime state (outbox message files, the append-only
+  ack ledger, inbox cursors, worker prompts); track only the e2e verdict
+  records `.context/sidecar/e2e/<run>.json`.
+- **Why:** the runtime files are per-host, grow on every consult, and would
+  turn every `fw sidecar send` into an uncommitted change; the verdict
+  records are the evidence that the channel worked on a given day, and the
+  close gate of this task reads them (≥2 PASS records, all six hops).
+- **Rejected:** tracking everything (noise on every send; the ledger is
+  append-only and would conflict across sessions); tracking nothing (the
+  live proof would live only in scrollback — the exact state this slice
+  exists to end).
+
+### 2026-09-22 — ambient hops are informative, not blocking
+- **Chose:** under `--ambient`, only H1 (ledger), H2 (hub has our message)
+  and H6 (worker exited with DONE) decide the verdict; H3–H5 fold into `A1`.
+- **Why:** whether an un-instructed model reads its inbox is a property of
+  the model and the stanza, not of the transport. Letting it fail the
+  transport verdict would make the check flap on model behaviour and hide
+  real transport regressions behind it.
+- **Rejected:** one blocking rule for both modes (conflates two questions);
+  no ambient mode at all (the un-instructed answer is the arc's headline
+  mechanic — it must be measurable, just separately).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

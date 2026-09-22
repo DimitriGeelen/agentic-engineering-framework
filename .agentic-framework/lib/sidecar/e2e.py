@@ -187,6 +187,26 @@ def _decoded_body(env: dict) -> str:
         return ""
 
 
+def is_ack(cfg: Config, *, sender: str | None, conversation_id: str | None, body: str | None) -> bool:
+    """Does a message count as the responder's answer to our consult?
+
+    The conversation id must match and the message must come from the
+    responder. The body must carry the run id — the exact `SIDECAR-E2E-ACK
+    <run>` token is what the explicit prompt asks for, but an UN-instructed
+    worker phrases its own answer: live run 0153e35a replied
+    `ack SIDECAR-E2E 0153e35a` on the right conversation and the first
+    matcher (exact token only) scored it as no answer. A false negative in
+    the ambient measurement is worse than a loose match, because the whole
+    point of A1 is to count real answers.
+    """
+    if conversation_id != cfg.conversation_id:
+        return False
+    if sender and sender != cfg.responder:
+        return False
+    text = body or ""
+    return cfg.ack in text or cfg.run_id in text
+
+
 def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
         result=real_result, hub_messages=real_hub_messages, read_inbox=real_inbox,
         cursor=real_cursor, sleep=time.sleep, now=time.monotonic,
@@ -249,7 +269,8 @@ def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
         polls += 1
         try:
             for msg in read_inbox(cfg.sender):
-                if msg.get("conversation_id") == cfg.conversation_id and cfg.ack in (msg.get("body") or ""):
+                if is_ack(cfg, sender=msg.get("from"), conversation_id=msg.get("conversation_id"),
+                          body=msg.get("body")):
                     reply = msg
                     break
         except Exception as exc:
@@ -267,8 +288,9 @@ def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
     _check_h2(report, hub_messages, responder_topic, cmid)
     sender_msgs = hub_messages(sender_topic, 0, 200)
     acks = [m for m in sender_msgs
-            if (m.get("metadata") or {}).get("conversation_id") == cfg.conversation_id
-            and cfg.ack in _decoded_body(m)]
+            if is_ack(cfg, sender=(m.get("metadata") or {}).get("from_agent"),
+                      conversation_id=(m.get("metadata") or {}).get("conversation_id"),
+                      body=_decoded_body(m))]
     errs = [m["_error"] for m in sender_msgs if "_error" in m]
     _hop(report, "H4", bool(acks),
          f"{len(acks)} ACK envelope(s) on {sender_topic}"
