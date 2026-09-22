@@ -1208,7 +1208,7 @@ show_help() {
     echo -e "  ${GREEN}notify${NC} <cmd>          Push notifications (setup, test, enable, disable, status)"
     echo -e "  ${GREEN}cron${NC} <cmd>            Cron registry management (generate, status)"
     echo -e "  ${GREEN}peer${NC} <cmd>            v2 peer-consult (subscribe to TermLink inbox.queued + spawn responders)"
-    echo -e "  ${GREEN}sidecar${NC} <cmd>         Peer-consult sidecar: send a consult to an agent, read your inbox (whoami, send, inbox)"
+    echo -e "  ${GREEN}sidecar${NC} <cmd>         Peer-consult sidecar: whoami, send, inbox, status, sweep, e2e (live end-to-end check)"
     echo -e "  ${GREEN}config${NC} <cmd>           Project config (set, get, list) — persistent settings in .framework.yaml"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     # T-2808: this line used to read "(default port 3000)". The port is per-project

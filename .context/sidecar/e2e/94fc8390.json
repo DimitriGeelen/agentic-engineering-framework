@@ -1,0 +1,69 @@
+{
+  "blocking_hops": [
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "H6"
+  ],
+  "client_msg_id": "1bd06cc8-7d8d-4f9e-8977-41e07cd70a4e",
+  "conversation_id": "e2e-94fc8390",
+  "dispatch": {
+    "rc": 0,
+    "tail": "  Focus seeded: focus.e2e-94fc8390-responder.yaml -> T-3423\nSpawned session 'e2e-94fc8390-responder' via tmux backend\nWaiting for session to register (timeout: 30s)...\nSession 'e2e-94fc8390-responder' is ready\nOK  Session 'e2e-94fc8390-responder' registered\n  Tagged: T-3423\n  Task-type: build\nWorker spawned: e2e-94fc8390-responder (wdir: /tmp/tl-dispatch/e2e-94fc8390-responder)\n"
+  },
+  "finished_at": "2026-09-22T08:47:18.810848+00:00",
+  "hops": {
+    "H1": {
+      "detail": "state=INJECTED_NOW delivered=True",
+      "ok": true,
+      "title": "ledger: consult row INJECTED_* (our side)"
+    },
+    "H2": {
+      "detail": "1 envelope(s) with our client_msg_id on sidecar:e2e-94fc8390-responder @0",
+      "ok": true,
+      "title": "hub: responder topic holds our client_msg_id"
+    },
+    "H3": {
+      "detail": "sidecar:e2e-94fc8390-responder cursor=1",
+      "ok": true,
+      "title": "worker read its inbox (responder cursor advanced)"
+    },
+    "H4": {
+      "detail": "1 ACK envelope(s) on sidecar:e2e-94fc8390-sender from_agent=e2e-94fc8390-responder",
+      "ok": true,
+      "title": "hub: sender topic holds the responder's ACK on our conversation"
+    },
+    "H5": {
+      "detail": "reply from e2e-94fc8390-responder @0",
+      "ok": true,
+      "title": "inbox: sender's inbox surfaces the ACK"
+    },
+    "H6": {
+      "detail": "wait rc=0 DONE=yes",
+      "ok": true,
+      "title": "worker exited 0 and its result carries DONE"
+    }
+  },
+  "mode": "explicit",
+  "polls": 5,
+  "responder": "e2e-94fc8390-responder",
+  "run_id": "94fc8390",
+  "sender": "e2e-94fc8390-sender",
+  "started_at": "2026-09-22T08:46:56.885308+00:00",
+  "task": "T-3423",
+  "timings": {
+    "dispatched": 1.62,
+    "reply_seen": 21.7,
+    "sent": 0.07,
+    "total": 21.93,
+    "worker_exit": 21.83
+  },
+  "verdict": "PASS",
+  "worker": {
+    "result_tail": "Delivered successfully. Test complete.\n\nDONE\n",
+    "wait_rc": 0,
+    "wait_tail": "Worker e2e-94fc8390-responder finished (exit: 0)\n"
+  }
+}

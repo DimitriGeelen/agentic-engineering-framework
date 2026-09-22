@@ -23,7 +23,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lib.sidecar import delivery, inbox, outbox, status as status_mod  # noqa: E402
+from lib.sidecar import delivery, e2e, inbox, outbox, status as status_mod  # noqa: E402
 from lib.sidecar import termlink_transport as transport  # noqa: E402
 
 
@@ -120,6 +120,45 @@ def cmd_sweep(args) -> int:
     return 0
 
 
+def cmd_e2e(args) -> int:
+    """Live end-to-end run against the real hub and a real dispatched worker.
+
+    T-3423. Preflight first so a missing hub never costs a worker; then
+    lib/sidecar/e2e.py:run with the real collaborators; JSON record under
+    .context/sidecar/e2e/<run>.json; exit 0 only when the blocking hops pass.
+    """
+    ok, why = e2e.preflight()
+    if not ok:
+        print(f"e2e: preflight refused — {why}", file=sys.stderr)
+        return 2
+    task = args.task or e2e.focused_task()
+    if not task:
+        print("e2e: no --task and no focused task — dispatch needs a task reference",
+              file=sys.stderr)
+        return 2
+    cfg = e2e.Config(task=task, timeout=args.timeout, ambient=args.ambient,
+                     worker_timeout=args.worker_timeout)
+    if not args.json:
+        print(f"e2e: preflight ok ({why}); run={cfg.run_id} "
+              f"mode={'ambient' if cfg.ambient else 'explicit'} — "
+              f"sending, then dispatching {cfg.responder} …", flush=True)
+    report = e2e.run(cfg)
+    path = e2e.write_report(report)
+    report["report_path"] = str(path)
+    if not args.keep:
+        # Drop the throwaway inbox cursors so `fw sidecar status` stays readable.
+        state = inbox.load_state()
+        for topic in (inbox.inbox_topic(cfg.sender), inbox.inbox_topic(cfg.responder)):
+            state.get("topics", {}).pop(topic, None)
+        inbox.save_state(state)
+    if args.json:
+        print(json.dumps(report, indent=2, sort_keys=True))
+    else:
+        print(e2e.render(report))
+        print(f"  report: {path}")
+    return 0 if report["verdict"] == "PASS" else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="fw sidecar",
                                      description=__doc__.split("\n")[0])
@@ -157,6 +196,21 @@ def build_parser() -> argparse.ArgumentParser:
                         "(cron cadence for resolve_expired; never re-sends)")
     sw.add_argument("--json", action="store_true")
     sw.set_defaults(func=cmd_sweep)
+
+    ee = sub.add_parser("e2e", help="live end-to-end check: real hub, real dispatched "
+                        "worker, every hop verified from both sides (T-3423)")
+    ee.add_argument("--task", default=None,
+                    help="task id for the dispatched worker (default: focused task)")
+    ee.add_argument("--timeout", type=int, default=300,
+                    help="seconds to wait for the worker's reply (default 300)")
+    ee.add_argument("--worker-timeout", type=int, default=600,
+                    help="dispatch kill-watchdog for the responder (default 600)")
+    ee.add_argument("--ambient", action="store_true",
+                    help="prompt never mentions consults; measures the T-3407 stanza alone")
+    ee.add_argument("--keep", action="store_true",
+                    help="keep the throwaway inbox cursors after the run")
+    ee.add_argument("--json", action="store_true")
+    ee.set_defaults(func=cmd_e2e)
 
     return parser
 

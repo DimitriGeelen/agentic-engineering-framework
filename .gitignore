@@ -125,4 +125,14 @@ tests/unit/_bvp_cli_imported*.py
 # T-3038 (OBS-291): per-worker session-scoped focus files. Ephemeral worker
 # state — the shared .context/working/focus.yaml stays tracked, these do not.
 .context/working/focus.*.yaml
+
+# T-3423 (arc-011 sidecar): runtime state of the peer-consult channel is
+# per-host and append-only (outbox message files, the ack ledger, inbox
+# cursors, worker prompts). Only the end-to-end verdict records
+# (.context/sidecar/e2e/<run>.json) are tracked — they are the evidence that
+# the channel worked on a given day, and the T-3423 close gate reads them.
+.context/sidecar/outbox/
+.context/sidecar/awaiting-ack.jsonl
+.context/sidecar/inbox-state.json
+.context/sidecar/e2e/*-prompt.md
 docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
