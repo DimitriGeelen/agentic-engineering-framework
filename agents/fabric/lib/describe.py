@@ -77,10 +77,17 @@ def _clean_lines(lines, limit=None):
     for raw in lines:
         line = raw.strip()
         if not line:
-            break  # blank line ends the first paragraph
+            if out:
+                break  # a blank line ends the first paragraph
+            continue   # …but leading blanks are just layout ("""\nText…)
         if _SEPARATOR_RE.match(line):
             continue
         if _NOISE_RE.match(line):
+            continue
+        # A line with no whitespace at all is a filename or a marker, not a
+        # description — `# lib/render_surface.sh` above the real sentence is
+        # the common shape here.
+        if " " not in line:
             continue
         out.append(line)
         if limit is not None and len(out) >= limit:
@@ -245,7 +252,11 @@ def derive_purpose_from_header(abs_path):
         reader = _EXT_READERS[".sh"]
     try:
         with open(abs_path, errors="replace") as f:
-            src = f.read(64 * 1024)
+            # 1 MB, not 64 KB: a truncated read makes ast.parse raise
+            # SyntaxError on any Python file larger than the cap, so every
+            # long module silently lost its docstring and was reported as
+            # "describes itself nowhere" (enrich.py, 60 KB, was one).
+            src = f.read(1024 * 1024)
     except OSError:
         return None
     if not src.strip():

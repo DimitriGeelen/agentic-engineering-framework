@@ -19,6 +19,11 @@ from datetime import date
 
 import yaml
 
+# T-3430: the describe pass. Imported by path because enrich.py is run as a
+# script from an arbitrary cwd, so a plain `import describe` is not reliable.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import describe as _describe  # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # YAML helpers
@@ -1385,6 +1390,50 @@ def apply_edges(cards, forward, reverse, dry_run, verbose):
 
 
 # ---------------------------------------------------------------------------
+# Describe pass (T-3430)
+# ---------------------------------------------------------------------------
+
+def apply_describe(targets, project_root, dry_run=False):
+    """Fill placeholder purpose/subsystem on the target cards.
+
+    Placeholders ONLY — a purpose a human wrote is never overwritten, and a
+    card whose subsystem is already routed is left alone. Returns
+    ``(described, refusals, unrouted, touched_paths)``; `refusals` is the list
+    of files that describe themselves nowhere, which the caller must print
+    rather than paper over.
+    """
+    rules = _describe.load_subsystem_rules(project_root)
+    described = 0
+    refusals = []
+    unrouted = []
+    touched = []
+
+    for card_path, card in sorted(targets.items()):
+        if not card:
+            continue
+        updates, refusal = _describe.describe_card(card, project_root, rules)
+        if refusal:
+            refusals.append(refusal)
+        if "purpose" in updates:
+            described += 1
+        if "subsystem" not in updates and _describe.is_placeholder_subsystem(
+                card.get("subsystem")):
+            loc = card.get("location") or card.get("id") or "?"
+            unrouted.append(loc)
+        if not updates:
+            continue
+        touched.append(card_path)
+        if not dry_run:
+            card.update(updates)
+
+    if not dry_run:
+        for card_path in touched:
+            save_card(card_path, targets[card_path])
+
+    return described, refusals, unrouted, touched
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -1398,6 +1447,18 @@ def main():
                         help="Only enrich cards in this subsystem")
     parser.add_argument("--verbose", "-v", action="store_true",
                         help="Show each detected edge")
+    # T-3430. --describe is ON by default: the placeholders are the problem the
+    # pass exists to remove, and a fill-only pass that never overwrites a human
+    # sentence has no failure mode worth opting into. --no-describe skips it.
+    parser.add_argument("--describe", dest="describe", action="store_true",
+                        default=True,
+                        help="Fill placeholder purpose/subsystem (default: on)")
+    parser.add_argument("--no-describe", dest="describe", action="store_false",
+                        help="Skip the describe pass, edges only")
+    parser.add_argument("--describe-only", action="store_true",
+                        help="Run only the describe pass — no edge detection")
+    parser.add_argument("--list-refusals", action="store_true",
+                        help="Print every refusal, not just the first 10")
     parser.add_argument("cards", nargs="*",
                         help="Specific card paths to enrich (default: all)")
     args = parser.parse_args()
@@ -1438,6 +1499,33 @@ def main():
     mode = "DRY RUN" if args.dry_run else "ENRICHING"
     print(f"\n=== Fabric Enrichment ({mode}) ===")
     print(f"Processing {len(targets)} cards...\n")
+
+    # Phase 0: describe (T-3430) — runs BEFORE edges so a card the describe
+    # pass routes into a subsystem is reported under that subsystem below.
+    if args.describe:
+        described, refusals, unrouted, touched = apply_describe(
+            targets, project_root, args.dry_run)
+        print(f"=== Describe pass ===")
+        print(f"described {described}, refused {len(refusals)}")
+        shown = refusals if args.list_refusals else refusals[:10]
+        for line in shown:
+            print(f"  ! {line}")
+        if len(refusals) > len(shown):
+            print(f"  … and {len(refusals) - len(shown)} more "
+                  f"(--list-refusals to see all)")
+        if unrouted:
+            head = unrouted if args.list_refusals else unrouted[:10]
+            print(f"unrouted subsystem: {len(unrouted)} "
+                  f"(add a paths: pattern to .fabric/subsystems.yaml)")
+            for loc in head:
+                print(f"  ? {loc}")
+            if len(unrouted) > len(head):
+                print(f"  … and {len(unrouted) - len(head)} more")
+        print("")
+        if args.describe_only:
+            if args.dry_run:
+                print("(Dry run — no files were modified)")
+            return 0
 
     # Phase 1: Compute forward edges (depends_on)
     unresolved = {}

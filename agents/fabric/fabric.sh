@@ -10,7 +10,7 @@
 #   impact <file-path>  Full transitive downstream chain
 #   blast-radius [ref]  Downstream impact of a commit (default: HEAD)
 #   ui <route>          Interactive elements on a route
-#   drift               Detect unregistered, orphaned, and stale components
+#   drift               Detect unregistered, orphaned, stale and under-populated components
 #   validate [id]       Deep-validate component edges
 #   overview            Compact subsystem summary for onboarding
 #   subsystem <id>      Drill into one subsystem
@@ -73,6 +73,9 @@ show_usage() {
     echo ""
     echo "Enrichment:"
     echo "  enrich [--dry-run] [--subsystem X]  Auto-detect dependency edges"
+    echo "         [--no-describe]              Skip the purpose/subsystem fill (default: on)"
+    echo "         [--describe-only]            Fill purpose/subsystem, no edge detection"
+    echo "         [--list-refusals]            Name every file that describes itself nowhere"
     echo ""
     echo "Meta:"
     echo "  stats                Component count, edge count, coverage"
