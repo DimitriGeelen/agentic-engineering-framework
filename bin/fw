@@ -2179,6 +2179,37 @@ else:
         fi
     fi
 
+    # Check: BVP driver scorability (T-3428, OBS-463 leg 3)
+    # Mirrors agents/audit/audit.sh:check_bvp_driver_scorability. A value
+    # driver the estimator cannot score is only a name: T-3427 keeps it out of
+    # the ranking denominator, but it also contributes nothing while its
+    # weight and rubric prose read as a live axis. T-3428 made a declarative
+    # `scoring:` block sufficient, so an unscorable driver is now an authoring
+    # gap, not a framework limitation. WARN-only. Silent when the project has
+    # no policy/value-drivers.yaml (never bootstrapped BVP).
+    local _bvp_scor_lib="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/bvp-scorability.sh"
+    if [ -f "$_bvp_scor_lib" ] && [ -f "$PROJECT_ROOT/policy/value-drivers.yaml" ]; then
+        # shellcheck source=/dev/null
+        source "$_bvp_scor_lib"
+        local _bvp_rows _bvp_rc _bvp_n
+        _bvp_rows=$(fw_bvp_unscorable_drivers "$PROJECT_ROOT" 2>/dev/null); _bvp_rc=$?
+        if [ "$_bvp_rc" -eq 2 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  BVP driver scorability scan did not run"
+            echo -e "         Run: bin/fw bvp driver --validate-scoring <file>  (estimator unimportable or policy YAML broken)"
+            warnings=$((warnings + 1))
+        elif [ "$_bvp_rc" -eq 0 ] && [ -n "$_bvp_rows" ]; then
+            _bvp_n=$(printf '%s\n' "$_bvp_rows" | grep -c .)
+            echo -e "  ${YELLOW}WARN${NC}  $_bvp_n BVP driver(s) have neither a handler nor a scoring spec"
+            printf '%s\n' "$_bvp_rows" | while IFS=$'\t' read -r _d_id _d_name _d_src _d_reason; do
+                [ -n "$_d_id" ] && echo -e "         $_d_id ($_d_src) — $_d_reason"
+            done
+            echo -e "         Give one a mechanism: bin/fw bvp driver --validate-scoring <file> (schema: policy/value-drivers.yaml header, T-3428)"
+            warnings=$((warnings + 1))
+        elif [ "$_bvp_rc" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  BVP drivers: every active free and arc-scoped driver is scorable"
+        fi
+    fi
+
     # Check: framework MCP manifest (T-2265, arc-010 Slice 2)
     # T-2461: framework ASSETS (manifest, tool-set, manifest.py) live under
     # FRAMEWORK_ROOT — which equals PROJECT_ROOT in the framework repo, but is
