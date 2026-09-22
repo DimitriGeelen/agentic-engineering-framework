@@ -1,0 +1,21 @@
+id: tests/unit/t3430_fabric_audit_doctor.bats
+name: t3430_fabric_audit_doctor
+type: script
+subsystem: tests
+location: tests/unit/t3430_fabric_audit_doctor.bats
+tags: []
+
+purpose: "T-3430: the audit + doctor surfaces for under-populated fabric cards."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-22
+created_by: unknown

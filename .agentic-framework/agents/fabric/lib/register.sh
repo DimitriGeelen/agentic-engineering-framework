@@ -259,21 +259,45 @@ else:
         esac
     fi
 
+    # T-3430: derive purpose + subsystem from the file itself before falling
+    # back to the placeholders. describe.py emits base64 so a purpose sentence
+    # containing quotes, backticks or `$` survives the trip through bash.
+    # A refusal comes back as an empty FW_PURPOSE_B64 and is printed, not faked.
+    local FW_PURPOSE_B64="" FW_PURPOSE_SOURCE="" FW_SUBSYSTEM=""
+    local _derived
+    _derived=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$(dirname "${BASH_SOURCE[0]}")/describe.py" \
+        --emit-shell "$rel_path" --created-by "${CURRENT_TASK:-}" 2>/dev/null || true)
+    if [ -n "$_derived" ]; then
+        # Only the three assignments we emit — nothing else is eval'd.
+        while IFS='=' read -r _k _v; do
+            case "$_k" in
+                FW_PURPOSE_B64) FW_PURPOSE_B64="$_v" ;;
+                FW_PURPOSE_SOURCE) FW_PURPOSE_SOURCE="$_v" ;;
+                FW_SUBSYSTEM) FW_SUBSYSTEM="$_v" ;;
+            esac
+        done <<< "$_derived"
+    fi
+
+    local purpose_line purpose_source_line
+    local refusal=""
+    if [ -n "$FW_PURPOSE_B64" ]; then
+        local _purpose
+        _purpose=$(printf '%s' "$FW_PURPOSE_B64" | base64 -d 2>/dev/null || true)
+        # YAML double-quoted scalar: backslash and double-quote are the only escapes.
+        _purpose=${_purpose//\\/\\\\}
+        _purpose=${_purpose//\"/\\\"}
+        purpose_line="purpose: \"$_purpose\""
+        purpose_source_line="purpose_source: $FW_PURPOSE_SOURCE"
+    else
+        purpose_line="purpose: \"TODO: describe what this component does\""
+        purpose_source_line="purpose_source: none"
+        refusal="$rel_path: describes itself nowhere — write a header comment"
+    fi
+
     # Infer subsystem from path (fallback if no rule matched)
     if [ -z "$subsystem" ]; then
-        subsystem="unknown"
-        case "$rel_path" in
-            agents/context/*) subsystem="context-fabric" ;;
-            agents/audit/*) subsystem="audit" ;;
-            agents/git/*) subsystem="git-traceability" ;;
-            agents/handover/*) subsystem="handover" ;;
-            agents/healing/*) subsystem="healing" ;;
-            agents/fabric/*) subsystem="component-fabric" ;;
-            agents/task-create/*) subsystem="task-management" ;;
-            web/*) subsystem="watchtower" ;;
-            lib/*) subsystem="framework-core" ;;
-            bin/*) subsystem="framework-core" ;;
-        esac
+        subsystem="${FW_SUBSYSTEM:-unknown}"
+        [ -n "$subsystem" ] || subsystem="unknown"
     fi
 
     # Infer name from filename
@@ -299,7 +323,8 @@ subsystem: $subsystem
 location: $rel_path
 tags: []
 
-purpose: "TODO: describe what this component does"
+$purpose_line
+$purpose_source_line
 
 depends_on:
   # Format: - target: <relative-path>
@@ -318,6 +343,14 @@ EOF
     echo -e "${GREEN}Card created: $card_file${NC}"
     echo "  Type: $comp_type"
     echo "  Subsystem: $subsystem"
+    if [ -n "$refusal" ]; then
+        echo -e "  ${YELLOW}REFUSED:${NC} $refusal"
+    else
+        echo "  Purpose: (from $FW_PURPOSE_SOURCE)"
+    fi
+    if [ "$subsystem" = "unknown" ]; then
+        echo -e "  ${YELLOW}REFUSED:${NC} $rel_path: no subsystem rule matches — add a paths: pattern to .fabric/subsystems.yaml"
+    fi
     return 0
 }
 

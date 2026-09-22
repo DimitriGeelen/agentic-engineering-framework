@@ -193,12 +193,43 @@ PYEOF
     [ "$stale" -eq 0 ] && echo "  (none)"
 
     echo ""
-    echo -e "${BOLD}Summary:${NC} unregistered: $unregistered, orphaned: $orphaned, stale: $stale"
+
+    # 4. Under-populated cards (T-3430). A card that says nothing is invisible
+    # to every class above: it IS registered, its file DOES exist, and its
+    # absent edges cannot be stale. 792 of 1314 cards on this repo carried the
+    # template TODO and no health check had an opinion about it.
+    echo -e "${CYAN}Under-populated cards:${NC}"
+    local under_populated=0 up_todo=0 up_unknown=0 up_noedges=0
+    local _up_raw
+    _up_raw=$(python3 "$LIB_DIR/underpopulated.py" "$COMPONENTS_DIR" 2>/dev/null || true)
+    if [ -n "$_up_raw" ]; then
+        local _up_lines
+        _up_lines=$({ printf '%s\n' "$_up_raw" | grep -v '^##UP_' || true; })
+        [ -n "$_up_lines" ] && printf '%s\n' "$_up_lines"
+        up_todo=$(printf '%s\n' "$_up_raw" | sed -n 's/^##UP_TODO=\([0-9]*\)##$/\1/p')
+        up_unknown=$(printf '%s\n' "$_up_raw" | sed -n 's/^##UP_UNKNOWN=\([0-9]*\)##$/\1/p')
+        up_noedges=$(printf '%s\n' "$_up_raw" | sed -n 's/^##UP_NOEDGES=\([0-9]*\)##$/\1/p')
+        under_populated=$(printf '%s\n' "$_up_raw" | sed -n 's/^##UP_TOTAL=\([0-9]*\)##$/\1/p')
+    fi
+    : "${up_todo:=0}" "${up_unknown:=0}" "${up_noedges:=0}" "${under_populated:=0}"
+    if [ "$under_populated" -eq 0 ]; then
+        echo "  (none)"
+    else
+        echo "  TODO purpose: $up_todo, unknown subsystem: $up_unknown, no edges: $up_noedges"
+        echo "  Fix: bin/fw fabric enrich --describe-only"
+    fi
+
+    echo ""
+    echo -e "${BOLD}Summary:${NC} unregistered: $unregistered, orphaned: $orphaned, stale: $stale, under-populated: $under_populated"
 
     if [ "$summary_flag" = "--summary" ]; then
         echo "unregistered: $unregistered"
         echo "orphaned: $orphaned"
         echo "stale: $stale"
+        echo "under-populated: $under_populated"
+        echo "under-populated-todo-purpose: $up_todo"
+        echo "under-populated-unknown-subsystem: $up_unknown"
+        echo "under-populated-no-edges: $up_noedges"
     fi
 
     return 0

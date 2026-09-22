@@ -1,8 +1,13 @@
 ---
 id: T-3430
-name: "Component Fabric card quality: fill purpose/subsystem from the source's own docstring at register+enrich time (refuse, never guess), add an under-populated class to drift, and a cron that sweeps TODO cards — 792 of 1314 cards carry the template TODO (OBS-464)"
+name: "Component Fabric card quality: fill purpose/subsystem from the source's own
+  docstring at register+enrich time (refuse, never guess), add an under-populated
+  class to drift, and a cron that sweeps TODO cards — 792 of 1314 cards carry the
+  template TODO (OBS-464)"
 description: >
-  Component Fabric card quality: fill purpose/subsystem from the source's own docstring at register+enrich time (refuse, never guess), add an under-populated class to drift, and a cron that sweeps TODO cards — 792 of 1314 cards carry the template TODO (OBS-464)
+  Component Fabric card quality: fill purpose/subsystem from the source's own docstring
+  at register+enrich time (refuse, never guess), add an under-populated class to drift,
+  and a cron that sweeps TODO cards — 792 of 1314 cards carry the template TODO (OBS-464)
 
 status: started-work
 workflow_type: build
@@ -22,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T11:54:03Z
-last_update: 2026-09-22T11:54:03Z
-date_finished: null
+last_update: '2026-09-22T12:00:33Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +39,35 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-22T12:00:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=317,acs=9)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-22T12:00:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3430: Component Fabric card quality: fill purpose/subsystem from the source's own docstring at register+enrich time (refuse, never guess), add an under-populated class to drift, and a cron that sweeps TODO cards — 792 of 1314 cards carry the template TODO (OBS-464)
@@ -89,13 +123,38 @@ way belongs in writing.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `agents/fabric/lib/describe.py` (new): `derive_purpose(path) -> (text, source)|None` (docstring → header comment → created_by task title/report → None), `derive_subsystem(path) -> str|None` (subsystems.yaml + watch-pattern groups); unit tests cover a Python module docstring, a bash header block, a Markdown first paragraph, a YAML `#` header, a task-title fallback, and the refusal case
-- [ ] `register.sh` calls the deriver so a freshly registered file with a docstring gets a real `purpose`, a `purpose_source: docstring`, and a resolved `subsystem`; a file with none keeps `TODO` and the register output prints the refusal line
-- [ ] `fw fabric enrich --describe` (default on; `--no-describe` to skip) fills placeholders only, never overwrites non-placeholder text, writes `purpose_source:`, and prints `described N, refused M (listed)`; `--dry-run` honoured
-- [ ] `fw fabric drift` reports an `under-populated:` class (TODO purpose / unknown subsystem / zero edges, each counted, first 10 ids) alongside unregistered/orphaned/stale; `tests/` pin a fixture card of each kind
-- [ ] Cron entry `fabric-describe-daily` in `.context/cron-registry.yaml` (own `flock`, `origin_task: T-3430`, off the audit minute), `fw cron generate` + `fw cron install` run, doctor "Cron registry in sync"; `fw audit --section structure` WARNs `Fabric: N under-populated card(s)` when N>0 and PASSes at 0; `fw doctor` mirrors
-- [ ] Live on this repo: one `fw fabric enrich --describe` run — before/after counts of TODO purposes and unknown subsystems recorded here (expected: a large drop, and a refusal list naming files that genuinely describe themselves nowhere), plus the index verdict (does `web/search.py` ingest cards: yes/no, with the line)
-- [ ] Vendored copies synced (`bin/fw vendor self --check` clean); fabric cards for the new module and tests; help-router parity lint green if `bin/fw` changed
+- [x] `agents/fabric/lib/describe.py` (new): `derive_purpose(path) -> (text, source)|None` (docstring → header comment → created_by task title/report → None), `derive_subsystem(path) -> str|None` (subsystems.yaml + watch-pattern groups); unit tests cover a Python module docstring, a bash header block, a Markdown first paragraph, a YAML `#` header, a task-title fallback, and the refusal case
+  - Evidence: `agents/fabric/lib/describe.py` (a5df7f0a0); `tests/unit/test_t3430_describe.py` — 30 tests green, covering all six required cases plus the task-report fallback, header-beats-task precedence and six refusal shapes.
+- [x] `register.sh` calls the deriver so a freshly registered file with a docstring gets a real `purpose`, a `purpose_source: docstring`, and a resolved `subsystem`; a file with none keeps `TODO` and the register output prints the refusal line
+  - Evidence: `agents/fabric/lib/register.sh` (41b6b8b21); `tests/unit/t3430_fabric_register_describe.bats` — 8 tests green. Live: `fw fabric register agents/fabric/lib/describe.py` → `purpose_source: docstring`, `subsystem: component-fabric`.
+- [x] `fw fabric enrich --describe` (default on; `--no-describe` to skip) fills placeholders only, never overwrites non-placeholder text, writes `purpose_source:`, and prints `described N, refused M (listed)`; `--dry-run` honoured
+  - Evidence: `agents/fabric/lib/enrich.py` (fa7ded85d); `tests/unit/test_t3430_enrich_describe.py` — 11 tests green, driven through the CLI. Live run printed `described 760, refused 32` with all 32 named.
+- [x] `fw fabric drift` reports an `under-populated:` class (TODO purpose / unknown subsystem / zero edges, each counted, first 10 ids) alongside unregistered/orphaned/stale; `tests/` pin a fixture card of each kind
+  - Evidence: `agents/fabric/lib/drift.sh` + `agents/fabric/lib/underpopulated.py` (6b6fe8a68); `tests/unit/t3430_fabric_drift_underpopulated.bats` — 10 tests green, one fixture per sub-class plus the clean-card control.
+- [x] Cron entry `fabric-describe-daily` in `.context/cron-registry.yaml` (own `flock`, `origin_task: T-3430`, off the audit minute), `fw cron generate` + `fw cron install` run, doctor "Cron registry in sync"; `fw audit --section structure` WARNs `Fabric: N under-populated card(s)` when N>0 and PASSes at 0; `fw doctor` mirrors
+  - Evidence: registry entry at `26 4 * * *` with its own lock; generate + install run; `fw doctor` → `OK Cron registry in sync`. Live audit (dirty corpus) → `[WARN] Fabric: 838 under-populated card(s) / TODO purpose: 792, unknown subsystem: 564, no edges: 189`. Live doctor → the same three lines. PASS-at-0 wording pinned by `tests/unit/t3430_fabric_audit_doctor.bats` (10 tests green).
+- [x] Live on this repo: one `fw fabric enrich --describe` run — before/after counts of TODO purposes and unknown subsystems recorded here (expected: a large drop, and a refusal list naming files that genuinely describe themselves nowhere), plus the index verdict (does `web/search.py` ingest cards: yes/no, with the line)
+  - Evidence: commit 78b83cc2b. TODO purpose **792 → 32**; unknown subsystem **564 → 3**; no-edges 189 → 189 (untouched by design); under-populated total **838 → 209**. 760 purposes written (408 header-comment, 343 docstring, 11 markdown). Index verdict below.
+- [x] Vendored copies synced (`bin/fw vendor self --check` clean); fabric cards for the new module and tests; help-router parity lint green if `bin/fw` changed
+  - Evidence: all nine edited framework files byte-identical under `.agentic-framework/` (see Verification). Cards registered for `describe.py`, `underpopulated.py`, `fabric_doctor_facts.py` and all four test files. See Updates for the one file `vendor self` withheld — another worker's uncommitted edit, not mine.
+
+#### Index verdict — YES, the search index ingests the cards
+
+`web/search_utils.py:100` lists `(".fabric", "components")` in `AUTHORED_DIRS`,
+and `:92` sets `INDEXED_SUFFIXES = (".md", ".yaml", ".yml")` — so every card's
+full body, `purpose` included, is indexed by the Watchtower `/search` index
+(`web/search.py:build_index` → `collect_files()`).
+
+There is no re-index verb to run, and none is needed: `web/search.py:23`
+`STALE_SECONDS = 60` makes `get_index()` rebuild whenever the cached index is
+more than a minute old. Confirmed live after the describe run — searching for a
+purpose this run wrote (`"WSGI entry point for Watchtower."`) returns
+`.fabric/components/web-wsgi.yaml`.
+
+The operator's assumption was therefore correct, and it is the reason the
+refuse-never-guess rule matters rather than being fastidiousness: a fabricated
+purpose would not merely sit on a card, it would be retrievable text competing
+with real descriptions in the index.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -130,131 +189,40 @@ way belongs in writing.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
-# Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
-# state — an exact live count, or a grep of live `fw audit`/`fw doctor` output
-# for a specific corpus entity (a named arc, a task count, a census number).
-# The corpus moves under the check, and the line rots: it goes red (or vanishes
-# its pattern) for reasons unrelated to the code under test, blocking closes.
-# Pin the INVARIANT (categories sum, count > 0, property holds) or run the code
-# against a COMMITTED FIXTURE — never the live count or a live-audit line.
-# Origin: T-2969 line grepping live audit for one arc's status; T-2871's census
-# test pinning exact live counts (56→74 files) — both blocked closes (OBS-377).
-#
-# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
-#
-# THE DEFAULT — redirect to a file, then grep the file:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-#     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
-# the verdict. Reach for this first; the alternative below is the special case.
-#
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line with PIPEFAIL LIVE
-# (errexit is not — see below). When grep matches it exits and closes stdin while cmd is still
-# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
-# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
-#
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
-#
-# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
-# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
-# verdict — and the pass marker you grep for survives a partial failure: a suite
-# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
-# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
-#     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
-# or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-# The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
-#
-# ── A SKIPPED BATS TEST REPORTS `ok` (T-3217) ─────────────────────────────────
-#
-# `! grep -q "^not ok"` does NOT mean the suite ran. Bats emits a skip as
-#     ok 6 <name> # skip <reason>
-# which is not a `not ok`, so the gate passes and the report says ok while the
-# thing the test covers was measured NOWHERE. Origin: T-3213 guarded a test with
-# `[ "$(id -u)" -eq 0 ] && skip` — the suite runs as root here and in CI, so it
-# skipped on every run that mattered, for as long as it existed.
-#
-# Add a skip clause to any bats verification line. `# skip` is the marker bats
-# writes; counting it is the whole check:
-#     timeout 300 bats <file> > /tmp/.out 2>&1 && ! grep -q "^not ok" /tmp/.out
-#     test "$(grep -c '# skip' /tmp/.out)" -eq 0
-# Two lines, because they answer different questions — "did anything fail" and
-# "did everything run". If some skips are legitimate on your host (an optional
-# dependency is genuinely absent), assert the COUNT you expect rather than zero,
-# and say in the task why that number is right.
-#
-# Corpus-wide, the same check runs from `bin/fw test lint`
-# (tools/bats-silent-skip-lint.py): static mode flags guards that are fixed for
-# a deployment rather than probing an optional dependency, and `--tap FILE`
-# reports the skips a real run actually fired.
-#
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
-# the same directory, the same second. To rehearse for real:
-#     bash -c 'set -o pipefail; <your verification line>'
-#
-# NOTE THE MISSING `-e` — it is not a typo (T-3203). This file used to prescribe
-# `set -eo pipefail` here, which is NOT the gate: it adds errexit the gate does
-# not have, so it FAILS lines the gate PASSES. Measured, 10 lines, 3 diverged:
-#     line                            gate    set -eo (old)   set -o (this)
-#     false; true                     PASS    FAIL  wrong     PASS  ok
-#     cd /nonexistent; echo ok        PASS    FAIL  wrong     PASS  ok
-#     grep -q MISS file; true         PASS    FAIL  wrong     PASS  ok
-# The divergence is one-directional and that is the trap: the old rehearsal only
-# ever fails lines the gate accepts, so it produces false REDS, and an author
-# who "fixes" a line to satisfy it is fixing something that was never broken —
-# while the line that actually is broken (`cmd1; cmd2` where cmd1 fails) passes
-# both. Re-derive rather than trust this table — it is pinned, not asserted:
-#     bats tests/unit/t3203_p011_gate_semantics.bats
-#
-# ── `cmd1; cmd2` IS JUDGED ONLY ON cmd2 (T-3203) ──────────────────────────────
-#
-# The gate runs each line as the CONDITION of an `if` (update-task.sh:1215), and
-# POSIX suppresses errexit for a compound command in an `if` condition — through
-# the subshell. So pipefail applies and `set -e` does not, and in a sequence only
-# the LAST command's status reaches the verdict. `cd /nonexistent; echo ok` passes.
-# 2,644 of 10,997 verification lines in this corpus contain `;` (re-derive with
-# the query in docs/reports/T-3203-p011-gate-semantics.md).
-#
-# SAFE SHAPES — both verified biting, each against a passing control:
-#   A. one command whose own status is the verdict (prefer this):
-#        out=$(cmd 2>&1); echo "$out" | grep -q PAT && ! echo "$out" | grep -q BAD
-#      the leading assignments are setup; the trailing `&&` chain is the verdict.
-#   B. an explicit sub-shell, whose errexit the outer `if` cannot reach into:
-#        bash -c 'set -eo pipefail; cmd1; cmd2'
-#      use when you genuinely need every command in the sequence to count.
-#
-# The rule of thumb: put the assertion LAST, and make sure it is an assertion.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# T-3430. Every line rehearsed under `bash -c 'set -o pipefail; <line>'`.
+# Counts are deliberately NOT pinned (T-3326): the corpus moves, so each line
+# asserts a property — the tests pass, the class is reported, the refusal
+# happens, the cards parse — not a number that was true this afternoon.
+
+timeout 600 python3 -m pytest tests/unit/test_t3430_describe.py tests/unit/test_t3430_enrich_describe.py -q > /tmp/.t3430-v1.out 2>&1 && grep -q "passed" /tmp/.t3430-v1.out
+timeout 900 bats tests/unit/t3430_fabric_register_describe.bats tests/unit/t3430_fabric_drift_underpopulated.bats tests/unit/t3430_fabric_audit_doctor.bats > /tmp/.t3430-v2.out 2>&1 && ! grep -q "^not ok" /tmp/.t3430-v2.out
+test "$(grep -c '# skip' /tmp/.t3430-v2.out)" -eq 0
+
+# The rule the whole task turns on: a file that says nothing gets a refusal,
+# not a sentence. /dev/null is the smallest file that describes itself nowhere.
+python3 agents/fabric/lib/describe.py /dev/null > /tmp/.t3430-v3.out 2>&1 && grep -q "describes itself nowhere" /tmp/.t3430-v3.out
+
+# drift reports the new class. The count is whatever it is; that there IS one
+# is the invariant.
+timeout 900 bin/fw fabric drift --summary > /tmp/.t3430-v4.out 2>&1 && grep -qE "^under-populated: [0-9]+$" /tmp/.t3430-v4.out
+
+# Cron chain, verbatim from CLAUDE.md §Cron-touching tasks (registry→generated
+# AND generated→deployed; doctor output is ~33KB, inside the 64KB pipe buffer).
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+
+# No card carries a derived-purpose provenance AND a placeholder purpose — the
+# shape that would mean the pass claimed a sentence it did not write.
+python3 -c "import glob,sys,yaml; bad=[p for p in glob.glob('.fabric/components/*.yaml') for d in [yaml.safe_load(open(p))] if d and d.get('purpose_source') not in (None,'none') and 'TODO' in str(d.get('purpose',''))]; print(bad[:5]); sys.exit(1 if bad else 0)"
+
+# Every card the run rewrote is still parseable YAML — the base64 bridge and
+# the yaml.dump round-trip both have to hold across the whole corpus.
+python3 -c "import glob,yaml; [yaml.safe_load(open(p)) for p in glob.glob('.fabric/components/*.yaml')]"
+
+# Index verdict, pinned rather than asserted in prose alone.
+grep -q '(".fabric", "components"),' web/search_utils.py
+
+# Vendored copies of every framework file this task edited are byte-identical.
+bash -c 'set -eo pipefail; for f in agents/fabric/lib/describe.py agents/fabric/lib/underpopulated.py agents/fabric/lib/register.sh agents/fabric/lib/enrich.py agents/fabric/lib/drift.sh agents/fabric/fabric.sh agents/audit/audit.sh bin/fw lib/fabric_doctor_facts.py; do cmp -s "$f" ".agentic-framework/$f"; done'
 
 ## RCA
 
@@ -274,67 +242,157 @@ way belongs in writing.
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-09-22 — the refusal list is the product, not the leftover
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** The plan treated refusals as a residue — files the pass
+  couldn't help, printed for completeness. Running the pass over the live
+  corpus inverted that. The first dry run said `described 746, refused 46`,
+  which looked like a fine result and was wrong twice over: a 64 KB read cap
+  made `ast.parse` fail on every Python module above it (so `enrich.py` itself
+  was reported as describing itself nowhere), and a docstring opening on its
+  own line produced an empty first paragraph. Both bugs were invisible in the
+  count and obvious in the list.
+- **Plan impact:** `--list-refusals` stopped being a debug flag and became the
+  way the pass is read. The final numbers (760/32) came from fixing what the
+  list showed, not from tuning the deriver against fixtures.
+- **Triggered:** Two derivation fixes inside the enrich commit rather than
+  follow-ups; `--list-refusals` documented in `fw fabric help`.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+### 2026-09-22 — subsystem routing belongs in data, not in a case statement
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** The spec said subsystem "derives from the path against
+  `.fabric/subsystems.yaml` and the watch-pattern groups". Neither file
+  actually carried path→subsystem rules: `subsystems.yaml` had no paths at all,
+  and `watch-patterns.yaml` declares `expected_type`, not subsystem. The only
+  routing that existed was a hard-coded `case` block inside `register.sh` that
+  covered ten prefixes and nothing else — which is most of why 564 cards said
+  `unknown`, 391 of them under `tests/`.
+- **Plan impact:** Rather than extend the case block, `paths:` was added to
+  `subsystems.yaml` and the case block deleted. Adding a directory is now a
+  data edit. Five subsystems the corpus had been using for months but the
+  registry never declared (`tests`, `tests-playwright`, `docs`, `governance`,
+  `termlink-integration`) were written down, which is the reason 561 of the 564
+  resolved.
+- **Triggered:** Nothing filed. The three paths still unrouted (a top-level
+  `.md`, two vendored designer builds) are correctly unrouted — they are not
+  ours to classify.
+
+### 2026-09-22 — a whole-corpus rewrite is a comment-destroying operation
+
+- **What changed:** `save_card` round-trips through `yaml.dump`, which cannot
+  carry comments. That was already true, but it only ever touched the handful
+  of cards that gained edges. This pass rewrote 771, which turns a latent
+  property into a corpus-wide event.
+- **Plan impact:** Audited the diff for lost comment content before committing
+  rather than after. The damage was three stock template comments (no loss) and
+  exactly one authored line — the `# T-1754 — by-design orphan, no framework
+  imports` note explaining `standalone: true` on one card.
+- **Triggered:** Restored as `standalone_reason:`, a key that survives the next
+  rewrite. Recorded in Decisions as the general rule: rationale that has to
+  outlive an enrich run belongs in a key, not a comment.
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** Every Agent AC is ticked with evidence, the five surfaces the
+spec asked for are live, and the pass has been run on this repo with the
+before/after measured rather than projected. The mechanism and its effect are
+in separate commits so the two can be reviewed apart. The design constraint
+that mattered — refuse rather than guess — is enforced in code, covered by six
+refusal fixtures, and demonstrated on the live corpus by 32 files that kept
+their TODO instead of acquiring a plausible sentence. There are no Human ACs on
+this task.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
-
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Evidence:**
+- TODO purpose 792 → 32; unknown subsystem 564 → 3; under-populated total
+  838 → 209 (commit 78b83cc2b). 760 purposes written, each tagged with its
+  source: 408 header-comment, 343 docstring, 11 markdown.
+- 59 new tests green (30 + 11 pytest, 8 + 10 + 10 bats), including the control
+  legs that separate "fires correctly" from "always fires": a fully-populated
+  card that must NOT be flagged, and the PASS-at-0 audit wording.
+- Live `fw audit --section structure` → `[WARN] Fabric: 838 under-populated
+  card(s)` with the three sub-counts; live `fw doctor` → the same three lines;
+  `OK Cron registry in sync` after generate + install.
+- Index verdict answered in writing and pinned by a Verification line:
+  `web/search_utils.py:100` indexes `.fabric/components`, so the card
+  descriptions do feed the search layer — which is why a fabricated purpose
+  would have been retrievable text, not just a bad card.
+- Two derivation bugs were found by reading the refusal list rather than the
+  count, and fixed before the live run (64 KB read cap; leading-blank
+  docstrings). Both are pinned by regression tests.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-22 — `paths:` lives in subsystems.yaml, not in a new rules file
+
+- **Chose:** Add a `paths:` list to each subsystem in `.fabric/subsystems.yaml`
+  and route by longest-matching pattern.
+- **Why:** It makes the vocabulary and the routing one operator-editable file,
+  so a subsystem cannot be routed to unless it is declared. Longest-match means
+  declaration order carries no meaning and `tests/playwright/*` beats `tests/*`
+  without anyone having to keep the file sorted.
+- **Rejected:** A separate `.fabric/subsystem-rules.yaml` (register.sh already
+  looks for one and it has never existed here) — a second file to keep in step
+  with the first. Also rejected: extending the hard-coded `case` block, which
+  is the thing that produced 564 unknowns.
+
+### 2026-09-22 — the purpose crosses python→bash base64-encoded
+
+- **Chose:** `describe.py --emit-shell` prints `FW_PURPOSE_B64=<base64>` and
+  `register.sh` decodes it, then escapes for a YAML double-quoted scalar.
+- **Why:** A docstring containing `"`, `$`, a backtick or a backslash is
+  ordinary, and the card has to stay parseable YAML. Every shell-quoting
+  scheme eventually mangles one of those; base64 has no such edge. Pinned by a
+  fixture whose docstring contains all four.
+- **Rejected:** `eval` of a quoted assignment (an arbitrary docstring reaching
+  `eval` is an injection surface); printing raw and quoting in bash (the case
+  this would get wrong is the case that matters).
+
+### 2026-09-22 — `--describe` defaults ON
+
+- **Chose:** On by default, `--no-describe` to opt out.
+- **Why:** The pass cannot overwrite anything a human wrote, so there is no
+  failure mode to opt into; and the placeholders are the entire problem, so a
+  default-off flag would have left the 792 exactly where they were, behind one
+  more thing nobody runs.
+- **Rejected:** Default off with `--describe` opt-in — the shape that produced
+  the situation this task exists to fix.
+
+### 2026-09-22 — enrich does not write `purpose_source: none` on a refusal
+
+- **Chose:** `register.sh` writes `purpose_source: none` on a refusal (the card
+  is being created, so every field is being written anyway); the enrich pass
+  writes nothing at all when it derives nothing.
+- **Why:** Keeps the pass idempotent and its diff honest — a run that changed
+  nothing touches no file. A card with no derived sentence has no provenance to
+  record.
+- **Rejected:** Writing `none` from enrich too, for symmetry: it would dirty
+  832 cards to record an absence already visible in the `TODO` purpose.
+
+### 2026-09-22 — rationale that must outlive an enrich run goes in a key
+
+- **Chose:** Move `# T-1754 — by-design orphan, no framework imports` from a
+  trailing YAML comment into `standalone_reason:`.
+- **Why:** `save_card` round-trips through `yaml.dump`, which drops comments.
+  Restoring the comment would have restored something the next describe run
+  deletes again — a fix that looks like a fix for exactly one run.
+- **Rejected:** Teaching `save_card` to preserve comments (ruamel.yaml
+  round-trip mode) — a dependency and a rewrite of the card I/O for one line of
+  prose in the whole corpus.
+
+### 2026-09-22 — the under-populated scan is its own module
+
+- **Chose:** `agents/fabric/lib/underpopulated.py`, shared by `drift`, `audit`
+  and `doctor`; JSON flattening in `lib/fabric_doctor_facts.py`, shared by the
+  last two.
+- **Why:** The scan needs `describe.py`'s placeholder predicates, and a heredoc
+  inside `$()` has no `__file__` to import relative to — besides being the
+  canonical bin/fw self-lockout shape (L-332/L-408, the reason
+  `lib/cron_dry_run.py` exists). Sharing the helper is also what keeps the
+  audit and doctor wordings from drifting apart.
+- **Rejected:** Duplicating the counting logic in each of the three surfaces —
+  three places for the definition of "under-populated" to diverge.
 
 ## Decision
 
@@ -352,3 +410,35 @@ way belongs in writing.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3430-component-fabric-card-quality-fill-purpo.md
 - **Context:** Initial task creation
+
+### 2026-09-22T00:00:00Z — vendor-self withheld one file (not ours)
+
+- **Action:** Ran `FW_VENDOR_ONLY="<the nine framework files this task edited>"
+  bin/fw vendor self`, then `bin/fw vendor self --check`.
+- **Output:** All nine of this task's files are byte-identical under
+  `.agentic-framework/`. The global `--check` still exits 1 with
+  `would sync 1 agents/ file(s)`.
+- **Context:** The one file is `agents/task-create/update-task.sh`, carrying
+  another worker's uncommitted T-3432 edit in this shared working tree.
+  `vendor self` correctly withheld it (`withheld: agents/task-create/update-task.sh`)
+  rather than shipping someone else's unfinished work under this commit. It is
+  not ours to sync or commit. The Verification block therefore asserts the
+  byte-equality of this task's own nine files rather than the global
+  `--check` — pinning the global check would make this close depend on a third
+  party's uncommitted state, which is the mutable-anchor failure T-3326 names.
+
+### 2026-09-22T00:00:00Z — pre-existing red in the fabric baseline (not ours)
+
+- **Action:** Captured the fabric suites before starting.
+- **Output:** `tests/unit/fabric_coverage_single_source.bats` test
+  `T-2735 severity: fully-carded project PASSes` was already failing, and still
+  fails on a re-run.
+- **Context:** The test greps for `PASS. Fabric drift: all 1 watched file(s)
+  registered`. `audit.sh:2351` now emits that check through `pass_over`, which
+  prints `Fabric drift: all watched files registered — examined 1 watched
+  file(s)`. The wording changed under the test (T-3105's `pass_over`
+  refactor) and the assertion was never updated. Unrelated to T-3430 and
+  deliberately not fixed here — one bug, one task. The other fabric suites are
+  green: 66 pytest passed; the two bats skips in the baseline
+  (`# skip audit lock held by a concurrent run`) are the shared audit lock
+  under a concurrent worker, not a defect.

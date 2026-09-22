@@ -1,0 +1,21 @@
+id: agents/fabric/lib/underpopulated.py
+name: underpopulated
+type: script
+subsystem: component-fabric
+location: agents/fabric/lib/underpopulated.py
+tags: []
+
+purpose: "Scan component cards for the under-populated class — a card that says nothing."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-22
+created_by: unknown

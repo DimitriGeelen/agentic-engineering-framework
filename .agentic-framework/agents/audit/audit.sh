@@ -3522,6 +3522,52 @@ check_continuous_run_cycling() {
 }
 check_continuous_run_cycling
 
+# T-3430 (OBS-464). A component card that says nothing is invisible to every
+# other fabric health check: it IS registered, its file DOES exist, and its
+# absent edges cannot be stale. 792 of 1314 cards on this repo carried the
+# template `purpose: "TODO: …"` and 564 `subsystem: unknown` — for as long as
+# the fabric has existed — because no check had an opinion about card CONTENT,
+# only about card PRESENCE. `fw fabric drift` now has the class (T-3430) and
+# `fw doctor` mirrors it, but both are pull-only; this is the scheduled path
+# that sees the number without anyone asking.
+#
+# WARN, never FAIL: an underdescribed card is a quality debt, not a broken
+# build, and the remedy is a one-line command the WARN names. Silent when the
+# project has no .fabric/components/ — a project that never adopted the fabric
+# gets neither a clean bill of health it did not earn nor a nag.
+check_fabric_underpopulated() {
+    local _cdir="$PROJECT_ROOT/.fabric/components"
+    [ -d "$_cdir" ] || return 0
+    local _scanner="$FRAMEWORK_ROOT/agents/fabric/lib/underpopulated.py"
+    [ -f "$_scanner" ] || return 0
+
+    local _json
+    _json=$(python3 "$_scanner" "$_cdir" --json --limit 5 2>/dev/null) || {
+        warn "Fabric card quality unreadable" \
+             ".fabric/components/ exists but the under-populated scan did not run" \
+             "Run: python3 agents/fabric/lib/underpopulated.py .fabric/components — an unreadable scan is itself the silent shape T-3430 closes"
+        return 0
+    }
+    [ -n "$_json" ] || return 0
+
+    # Flattened by a real file, not a heredoc-in-$(): that shape is the
+    # canonical bin/fw self-lockout (L-332/L-408), and doctor shares the helper.
+    local _facts _total _todo _unknown _noedges _first
+    _facts=$(FW_FAB_JSON="$_json" python3 "$FRAMEWORK_ROOT/lib/fabric_doctor_facts.py" 2>/dev/null) || return 0
+    [ -n "$_facts" ] || return 0
+    IFS=$'\t' read -r _total _todo _unknown _noedges <<< "$_facts"
+    _first=$(FW_FAB_JSON="$_json" python3 "$FRAMEWORK_ROOT/lib/fabric_doctor_facts.py" --offenders 2>/dev/null || true)
+
+    if [ "${_total:-0}" -eq 0 ]; then
+        pass "Fabric: 0 under-populated card(s) — every card has a purpose, a subsystem and at least one edge"
+        return 0
+    fi
+    warn "Fabric: $_total under-populated card(s)" \
+         "TODO purpose: $_todo, unknown subsystem: $_unknown, no edges: $_noedges${_first:+ — e.g. $_first}" \
+         "Run: bin/fw fabric enrich --describe-only (fills purpose/subsystem from each file's own header; names what it refuses). Zero-edge cards want a look, not a re-run: bin/fw fabric drift"
+}
+check_fabric_underpopulated
+
 echo ""
 fi # end structure
 
