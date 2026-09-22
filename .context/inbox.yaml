@@ -4880,3 +4880,164 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-446
+  text: "Mandate-run selection hit the T-3068 cost gap head-on: a newly-filed task (T-3404) scores a real value half (BVP 97, norm 0.36 — above 12 of 16 ranked arcs) but returns QUAD '-' because blast_radius needs components:, which only resolves at the work-completed transition. So a top-down 'select by BVP quadrant' mandate cannot place ANY newly-filed task in Q1 or Q2 at selection time, by construction — the quadrant exists only after the work is done. Sibling to OBS-443 (no-signal defaults making parked stubs look like Q1) but distinct: that one is contaminated signal, this one is absent signal at exactly the moment selection needs it. Workaround available but NOT taken here (pre-declaring components: to force a blast_radius) because the author choosing the cost input is the wrong shape for a producer-not-judge binding."
+  captured: 2026-09-21T20:52:44Z
+  context_task: T-3404
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-447
+  text: "T-3405 live gate MEASURED a hole in Amendment 5's retry-idempotency claim. The design says a retried send with the same client_msg_id is deduped on the receiving side 'regardless of how many times the caller retries'. Live against termlink 0.11.1766: TermLink's dedupe is hub-side, keyed (sender_id, client_msg_id), and TTL-bounded — default 5 min per 'termlink channel post --help'. Topic sidecar:selftest-T-3405: original at offset 0 (21:45:56Z); two re-posts ~2 min later were absorbed (topic count stayed 1); a re-post at 22:01:35Z, 15m39s after the original, APPENDED as offset 2 — a duplicate. So retry is idempotent only inside the TTL. Slice 2's 30s STORED deadline keeps a prompt retry inside that window, but a retry after resolve_expired flips a row to UNKNOWN (minutes-to-hours later) is NOT covered and would duplicate-deliver. Also measured: --client-msg-id is not echoed into envelope metadata at all (it is an out-of-band key), so nothing on the wire lets a RECEIVER dedupe beyond the TTL unless the sender puts the id in metadata itself — T-3405 now does. Open design question, not decided here: bound the sidecar's retry window to the hub TTL (never retry an UNKNOWN row), or add receiver-side dedupe on the metadata id. Also found: TermLink already ships --await-ack/--retry on dm: topics and its help text names the recipient ack as 'an AEF-harness sidecar convention' — the counterpart half of this sidecar may already exist on their side."
+  captured: 2026-09-21T22:02:44Z
+  context_task: T-3405
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-448
+  text: "G-083 instance, observed live during a Mandate run: while this interactive session was mid-push on T-3405, a SECOND autonomous run was active on the same checkout — PID 3455819, 'timeout -k 60 21600 claude -p' running a whole-repository Project Value Review (prompt names a 'sequence driver' that filled its parameters; BUDGET 200k tokens). Its audit (PID 3570331, audit.sh --section structure,compliance,quality,di...) held .context/locks/audit.lock, blocking my pre-push audit twice — correctly, as designed, and I waited rather than --no-verify. The hazard is not the lock; it is that two autonomous writers share one working tree and one index. My commits were pathspec-limited so neither run swept the other's staged files, but nothing structural guarantees that — the handover auto-commit (T-3090) sweeps the whole index by construction. Noting also that /opt/055-agentic-fleet-cockpit's vendored audit.sh was running concurrently in its own tree; that one held its own lock, not ours. No action taken against either process (killing a live run is Tier 0)."
+  captured: 2026-09-21T22:06:44Z
+  context_task: T-3358
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-449
+  text: "TermLink may already ship the RECEIVING half of the arc-011 sidecar — check before building it. Measured from 'termlink channel post --help' on 0.11.1766 during T-3405: --await-ack (T-2286) polls the recipient's channel.receipts frontier until they ack through the posted offset; --retry re-posts reusing the same client_msg_id 'so T-2049 dedupe absorbs the duplicate — exactly once'; --max-attempts defaults 3. Two tells that this was built FOR us, not coincidentally: the help text calls the recipient ack 'an AEF-harness sidecar convention', and --ack-timeout-secs defaults to 30 'aligns with the AEF section 6 heartbeat staleness threshold' — the same 30s our slice 2 independently picked as DEFAULT_DEADLINE_SECONDS. Implication for the next slice: the sidecar's ack/retry loop may not need building at all on dm: topics, only wiring, and our three-state ack should be checked against their receipts frontier rather than defined beside it. Caveat measured in OBS-447: --await-ack's exactly-once rests on the same 5-min dedupe TTL, so it inherits that bound. Note --await-ack is dm:-topic only; T-3405's transport posts to sidecar:<recipient> topics, so adopting it means revisiting the topic-addressing choice. Cross-repo confirmation needed and NOT done here: the project-boundary gate (T-559) correctly refused a direct grep of /opt/termlink from this session; doing it properly needs a TermLink dispatch into their tree."
+  captured: 2026-09-21T22:08:15Z
+  context_task: T-3358
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-450
+  text: "G-084 instance, twice in one run: the G-020 build-readiness gate blocked two READ-ONLY commands because their text contained tokens not on the safe-commands allowlist — (1) 'python3 -c \"import json; json.load(open(...))\"' surveying .claude/settings.json, (2) a grep whose regex PATTERN contained the literal 'export .*NAME'. In both cases the command wrote nothing; the gate itself said 'this command writes nothing the gate can detect' and named the allowlist gap. The second is the sharper one: a grep pattern is data, not a verb, and matching the pattern text against write-verb heuristics means any search FOR a write pattern is itself refused. Cost was low (write real ACs, retry) but the false-green side matters more: an agent that learns 'greps get blocked, use python' or 'avoid words in patterns' is being trained to route around the gate, which is the G-084 hazard. Candidate fix: classify grep/rg/awk by their argv[0] and ignore pattern text; allowlist 'python3 -c' only when the -c string contains no open(...,'w'), no os.remove, no subprocess — or simply exempt reads whose stdout is piped to head/tail."
+  captured: 2026-09-21T22:37:40Z
+  context_task: T-3407
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-451
+  text: "T-1550 bug-class classifier false-positive trigger: the RCA gate fired on T-3408 because its title carries a peer project's correlation id, 'BVP-CALIB-RCA-832', and 'rca' is in the bug-class title regex. The task is a read-only cross-repo measurement, not a bug fix. Low cost here (an honest RCA was worth writing anyway), but the class is worth a note: correlation ids and thread tags from other projects routinely contain tokens like RCA, FIX, ERROR (e.g. 832's threads 'false-green-family', 'BVP-CALIB-RCA'), so any task filed to answer a peer's message inherits their vocabulary into OUR classifier. Candidate fix: match the regex on whole words outside of ALL-CAPS-HYPHENATED tokens, or exclude a recognised correlation-id shape ([A-Z]+-[A-Z]+-[A-Z0-9-]+)."
+  captured: 2026-09-21T22:51:50Z
+  context_task: T-3408
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-452
+  text: "AUTONOMOUS-WORKER FAILURE MODE, caught by a second rail: the SEQ-T3411 round-1 procAsFit worker (T-3412) edited three vendored paths (lib/inception.sh, agents/context/check-active-task.sh, agents/task-create/create-task.sh) and never ran 'fw vendor self'. It closed GREEN — P-011 3/3 passed — because its Verification block contained zero occurrences of 'vendor'. CLAUDE.md requires 'bin/fw vendor self --check' in Verification for exactly those paths and requires the sync BEFORE work-completed (OBS-250, T-3236); the worker did not know or did not apply it. The structural point: P-011 is AUTHOR-CONTROLLED by construction — it runs only the lines the author thought to write — so a rule an autonomous worker does not know produces a green close rather than a red one, and its handback reports success. This is the L-291 toolchain-build lesson in a new costume (the gate is only as complete as the author's memory). Two rails did work: the pre-push self-vendor gate (T-2240/T-3125) caught it and named the exact fix, which is defence-in-depth behaving correctly. Candidate structural fix, NOT done here: have the close gate DERIVE the required verification lines from the task's actual git diff (touched a vendored path -> require the vendor check; touched *.py -> require a test run) instead of trusting the author to remember. That converts an author-memory dependency into a deterministic check, which is the framework's own REFACTOR thesis. Remediated under T-3414."
+  captured: 2026-09-22T07:04:17Z
+  context_task: T-3414
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-453
+  text: "SOVEREIGN (arc-011 sidecar addressing): TermLink (T-3062, agent-chat-arc @1640) recommends moving consult topics from sidecar:<agent-id> to inbox:<agent-id> — the hub treats inbox:* and dm:* as mail (inbox.queued wake events, receipts, ears, auto-confirm, --await-ack) and sidecar:* as a bare append log. Our recommendation: inbox:<agent-id>, keep sidecar:* as a transition alias, file per-agent identity keys as follow-on (shared host key d1993c2c makes receipts self-satisfying). Needs operator confirmation before topic_for() changes. Also from @1640: OBS-447 ruling = bound retry to hub dedupe_ttl_ms read at runtime AND dedupe on read; framework-agent-systemd cannot post (-32005, allowlist) — operator decision."
+  captured: 2026-09-22T09:06:07Z
+  context_task: T-3411
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-454
+  text: "SOVEREIGN (seam ownership, 832 T-798 via sidecar @6 / agent-chat-arc corr 832-T798-WORKFLOW-CLASS-INSTANCE): 832 asks whether the process INSTANCE/execution-tracking layer is ours. Measured by them: designs are compiled NODE->task (fw bpmn compile, idempotent on uid+sha = synchronisation, not instantiation); ~1,500 runs of 7 designs exist in our corpus (797 tasks, 656 handovers, 44 inceptions, 3 arcs) with no link to the design they instantiate; workflow_type is an unresolved class pointer (resolver.py:1060 reads it as a bare string) while arc_id is a resolved, gated reference. Two shapes: LIFECYCLE (one run = one task passing through nodes-as-states; our aef-task-lifecycle map + T-2621 conformance rail already treat it so) vs PIPELINE (one run = a set of tasks, = compile today). Our reply: by the @1631 seam argument the layer is ours (instance = task state inside our gate); the lifecycle/pipeline split matches existing practice; whether to BUILD a resolving workflow_type -> design reference is the operator's call."
+  captured: 2026-09-22T09:24:55Z
+  context_task: T-3411
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-455
+  text: "fw termlink cleanup removes /tmp/tl-dispatch/<worker>/ for every finished worker, including ones whose exit_code a still-running driver has not yet consumed. Observed live: run-sequence.sh (T-3411) was polling /tmp/tl-dispatch/seq-t3411-r4-procasfit/exit_code every 2s; the worker had finished (exit 0, handback written 11:04); a parent-session 'fw termlink cleanup' at ~11:20 deleted the whole /tmp/tl-dispatch tree; the driver would have waited its full 21600s timeout and then failed round 4. Recovered by recreating the exit_code file. Candidate fix: cleanup should skip dirs whose exit_code is younger than N minutes, or honour a .consumed marker written by fw termlink wait; at minimum warn that a wait is in progress (pgrep termlink.sh wait)."
+  captured: 2026-09-22T09:26:36Z
+  context_task: T-3411
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-456
+  text: "FIELD REPORT 1409-sprind (sidecar @7, 2026-09-22) finding 1 — BVP blast_radius is structurally unavailable for exactly the tasks fw bvp ranks: score_blast_radius() reads components: only; components: is written at work-completed from git history; fw bvp excludes work-completed by default (T-2223). The 0.6-weight term is populated only after it can no longer inform a choice. Measured there: 15/33 (45%) no quadrant; T-3068 here: 4/142. Suggested fix: pre-completion fallback for non-inception tasks deriving components: from paths named in ACs + ## Verification (same shape as T-2189's inception substitution); strip template text first (naive scan proposed CLAUDE.md/.claude/settings.json for 47/49 tasks), drop non-existent paths, never invent 0. Corroborated independently by PL-034 (100-Video-riper). Related: OBS-446."
+  captured: 2026-09-22T09:27:02Z
+  context_task: T-3411
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-457
+  text: "FIELD REPORT 1409-sprind finding 2 — unmeasured cost renders as quadrant EXCLUSION: blast_radius None -> QUAD '-' and every --quadrant filter drops the task; self-reinforcing (never picked -> never completed -> never measured). Persists after finding 1 (a task naming no file is legitimately None). Their operator's ruling, offered as a candidate default: 'if we cannot get any blast radius we look at the value; high value is worth doing'. Suggested fix, cheapest first: keep unmeasured tasks in --quadrant output under a distinct UNKNOWN marker, or --include-unmeasured, or value-first default with cost as attribute not partition. Measured there: 11/33 invisible under filtering, several highest-value."
+  captured: 2026-09-22T09:27:03Z
+  context_task: T-3411
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-458
+  text: "FIELD REPORT 1409-sprind finding 3 — fw fabric register/scan create skeleton cards and no verb enriches them: 22/36 (61%) subsystem: unknown, 15/36 (41%) zero edges, while F2 V_COMPONENT_FABRIC's rubric says a card without edges is L1. fw fabric drift reports unregistered/stale but not UNDER-POPULATED cards, so the 61% is invisible to the health check. Suggested: under-populated class in fw fabric drift; better, fw fabric enrich <path> resolving depends_on from real imports. Corroborated by PL-034 ('fw fabric edge verb'). Our own cards registered today (sidecar-audit, prepush-lock-wait, e2e tests) came out 'Subsystem: unknown' — same defect, observed first-hand."
+  captured: 2026-09-22T09:27:03Z
+  context_task: T-3411
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-459
+  text: "URGENT — two TermLink hub stores on this host, split-brain (1409-sprind field report follow-up, sidecar @8, confirmed here): canonical hub PID 21462 (systemd, --tcp 0.0.0.0:9100, TERMLINK_RUNTIME_DIR=/var/lib/termlink, 67 topics incl. agent-chat-arc and every sidecar:* consult topic) vs the MCP server default TERMLINK_RUNTIME_DIR=/tmp/termlink-0 (5 topics). Every MCP channel tool reads/writes /tmp; post returns an offset and state reads it back, so posting into the void is indistinguishable from success. Our .mcp.json termlink server sets only TERMLINK_TASK_GOVERNANCE — no runtime dir — so our MCP termlink tools are on the wrong store too; the /tmp store already carries sidecar:999-Agentic-Engineering-Framework, aef-seq-2026-0921-findings and channel:learnings (PL-034/PL-035 from 100-Video-riper never reached the fleet). Our CLI path (bin/fw sidecar, termlink channel post) is on the canonical hub and unaffected. Fix, two legs: ours — .mcp.json env TERMLINK_RUNTIME_DIR=/var/lib/termlink (and the fw init/upgrade template if one exists); TermLink's — MCP server should inherit/resolve the canonical runtime dir, and a topic-count parity check between CLI and MCP would have caught it."
+  captured: 2026-09-22T09:33:05Z
+  context_task: T-3411
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-460
+  text: "SOVEREIGN (drain decision, T-3424): the shadow TermLink store /tmp/termlink-0 holds messages the fleet never saw — channel:learnings PL-033/034/035 (100-Video-riper) and PL-036/037/038 (1409-sprind); aef-seq-2026-0921-findings 3 audit-round records from 1023-portable-encrypted-chromium-vault; sidecar:999-Agentic-Engineering-Framework 1 (duplicate of a report that later arrived on the canonical hub). Options: (a) re-post them onto the canonical hub with metadata.origin_store=/tmp/termlink-0 and the original offsets; (b) leave them and tell the two projects to re-send; (c) ignore. Not done here: re-posting other projects' messages under our sender id is a representation question for the operator."
+  captured: 2026-09-22T09:44:10Z
+  context_task: T-3424
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-461
+  text: "G-020/T-3174 read-only allowlist gap: 'bin/fw sidecar inbox --peek', 'bin/fw sidecar status' and 'termlink channel subscribe' are pure reads but are not in agents/context/lib/safe-commands.sh, so under a captured or partial-complete focus (e.g. after a close nulls focus and the only active task is T-3090 partial-complete) the gate refuses them — an agent then cannot even see whether a peer consult is waiting. Observed 2026-09-22 after closing T-3411. Fix: add the sidecar read verbs (whoami, inbox --peek, status without --probe) and termlink channel subscribe/state/list to the read-only allowlist."
+  captured: 2026-09-22T09:48:59Z
+  context_task: T-3090
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-462
+  text: "SUPERSEDES OBS-457 (1409-sprind T-1160, sidecar @10, their operator's ruling): an unmeasured BVP cost must NOT render as UNKNOWN or as exclusion — it DEFAULTS TO HIGH COST provisionally ('high value is high value; we default on high cost; a rerun with sufficient data resolves it'). Concrete: score_blast_radius() in agents/termlink/bvp-estimator/estimator.py returns rung 5 (real rung on the 1/3/5/7/9 ladder; on their corpus of 22 measured tasks median 2.45, rung 5 implies ~3.8, clearly above median; rung 3 flips on corpus shift; rung 7 overstates every measured task) MARKED as defaulted, distinguishable from a measured 5. Two guards: (1) a defaulted cost must never enter the median pool — lib/bvp.sh:265-272 splits on the median of known costs and bvp.sh:338 already excludes None (T-3068); measured there: 11 defaulted at ~3.8 joining 22 measured moves the median 2.45->3.2 and flips every task genuinely measured at 3.2 from hv-hc to hv-lc silently; (2) resolution is asymmetric — estimate-cost overwrites a DEFAULTED value and never a MEASURED one. Why high not low: defaulting low manufactures false hv-lc entries and corrupts the ordering; defaulting high can only delay, never fake a bargain. Their presentation half is in tools/next-work.sh; the estimator + median guard are ours."
+  captured: 2026-09-22T09:58:43Z
+  context_task: T-3425
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-463
+  text: "UPSTREAM, STRUCTURAL (bigger than PL-036/037/038; via operator, origin 1409-sprind T-1161): BVP free drivers are a name with no scoring mechanism. Verified in agents/termlink/bvp-estimator/estimator.py: score dispatch is a hardcoded handlers dict keyed by driver name (line 2295) plus _load_driver_aliases() mapping policy ids F3/F1/F2 to V_PROMPT_QUALITY/V_CONTEXT_FABRIC/V_COMPONENT_FABRIC (2348-2355); any driver id with no handler falls to score_free_driver (2225-2239), whose docstring says 'keyword-on-driver-id only … looks for the driver id as a substring in body/tags' — so a task scored F4=1 because its text contains 'F4'. policy/value-drivers.yaml free_drivers entries carry NO levels: field; the estimator's handlers are 'anchored to policy lines' by comment only and never read a rubric at runtime (policy is loaded for ids/names/weights). Consequence: fw bvp driver --add (Sovereign, acd-gated) adds a driver that can never be scored and reports success; writing levels: into policy changes nothing. The free-driver slot is not an extension point. Fix is a design change: (a) a declarative scoring spec per driver in policy (levels with detectable signals: keyword sets, path globs, frontmatter predicates) that a generic scorer interprets, or (b) --add refuses/warns when no scorer exists and the estimator emits 'unscorable' instead of a substring score. Inception-sized; Sovereign."
+  captured: 2026-09-22T10:19:51Z
+  context_task: T-3426
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-464
+  text: "AMENDS OBS-458 (1409-sprind T-1163 correction, sidecar @12): fw fabric enrich EXISTS (agents/fabric/fabric.sh:148 -> lib/enrich.py) and fills edges — do not build it. The narrower truth: nothing fills the two human-read fields; purpose stays 'TODO: describe…' and subsystem stays unknown (61% of their cards, the same 22 both ways; our own cards registered today came out subsystem: unknown). Fixes: an under-populated class in fw fabric drift (purpose contains TODO, subsystem unknown, zero edges — data already on the card); fill purpose/subsystem at register time from the module docstring/header, refusing (not guessing) when the file describes itself nowhere — their tools/enrich_fabric.py records purpose_source: per card and deliberately does NOT use a vector store (nearest text != correct text)."
+  captured: 2026-09-22T10:34:25Z
+  context_task: T-3426
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-465
+  text: "fw fabric drift reports 'unregistered: 0' while files have no card (1409-sprind T-1163: 14 of 14 uncarded files under tools/ and .claude/hooks/ missed). CAUSE, verified here: the unregistered scan enumerates only .fabric/watch-patterns.yaml globs (agents/*/*.sh, agents/*/lib/*.sh, web/blueprints/*.py, …); files outside every pattern are invisible to it, and drift never says so — our own audit already WARNs '756 card(s) point at files no watch pattern covers', the mirror image. A clean drift report is therefore not evidence of a clean fabric. Fixes: drift prints a third class — files under source roots outside every watch pattern (count + first N) — so silence becomes a number; default patterns gain tools/*.py and .claude/hooks/*.sh; test: register nothing for a new tools/x.py, run drift, assert it is reported."
+  captured: 2026-09-22T10:34:25Z
+  context_task: T-3426
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-466
+  text: "fw hook-enable --name <x> registers a hook whose script does not exist (1409-sprind T-1163): it resolves <framework>/agents/context/<x>.sh, prints 'registered:', and at call time the runner warns 'Hook script not found … (degrading to allow)' and returns 0 — a registered, absent, fail-OPEN hook, while settings.json reads as if the gate were present. Also --script writes an ABSOLUTE path into settings.json, which check-settings-edit's own block message warns against. Fixes: refuse at --name time when the script is absent (bin/hook-enable.sh); write ${CLAUDE_PROJECT_DIR}-relative when --script is under the project root; hook runner should log a WARN-with-count for absent scripts rather than silently allowing."
+  captured: 2026-09-22T10:34:26Z
+  context_task: T-3426
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-467
+  text: "STALE master-as-integration-target references survive T-3185 (found by 832, sidecar @13): lib/branch-hygiene.sh:9 'Judged against TARGET = origin/master', lib/worktree.sh:18 'Resolve the master ref this repo integrates onto', lib/worktree.sh:196 on_master, agents/handover/handover.sh:303 'land the strand with fw integrate run master --push'. Under the release-train (T-3185: bleeding-edge is master's ONLY writer; worktrees land on bleeding-edge, never master) these read trunk-based and the handover nudge would tell a strand cut from bleeding-edge to merge into master — the exact injection the model forbids. Fix: resolve the integration target to the dev branch (bleeding-edge when present, else master) in one helper and use it from all four sites; test pins the nudge text. Also: 832's vendored tree (v1.6.354) has no integrate agent while handover.sh references it."
+  captured: 2026-09-22T10:44:25Z
+  context_task: T-3428
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-468
+  text: "Close-commit deadlock under session-scoped focus. update-task.sh:2266 hard-codes FOCUS_FILE=$CONTEXT_DIR/working/focus.yaml when clearing focus at full completion, but check-active-task.sh resolves focus via fw_focus_file() which honours FW_SESSION_SCOPED_FOCUS=1 and returns focus.<session-key>.yaml. So a dispatched worker's close never clears the file its own gate reads: focus keeps naming a task that has just moved to completed/, find_task_file(active) returns empty, and check-active-task.sh:770 hard-exits 2 on EVERY subsequent Bash command - including the close commit itself, fw sidecar inbox, and fw vendor self. The T-2054 null-focus commit-checkpoint allowance is unreachable because it requires CURRENT_TASK to be empty. Measured on T-3428 (2026-09-22): the session was fully deadlocked after a clean 9/9 close and recovered only via the gate's own printed remedy, fw work-on 'name', plus FW_SWITCH_FOCUS=1 on the commit. Sibling of OBS-250 (no route back to a just-closed task's trailing work) but distinct and worse: OBS-250 assumes focus was cleared, this is focus NOT being cleared. Fix filed as T-3432."
+  captured: 2026-09-22T12:06:22Z
+  context_task: T-3432
+  tags: [bug]
+  status: pending
+  promoted_to: null
