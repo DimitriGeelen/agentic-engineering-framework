@@ -1,3 +1,59 @@
+- id: OBS-255
+  type: structural
+  severity: high
+  surface: 'Session-scoped focus (T-3038) split ONE file into two, and the close
+    path kept writing the old one. `agents/task-create/update-task.sh` cleared
+    `$CONTEXT_DIR/working/focus.yaml` on `--status work-completed` while the
+    PreToolUse gate (`agents/context/check-active-task.sh` via `fw_focus_file`)
+    reads `focus.<key>.yaml` under `FW_SESSION_SCOPED_FOCUS=1`.'
+  detected_in: T-3432 (found live by the T-3428 worker mid-close; filed as OBS-468
+    in the inbox, homed here)
+  symptom: 'A worker that closes its own task is locked out of committing that
+    close. After a CLEAN `--status work-completed` — no error, exit 0, "Focus
+    cleared" printed — the scoped focus file still named the just-completed task,
+    whose file had just moved to `.tasks/completed/`. The gate then refused every
+    subsequent Bash and every Write with "Task T-XXXX is not active (may be
+    completed or missing)". The close commit (file move + episodic) could not be
+    made, and the task''s own work sat uncommitted. Universal, not occasional:
+    T-3422 seeds a scoped focus file for every dispatched worker at dispatch time,
+    so every dispatched worker that closes a task hits it.'
+  root_cause: 'A PRODUCER/CONSUMER SPLIT of the L-399 class, with a twist that is
+    worth naming: the escape hatch the framework built for exactly this deadlock
+    was rendered unreachable by the same defect. T-2054 allows a bare `git commit`
+    when focus is NULL, precisely so a just-closed task can checkpoint itself.
+    That allowance is predicated on the close having nulled the focus the gate
+    reads — and it had not. So the gate saw a non-null focus naming an archived
+    task, took the "not active" branch, and the remedy never fired. The failure is
+    not that a write went to the wrong file; it is that a SAFETY VALVE was
+    silently disarmed by the file split it was never told about. T-3038 changed
+    the reader and the `fw context focus` writer through one helper, and missed
+    this third writer.'
+  prevention: 'FIXED (T-3432): update-task.sh now resolves the file to clear
+    through `fw_focus_file "$PROJECT_ROOT"` — the same resolver the gate and
+    `fw context focus` use. Pinned by
+    `tests/unit/t3432_scoped_close_clears_scoped_focus.bats` (7 tests), which
+    exercises the DEADLOCKED COMMAND rather than only the file contents: after a
+    scoped close the gate must ALLOW `git commit -m "<id>: close"`, with a control
+    leg pinning the gate REFUSING that same command in the pre-fix state. Asserting
+    only on `current_task: null` would have passed on a fix that cleared the wrong
+    key. WHAT IS NOT PREVENTED: nothing enumerates the writers of focus.yaml, so a
+    FOURTH writer added later can reintroduce this in the same way. The residual
+    shape worth building is a lint that refuses a literal `working/focus.yaml` path
+    anywhere outside lib/paths.sh — the same move that would have caught this one
+    at T-3038 time. Sibling recurrence: T-3179 is the identical class one layer
+    over (the partial-complete half of the same T-2054 deadlock), which makes this
+    the second instance of "a focus-predicated allowance stops being reachable
+    when the focus state it reads changes shape".'
+  blast_radius: every dispatched worker that closes its own task
+  observed: '2026-09-22'
+  status: closed
+  related:
+  - T-3432
+  - T-3038
+  - T-3422
+  - T-2054
+  - T-3179
+  follow_up_task: null
 - id: OBS-254
   type: structural
   severity: medium
