@@ -10,7 +10,7 @@ description: >
   fence, so it refuses on success and T-3394's pinned verification line 4 is red.
   OBS-476.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T18:10:24Z
-last_update: '2026-09-22T18:15:10Z'
+last_update: 2026-09-22T19:30:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,30 +75,38 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`tools/ewcr-arc0-unknown-overlap.py` is the executable fence behind Arc-0 clause 1: it
+measures how many `subsystem: Unknown` Fabric cards fall inside the runtime write set.
+It carried a guard that refused (exit 2) whenever it found **zero** Unknown cards, on the
+premise that the corpus always holds some — so a zero could only mean its own subsystem
+predicate was broken. On 2026-09-22 that premise went false (0 Unknown of 1332 cards,
+measured by T-3437 drive 6 and recorded as D-615), and the tool began refusing on
+success. `T-3394`'s pinned verification line 4 — the clause-1 attestation's own
+*"Reproducing this"* command — therefore went **red three days after T-3394 closed
+green**, with nobody having touched the tool. Registered as **OBS-476**.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **A1 The two conditions are separated.** `tools/ewcr-arc0-unknown-overlap.py`
+- [x] **A1 The two conditions are separated.** `tools/ewcr-arc0-unknown-overlap.py`
       REFUSES (exit 2) only when *total Fabric cards enumerated* is 0 — the real
       "nothing was looked at" signal. A run that enumerates cards successfully and
       finds zero carrying `subsystem: Unknown` completes (exit 0) and reports the
       zero as a measured clear, printing the enumerated-card total as the evidence
       that the scan was not empty.
-- [ ] **A2 The stale premise is gone from the refusal text.** The message no longer
+- [x] **A2 The stale premise is gone from the refusal text.** The message no longer
       asserts that `fw fabric overview` reports a non-zero Unknown subsystem; that
       was true on 2026-09-19 and false on 2026-09-22 (0 of 1332 cards). Whatever
       replaces it must be a statement the script verifies at run time, not a corpus
       fact copied into a string (T-3326 mutable-corpus-anchor class).
-- [ ] **A3 The false-green the guard exists to catch still bites.** A control run
+- [x] **A3 The false-green the guard exists to catch still bites.** A control run
       against an empty card directory still exits 2 — demonstrated by a run, not by
       reading the code. Fixing the false red must not remove the protection: both
       legs (empty scan refuses, cleared fence passes) are pinned as verification.
-- [ ] **A4 T-3394's pinned line is green again.** The clause-1 attestation's own
+- [x] **A4 T-3394's pinned line is green again.** The clause-1 attestation's own
       reproduction command runs clean:
       `python3 tools/ewcr-arc0-unknown-overlap.py && python3 tools/ewcr-arc0-coverage-check.py`
-- [ ] **A5 The attestation is reconciled, not silently superseded.**
+- [x] **A5 The attestation is reconciled, not silently superseded.**
       `arc-0-clause-1-attestation.md` records that the Unknown total moved 544 -> 0
       corpus-wide, with the date and the commit, so the document and the live
       measurement cannot disagree without one of them going red — the same discipline
@@ -121,43 +129,70 @@ grep -q '544' docs/research/executable-workflow/arc-0-clause-1-attestation.md
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom.** `python3 tools/ewcr-arc0-unknown-overlap.py` exits **2 REFUSED** on a
+healthy corpus: *"REFUSED: enumerated 0 Unknown-subsystem cards."* T-3394's pinned
+verification line 4 returns `rc=2`. Re-measured at the start of this task, before any
+edit, and again after — red then, green now.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause.** The guard used the **wrong discriminator**. The question it exists to
+answer is *"did this scan look at anything?"*, and the number that answers it is the
+**Fabric card total**. The guard instead read the **Unknown total**, which is a *result*
+of the scan, not evidence that the scan happened. The two are only equivalent while the
+corpus holds some Unknown cards — which the refusal text asserted as a standing fact
+(*"`fw fabric overview` reports a non-zero Unknown subsystem"*). Once the corpus cleared,
+a cleared fence and a broken predicate produced the identical observation and the guard
+resolved the ambiguity in the one direction that is wrong on a success.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed.** The script hard-coded a **corpus fact as an invariant** —
+exactly the mutable-corpus-anchor class **T-3326** names, which the framework applies to
+`## Verification` lines but not to the tools those lines invoke. The script's own header
+argues the opposite case correctly (*"The Unknown count moves… A fence keyed to a number
+that drifts needs a command, not a citation"*) and then embeds a drifting number in its
+refusal string eighty lines later — so the rule was understood and still not applied to
+the file that stated it. Nothing detected the regression: the only consumer is a
+verification line on an already-**completed** task, and P-011 runs a task's Verification
+block at the close transition, never again. A pinned line on a closed task is a claim
+nobody re-checks.
+
+**Prevention.** Distinct from the fix, and both are pinned as verification lines here:
+
+1. **The right discriminator, read at run time.** REFUSED now means *zero Fabric cards
+   enumerated* — a property the script measures on every invocation, which cannot go
+   stale because there is no number stored anywhere to go stale.
+2. **The control leg proves the protection still bites.** A run against an empty
+   `.fabric/components` directory still exits 2 (verification line 4 of this task) — so
+   removing the false red demonstrably did not remove the false-green guard. Fixing a
+   guard by deleting it is the obvious wrong repair, and the control is what makes that
+   distinguishable from the right one.
+3. **The document and the measurement are reconciled** (AC A5) so they cannot silently
+   disagree — the same discipline T-3394 itself applied to the stale `intersection_count:
+   3` block it corrected.
+
+**The generalisable finding, recorded for whoever owns it.** *A verification line pinned
+on a `completed/` task is never re-run by the framework.* T-3394 was green at close and
+red three days later, and the only reason anyone knows is that drive 6 chose to re-run a
+cited command instead of citing it. This is a detection gap wider than this bug —
+surfaced in the drive-7 handback as a Sovereign question rather than fixed here, because
+"re-run completed tasks' verification blocks on a schedule" is a governance change with a
+cost model, not a one-file repair.
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-09-22 — the fix is one condition, the finding is two
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** At filing this read as a one-line guard repair. Implementing it
+  surfaced that the guard's premise and its *discriminator* are separate defects. Swapping
+  the discriminator (card total, not Unknown total) fixes it permanently; deleting the
+  stale premise string alone would have left a guard that is correct today and wrong again
+  the next time someone reasons from a corpus snapshot. The zero-denominator path
+  (`0/0` in the percent-of-Unknown columns) was not anticipated at filing and needed an
+  explicit `n/a — 0 Unknown cards to apportion` rather than a crash or a misleading `0.0%`.
+- **Plan impact:** None to scope; A1–A5 were already written against the right shape. The
+  measured-clear banner and the `share()` helper are additions the ACs implied but did not
+  name.
+- **Triggered:** No new task. One Sovereign question for the drive-7 handback — *nothing
+  re-runs a completed task's `## Verification` block*, which is why this sat red for three
+  days and is a wider gap than this tool. Surfaced, not decided.
 
 ## Recommendation
 
@@ -215,3 +250,6 @@ grep -q '544' docs/research/executable-workflow/arc-0-clause-1-attestation.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3438-ewcr-arc-0-leg-1-tool-refuses-on-success.md
 - **Context:** Initial task creation
+
+### 2026-09-22T19:30:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

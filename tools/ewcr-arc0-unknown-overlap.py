@@ -3,9 +3,13 @@
 the runtime write set?
 
 Roadmap §6 fence 1 ("Component Fabric non-empty, enriched, validated") is
-currently NOT passable: `bin/fw fabric overview` reports a large `Unknown`
-subsystem. The dossier's disposition (questions-and-dispositions.md C1) reads
-"Unmeasured, not zero" — the right encoding, and the reason this task exists.
+SIZED by this script, not asserted by it. The dossier's disposition
+(questions-and-dispositions.md C1) reads "Unmeasured, not zero" — the right
+encoding, and the reason this script exists. Whether the fence is clear on any
+given day is the OUTPUT of a run, never a premise baked into this file: the
+Unknown total measured 512 at ingestion, 519 when Arc 0 opened, 544 at the
+clause-1 attestation (2026-09-19), and 0 on 2026-09-22. Nothing in the control
+flow below may depend on which of those numbers is current.
 
 The re-scoping in that disposition is the whole point: fence 1 does NOT require
 a full-corpus enrichment. It requires resolving `Unknown` for the subsystems in
@@ -22,11 +26,24 @@ Fabric card, or touch the runtime. Arc 0 is measurement-only by its own scope
 fence (`.context/arcs/ewcr-arc0-contract-evidence.yaml`).
 
 Exit codes:
-    0  measurement completed
-    2  REFUSED — the corpus could not be read, or zero components were
-       enumerated. Zero enumerated is not "no overlap"; it is "nothing was
-       looked at", and reporting 0% overlap from an empty scan is the exact
+    0  measurement completed. This INCLUDES a run that enumerates cards and
+       finds zero of them carrying `subsystem: Unknown` — that is a measured
+       clear, and the enumerated-card total printed in the report is the
+       evidence that the scan was not empty.
+    2  REFUSED — the corpus could not be read, or zero Fabric CARDS were
+       enumerated. Zero cards enumerated is not "no overlap"; it is "nothing
+       was looked at", and reporting 0% overlap from an empty scan is the exact
        false-green this programme exists to eliminate.
+
+THE TWO CONDITIONS ABOVE WERE CONFLATED until T-3438 (OBS-476). A zero Unknown
+count was treated as proof that this script's own subsystem predicate must be
+broken, on the premise that the corpus always holds some Unknown cards. That
+premise was a corpus fact copied into a string — the mutable-corpus-anchor class
+T-3326 names — it went false on 2026-09-22, and the script then refused on
+success, turning T-3394's pinned verification line red three days after that
+task closed green. The discriminator for "did we look at anything" is the CARD
+total, which is read at run time on every invocation. It is not the Unknown
+total, and it never was.
 """
 
 from __future__ import annotations
@@ -125,12 +142,18 @@ def main() -> int:
 
     unknown = [c for c in cards if str(c.get("subsystem", "")).strip().lower() in ("unknown", "", "none")]
 
-    if not unknown:
-        print("REFUSED: enumerated 0 Unknown-subsystem cards.", file=sys.stderr)
-        print("  `fw fabric overview` reports a non-zero Unknown subsystem, so a zero", file=sys.stderr)
-        print("  here means this script's subsystem predicate is wrong, not that the", file=sys.stderr)
-        print("  fence is clear. Fix the predicate before trusting any number below.", file=sys.stderr)
-        return 2
+    def share(n: int) -> str:
+        """Percent-of-Unknown, or an explicit n/a when the denominator is zero.
+
+        A cleared fence makes len(unknown) == 0. That is a result, not a fault:
+        the empty-scan refusal above has already established that cards WERE
+        enumerated, so 0/0 here means "nothing to apportion", not "nothing was
+        looked at". Reporting it as n/a keeps the two apart in the output the
+        same way the exit codes keep them apart.
+        """
+        if not unknown:
+            return "n/a — 0 Unknown cards to apportion"
+        return f"{100.0 * n / len(unknown):.1f}% of Unknown"
 
     core_prefixes = tuple(p for group in CORE.values() for p in group)
     broad_prefixes = core_prefixes + tuple(p for group in BROAD_EXTRA.values() for p in group)
@@ -145,11 +168,17 @@ def main() -> int:
     print(f"Unknown-subsystem cards          : {len(unknown)}")
     print(f"  ...of which carry no location  : {len(no_location)}   <- cannot be placed either way")
     print()
-    print(f"Intersection with CORE write set : {len(in_core)}"
-          f"   ({100.0 * len(in_core) / len(unknown):.1f}% of Unknown)")
-    print(f"Intersection with BROAD write set: {len(in_broad)}"
-          f"   ({100.0 * len(in_broad) / len(unknown):.1f}% of Unknown)")
+    print(f"Intersection with CORE write set : {len(in_core)}   ({share(len(in_core))})")
+    print(f"Intersection with BROAD write set: {len(in_broad)}   ({share(len(in_broad))})")
     print()
+
+    if not unknown:
+        print("MEASURED CLEAR — this is a result, not a refusal.")
+        print(f"  {len(cards)} Fabric cards enumerated; 0 of them carry `subsystem: Unknown`.")
+        print("  The enumerated-card total on the line above is the evidence that this")
+        print("  scan was not empty. A scan that enumerates nothing exits 2 REFUSED and")
+        print("  never reaches this line — see the empty-directory control in T-3438.")
+        print()
 
     print("── CORE breakdown by §5.1 row ──")
     for label, prefixes in CORE.items():
@@ -167,6 +196,8 @@ def main() -> int:
         loc = location_of(c)
         top[loc.split("/")[0] if "/" in loc else (loc or "(no location)")] += 1
     print("── Where the Unknown cards actually live (top 12 roots) ──")
+    if not top:
+        print("  (none — no card carries an Unknown subsystem)")
     for root, n in top.most_common(12):
         print(f"  {n:>4}  {root}")
 

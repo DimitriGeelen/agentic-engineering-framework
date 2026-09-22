@@ -28,7 +28,9 @@ commit named above; neither number is copied from prose.
 ### Leg 1 — Unknown-subsystem intersection with the runtime write set
 
 `tools/ewcr-arc0-unknown-overlap.py`, against the CORE and BROAD write sets derived in
-`arc0-write-set.md` from architecture §5.1:
+`arc0-write-set.md` from architecture §5.1. **This block is the run of 2026-09-19 and is
+kept verbatim as the dated capture it was; the Unknown total has since moved to 0 —
+see `## The Unknown total moved 544 -> 0` below, which is the current state.**
 
 ```
 Fabric cards enumerated          : 1279
@@ -96,15 +98,52 @@ figure was correct when taken and is now superseded:
 | commit `42cd97a2` (2026-09-07) | 3 | 4 | `arc0-write-set.md` machine-readable block |
 | commit `ac9a9d410` (T-3351) | **0** | **0** | 23 Unknown write-set cards reclassified |
 | commit `996a4f9a5` (this attestation) | **0** | **0** | live re-run, 2026-09-19 |
+| commit `d9841353f` (T-3438) | **0** | **0** | live re-run, 2026-09-22 — and the Unknown *total* is now **0** too |
 
 `arc0-write-set.md`'s machine-readable block was left at the `42cd97a2` figures after
 T-3351 drove the intersection to 0/0 — stale for twelve days. T-3394 corrects it in the
 same change as this attestation, so the two documents cannot disagree again without one
 of them going red.
 
-The Unknown *total* grows (519 → 539 → 544) while the intersection stays 0. That is the
-expected shape: Unknown grows with `tests/`, which is outside the write set by
-construction.
+The Unknown *total* grew (519 → 539 → 544) while the intersection stayed 0. That was the
+expected shape: Unknown grew with `tests/`, which is outside the write set by
+construction. **That trend then reversed and completed — see the next section.**
+
+## The Unknown total moved 544 -> 0
+
+**Measured 2026-09-22, commit `d9841353f`, by re-running this document's own reproduction
+command rather than citing it** (T-3437 drive 6 §2, recorded as **D-615**; tool fix
+**T-3438** / **OBS-476**):
+
+```
+Fabric cards enumerated          : 1333
+Unknown-subsystem cards          : 0
+Intersection with CORE write set : 0   (n/a — 0 Unknown cards to apportion)
+Intersection with BROAD write set: 0   (n/a — 0 Unknown cards to apportion)
+```
+
+The 544 cards were reclassified corpus-wide in the three days after 2026-09-19,
+overwhelmingly into `tests` (524) and `tests-playwright` (129) — not by any Arc-0 task,
+which is why nothing in this arc noticed. Leg 1 is therefore now clear on both axes:
+zero intersection *and* zero Unknown anywhere. The discriminating control in leg 2
+(coverage 98.4–100% on every write-set root, 0 Unknown on each) is what makes that zero
+a measured clear rather than an empty scan.
+
+**The tool refused on this success for three days.** `ewcr-arc0-unknown-overlap.py`
+treated `unknown == 0` as proof that its own subsystem predicate must be broken, on the
+hard-coded premise that `fw fabric overview` always reports a non-zero Unknown subsystem
+— a corpus fact copied into a string (the T-3326 mutable-corpus-anchor class). When the
+premise went false the script exited 2, and **this attestation's own pinned verification
+line went red on 2026-09-22, three days after T-3394 closed green**. T-3438 split the two
+conditions: REFUSED now means *zero Fabric cards enumerated*, which is the real
+"nothing was looked at" signal and is read at run time on every invocation. The
+enumerated-card total (1333) is the evidence the scan was not empty; an empty-directory
+control run still exits 2, pinned as a verification line on T-3438.
+
+Note the card total itself moved 1332 → 1333 between drive 6 (2026-09-22 18:00Z) and
+this reconciliation (20:00Z). It is recorded here to make the point rather than to be
+tracked: **every number on this page is a dated capture of a moving corpus, and the
+command is the claim.**
 
 ## Reproducing this
 
@@ -129,10 +168,14 @@ reporting a number the other side did not ask for:
   `## Clause 2` below.
 - **It does not speak to exit-clause 3.** H1/H3/H5/H6 are 832's register and their
   operator's ruling. 832 measured clause 3 at 2/6 and explicitly did not ask us for it.
-- **It is scoped to the Arc-0 write set**, not to the repository. Repo-wide Fabric
-  coverage — 544 Unknown cards, overwhelmingly under `tests/` — is a real and separately
-  tracked concern. Reporting it as this clause would be answering a question nobody
-  asked, which is the error 832 declined to make in the other direction.
+- **It is scoped to the Arc-0 write set**, not to the repository. When this attestation
+  was written, repo-wide Fabric coverage — 544 Unknown cards, overwhelmingly under
+  `tests/` — was a real and separately tracked concern, and reporting it as this clause
+  would have been answering a question nobody asked (the error 832 declined to make in
+  the other direction). That concern has since resolved on its own (0 Unknown
+  corpus-wide, 2026-09-22), but the scoping claim stands unchanged: this clause is about
+  the write set, and a repo-wide number would still be the wrong answer to it now that
+  the repo-wide number happens to agree.
 - **No runtime code was written.** arc-019's fence forbids runtime implementation; this
   is documentation and measurement only.
 
