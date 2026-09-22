@@ -1,8 +1,10 @@
 ---
 id: T-3432
-name: "close-commit deadlock under session-scoped focus: update-task.sh clears the unscoped focus.yaml while the gate reads focus.SESSION.yaml"
+name: "close-commit deadlock under session-scoped focus: update-task.sh clears the
+  unscoped focus.yaml while the gate reads focus.SESSION.yaml"
 description: >
-  close-commit deadlock under session-scoped focus: update-task.sh clears the unscoped focus.yaml while the gate reads focus.SESSION.yaml
+  close-commit deadlock under session-scoped focus: update-task.sh clears the unscoped
+  focus.yaml while the gate reads focus.SESSION.yaml
 
 status: started-work
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T12:03:48Z
-last_update: 2026-09-22T12:03:48Z
-date_finished: null
+last_update: '2026-09-22T12:15:25Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,13 +36,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-22T12:15:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=271,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-22T12:15:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3432: close-commit deadlock under session-scoped focus: update-task.sh clears the unscoped focus.yaml while the gate reads focus.SESSION.yaml
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Found live by the T-3428 worker (OBS-468). `update-task.sh:2267` hardcodes
+`$CONTEXT_DIR/working/focus.yaml` when clearing focus on `work-completed`,
+while the task gate (`check-active-task.sh` → `fw_focus_file`, T-3038)
+reads the worker's own `focus.<key>.yaml` under `FW_SESSION_SCOPED_FOCUS=1`.
+After a clean close the scoped file still names the completed task, so the
+gate refuses every Bash and Write ("task is work-completed") and the close
+commit cannot be made; T-2054's null-focus checkpoint allowance never fires
+because the focus the gate sees is not null. Every dispatched worker that
+closes a task hits this, and T-3422 (seeding the scoped file at dispatch)
+made it universal. Fix: resolve the file to clear through the same helper
+the reader uses (L-399 producer/consumer parity); default mode unchanged.
 
 ## Acceptance Criteria
 
