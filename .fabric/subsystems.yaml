@@ -15,6 +15,7 @@ subsystems:
       - "web/*"
       - "agents/docgen/*"
       - "bin/watchtower.sh"
+      - "vendor/designer/*"
     name: Watchtower Web UI
     purpose: "Web dashboard for monitoring framework state — tasks, learnings, patterns, metrics, graduation pipeline"
     component_count: 65
@@ -175,6 +176,7 @@ subsystems:
     paths:
       - "docs/*"
       - "prompts/*"
+      - "0[0-9][0-9]-*.md"
     summary: "docs/{reports,adr,architecture,runbooks,design}/ + prompts/"
     entry_points:
       - "fw docs"
