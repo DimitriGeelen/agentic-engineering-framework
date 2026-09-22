@@ -1,8 +1,10 @@
 ---
 id: T-3426
-name: "arc-011 sidecar slice 10: fw sidecar e2e --peer <agent-id> — two-party live check against a real peer agent (TermLink), hub-verified both ways"
+name: "arc-011 sidecar slice 10: fw sidecar e2e --peer <agent-id> — two-party live
+  check against a real peer agent (TermLink), hub-verified both ways"
 description: >
-  arc-011 sidecar slice 10: fw sidecar e2e --peer <agent-id> — two-party live check against a real peer agent (TermLink), hub-verified both ways
+  arc-011 sidecar slice 10: fw sidecar e2e --peer <agent-id> — two-party live check
+  against a real peer agent (TermLink), hub-verified both ways
 
 status: started-work
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T10:11:39Z
-last_update: 2026-09-22T10:11:39Z
-date_finished: null
+last_update: '2026-09-22T10:15:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-22T10:15:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=295,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-22T10:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3426: arc-011 sidecar slice 10: fw sidecar e2e --peer <agent-id> — two-party live check against a real peer agent (TermLink), hub-verified both ways
@@ -69,11 +99,11 @@ and we answer it through the same path. Two-party, both directions.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/sidecar/e2e.py`: `Config.peer` (agent id or None); with a peer, `responder` is the peer, no dispatch/wait/result collaborator is called, H3 and H6 are recorded `not applicable (peer-owned)` and excluded from the verdict; `blocking_hops()` = H1,H2,H4,H5; the consult body is the human-readable request carrying the run id and the ACK token
-- [ ] `fw sidecar e2e --peer <id> [--timeout N] [--poll S]`: defaults 1800 s / 15 s in peer mode, 300 s / 5 s otherwise; `--ambient` refused with `--peer` (meaningless: no prompt of ours is involved); report `mode: peer`
-- [ ] Unit tests in `tests/unit/test_sidecar_e2e.py`: peer-mode full pass (no dispatch called, H3/H6 n/a, verdict PASS on H1/H2/H4/H5); peer never answers → H4/H5 FAIL, verdict FAIL; body carries run id + ACK token; `--ambient --peer` rejected by the CLI parser
+- [x] `lib/sidecar/e2e.py`: `Config.peer`; `responder` = peer; `mode` = peer; `consult_body()` is the readable request (run id, ACK token, sender id, conversation id, both reply forms); in `run()` the dispatch block is skipped, H3/H6 recorded `not applicable: <peer> owns …`, `blocking_hops()` = H1,H2,H4,H5; `render()` prints `n/a` for those rows. Also (TermLink @1640 meet-point 2) every consult now carries `metadata.cv_key=<client_msg_id>` so `channel cv-keys` is an O(1) H2 path — transport test pins it
+- [x] `fw sidecar e2e --peer <id> [--timeout] [--poll]`: defaults 1800 s / 15 s with `--peer`, 300 s / 5 s otherwise; `--ambient --peer` → exit 2 before any send; report carries `mode: peer`, `peer: <id>`
+- [x] `tests/unit/test_sidecar_e2e.py` +3: peer full pass (no dispatch, H3/H6 n/a, PASS on H1/H2/H4/H5, `n/a` in render); peer never answers (H4/H5 FAIL only, verdict FAIL, nothing dispatched); CLI refuses `--ambient --peer`. **12/12; sidecar suites 47/47**
 - [ ] **Live, two-party:** `bin/fw sidecar e2e --peer 010-termlink` sent, the request posted to TermLink on agent-chat-arc with the run id, and the outcome recorded here — PASS with their topic offsets if they answered within the window; otherwise the FAIL record with H1/H2 PASS (our send and their topic hold it) and the run re-issued once they signal they read it
-- [ ] Vendored copies synced, `bin/fw vendor self --check` clean; all sidecar suites green
+- [x] Vendored `lib/sidecar/e2e.py`, `lib/sidecar_cli.py`, `lib/sidecar/termlink_transport.py` synced (VERSION 1.6.783); `bin/fw vendor self --check` → "in sync with source"; all seven sidecar suites **47/47**
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -107,6 +137,14 @@ and we answer it through the same path. Two-party, both directions.
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_sidecar_e2e.py tests/unit/test_sidecar_termlink_transport.py tests/unit/test_sidecar_sweep.py tests/unit/test_sidecar_status.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_delivery.py tests/unit/test_sidecar_outbox.py -q > /tmp/.t3426-py 2>&1 && grep -q passed /tmp/.t3426-py && ! grep -q failed /tmp/.t3426-py
+bin/fw sidecar e2e --help > /tmp/.t3426-h 2>&1 && grep -q -- "--peer" /tmp/.t3426-h
+# --ambient with --peer is refused before any send (exit 2).
+bin/fw sidecar e2e --peer x --ambient --task T-0 > /tmp/.t3426-amb 2>&1; test $? -eq 2
+# A peer-mode record exists for 010-termlink with H1 and H2 both ok (our send landed on their topic) — the invariant this slice owns; H4/H5 are the peer's answer.
+python3 -c "import json,glob,sys; rs=[json.load(open(p)) for p in glob.glob('.context/sidecar/e2e/*.json')]; ok=[r for r in rs if r.get('mode')=='peer' and r.get('peer')=='010-termlink' and r['hops']['H1']['ok'] and r['hops']['H2']['ok']]; sys.exit(0 if ok else 1)"
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

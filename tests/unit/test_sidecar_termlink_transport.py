@@ -45,6 +45,7 @@ def test_command_carries_identity_and_conversation(mod):
     assert "--client-msg-id" in argv
     assert argv[argv.index("--client-msg-id") + 1] == "cmid-live-1"
     assert "client_msg_id=cmid-live-1" in argv  # observable on the envelope too
+    assert "cv_key=cmid-live-1" in argv         # T-3426: hub-indexed O(1) lookup key
     assert "conversation_id=conv-7" in argv
     assert "--hub" not in argv  # same-host names no hub
 

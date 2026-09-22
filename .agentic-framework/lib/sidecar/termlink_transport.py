@@ -74,6 +74,12 @@ def build_post_command(msg: dict, *, binary: str | None = None,
         # find a message by id — and so receiver-side dedupe is *possible*
         # once the hub's own 5-minute dedupe TTL has lapsed.
         "--metadata", f"client_msg_id={msg['client_msg_id']}",
+        # T-3426 / TermLink @1640 meet-point 2: cv_key lands in the hub's
+        # in-memory index, so `channel cv-keys <topic>` answers "does this
+        # topic hold my id" without walking the topic. Process-local on the
+        # hub (cleared on restart) — a reader must fall back to the walk when
+        # the key is absent; absent is not an error.
+        "--metadata", f"cv_key={msg['client_msg_id']}",
         "--metadata", f"conversation_id={msg['conversation_id']}",
         "--metadata", f"from_agent={msg['from']}",
         "--payload", msg["body"],
