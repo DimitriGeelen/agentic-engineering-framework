@@ -2,8 +2,19 @@
 # Auto-injected at session start as system topology overview (UC-4)
 # Each subsystem groups related components for navigation and onboarding
 
+# T-3430: `paths:` routes a file to this subsystem. `fw fabric register` and
+# `fw fabric enrich --describe` match a card's location against every pattern
+# declared here (fnmatch; `*` crosses `/`) and the LONGEST matching pattern
+# wins, so declaration order does not matter and a specific rule always beats
+# the broad one above it. No match => `subsystem: unknown`, printed as a
+# refusal rather than guessed. Add a pattern here to route a new directory.
+
 subsystems:
   - id: watchtower
+    paths:
+      - "web/*"
+      - "agents/docgen/*"
+      - "bin/watchtower.sh"
     name: Watchtower Web UI
     purpose: "Web dashboard for monitoring framework state — tasks, learnings, patterns, metrics, graduation pipeline"
     component_count: 65
@@ -13,6 +24,12 @@ subsystems:
       - "http://localhost:3000"
 
   - id: context-fabric
+    paths:
+      - "agents/context/*"
+      - "agents/capture/*"
+      - "agents/session-capture/*"
+      - "agents/resume/*"
+      - ".context/*"
     name: Context Fabric
     purpose: "Persistent memory system — working memory, project memory, episodic memory. Manages learnings, decisions, patterns, focus."
     component_count: 25
@@ -21,6 +38,14 @@ subsystems:
       - "fw context <command>"
 
   - id: framework-core
+    paths:
+      - "lib/*"
+      - "bin/*"
+      - "tools/*"
+      - "scripts/*"
+      - "agents/*"
+      - "deploy/*"
+      - "templates/*"
     name: Framework Core
     purpose: "CLI entry point, library scripts, initialization, harvesting, metrics"
     component_count: 24
@@ -29,6 +54,8 @@ subsystems:
       - "fw <command>"
 
   - id: git-traceability
+    paths:
+      - "agents/git/*"
     name: Git Traceability
     purpose: "Task-referenced commits, hooks (commit-msg, post-commit, pre-push), bypass logging"
     component_count: 7
@@ -37,6 +64,9 @@ subsystems:
       - "fw git <command>"
 
   - id: component-fabric
+    paths:
+      - "agents/fabric/*"
+      - ".fabric/*"
     name: Component Fabric
     purpose: "Structural topology system — component cards, dependency graph, drift detection, impact analysis"
     component_count: 7
@@ -45,6 +75,8 @@ subsystems:
       - "fw fabric <command>"
 
   - id: healing
+    paths:
+      - "agents/healing/*"
     name: Healing Loop
     purpose: "Antifragile error recovery — diagnose issues, suggest mitigations, record patterns"
     component_count: 6
@@ -70,6 +102,8 @@ subsystems:
       - "Automatic (hooks on every tool call)"
 
   - id: task-management
+    paths:
+      - "agents/task-create/*"
     name: Task Management
     purpose: "Create, update, and track tasks with frontmatter, ACs, verification gates"
     component_count: 2
@@ -78,6 +112,10 @@ subsystems:
       - "fw task <command>"
 
   - id: audit
+    paths:
+      - "agents/audit/*"
+      - "agents/monitor/*"
+      - "agents/observe/*"
     name: Audit System
     purpose: "Compliance checking — structure, task quality, git traceability, controls, drift"
     component_count: 3
@@ -86,6 +124,8 @@ subsystems:
       - "fw audit"
 
   - id: handover
+    paths:
+      - "agents/handover/*"
     name: Handover System
     purpose: "Session continuity — generate forward-looking context documents"
     component_count: 1
@@ -102,9 +142,59 @@ subsystems:
       - "bin/watchtower.sh"
 
   - id: enforcement
+    paths:
+      - ".claude/*"
     name: Hook Enforcement
     purpose: "Wire PreToolUse/PostToolUse hooks for task gate, tier-0 guard, budget gate, checkpoint, error watchdog"
     component_count: 1
     summary: "settings.json → PreToolUse[task-gate, tier0, budget-gate] + PostToolUse[checkpoint, error-watchdog]"
     entry_points:
       - ".claude/settings.json"
+
+  - id: tests
+    name: Test Suite
+    purpose: "Unit, integration, lint and governance tests — the executable half of every gate"
+    paths:
+      - "tests/*"
+    summary: "tests/{unit,integration,lint,web,governance,fixtures}/ — bats + pytest"
+    entry_points:
+      - "fw test all"
+
+  - id: tests-playwright
+    name: Playwright Browser Tests
+    purpose: "Tier-3 browser automation over Watchtower routes — interactive UI verification"
+    paths:
+      - "tests/playwright/*"
+    summary: "tests/playwright/ → live Watchtower → page assertions"
+    entry_points:
+      - "fw test playwright"
+
+  - id: docs
+    name: Documentation
+    purpose: "Reports, ADRs, architecture notes, runbooks, prompts — the written half of the corpus"
+    paths:
+      - "docs/*"
+      - "prompts/*"
+    summary: "docs/{reports,adr,architecture,runbooks,design}/ + prompts/"
+    entry_points:
+      - "fw docs"
+
+  - id: governance
+    name: Governance Policy
+    purpose: "Value drivers, capability overlays, standards and prompt bundles that gates read"
+    paths:
+      - "policy/*"
+    summary: "policy/{value-drivers.yaml,standards,prompts,capability-overlay}/"
+    entry_points:
+      - "fw bvp / fw reviewer"
+
+  - id: termlink-integration
+    name: TermLink Integration
+    purpose: "Cross-terminal session dispatch — workers, templates and editor plugins"
+    paths:
+      - "agents/termlink/*"
+      - "lib/templates/*"
+      - "plugins/*"
+    summary: "fw termlink → termlink binary → tagged PTY sessions"
+    entry_points:
+      - "fw termlink <command>"
