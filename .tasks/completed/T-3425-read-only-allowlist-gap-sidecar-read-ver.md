@@ -1,15 +1,18 @@
 ---
 id: T-3425
-name: "read-only allowlist gap: sidecar read verbs and termlink channel reads are blocked under captured/partial-complete focus (OBS-461); lands the staged T-3411 close"
+name: "read-only allowlist gap: sidecar read verbs and termlink channel reads are
+  blocked under captured/partial-complete focus (OBS-461); lands the staged T-3411
+  close"
 description: >
-  read-only allowlist gap: sidecar read verbs and termlink channel reads are blocked under captured/partial-complete focus (OBS-461); lands the staged T-3411 close
+  read-only allowlist gap: sidecar read verbs and termlink channel reads are blocked
+  under captured/partial-complete focus (OBS-461); lands the staged T-3411 close
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/lib/safe-commands.sh, tests/unit/t3425_sidecar_read_allowlist.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T09:54:41Z
-last_update: 2026-09-22T09:54:41Z
-date_finished: null
+last_update: 2026-09-22T10:04:37Z
+date_finished: 2026-09-22T10:04:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +37,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-22T10:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=296,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-22T10:00:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3425: read-only allowlist gap: sidecar read verbs and termlink channel reads are blocked under captured/partial-complete focus (OBS-461); lands the staged T-3411 close
@@ -63,7 +94,7 @@ gap leaves open: a new task for trailing work, not a bypass.
 - [x] `agents/context/lib/safe-commands.sh`: new `sidecar)` arm under the `fw|bin/fw` case — `whoami` safe; `inbox` safe only when `--peek` is present; `status` safe unless `--probe` — and `subscribe|cv-keys|ack-status|ack-history` added to the `termlink channel` read arm. `send`, plain `inbox`, `sweep`, `e2e`, `channel post|ack|create` remain gated (verified directly: SAFE/GATED table in the task's Updates)
 - [x] `tests/unit/t3425_sidecar_read_allowlist.bats` — 8 tests, 4 accepted forms (incl. bare `fw` and vendored path) and 4 refused forms; **8/8 ok**; the seven existing safe-commands suites still green (133 ok, 0 not ok, 0 skips across the set)
 - [x] Live: focus set to T-3090 (partial-complete, the exact state that refused it), `bin/fw sidecar inbox --peek` ran and printed a waiting consult (`@10 from 1409-sprind`, the PL-037 supersession) — before this task the same command under the same focus returned the G-020/T-3174 BLOCK
-- [ ] The staged T-3411 close (`.tasks/completed/T-3411-…`, `.context/episodic/T-3411.yaml`) is committed and pushed
+- [x] The staged T-3411 close (`.tasks/completed/T-3411-…`, `.context/episodic/T-3411.yaml`) rode in commit 24bed25fd and is on origin/bleeding-edge (push landed; `git status -sb` level with origin)
 - [x] Vendored `agents/context/lib/safe-commands.sh` synced (`FW_VENDOR_ONLY`, VERSION 1.6.780); `bin/fw vendor self --check` → "in sync with source"; bats file registered in the fabric
 
 ### Human
@@ -105,8 +136,8 @@ timeout 300 bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/context
 bash -n agents/context/lib/safe-commands.sh
 # The predicate itself, on the exact command that was refused (OBS-461), and on its write-side twin.
 bash -c 'source agents/context/lib/safe-commands.sh; is_bash_safe_command "bin/fw sidecar inbox --peek" && ! is_bash_safe_command "bin/fw sidecar inbox"'
-# The trailing T-3411 close is in history, not just staged.
-git log --oneline -1 -- .tasks/completed/T-3411-drive-5-rounds-of-review--procasfit-thro.md > /tmp/.t3425-t3411 2>&1 && grep -q "T-3411" /tmp/.t3425-t3411
+# The trailing T-3411 close is committed (tracked in completed/, no pending diff, gone from active/).
+git ls-files --error-unmatch .tasks/completed/T-3411-drive-5-rounds-of-review--procasfit-thro.md > /tmp/.t3425-t3411 2>&1 && git diff --quiet HEAD -- .tasks/completed/T-3411-drive-5-rounds-of-review--procasfit-thro.md && test ! -e .tasks/active/T-3411-drive-5-rounds-of-review--procasfit-thro.md
 bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -331,3 +362,25 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3425-read-only-allowlist-gap-sidecar-read-ver.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-99d67a31
+- **Timestamp:** 2026-09-22T10:05:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — The staged T-3411 close (`.tasks/completed/T-3411-…`, `.context/episodic/T-3411.yaml`) rode in commit 24bed25fd and is on origin/bleeding-edge (push landed; `git status -sb` level with origin)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/episodic/T-3411.yaml in: The staged T-3411 close (`.tasks/completed/T-3411-…`, `.context/episodic/T-3411.yaml`) rode in commit 24bed25fd and is on origin/bleeding-edge (push l`
+
+**Verification-level findings:**
+
+  1. **decaying-task-path-ref** (partial, deterministic) @ Verification:line 8
+     - evidence: `T-3411 no longer in active/ — git ls-files --error-unmatch .tasks/completed/T-3411-drive-5-rounds-of-review--procasfit-thro.md > /tmp/.t3425-t3411 2>&1 && git diff --quiet HEAD -- `
+
+### 2026-09-22T10:04:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

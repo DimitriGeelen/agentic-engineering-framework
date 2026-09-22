@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3425: read-only allowlist gap: sidecar read verbs and termlink channel reads are blocked under captured/partial-complete focus (OBS-461); lands the staged T-3411 close
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T10:05:20Z
+# ============================================================================
+
+task_id: T-3425
+task_name: "read-only allowlist gap: sidecar read verbs and termlink channel reads are blocked under captured/partial-complete focus (OBS-461); lands the staged T-3411 close"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T09:54:41Z
+completed: 2026-09-22T10:04:37Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T11:59:00+02:00
+last_commit: 2026-09-22T11:59:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar read verbs and termlink channel reads join the read-only allowlist (OBS-461)
+
+# Key outcomes
+outcomes:
+  - '`agents/context/lib/safe-commands.sh`: new `sidecar)` arm under the `fw|bin/fw` case — `whoami` safe; `inbox` safe only when `--peek` is present; `status` safe unless `--probe` — and `subscribe|cv-keys|ack-status|ack-history` added to the `termlink channel` read arm. `send`, plain `inbox`, `sweep`, `e2e`, `channel post|ack|create` remain gated (verified directly: SAFE/GATED table in the task''s Updates)'
+  - '`tests/unit/t3425_sidecar_read_allowlist.bats` — 8 tests, 4 accepted forms (incl. bare `fw` and vendored path) and 4 refused forms; **8/8 ok**; the seven existing safe-commands suites still green (133 ok, 0 not ok, 0 skips across the set)'
+  - 'Live: focus set to T-3090 (partial-complete, the exact state that refused it), `bin/fw sidecar inbox --peek` ran and printed a waiting consult (`@10 from 1409-sprind`, the PL-037 supersession) — before this task the same command under the same focus returned the G-020/T-3174 BLOCK'
+  - 'The staged T-3411 close (`.tasks/completed/T-3411-…`, `.context/episodic/T-3411.yaml`) rode in commit 24bed25fd and is on origin/bleeding-edge (push landed; `git status -sb` level with origin)'
+  - 'Vendored `agents/context/lib/safe-commands.sh` synced (`FW_VENDOR_ONLY`, VERSION 1.6.780); `bin/fw vendor self --check` → "in sync with source"; bats file registered in the fabric'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/episodic/T-3411.yaml'
+  - '.fabric/components/tests-unit-t3425_sidecar_read_allowlist.yaml'
+  - '.tasks/active/T-3425-read-only-allowlist-gap-sidecar-read-ver.md'
+  - '.tasks/completed/T-3411-drive-5-rounds-of-review--procasfit-thro.md'
+  - 'tests/unit/t3425_sidecar_read_allowlist.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T11:59:00'
+    action: 'T-3425: sidecar read verbs and termlink channel reads join the read-only allowlist (OBS-461)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 9
+  lines_added: 598
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3425-read-only-allowlist-gap-sidecar-read-ver.md
+generated_by: context-agent-hybrid
