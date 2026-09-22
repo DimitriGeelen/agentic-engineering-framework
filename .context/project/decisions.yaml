@@ -4132,3 +4132,59 @@ decisions:
     date: 2026-09-22
     task: T-3430
     rationale: "Not specified"
+
+  - id: D-593
+    decision: "Add a `paths:` list to each subsystem in `.fabric/subsystems.yaml`"
+    scope: project
+    date: 2026-09-22
+    task: T-3430
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-594
+    decision: "`describe.py --emit-shell` prints `FW_PURPOSE_B64=<base64>` and"
+    scope: project
+    date: 2026-09-22
+    task: T-3430
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-595
+    decision: "On by default, `--no-describe` to opt out."
+    scope: project
+    date: 2026-09-22
+    task: T-3430
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-596
+    decision: "`register.sh` writes `purpose_source: none` on a refusal (the card"
+    scope: project
+    date: 2026-09-22
+    task: T-3430
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-597
+    decision: "Move `# T-1754 — by-design orphan, no framework imports` from a"
+    scope: project
+    date: 2026-09-22
+    task: T-3430
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-598
+    decision: "`agents/fabric/lib/underpopulated.py`, shared by `drift`, `audit`"
+    scope: project
+    date: 2026-09-22
+    task: T-3430
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-599
+    decision: "Sidecar consult addressing: topics move from sidecar:<agent-id> to inbox:<circuit-id> — the hub treats inbox:* as mail (wake events, receipts, --await-ack); what follows the prefix is the framework's five-level circuit id (host FQDN / hub id / project id derived from path / session id / agent name). Two address forms: DURABLE ROLE ADDRESS at project level (inbox:<hub>/<project> — survives session restarts, the form peers use today) and EXACT CIRCUIT ADDRESS down to the agent for a dispatched worker (ephemeral, bounded retention). Group/broadcast ids unchanged for one-to-many. The sender's full circuit id goes in metadata on every message so origin is precise even when the destination is coarse. sidecar:* kept as a read-only transition alias for one release. Operator ruling 2026-09-22; resolves OBS-453. Implemented as T-3433."
+    scope: project
+    date: 2026-09-22
+    task: T-3433
+    rationale: "Not specified"
+
+  - id: D-600
+    decision: "Universal message retry ladder: every framework message kind (sidecar consults, pickups, learning publishes, dispatch results) retries on one shared schedule — 2x1min, 2x5min, 2x15min, 2x1h, 2x4h, 2x1d, 2x1w, 2x1mo — then dead-letters with a record and an audit WARN. Two failure classes, one schedule, different verbs: a post that never reached the hub is RE-POSTED on the rung; a post the hub holds but nobody read is ESCALATED on the rung (15min: nudge the recipient's project inbox/DM; 1d: surface to the operator; final: dead-letter). Receiver-side dedupe on client_msg_id is MANDATORY for every kind because the ladder deliberately outlives the hub's 5-minute dedupe window (TermLink's spec assumes a sender gives up by then; we diverge knowingly and told them). URGENT compresses the ladder — designed in a separate conversation, not here. Implemented as one shared lib driven by the existing 5-minute sweep cron; first rungs in-process. Operator ruling 2026-09-22; resolves OBS-447. Implemented as T-3434."
+    scope: project
+    date: 2026-09-22
+    task: T-3433
+    rationale: "Not specified"
