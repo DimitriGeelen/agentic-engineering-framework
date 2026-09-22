@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3438: EWCR Arc-0 leg-1 tool refuses on success: split 'nothing enumerated' from 'zero Unknown
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T19:37:19Z
+# ============================================================================
+
+task_id: T-3438
+task_name: "EWCR Arc-0 leg-1 tool refuses on success: split 'nothing enumerated' from 'zero Unknown"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T18:10:24Z
+completed: 2026-09-22T19:36:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-22T21:36:49+02:00
+last_commit: 2026-09-22T21:36:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the Arc-0 leg-1 fence stops refusing on success — card total is the discriminator, not the Unknown total
+
+# Key outcomes
+outcomes:
+  - '**A1 The two conditions are separated.** `tools/ewcr-arc0-unknown-overlap.py`'
+  - '**A2 The stale premise is gone from the refusal text.** The message no longer'
+  - '**A3 The false-green the guard exists to catch still bites.** A control run'
+  - '**A4 T-3394''s pinned line is green again.** The clause-1 attestation''s own'
+  - '**A5 The attestation is reconciled, not silently superseded.**'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/ewcr-arc0-unknown-overlap.json'
+  - 'docs/research/executable-workflow/arc-0-clause-1-attestation.md'
+  - '.tasks/active/T-3438-ewcr-arc-0-leg-1-tool-refuses-on-success.md'
+  - 'tools/ewcr-arc0-unknown-overlap.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T21:36:49'
+    action: 'T-3438: the Arc-0 leg-1 fence stops refusing on success — card total is the discriminator, not the Unknown total'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 86 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ewcr, arc0, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 86
+  commits: 1
+  files_changed: 4
+  lines_added: 181
+  lines_removed: 69
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3438-ewcr-arc-0-leg-1-tool-refuses-on-success.md
+generated_by: context-agent-hybrid
