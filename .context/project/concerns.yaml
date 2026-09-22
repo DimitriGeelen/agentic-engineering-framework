@@ -5186,3 +5186,56 @@ concerns:
   - T-1841
   - T-2904
   - L-399
+- id: OBS-093
+  type: structural
+  title: 'fw audit --sections structure hangs (not just fails) on a minimal synthetic
+    project — exec-bit-drift check, plus a stale Fabric-drift PASS-message string
+    in a test that grepped a wording an earlier commit changed'
+  description: 'Found while verifying `tests/unit/fabric_coverage_single_source.bats`
+    stayed green for T-3435 (fabric header-line work, unrelated to audit.sh
+    internals). Reproduced in full isolation: a fresh minimal synthetic project
+    (own `.tasks/`, `.fabric/components/` with one card, own `.context/locks/`
+    so the real corpus''s audit lock cannot be the cause) still hangs when
+    `PROJECT_ROOT=<synthetic-dir> bash agents/audit/audit.sh --sections structure`
+    is run standalone, no other process involved. `/proc/<pid>/stack` on the
+    stuck process showed `pipe_read` — blocked reading a pipe that never closes
+    — with output cut off mid-line exactly at "[WARN] Exec-bit parity: every
+    100755-indexed script is executable on disk — NOT EVALUATED... 0 indexed-1"
+    (`lib/exec-bit-drift.sh`, T-3317/OBS-336''s `exec_bit_candidates`/`exec_bit_drifted_files`,
+    invoked from `agents/audit/audit.sh` around line 2503). A second, independent
+    defect surfaced in the same test: `tests/unit/fabric_coverage_single_source.bats`
+    line ~241 greps the structure section''s output for the literal string
+    "PASS. Fabric drift: all 1 watched file(s) registered", but the section
+    currently prints "[PASS] Fabric drift: all watched files registered —
+    examined 1 watched file(s)" — different wording, so the assertion fails
+    even on a run that completes. Did not bisect which same-day commit(s)
+    changed either the exec-bit-drift code path or the Fabric-drift message
+    wording — audit.sh received several same-day commits from other tasks
+    (T-3428, T-3420, T-3430''s own under-populated-cards addition, among
+    others) and I did not want to spend a T-3435-scoped session bisecting
+    code neither T-3435 nor its sibling T-3431 owns.'
+  spec_reference: 'agents/audit/audit.sh (~line 2478-2503, exec-bit parity block);
+    lib/exec-bit-drift.sh; tests/unit/fabric_coverage_single_source.bats (~line
+    233-241, test "T-2735 severity: fully-carded project PASSes")'
+  severity: medium
+  status: open
+  detected_in: T-3435 (found live while confirming the fabric bats suite, unrelated
+    to T-3435's own header-line/edge-enrichment/describe-rerun work)
+  observed: '2026-09-22'
+  reported_by: self (found running the required Verification/AC test suite, not
+    by review)
+  blast_radius: 'Any `fw audit --sections structure` (or plain `fw audit`) run
+    against a project whose git-repo resolution for exec-bit checking behaves
+    differently from the framework''s own repo — observed on a non-git synthetic
+    temp directory, so anything that audits a fresh/minimal/non-git PROJECT_ROOT
+    is at risk of a silent hang rather than a fast FAIL or WARN. Also blocks
+    `tests/unit/fabric_coverage_single_source.bats` from running clean end to
+    end (2 of 14 tests affected: the hang, and the stale-wording mismatch).'
+  what_remains: 'Root-cause the exec-bit-drift pipe_read block (why `git -C
+    <non-repo> rev-parse --is-inside-work-tree` or the `exec_bit_candidates`
+    pipeline blocks instead of returning quickly on a non-git PROJECT_ROOT);
+    update the T-2735 test''s expected string to match current Fabric-drift
+    wording, or fix whichever side regressed. T-3435 worked around this by
+    scoping its own Verification bats invocation to exclude this one file
+    rather than fix code outside its scope — see T-3435''s Decisions section
+    for the exact evidence and the excluded-file list.'
