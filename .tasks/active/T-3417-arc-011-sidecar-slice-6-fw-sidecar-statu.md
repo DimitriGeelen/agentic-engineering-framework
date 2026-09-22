@@ -1,18 +1,19 @@
 ---
-id: T-3414
-name: "Worker T-3412 skipped the vendored-path sync; pre-push gate blocked. Refresh
-  vendored copies and record the autonomous-worker failure mode"
+id: T-3417
+name: "arc-011 sidecar slice 6: fw sidecar status — out-of-band observer for the consult
+  channel (round-1 review Δ4)"
 description: >
-  Worker T-3412 skipped the vendored-path sync; pre-push gate blocked. Refresh vendored
-  copies and record the autonomous-worker failure mode
+  arc-011 sidecar slice 6: fw sidecar status — out-of-band observer for the consult
+  channel (round-1 review Δ4)
 
 status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [termlink, peer-consult, sidecar, observability]
 components: []
-related_tasks: []
+related_tasks: [T-3407, T-3406, T-3404, T-3402, T-3411]
+arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -23,8 +24,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-22T07:02:42Z
-last_update: '2026-09-22T07:04:18Z'
+created: 2026-09-22T07:29:53Z
+last_update: '2026-09-22T07:32:08Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -37,17 +38,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-22T07:04:18Z'
+  - ts: '2026-09-22T07:32:08Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=295,acs=6)
+      (workflow:build); effort=8 (lines=295,acs=7)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-22T07:04:18Z'
+  - ts: '2026-09-22T07:32:08Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -56,64 +57,63 @@ bvp_scores_proposed:
       D4: 2
       F-RECALL: 2
       F-AUTONOMY: 0
-      F3: 0
+      F3: 1
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3414: Worker T-3412 skipped the vendored-path sync; pre-push gate blocked. Refresh vendored copies and record the autonomous-worker failure mode
+# T-3417: arc-011 sidecar slice 6: fw sidecar status — out-of-band observer for the consult channel (round-1 review Δ4)
 
 ## Context
 
-The SEQ-T3411 round-1 procAsFit worker fixed two real gate-bypass-log
-corruption bugs (T-3412, commit `0ec223c1e`) and closed cleanly — P-011
-3/3 passed. Pushing it was then **refused** by the pre-push self-vendor gate
-(T-2240/T-3125): it edited three vendored paths —
-`lib/inception.sh`, `agents/context/check-active-task.sh`,
-`agents/task-create/create-task.sh` — and never ran `bin/fw vendor self`.
-Left as-is, the fix would ship to consumers stale.
+Slice 6 of the arc-011 peer-consult sidecar. Slices 1-5 (T-3402…T-3407) make
+the channel work — two-agent round trip and ambient surfacing both
+live-verified. What they do not do is let anyone see it *fail*.
 
-**The failure mode, which is the part worth keeping.** CLAUDE.md requires, for
-any task touching `bin/fw`, `lib/`, `agents/`, `policy/`, `web/` or
-`.tasks/templates/`, that `## Verification` include `bin/fw vendor self --check`
-and that the sync happen BEFORE `--status work-completed` (OBS-250, T-3236).
-T-3412's Verification block contains **zero** occurrences of "vendor" — so the
-close gate ran the three lines the worker wrote, passed all three, and
-certified incomplete work. P-011 is author-controlled by construction: it can
-only run what the author thought to write. An autonomous worker that does not
-know a rule produces a *green* close, not a red one.
+The SEQ-T3411 round-1 value review classed the sidecar **`D — unmeasured`**
+(finding Δ4): 28/28 tests prove correctness in isolation, not delivery, and
+per that prompt's ground rule "a channel cannot report its own failures" — a
+silent consult drop is currently indistinguishable from "nothing to say". Its
+proposal, verbatim in spirit: an out-of-band observer, or at minimum a
+send/receive counter distinct from the tests, before relying on this channel
+for governance-relevant consults. This slice is that observer.
 
-Two rails behaved correctly and are worth naming: the pre-push gate caught
-what the close gate structurally could not (defence in depth working), and it
-named the exact fix command. The gap is that the worker's handback would have
-reported success.
+**Out-of-band means: read our own durable state, not the hub's claims.** The
+outbox files and the append-only ack ledger are written by *us* on every send
+and every delivery outcome; the inbox cursor state is written on every read.
+A status derived from those cannot be fooled by a hub that says "delivered"
+(TermLink's own `confirmed: false` shape, measured in T-3405). That is the
+whole design: no new telemetry, no new writer — a reader over state that
+already exists because slices 1 and 4 made it durable.
 
-T-3412 is closed, so OBS-250's dead end applies — there is no route back to
-that task to add the missing line. Hence this task rather than reopening it.
+**Scope fence.** Out: the sweeper that calls `resolve_expired()` on a cadence
+(this slice *reports* expired-unswept rows, which is the evidence the sweeper
+slice will need), any retry loop (OBS-447 is the operator's), and an audit
+rail that greps this output (a follow-on once the shape is stable).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `bin/fw vendor self` run and `--check` reports in-sync — synced with `FW_VENDOR_ONLY` naming only T-3412's three files (the gate withholds uncommitted files a caller has not claimed, so this is the sanctioned path, not the `FW_VENDOR_ALL` bypass). Result: "synced 2 agents/ file(s)", VERSION 1.6.744, then "vendored .agentic-framework/ in sync with source"
-- [x] The failure mode recorded as an observation (OBS filed under this task) — including the structural point that P-011 is author-controlled and therefore cannot catch a rule the author never wrote, and the candidate fix of DERIVING required verification lines from the task's git diff rather than trusting author memory
-- [x] T-3412's own fix is not modified — this task touched only `.agentic-framework/` copies and `VERSION`; `lib/inception.sh`, `agents/context/check-active-task.sh` and `agents/task-create/create-task.sh` are unchanged from commit `0ec223c1e`
-- [x] The push that was blocked now succeeds — `8bd9b13ec..551c22595` on attempt 18 (17 refusals were audit-lock contention from concurrent workers, retried rather than bypassed with `--no-verify`). T-3412's fix is now on origin with its vendored copies in step
-
-**Close deliberately deferred — applying this sequence's own round-2 finding.**
-Round 2's review (E17) established that a shared-tree worker with no
-session-local focus inherits whatever `.context/working/focus.yaml` a
-concurrent session last set. The `work-completed` transition **nulls that
-slot** as its final act. Closing this task while round 2's procAsFit worker is
-mid-flight could therefore hand a live worker "No active task" for a gate it
-would otherwise pass. The ACs above are met and checked; the close waits for a
-gap between workers. Recorded here rather than done quietly, because "I held a
-close for three minutes" is otherwise indistinguishable from "I forgot".
+- [x] `lib/sidecar/status.py:snapshot()` — derives every number from `outbox/*.json`, the append-only ledger (latest row per id) and `inbox-state.json`; imports neither the transport nor the probe. `test_snapshot_never_touches_the_hub` monkeypatches `subprocess.run`/`Popen` to raise and asserts `snapshot()` still returns
+- [x] `fw sidecar status [--json] [--probe]` — `lib/sidecar_cli.py:cmd_status`; `--probe` result is emitted as a separate `hub_probe` key / trailing line and never merged into the ledger counts. Live `--probe --json`: file counts unchanged, `"hub_probe": {"ok": true, …}` beside them
+- [x] Failure is visible — `test_silent_drop_becomes_visible_once_its_deadline_passes`: one `TransportError` send → `STORED 1`, `expired_unswept 0`; at `now+5min` → `expired_unswept 1`; after `resolve_expired()` → `expired_unswept 0, UNKNOWN 1`. The drop is on the record at every stage
+- [x] Unit tests: `tests/unit/test_sidecar_status.py`, 5 tests; all six sidecar suites together **33 passed** in 1.08s
+- [x] Live, against this agent's real state:
+      ```
+      messages total:   6   pending: 0
+      ack ledger:       STORED 0  INJECTED_NOW 6  INJECTED_LATER 0  UNKNOWN 0
+      expired unswept:  0
+      last send:        2026-09-21T22:40:27Z   last delivery: 2026-09-21T22:40:27Z
+      inbox cursors:    sidecar:999-AEF@4, sidecar:ambient-responder@1, sidecar:consult-responder@1,
+                        sidecar:seq-t3411-r1-review@0, r1-procasfit@0, r2-review@0, r2-procasfit@0
+      ```
+      The 6 delivered / 0 dropped are tonight's T-3405/T-3406/T-3407 sends. **Unplanned evidence in the cursor list:** every SEQ-T3411 worker has an inbox cursor at `@0` — each of them ran `fw sidecar inbox` at least once with *no* inbox instruction in its own prompt. That is T-3407's dispatch stanza firing in real, unrelated workers, observed out-of-band through this very status verb — the first non-demo proof the ambient mechanism runs in production dispatches
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -148,10 +148,26 @@ close for three minutes" is otherwise indistinguishable from "I forgot".
 
 ## Verification
 
+out=$(python3 -m pytest tests/unit/test_sidecar_status.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_termlink_transport.py tests/unit/test_sidecar_delivery.py tests/unit/test_sidecar_outbox.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+bin/fw sidecar status --json > /tmp/.t3417-status 2>&1 && grep -q '"expired_unswept"' /tmp/.t3417-status && grep -q '"ledger"' /tmp/.t3417-status
+bin/fw sidecar status --probe --json > /tmp/.t3417-probe 2>&1 && grep -q '"hub_probe"' /tmp/.t3417-probe
 bin/fw vendor self --check
-# T-3412's repair is untouched by this task: both fixes still present at HEAD.
-grep -q 'errors="ignore"' agents/context/check-active-task.sh
-git diff --quiet 0ec223c1e -- lib/inception.sh agents/context/check-active-task.sh agents/task-create/create-task.sh
+
+## Evolution
+
+### 2026-09-22 — the observer is a reader, and that is the whole point
+- **What changed:** nothing in the plan. The one design decision worth
+  recording is what this slice deliberately does NOT do: it adds no counter,
+  no log line, no new writer. Slices 1 and 4 already made every send and
+  every delivery outcome durable on disk; the "instrumentation" the review
+  asked for turned out to be a reader over that state. A counter would have
+  been a second source of truth that could drift from the ledger.
+- **Why `--probe` is separate output, not a field:** the hub's self-report is
+  the thing the review's ground rule says cannot be trusted alone
+  (`confirmed: false`, T-3405). Reporting it beside the file-derived numbers,
+  never merged into them, is what makes the status *out-of-band*.
+- **Surfaced, not fixed here:** `expired_unswept` is now visible, and nothing
+  sweeps it. The sweeper slice has its evidence.
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -371,7 +387,7 @@ git diff --quiet 0ec223c1e -- lib/inception.sh agents/context/check-active-task.
 
 ## Updates
 
-### 2026-09-22T07:02:42Z — task-created [task-create-agent]
+### 2026-09-22T07:29:53Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3414-worker-t-3412-skipped-the-vendored-path-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3417-arc-011-sidecar-slice-6-fw-sidecar-statu.md
 - **Context:** Initial task creation

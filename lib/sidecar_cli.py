@@ -23,7 +23,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lib.sidecar import delivery, inbox, outbox  # noqa: E402
+from lib.sidecar import delivery, inbox, outbox, status as status_mod  # noqa: E402
 from lib.sidecar import termlink_transport as transport  # noqa: E402
 
 
@@ -83,6 +83,26 @@ def cmd_inbox(args) -> int:
     return 0
 
 
+def cmd_status(args) -> int:
+    snap = status_mod.snapshot()
+    probe = None
+    if args.probe:
+        # Kept apart from the file-derived numbers on purpose: the hub's
+        # self-report must never be able to overwrite what our own ledger says.
+        verdict = transport.probe_hub(None)
+        probe = {"ok": verdict.ok, "reason": verdict.reason}
+    if args.json:
+        payload = dict(snap)
+        if probe is not None:
+            payload["hub_probe"] = probe
+        print(json.dumps(payload, indent=2))
+        return 0
+    print(status_mod.render(snap))
+    if probe is not None:
+        print(f"hub probe:        {'ok' if probe['ok'] else 'REFUSED'} — {probe['reason']}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="fw sidecar",
                                      description=__doc__.split("\n")[0])
@@ -108,6 +128,13 @@ def build_parser() -> argparse.ArgumentParser:
     box.add_argument("--peek", action="store_true",
                      help="do not advance the cursor")
     box.set_defaults(func=cmd_inbox)
+
+    st = sub.add_parser("status", help="out-of-band channel status from our own "
+                        "outbox/ledger/inbox state; never asks the hub")
+    st.add_argument("--json", action="store_true")
+    st.add_argument("--probe", action="store_true",
+                    help="also run the hub capability probe, reported separately")
+    st.set_defaults(func=cmd_status)
 
     return parser
 
