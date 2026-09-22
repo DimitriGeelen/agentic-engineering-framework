@@ -106,11 +106,16 @@ def explicit_prompt(cfg: Config) -> str:
 
 def ambient_prompt(cfg: Config) -> str:
     # Deliberately says nothing about consults, inboxes or replies.
+    #
+    # No `sleep` in this job: live run 7e013402 backgrounded `sleep 45`,
+    # ended its turn "waiting to be notified", and never printed DONE — a
+    # headless `claude -p` has no next turn. The un-instructed inbox read
+    # comes from the dispatch stanza's yield-point rule, not from idle time.
     return (
         f"You are a worker in an automated framework test (task {cfg.task}, "
-        f"run {cfg.run_id}). Your only job: run `sleep 45`, then print the "
-        f"single word {DONE_MARKER} as the last line of your final message. "
-        f"Do not create tasks, edit files, or commit.\n"
+        f"run {cfg.run_id}). Your only job: run `date -u` and report the "
+        f"output, then print the single word {DONE_MARKER} as the last line "
+        f"of your final message. Do not create tasks, edit files, or commit.\n"
     )
 
 
