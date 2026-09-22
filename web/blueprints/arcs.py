@@ -29,6 +29,7 @@ from typing import Any
 
 import yaml
 from flask import Blueprint, abort, request
+from markupsafe import escape   # T-3429: reviewer reasons are rendered into an error card
 
 from lib.arc_membership import (
     scan_tasks_by_arc_id as _scan_tasks_by_arc_id_shared,
@@ -937,6 +938,28 @@ def _bvp_signals(arc: dict, arc_slug: str, arc_numeric: str) -> dict:
         reverse=True,
     )
 
+    # T-3429 (D-586): the reviewer verdict is what the Approve button now acts
+    # on, so the row has to show it BEFORE the click — a button whose outcome is
+    # only discoverable by pressing it is the shape this surface exists to avoid.
+    # Read straight off the persisted `reviewer:` block; the page never runs the
+    # reviewer itself (a render that mutates arc YAML would be a worse bug than
+    # a stale verdict, and `fw arc review-driver <arc> --all` refreshes it).
+    for p in proposed_sorted:
+        rv = p.get("reviewer")
+        if not isinstance(rv, dict) or not rv:
+            p["reviewer_state"] = "not-reviewed"
+            p["reviewer_failed"] = []
+            continue
+        checks = rv.get("checks") or {}
+        failed = sorted(
+            c.get("check") or k
+            for k, c in checks.items()
+            if isinstance(c, dict) and c.get("verdict") == "fail"
+        )
+        p["reviewer_state"] = "pass" if str(rv.get("verdict")) == "pass" else "fail"
+        p["reviewer_failed"] = failed
+        p["reviewer_ts"] = rv.get("ts")
+
     scoped = arc.get("scoped_drivers") or []
     if not isinstance(scoped, list):
         scoped = []
@@ -976,7 +999,12 @@ def arc_approve_driver(arc_id):
         return '<p style="color: var(--pico-del-color);">Driver name required.</p>', 400
     if len(name) > 64:
         return '<p style="color: var(--pico-del-color);">Driver name too long (max 64).</p>', 400
-    cmd = ["bin/fw", "arc", "approve-driver", slug, name, "--from-watchtower"]
+    # T-3429 (D-586): the DEFAULT path — no --from-watchtower — so the static
+    # reviewer certifies the driver and the entry records approved_by:
+    # reviewer:<id>. The override flag is deliberately not passed: clicking
+    # Approve should mean "run the check", not "skip it because a human clicked".
+    # A FAIL comes back on stderr and is surfaced below.
+    cmd = ["bin/fw", "arc", "approve-driver", slug, name]
     if weight_raw:
         try:
             w = int(weight_raw)
@@ -994,9 +1022,16 @@ def arc_approve_driver(arc_id):
         return f'<p style="color: var(--pico-del-color);">Failed to invoke fw: {e}</p>', 500
     if result.returncode != 0:
         err = (result.stderr or "").strip() or f"fw arc approve-driver exited {result.returncode}"
-        # Show only first line (block messages can be long).
-        first = err.splitlines()[0] if err else "unknown error"
-        return f'<p style="color: var(--pico-del-color);">{first}</p>', 400
+        lines = err.splitlines()
+        # T-3429: a review refusal names one FAILED line per failed check. The
+        # old "first line only" rule would have shown the headline and dropped
+        # every reason — which is the one thing the operator needs to act on.
+        detail = [ln.strip() for ln in lines if ln.strip().startswith("FAILED (")]
+        head = lines[0] if lines else "unknown error"
+        body = escape(head)
+        if detail:
+            body += "<br>" + "<br>".join(escape(d) for d in detail)
+        return f'<p style="color: var(--pico-del-color);">{body}</p>', 400
     return redirect(f"/arcs/{slug}")
 
 

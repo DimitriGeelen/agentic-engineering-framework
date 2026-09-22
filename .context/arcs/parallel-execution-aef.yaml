@@ -1,10 +1,10 @@
 id: arc-011
 slug: parallel-execution-aef
-name: "Parallel execution \u2014 AEF orchestration layer"
-description: "Multi-agent concurrent execution over disjoint write-sets, coordinated through the\
-  \ TermLink substrate. Companion ADR: docs/architecture/parallel-execution-aef.md\
-  \ (this repo authoritative). Substrate side: docs/architecture/parallel-execution-substrate.md\
-  \ (TermLink repo authoritative). Scoping inception: T-2303."
+name: "Parallel execution — AEF orchestration layer"
+description: "Multi-agent concurrent execution over disjoint write-sets, coordinated
+  through the TermLink substrate. Companion ADR: docs/architecture/parallel-execution-aef.md
+  (this repo authoritative). Substrate side: docs/architecture/parallel-execution-substrate.md
+  (TermLink repo authoritative). Scoping inception: T-2303."
 status: in-progress
 anchor_task: T-2303
 headline_mechanic: |
@@ -26,10 +26,11 @@ headline_mechanic: |
   (3) outputs A.md + B.md exist -> else exit 4;
   (4) wall-clock concurrent (~1s) < serial (~2s).
   Captured evidence: docs/reports/T-2371-arc-011-wire-evidence-demo.md.
-demo_evidence: "agents/dispatch/single-host-parallel-demo.sh (T-2341, exit 0) + docs/reports/T-2371-arc-011-wire-evidence-demo.md (captured run, T-2371)"
+demo_evidence: "agents/dispatch/single-host-parallel-demo.sh (T-2341, exit 0) + docs/reports/T-2371-arc-011-wire-evidence-demo.md
+  (captured run, T-2371)"
 created: 2026-06-10T08:35:44Z
-closed_at: null
-decision: null
+closed_at:
+decision:
 # T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
 # docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
 bvp_scores: {}
@@ -52,6 +53,24 @@ proposed_scoped_drivers:     # uncapped persistence (D7-reframe). Estimator may 
     source: agent
     ts: 2026-06-11T19:45:00Z
     source_task: T-2344
+    reviewer:
+      verdict: pass
+      checks:
+        a:
+          check: scorable
+          verdict: pass
+          reason: handler exists for 'D-DISJOINT'
+        b:
+          check: distinct
+          verdict: pass
+          reason: no collision with D1-D4, free_drivers[] or this arc's 
+            scoped_drivers[]
+        c:
+          check: distinguishes
+          verdict: pass
+          reason: 451 chars, distinguishes from D2, D3, Reliability
+      ts: '2026-09-22T16:48:16Z'
+      reviewer_id: static-v1
   - id: D-WIRE-EVIDENCE
     name: Wire-Evidence Falsifiability
     weight: 4
@@ -65,6 +84,24 @@ proposed_scoped_drivers:     # uncapped persistence (D7-reframe). Estimator may 
     source: agent
     ts: 2026-06-11T19:45:00Z
     source_task: T-2344
+    reviewer:
+      verdict: pass
+      checks:
+        a:
+          check: scorable
+          verdict: pass
+          reason: handler exists for 'D-WIRE-EVIDENCE'
+        b:
+          check: distinct
+          verdict: pass
+          reason: no collision with D1-D4, free_drivers[] or this arc's 
+            scoped_drivers[]
+        c:
+          check: distinguishes
+          verdict: pass
+          reason: 464 chars, distinguishes from D2, D4, Portability
+      ts: '2026-09-22T16:48:16Z'
+      reviewer_id: static-v1
 grill_me:
   entry: "/grill-with-docs"
   scope: |
@@ -85,16 +122,16 @@ grill_me:
     - .tasks/active/T-2323-aef-ic-1-yield-point-granularity-substra.md
     - .tasks/active/T-2324-aef-ic-2-disjoint-write-set-policy.md
   primary_targets:
-    - "Is the headline_mechanic above a CONSUMER-SIDE mechanic (what AEF agents do) or
-      does it cross the seam into substrate territory (what TermLink delivers)? §ACD/G-062
-      demands user-observable, not substrate-only."
-    - "Wire-evidence-X needs sharpening (Spike 1). 'two dispatch IDs in flight at once'
-      and 'absence of .tasks/ merge conflicts' — is this actually falsifiable, or does
-      it need a concrete test scenario with named tasks and a captured dispatches.jsonl
+    - "Is the headline_mechanic above a CONSUMER-SIDE mechanic (what AEF agents do)
+      or does it cross the seam into substrate territory (what TermLink delivers)?
+      §ACD/G-062 demands user-observable, not substrate-only."
+    - "Wire-evidence-X needs sharpening (Spike 1). 'two dispatch IDs in flight at
+      once' and 'absence of .tasks/ merge conflicts' — is this actually falsifiable,
+      or does it need a concrete test scenario with named tasks and a captured dispatches.jsonl
       excerpt?"
-    - "If TermLink-side substrate work blocks indefinitely (A2 fails), can arc-011 still
-      progress AEF-side preparation (orchestrator-graph spike, harness yield-point spike)
-      without committing to a contract that may not land?"
-    - "Does §9 collaboration seam producer ≠ judge mean arc-011 closure literally cannot
-      land until TermLink-side substrate primitives are validated by AEF — i.e. arc-011
-      is bound to a cross-repo arc whose ETA is partly outside our control?"
+    - "If TermLink-side substrate work blocks indefinitely (A2 fails), can arc-011
+      still progress AEF-side preparation (orchestrator-graph spike, harness yield-point
+      spike) without committing to a contract that may not land?"
+    - "Does §9 collaboration seam producer ≠ judge mean arc-011 closure literally
+      cannot land until TermLink-side substrate primitives are validated by AEF —
+      i.e. arc-011 is bound to a cross-repo arc whose ETA is partly outside our control?"
