@@ -1,0 +1,133 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3428: BVP rubric-driven scoring: free and arc-scoped drivers score from a declarative scoring: spec in policy/value-drivers.yaml, not from a hardcoded handler table (OBS-463 leg 2 + doctor rail)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T11:59:19Z
+# ============================================================================
+
+task_id: T-3428
+task_name: "BVP rubric-driven scoring: free and arc-scoped drivers score from a declarative scoring: spec in policy/value-drivers.yaml, not from a hardcoded handler table (OBS-463 leg 2 + doctor rail)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-22T10:38:04Z
+completed: 2026-09-22T11:56:55Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T12:40:47+02:00
+last_commit: 2026-09-22T13:56:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file rubric-driven scoring (declarative scoring: specs) with the design as spec; record the operator ruling on default arc-driver creation. estimator reads declarative scoring: specs (handler → alias → spec → unscored). fw bvp driver gains --scoring-file, --validate-scoring, --explain. audit + doctor name every driver the estimator cannot score (leg 3). document the scoring: schema, ship a worked example, record the design. 58 tests — every signal kind, the template trap, and both rails. vendor the scoring-example file and sync all seven edited surfaces. tick the six ACs with evidence, pin nine verification lines, record the design decisions
+
+# Key outcomes
+outcomes:
+  - '`agents/termlink/bvp-estimator/estimator.py`: `load_scoring_spec(driver_entry) -> spec|None`, `validate_scoring_spec(spec) -> list[str]` (errors), `score_declarative(spec, fm, body, tags) -> (int, evidence)`, template stripping via `.tasks/templates/default.md`; the loop dispatches handler → alias → spec → unscored; `has_scorer()` true for a driver with a valid spec; arc-scoped entries honoured through `_arc_scoped_drivers_for_task`'
+  - '`lib/bvp.sh`: `--add … --scoring-file <yaml>` validates and writes the block (an invalid spec is refused with the errors listed; a valid one removes the T-3427 refusal); `--validate-scoring <yaml>`; `--explain <id> <T-XXXX>` prints per-level evidence'
+  - '`fw audit --section structure` WARNs per active driver with neither handler nor spec, naming the id; `fw doctor` mirrors; both silent when every active driver is scorable'
+  - 'Tests (`tests/unit/test_t3428_declarative_scoring.py`): each signal kind matches and is reported in evidence; highest-level-wins; no-signal → 0 with `L0` evidence; template stripping removes template prose (a task whose only "match" is template text scores 0); invalid specs (level 7, empty keywords, unknown kind) refused with named errors; `has_scorer` true with spec; estimator end-to-end on a fixture task with a spec''d driver; `--add --scoring-file` writes the block and is not refused; the audit WARN fires on a fixture policy with an unscorable active driver and is silent otherwise. T-3427''s suite and the estimator suite still green'
+  - '`policy/value-drivers.yaml`: header comment documents the `scoring:` block (schema + the template trap); one real free driver (`F-RECALL` or a new example under a comment) carries a worked spec; `docs/reports/T-3428-declarative-scoring.md` records the design and what stays hand-written (D1–D4 handlers)'
+  - 'Vendored copies synced, `bin/fw vendor self --check` clean; fabric cards for new files; `bin/fw help` parity lint green if any router line changes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-22 — A handler always outranks a declarative spec'
+    chose: 'dispatch order handler → alias → spec → unscored, so a hand-written handler wins whenever both exist for the same driver.'
+    rationale: 'a handler is the richer mechanism (it can read arbitrary structure); a policy-file edit must not be able to silently displace framework code. The losing case is loud rather than silent — `--explain` says which source scored.'
+    alternatives_rejected: ['spec-wins (a policy edit becomes a code override with no review); error-on-both (punishes a project for documenting an axis the framework already handles).']
+  - decision: '2026-09-22 — The worked example ships inert, under a comment'
+    chose: '`policy/value-drivers.yaml` carries `F-EXAMPLE` commented out, and the copyable spec lives in `policy/driver-scoring-example.yaml`.'
+    rationale: 'every currently-active free driver already has a handler, so by the decision above a live spec attached to one would never fire — shipping it live would be a worked example that demonstrably does nothing. The AC explicitly allows "a new example under a comment".'
+    alternatives_rejected: ['attaching a spec to F-RECALL (inert for the same reason, but misleadingly live-looking).']
+  - decision: '2026-09-22 — `strip_template` defaults to true'
+    chose: 'template stripping on by default; opt out per spec.'
+    rationale: 'the 1409-sprind trap is the expensive failure and it is silent — a keyword drawn from template prose matches the whole corpus uniformly and ranks nothing, while looking like a working driver. Measured here: "committed fixture" scores 4 unstripped and 0 stripped on a task that only contains it as template guidance.'
+    alternatives_rejected: ['default false (fails open into the exact trap the spec names).']
+  - decision: '2026-09-22 — `--validate-scoring` exits 2, not 1, on an invalid spec'
+    chose: 'exit 2 for a spec that parses but fails validation.'
+    rationale: 'keeps "file missing/unreadable" (1) distinct from "file is not a valid spec" (2), so a Verification line can tell an authoring error from a typo''d path.'
+  - decision: '2026-09-22 — the design report is not fabric-registered'
+    chose: 'fabric cards for `lib/bvp-scorability.sh`, `policy/driver-scoring-example.yaml` and the test file; none for `docs/reports/T-3428-declarative-scoring.md`.'
+    rationale: 'report registration is the clear exception in this corpus — 17 of 728 files under `docs/reports/` carry a card, and no recent sibling (T-3427, T-3426, T-3398, T-3203) registered one. Following the convention beats following the literal word "new files".'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/termlink/bvp-estimator/estimator.py'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/bvp-scorability.sh'
+  - '.agentic-framework/lib/bvp.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/policy/driver-scoring-example.yaml'
+  - '.agentic-framework/policy/value-drivers.yaml'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - 'bin/fw'
+  - '.context/project/decisions.yaml'
+  - 'docs/reports/T-3428-declarative-scoring.md'
+  - '.fabric/components/lib-bvp-scorability.yaml'
+  - '.fabric/components/policy-driver-scoring-example.yaml'
+  - '.fabric/components/tests-unit-test_t3428_declarative_scoring.yaml'
+  - 'lib/bvp-scorability.sh'
+  - 'lib/bvp.sh'
+  - 'lib/upgrade.sh'
+  - 'policy/driver-scoring-example.yaml'
+  - 'policy/value-drivers.yaml'
+  - '.tasks/active/T-3428-bvp-rubric-driven-scoring-free-and-arc-s.md'
+  - 'tests/unit/test_t3428_declarative_scoring.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T12:40:47'
+    action: 'T-3428: file rubric-driven scoring (declarative scoring: specs) with the design as spec; record the operator ruling on default arc-driver creation'
+  - time: '2026-09-22T12:46:11'
+    action: 'T-3428: estimator reads declarative scoring: specs (handler → alias → spec → unscored)'
+  - time: '2026-09-22T12:49:37'
+    action: 'T-3428: fw bvp driver gains --scoring-file, --validate-scoring, --explain'
+  - time: '2026-09-22T12:55:31'
+    action: 'T-3428: audit + doctor name every driver the estimator cannot score (leg 3)'
+  - time: '2026-09-22T12:58:00'
+    action: 'T-3428: document the scoring: schema, ship a worked example, record the design'
+  - time: '2026-09-22T13:00:41'
+    action: 'T-3428: 58 tests — every signal kind, the template trap, and both rails'
+  - time: '2026-09-22T13:02:21'
+    action: 'T-3428: vendor the scoring-example file and sync all seven edited surfaces'
+  - time: '2026-09-22T13:56:49'
+    action: 'T-3428: tick the six ACs with evidence, pin nine verification lines, record the design decisions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 78 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, estimator, value-drivers, arc-006]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 78
+  commits: 8
+  files_changed: 24
+  lines_added: 3573
+  lines_removed: 144
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3428-bvp-rubric-driven-scoring-free-and-arc-s.md
+generated_by: context-agent-hybrid

@@ -4090,3 +4090,45 @@ decisions:
     date: 2026-09-22
     task: T-3428
     rationale: "Not specified"
+
+  - id: D-587
+    decision: "dispatch order handler → alias → spec → unscored, so a hand-written"
+    scope: project
+    date: 2026-09-22
+    task: T-3428
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-588
+    decision: "`policy/value-drivers.yaml` carries `F-EXAMPLE` commented out, and the"
+    scope: project
+    date: 2026-09-22
+    task: T-3428
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-589
+    decision: "template stripping on by default; opt out per spec."
+    scope: project
+    date: 2026-09-22
+    task: T-3428
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-590
+    decision: "exit 2 for a spec that parses but fails validation."
+    scope: project
+    date: 2026-09-22
+    task: T-3428
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-591
+    decision: "fabric cards for `lib/bvp-scorability.sh`,"
+    scope: project
+    date: 2026-09-22
+    task: T-3428
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-592
+    decision: "Component Fabric enrichment runs at EVERY session start and resume, not only on a cron: the SessionStart path (post-compact-resume hook / fw context init / fw resume) runs a bounded fw fabric enrich --describe and the resume statement carries the fabric quality line (cards, TODO purposes, unknown subsystems, refused files) so each session is born with the best fabric the code can derive and sees what it cannot. Operator ruling 2026-09-22 (repeated: 'should be included in every resume statement; we should run an enrichment'). Not previously on record. Depends on T-3430 (--describe); implemented as T-3431."
+    scope: project
+    date: 2026-09-22
+    task: T-3430
+    rationale: "Not specified"
