@@ -59,6 +59,7 @@ class Config:
     ambient: bool = False
     poll_interval: float = 5.0
     worker_timeout: int = 600
+    peer: str | None = None          # T-3426: a real peer agent instead of a dispatched worker
     run_id: str = field(default_factory=lambda: uuid.uuid4().hex[:8])
 
     @property
@@ -67,7 +68,25 @@ class Config:
 
     @property
     def responder(self) -> str:
-        return f"e2e-{self.run_id}-responder"
+        return self.peer if self.peer else f"e2e-{self.run_id}-responder"
+
+    @property
+    def mode(self) -> str:
+        return "peer" if self.peer else ("ambient" if self.ambient else "explicit")
+
+    def consult_body(self) -> str:
+        """What the responder receives. A dispatched worker gets the bare
+        nonce (its prompt explains it); a real peer gets the request in
+        words, because nothing else we control will."""
+        if not self.peer:
+            return self.nonce
+        return (f"{self.nonce} — joint end-to-end check of the peer-consult sidecar from "
+                f"999-Agentic-Engineering-Framework (task {self.task}). Please reply on this "
+                f"conversation ({self.conversation_id}) to agent id '{self.sender}' with the "
+                f"text: {self.ack}  — e.g. `fw sidecar send --to {self.sender} "
+                f"--conversation {self.conversation_id} --body '{self.ack}'` or a channel post "
+                f"to sidecar:{self.sender} with metadata conversation_id={self.conversation_id} "
+                f"and from_agent={self.peer}. Any reply carrying the run id counts.")
 
     @property
     def conversation_id(self) -> str:
@@ -82,6 +101,10 @@ class Config:
         return f"{ACK_PREFIX} {self.run_id}"
 
     def blocking_hops(self) -> tuple[str, ...]:
+        # Peer mode: we control neither the peer's inbox read (H3) nor its
+        # process exit (H6); the transport verdict is the four hub-visible hops.
+        if self.peer:
+            return ("H1", "H2", "H4", "H5")
         # In ambient mode the worker's reaction is the thing under observation,
         # not a transport property, so H3-H5 fold into the informative A1.
         return ("H1", "H2", "H6") if self.ambient else HOPS
@@ -220,7 +243,8 @@ def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
     report: dict = {
         "run_id": cfg.run_id,
         "task": cfg.task,
-        "mode": "ambient" if cfg.ambient else "explicit",
+        "mode": cfg.mode,
+        "peer": cfg.peer,
         "sender": cfg.sender,
         "responder": cfg.responder,
         "conversation_id": cfg.conversation_id,
@@ -235,7 +259,7 @@ def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
     # 1. send the consult
     cmid = None
     try:
-        res = send(cfg.sender, cfg.responder, cfg.nonce, cfg.conversation_id)
+        res = send(cfg.sender, cfg.responder, cfg.consult_body(), cfg.conversation_id)
         cmid = res.client_msg_id
         report["client_msg_id"] = cmid
         report["timings"]["sent"] = round(now() - t0, 2)
@@ -248,23 +272,28 @@ def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
         _skip_rest(report, HOPS, "send failed")
         return _finish(report, cfg, t0, now)
 
-    # 2. dispatch the responder
-    prompt = ambient_prompt(cfg) if cfg.ambient else explicit_prompt(cfg)
-    pdir = prompt_dir or (outbox._root() / ".context" / "sidecar" / "e2e")
-    pdir.mkdir(parents=True, exist_ok=True)
-    prompt_path = pdir / f"{cfg.run_id}-prompt.md"
-    prompt_path.write_text(prompt, encoding="utf-8")
-    try:
-        rc, out = dispatch(cfg.responder, cfg.task, str(prompt_path), cfg.worker_timeout)
-    except Exception as exc:
-        rc, out = 1, f"dispatch raised: {exc}"
-    report["timings"]["dispatched"] = round(now() - t0, 2)
-    report["dispatch"] = {"rc": rc, "tail": out[-600:]}
-    if rc != 0:
-        _skip_rest(report, ("H3", "H4", "H5", "H6"), f"dispatch rc={rc}")
-        # H2 is still worth asking: the hub may hold our message regardless.
-        _check_h2(report, hub_messages, responder_topic, cmid)
-        return _finish(report, cfg, t0, now)
+    # 2. dispatch the responder — unless it is a real peer we do not control
+    if cfg.peer:
+        _hop(report, "H3", True, f"not applicable: {cfg.peer} owns its inbox read (peer mode)")
+        _hop(report, "H6", True, f"not applicable: {cfg.peer} owns its process (peer mode)")
+        report["dispatch"] = {"rc": None, "tail": "skipped: peer mode"}
+    else:
+        prompt = ambient_prompt(cfg) if cfg.ambient else explicit_prompt(cfg)
+        pdir = prompt_dir or (outbox._root() / ".context" / "sidecar" / "e2e")
+        pdir.mkdir(parents=True, exist_ok=True)
+        prompt_path = pdir / f"{cfg.run_id}-prompt.md"
+        prompt_path.write_text(prompt, encoding="utf-8")
+        try:
+            rc, out = dispatch(cfg.responder, cfg.task, str(prompt_path), cfg.worker_timeout)
+        except Exception as exc:
+            rc, out = 1, f"dispatch raised: {exc}"
+        report["timings"]["dispatched"] = round(now() - t0, 2)
+        report["dispatch"] = {"rc": rc, "tail": out[-600:]}
+        if rc != 0:
+            _skip_rest(report, ("H3", "H4", "H5", "H6"), f"dispatch rc={rc}")
+            # H2 is still worth asking: the hub may hold our message regardless.
+            _check_h2(report, hub_messages, responder_topic, cmid)
+            return _finish(report, cfg, t0, now)
 
     # 3. wait for the ACK on the sender's inbox
     deadline = t0 + cfg.timeout
@@ -301,6 +330,9 @@ def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
          f"{len(acks)} ACK envelope(s) on {sender_topic}"
          + (f" from_agent={(acks[0].get('metadata') or {}).get('from_agent')}" if acks else "")
          + (f" hub_error={errs[0]}" if errs else ""))
+
+    if cfg.peer:
+        return _finish(report, cfg, t0, now)
 
     # 5. did the worker read its inbox?
     try:
@@ -387,8 +419,11 @@ def render(report: dict) -> str:
     blocking = set(report.get("blocking_hops", []))
     for h in order:
         hop = report["hops"][h]
-        mark = "PASS" if hop["ok"] else "FAIL"
-        tag = "" if h in blocking or h == "A1" else " (informative)"
+        if hop["detail"].startswith("not applicable"):
+            mark, tag = "n/a ", ""
+        else:
+            mark = "PASS" if hop["ok"] else "FAIL"
+            tag = "" if h in blocking or h == "A1" else " (informative)"
         lines.append(f"  [{mark}] {h}  {hop['title']}{tag}")
         lines.append(f"         {hop['detail']}")
     t = report.get("timings", {})

@@ -201,6 +201,44 @@ def test_free_form_answer_from_the_responder_counts_but_strangers_and_other_thre
     assert not e2e.is_ack(cfg, sender=cfg.responder, conversation_id=cfg.conversation_id, body="hello")
 
 
+def test_peer_mode_consults_a_real_agent_and_never_dispatches(mods, tmp_path):
+    e2e, outbox, inbox = mods
+    cfg = _cfg(e2e, peer="010-termlink")
+    assert cfg.responder == "010-termlink" and cfg.mode == "peer"
+    assert cfg.blocking_hops() == ("H1", "H2", "H4", "H5")
+    body = cfg.consult_body()
+    assert cfg.nonce in body and cfg.ack in body and cfg.sender in body and cfg.conversation_id in body
+    f = Fakes(e2e, outbox, inbox, cfg)
+    r = f.run(prompt_dir=tmp_path / "p")
+    assert f.dispatched is None                      # nothing spawned
+    assert r["mode"] == "peer" and r["peer"] == "010-termlink"
+    for h in ("H1", "H2", "H4", "H5"):
+        assert r["hops"][h]["ok"], h
+    assert r["hops"]["H3"]["detail"].startswith("not applicable")
+    assert r["hops"]["H6"]["detail"].startswith("not applicable")
+    assert r["verdict"] == "PASS"
+    assert "n/a " in e2e.render(r)
+
+
+def test_peer_that_never_answers_fails_on_h4_h5_only(mods, tmp_path):
+    e2e, outbox, inbox = mods
+    f = Fakes(e2e, outbox, inbox, _cfg(e2e, peer="010-termlink"), hub_has_ack=False)
+    r = f.run(prompt_dir=tmp_path / "p")
+    assert r["hops"]["H1"]["ok"] and r["hops"]["H2"]["ok"]
+    assert not r["hops"]["H4"]["ok"] and not r["hops"]["H5"]["ok"]
+    assert r["verdict"] == "FAIL"
+    assert f.dispatched is None
+
+
+def test_cli_refuses_ambient_with_peer(mods, capsys):
+    import lib.sidecar_cli as cli
+    importlib.reload(cli)
+    rc = cli.main(["e2e", "--peer", "010-termlink", "--ambient", "--task", "T-1"])
+    # preflight may refuse first on a host without termlink; either way the
+    # combination never reaches run() — exit code 2 and nothing dispatched.
+    assert rc == 2
+
+
 def test_report_round_trips_and_renders(mods, tmp_path):
     e2e, outbox, inbox = mods
     f = Fakes(e2e, outbox, inbox, _cfg(e2e))

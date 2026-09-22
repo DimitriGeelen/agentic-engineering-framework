@@ -136,12 +136,21 @@ def cmd_e2e(args) -> int:
         print("e2e: no --task and no focused task — dispatch needs a task reference",
               file=sys.stderr)
         return 2
-    cfg = e2e.Config(task=task, timeout=args.timeout, ambient=args.ambient,
-                     worker_timeout=args.worker_timeout)
+    if args.peer and args.ambient:
+        print("e2e: --ambient is meaningless with --peer (no prompt of ours is involved)",
+              file=sys.stderr)
+        return 2
+    # T-3426: a real peer answers when it next reads, not when we poll — long
+    # window, slow poll, unless the caller says otherwise.
+    timeout = args.timeout if args.timeout is not None else (1800 if args.peer else 300)
+    poll = args.poll if args.poll is not None else (15.0 if args.peer else 5.0)
+    cfg = e2e.Config(task=task, timeout=timeout, ambient=args.ambient, peer=args.peer,
+                     poll_interval=poll, worker_timeout=args.worker_timeout)
     if not args.json:
-        print(f"e2e: preflight ok ({why}); run={cfg.run_id} "
-              f"mode={'ambient' if cfg.ambient else 'explicit'} — "
-              f"sending, then dispatching {cfg.responder} …", flush=True)
+        what = (f"consulting peer {cfg.peer}, waiting up to {timeout}s for its answer"
+                if cfg.peer else f"sending, then dispatching {cfg.responder}")
+        print(f"e2e: preflight ok ({why}); run={cfg.run_id} mode={cfg.mode} — {what} …",
+              flush=True)
     report = e2e.run(cfg)
     path = e2e.write_report(report)
     report["report_path"] = str(path)
@@ -201,10 +210,15 @@ def build_parser() -> argparse.ArgumentParser:
                         "worker, every hop verified from both sides (T-3423)")
     ee.add_argument("--task", default=None,
                     help="task id for the dispatched worker (default: focused task)")
-    ee.add_argument("--timeout", type=int, default=300,
-                    help="seconds to wait for the worker's reply (default 300)")
+    ee.add_argument("--timeout", type=int, default=None,
+                    help="seconds to wait for the reply (default 300; 1800 with --peer)")
+    ee.add_argument("--poll", type=float, default=None,
+                    help="seconds between inbox polls (default 5; 15 with --peer)")
     ee.add_argument("--worker-timeout", type=int, default=600,
                     help="dispatch kill-watchdog for the responder (default 600)")
+    ee.add_argument("--peer", default=None, metavar="AGENT_ID",
+                    help="consult a real peer agent instead of dispatching a worker "
+                         "(T-3426): H3/H6 become peer-owned, verdict on H1/H2/H4/H5")
     ee.add_argument("--ambient", action="store_true",
                     help="prompt never mentions consults; measures the T-3407 stanza alone")
     ee.add_argument("--keep", action="store_true",
