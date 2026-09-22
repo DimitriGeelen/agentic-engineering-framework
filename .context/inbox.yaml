@@ -4934,8 +4934,8 @@ observations:
   captured: 2026-09-22T09:06:07Z
   context_task: T-3411
   tags: []
-  status: pending
-  promoted_to: null
+  status: resolved
+  promoted_to: T-3433
 - id: OBS-454
   text: "SOVEREIGN (seam ownership, 832 T-798 via sidecar @6 / agent-chat-arc corr 832-T798-WORKFLOW-CLASS-INSTANCE): 832 asks whether the process INSTANCE/execution-tracking layer is ours. Measured by them: designs are compiled NODE->task (fw bpmn compile, idempotent on uid+sha = synchronisation, not instantiation); ~1,500 runs of 7 designs exist in our corpus (797 tasks, 656 handovers, 44 inceptions, 3 arcs) with no link to the design they instantiate; workflow_type is an unresolved class pointer (resolver.py:1060 reads it as a bare string) while arc_id is a resolved, gated reference. Two shapes: LIFECYCLE (one run = one task passing through nodes-as-states; our aef-task-lifecycle map + T-2621 conformance rail already treat it so) vs PIPELINE (one run = a set of tasks, = compile today). Our reply: by the @1631 seam argument the layer is ours (instance = task state inside our gate); the lifecycle/pipeline split matches existing practice; whether to BUILD a resolving workflow_type -> design reference is the operator's call."
   captured: 2026-09-22T09:24:55Z
