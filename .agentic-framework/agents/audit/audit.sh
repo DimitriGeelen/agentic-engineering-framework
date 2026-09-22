@@ -3378,6 +3378,60 @@ check_sidecar_ledger() {
 }
 check_sidecar_ledger
 
+# T-3428 (OBS-463 leg 3, arc-006). A value driver that the estimator cannot
+# score is only a NAME. T-3427 stopped it distorting the ranking (an unscorable
+# driver is omitted from the scores map and so left out of the normalisation
+# denominator) — but it still contributes NOTHING while its weight, rubric
+# prose and rationale all read as a live scoring axis, and nobody is told.
+# T-3428 removed the excuse: a declarative `scoring:` block needs no framework
+# code change, so "there is no handler for it" is now an authoring gap rather
+# than a framework limitation. This is the rail that names the gap.
+#
+# WARN, never FAIL, one line per driver so the id is actionable. The remedy is
+# a policy/authoring decision (draft a spec, or write a handler for a rubric
+# that genuinely needs judgement over prose) and must never block a push.
+# Silent when the project has no policy/value-drivers.yaml — a project that
+# never bootstrapped BVP gets no clean bill of health it did not earn, and no
+# nagging either. `fw doctor` mirrors this check (bin/fw).
+check_bvp_driver_scorability() {
+    [ -f "$FRAMEWORK_ROOT/lib/bvp-scorability.sh" ] || return 0
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/bvp-scorability.sh"
+
+    local _rows _rc
+    _rows=$(fw_bvp_unscorable_drivers "$PROJECT_ROOT"); _rc=$?
+    [ "$_rc" -eq 1 ] && return 0
+    if [ "$_rc" -ne 0 ]; then
+        warn "BVP driver scorability unreadable" \
+             "policy/value-drivers.yaml exists but the scorability scan did not run (estimator unimportable, or YAML broken)" \
+             "Run: bash -c 'source lib/bvp-scorability.sh; fw_bvp_unscorable_drivers \"\$PWD\"' — an unreadable scan is itself the silent shape T-3428 closes"
+        return 0
+    fi
+
+    if [ -z "$_rows" ]; then
+        pass "BVP drivers: every active free and arc-scoped driver is scorable (handler or scoring: spec)"
+        return 0
+    fi
+
+    local _id _name _source _reason
+    while IFS=$'\t' read -r _id _name _source _reason; do
+        [ -z "$_id" ] && continue
+        case "$_reason" in
+            invalid-spec*)
+                warn "BVP driver $_id has an INVALID scoring spec — treated as unscored" \
+                     "$_source: '$_name' carries a scoring: block that does not validate ($_reason)" \
+                     "Run: bin/fw bvp driver --validate-scoring <file> — a broken spec reads as a mechanism in the policy file and is none to the estimator (T-3428)"
+                ;;
+            *)
+                warn "BVP driver $_id has neither a handler nor a scoring spec" \
+                     "$_source: '$_name' cannot be scored, so it contributes nothing to any ranking while its weight and rubric read as a live axis (T-3427 omits it from the denominator)" \
+                     "Give it a mechanism: draft a scoring: spec, check it with 'bin/fw bvp driver --validate-scoring <file>', try it with 'bin/fw bvp driver --explain $_id T-XXXX --scoring-file <file>'; schema in policy/value-drivers.yaml header (T-3428)"
+                ;;
+        esac
+    done <<< "$_rows"
+}
+check_bvp_driver_scorability
+
 # T-3262 (G-099). `fw doctor` (bin/fw:2390+) already compares the
 # continuous-run wrapper ledger against the turn-driver state and WARNs when
 # they disagree — but doctor is pull-only, and it was THIS daily cron that

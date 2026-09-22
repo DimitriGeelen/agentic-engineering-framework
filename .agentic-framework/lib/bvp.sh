@@ -705,12 +705,20 @@ def cmd_driver(args):
     # Must route before --add — propose has no acd_gate; add does.
     if '--propose' in args:
         return _driver_propose(args)
+    # T-3428: the two read-only scoring-spec surfaces. Routed before --add so
+    # `--validate-scoring` is never mistaken for an add that forgot a name.
+    if '--validate-scoring' in args:
+        return _driver_validate_scoring(args)
+    if '--explain' in args:
+        return _driver_explain(args)
     if '--add' in args:
         return _driver_add(args)
     if '--remove' in args:
         return _driver_remove(args)
     print("Usage: fw bvp driver --init [--force]", file=sys.stderr)
-    print("       fw bvp driver --add \"name\" --weight N --rationale \"...\" [--drop Fn --drop-name NAME]", file=sys.stderr)
+    print("       fw bvp driver --add \"name\" --weight N --rationale \"...\" [--drop Fn --drop-name NAME] [--scoring-file FILE]", file=sys.stderr)
+    print("       fw bvp driver --validate-scoring FILE", file=sys.stderr)
+    print("       fw bvp driver --explain <driver-id-or-name> T-XXXX [--scoring-file FILE]", file=sys.stderr)
     # `--remove` takes no --drop; the old usage line said it did (same
     # docs↔CLI divergence class as T-3069, fixed here incidentally).
     print("       fw bvp driver --remove Fn --rationale \"...\"", file=sys.stderr)
@@ -935,25 +943,235 @@ def cmd_confirm(args):
     return 0
 
 
-def _has_scorer(driver_id, name):
-    """T-3427: ask the estimator whether a driver can be scored at all.
+def _load_estimator():
+    """Import agents/termlink/bvp-estimator/estimator.py by path.
 
-    Imports agents/termlink/bvp-estimator/estimator.py by path (it is not a
-    package) and calls has_scorer(). If the estimator cannot be imported the
-    answer is unknown, not "no": say so on stderr and let the add proceed,
-    because refusing on our own tooling fault would be a false block.
+    It is a script, not a package, so there is no import statement that
+    reaches it. Raises on failure — callers decide whether a tooling fault is
+    a refusal (it is not, for _has_scorer) or an error (it is, for the
+    scoring-spec verbs, which have nothing to say without it).
     """
     import importlib.util
     est_path = FRAMEWORK_ROOT / 'agents' / 'termlink' / 'bvp-estimator' / 'estimator.py'
+    spec = importlib.util.spec_from_file_location('bvp_estimator_for_cli', est_path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _has_scorer(driver_id, name, entry=None):
+    """T-3427: ask the estimator whether a driver can be scored at all.
+
+    Calls has_scorer(). T-3428 added the `entry` argument: when the caller
+    supplied `--scoring-file`, the candidate entry carries a declarative
+    `scoring:` block that is not in the policy file yet, and the spec IS the
+    answer. If the estimator cannot be imported the answer is unknown, not
+    "no": say so on stderr and let the add proceed, because refusing on our
+    own tooling fault would be a false block.
+    """
     try:
-        spec = importlib.util.spec_from_file_location('bvp_estimator_for_add', est_path)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        return bool(mod.has_scorer(driver_id, name))
+        return bool(_load_estimator().has_scorer(driver_id, name, entry))
     except Exception as exc:  # pragma: no cover - tooling fault, not a verdict
         print(f"WARN: could not consult the estimator for a scorer ({exc}); "
               f"proceeding without the T-3427 check", file=sys.stderr)
         return True
+
+
+def _read_scoring_file(path_str):
+    """Load a `scoring:` spec from a YAML file. Returns (spec, errors).
+
+    Accepts both shapes, because both are what an author writes: a bare spec
+    (`kind: signals` at the top level) or a file wrapping it under `scoring:`.
+    Guessing between them is safe — `scoring:` is not a valid spec key, so the
+    two cannot be confused.
+    """
+    path = Path(path_str)
+    if not path.is_file():
+        return None, [f"{path_str}: no such file"]
+    try:
+        data = yaml.safe_load(path.read_text()) or {}
+    except yaml.YAMLError as exc:
+        return None, [f"{path_str}: YAML parse error: {exc}"]
+    if not isinstance(data, dict):
+        return None, [f"{path_str}: top level must be a mapping"]
+    spec = data.get('scoring') if isinstance(data.get('scoring'), dict) else data
+    try:
+        errors = _load_estimator().validate_scoring_spec(spec)
+    except Exception as exc:
+        return None, [f"could not load the estimator to validate: {exc}"]
+    return spec, errors
+
+
+def _driver_validate_scoring(args):
+    """T-3428: `fw bvp driver --validate-scoring <yaml>` — check a spec offline.
+
+    Read-only, so NOT §ACD-gated: validating a file the operator is drafting
+    carries no policy authority. Exists so an author finds out a spec is wrong
+    BEFORE spending the one free driver slot on it.
+    """
+    idx = args.index('--validate-scoring')
+    if idx + 1 >= len(args):
+        print("Error: --validate-scoring needs a YAML file path", file=sys.stderr)
+        return 2
+    path_str = args[idx + 1]
+    spec, errors = _read_scoring_file(path_str)
+    if errors:
+        print(f"INVALID: {path_str} — {len(errors)} error(s)", file=sys.stderr)
+        for e in errors:
+            print(f"  - {e}", file=sys.stderr)
+        return 2
+    levels = sorted(int(k) for k in (spec.get('levels') or {}))
+    print(f"OK: {path_str} is a valid scoring spec")
+    print(f"  kind:           {spec.get('kind')}")
+    print(f"  strip_template: {spec.get('strip_template', True)}")
+    print(f"  levels:         {', '.join('L' + str(l) for l in levels)}")
+    for lvl in levels:
+        sigs = spec['levels'][lvl] if lvl in spec['levels'] else spec['levels'][str(lvl)]
+        kinds = ', '.join(f"{k}({len(v) if isinstance(v, (list, dict)) else 1})"
+                          for k, v in sigs.items())
+        print(f"    L{lvl}: {kinds}")
+    print("")
+    print("  Attach it to a driver with:")
+    print(f"    fw bvp driver --add \"<name>\" --weight N --rationale \"...\" --scoring-file {path_str}")
+    return 0
+
+
+def _find_driver_entry(driver_key, task_fm=None):
+    """Locate a driver entry by id or name: policy first, then the task's arc.
+
+    Returns (entry, source) or (None, None). Policy wins on collision, the
+    same precedence estimate_task() applies when it merges arc-scoped drivers.
+    """
+    policy = load_policy()
+    for section in ('protected_drivers', 'free_drivers'):
+        for d in (policy.get(section) or []):
+            if not isinstance(d, dict):
+                continue
+            if driver_key in (d.get('id'), d.get('name')):
+                return d, f"policy/value-drivers.yaml ({section})"
+    if task_fm:
+        try:
+            arc_data = _load_estimator()._resolve_arc_data(task_fm) or {}
+        except Exception:
+            arc_data = {}
+        for sd in (arc_data.get('scoped_drivers') or []):
+            if not isinstance(sd, dict):
+                continue
+            if driver_key in (sd.get('id'), sd.get('name')):
+                return sd, f".context/arcs/{task_fm.get('arc_id')}.yaml (scoped_drivers)"
+    return None, None
+
+
+def _driver_explain(args):
+    """T-3428: `fw bvp driver --explain <driver> <T-XXXX>` — the level ladder.
+
+    Prints, per declared level, which signals matched and which did not, then
+    the winning score. Read-only; NOT §ACD-gated. This is the surface that
+    makes a declarative driver debuggable — without it an author can see the
+    score but not why, which is the same opacity the hardcoded handler table
+    had (OBS-463).
+    """
+    idx = args.index('--explain')
+    if idx + 2 >= len(args):
+        print("Error: --explain needs <driver-id-or-name> <T-XXXX>", file=sys.stderr)
+        return 2
+    driver_key, task_id = args[idx + 1], args[idx + 2]
+    if not re.fullmatch(r'T-\d+', task_id):
+        print(f"Error: {task_id!r} is not a task id (expected T-NNNN)", file=sys.stderr)
+        return 2
+
+    matches = list((PROJECT_ROOT / '.tasks' / 'active').glob(f'{task_id}-*.md')) + \
+              list((PROJECT_ROOT / '.tasks' / 'completed').glob(f'{task_id}-*.md'))
+    if not matches:
+        print(f"Error: task {task_id} not found under .tasks/{{active,completed}}/", file=sys.stderr)
+        return 2
+    task_path = matches[0]
+
+    try:
+        est = _load_estimator()
+    except Exception as exc:
+        print(f"Error: could not load the estimator: {exc}", file=sys.stderr)
+        return 1
+    fm, body = est.parse_task(task_path)
+    tags = list(fm.get('tags') or [])
+
+    entry, source = _find_driver_entry(driver_key, fm)
+    if entry is None:
+        print(f"Error: driver {driver_key!r} not found in policy or in "
+              f"{task_id}'s arc scoped_drivers", file=sys.stderr)
+        return 2
+
+    d_id = entry.get('id') or entry.get('name')
+    d_name = entry.get('name') or d_id
+    print(f"Driver: {d_id} '{d_name}'   weight={entry.get('weight')}")
+    print(f"Source: {source}")
+    print(f"Task:   {task_id}  ({task_path.name})")
+    print("")
+
+    # T-3428: `--scoring-file` lets an author try a DRAFT spec against a real
+    # task before spending the one free slot on it — the companion to
+    # `--validate-scoring`, which only checks shape. Without it the only way
+    # to see what a spec scores is to attach it to live policy first.
+    draft = None
+    if '--scoring-file' in args:
+        sfidx = args.index('--scoring-file')
+        if sfidx + 1 >= len(args):
+            print("Error: --scoring-file needs a YAML file path", file=sys.stderr)
+            return 2
+        draft, draft_errors = _read_scoring_file(args[sfidx + 1])
+        if draft_errors:
+            print(f"Error: --scoring-file {args[sfidx + 1]} is not a valid scoring spec:", file=sys.stderr)
+            for e in draft_errors:
+                print(f"  - {e}", file=sys.stderr)
+            return 2
+
+    spec = draft if draft is not None else est.load_scoring_spec(entry)
+    if draft is not None:
+        print(f"Spec source: DRAFT {args[args.index('--scoring-file') + 1]} "
+              f"(not attached to {d_id}; nothing is written)")
+    if spec is None:
+        # Not an error: the driver may be scored by a hand-written handler,
+        # which is the RICHER mechanism. Say which, so the absence of a spec
+        # does not read as a fault.
+        if est.has_scorer(d_id, d_name):
+            print("No declarative `scoring:` block — this driver is scored by a")
+            print("hand-written handler in agents/termlink/bvp-estimator/estimator.py.")
+            print(f"Score it with: fw bvp estimate {task_id} --dry-run --json")
+            return 0
+        print("No declarative `scoring:` block and no handler — this driver is UNSCORED")
+        print("(T-3427: omitted from `scores` and left out of the ranking denominator).")
+        print("Give it a mechanism: fw bvp driver --validate-scoring <yaml>, then")
+        print("re-add with --scoring-file. See policy/value-drivers.yaml header.")
+        return 1
+
+    errors = est.validate_scoring_spec(spec)
+    if errors:
+        print(f"INVALID spec — {len(errors)} error(s); this driver scores as UNSCORED:", file=sys.stderr)
+        for e in errors:
+            print(f"  - {e}", file=sys.stderr)
+        return 2
+
+    strip = spec.get('strip_template', True) is not False
+    print(f"Spec: kind={spec.get('kind')}  strip_template={strip}")
+    # Dispatch order is handler → alias → spec, so an attached spec on a
+    # handler-backed driver is INERT. Say so here rather than let the ladder
+    # below read as what the estimator actually did.
+    if draft is None and (d_id in est._handler_table() or d_name in est._handler_table()):
+        print(f"NOTE: {d_id} also has a hand-written handler, which WINS "
+              f"(handler → alias → spec).")
+        print("      The ladder below is what the spec would score, not what the "
+              "estimator used.")
+    ladder = est.declarative_matches(spec, fm, body, tags)
+    for lvl in sorted(ladder):
+        if ladder[lvl]:
+            print(f"  L{lvl}  MATCH   " + "; ".join(ladder[lvl]))
+        else:
+            print(f"  L{lvl}  -")
+    score, evidence = est.score_declarative(spec, fm, body, tags)
+    print("")
+    print(f"Score: {score}   (highest matching level; 0 = measured no-signal, not unscored)")
+    print(f"Evidence: {'; '.join(evidence)}")
+    return 0
 
 
 def _driver_add(args):
@@ -1052,6 +1270,30 @@ def _driver_add(args):
         next_n += 1
     new_id = f'F{next_n}'
 
+    # T-3428 (OBS-463 leg 2): `--scoring-file` attaches a declarative scoring
+    # spec to the new entry. An invalid spec is refused with every error named
+    # — writing a broken block would produce a driver that LOOKS scorable in
+    # the policy file and is treated as UNSCORED by the estimator, which is the
+    # silent-divergence shape this task exists to remove. A valid spec IS a
+    # scorer, so it also lifts the T-3427 refusal below without --allow-unscored.
+    scoring_spec = None
+    if '--scoring-file' in args:
+        sfidx = args.index('--scoring-file')
+        if sfidx + 1 >= len(args):
+            print("Error: --scoring-file needs a YAML file path", file=sys.stderr)
+            return 2
+        scoring_spec, spec_errors = _read_scoring_file(args[sfidx + 1])
+        if spec_errors:
+            print(f"Error: --scoring-file {args[sfidx + 1]} is not a valid scoring spec "
+                  f"({len(spec_errors)} error(s)) — nothing was written.", file=sys.stderr)
+            for e in spec_errors:
+                print(f"  - {e}", file=sys.stderr)
+            print("", file=sys.stderr)
+            print("  Check it in isolation first:", file=sys.stderr)
+            print(f"    fw bvp driver --validate-scoring {args[sfidx + 1]}", file=sys.stderr)
+            print("  Schema: policy/value-drivers.yaml header, §Declarative scoring specs.", file=sys.stderr)
+            return 2
+
     # T-3427 (OBS-463): a free driver is only a name unless the estimator has a
     # scorer for it — without one it scores 0 on every non-inception task and
     # STILL enters the ranking denominator, so adding it ranks every real task
@@ -1059,15 +1301,21 @@ def _driver_add(args):
     # the flagship "rising to #1" was 2×58 vs 2×54 arithmetic. A gated, capped,
     # deliberate verb must not produce that silently. Refuse, name the
     # consequence, and offer the bypass for an operator reserving the slot.
-    unscored = not _has_scorer(new_id, name)
+    candidate_entry = {'scoring': scoring_spec} if scoring_spec else None
+    unscored = not _has_scorer(new_id, name, candidate_entry)
     if unscored and '--allow-unscored' not in args:
         print(f"Error: '{name}' has no scorer in the estimator (would be {new_id}) — refused (T-3427).", file=sys.stderr)
         print("", file=sys.stderr)
         print("  Scoring is dispatched from a handler table in agents/termlink/bvp-estimator/estimator.py;", file=sys.stderr)
         print("  a driver with no handler scores 0 on every non-inception task, and its weight still", file=sys.stderr)
         print("  enters the normalisation denominator — every real task ranks LOWER for adding it.", file=sys.stderr)
-        print("  Writing levels: into policy/value-drivers.yaml changes nothing; the estimator does", file=sys.stderr)
-        print("  not read rubric text (OBS-463; the data-driven ladder is the open design item).", file=sys.stderr)
+        print("  Prose `rubric:` text alone changes nothing — the estimator does not read it.", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("  GIVE IT A MECHANISM (T-3428) — a declarative `scoring:` spec needs no framework", file=sys.stderr)
+        print("  code change. Draft it, check it, then attach it:", file=sys.stderr)
+        print("    fw bvp driver --validate-scoring my-driver-scoring.yaml", file=sys.stderr)
+        print(f"    fw bvp driver --add \"{name}\" --weight {weight} --scoring-file my-driver-scoring.yaml ...", file=sys.stderr)
+        print("  Schema: policy/value-drivers.yaml header, §Declarative scoring specs.", file=sys.stderr)
         print("", file=sys.stderr)
         print("  To reserve the slot anyway (it will be listed UNSCORED and left out of ranking sums):", file=sys.stderr)
         print(f"    fw bvp driver --add \"{name}\" --weight {weight} --allow-unscored ...", file=sys.stderr)
@@ -1122,6 +1370,8 @@ def _driver_add(args):
         policy['free_drivers'] = free
 
     new_entry = {'id': new_id, 'name': name, 'weight': weight, 'protected': False, 'rationale': rationale}
+    if scoring_spec:
+        new_entry['scoring'] = scoring_spec
     if not policy.get('free_drivers'):
         policy['free_drivers'] = []
     policy['free_drivers'].append(new_entry)
@@ -1133,6 +1383,7 @@ def _driver_add(args):
         'name': name,
         'weight': weight,
         'rationale': rationale,
+        'scoring': 'declarative' if scoring_spec else None,
         'dropped': drop_id,
         # T-3066: the slot id alone made the audit log unreadable after any
         # reallocation — "dropped F1" is true of two different deletions.
@@ -1141,10 +1392,15 @@ def _driver_add(args):
         'agent_session': bool(os.environ.get('CLAUDECODE')),
         'ts': _utc_now(),
     })
+    _flag = ' UNSCORED' if unscored else (' +scoring-spec' if scoring_spec else '')
     if drop_id:
-        print(f"OK: added {new_id} '{name}' weight={weight}{' UNSCORED' if unscored else ''}; dropped {drop_id} '{drop_name}' (M1 add-one-drop-one)")
+        print(f"OK: added {new_id} '{name}' weight={weight}{_flag}; dropped {drop_id} '{drop_name}' (M1 add-one-drop-one)")
     else:
-        print(f"OK: added {new_id} '{name}' weight={weight}{' UNSCORED' if unscored else ''}")
+        print(f"OK: added {new_id} '{name}' weight={weight}{_flag}")
+    if scoring_spec:
+        print(f"    scoring: declarative spec, levels "
+              f"{', '.join('L' + str(l) for l in sorted(int(k) for k in scoring_spec.get('levels') or {}))}")
+        print(f"    Explain it on a task: fw bvp driver --explain {new_id} T-XXXX")
     return 0
 
 
@@ -1587,6 +1843,19 @@ USAGE:
                                   refuses if the slot changed hands (T-3066)
   fw bvp driver --remove Fn --rationale "..."
                                   remove free driver (D1-D4 protected)
+  fw bvp driver --add ... --scoring-file FILE
+                                  attach a declarative `scoring:` spec to the new driver
+                                  (T-3428). A valid spec IS a scorer, so it lifts the
+                                  T-3427 no-scorer refusal — no framework code change
+                                  needed to make a project or arc driver actually score.
+  fw bvp driver --validate-scoring FILE
+                                  check a scoring spec offline before spending a slot on
+                                  it; prints the level ladder or every validation error
+  fw bvp driver --explain <driver-id-or-name> T-XXXX [--scoring-file FILE]
+                                  per-level evidence for one driver on one task: which
+                                  signals matched at which level, and the winning score.
+                                  --scoring-file tries a DRAFT spec against a real task
+                                  without attaching it to policy (nothing is written)
   fw bvp estimate-cost T-<id> [--dry-run] [--json]
   fw bvp estimate-cost all|sweep|determinism ...
                                   propose cost_estimate per task (advisory, T-1935).

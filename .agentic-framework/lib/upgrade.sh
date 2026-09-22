@@ -391,7 +391,12 @@ _self_vendor_policy() {
     # designer refuses to install" with no visible cause. Load-bearing from A2
     # onward, because A2 is what makes the vendored pin the thing consumers verify
     # against. Parity pinned by tests/unit/t3064_self_vendor_designer.bats.
-    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml anti-patterns.yaml escalation-patterns.yaml designer-pin.yaml; do
+    # T-3428: driver-scoring-example.yaml is the worked declarative `scoring:`
+    # spec that the vendored value-drivers.yaml header AND the vendored
+    # lib/bvp.sh refusal messages both name by path. Omitting it would point
+    # every consumer at a file that is not there — the same docs↔reality gap
+    # T-3064 found for designer-pin.yaml, one list entry earlier.
+    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml anti-patterns.yaml escalation-patterns.yaml designer-pin.yaml driver-scoring-example.yaml; do
         _svp_src="$FRAMEWORK_ROOT/policy/$_svp_name"
         _svp_dst="$_self_vendor/policy/$_svp_name"
         [ -f "$_svp_src" ] || continue
