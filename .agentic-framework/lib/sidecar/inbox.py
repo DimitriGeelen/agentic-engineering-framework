@@ -28,7 +28,7 @@ import os
 import shutil
 import subprocess
 
-from . import outbox
+from . import circuit, outbox
 
 DEFAULT_LIMIT = 100
 
@@ -44,11 +44,27 @@ def agent_id() -> str:
     NOT the TermLink identity fingerprint: that is machine-wide (T-3405),
     so it names a host, not an agent, and cannot route a consult.
     """
-    return os.environ.get("FW_SIDECAR_AGENT_ID") or outbox._root().name
+    return circuit.agent_name()
 
 
 def inbox_topic(agent: str | None = None) -> str:
-    return f"sidecar:{agent or agent_id()}"
+    """The `inbox:<circuit-id>` topic a consult for `agent` lands on (T-3433).
+
+    With no argument this is OUR exact circuit — which truncates to the
+    durable role address when this session has no agent distinct from the
+    project, and that is the right answer rather than a degraded one. With an
+    argument it is whatever that name resolves to (circuit.resolve_address).
+    """
+    if agent is None:
+        return circuit.topic_for_circuit(circuit.circuit_id("agent"))
+    return circuit.topic_for_name(agent)
+
+
+def legacy_topics(agent: str | None = None) -> list[str]:
+    """The `sidecar:` topics this address used to be, kept as a READ alias for
+    one release (T-3433). Senders never write them; `pending()` drains them so
+    a consult posted by a peer that has not yet switched still arrives."""
+    return [circuit.legacy_topic_for(agent or agent_id())]
 
 
 def _state_path():
@@ -122,43 +138,61 @@ def pending(agent: str | None = None, *, reader=default_reader,
             advance: bool = True, limit: int = DEFAULT_LIMIT) -> list[dict]:
     """Consults addressed to this agent that have not been shown before.
 
-    With `advance` (the default) the cursor and the seen-set move, so a
+    Drains the `inbox:<circuit-id>` topic AND the legacy `sidecar:<agent>`
+    alias (T-3433). Each topic keeps its own cursor — offsets are per-topic
+    and comparing them across topics is meaningless — but the seen-set is
+    SHARED, so a peer that posts to both during the transition, or a sender
+    retrying past the hub's ~5-minute dedupe TTL (measured T-3405), surfaces
+    once rather than twice.
+
+    With `advance` (the default) the cursors and the seen-set move, so a
     second call returns nothing new. `advance=False` is a peek.
     """
-    topic = inbox_topic(agent)
+    topics = [inbox_topic(agent)] + legacy_topics(agent)
     state = load_state()
-    entry = state["topics"].setdefault(topic, {"cursor": 0, "seen": []})
 
-    envelopes = reader(topic, entry["cursor"], limit)
-
-    seen = list(entry.get("seen") or [])
+    seen = list(state.get("seen") or [])
     seen_set = set(seen)
-    highest = entry["cursor"]
-    fresh = []
+    # Seed from the per-topic seen-sets written before T-3433 made it shared,
+    # so the transition does not re-surface anything already shown.
+    for entry in state.get("topics", {}).values():
+        for cmid in entry.get("seen") or []:
+            if cmid not in seen_set:
+                seen_set.add(cmid)
+                seen.append(cmid)
 
-    for env in envelopes:
-        offset = env.get("offset")
-        if isinstance(offset, int):
-            highest = max(highest, offset + 1)
-        meta = env.get("metadata") or {}
-        client_msg_id = meta.get("client_msg_id")
-        if client_msg_id and client_msg_id in seen_set:
-            continue  # duplicate the hub's TTL let through
-        if client_msg_id:
-            seen_set.add(client_msg_id)
-            seen.append(client_msg_id)
-        fresh.append({
-            "offset": offset,
-            "client_msg_id": client_msg_id,
-            "from": meta.get("from_agent"),
-            "conversation_id": meta.get("conversation_id"),
-            "body": _decode(env),
-            "ts": env.get("ts"),
-        })
+    fresh = []
+    for topic in topics:
+        entry = state["topics"].setdefault(topic, {"cursor": 0})
+        highest = entry.get("cursor", 0)
+        for env in reader(topic, highest, limit):
+            offset = env.get("offset")
+            if isinstance(offset, int):
+                highest = max(highest, offset + 1)
+            meta = env.get("metadata") or {}
+            client_msg_id = meta.get("client_msg_id")
+            if client_msg_id and client_msg_id in seen_set:
+                continue  # duplicate the hub's TTL let through, or a dual post
+            if client_msg_id:
+                seen_set.add(client_msg_id)
+                seen.append(client_msg_id)
+            fresh.append({
+                "offset": offset,
+                "topic": topic,
+                "client_msg_id": client_msg_id,
+                "from": meta.get("from_agent"),
+                "from_circuit": meta.get("from_circuit"),
+                "conversation_id": meta.get("conversation_id"),
+                "body": _decode(env),
+                "ts": env.get("ts"),
+            })
+        if advance:
+            entry["cursor"] = highest
 
     if advance:
-        entry["cursor"] = highest
-        entry["seen"] = seen[-SEEN_CAP:]
+        state["seen"] = seen[-SEEN_CAP:]
+        for entry in state.get("topics", {}).values():
+            entry.pop("seen", None)   # superseded by the shared set
         save_state(state)
 
     return fresh

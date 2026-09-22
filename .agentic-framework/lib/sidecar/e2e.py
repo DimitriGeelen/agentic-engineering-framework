@@ -8,9 +8,9 @@ hub's own topic state), a JSON record on disk, exit 0 only when the
 blocking hops pass.
 
     H1  ledger      our consult row is INJECTED_*         (slice 2 semantics)
-    H2  hub         sidecar:<responder> holds our client_msg_id (hub-side proof)
+    H2  hub         inbox:<responder circuit> holds our client_msg_id (hub-side)
     H3  worker read the responder topic cursor advanced   (worker ran inbox)
-    H4  hub         sidecar:<sender> holds the responder's ACK on our conversation
+    H4  hub         inbox:<sender circuit> holds the responder's ACK on our conversation
     H5  inbox       inbox.pending(sender) surfaces that ACK
     H6  worker exit fw termlink wait returned 0 and the result carries DONE
     A1  ambient     (--ambient only) H3+H4+H5 with a prompt that never
@@ -81,12 +81,15 @@ class Config:
         if not self.peer:
             return self.nonce
         return (f"{self.nonce} — joint end-to-end check of the peer-consult sidecar from "
-                f"999-Agentic-Engineering-Framework (task {self.task}). Please reply on this "
-                f"conversation ({self.conversation_id}) to agent id '{self.sender}' with the "
-                f"text: {self.ack}  — e.g. `fw sidecar send --to {self.sender} "
+                f"999-Agentic-Engineering-Framework (task {self.task}), now on the "
+                f"inbox:<circuit-id> addressing our operator ruled on 2026-09-22 (T-3433). "
+                f"Please reply on this conversation ({self.conversation_id}) with the text: "
+                f"{self.ack}  — e.g. `fw sidecar send --to {self.sender} "
                 f"--conversation {self.conversation_id} --body '{self.ack}'` or a channel post "
-                f"to sidecar:{self.sender} with metadata conversation_id={self.conversation_id} "
-                f"and from_agent={self.peer}. Any reply carrying the run id counts.")
+                f"to {inbox.inbox_topic(self.sender)} with metadata "
+                f"conversation_id={self.conversation_id} and from_agent={self.peer}. "
+                f"The legacy topic sidecar:{self.sender} is still drained for one release, so "
+                f"a reply there counts too. Any reply carrying the run id counts.")
 
     @property
     def conversation_id(self) -> str:
@@ -255,6 +258,13 @@ def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
     }
     responder_topic = inbox.inbox_topic(cfg.responder)
     sender_topic = inbox.inbox_topic(cfg.sender)
+    # T-3433: the sidecar: alias is a READ alias for one release, so a peer
+    # that has not switched yet still lands somewhere we look. The record
+    # names every topic the run touched — a verdict whose addresses are not
+    # written down cannot be repeated.
+    responder_topics = [responder_topic] + inbox.legacy_topics(cfg.responder)
+    sender_topics = [sender_topic] + inbox.legacy_topics(cfg.sender)
+    report["topics"] = {"responder": responder_topics, "sender": sender_topics}
 
     # 1. send the consult
     cmid = None
@@ -292,7 +302,7 @@ def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
         if rc != 0:
             _skip_rest(report, ("H3", "H4", "H5", "H6"), f"dispatch rc={rc}")
             # H2 is still worth asking: the hub may hold our message regardless.
-            _check_h2(report, hub_messages, responder_topic, cmid)
+            _check_h2(report, hub_messages, responder_topics, cmid)
             return _finish(report, cfg, t0, now)
 
     # 3. wait for the ACK on the sender's inbox
@@ -319,15 +329,15 @@ def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
          else f"no ACK on {sender_topic} within {cfg.timeout}s ({polls} polls)")
 
     # 4. hub-side evidence, both directions
-    _check_h2(report, hub_messages, responder_topic, cmid)
-    sender_msgs = hub_messages(sender_topic, 0, 200)
+    _check_h2(report, hub_messages, responder_topics, cmid)
+    sender_msgs = [m for topic in sender_topics for m in hub_messages(topic, 0, 200)]
     acks = [m for m in sender_msgs
             if is_ack(cfg, sender=(m.get("metadata") or {}).get("from_agent"),
                       conversation_id=(m.get("metadata") or {}).get("conversation_id"),
                       body=_decoded_body(m))]
     errs = [m["_error"] for m in sender_msgs if "_error" in m]
     _hop(report, "H4", bool(acks),
-         f"{len(acks)} ACK envelope(s) on {sender_topic}"
+         f"{len(acks)} ACK envelope(s) on {' or '.join(sender_topics)}"
          + (f" from_agent={(acks[0].get('metadata') or {}).get('from_agent')}" if acks else "")
          + (f" hub_error={errs[0]}" if errs else ""))
 
@@ -371,12 +381,15 @@ def run(cfg: Config, *, send=real_send, dispatch=real_dispatch, wait=real_wait,
     return _finish(report, cfg, t0, now)
 
 
-def _check_h2(report, hub_messages, responder_topic, cmid) -> None:
-    msgs = hub_messages(responder_topic, 0, 200)
+def _check_h2(report, hub_messages, responder_topics, cmid) -> None:
+    if isinstance(responder_topics, str):
+        responder_topics = [responder_topics]
+    msgs = [m for topic in responder_topics for m in hub_messages(topic, 0, 200)]
     hits = [m for m in msgs if (m.get("metadata") or {}).get("client_msg_id") == cmid]
     errs = [m["_error"] for m in msgs if "_error" in m]
     _hop(report, "H2", bool(hits),
-         f"{len(hits)} envelope(s) with our client_msg_id on {responder_topic}"
+         f"{len(hits)} envelope(s) with our client_msg_id on "
+         f"{' or '.join(responder_topics)}"
          + (f" @{hits[0].get('offset')}" if hits else "")
          + (f" hub_error={errs[0]}" if errs else ""))
 
@@ -415,6 +428,11 @@ def render(report: dict) -> str:
     lines = [f"sidecar e2e  run={report['run_id']}  mode={report['mode']}  "
              f"task={report['task']}",
              f"  sender={report['sender']}  responder={report['responder']}"]
+    topics = report.get("topics") or {}
+    for role in ("sender", "responder"):
+        if topics.get(role):
+            lines.append(f"  {role} topic: {topics[role][0]}"
+                         + (f"   (+ alias {topics[role][1]})" if len(topics[role]) > 1 else ""))
     order = list(HOPS) + (["A1"] if "A1" in report["hops"] else [])
     blocking = set(report.get("blocking_hops", []))
     for h in order:
