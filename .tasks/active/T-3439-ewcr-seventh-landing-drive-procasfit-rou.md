@@ -27,7 +27,7 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T19:27:47Z
-last_update: '2026-09-22T19:29:06Z'
+last_update: '2026-09-22T19:30:11Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,6 +57,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-22T19:30:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:design); effort=8 (lines=299,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3439: EWCR seventh landing drive: procAsFit round 2 over arc-019, fed drive 6 (T-3437) — re-check S1 transfer, work the arc's remaining executable items (T-3438 first), re-disposition what moved, surface the rest
@@ -77,23 +87,49 @@ arc. This is round 2, fed by that handback.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **A1 Selection stated before execution.** Objective → arc-019 (Sovereign-selected) → task
+- [x] **A1 Selection stated before execution.** Objective → arc-019 (Sovereign-selected) → task
       → quadrant for every unit, the next candidate named; BVP from the estimator only. Drive 6's
       handback is read first and treated as evidence, not a worklist.
-- [ ] **A2 T-3438 driven to a terminal state.** The arc's one executable member at round start
+      **Evidence:** handback §1 states both units' selection before execution, names why no second
+      candidate existed, and states *which* quadrant reading is applied (within-arc) against the
+      whole-repo reading it rejects — `bin/fw bvp estimate T-3438` re-run this drive, no self-estimate,
+      no rescore; drive 6's handback read in full at run start and cited as evidence throughout §4/§5.
+- [x] **A2 T-3438 driven to a terminal state.** The arc's one executable member at round start
       (build, real ACs, `horizon: now`) is worked through its own ACs and closed through the verb,
       or left with a recorded failure mode after at most two attempts — and T-3394's red
       verification line 4 is re-run green or its state recorded.
-- [ ] **A3 S1 re-checked and every drive-6 Sovereign item re-dispositioned.** The clause-2
+      **Evidence:** T-3438 closed via `bin/fw task update T-3438 --status work-completed`, 5/5 ACs,
+      6/6 verification incl. the empty-directory control (exit 2 preserved); commits `8590c21c6`
+      (fix) + `8fca51362` (close). T-3394's line 4 measured **rc=2 before, rc=0 after**, and its
+      whole block re-run 6/6 — handback §3.
+- [x] **A3 S1 re-checked and every drive-6 Sovereign item re-dispositioned.** The clause-2
       artefacts are searched for again (disk, `xfer-832-*`, `sidecar:832-Workflow-designer`, the
       832 DM rail); S1..Sn from drive 6 §6 are each marked unchanged / moved / resolved with the
       evidence; nothing is answered on the worker's authority.
-- [ ] **A4 Handback written** to `docs/reports/EWCR/drive-7-procasfit-handback.md` with the
+      **Evidence:** handback §4 — seven surfaces re-checked (all reproduce drive 6's negative) plus
+      the DM rail drive 6 did not search, which carries 832's standing position that the artefacts
+      EXIST at named paths with published sha256 and the ask is AEF-owned disposition tables. A
+      control proves the blind spot rather than asserting it (`termlink agent search` returns 0 for
+      a phrase verbatim in the DM); registered as OBS-482. §5 re-dispositions S1–S9 with verdicts
+      moved/unchanged/resolved + evidence, and adds S10. No Sovereign item answered; S1's ruling
+      deliberately not taken even though a sanctioned cross-project route existed (§7 refusal 2).
+- [x] **A4 Handback written** to `docs/reports/EWCR/drive-7-procasfit-handback.md` with the
       Mandate's Handback sections and a delta table against drive 6's §2 and §10, every claim
       traceable to a recorded check or a verb-gated state change.
-- [ ] **A5 Sovereign boundaries respected.** No `fw arc close`, no `fw inception decide go`, no
+      **Evidence:** file written (555 lines); §2 is the delta table against drive 6 §2, §9 carries
+      the delta against drive 6 §10; all six Mandate handback sections present (objectives §2,
+      arc state §9, Q1/Q2 remaining §9, Sovereign questions §5, gates refused §7, cost deltas §8).
+      Two rank figures written from memory-of-output were re-derived against the table offset and
+      corrected (178/192, 38/192) rather than left.
+- [x] **A5 Sovereign boundaries respected.** No `fw arc close`, no `fw inception decide go`, no
       Human AC ticked, no arc scope change, no bypass flag; every gate refusal recorded with what
       was done instead.
+      **Evidence:** handback §7 — two gate refusals recorded (check-active-task/OBS-250 on the close
+      commit → re-focused on T-3439 via the verb; project-boundary T-559 on `/opt/0503*` → nothing
+      done, sanctioned TermLink route deliberately declined because the fetch IS S1's decision).
+      No `--force`, `--skip-*`, `--no-verify` or `FW_ALLOW_*` anywhere. T-3389 left `captured/later`;
+      T-3147's Human ACs untouched; no arc verb run. Reviewer's `destructive-action` escalation on
+      T-3438 reported rather than reworded away.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,27 +315,32 @@ grep -q "Sovereign" docs/reports/EWCR/drive-7-procasfit-handback.md
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-09-22 — the dispatch stanza was worth more than the arc's executable task
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** The round's planned value was T-3438 (the arc's one executable member).
+  Its actual value was §4: the clause-2 answer has been on the record in an AEF mailbox since
+  before drive 2, and drives 2–6 reported it absent because `termlink agent search` does not
+  index DM channels. Drive 6 called its six searches "independent negatives"; they shared one
+  blind spot. The only reason drive 7 found it is that the dispatch stanza named "the 832 DM
+  rail" as a surface to re-check by name.
+- **Plan impact:** S1 is no longer "can the artefacts be obtained" — they exist, at named paths,
+  with published hashes. It is now "does the operator authorise the fetch and the AEF-owned
+  disposition tables". That is a sharper and more answerable question, and it is still Sovereign.
+  Drive 6's "building dispositions from a bibliography line would be fabrication" was right about
+  its source and wrong about the world.
+- **Triggered:** OBS-482 (register first, fix second; homed per the gap-homing rule — the
+  evidence-discipline half is ours, the search-coverage and unread-mailbox halves are not).
+  New Sovereign question S10 (nothing re-runs a completed task's `## Verification` block),
+  surfaced as an inception candidate rather than filed as a build.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+### 2026-09-22 — the arc's executable queue is empty for the first time
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** Drive 6 stopped with T-3438 filed-and-unstarted, on the Mandate's AC-scoping
+  rule. Drive 7 leaves nothing: 18 of 20 members work-completed, T-3389 blocked on S1, T-3147
+  human-owned with zero unticked Human ACs.
+- **Plan impact:** Every remaining path in arc-019 runs through S1. A round 8 fed this handback
+  would re-verify the same seven negative surfaces and write a third document saying so.
+- **Triggered:** Advice in §9, not a decision — do not dispatch round 8 until S1 is ruled.
 
 ## Recommendation
 
