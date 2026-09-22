@@ -2264,7 +2264,19 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
     # === Clear focus if this was the focused task (T-354) ===
     # Only for full completion (not partial-complete — human still needs focus)
     if [ "${PARTIAL_COMPLETE:-false}" = false ]; then
-        FOCUS_FILE="$CONTEXT_DIR/working/focus.yaml"
+        # T-3432: resolve through the SAME helper the gate reads (fw_focus_file,
+        # lib/paths.sh, T-3038) instead of hard-coding the shared focus.yaml.
+        # Under FW_SESSION_SCOPED_FOCUS=1 the reader
+        # (agents/context/check-active-task.sh) looks at focus.<key>.yaml, so a
+        # close that nulled focus.yaml left the scoped file still naming the
+        # just-completed task: every subsequent Bash/Write was refused
+        # ("work-completed") and T-2054's null-focus commit allowance never
+        # fired, because the focus the gate saw was not null. The worker could
+        # not commit its own close. L-399 producer/consumer parity: one
+        # resolver, both sides. fw_focus_file honours CONTEXT_DIR itself, and
+        # returns the shared path verbatim when scoped mode is off, so the
+        # default (interactive) behaviour is unchanged.
+        FOCUS_FILE="$(fw_focus_file "$PROJECT_ROOT")"
         if [ -f "$FOCUS_FILE" ]; then
             FOCUSED_TASK=$(grep "^current_task:" "$FOCUS_FILE" | sed 's/current_task:[[:space:]]*//')
             if [ "$FOCUSED_TASK" = "$TASK_ID" ]; then
