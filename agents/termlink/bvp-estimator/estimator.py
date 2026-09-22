@@ -25,6 +25,7 @@ remains the score authority.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import glob
 import hashlib
 import json
@@ -122,15 +123,49 @@ def _load_drivers() -> dict[str, int]:
     return out
 
 
+def _resolve_arc_data(fm: dict) -> dict | None:
+    """T-3428 — resolve the task's `arc_id:` to its parsed arc YAML, or None.
+
+    Hoisted out of _arc_scoped_drivers_for_task so the weight reader and the
+    T-3428 scoring-spec reader resolve the arc exactly once each, the same way,
+    rather than forking the dual-form lookup. Resolution order: slug form
+    (`.context/arcs/<arc_id>.yaml`, T-1849) first, then an `arc-NNN` scan
+    matching each arc YAML's top-level `id:` or `slug:`. None on any
+    missing/error path: no arc_id, file missing, YAML parse error.
+    """
+    arc_id = fm.get("arc_id")
+    if not arc_id or not isinstance(arc_id, str):
+        return None
+
+    # Slug form first (cheapest path)
+    direct = ARCS_DIR / f"{arc_id}.yaml"
+    if direct.is_file():
+        try:
+            return yaml.safe_load(direct.read_text()) or {}
+        except yaml.YAMLError:
+            return None
+
+    # arc-NNN dual-form fallback (T-1849: arc_id may be `arc-011` while the
+    # file lives at slug `parallel-execution-aef.yaml`).
+    if ARCS_DIR.is_dir():
+        for arc_yaml in sorted(ARCS_DIR.glob("*.yaml")):
+            try:
+                candidate = yaml.safe_load(arc_yaml.read_text()) or {}
+            except yaml.YAMLError:
+                continue
+            if (candidate.get("id") == arc_id
+                    or candidate.get("slug") == arc_id):
+                return candidate
+    return None
+
+
 def _arc_scoped_drivers_for_task(fm: dict) -> dict[str, int]:
     """T-2357 — return {driver_id: weight} from the task's arc's scoped_drivers.
 
-    Resolves the task's `arc_id:` frontmatter to `.context/arcs/<arc_id>.yaml`
-    (slug form, T-1849), falling back to a `arc-NNN` dual-form scan that
-    matches each arc YAML's top-level `id:` or `slug:`. Returns the operator-
-    approved `scoped_drivers:` map (driver_id → weight). Empty on any
-    missing/error path: no arc_id, file missing, YAML parse error, empty
-    scoped_drivers.
+    Resolves the arc through _resolve_arc_data (slug form, then `arc-NNN`
+    dual-form scan — T-1849). Returns the operator-approved `scoped_drivers:`
+    map (driver_id → weight). Empty on any missing/error path: no arc_id, file
+    missing, YAML parse error, empty scoped_drivers.
 
     Read-only; never mutates arc YAMLs. Does NOT consult
     proposed_scoped_drivers: — only operator-approved scoped_drivers: fires
@@ -142,32 +177,7 @@ def _arc_scoped_drivers_for_task(fm: dict) -> dict[str, int]:
     arc-011 D-DISJOINT --weight 5 --from-watchtower` + same for
     D-WIRE-EVIDENCE), this helper yields them and estimate_task() dispatches.
     """
-    arc_id = fm.get("arc_id")
-    if not arc_id or not isinstance(arc_id, str):
-        return {}
-
-    # Slug form first (cheapest path)
-    direct = ARCS_DIR / f"{arc_id}.yaml"
-    arc_data: dict | None = None
-    if direct.is_file():
-        try:
-            arc_data = yaml.safe_load(direct.read_text()) or {}
-        except yaml.YAMLError:
-            return {}
-    else:
-        # arc-NNN dual-form fallback (T-1849: arc_id may be `arc-011` while
-        # the file lives at slug `parallel-execution-aef.yaml`).
-        if ARCS_DIR.is_dir():
-            for arc_yaml in sorted(ARCS_DIR.glob("*.yaml")):
-                try:
-                    candidate = yaml.safe_load(arc_yaml.read_text()) or {}
-                except yaml.YAMLError:
-                    continue
-                if (candidate.get("id") == arc_id
-                        or candidate.get("slug") == arc_id):
-                    arc_data = candidate
-                    break
-
+    arc_data = _resolve_arc_data(fm)
     if not arc_data:
         return {}
 
@@ -2239,6 +2249,316 @@ def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> t
     return min(hits, 2), [f"body/tag hits for '{driver_id}': {hits}", f"→{min(hits, 2)}"]
 
 
+# ---- declarative scoring specs (T-3428, OBS-463 leg 2) ----------------------
+#
+# A driver entry — free (policy/value-drivers.yaml) or arc-scoped
+# (.context/arcs/<slug>.yaml `scoped_drivers[]`) — may carry a `scoring:` block
+# the estimator interprets generically, so a project or an arc can define a
+# driver that WORKS without a framework code change. T-3427 stopped the
+# bleeding (an unscorable driver is omitted rather than scored 0); this is the
+# fix. D1-D4 and the V_* batch keep their hand-written handlers: their rubrics
+# are judgement over prose, not signal matching (see
+# docs/reports/T-3428-declarative-scoring.md §What stays hand-written).
+#
+# Shape:
+#   scoring:
+#     kind: signals              # the one kind this slice ships
+#     strip_template: true       # default true — see _strip_template() below
+#     levels:                    # int 1..5 -> any-of signals; highest wins
+#       1: {keywords: ["finding"]}
+#       3: {keywords: ["evidence"], paths: ["tools/*.py"]}
+#       5: {frontmatter: {workflow_type: build}, tags: ["audit"]}
+#
+# A level matches when ANY of its signals matches; the score is the highest
+# matching level; no matching level is a MEASURED 0 (evidence `L0: no signal`),
+# not "unscored" — the driver has a mechanism, it just did not fire here.
+
+SCORING_KIND = "signals"
+SIGNAL_KINDS = ("keywords", "paths", "frontmatter", "tags")
+_TEMPLATE_LINES_CACHE: set[str] | None = None
+
+
+def _template_lines() -> set[str]:
+    """Stripped non-empty lines of `.tasks/templates/default.md`, cached.
+
+    Empty set when the template is absent (a consumer mid-bootstrap) — which
+    degrades stripping to a no-op rather than failing the score.
+    """
+    global _TEMPLATE_LINES_CACHE
+    if _TEMPLATE_LINES_CACHE is not None:
+        return _TEMPLATE_LINES_CACHE
+    tpl = PROJECT_ROOT / ".tasks" / "templates" / "default.md"
+    lines: set[str] = set()
+    try:
+        for ln in tpl.read_text(encoding="utf-8").splitlines():
+            s = ln.strip()
+            if s:
+                lines.add(s)
+    except OSError:
+        pass
+    _TEMPLATE_LINES_CACHE = lines
+    return lines
+
+
+def _strip_template(text: str) -> str:
+    """Drop every line that also appears verbatim in the task template.
+
+    The trap this exists for (measured on consumer 1409-sprind): template
+    guidance prose — REHEARSING, PRODUCING, CLAUDE.md, .claude/settings.json —
+    is present in EVERY task file, so a keyword drawn from it matches uniformly
+    across a whole corpus and the driver ranks nothing. Stripping is line-exact
+    (not fuzzy): a line the author actually wrote survives even if it quotes a
+    template word, because it will not match the template line character for
+    character.
+    """
+    tpl = _template_lines()
+    if not tpl:
+        return text
+    return "\n".join(ln for ln in text.splitlines() if ln.strip() not in tpl)
+
+
+def load_scoring_spec(driver_entry) -> dict | None:
+    """Return the `scoring:` block of a driver entry, or None when absent.
+
+    Shape-only: a present-but-malformed block comes back so the caller can run
+    validate_scoring_spec() and report the errors, rather than vanishing into
+    "this driver has no spec" (the silent-failure shape this whole task is
+    about). Non-mapping entries and non-mapping blocks return None.
+    """
+    if not isinstance(driver_entry, dict):
+        return None
+    spec = driver_entry.get("scoring")
+    if not isinstance(spec, dict) or not spec:
+        return None
+    return spec
+
+
+def _spec_levels(spec) -> dict[int, dict]:
+    """Normalise `levels:` keys to ints. Unparseable keys are dropped here and
+    reported by validate_scoring_spec() — validation is the gate, not this."""
+    out: dict[int, dict] = {}
+    levels = spec.get("levels") if isinstance(spec, dict) else None
+    if not isinstance(levels, dict):
+        return out
+    for k, v in levels.items():
+        try:
+            ik = int(k)
+        except (TypeError, ValueError):
+            continue
+        if isinstance(v, dict):
+            out[ik] = v
+    return out
+
+
+def validate_scoring_spec(spec) -> list[str]:
+    """Return a list of human-readable errors; empty list means valid.
+
+    Checked: kind is the one kind we ship; strip_template is a bool; levels is
+    a non-empty map whose keys are ints 1..5; each level carries at least one
+    signal of a known kind; keywords/paths/tags are non-empty lists of
+    non-empty strings; frontmatter is a flat map of scalars.
+    """
+    errors: list[str] = []
+    if not isinstance(spec, dict):
+        return ["scoring: must be a mapping"]
+
+    kind = spec.get("kind")
+    if kind is None:
+        errors.append(f"scoring.kind: missing (only '{SCORING_KIND}' is supported)")
+    elif kind != SCORING_KIND:
+        errors.append(f"scoring.kind: unknown kind {kind!r} (only '{SCORING_KIND}' is supported)")
+
+    if "strip_template" in spec and not isinstance(spec["strip_template"], bool):
+        errors.append("scoring.strip_template: must be true or false")
+
+    for unknown in sorted(set(spec) - {"kind", "strip_template", "levels"}):
+        errors.append(f"scoring.{unknown}: unknown key")
+
+    raw_levels = spec.get("levels")
+    if not isinstance(raw_levels, dict) or not raw_levels:
+        errors.append("scoring.levels: must be a non-empty mapping of level -> signals")
+        return errors
+
+    for k in raw_levels:
+        try:
+            ik = int(k)
+        except (TypeError, ValueError):
+            errors.append(f"scoring.levels[{k!r}]: level must be an integer 1..5")
+            continue
+        if not 1 <= ik <= 5:
+            errors.append(f"scoring.levels[{k}]: level out of range (must be 1..5; 0 is the no-match floor)")
+        sigs = raw_levels[k]
+        if not isinstance(sigs, dict) or not sigs:
+            errors.append(f"scoring.levels[{k}]: must be a mapping with at least one signal")
+            continue
+        known = [s for s in sigs if s in SIGNAL_KINDS]
+        for s in sorted(set(sigs) - set(SIGNAL_KINDS)):
+            errors.append(f"scoring.levels[{k}].{s}: unknown signal kind "
+                          f"(known: {', '.join(SIGNAL_KINDS)})")
+        if not known:
+            errors.append(f"scoring.levels[{k}]: no signal of a known kind "
+                          f"({', '.join(SIGNAL_KINDS)})")
+        for listy in ("keywords", "paths", "tags"):
+            if listy not in sigs:
+                continue
+            vals = sigs[listy]
+            if not isinstance(vals, list) or not vals:
+                errors.append(f"scoring.levels[{k}].{listy}: must be a non-empty list of strings")
+                continue
+            for v in vals:
+                if not isinstance(v, str) or not v.strip():
+                    errors.append(f"scoring.levels[{k}].{listy}: {v!r} is not a non-empty string")
+        if "frontmatter" in sigs:
+            fmm = sigs["frontmatter"]
+            if not isinstance(fmm, dict) or not fmm:
+                errors.append(f"scoring.levels[{k}].frontmatter: must be a non-empty flat mapping")
+            else:
+                for fk, fv in fmm.items():
+                    if isinstance(fv, (dict, list)):
+                        errors.append(f"scoring.levels[{k}].frontmatter.{fk}: must be a scalar "
+                                      f"(equality is a string compare)")
+    return errors
+
+
+_PATH_TOKEN_RE = re.compile(r"[A-Za-z0-9_.*-]+(?:/[A-Za-z0-9_.*-]+)+")
+
+
+def _candidate_paths(fm: dict, body: str) -> list[str]:
+    """Paths a `paths:` signal may fnmatch against: the task's `components:`
+    plus every path-shaped token in the body (which is where ACs and
+    Verification name files). Body tokens are taken from the TEMPLATE-STRIPPED
+    body for the same reason keywords are — the template names
+    `.claude/settings.json` and friends in prose every task carries."""
+    out: list[str] = []
+    comps = fm.get("components") or []
+    if isinstance(comps, list):
+        out.extend(str(c).strip() for c in comps if str(c).strip())
+    for tok in _PATH_TOKEN_RE.findall(body):
+        out.append(tok.strip("`'\"(),;:"))
+    # de-dup, order-stable
+    seen: set[str] = set()
+    uniq: list[str] = []
+    for p in out:
+        if p and p not in seen:
+            seen.add(p)
+            uniq.append(p)
+    return uniq
+
+
+def declarative_matches(spec: dict, fm: dict, body: str,
+                        tags: list[str]) -> dict[int, list[str]]:
+    """Per-level matched signals, as `L<level>:<kind>=<value>` strings.
+
+    Returned for EVERY declared level (empty list = level did not match), so
+    `fw bvp driver --explain` can show the ladder rather than only the winner.
+    """
+    strip = spec.get("strip_template", True) is not False
+    body_txt = _strip_template(body) if strip else body
+    tag_strs = [str(t).strip() for t in (tags or [])]
+    hay = "\n".join([
+        str(fm.get("name") or ""),
+        str(fm.get("description") or ""),
+        body_txt,
+        " ".join(tag_strs),
+    ]).lower()
+    cand_paths = _candidate_paths(fm, body_txt)
+
+    result: dict[int, list[str]] = {}
+    for lvl, sigs in sorted(_spec_levels(spec).items()):
+        matched: list[str] = []
+        for kw in (sigs.get("keywords") or []):
+            if isinstance(kw, str) and kw.strip() and kw.strip().lower() in hay:
+                matched.append(f"L{lvl}:keyword={kw}")
+        for pat in (sigs.get("paths") or []):
+            if not isinstance(pat, str) or not pat.strip():
+                continue
+            hit = next((c for c in cand_paths if fnmatch.fnmatch(c, pat.strip())), None)
+            if hit:
+                matched.append(f"L{lvl}:path={pat}~{hit}")
+        fmm = sigs.get("frontmatter")
+        if isinstance(fmm, dict):
+            for fk, fv in fmm.items():
+                actual = fm.get(fk)
+                if actual is None:
+                    continue
+                if str(actual).strip().lower() == str(fv).strip().lower():
+                    matched.append(f"L{lvl}:frontmatter={fk}={fv}")
+        for t in (sigs.get("tags") or []):
+            if not isinstance(t, str) or not t.strip():
+                continue
+            if any(x.lower() == t.strip().lower() for x in tag_strs):
+                matched.append(f"L{lvl}:tag={t}")
+        result[lvl] = matched
+    return result
+
+
+def score_declarative(spec: dict, fm: dict, body: str,
+                      tags: list[str]) -> tuple[int, list[str]]:
+    """Score one driver from its declarative spec. Highest matching level wins.
+
+    Returns (score, evidence). No matching level is `0` with evidence
+    `L0: no signal` — a measured zero, distinct from T-3427's `unscored`
+    (which means no mechanism exists at all and keeps the driver OUT of the
+    ranking denominator).
+    """
+    matches = declarative_matches(spec, fm, body, tags)
+    hits = [(lvl, m) for lvl, m in matches.items() if m]
+    if not hits:
+        return 0, ["L0: no signal", "→0 (declarative: no level matched)"]
+    best = max(lvl for lvl, _ in hits)
+    ev = [s for _, m in sorted(hits) for s in m]
+    return best, ev + [f"→{best} (declarative: highest matching level)"]
+
+
+def _load_driver_specs() -> dict[str, dict]:
+    """`{driver id and name: validated scoring spec}` from the policy file.
+
+    Keyed by BOTH id and name so dispatch reaches a spec the same two ways the
+    handler table is reached (id, or the T-2343 name alias). Specs that fail
+    validation are omitted — an invalid spec is not a scorer, and the audit
+    rail (lib/bvp-scorability.sh) is what tells the operator so.
+    """
+    if not POLICY_PATH.is_file():
+        return {}
+    try:
+        policy = yaml.safe_load(POLICY_PATH.read_text()) or {}
+    except yaml.YAMLError:
+        return {}
+    out: dict[str, dict] = {}
+    for section in ("protected_drivers", "free_drivers"):
+        for d in (policy.get(section) or []):
+            spec = load_scoring_spec(d)
+            if spec is None or validate_scoring_spec(spec):
+                continue
+            for key in (d.get("id"), d.get("name")):
+                if key and isinstance(key, str):
+                    out[key] = spec
+    return out
+
+
+def _arc_scoped_specs_for_task(fm: dict) -> dict[str, dict]:
+    """T-3428 — `{driver_key: validated scoring spec}` from the task's arc.
+
+    Sibling of _arc_scoped_drivers_for_task (which yields weights); both read
+    the same operator-approved `scoped_drivers:` entries through
+    _resolve_arc_data, so an arc-scoped driver can ship its own mechanism
+    without a framework code change. Invalid specs are omitted, same rule as
+    the policy path.
+    """
+    arc_data = _resolve_arc_data(fm)
+    if not arc_data:
+        return {}
+    out: dict[str, dict] = {}
+    for sd in (arc_data.get("scoped_drivers") or []):
+        spec = load_scoring_spec(sd)
+        if spec is None or validate_scoring_spec(spec):
+            continue
+        for key in (sd.get("id"), sd.get("name")):
+            if key and isinstance(key, str):
+                out[key] = spec
+    return out
+
+
 # ---- top-level orchestration ------------------------------------------------
 
 def _handler_table() -> dict:
@@ -2273,12 +2593,19 @@ def _handler_table() -> dict:
     }
 
 
-def has_scorer(driver_id: str, name: str | None = None) -> bool:
+def has_scorer(driver_id: str, name: str | None = None,
+               entry: dict | None = None) -> bool:
     """Can this driver be scored by anything but a grep for its own id?
 
-    True when the id, the name, or the id's policy alias is a handler key.
+    True when the id, the name, or the id's policy alias is a handler key —
+    OR (T-3428) when a declarative `scoring:` spec exists and validates, for
+    the id, the name, or the `entry` passed in directly.
+
     `fw bvp driver --add` asks this before it lets a Sovereign spend the one
-    free slot on a driver that would score 0 everywhere (OBS-463).
+    free slot on a driver that would score 0 everywhere (OBS-463). It passes
+    `entry` when the caller supplied `--scoring-file`, because the entry is not
+    in the policy file yet at that point — the spec IS the answer, and reading
+    policy would say "no scorer" about a driver that ships one.
     """
     table = _handler_table()
     if driver_id in table or (name and name in table):
@@ -2287,7 +2614,18 @@ def has_scorer(driver_id: str, name: str | None = None) -> bool:
         alias = _load_driver_aliases().get(driver_id)
     except Exception:
         alias = None
-    return bool(alias and alias in table)
+    if alias and alias in table:
+        return True
+    # T-3428: a validated declarative spec is a scorer.
+    if entry is not None:
+        spec = load_scoring_spec(entry)
+        if spec is not None and not validate_scoring_spec(spec):
+            return True
+    try:
+        specs = _load_driver_specs()
+    except Exception:
+        return False
+    return bool(driver_id in specs or (name and name in specs))
 
 
 def _score_inception_voi(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
@@ -2350,6 +2688,14 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
     # T-2343: name-alias map for drivers whose policy id differs from their
     # canonical name (e.g. policy id F3, handler key V_PROMPT_QUALITY).
     name_aliases = _load_driver_aliases()
+    # T-3428: declarative `scoring:` specs, keyed by id AND name. Policy specs
+    # first, then the task's arc-scoped specs — an arc may ship a mechanism for
+    # a driver the policy file has never heard of. Arc keys do not overwrite
+    # policy keys (same precedence as the weight merge above: global wins).
+    specs = _load_driver_specs()
+    if not is_inception:
+        for _k, _v in _arc_scoped_specs_for_task(fm).items():
+            specs.setdefault(_k, _v)
     for driver_id in drivers:
         if is_inception:
             sc, ev = _score_inception_voi(fm, body, tags)
@@ -2357,6 +2703,13 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
             sc, ev = handlers[driver_id](fm, body, tags)
         elif name_aliases.get(driver_id) in handlers:
             sc, ev = handlers[name_aliases[driver_id]](fm, body, tags)
+        elif driver_id in specs or name_aliases.get(driver_id) in specs:
+            # T-3428: declarative spec. Dispatch order is handler → alias →
+            # spec → unscored, so a hand-written handler always wins: it is the
+            # richer mechanism, and a policy edit must not silently displace it.
+            sc, ev = score_declarative(
+                specs.get(driver_id) or specs[name_aliases[driver_id]],
+                fm, body, tags)
         else:
             # T-3427 (OBS-463): a driver with no scorer is UNSCORED, not 0.
             # score_free_driver grepped the task for the driver's own id —
