@@ -8,12 +8,12 @@ description: >
   → hub → dispatched worker → reply → hub → inbox), every hop checked, repeatable
   verdict
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [termlink, peer-consult, sidecar, e2e, test]
-components: []
+components: [bin/fw, lib/sidecar_cli.py, lib/sidecar/e2e.py, tests/unit/test_sidecar_e2e.py]
 related_tasks: [T-3406, T-3407, T-3417, T-3420]
 arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -27,8 +27,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T08:41:14Z
-last_update: '2026-09-22T08:45:21Z'
-date_finished:
+last_update: 2026-09-22T08:55:49Z
+date_finished: 2026-09-22T08:55:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -440,3 +440,20 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3423-arc-011-sidecar-slice-9-fw-sidecar-e2e--.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8587602c
+- **Timestamp:** 2026-09-22T08:55:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_sidecar_e2e.py tests/unit/test_sidecar_sweep.py tests/unit/test_sidecar_status.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_termlink_transport.py tests`
+
+### 2026-09-22T08:55:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

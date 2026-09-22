@@ -1,0 +1,109 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3423: arc-011 sidecar slice 9: fw sidecar e2e — live TermLink end-to-end harness (send → hub → dispatched worker → reply → hub → inbox), every hop checked, repeatable verdict
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T08:56:10Z
+# ============================================================================
+
+task_id: T-3423
+task_name: "arc-011 sidecar slice 9: fw sidecar e2e — live TermLink end-to-end harness (send → hub → dispatched worker → reply → hub → inbox), every hop checked, repeatable verdict"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-22T08:41:14Z
+completed: 2026-09-22T08:55:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T10:48:12+02:00
+last_commit: 2026-09-22T10:55:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar e2e — live TermLink end-to-end harness, first two runs PASS 6/6. e2e answer matcher — a free-form reply from the responder on our conversation counts. ambient job runs date -u, not sleep — a headless worker backgrounds sleep and never prints DONE. ambient run cb29fa71 PASS 7/7 — un-instructed answer through the hub, 18.9s
+
+# Key outcomes
+outcomes:
+  - '`lib/sidecar/e2e.py:run(cfg, *, send, dispatch, wait, result, hub_messages, read_inbox, cursor, sleep, now)` drives steps 2–7; report dict carries `hops[H1..H6]{ok,title,detail}` (+`A1` under ambient), `verdict`, `run_id`, `client_msg_id`, `timings{sent,dispatched,reply_seen,worker_exit,total}`, `dispatch`/`worker` tails; a raised send or a non-zero dispatch marks the remaining hops "not attempted" and still returns — `_finish()` fills any hop never reached'
+  - '`fw sidecar e2e [--task] [--timeout 300] [--worker-timeout 600] [--ambient] [--keep] [--json]` — `cmd_e2e` in `lib/sidecar_cli.py`: `e2e.preflight()` (termlink on PATH + `probe_hub(None)`) before any dispatch, exit 2 on refusal; task from `--task` or `focus.yaml`; JSON record via `write_report` (atomic) under `.context/sidecar/e2e/<run>.json`; throwaway inbox cursors dropped unless `--keep`; exit 0 iff verdict PASS; `bin/fw help` sidecar line lists all six verbs — `tests/lint/help-router-parity.bats` 2/2'
+  - '`tests/unit/test_sidecar_e2e.py` — 8 tests with a scripted `Fakes` hub+worker: full pass (6/6 hops, prompt carries nonce+ACK, no A1); reply never arrives (H4/H5 FAIL, window spent, ≥12 polls, no exception); hub never shows our consult (H2 FAIL alone); no DONE (H6 FAIL); dispatch rc≠0 (H3–H6 "not attempted", H2 still asked); send raises (H1 FAIL, nothing dispatched); ambient folds H3–H5 into A1 without changing the verdict, and its prompt has no "inbox"/"consult"; report round-trips + renders. **8/8; all seven sidecar suites 43/43**'
+  - '**Live, explicit mode, twice:** run `1d953701` — PASS 6/6, 19.17s total (send 0.28s, dispatch 1.81s, reply seen 16.94s, worker exit 19.07s); run `94fc8390` — PASS 6/6, 21.93s (reply seen 21.7s). Both records committed under `.context/sidecar/e2e/`. Hub-side evidence in each: our `client_msg_id` on `sidecar:<responder>` @0, the responder''s ACK on `sidecar:<sender>` with `from_agent=<responder>` and our conversation id; responder cursor 0→1; `fw termlink wait` rc 0 with DONE'
+  - '**Live, ambient mode:** run `0153e35a` — transport verdict PASS (H1, H2 @0 on `sidecar:e2e-0153e35a-responder`, H6 rc 0 + DONE), 242.7s (the worker''s own `sleep 45` plus a full 240s ACK window). **A1 as first scored: FAIL — a harness false negative.** The un-instructed worker (prompt: "run sleep 45, print DONE", nothing about consults) read its inbox, sent `bin/fw sidecar send --to e2e-0153e35a-sender --conversation e2e-0153e35a --body ''ack SIDECAR-E2E 0153e35a''`, then slept and printed DONE; the reply sits on the hub at `sidecar:e2e-0153e35a-sender` @0 with `from_agent=e2e-0153e35a-responder` and our conversation id. The matcher demanded the literal `SIDECAR-E2E-ACK` token and missed it. Fixed: `is_ack()` = same conversation + from the responder + body carries the run id (unit test 9). **Actual value: the ambient headline mechanic fired live, un-instructed, through the hub.** Second ambient run `7e013402` with the corrected matcher: **A1 PASS** — reply seen 16.72s after send, H1–H5 all PASS; overall verdict FAIL on H6 alone: the worker backgrounded its `sleep 45`, ended the headless turn "waiting to be notified", and never printed DONE (`wait rc=0 DONE=no`). Model quirk of a sleep-shaped job, not a channel property; the ambient job now runs `date -u` instead. Third ambient run `cb29fa71` (sleep-free job): **PASS 7/7 including A1**, 18.91s total, reply seen 16.67s. Ambient tally: un-instructed answers **3/3**, all verified on the hub; full-verdict PASS 1/3 (the other two failed on harness matcher and worker-sleep quirk respectively, both fixed and recorded)'
+  - 'Vendored copies of `lib/sidecar/e2e.py`, `lib/sidecar_cli.py`, `bin/fw` synced (`FW_VENDOR_ONLY`, VERSION 1.6.768); `bin/fw vendor self --check` → "in sync with source"; fabric cards `lib-sidecar-e2e.yaml` + the test''s card registered; `.gitignore` now ignores sidecar runtime state and tracks only `e2e/<run>.json` verdict records (Decision below)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-22 — what of `.context/sidecar/` is tracked'
+    chose: 'ignore the runtime state (outbox message files, the append-only ack ledger, inbox cursors, worker prompts); track only the e2e verdict records `.context/sidecar/e2e/<run>.json`.'
+    rationale: 'the runtime files are per-host, grow on every consult, and would turn every `fw sidecar send` into an uncommitted change; the verdict records are the evidence that the channel worked on a given day, and the close gate of this task reads them (≥2 PASS records, all six hops).'
+    alternatives_rejected: ['tracking everything (noise on every send; the ledger is append-only and would conflict across sessions); tracking nothing (the live proof would live only in scrollback — the exact state this slice exists to end).']
+  - decision: '2026-09-22 — ambient hops are informative, not blocking'
+    chose: 'under `--ambient`, only H1 (ledger), H2 (hub has our message) and H6 (worker exited with DONE) decide the verdict; H3–H5 fold into `A1`.'
+    rationale: 'whether an un-instructed model reads its inbox is a property of the model and the stanza, not of the transport. Letting it fail the transport verdict would make the check flap on model behaviour and hide real transport regressions behind it.'
+    alternatives_rejected: ['one blocking rule for both modes (conflates two questions); no ambient mode at all (the un-instructed answer is the arc''s headline mechanic — it must be measurable, just separately).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/e2e.py'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.context/sidecar/e2e/0153e35a.json'
+  - '.context/sidecar/e2e/1d953701.json'
+  - '.context/sidecar/e2e/7e013402.json'
+  - '.context/sidecar/e2e/94fc8390.json'
+  - '.context/sidecar/e2e/cb29fa71.json'
+  - '.fabric/components/lib-sidecar-e2e.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_e2e.yaml'
+  - '.gitignore'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/e2e.py'
+  - '.tasks/active/T-3423-arc-011-sidecar-slice-9-fw-sidecar-e2e--.md'
+  - 'tests/unit/test_sidecar_e2e.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T10:48:12'
+    action: 'T-3423: fw sidecar e2e — live TermLink end-to-end harness, first two runs PASS 6/6'
+  - time: '2026-09-22T10:53:20'
+    action: 'T-3423: e2e answer matcher — a free-form reply from the responder on our conversation counts'
+  - time: '2026-09-22T10:54:57'
+    action: 'T-3423: ambient job runs date -u, not sleep — a headless worker backgrounds sleep and never prints DONE'
+  - time: '2026-09-22T10:55:38'
+    action: 'T-3423: ambient run cb29fa71 PASS 7/7 — un-instructed answer through the hub, 18.9s'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, peer-consult, sidecar, e2e, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 4
+  files_changed: 18
+  lines_added: 2027
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3423-arc-011-sidecar-slice-9-fw-sidecar-e2e--.md
+generated_by: context-agent-hybrid
