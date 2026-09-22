@@ -1,3 +1,4 @@
+{# Search bar + mode-pill controls included by search.html; the form GETs discovery.search_view via htmx. #}
 <div class="search-hero">
     <form action="{{ url_for('discovery.search_view') }}" method="get" role="search"
           hx-get="{{ url_for('discovery.search_view') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"

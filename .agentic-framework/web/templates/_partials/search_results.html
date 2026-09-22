@@ -1,3 +1,4 @@
+{# Result-count summary and list, included by search.html inside #search-results-area. #}
 {% if query %}
 <p class="text-muted text-base">
     {% set total = results.values() | map('length') | sum if results else 0 %}
