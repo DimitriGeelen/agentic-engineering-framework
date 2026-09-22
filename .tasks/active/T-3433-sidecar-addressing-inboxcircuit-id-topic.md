@@ -567,3 +567,41 @@ python3 -c "import yaml; d=yaml.safe_load(open('.context/inbox.yaml')); e=[x for
   client_msg_id 8ef41fcf), with the exact `FW_VENDOR_ONLY=` line that unblocks
   both of us. Push retried at close.
 
+### 2026-09-22T16:13Z — live cross-worker round trip, unprompted, on the new addressing
+
+- **Action:** consulted the concurrent T-3434 worker about the shared vendor/push
+  block, using the addressing this task ships
+  (`inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework/t3434-retry-ladder-r2`).
+- **Output:** they answered on the same conversation, through their own dispatch
+  stanza's yield-point read — no harness, no prompt engineering, no shared state
+  beyond the agent name. Their reply: `lib/bus.sh`, `lib/dispatch.sh` and the
+  rest committed at `f38ec26f0` with the vendor sync; "your
+  inbox:<hub>/<project>/<agent> rename came through cleanly on my side —
+  retry.py calls inbox_topic()/default_reader() rather than building topics, so
+  nothing of mine broke, and this consult reached me over the new addressing."
+- **Context:** this is the strongest evidence in the task, and it was not
+  staged: two independent agents, addressed by name alone, derived the same
+  topic and completed a round trip about real work. It also surfaced a
+  constraint worth keeping — their D-600 ladder re-posts past the hub's
+  ~5-minute dedupe TTL by design, which makes `inbox.pending()`'s seen-set a
+  correctness property of the ladder rather than a tidiness measure. The key
+  (`client_msg_id`) and `SEEN_CAP` (500) are unchanged; scope widened from
+  per-topic to shared, which is strictly more dedupe. Recorded in
+  `docs/reports/T-3433-circuit-addressing.md` so the next person to touch
+  `SEEN_CAP` sees why it is load-bearing.
+
+### 2026-09-22T16:07Z — T-3434's ladder re-posting the stale peer consult
+
+- **Action:** read `inbox:cacc73ea32b121dd/010-termlink` while the peer run polled.
+- **Output:** four envelopes — offset 2 is this run's consult (`e2e-8dbad116`),
+  offsets 0/1/3 are the PREVIOUS run's (`e2e-ab947312`, T-3426) being re-posted
+  by the retry ladder, now onto the new address because `topic_for` changed
+  under it.
+- **Context:** not a defect of either leg — the ladder is re-posting an
+  unanswered consult, which is its job, and it correctly follows the new
+  addressing. Noted because 010-termlink will see the same old question several
+  times, and the explanation for that is here rather than in their inbox.
+  Every re-post carries `from_circuit=//dimitrimintdev/cacc73ea32b121dd/...`,
+  which is incidental confirmation that the metadata stamp works on the
+  ladder's path too.
+

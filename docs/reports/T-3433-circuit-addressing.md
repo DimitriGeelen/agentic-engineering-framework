@@ -129,6 +129,17 @@ The e2e harness checks H2/H4 on both addresses, so a peer that has not
 switched still closes the loop. Removing the alias is a follow-on: delete
 `legacy_topics()` and its callers, one release from now.
 
+**The shared seen-set is load-bearing, not tidiness.** T-3434's universal retry
+ladder (D-600) re-posts past the hub's ~5-minute dedupe TTL *by design*, so the
+receiver's seen-set is the only thing collapsing those duplicates — its owner
+said so over this very channel, mid-build. The key is unchanged
+(`metadata.client_msg_id`) and `SEEN_CAP` is unchanged at 500; what changed is
+scope, from per-topic to shared, which is strictly more dedupe. The one real
+interaction: 500 ids are now shared across two topics rather than 500 per
+topic, so effective per-topic memory halves during the transition window. Not
+close to the TTL at present cadence — but anyone changing `SEEN_CAP` or the key
+is changing a correctness property of the retry ladder, not a cache size.
+
 ## What the hub now does for us — and the one thing we could not measure
 
 Verified here, 2026-09-22, on `inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework/t3433-probe/t3433-probe`:
