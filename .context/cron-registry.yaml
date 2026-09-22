@@ -376,3 +376,24 @@ jobs:
     contends the shared audit lock (T-3070 collision class) — the runner takes
     its OWN overlap lock (.context/locks/unit-suite.lock, skip-if-held logged
     exit 0) and never holds the audit lock itself."
+- id: fabric-describe-daily
+  name: Fabric card describe sweep (daily)
+  schedule: 26 4 * * *
+  command: flock -n /var/lock/agentic-cron-fabric-describe-daily.lock -c 'fw fabric
+    enrich --describe-only'
+  source_file: agentic-audit.crontab
+  origin_task: T-3430
+  status: active
+  description: "T-3430 (OBS-464) — fills `purpose` and `subsystem` on component
+    cards that still carry the register-time placeholders, deriving each
+    sentence from the file's own docstring/header or its created_by task and
+    recording the provenance as purpose_source:. Never overwrites a purpose a
+    human wrote, so re-running is a no-op on a clean corpus. --describe-only
+    because the nightly sweep has no business recomputing the dependency graph;
+    edge enrichment stays an explicit `fw fabric enrich`. Exists because 792 of
+    1314 cards carried the template TODO with no verb, hook or cron that would
+    ever fill them — new files land between sweeps and register only derives at
+    creation, so a scheduled pass is what keeps the count near zero rather than
+    letting it climb again. Off the audit minutes (:07/:17/:27/…) and takes its
+    own lock, not audit.lock (T-3070 collision class); the run is read-mostly
+    and idempotent."

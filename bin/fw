@@ -2210,6 +2210,32 @@ else:
         fi
     fi
 
+    # Check: fabric card quality (T-3430, OBS-464)
+    # Mirrors agents/audit/audit.sh:check_fabric_underpopulated. A card that
+    # says nothing is invisible to every other fabric check — it IS registered,
+    # its file DOES exist, its absent edges cannot be stale — which is how 792
+    # of 1314 cards here kept the template TODO for the fabric's whole life.
+    # WARN-only. Silent when the project has no .fabric/components/.
+    local _fab_scan="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/agents/fabric/lib/underpopulated.py"
+    if [ -f "$_fab_scan" ] && [ -d "$PROJECT_ROOT/.fabric/components" ]; then
+        local _fab_json _fab_facts _fab_total _fab_todo _fab_unknown _fab_noedges
+        _fab_json=$(python3 "$_fab_scan" "$PROJECT_ROOT/.fabric/components" --json --limit 3 2>/dev/null || true)
+        if [ -n "$_fab_json" ]; then
+            _fab_facts=$(FW_FAB_JSON="$_fab_json" python3 "$FRAMEWORK_ROOT/lib/fabric_doctor_facts.py" 2>/dev/null || true)
+        fi
+        if [ -n "${_fab_facts:-}" ]; then
+            IFS=$'\t' read -r _fab_total _fab_todo _fab_unknown _fab_noedges <<< "$_fab_facts"
+            if [ "${_fab_total:-0}" -eq 0 ]; then
+                echo -e "  ${GREEN}OK${NC}  Fabric: 0 under-populated card(s)"
+            else
+                echo -e "  ${YELLOW}WARN${NC}  Fabric: $_fab_total under-populated card(s)"
+                echo -e "         TODO purpose: $_fab_todo, unknown subsystem: $_fab_unknown, no edges: $_fab_noedges"
+                echo -e "         Run: bin/fw fabric enrich --describe-only  (then: bin/fw fabric drift)"
+                warnings=$((warnings + 1))
+            fi
+        fi
+    fi
+
     # Check: framework MCP manifest (T-2265, arc-010 Slice 2)
     # T-2461: framework ASSETS (manifest, tool-set, manifest.py) live under
     # FRAMEWORK_ROOT — which equals PROJECT_ROOT in the framework repo, but is

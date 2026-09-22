@@ -91,3 +91,6 @@ PATH=/usr/local/bin:/usr/bin:/bin
 
 # Unit-suite corpus run (tests/unit, nightly)
 3 3 * * * root cd "/opt/999-Agentic-Engineering-Framework" && /opt/999-Agentic-Engineering-Framework/agents/audit/unit-suite.sh 2>&1 | logger -t agentic-cron
+
+# Fabric card describe sweep (daily)
+26 4 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-fabric-describe-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" fabric enrich --describe-only' 2>&1 | logger -t agentic-cron
