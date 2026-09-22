@@ -235,7 +235,7 @@ _run_push_hook() {
     # (lib/prepush-lock-wait.sh). The pin moves with it: the hook must source the
     # derivation, and 90 must remain the floor, not the default.
     grep -q 'prepush-lock-wait.sh' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh"
-    ! grep -q 'FW_PREPUSH_LOCK_WAIT:-90' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh"
+    [ "$(grep -c 'FW_PREPUSH_LOCK_WAIT:-90' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh")" -eq 0 ]
     grep -q '^FW_PREPUSH_LOCK_WAIT_FLOOR=90$' "$FRAMEWORK_ROOT/lib/prepush-lock-wait.sh"
 }
 

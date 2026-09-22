@@ -90,6 +90,7 @@ EOF
     # Static pin on the hook source: the derivation is wired, the override is kept.
     grep -q 'fw_prepush_lock_wait_default "\$PROJECT_ROOT"' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh"
     grep -q 'if \[ -n "\${FW_PREPUSH_LOCK_WAIT:-}" \]; then' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh"
-    # And the old asserted constant is gone from the default path.
-    ! grep -q '_t3297_wait="\${FW_PREPUSH_LOCK_WAIT:-90}"' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh"
+    # And the old asserted constant is gone from the default path. (Counted, not
+    # `! grep` — a bare negation never fails a bats test; T-3138/T-3191 lint.)
+    [ "$(grep -c '_t3297_wait="\${FW_PREPUSH_LOCK_WAIT:-90}"' "$FRAMEWORK_ROOT/agents/git/lib/hooks.sh")" -eq 0 ]
 }
