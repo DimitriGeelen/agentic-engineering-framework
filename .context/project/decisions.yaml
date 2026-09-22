@@ -4069,3 +4069,24 @@ decisions:
     date: 2026-09-20
     task: T-2346
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-584
+    decision: "ignore the runtime state (outbox message files, the append-only"
+    scope: project
+    date: 2026-09-22
+    task: T-3423
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-585
+    decision: "under `--ambient`, only H1 (ledger), H2 (hub has our message)"
+    scope: project
+    date: 2026-09-22
+    task: T-3423
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-586
+    decision: "Arc-scoped value drivers are created and added by DEFAULT — the operator-approval step (fw arc approve-driver, T-1926 §ACD gate, M6/D8) is no longer the default path. Quality is held by an external value-driver reviewer (a dispatched/static reviewer that certifies a proposed driver has a scoring: mechanism, does not duplicate D1-D4, and states what it distinguishes) rather than by a Sovereign click. Operator ruling 2026-09-22 (verbatim: 'per default just create them and add them; if needed institute an external value driver reviewer'). Depends on T-3428 (declarative scoring specs); implemented as T-3429."
+    scope: project
+    date: 2026-09-22
+    task: T-3428
+    rationale: "Not specified"
