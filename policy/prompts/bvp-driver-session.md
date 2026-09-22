@@ -23,9 +23,15 @@ Pick the workflow based on `mode` injected by the verb handler:
 
 ### Workflow A — Batch propose (arc-draft)
 
-`mode=batch_propose`. Operator is drafting an arc and asks for several candidate drivers up front. You propose 2–3 candidates with one-line rationales each, written to the arc YAML's `proposed_scoped_drivers:` field. Approval stays with the operator via `fw arc approve-driver`. Do not run sharpening per candidate — proposal-shape is one line + one-line rationale, not a full session.
+`mode=batch_propose`. Operator is drafting an arc and asks for several candidate drivers up front. You propose 2–3 candidates with one-line rationales each, **each carrying a `scoring:` spec or `scoring_file:`**, written to the arc YAML's `proposed_scoped_drivers:` field. Do not run sharpening per candidate — proposal-shape is one line + one-line rationale, not a full session.
 
-The trigger condition (when arc creation invokes this workflow) and the surrounding 5-step protocol (read body → list candidates → write proposed → surface via `fw arc show-suggestions` → human approves/none) are documented in CLAUDE.md §Arc-Scoped Driver Suggestion Workflow (T-1925). Worked examples for Workflow A live in `bvp-references/arc-scoped-driver-examples.md`.
+**Step 4 is `fw arc approve-driver <arc-id> --all-reviewed`, not "surface to the operator"** (T-3429, D-586 — operator ruling 2026-09-22: *"per default just create them and add them; if needed institute an external value driver reviewer"*). The external value-driver reviewer is a static check — (a) scorable, (b) distinct from D1-D4 / free drivers / this arc's existing scoped drivers, (c) rationale ≥60 chars naming a directive it differs from — and everything that passes is added up to the M2 cap of 3. Preview with `fw arc review-driver <arc-id> --all --dry-run`.
+
+The operator still owns the *negative* ruling: `--none --justification "…"` stays §ACD-gated and human-only. `--i-am-human` / `--from-watchtower` remain the override for approving without the reviewer, recorded as `approved_by: human`.
+
+**This is why a candidate without a scoring spec is not a candidate.** Check (a) is the reviewer's most common refusal, and R5 below already says manufacturing drivers to look thorough is worse than proposing zero — a driver you cannot write a spec for is exactly that driver.
+
+The trigger condition (when arc creation invokes this workflow) and the surrounding 5-step protocol (read body → list candidates with specs → write proposed → `fw arc approve-driver --all-reviewed` → zero-approved is still valid) are documented in CLAUDE.md §Arc-Scoped Driver Suggestion Workflow (T-1925, T-3429). Worked examples for Workflow A live in `bvp-references/arc-scoped-driver-examples.md`.
 
 When to use Workflow A:
 

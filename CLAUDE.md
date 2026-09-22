@@ -1156,9 +1156,10 @@ When surfacing an arc-mutating action to the operator — `fw arc close`, `fw ar
 | Action | Watchtower surface | Underlying verb (CLI is fallback) |
 |--------|--------------------|-----------------------------------|
 | Close arc | `/arcs/<slug>/close` (form + §ACD prompt + demo modes) | `fw arc close <slug> --demo <…> --from-watchtower` |
-| Approve proposed driver | Button on `/arcs/<slug>` (proposed_scoped_drivers table) | `fw arc approve-driver <slug> "<name>" --weight N --from-watchtower` |
+| Review proposed driver (no human needed) | Verdict column on `/arcs/<slug>` | `fw arc review-driver <slug> "<name>" [--all] [--dry-run]` (T-3429) |
+| Approve proposed driver | Button on `/arcs/<slug>` (proposed_scoped_drivers table) | `fw arc approve-driver <slug> "<name>" --weight N` — **default path, reviewer-gated, no flag** (T-3429) |
 | Approve `--none` | Form on `/arcs/<slug>` | `fw arc approve-driver <slug> --none --justification "…" --from-watchtower` |
-| Add ad-hoc driver | Form on `/arcs/<slug>` | `fw arc approve-driver <slug> "<name>" --weight N --rationale "…" --from-watchtower` |
+| Add ad-hoc driver | Form on `/arcs/<slug>` | `fw arc approve-driver <slug> "<name>" --weight N --rationale "…"` (reviewer-gated) |
 | Remove scoped driver | Button on `/arcs/<slug>` | `fw arc remove-driver <slug> "<name>" --rationale "…" --from-watchtower` |
 | Adjust scoped weight | Slider on `/arcs/<slug>` | `fw arc set-scoped-weight <slug> "<name>" <N> --from-watchtower` |
 
@@ -1173,15 +1174,28 @@ When surfacing an arc-mutating action to the operator — `fw arc close`, `fw ar
 
 ### Arc-Scoped Driver Suggestion Workflow (T-1925, arc-006)
 
-When a new arc is created (via `fw arc create` or `fw work-on` of an arc anchor task), the primary agent runs this 5-step workflow **after the arc's anchor-task body is filled** but **before any driver is approved**. The goal is to surface arc-specific drivers that would distinguish the arc from the global D1-D4 directives. Approval stays with the human (M6, D8).
+When a new arc is created (via `fw arc create` or `fw work-on` of an arc anchor task), the primary agent runs this 5-step workflow **after the arc's anchor-task body is filled** but **before any driver is approved**. The goal is to surface arc-specific drivers that would distinguish the arc from the global D1-D4 directives. **Addition is the default; the external value-driver reviewer holds quality, not the operator** (T-3429, D-586 — this supersedes the "approval stays with the human (M6, D8)" rule this section carried from T-1926). The human still owns the *negative* ruling (`--none`) and the override.
 
 **Steps (D5 — timing matters):**
 
 1. **Read the arc anchor-task body in full** (Problem Statement, Scope Fence, Risks, Decisions). Do **not** propose drivers from the arc name alone.
-2. **List 2-3 candidate drivers**, each with a one-line rationale of what the driver distinguishes that the four constitutional directives (D1-D4) do not. If you cannot articulate the distinction in one line, the candidate is not worth proposing.
-3. **Write the candidates to `proposed_scoped_drivers:` in the arc YAML** (each as `{name, rationale, source: agent, ts}`). This is a *proposal*, not an assignment — `scoped_drivers:` only mutates via `fw arc approve-driver` (T-1926, §ACD-gated).
-4. **Surface the proposals to the human via `fw arc show-suggestions <arc-id>`** (T-1926; D7-reframe — this is a workflow verb the human runs when focus shifts to an arc, not a debug verb). The human reviews, approves up to 3 with `fw arc approve-driver` or runs `--none --justification "..."` to indicate the arc has no scoped drivers worth tracking separately.
-5. **If the human approves zero drivers, that is a valid outcome.** Arcs without scoped drivers rank by global D1-D4 only.
+2. **List 2-3 candidate drivers**, each with a one-line rationale of what the driver distinguishes that the four constitutional directives (D1-D4) do not, **and a `scoring:` spec for each** (T-3428 schema; check it with `fw bvp driver --validate-scoring <file>`). If you cannot articulate the distinction in one line, the candidate is not worth proposing; if you cannot write a scoring spec for it, the reviewer will refuse it at step 4 and you have lost nothing by finding out now.
+3. **Write the candidates to `proposed_scoped_drivers:` in the arc YAML** (each as `{name, rationale, source: agent, ts}`, plus a `scoring:` block or `scoring_file:` — see step 4). This is a *proposal*, not an assignment — `scoped_drivers:` only mutates via `fw arc approve-driver`.
+4. **Run `fw arc approve-driver <arc-id> --all-reviewed`.** This is the default next step (T-3429, D-586 — operator ruling 2026-09-22: *"per default just create them and add them; if needed institute an external value driver reviewer"*). Every proposal that passes the reviewer is added, in proposal order, up to the M2 cap of 3; the rest are named and left proposed. Preview first with `fw arc review-driver <arc-id> --all --dry-run`.
+
+   The reviewer is a **static** check, not a model call, so its verdict is re-runnable and auditable. Three checks, all three must pass:
+
+   | Check | What it asks | Usual reason it fails |
+   |---|---|---|
+   | (a) scorable | can the estimator score this at all — a handler, or a `scoring:`/`scoring_file:` spec that validates (T-3428)? | no spec at all; the most common failure by far |
+   | (b) distinct | does the name collide with D1-D4, a `free_drivers[]` entry, or an existing `scoped_drivers[]` entry on this arc? | a driver that restates a global directive |
+   | (c) distinguishes | is the rationale ≥60 chars AND does it name a directive it differs from (D6)? | "this arc is about reliability" — that is already D2 |
+
+   **Check (a) is why step 2 must produce a scoring spec, not just a name.** A driver with no mechanism contributes nothing to any ranking while its weight and rubric read as a live axis; the reviewer refuses it rather than letting it in silently.
+
+5. **Zero approved drivers is still a valid outcome.** If nothing passes review, do not lower the bar — fix the specs or leave the arc on global D1-D4 only. `--none --justification "..."` (declaring the arc has no scoped drivers worth tracking) stays **human-only and §ACD-gated**: a negative ruling is sovereign, an addition is not. `--i-am-human` / `--from-watchtower` remain as the override path when the operator wants to approve without the reviewer — recorded as `approved_by: human`, so the two provenances stay distinguishable in the audit.
+
+   **Audit rail:** `check_arc_driver_reviewer_record` (audit + `fw doctor`) WARNs on any `approved_by: reviewer:…` entry with no `reviewer:` block, or one whose verdict is `fail` — a certification claim with nothing behind it.
 
 **R5 mitigation — the verbatim rule:**
 
@@ -1206,7 +1220,7 @@ A rationale of "this arc is about reliability" does not meet D6 — that's alrea
 
 A bad set of candidates (don't do this): `reliability`, `usability`, `correctness` — these duplicate global drivers and would dilute scoring.
 
-**Surfaced through:** `fw arc show-suggestions <arc-id>` (T-1926); Watchtower `/arcs/<id>` shows proposed drivers with Approve buttons (T-1930).
+**Surfaced through:** `fw arc review-driver <arc-id> --all --dry-run` for the verdicts (T-3429) and `fw arc show-suggestions <arc-id>` for the raw proposals (T-1926); Watchtower `/arcs/<id>` shows each proposed driver with its reviewer verdict (PASS / FAIL + failed checks / not reviewed) and an Approve button that posts through the reviewer path (T-1930, T-3429).
 
 **Canonical session prompt:** this 5-step protocol is Workflow A (`mode=batch_propose`) of the BVP driver-session bundle — see §Driver Session Prompt Bundle below + `policy/prompts/bvp-driver-session.md` for entry conditions, failure modes (driver inflation, overlap with directives, manufactured drivers), and worked examples (`policy/prompts/bvp-references/arc-scoped-driver-examples.md`). Workflows B (`fw bvp driver suggest`) and C (`fw bvp driver create <topic>`) are global / sharpening variants that run the same sharpening subroutine but are not arc-scoped. **Note:** the CLI loader verbs `fw bvp driver suggest|create|recompute|edit|retire` are deferred per T-2245 IW-3 — the bundle is invoked manually today; the verb references are stable contracts for the eventual handoff. See `lib/bvp.sh:1325` SEE-ALSO comment and the keystone's status note for the same parity statement.
 
