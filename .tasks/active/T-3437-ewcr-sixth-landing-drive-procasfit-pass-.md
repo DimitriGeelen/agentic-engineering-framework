@@ -27,7 +27,7 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T18:01:29Z
-last_update: '2026-09-22T18:03:28Z'
+last_update: '2026-09-22T18:15:10Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,6 +57,16 @@ bvp_scores_proposed:
       F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=1
       (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-22T18:15:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:design); effort=8 (lines=309,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3437: EWCR sixth landing drive: procAsFit pass over arc-019 (operator instruction 2026-09-22) — top-down selection inside the arc, §3 register questions driven or dispositioned, T-3389 transfer re-checked, Sovereign items surfaced not decided
@@ -82,28 +92,54 @@ classes AEF / JOINT / HUMAN / PEER). Previous drives: T-3381, T-3384, T-3392, T-
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **A1 Selection stated before execution, per the Mandate.** The handback opens with
+- [x] **A1 Selection stated before execution, per the Mandate.** The handback opens with
       objective → arc (arc-019, Sovereign-selected) → task → quadrant for every unit attempted,
       and names the next candidate it was preferred over. BVP scores cited come from the
       estimator (`fw bvp estimate` / `bvp_scores_proposed`), never from the worker's own estimate.
-- [ ] **A2 T-3389 transfer re-checked, not assumed.** The four external review findings are
+      **Evidence:** handback §1 — objective → arc → task → quadrant table; T-3437 BVP 110
+      (rank 2/192) and T-3389 BVP 97 both from `fw bvp estimate` / `fw bvp --include-proposed`
+      against live median 62; T-3389 named as the candidate preferred over, with the reason.
+      No quadrant asserted, because cost is `-` for 86% of the corpus (T-3068).
+- [x] **A2 T-3389 transfer re-checked, not assumed.** The four external review findings are
       searched for on disk, on the hub (`xfer-832-*`, `sidecar:832-Workflow-designer`), and in the
       832 exchange; if present, T-3389 is promoted through the verb (`fw task update --horizon
       now`) and worked; if absent, the disposition is re-recorded with the search evidence and
       one line naming exactly what the operator must transfer and where.
-- [ ] **A3 §3 register driven.** Every Q-01..Q-15 row is dispositioned in the handback: AEF-class
+      **Evidence:** handback §3 — six searches, all recorded with their commands and results
+      (disk `ls`/`grep -rliE`, `termlink channel info xfer-832-bpmn` 0 posts, `channel state
+      sidecar:832-Workflow-designer`, `agent search` ×4 over 1001 envelopes, `inbox list`).
+      All negative; T-3389 left `captured/later`, not promoted. Refinement recorded: Claude and
+      Z.ai findings ARE present (architecture §17/§18) — the ask is two artefacts, not four,
+      named with the destination path and the G-086 transport caveat.
+- [x] **A3 §3 register driven.** Every Q-01..Q-15 row is dispositioned in the handback: AEF-class
       rows either land (a decision recorded through `fw context add-decision` with rationale,
       or a task filed with real ACs) or carry a one-line blocked reason; HUMAN / JOINT / PEER rows
       are listed as Sovereign or peer questions with the recommended answer and evidence —
       never answered on the worker's own authority.
-- [ ] **A4 Handback written** to `docs/reports/EWCR/drive-6-procasfit-handback.md` with the
+      **Evidence:** handback §5 — all 15 rows dispositioned; 3 landed (D-614 Q-01, D-615 Q-02,
+      D-616 Q-07-AEF-half, each via `fw context add-decision` with rationale and rejected
+      alternative), 6 Sovereign with recommendations (§6 S1-S8), 5 blocked with one-line
+      reasons, 1 peer-unresolved (G-086). Plus T-3438 filed with 5 real ACs and 6 verification
+      lines. Nothing answered on the worker's authority.
+- [x] **A4 Handback written** to `docs/reports/EWCR/drive-6-procasfit-handback.md` with the
       Mandate's Handback sections (objectives advanced; arc state by status and quadrant; what
       remains in Q1/Q2 with reasons; Sovereign questions in priority order; gates that refused;
       cost-vs-estimate deltas), every claim traceable to a recorded check or a verb-gated state
       change.
-- [ ] **A5 Sovereign boundaries respected.** No `fw arc close`, no `fw inception decide go`, no
+      **Evidence:** `docs/reports/EWCR/drive-6-procasfit-handback.md`, 451 lines, all five of
+      this task's verification lines green (rehearsed under `set -o pipefail`). Carries every
+      Mandate section: objectives advanced with before/after (§2), arc state by status and
+      quadrant (§10), Q1/Q2 remainder with reasons (§10), Sovereign questions in priority order
+      (§6), gates (§8), cost-vs-estimate deltas (§9).
+- [x] **A5 Sovereign boundaries respected.** No `fw arc close`, no `fw inception decide go`, no
       Human AC ticked, no arc scope change, no bypass flag (`--force`, `--skip-*`, `--no-verify`,
       `FW_ALLOW_*`); every gate refusal recorded in the handback with what was done instead.
+
+      **Evidence:** handback §8 — no gate refused, reported as such rather than padded; the
+      seven actions declined-without-attempting are each named with the reason. `fw arc close`
+      not attempted (surfaced as a URL, §11); T-3389 not promoted; no Human AC touched; no
+      scope ruling on DeepSeek/Mistral (surfaced as S1); zero `--force`/`--skip-*`/`--no-verify`/
+      `FW_ALLOW_*` in this session; T-3438's low estimator score left unadjusted (§9 C2).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +324,49 @@ grep -q "T-3389" docs/reports/EWCR/drive-6-procasfit-handback.md
 -->
 
 ## Evolution
+
+### 2026-09-22 — the arc's blocker is smaller than five drives have been saying
+- **What changed:** the transfer gap is **two of four** reviews, not four of four. The
+  Claude and Z.ai findings were in the transferred packet all along, as
+  `architecture-c9070637.md` §17 and §18. Drives 2-5 and the clause-1 attestation all
+  carried "the four external reviews were not transferred", which is true of the
+  *artefacts* but hides that half the content is already on disk. Only DeepSeek and
+  Mistral are genuinely missing, and for those this repo holds four topic keywords apiece
+  (roadmap §8) — a bibliography line, not a finding set.
+- **Plan impact:** the operator ask shrinks and sharpens. S1 now names two artefacts and
+  a destination path instead of repeating a four-way block.
+- **Triggered:** handback §3; no new task — the block is unchanged in kind, only in size.
+
+### 2026-09-22 — the fence the arc was built to measure has already cleared
+- **What changed:** Q-02 has read "Not yet, 45.8% unclassified, fence 1 fails today" since
+  ingestion. Re-measured this drive: **0 of 1332** Fabric cards carry `subsystem: Unknown`
+  (was 512/1117 at ingestion, 544 at the T-3394 attestation three days ago). The 544 were
+  reclassified corpus-wide, 524 into `tests`. The discriminating coverage control is green
+  on every write-set root (98.4-100%, 0 Unknown).
+- **Plan impact:** arc-019's originating measurement question is answered in the
+  affirmative. What still gates the arc is clause 2, not the Fabric.
+- **Triggered:** D-615.
+
+### 2026-09-22 — the tool that measures the fence refuses when the fence clears
+- **What changed:** `tools/ewcr-arc0-unknown-overlap.py` exits 2 REFUSED on exactly the
+  zero that means success, because its guard hard-codes "`fw fabric overview` reports a
+  non-zero Unknown subsystem" as an invariant. T-3394's pinned verification line 4 is red
+  three days after it closed green, and the clause-1 attestation's own "Reproducing this"
+  command no longer runs.
+- **Plan impact:** Q-02's evidence had to be re-derived directly from the cards plus the
+  leg-2 control rather than taken from the leg-1 tool. Recorded in D-615 rather than
+  hidden, because a decision resting on a tool that refuses should say so.
+- **Triggered:** OBS-476 (registered first), T-3438 (filed with 5 real ACs and an
+  empty-directory control leg; deliberately not executed — it closes no AC of this task).
+
+### 2026-09-22 — a falsifier died, and it makes Arc 2 bigger not smaller
+- **What changed:** §6 falsifier 3 hoped `.context/rail-identity.key` might already be a
+  usable service identity. It is 32 bytes, mode 0600 — a raw symmetric key — and OBS-248
+  independently records that one key covers at least three agents on this host, concluding
+  "the fingerprint is not a discriminator".
+- **Plan impact:** Arc 2 is the size C4 assumed. Q-06's recommendation firms from "open"
+  to runner-issued attempt credentials.
+- **Triggered:** handback §6 S4.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at

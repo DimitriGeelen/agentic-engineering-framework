@@ -5099,3 +5099,10 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-477
+  text: "Concurrent worker's broad git-add swept another worker's context records into its own close commit: T-3429's close (32119079a, 2026-09-22 18:16:34Z) contains D-614/D-615/D-616 and OBS-476, all authored by the T-3437 worker minutes earlier. The records survive and name T-3437 in their own content, but git history attributes them to T-3429, so Updates-mining by T-XXX (P-002) will trace them to the wrong task. Parallel dispatch stanzas tell workers to stage by name and never git add -A/-u; nothing enforces it, and shared append-only state (.context/project/decisions.yaml, .context/inbox.yaml) is the converging write-set the framework writes on every task's behalf (CLAUDE.md Execution Model item 4)."
+  captured: 2026-09-22T18:18:11Z
+  context_task: T-3437
+  tags: [concurrency]
+  status: pending
+  promoted_to: null
