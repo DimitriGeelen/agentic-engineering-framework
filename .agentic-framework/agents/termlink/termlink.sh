@@ -260,6 +260,41 @@ is_macos() { [[ "$(uname -s)" == "Darwin" ]]; }
 
 # --- Subcommands ---
 
+# T-3424: hub-store parity. Two stores can coexist on one host (the systemd
+# hub's /var/lib/termlink and `termlink mcp serve`'s default /tmp/termlink-0)
+# and a post into the wrong one returns an offset and reads straight back —
+# indistinguishable from delivery. Counts do not discriminate (the /tmp store
+# is BUSY with session events; 1409-sprind measured 118 event topics there vs
+# 43 on the fleet hub). MEMBERSHIP does: a known fleet channel exists only on
+# the canonical store. So: (1) the MCP config must name the runtime dir the
+# running hub uses; (2) the CLI's store must resolve agent-chat-arc.
+_check_hub_store_parity() {
+    local project_root="${PROJECT_ROOT:-$(pwd)}"
+    local mcp="$project_root/.mcp.json"
+    local hub_pid hub_dir cfg_dir
+    hub_pid=$(pgrep -f "termlink hub start" 2>/dev/null | head -1)
+    if [ -n "$hub_pid" ] && [ -r "/proc/$hub_pid/environ" ]; then
+        hub_dir=$(tr '\0' '\n' < "/proc/$hub_pid/environ" 2>/dev/null | sed -n 's/^TERMLINK_RUNTIME_DIR=//p' | head -1)
+    fi
+    if [ -f "$mcp" ]; then
+        cfg_dir=$(python3 -c "import json,sys; c=json.load(open(sys.argv[1])); print((c.get('mcpServers',{}).get('termlink',{}).get('env') or {}).get('TERMLINK_RUNTIME_DIR',''))" "$mcp" 2>/dev/null)
+        if [ -z "$cfg_dir" ]; then
+            echo -e "${YELLOW}WARN${NC}  .mcp.json termlink server sets no TERMLINK_RUNTIME_DIR — MCP channel tools default to /tmp/termlink-0, a store the fleet does not read (T-3424)"
+            [ -n "$hub_dir" ] && echo "  Running hub (pid $hub_pid) uses: $hub_dir — set that in .mcp.json env"
+        elif [ -n "$hub_dir" ] && [ "$cfg_dir" != "$hub_dir" ]; then
+            echo -e "${YELLOW}WARN${NC}  .mcp.json TERMLINK_RUNTIME_DIR=$cfg_dir but the running hub (pid $hub_pid) uses $hub_dir — MCP posts land in a different store (T-3424)"
+        else
+            echo "  Hub store: ${cfg_dir}${hub_dir:+ (matches running hub pid $hub_pid)}"
+        fi
+    fi
+    # Membership, not count: the fleet channel must resolve on the CLI's store.
+    if termlink channel list 2>/dev/null | grep -q "agent-chat-arc"; then
+        echo "  Fleet channel agent-chat-arc: present on the CLI's store"
+    else
+        echo -e "${YELLOW}WARN${NC}  agent-chat-arc is NOT on the store the CLI resolves — posts from here will not reach the fleet (T-3424)"
+    fi
+}
+
 cmd_check() {
     if command -v termlink >/dev/null 2>&1; then
         local version
@@ -267,6 +302,7 @@ cmd_check() {
         echo -e "${GREEN}OK${NC}  TermLink installed: $version"
         echo "  Path: $(command -v termlink)"
         echo "  Repo: https://onedev.docker.ring20.geelenandcompany.com/termlink"
+        _check_hub_store_parity
         return 0
     else
         echo -e "${YELLOW}WARN${NC}  TermLink not installed"

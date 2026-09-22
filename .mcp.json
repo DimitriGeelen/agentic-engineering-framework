@@ -23,7 +23,8 @@
         "serve"
       ],
       "env": {
-        "TERMLINK_TASK_GOVERNANCE": "1"
+        "TERMLINK_TASK_GOVERNANCE": "1",
+        "TERMLINK_RUNTIME_DIR": "/var/lib/termlink"
       }
     },
     "skills": {
