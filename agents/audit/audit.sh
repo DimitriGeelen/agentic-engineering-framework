@@ -3330,6 +3330,54 @@ check_gitignore_register() {
 }
 check_gitignore_register
 
+# T-3420 (arc-011 sidecar, slice 8). `fw sidecar status` (T-3417) exposes two
+# numbers that must not climb: `UNKNOWN` — consults the sweep has already
+# recorded as never delivered — and `expired_unswept` — STORED rows past their
+# deadline that the 5-minute cron sweep (T-3418) should have flipped and did
+# not, i.e. the sweep itself has stopped. Both were only ever visible to
+# someone who ran the verb by hand. This is the cron path watching them.
+#
+# WARN, never FAIL. The remedy for UNKNOWN is the OBS-447 retry ruling, which
+# is the operator's; the remedy for expired_unswept is "check the cron", which
+# the WARN names. Silent when the sidecar has never been used here (rc 1 from
+# the fact function) so consumer projects without a hub are not nagged. Reads
+# our own ledger only — no hub call, no termlink invocation; see
+# lib/sidecar-audit.sh for why that is the whole design.
+check_sidecar_ledger() {
+    [ -f "$FRAMEWORK_ROOT/lib/sidecar-audit.sh" ] || return 0
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
+
+    local _facts _rc _unknown _expired _stored _delivered _total
+    _facts=$(fw_sidecar_ledger_facts "$PROJECT_ROOT"); _rc=$?
+    [ "$_rc" -eq 1 ] && return 0
+    if [ "$_rc" -ne 0 ] || [ -z "$_facts" ]; then
+        warn "Sidecar ledger unreadable" \
+             "$PROJECT_ROOT/.context/sidecar/outbox exists but 'fw sidecar status --json' produced no readable snapshot" \
+             "Run: bin/fw sidecar status — a present outbox with an unreadable ledger is itself a silent-failure shape (T-3420)"
+        return 0
+    fi
+    IFS=$'\t' read -r _unknown _expired _stored _delivered _total <<< "$_facts"
+
+    local _bad=0
+    if [ "${_unknown:-0}" -gt 0 ]; then
+        _bad=1
+        warn "Sidecar: $_unknown consult(s) recorded UNKNOWN — sent, never confirmed delivered" \
+             "fw sidecar status: UNKNOWN=$_unknown of $_total message(s); a peer never saw these" \
+             "Run: bin/fw sidecar status — then decide re-send vs drop per OBS-447 (retry policy is the operator's; the sidecar never re-sends on its own)"
+    fi
+    if [ "${_expired:-0}" -gt 0 ]; then
+        _bad=1
+        warn "Sidecar: $_expired STORED row(s) past deadline and unswept — the sweep cron is not running" \
+             "fw sidecar status: expired_unswept=$_expired; cron 'sidecar-sweep-5m' should flip these within 5 minutes" \
+             "Run: bin/fw cron status sidecar-sweep-5m && bin/fw sidecar sweep — if the sweep flips them, the cron slot is dead, not the ledger (T-3418)"
+    fi
+    if [ "$_bad" -eq 0 ]; then
+        pass "Sidecar ledger: $_total consult(s), $_delivered delivered, ${_stored} in flight, 0 UNKNOWN, 0 expired-unswept"
+    fi
+}
+check_sidecar_ledger
+
 # T-3262 (G-099). `fw doctor` (bin/fw:2390+) already compares the
 # continuous-run wrapper ledger against the turn-driver state and WARNs when
 # they disagree — but doctor is pull-only, and it was THIS daily cron that
