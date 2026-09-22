@@ -9,11 +9,19 @@ import pytest
 
 @pytest.fixture()
 def mod(tmp_path, monkeypatch):
-    monkeypatch.setenv("FRAMEWORK_ROOT", str(tmp_path))
+    project = tmp_path / "999-Agentic-Engineering-Framework"
+    project.mkdir(exist_ok=True)
+    monkeypatch.setenv("FRAMEWORK_ROOT", str(project))
+    monkeypatch.setenv("FW_SIDECAR_HUB_ID", "cacc73ea32b121dd")
+    monkeypatch.setenv("FW_SIDECAR_HOST", "host107.ring20.lan")
+    monkeypatch.setenv("FW_SIDECAR_AGENT_ID", "agentA")
+    monkeypatch.setenv("FW_FOCUS_SESSION_KEY", "agentA")
     import lib.sidecar.outbox as outbox
+    import lib.sidecar.circuit as circuit
     import lib.sidecar.delivery as delivery
     import lib.sidecar.termlink_transport as tt
     importlib.reload(outbox)
+    importlib.reload(circuit)
     importlib.reload(delivery)
     importlib.reload(tt)
     return tt, delivery, outbox
@@ -41,7 +49,8 @@ def test_command_carries_identity_and_conversation(mod):
     tt, _, _ = mod
     argv = tt.build_post_command(_msg(), binary="termlink")
 
-    assert argv[:4] == ["termlink", "channel", "post", "sidecar:agentB"]
+    assert argv[:4] == ["termlink", "channel", "post",
+                        "inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework/agentB"]
     assert "--client-msg-id" in argv
     assert argv[argv.index("--client-msg-id") + 1] == "cmid-live-1"
     assert "client_msg_id=cmid-live-1" in argv  # observable on the envelope too
@@ -159,3 +168,55 @@ def test_refused_hub_blocks_delivery_end_to_end(mod):
     assert result.delivered is False
     assert posted == []
     assert "version floor is unestablished" in outbox.latest_ack_state(cmid)["error"]
+
+
+# ── T-3433: inbox:<circuit-id> addressing ───────────────────────────────────
+
+HUB = "cacc73ea32b121dd"
+PROJ = "999-Agentic-Engineering-Framework"
+
+
+def test_bare_project_id_posts_to_the_durable_role_address(mod):
+    tt, _, _ = mod
+    msg = dict(_msg(), to="010-termlink")
+    assert tt.topic_for(msg) == f"inbox:{HUB}/010-termlink"
+
+
+def test_bare_agent_name_posts_to_an_agent_under_our_project(mod):
+    tt, _, _ = mod
+    msg = dict(_msg(), to="e2e-ab947312-responder")
+    assert tt.topic_for(msg) == f"inbox:{HUB}/{PROJ}/e2e-ab947312-responder"
+
+
+def test_a_full_circuit_to_is_posted_verbatim(mod):
+    tt, _, _ = mod
+    cid = f"{HUB}/003-NTB-ATC-Plugin/tl-9/reviewer"
+    assert tt.topic_for(dict(_msg(), to=cid)) == f"inbox:{cid}"
+
+
+def test_address_level_overrides_the_heuristic(mod):
+    tt, _, _ = mod
+    msg = dict(_msg(), to="010-termlink", address_level="agent")
+    assert tt.topic_for(msg) == f"inbox:{HUB}/{PROJ}/010-termlink"
+
+
+def test_post_carries_the_senders_full_host_qualified_circuit(mod):
+    tt, _, _ = mod
+    argv = tt.build_post_command(_msg(), binary="termlink")
+    assert f"from_circuit=//host107.ring20.lan/{HUB}/{PROJ}/agentA" in argv
+    assert "from_agent=agentA" in argv   # compatibility field kept
+
+
+def test_explicit_from_circuit_on_the_message_wins(mod):
+    tt, _, _ = mod
+    msg = dict(_msg(), from_circuit=f"//other.host/{HUB}/005-Yellowtwig/worker")
+    argv = tt.build_post_command(msg, binary="termlink")
+    assert f"from_circuit=//other.host/{HUB}/005-Yellowtwig/worker" in argv
+
+
+def test_no_sender_writes_the_legacy_prefix(mod):
+    tt, _, _ = mod
+    for to in ("010-termlink", "e2e-x-responder", f"{HUB}/{PROJ}/w"):
+        argv = tt.build_post_command(dict(_msg(), to=to), binary="termlink")
+        assert not argv[3].startswith("sidecar:")
+        assert argv[3].startswith("inbox:")

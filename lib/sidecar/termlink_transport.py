@@ -34,6 +34,7 @@ import re
 import shutil
 import subprocess
 
+from . import circuit
 from .delivery import ProbeResult, TransportError
 
 #: Minimum TermLink version this sidecar will send through. The cross-hub
@@ -55,8 +56,16 @@ def topic_for(msg: dict) -> str:
     Offsets are hub-scoped and meaningless across hubs (G-060, no
     federation), so the topic carries the addressing and the
     `conversation_id` carries the thread — never a bare offset.
+
+    T-3433: the topic is now `inbox:<circuit-id>`, because TermLink treats
+    only `inbox:*`/`dm:*` as mail. `to` decides which form
+    (lib/sidecar/circuit.py owns the derivation, and is the only place that
+    does): a bare project id resolves to the durable role address, a bare
+    agent name to an agent under our project, and a `to` that already
+    contains `/` is used verbatim. `msg["address_level"]` overrides the
+    heuristic when a caller knows better than `is_project_id` can.
     """
-    return f"sidecar:{msg['to']}"
+    return circuit.topic_for_name(msg["to"], level=msg.get("address_level") or "auto")
 
 
 def build_post_command(msg: dict, *, binary: str | None = None,
@@ -82,6 +91,12 @@ def build_post_command(msg: dict, *, binary: str | None = None,
         "--metadata", f"cv_key={msg['client_msg_id']}",
         "--metadata", f"conversation_id={msg['conversation_id']}",
         "--metadata", f"from_agent={msg['from']}",
+        # T-3433: the sender's FULL (host-qualified) circuit id, so origin is
+        # precise even when the destination is coarse — a consult answered at
+        # a project-level address can still be traced to the exact agent that
+        # asked. `from_agent` stays for compatibility with readers written
+        # before the circuit existed.
+        "--metadata", f"from_circuit={msg.get('from_circuit') or circuit.circuit_id('full')}",
         "--payload", msg["body"],
     ]
     hub = msg.get("hub")
