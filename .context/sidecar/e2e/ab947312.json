@@ -1,0 +1,60 @@
+{
+  "blocking_hops": [
+    "H1",
+    "H2",
+    "H4",
+    "H5"
+  ],
+  "client_msg_id": "0c262223-389e-4e07-978e-69eb1d21ba5b",
+  "conversation_id": "e2e-ab947312",
+  "dispatch": {
+    "rc": null,
+    "tail": "skipped: peer mode"
+  },
+  "finished_at": "2026-09-22T10:44:32.736088+00:00",
+  "hops": {
+    "H1": {
+      "detail": "state=INJECTED_NOW delivered=True",
+      "ok": true,
+      "title": "ledger: consult row INJECTED_* (our side)"
+    },
+    "H2": {
+      "detail": "1 envelope(s) with our client_msg_id on sidecar:010-termlink @1",
+      "ok": true,
+      "title": "hub: responder topic holds our client_msg_id"
+    },
+    "H3": {
+      "detail": "not applicable: 010-termlink owns its inbox read (peer mode)",
+      "ok": true,
+      "title": "worker read its inbox (responder cursor advanced)"
+    },
+    "H4": {
+      "detail": "0 ACK envelope(s) on sidecar:e2e-ab947312-sender",
+      "ok": false,
+      "title": "hub: sender topic holds the responder's ACK on our conversation"
+    },
+    "H5": {
+      "detail": "no ACK on sidecar:e2e-ab947312-sender within 1800s (120 polls)",
+      "ok": false,
+      "title": "inbox: sender's inbox surfaces the ACK"
+    },
+    "H6": {
+      "detail": "not applicable: 010-termlink owns its process (peer mode)",
+      "ok": true,
+      "title": "worker exited 0 and its result carries DONE"
+    }
+  },
+  "mode": "peer",
+  "peer": "010-termlink",
+  "polls": 120,
+  "responder": "010-termlink",
+  "run_id": "ab947312",
+  "sender": "e2e-ab947312-sender",
+  "started_at": "2026-09-22T10:14:30.346026+00:00",
+  "task": "T-3426",
+  "timings": {
+    "sent": 0.04,
+    "total": 1802.39
+  },
+  "verdict": "FAIL"
+}
