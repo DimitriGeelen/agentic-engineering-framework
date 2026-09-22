@@ -99,13 +99,13 @@ code. This driver is sequential by instruction and by G-083.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The two prompts are stored verbatim as tracked files under `tools/prompt-sequence/`; the driver fills `{{SCOPE}}`/`{{PURPOSE_SOURCE}}`/`{{EXTERNAL_DATA}}`/`{{BUDGET}}` at dispatch time — the stored text is not hand-edited
-- [ ] A driver script runs round r = 1..5 as: dispatch Review worker → wait → dispatch procAsFit worker → wait, strictly sequential, and feeds round r's Review report path and procAsFit handback path into round r+1's Review prompt as prior context
-- [ ] Each worker is told to write its result to a repo path — `docs/reports/SEQ-T3411/r<N>-review.md` and `r<N>-procasfit-handback.md` — and the driver refuses to start the next step if that file is absent (a missing result is a failed step, not an empty input)
-- [ ] The Review worker's prompt explicitly instructs: answer every `[ASK]` by recording the question and proceeding on the stated defaults; stop at Phase 5; do not execute Phase 6
-- [ ] The run record is posted per step to TermLink topic `seq:T-3411` (round, step, worker, result path, status), so sequence state is recoverable from the hub after a context reset
-- [ ] `--dry-run` prints the ten dispatches with prompt byte sizes and result paths and dispatches nothing
-- [ ] The sequence is launched for real; round 1's Review worker is observed via `termlink list`, and the first completed step appears on `seq:T-3411` — recorded here
+- [x] `tools/prompt-sequence/01-value-review.prompt.md` and `02-procasfit.prompt.md` are the verbatim prompts (tracked); `run-sequence.sh` substitutes `{{SCOPE}}`/`{{PURPOSE_SOURCE}}`/`{{EXTERNAL_DATA}}`/`{{BUDGET}}` in `compose_review`/`compose_fit` at dispatch time
+- [x] `run-sequence.sh` ran rounds 1..5 strictly sequentially (dispatch review → wait → dispatch procasfit → wait); `prior_context(round)` fed r(N-1)'s review, evidence and handback paths into round N's review prompt — every round from 2 on opens with a prediction re-check of the previous round (r2–r5 reviews §5 "Prediction-recheck counts")
+- [x] Workers wrote `docs/reports/SEQ-T3411/r<N>-review.md`, `r<N>-review-evidence.md`, `r<N>-procasfit-handback.md` (15 files, all committed); `run_step` fails the step when the result file is missing or empty — exercised live in round 4: the driver waited on a worker whose dispatch dir had been removed rather than proceeding on nothing (OBS-455)
+- [x] `compose_review` carries the [ASK]→record-and-proceed-on-defaults rule (recorded as PROPOSED-UNCONFIRMED), STOP at end of Phase 5, no Phase 6/7 — every round's review ends at Phase 5 with an open-questions list
+- [x] Topic `seq:T-3411` holds the run record: 20 messages — 10 `status=dispatched` + 10 `status=complete`, one pair per step, each with round/step/worker/result path
+- [x] `--dry-run` prints all ten dispatches with prompt byte sizes (e.g. `round 1 review worker=seq-t3411-r1-review prompt= 27786 bytes`) and result paths and dispatches nothing
+- [x] Launched for real 06:30Z; round 1's review worker observed on `termlink list` (tl-vyotn355, task:T-3411); first completed step recorded on `seq:T-3411` at 06:39Z (`round=1 step=review status=complete`); sequence completed 09:37Z — `sequence complete: rounds 1..5`; 10 workers, 15 reports, 8 tasks closed by workers across the rounds (T-3412, T-3415, T-3416, T-3419, T-3414, T-3417, T-3418, T-3420)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -139,6 +139,16 @@ code. This driver is sequential by instruction and by G-083.
 -->
 
 ## Verification
+
+test -f tools/prompt-sequence/01-value-review.prompt.md && test -f tools/prompt-sequence/02-procasfit.prompt.md && test -x tools/prompt-sequence/run-sequence.sh
+bash -n tools/prompt-sequence/run-sequence.sh
+# Dry run composes ten dispatches and dispatches nothing.
+./tools/prompt-sequence/run-sequence.sh --dry-run > /tmp/.t3411-dry 2>&1 && test "$(grep -c 'worker=seq-t3411-r' /tmp/.t3411-dry)" -eq 10
+# All fifteen result files exist and are non-empty (invariant of a completed 5-round run).
+test "$(ls docs/reports/SEQ-T3411/r{1,2,3,4,5}-review.md docs/reports/SEQ-T3411/r{1,2,3,4,5}-review-evidence.md docs/reports/SEQ-T3411/r{1,2,3,4,5}-procasfit-handback.md 2>/dev/null | wc -l)" -eq 15
+# Run record on the hub: one dispatched + one complete per step (pinned as a property: completes == dispatched == 10).
+termlink channel state seq:T-3411 --json > /tmp/.t3411-topic 2>&1 && test "$(grep -o 'status=complete' /tmp/.t3411-topic | wc -l)" -eq 10 && test "$(grep -o 'status=dispatched' /tmp/.t3411-topic | wc -l)" -eq 10
+grep -q "sequence complete: rounds 1..5" .context/working/seq-t3411/driver.log
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -305,6 +315,26 @@ code. This driver is sequential by instruction and by G-083.
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-22 — what five rounds taught that the driver could not know
+- **What changed:** the sequence was specified as a pipeline of two prompts;
+  what it turned out to be was an instrument. Each round's review re-checked
+  the previous round's predictions, and that loop found things no single
+  review would: the shared-focus fallback recurring in every fresh worker
+  (Δ8, fixed by T-3422 while the sequence ran), the pre-push lock window
+  shorter than the audit it waits for (Δ7 → T-3421), five closed-but-unmoved
+  tasks (Δ11), the vendor-sync scope gap for docs/generated (Δ10).
+- **Plan impact:** the driver itself needed nothing after launch, but its
+  wait contract depends on `/tmp/tl-dispatch/<worker>/exit_code` surviving
+  until consumed — a parent-session `fw termlink cleanup` deleted it mid-run
+  and the driver would have waited its full 6-hour timeout (OBS-455).
+  Restored by hand; the fix belongs in cleanup, not the driver.
+- **Triggered:** T-3421, T-3422 (from findings); OBS-455 (cleanup hazard);
+  the reviews' Δ4 ask — an out-of-band hub-side delivery counter — was
+  answered mid-sequence by T-3417/T-3418/T-3420 and the e2e harness T-3423,
+  which the reviews could see only partially because their observation was
+  "did any of OUR ten workers receive an organic consult" (none did; the
+  parent address received four from three peers the same morning).
 
 ## Recommendation
 

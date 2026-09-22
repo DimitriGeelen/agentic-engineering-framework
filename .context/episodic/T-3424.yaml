@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3424: MCP termlink server points at the wrong hub store: .mcp.json lacks TERMLINK_RUNTIME_DIR, so every MCP channel tool posts into /tmp/termlink-0 while the fleet reads /var/lib/termlink
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T09:46:12Z
+# ============================================================================
+
+task_id: T-3424
+task_name: "MCP termlink server points at the wrong hub store: .mcp.json lacks TERMLINK_RUNTIME_DIR, so every MCP channel tool posts into /tmp/termlink-0 while the fleet reads /var/lib/termlink"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T09:33:08Z
+completed: 2026-09-22T09:45:55Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T11:45:16+02:00
+last_commit: 2026-09-22T11:45:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pin the MCP termlink server to the canonical hub store; fw termlink check gains hub-store parity
+
+# Key outcomes
+outcomes:
+  - '`.mcp.json` termlink server `env` carries `TERMLINK_RUNTIME_DIR: /var/lib/termlink` — value read from `/proc/21462/environ` (`TERMLINK_RUNTIME_DIR=/var/lib/termlink`) and `systemctl cat termlink-hub.service` (`Environment=TERMLINK_RUNTIME_DIR=/var/lib/termlink`); the MCP server process (PID 959728) had no `TERMLINK_*` var at all. Takes effect when the MCP server is next started (this session''s is already running on the old env)'
+  - 'Shadow store `/tmp/termlink-0` read in full: `sidecar:999-Agentic-Engineering-Framework` 1 message (1409-sprind''s field report — the same text later reached us on the canonical hub, so nothing lost); `aef-seq-2026-0921-findings` 3 messages from 1023-portable-encrypted-chromium-vault (audit round-7 records r20 c1–c3, never seen by the fleet); `channel:learnings` 6 messages — PL-033/034/035 from 100-Video-riper-and-translation-app and PL-036/037/038 from 1409-sprind, none on the canonical bus. Drain decision: operator''s (OBS-459 names it)'
+  - '`fw termlink check` gained `_check_hub_store_parity` (agents/termlink/termlink.sh): WARN when `.mcp.json` names no `TERMLINK_RUNTIME_DIR`, WARN when it differs from the running hub''s (read from `/proc/<hub pid>/environ`), and — per 1409-sprind''s correction (sidecar @9): counts do not discriminate, membership does — WARN when `agent-chat-arc` is absent from the store the CLI resolves. Live output here: `Hub store: /var/lib/termlink (matches running hub pid 21462)` and `Fleet channel agent-chat-arc: present on the CLI''s store`'
+  - 'Split-brain reported to TermLink on agent-chat-arc @1647 (correlation AEF-SIDECAR-E2E) with the measurements and the two-leg split (ours: config; theirs: MCP server resolves the canonical dir like the CLI does; parity check)'
+  - '`tests/lint/mcp-termlink-runtime-dir.bats` — 2 tests: the env names an absolute `TERMLINK_RUNTIME_DIR` equal to `/var/lib/termlink`; when a hub process runs on the host, its environment''s runtime dir equals the pinned one (skips only with no hub process). **2/2 ok, 0 skips here**'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/termlink/termlink.sh'
+  - '.fabric/components/tests-lint-mcp-termlink-runtime-dir.yaml'
+  - '.mcp.json'
+  - '.tasks/active/T-3424-mcp-termlink-server-points-at-the-wrong-.md'
+  - 'tests/lint/mcp-termlink-runtime-dir.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T11:45:16'
+    action: 'T-3424: pin the MCP termlink server to the canonical hub store; fw termlink check gains hub-store parity'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 8
+  lines_added: 485
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3424-mcp-termlink-server-points-at-the-wrong-.md
+generated_by: context-agent-hybrid
