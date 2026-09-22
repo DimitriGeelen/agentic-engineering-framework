@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3427: fw bvp driver --add accepts a driver with no scorer and reports success; score_free_driver returns 0 (dilutes the denominator) instead of unscored (OBS-463 legs 1+4, +doctor rail)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T10:28:51Z
+# ============================================================================
+
+task_id: T-3427
+task_name: "fw bvp driver --add accepts a driver with no scorer and reports success; score_free_driver returns 0 (dilutes the denominator) instead of unscored (OBS-463 legs 1+4, +doctor rail)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T10:20:44Z
+completed: 2026-09-22T10:28:30Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T12:28:02+02:00
+last_commit: 2026-09-22T12:28:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a free driver with no scorer is UNSCORED, and --add refuses to spend the slot on one (OBS-463)
+
+# Key outcomes
+outcomes:
+  - '`estimator.py`: handlers hoisted into `_handler_table()`; `has_scorer(driver_id, name=None)` checks id, name, and the policy alias against it; the scoring loop omits an unscorable driver from `scores` and writes `unscored (no scorer for <id>; not counted)` to its evidence — `score_free_driver` is no longer reached from the loop; every dedicated scorer (D1–D4, F-RECALL, F-ORCH, F-AUTONOMY, V_* via F1/F2/F3 aliases, arc-scoped keys) dispatches exactly as before (estimator suite 188/188 + the moved pin)'
+  - '`compute_bvp` already sums only drivers present in BOTH scores and weights, so omission is exclusion by construction — pinned: `{"D1":5,"D2":5}` against weights `{D1:9,D2:7,F4:8}` → norm 1.0 and `used == [D1, D2]`; the old `F4: 0` gives norm < 1.0 (the dilution)'
+  - '`fw bvp driver --add`: `_has_scorer()` imports the estimator by path and asks `has_scorer(new_id, name)`; no scorer → exit 2, stderr names the mechanism (handler table), the consequence (0 on every non-inception task, weight still in the denominator), that `levels:` in policy changes nothing (OBS-463), and the bypass `--allow-unscored`; with the bypass the success line carries `UNSCORED`; a scorable name (`F-ORCH`) is not refused. Estimator import failure → WARN and proceed (a tooling fault is not a verdict)'
+  - '`tests/unit/test_t3427_unscored_driver.py` — 8 tests (has_scorer true/false/aliases; loop-and-table parity; fixture task with four literal `F4`s omitted from scores; `compute_bvp` exclusion vs the old 0; `--add` refusal with nothing written; `--allow-unscored` proceeds with `UNSCORED`; scorable name not refused) — **8/8**; `test_bvp_estimator.py` 188 + moved pin `test_unknown_free_driver_is_unscored_not_grepped_for_its_own_id`; `test_bvp_cli_*` 20/20. Note: `t2230_bvp_driver_init.bats` is RED (11/15) **on the untouched tree too** — pre-existing, not this change; left for its own task'
+  - 'Doctor rail DEFERRED, reason written: budget at 77% of the window and the moment that matters — the `--add` decision — is now guarded at the verb, with `UNSCORED` printed on the record; a rail over already-active drivers with no scorer belongs with leg 2 (rubric-driven scoring, the inception in OBS-463), where "unscorable" becomes a first-class state'
+  - 'Vendored `lib/bvp.sh` + `agents/termlink/bvp-estimator/estimator.py` synced (VERSION 1.6.784), `bin/fw vendor self --check` → "in sync with source"; estimator 189/189, bvp CLI 20/20, new suite 8/8; test registered in the fabric'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/bvp-estimator/estimator.py'
+  - '.agentic-framework/lib/bvp.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - '.fabric/components/tests-unit-test_t3427_unscored_driver.yaml'
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-3427-fw-bvp-driver---add-accepts-a-driver-wit.md'
+  - 'tests/unit/test_bvp_estimator.py'
+  - 'tests/unit/test_t3427_unscored_driver.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T12:28:02'
+    action: 'T-3427: a free driver with no scorer is UNSCORED, and --add refuses to spend the slot on one (OBS-463)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 10
+  lines_added: 779
+  lines_removed: 115
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3427-fw-bvp-driver---add-accepts-a-driver-wit.md
+generated_by: context-agent-hybrid
