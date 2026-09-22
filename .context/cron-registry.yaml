@@ -396,4 +396,8 @@ jobs:
     creation, so a scheduled pass is what keeps the count near zero rather than
     letting it climb again. Off the audit minutes (:07/:17/:27/…) and takes its
     own lock, not audit.lock (T-3070 collision class); the run is read-mostly
-    and idempotent."
+    and idempotent. Per-session counterpart: T-3431 (D-592) runs the same
+    describe pass (`--quiet`, ~3s measured) from the SessionStart hook and
+    `fw resume status` on every start/resume/compact, not only this nightly
+    sweep — this cron entry remains the full-corpus backstop for cards a
+    session never touches."
