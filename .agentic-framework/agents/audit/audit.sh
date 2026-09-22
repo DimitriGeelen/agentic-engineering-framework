@@ -3348,7 +3348,7 @@ check_sidecar_ledger() {
     # shellcheck source=/dev/null
     source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
 
-    local _facts _rc _unknown _expired _stored _delivered _total
+    local _facts _rc _unknown _expired _stored _delivered _total _deadletters
     _facts=$(fw_sidecar_ledger_facts "$PROJECT_ROOT"); _rc=$?
     [ "$_rc" -eq 1 ] && return 0
     if [ "$_rc" -ne 0 ] || [ -z "$_facts" ]; then
@@ -3357,23 +3357,35 @@ check_sidecar_ledger() {
              "Run: bin/fw sidecar status — a present outbox with an unreadable ledger is itself a silent-failure shape (T-3420)"
         return 0
     fi
-    IFS=$'\t' read -r _unknown _expired _stored _delivered _total <<< "$_facts"
+    IFS=$'\t' read -r _unknown _expired _stored _delivered _total _deadletters <<< "$_facts"
+    : "${_deadletters:=0}"   # five-field ledgers predate T-3434's column
 
     local _bad=0
-    if [ "${_unknown:-0}" -gt 0 ]; then
+    if [ "${_deadletters:-0}" -gt 0 ]; then
+        # T-3434: a dead-letter is the retry ladder giving up after all 16
+        # attempts (or losing the durable message file). It is a SUBSET of
+        # UNKNOWN, and it is named separately because the remedy differs: an
+        # UNKNOWN that the ladder is still working needs patience, a
+        # dead-letter needs a human to decide whether the message still matters.
         _bad=1
-        warn "Sidecar: $_unknown consult(s) recorded UNKNOWN — sent, never confirmed delivered" \
-             "fw sidecar status: UNKNOWN=$_unknown of $_total message(s); a peer never saw these" \
-             "Run: bin/fw sidecar status — then decide re-send vs drop per OBS-447 (retry policy is the operator's; the sidecar never re-sends on its own)"
+        warn "Sidecar: $_deadletters consult(s) dead-lettered — the retry ladder is exhausted (reason ladder-exhausted)" \
+             "fw sidecar status: dead_letters=$_deadletters of $_total message(s); 16 attempts over ~76 days reached nobody (D-600)" \
+             "Run: bin/fw sidecar status --json — a dead-letter is terminal; re-sending means a NEW message, and the peer being unreachable that long is the finding"
+    fi
+    if [ "${_unknown:-0}" -gt "${_deadletters:-0}" ]; then
+        _bad=1
+        warn "Sidecar: $(( _unknown - _deadletters )) consult(s) recorded UNKNOWN — sent, never confirmed delivered" \
+             "fw sidecar status: UNKNOWN=$_unknown of $_total message(s) ($_deadletters of them dead-lettered); a peer never saw these" \
+             "Run: bin/fw sidecar status — the retry ladder (T-3434, D-600) re-posts and escalates these automatically; an UNKNOWN that is NOT a dead-letter was recorded some other way and is worth reading"
     fi
     if [ "${_expired:-0}" -gt 0 ]; then
         _bad=1
-        warn "Sidecar: $_expired STORED row(s) past deadline and unswept — the sweep cron is not running" \
-             "fw sidecar status: expired_unswept=$_expired; cron 'sidecar-sweep-5m' should flip these within 5 minutes" \
-             "Run: bin/fw cron status sidecar-sweep-5m && bin/fw sidecar sweep — if the sweep flips them, the cron slot is dead, not the ledger (T-3418)"
+        warn "Sidecar: $_expired row(s) past their retry rung and unswept — the sweep cron is not running" \
+             "fw sidecar status: expired_unswept=$_expired; cron 'sidecar-sweep-5m' should work each due rung within 5 minutes" \
+             "Run: bin/fw cron status sidecar-sweep-5m && bin/fw sidecar sweep — if the sweep advances them, the cron slot is dead, not the ledger (T-3418, T-3434)"
     fi
     if [ "$_bad" -eq 0 ]; then
-        pass "Sidecar ledger: $_total consult(s), $_delivered delivered, ${_stored} in flight, 0 UNKNOWN, 0 expired-unswept"
+        pass "Sidecar ledger: $_total consult(s), $_delivered delivered, ${_stored} in flight, 0 UNKNOWN, 0 dead-lettered, 0 expired-unswept"
     fi
 }
 check_sidecar_ledger

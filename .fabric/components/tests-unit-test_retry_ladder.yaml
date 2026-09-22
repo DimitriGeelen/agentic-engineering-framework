@@ -1,0 +1,21 @@
+id: tests/unit/test_retry_ladder.py
+name: test_retry_ladder
+type: script
+subsystem: tests
+location: tests/unit/test_retry_ladder.py
+tags: []
+
+purpose: "T-3434 — the universal message retry ladder (D-600)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-22
+created_by: unknown

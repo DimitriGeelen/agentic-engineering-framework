@@ -93,11 +93,20 @@ do_dispatch_send() {
     local hostname
     hostname=$(hostname -s 2>/dev/null || echo "unknown")
 
+    # T-3434: the envelope carries a message id so the receiving side can
+    # dedupe a re-post. Without one there is nothing for `fw bus receive` to
+    # key on, and the universal retry ladder (D-600) would deliver a duplicate
+    # every time it re-posts past the hub's ~5-minute dedupe TTL.
+    local client_msg_id
+    client_msg_id=$(python3 -c 'import uuid; print(uuid.uuid4())' 2>/dev/null) \
+        || client_msg_id="${hostname}-${task_id}-$(date -u +%s)-$$"
+
     local envelope
     envelope=$(cat <<EOF
 {
   "task_id": "$task_id",
   "agent_type": "$agent_type",
+  "client_msg_id": "$client_msg_id",
   "timestamp": "$timestamp",
   "source_host": "$hostname",
   "summary": $(printf '%s' "$summary" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))'),

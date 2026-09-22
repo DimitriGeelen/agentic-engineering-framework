@@ -63,11 +63,6 @@ from . import delivery, inbox, outbox
 #: annotation channel (T-3404) and adding a state would change the three-state
 #: machine, which this task deliberately does not.
 ANSWERED = "answered"
-#: Error prefix marking a row the ladder has deliberately let go of without
-#: either succeeding or giving up — it was never the ladder's to work. Distinct
-#: from `answered` (the peer replied) and from `ladder-*` (the ladder tried and
-#: failed), because it must not be counted as a dead-letter in the audit rail.
-RELEASED = "released"
 EXHAUSTED = "ladder-exhausted"
 UNRETRYABLE = "ladder-unretryable"
 
@@ -83,7 +78,7 @@ def _now(now: str | datetime | None) -> datetime:
 def is_open(row: dict) -> bool:
     """Is the ladder still responsible for this message?
 
-    Four ways a row is closed, and the last is the one that needs saying.
+    Three ways a row is closed, and the third is the one that needs saying.
     A row with no `attempts` field predates T-3434; if it is also in a posted
     state, it was DELIVERED before the ladder existed and was never promised
     escalation. The ladder does not adopt it — re-opening every consult this
@@ -96,8 +91,7 @@ def is_open(row: dict) -> bool:
     state = row.get("state")
     if state == outbox.UNKNOWN:
         return False
-    error = row.get("error") or ""
-    if error.startswith(ANSWERED) or error.startswith(RELEASED):
+    if (row.get("error") or "").startswith(ANSWERED):
         return False
     if row.get("attempts") is None and state in (outbox.INJECTED_NOW,
                                                  outbox.INJECTED_LATER):

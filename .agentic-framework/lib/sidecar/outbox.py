@@ -108,12 +108,21 @@ def list_pending() -> list[str]:
 
 def record_ack(client_msg_id: str, target: str, hub: str | None,
                state: str, deadline: str | None = None,
-               error: str | None = None) -> None:
+               error: str | None = None, attempts: int | None = None,
+               next_retry_at: str | None = None,
+               rung: int | None = None) -> None:
     """Append one row to the ack ledger. Append-only — never rewritten.
 
     `error` annotates a row without changing its state, so a failed delivery
     attempt is recorded while the message stays non-terminal and retryable
     (T-3404). It does not add a fourth state to the three-state machine.
+
+    `attempts` / `next_retry_at` / `rung` carry the message's position on the
+    universal retry ladder (T-3434, D-600). They are ledger DATA, not ledger
+    STATE: the three-state machine is untouched, and a row written without
+    them (every row this ledger held before T-3434) reads back as a message
+    that has had one attempt and no scheduled retry — which is exactly what
+    those rows were.
     """
     row = {
         "client_msg_id": client_msg_id,
@@ -122,6 +131,9 @@ def record_ack(client_msg_id: str, target: str, hub: str | None,
         "state": state,
         "deadline": deadline,
         "error": error,
+        "attempts": attempts,
+        "next_retry_at": next_retry_at,
+        "rung": rung,
         "ts": _now_iso(),
     }
     with open(_ledger_path(), "a", encoding="utf-8") as fh:

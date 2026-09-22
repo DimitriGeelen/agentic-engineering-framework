@@ -1,0 +1,21 @@
+id: lib/sidecar/retry.py
+name: retry
+type: script
+subsystem: framework-core
+location: lib/sidecar/retry.py
+tags: []
+
+purpose: "arc-011 sidecar — the retry ladder's first consumer (T-3434, D-600)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-22
+created_by: unknown

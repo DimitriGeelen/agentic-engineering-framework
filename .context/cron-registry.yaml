@@ -28,14 +28,20 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-3418
   status: active
-  description: "arc-011 peer-consult sidecar, slice 7. Every 5 minutes, flip STORED\
-    \ ack-ledger rows whose deadline has passed to UNKNOWN (lib/sidecar/outbox.py\
-    \ resolve_expired, T-3404), so a stuck or failed consult delivery is recorded\
-    \ rather than left indistinguishable from in-flight. Reports only — never\
-    \ re-sends; retry policy is OBS-447, the operator's. Idempotent and a no-op on a\
-    \ clean ledger. `fw sidecar status` (T-3417) shows the pre-sweep count as\
-    \ expired_unswept. Offset to :03/:08/... off the audit slots (T-3070 collision\
-    \ class); takes its own lock, not audit.lock."
+  description: "arc-011 peer-consult sidecar, slice 7 (T-3418), now the drive wheel\
+    \ of the universal message retry ladder (T-3434, D-600 — OBS-447 ruled). Every\
+    \ 5 minutes, walk every open ack-ledger row and work the ones whose rung has\
+    \ come due: re-post what never reached the hub, escalate what the hub holds\
+    \ unread (a pointer to the recipient's inbox from the 15-minute rung, an\
+    \ operator `fw note` from the 1-day rung), and dead-letter after the last of 16\
+    \ attempts across ~76 days. A reply on the conversation closes the row. It no\
+    \ longer merely records failures — the pre-T-3434 behaviour was to flip a\
+    \ past-deadline STORED row to UNKNOWN and never re-send. Idempotent and a no-op\
+    \ on a clean ledger; one hub read per sweep, and a peek that never advances the\
+    \ inbox cursor `fw sidecar inbox` owns. `fw sidecar status` (T-3417) shows the\
+    \ pre-sweep backlog as expired_unswept and the give-ups as dead_letters.\
+    \ Offset to :03/:08/... off the audit slots (T-3070 collision class); takes its\
+    \ own lock, not audit.lock."
 - id: reviewer-audit-daily
   name: Reviewer Layer-3 audit (daily Pass B)
   schedule: 37 4 * * *

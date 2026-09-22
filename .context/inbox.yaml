@@ -4892,7 +4892,9 @@ observations:
   captured: 2026-09-21T22:02:44Z
   context_task: T-3405
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "Resolved by T-3434 (D-600, operator ruling 2026-09-22). The open design question \u2014 bound the retry window to the hub TTL, or add receiver-side dedupe \u2014 is answered BOTH ways and deliberately: the universal retry ladder runs far past the 5-minute TTL (16 attempts over ~76 days), and receiver-side dedupe on client_msg_id is made MANDATORY for every message kind precisely because of that. Shipped: lib/retry_ladder.py, lib/sidecar/retry.py driven by the sidecar-sweep-5m cron, bus-leg dedupe, dead-letter audit class. Report: docs/reports/T-3434-retry-ladder.md. Residual: OBS-472 (pickup's 7-day dedupe cooldown is shorter than the ladder)."
+  dismissed_at: 2026-09-22T16:05:58Z
   promoted_to: null
 - id: OBS-448
   text: "G-083 instance, observed live during a Mandate run: while this interactive session was mid-push on T-3405, a SECOND autonomous run was active on the same checkout — PID 3455819, 'timeout -k 60 21600 claude -p' running a whole-repository Project Value Review (prompt names a 'sequence driver' that filled its parameters; BUDGET 200k tokens). Its audit (PID 3570331, audit.sh --section structure,compliance,quality,di...) held .context/locks/audit.lock, blocking my pre-push audit twice — correctly, as designed, and I waited rather than --no-verify. The hazard is not the lock; it is that two autonomous writers share one working tree and one index. My commits were pathspec-limited so neither run swept the other's staged files, but nothing structural guarantees that — the handover auto-commit (T-3090) sweeps the whole index by construction. Noting also that /opt/055-agentic-fleet-cockpit's vendored audit.sh was running concurrently in its own tree; that one held its own lock, not ours. No action taken against either process (killing a live run is Tier 0)."

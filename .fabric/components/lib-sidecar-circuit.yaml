@@ -1,0 +1,21 @@
+id: lib/sidecar/circuit.py
+name: circuit
+type: script
+subsystem: framework-core
+location: lib/sidecar/circuit.py
+tags: []
+
+purpose: "arc-011 sidecar — circuit ids: the one place an address is derived."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-22
+created_by: unknown

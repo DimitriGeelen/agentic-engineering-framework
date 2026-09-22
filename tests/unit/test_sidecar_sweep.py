@@ -380,3 +380,18 @@ def test_a_delivery_made_before_the_ladder_existed_is_not_adopted(sc):
 
     assert report["considered"] == 0
     assert posted == []
+
+
+def test_a_released_row_is_closed_and_is_not_a_dead_letter(sc):
+    """`released` is the ladder letting go of a row that was never its to work."""
+    _cli, outbox, status, retry, delivery = sc
+    cmid = _store_and_deliver(outbox, delivery)
+    outbox.record_ack(cmid, "agentB", None, outbox.INJECTED_NOW, attempts=2,
+                      error=f"{retry.RELEASED}: pre-ladder delivery")
+
+    report = retry.sweep(now=T0 + timedelta(days=90), transport=_recorder()[1],
+                         probe=_ok_probe, reader=_empty_reader)
+
+    assert report["considered"] == 0
+    # It stays out of the audit's dead-letter count — nothing failed here.
+    assert status.snapshot()["dead_letters"] == 0
