@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T12:58:22Z
-last_update: '2026-09-22T13:00:12Z'
+last_update: 2026-09-22T13:00:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -47,6 +47,25 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=289,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-22T13:00:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 
@@ -76,12 +95,12 @@ run and the re-run are mechanical.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] For each file in the refusal list (`fw fabric enrich --describe --dry-run` prints it): read the file, write one header line that states what it does (not what it is called), in the file's native comment form; files whose purpose cannot be stated with certainty from their own contents are left untouched and listed in this task with one line of why — no invented descriptions
-- [ ] `fw fabric enrich` (edge detection) run over the zero-edge set; resulting edge count recorded; cards that legitimately have no edges (data files, standalone docs) named as such in `## Decisions`, not forced
-- [ ] The 3 `subsystem: unknown` cards resolved by a `paths:` rule in `.fabric/subsystems.yaml` where a rule generalises, else by a direct card edit with the reason
-- [ ] `fw fabric enrich --describe` re-run; `fw fabric drift` before/after recorded here (TODO purposes, unknown subsystems, zero-edge, under-populated total); expected: TODO ≤ the refused-with-reason count, unknown 0
-- [ ] Every touched source file still passes its own toolchain check (`python3 -m py_compile` for `.py`, `bash -n` for `.sh`); the fabric suites (`tests/unit/*fabric*`, `tests/unit/*t3430*`) green; the header-line commits are separate from the card commits (mechanism/effect kept apart, as T-3430 did)
-- [ ] Vendored copies synced for any file under `agents/`, `lib/`, `bin/`, `policy/` that gained a header line; `bin/fw vendor self --check` clean
+- [x] For each file in the refusal list (`fw fabric enrich --describe --dry-run` prints it): read the file, write one header line that states what it does (not what it is called), in the file's native comment form; files whose purpose cannot be stated with certainty from their own contents are left untouched and listed in this task with one line of why — no invented descriptions. 22 of 32 header-lined (1 YAML + 21 HTML/Jinja); 10 refused-with-reason (see `## Decisions`) — 9 format-blocked, 1 vendored DO-NOT-EDIT.
+- [x] `fw fabric enrich` (edge detection) run over the zero-edge set; resulting edge count recorded; cards that legitimately have no edges (data files, standalone docs) named as such in `## Decisions`, not forced. `fw fabric enrich --no-describe` (real, corpus-wide — no scoping flag limits to zero-edge only, confirmed via `--help`): 351 edges added (174 depends_on + 177 depended_by) across 119 cards; zero-edge count 195 → 122 (see `## Decisions` for the residual's composition).
+- [x] The 3 `subsystem: unknown` cards resolved by a `paths:` rule in `.fabric/subsystems.yaml` where a rule generalises, else by a direct card edit with the reason. Both generalise: `docs` gained `"0[0-9][0-9]-*.md"` (012-ArcSystem.md + the other 10 root-numbered docs), `watchtower` gained `"vendor/designer/*"` (both unrouted builds + the other 8 versioned builds). 0 cards edited directly.
+- [x] `fw fabric enrich --describe` re-run; `fw fabric drift` before/after recorded here (TODO purposes, unknown subsystems, zero-edge, under-populated total); expected: TODO ≤ the refused-with-reason count, unknown 0. **Before** (`/tmp/.t3435-before`): TODO purpose 32, unknown subsystem 3, no edges 195, under-populated total 215. **After** (`/tmp/.t3435-after`, post real `--describe` + edges run): TODO purpose 10 (== the 10 refused-with-reason files, exactly), unknown subsystem 0, no edges 122, under-populated total 126.
+- [x] Every touched source file still passes its own toolchain check (`python3 -m py_compile` for `.py`, `bash -n` for `.sh`); the fabric suites (`tests/unit/*fabric*`, `tests/unit/*t3430*`) green; the header-line commits are separate from the card commits (mechanism/effect kept apart, as T-3430 did). No `.py`/`.sh` files touched (all edits were `.yaml`/`.html`) — YAML parses, Jinja templates parse (see `## Verification`). 116 fabric/t3430 pytest tests pass. bats fabric suite green (see `## Updates` for the contended first run and the clean rerun). Header-line commit (`e2d89ded4`) kept separate from the card-enrichment commit.
+- [x] Vendored copies synced for any file under `agents/`, `lib/`, `bin/`, `policy/` that gained a header line; `bin/fw vendor self --check` clean. 0 files under those 4 directories gained a header line (all 22 were `.context/`/`web/templates/`); `fw vendor self` synced the 21 committed `web/templates/` files (correctly withholding T-3431's 3 concurrently-dirty, unrelated `agents/` files); `bin/fw vendor self --check` reports clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -242,6 +261,20 @@ run and the re-run are mechanical.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -c "import yaml; yaml.safe_load(open('.context/project/workflows/ask.yaml'))"
+python3 -c "import yaml; yaml.safe_load(open('.fabric/subsystems.yaml'))"
+out=$(for f in .context/project/workflows/ask.yaml web/templates/_error_csrf.html web/templates/_partials/ask_answer_card.html web/templates/_partials/search_input.html web/templates/_partials/search_results.html web/templates/_project_docs_list.html web/templates/_stale_tasks_items.html web/templates/_work_queue_items.html web/templates/arc_close.html web/templates/arc_review.html web/templates/bvp.html web/templates/designer_ghosts.html web/templates/designer_landing.html web/templates/escalation_drift.html web/templates/hooks.html web/templates/orchestrator.html web/templates/pending.html web/templates/prompt_detail.html web/templates/prompts_list.html web/templates/reviewer_audit.html web/templates/reviewer_overrides.html web/templates/timeline_session.html; do python3 agents/fabric/lib/describe.py "$f"; done 2>&1); ! echo "$out" | grep -q "describes itself nowhere"
+out=$(python3 agents/fabric/lib/describe.py 012-ArcSystem.md; python3 agents/fabric/lib/describe.py vendor/designer/aef-workflow-designer-0.11.0.html; python3 agents/fabric/lib/describe.py vendor/designer/aef-workflow-designer-0.4.0.html); ! echo "$out" | grep -q "subsystem:      unknown"
+python3 -c "
+from jinja2 import Environment, FileSystemLoader
+env = Environment(loader=FileSystemLoader('web/templates'))
+files = '_error_csrf.html _partials/ask_answer_card.html _partials/search_input.html _partials/search_results.html _project_docs_list.html _stale_tasks_items.html _work_queue_items.html arc_close.html arc_review.html bvp.html designer_ghosts.html designer_landing.html escalation_drift.html hooks.html orchestrator.html pending.html prompt_detail.html prompts_list.html reviewer_audit.html reviewer_overrides.html timeline_session.html'.split()
+[env.parse(env.loader.get_source(env, f)[0]) for f in files]
+"
+timeout 900 python3 -m pytest tests/unit/test_fabric_coupling_token.py tests/unit/test_fabric_dotted_imports.py tests/unit/test_fabric_drift_absolute_paths.py tests/unit/test_fabric_drift_performance.py tests/unit/test_fabric_shell_invocations.py tests/unit/test_fabric_shell_sources.py tests/unit/test_t3430_describe.py tests/unit/test_t3430_enrich_describe.py -q > /tmp/.t3435-v-pytest.out 2>&1 && grep -q passed /tmp/.t3435-v-pytest.out && ! grep -q failed /tmp/.t3435-v-pytest.out
+timeout 900 bats tests/unit/fabric.bats tests/unit/fabric_coverage_single_source.bats tests/unit/fabric_drift_data_artifact.bats tests/unit/fabric_drift_orphaned_gitignored.bats tests/unit/fabric_globstar.bats tests/unit/fabric_register_slug.bats tests/unit/fabric_watch_pattern_fitness.bats tests/unit/t2457_fabric_atomic_card_write.bats tests/unit/t3049_fabric_url_location.bats tests/unit/t3430_fabric_audit_doctor.bats tests/unit/t3430_fabric_drift_underpopulated.bats tests/unit/t3430_fabric_register_describe.bats tests/unit/test_fabric_exclude.bats > /tmp/.t3435-v-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3435-v-bats.out
+bin/fw vendor self --check > /tmp/.t3435-v-vendor.out 2>&1; echo "$(cat /tmp/.t3435-v-vendor.out)" | grep -q "in sync with source"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -321,6 +354,127 @@ run and the re-run are mechanical.
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-09-22 — 10 of 32 refused files left untouched (format, not content, uncertainty)
+
+`describe.py`'s per-extension reader table (`_EXT_READERS`) has no entry for
+`.json` or `.bpmn`; both fall back to the `.sh` hash-comment reader, which only
+recognises a literal `#` line as the very first byte of the file. Writing that
+line would corrupt every one of these 9 files (JSON has no comment syntax at
+all; BPMN/XML text cannot precede the root element outside a real `<!--
+-->` comment or PI). I read all 9 in full — their purpose is not in doubt —
+but refuse to inject a tool-satisfying line that breaks the file it is meant
+to describe:
+
+- `tests/fixtures/bpmn/events-only-lane-sample.bpmn`,
+  `events-only-valid-lane-sample.bpmn`, `external-lane-sample.bpmn`,
+  `out-of-dialect-lane-sample.bpmn`, `typed-event-sample.bpmn` — **already
+  self-described.** Each carries a real `<!-- T-3172/T-3173/T-2552 … -->` XML
+  comment right after the `<?xml?>` declaration, explaining exactly what
+  lane-detection or dialect-widening edge case the fixture pins. The
+  description exists in the file's true native form; `describe.py` simply has
+  no reader mapped for `.bpmn` to see it. Left byte-for-byte untouched —
+  touching a lane-detection/dialect test fixture for a description the file
+  already carries would be pure risk for zero gain.
+- `tests/fixtures/termlink-list-schema.json`,
+  `termlink-protocol-frame-types.json`, `termlink-route-cache-schema.json` —
+  **already self-described.** Each has a `_meta.purpose` key (valid JSON) that
+  states the contract it pins and why (e.g. "Pin the data plane FrameType byte
+  mapping … without this contract, byte renumbering goes silent"). Same
+  situation as the BPMN fixtures: real description, wrong side of a tool gap
+  that isn't mine to close in a header-line task, and these are termlink
+  wire-format contract fixtures — corrupting them to satisfy a `#`-line reader
+  is not a trade worth making.
+- `docs/reports/T-1922-a3-measurement-raw.json` — genuinely undescribed (no
+  `_meta`, just a flat data table: estimator name, latency stats, 20 per-task
+  score rows). `created_by: unknown` on its card, so the task-title Tier-2
+  fallback has nothing to resolve either. Confirmed via grep that no code
+  parses this file (`docs/reports/T-1922-a3-measurement.md` is the human-read
+  companion) — for the record, since I'm certain and it's worth writing down:
+  raw per-task BVP-score output from T-1922's estimator-harness A3 measurement
+  run. Left untouched rather than inventing a `_comment` key the deriver can't
+  read anyway (still unmapped extension).
+- `vendor/designer/aef-workflow-designer-0.11.0.html` — explicit **DO NOT
+  EDIT** contract (`vendor/designer/README.md`, T-2521 AC5): "Never edit the
+  vendored `.html` in place… installs it mode `0444` precisely so an
+  accidental edit fails loudly." Refused on contract, not uncertainty.
+
+### 2026-09-22 — subsystem-unknown: 2 generalising `paths:` rules over 1 card-edit
+
+All 3 `subsystem: unknown` cards routed via new `paths:` patterns added to
+existing subsystem entries in `.fabric/subsystems.yaml` (no card edited
+directly — both rules generalise past their triggering file):
+- `docs` subsystem gained `"0[0-9][0-9]-*.md"` — routes `012-ArcSystem.md` and
+  generalises to the other ten root-level numbered docs (`001-Vision.md` …
+  `050-Inceptions.md`), none of which have fabric cards yet but will route
+  correctly the day they do.
+- `watchtower` subsystem gained `"vendor/designer/*"` — routes both unrouted
+  designer builds (`aef-workflow-designer-0.11.0.html` and `-0.4.0.html`) and
+  the other 8 versioned builds in that directory; the designer is served by
+  Watchtower's `/designer` route.
+
+### 2026-09-22 — zero-edge residual (122 of 189 resolved to 122 remaining) not force-fixed
+
+`fw fabric enrich` (edges) ran corpus-wide (idempotent, no scoping flag limits
+to "zero-edge only" — confirmed via `--help`) and took 189 → 122. The
+remaining 122 are not a detector failure to chase; by category:
+- **~55 test files** (bats/pytest scripts under `tests/`, `agents/*/tests/`,
+  e.g. `agents/context/test-tier0-patterns.py`) — self-contained assertions,
+  no import/source edges to detect.
+- **~11 root-level docs / reports** — narrative Markdown, correctly edgeless.
+- **~49 standalone leaf scripts and static assets** — one-off `tools/*.py`,
+  `lib/templates/scripts/*.sh` (copied verbatim into consumer projects, not
+  sourced here), `web/static/*.js` (browser-loaded, not `require`/`import`'d
+  the way the JS/TS detector expects), a handful of `web/templates/*.html`
+  partials whose only reference is a Python string literal the Python
+  path-ref detector doesn't chase into HTML.
+- **5 YAML / 2 JSON** data files — genuinely standalone.
+- The 2 remaining vendored `vendor/designer/*.html` builds — single-file
+  bundles with no framework-internal edges by construction.
+
+None of these are forced; a real edge would need either a new detector
+pattern (out of scope for a "write header lines, run the existing verbs"
+task) or is simply absent because the file has no framework-internal
+dependency to record.
+
+### 2026-09-22 — T-3431's commit swept my staged `.fabric/components/` changes
+
+Between `git add .fabric/` and `git commit` for what was meant to be T-3435's
+"describe re-run" card commit, T-3431 committed first
+(`eea54cb14 T-3431: fabric card refresh — register side effect + live
+describe testing`, 145 files) — including every card I had just staged,
+since both sessions share one checkout (not isolated worktrees) and staging
+is shared index state, not per-process. My own commit landed with only
+`.fabric/subsystems.yaml`'s 2 lines left to commit (`4c61a6d29`); the 145
+component-card changes are real and correct (verified: `fw fabric drift`
+immediately after shows exactly the after-state recorded in this task's ACs
+— TODO 10, unknown 0, no-edges 122, under-populated 126) but their git
+history now sits under T-3431's message, not T-3435's. Content is right;
+attribution is merged. Not re-committing to "fix" this — that would fork
+history over a commit message, not a defect. Named here because
+CLAUDE.md §Execution Model item 4 predicts exactly this failure mode
+("converging writes... assume convergence on framework state") and my
+dispatcher's briefing ("No other worker touches the fabric right now")
+turned out to be wrong in practice — worth flagging as a pattern, not
+worth blocking on.
+
+### 2026-09-22 — concurrent T-3431 fabric-describe activity observed, not a conflict
+
+Mid-task, `fw fabric drift`'s TODO-purpose count moved by one card
+(`context-project-workflows-ask.yaml`) between two of my own read-only
+checks, before I had run any real (non-dry-run) describe pass myself. Traced
+via `ps aux` to a concurrently-dispatched sibling worker (T-3431, "fabric
+enrichment at every session start") exercising `fw fabric enrich --describe
+--quiet` for real as part of its own timing measurement — its prompt commits
+to editing only `agents/context/post-compact-resume.sh`,
+`agents/resume/resume.sh` and `agents/fabric/lib/enrich.py` (untouched by me,
+confirmed via `git status`), not to leaving the live corpus alone while it
+tests. `describe_card()` only ever fills a placeholder field with a
+deterministically-derived value (never overwrites a human sentence), so two
+processes computing the same describe pass concurrently converge to the same
+result — this was a benign overlap, not a corrupted read. Recorded because
+CLAUDE.md's Hypothesis-Driven Debugging protocol asks for a stated hypothesis
+and a test before moving on, not because it blocked anything.
 
 ## Decision
 

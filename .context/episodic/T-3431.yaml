@@ -1,0 +1,250 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3431: Fabric enrichment at every session start: SessionStart/resume runs a bounded fw fabric enrich --describe and the resume statement carries the fabric quality line (operator ruling 2026-09-22; depends on T-3430)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T13:35:52Z
+# ============================================================================
+
+task_id: T-3431
+task_name: "Fabric enrichment at every session start: SessionStart/resume runs a bounded fw fabric enrich --describe and the resume statement carries the fabric quality line (operator ruling 2026-09-22; depends on T-3430)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-22T12:00:48Z
+completed: 2026-09-22T13:33:27Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-22T14:01:30+02:00
+last_commit: 2026-09-22T15:31:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — fabric enrichment at every session start with the fabric quality line in the resume statement (operator ruling 2026-09-22, now on record; depends on T-3430). fabric enrichment at every session start — enrich --quiet + hook + resume line. cron-registry — cross-reference the per-session describe counterpart. fabric card refresh — register side effect + live describe testing
+
+# Key outcomes
+outcomes:
+  - '`agents/context/post-compact-resume.sh` (the one hook behind all three SessionStart matchers: startup, resume, compact) runs `timeout ${FW_FABRIC_DESCRIBE_TIMEOUT:-10} bin/fw fabric enrich --describe --quiet` and never fails the hook on timeout/error (exit 0, last-known counts printed instead)'
+  - 'The additionalContext the hook injects gains one line `Fabric: N cards · T TODO purpose · U unknown subsystem · E no edges · R refused this run (bin/fw fabric drift for ids)`; `fw resume status` prints the same line under its state block'
+  - '`fw fabric enrich --describe --quiet` visits only cards that still carry a placeholder (purpose TODO or subsystem unknown), so the session-start call stays under the timeout on 1,314 cards — measured and recorded here; full sweeps remain the cron''s job (T-3430)'
+  - 'Tests: the hook emits the fabric line on a fixture fabric with 2 TODO cards; the hook exits 0 and emits the last-known line when the enrich call is forced to fail (`FW_FABRIC_DESCRIBE_TIMEOUT=0`); `fw resume status` shows the line'
+  - '`bin/fw enforcement baseline` re-run if `.claude/settings.json` changes (it should not — the hook script changes, not the wiring); vendored copies synced, `bin/fw vendor self --check` clean'
+  - 'Recorded: decision D-(this) "enrichment at every session start" points here; T-3430''s cron description cross-references this task as the per-session counterpart'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-22 — `--quiet` forces `--describe-only` semantics rather than literally running edges too'
+    chose: '`enrich.py --quiet` internally sets `args.describe_only = True` regardless of the flags passed, skipping the forward/reverse edge-computation phase entirely, and prints exactly one line: `Fabric: N cards · T TODO purpose · U unknown subsystem · E no edges · R refused this run (bin/fw fabric drift for ids)`. The hook and `fw resume status` inject this line verbatim.'
+    rationale: 'Measured live: `--describe-only` (no edges) is ~3.3s on the full 1,323-card corpus; `--describe` with the edge pass is 13.1s — over the 10s default `FW_FABRIC_DESCRIBE_TIMEOUT`. The nightly T-3430 cron already only ever runs `--describe-only` for the same reason ("the nightly sweep has no business recomputing the dependency graph"). Session start inherits that same boundary rather than inventing a different one. The AC''s literal invocation (`enrich --describe --quiet`) is honoured at the call-site; `--quiet` is what narrows the actual work performed.'
+    alternatives_rejected: ['(a) A separate raw-text pre-filter that skips YAML-parsing non-placeholder cards before `build_index()` — unnecessary once edges are already out of scope, since `apply_describe()` only does real file I/O on placeholder cards; the ~3.3s floor is `yaml.safe_load` over 1,323 files, which is inherent to any full-corpus fabric scan (paid identically by `fw doctor`/`fw audit`/`fw fabric drift` today) and did not need re-solving here. (b) A background/`nohup` hook invocation with a cached-summary read — the ground truth text allowed this as a fallback if the foreground path couldn''t be made fast enough, but 3.3s comfortably fits inside the 10s budget so the simpler foreground call was kept.']
+  - decision: '2026-09-22 — `fw resume status` reads the cache file rather than re-running the scan'
+    chose: '`resume.sh:cmd_status` reads `.context/working/.fabric-describe.last` (the same cache file the hook writes) instead of invoking `fw fabric enrich --describe --quiet` itself.'
+    rationale: '`resume status` is documented as a "routine check" callers may run repeatedly in one session (CLAUDE.md recommends `resume quick` over `resume status` for that reason); paying the ~3.3s scan cost on every invocation is unnecessary when the SessionStart hook already refreshes the cache once per session. The line is only as stale as the last session-start/resume/compact event, which is the same freshness bound the additionalContext line has.'
+    alternatives_rejected: ['Re-running the live scan inside `cmd_status` — correct but slower for no accuracy gain in the common case, and duplicates work the hook already did moments earlier.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - '.agentic-framework/agents/fabric/lib/enrich.py'
+  - '.agentic-framework/agents/resume/resume.sh'
+  - 'agents/context/post-compact-resume.sh'
+  - 'agents/fabric/lib/enrich.py'
+  - 'agents/resume/resume.sh'
+  - '.context/cron-registry.yaml'
+  - '.context/episodic/T-3428.yaml'
+  - '.context/project/decisions.yaml'
+  - '.fabric/components/012-ArcSystem.yaml'
+  - '.fabric/components/agents-audit-audit.yaml'
+  - '.fabric/components/agents-context-check-active-task.yaml'
+  - '.fabric/components/agents-context-lib-safe-commands.yaml'
+  - '.fabric/components/agents-context-post-compact-resume.yaml'
+  - '.fabric/components/agents-context-sidecar-inbox.yaml'
+  - '.fabric/components/agents-dispatch-preamble.yaml'
+  - '.fabric/components/agents-fabric-lib-describe.yaml'
+  - '.fabric/components/agents-fabric-lib-enrich.yaml'
+  - '.fabric/components/agents-fabric-lib-register.yaml'
+  - '.fabric/components/agents-fabric-lib-underpopulated.yaml'
+  - '.fabric/components/agents-git-lib-hooks.yaml'
+  - '.fabric/components/agents-git-lib-large-file-scan.yaml'
+  - '.fabric/components/agents-monitor-liveness-check.yaml'
+  - '.fabric/components/agents-resume-resume.yaml'
+  - '.fabric/components/agents-sessions-antigravity-provision.yaml'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-estimator.yaml'
+  - '.fabric/components/agents-termlink-termlink.yaml'
+  - '.fabric/components/audit-yaml-validator.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/budget-gate.yaml'
+  - '.fabric/components/checkpoint.yaml'
+  - '.fabric/components/context-project-workflows-ask.yaml'
+  - '.fabric/components/hook-config.yaml'
+  - '.fabric/components/lib-aef_address.yaml'
+  - '.fabric/components/lib-aef_circuit.yaml'
+  - '.fabric/components/lib-aef_election.yaml'
+  - '.fabric/components/lib-aef_governor.yaml'
+  - '.fabric/components/lib-aef_provision_log.yaml'
+  - '.fabric/components/lib-aef_repo_source.yaml'
+  - '.fabric/components/lib-aef_resolve.yaml'
+  - '.fabric/components/lib-antigravity_steps.yaml'
+  - '.fabric/components/lib-audit-anchor-task.yaml'
+  - '.fabric/components/lib-branch-hygiene.yaml'
+  - '.fabric/components/lib-bvp-scorability.yaml'
+  - '.fabric/components/lib-bvp.yaml'
+  - '.fabric/components/lib-config.yaml'
+  - '.fabric/components/lib-context_tokens.yaml'
+  - '.fabric/components/lib-cron_dry_run.yaml'
+  - '.fabric/components/lib-cron_exec_bit.yaml'
+  - '.fabric/components/lib-exec-bit-drift.yaml'
+  - '.fabric/components/lib-fabric_doctor_facts.yaml'
+  - '.fabric/components/lib-govd_sandbox.yaml'
+  - '.fabric/components/lib-human_review_state.yaml'
+  - '.fabric/components/lib-inception.yaml'
+  - '.fabric/components/lib-paths.yaml'
+  - '.fabric/components/lib-prepush-lock-wait.yaml'
+  - '.fabric/components/lib-render_surface.yaml'
+  - '.fabric/components/lib-resolver.yaml'
+  - '.fabric/components/lib-section-extract.yaml'
+  - '.fabric/components/lib-sidecar-audit.yaml'
+  - '.fabric/components/lib-sidecar_cli.yaml'
+  - '.fabric/components/lib-sidecar-delivery.yaml'
+  - '.fabric/components/lib-sidecar-e2e.yaml'
+  - '.fabric/components/lib-sidecar-inbox.yaml'
+  - '.fabric/components/lib-sidecar-__init__.yaml'
+  - '.fabric/components/lib-sidecar-outbox.yaml'
+  - '.fabric/components/lib-sidecar-status.yaml'
+  - '.fabric/components/lib-sidecar-termlink_transport.yaml'
+  - '.fabric/components/lib-templates-scripts-agent-chat-arc-recent.yaml'
+  - '.fabric/components/lib-templates-scripts-recent-dm.yaml'
+  - '.fabric/components/lib-watchtower.yaml'
+  - '.fabric/components/policy-authority-envelope.yaml'
+  - '.fabric/components/policy-designer-pin.yaml'
+  - '.fabric/components/policy-proxy-policy.yaml'
+  - '.fabric/components/policy-standards-aef-bpmn-mapping-v1-partI.yaml'
+  - '.fabric/components/policy-value-drivers.yaml'
+  - '.fabric/components/tests-unit-audit_anchor_task_existence.yaml'
+  - '.fabric/components/tests-unit-sidecar_audit_rail.yaml'
+  - '.fabric/components/tests-unit-sidecar_inbox_hook.yaml'
+  - '.fabric/components/tests-unit-t3248_useful_headroom.yaml'
+  - '.fabric/components/tests-unit-t3374_env_prefix_denylist.yaml'
+  - '.fabric/components/tests-unit-t3377_large_file_scan.yaml'
+  - '.fabric/components/tests-unit-t3379_review_placeholder_foreign_port.yaml'
+  - '.fabric/components/tests-unit-t3380_cron_exec_bit.yaml'
+  - '.fabric/components/tests-unit-t3385_ewcr_contracts_v1.yaml'
+  - '.fabric/components/tests-unit-t3388_ewcr_worked_procedure_fixture.yaml'
+  - '.fabric/components/tests-unit-t3393_ewcr_traceability.yaml'
+  - '.fabric/components/tests-unit-t3421_prepush_lock_wait.yaml'
+  - '.fabric/components/tests-unit-t3422_dispatch_seeds_focus.yaml'
+  - '.fabric/components/tests-unit-t3425_sidecar_read_allowlist.yaml'
+  - '.fabric/components/tests-unit-t3430_fabric_audit_doctor.yaml'
+  - '.fabric/components/tests-unit-t3430_fabric_register_describe.yaml'
+  - '.fabric/components/tests-unit-t3431_fabric_session_start.yaml'
+  - '.fabric/components/tests-unit-test_ac_field_render_safety.yaml'
+  - '.fabric/components/tests-unit-test_govd_sandbox.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_delivery.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_e2e.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_inbox.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_outbox.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_status.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_sweep.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_termlink_transport.yaml'
+  - '.fabric/components/tests-unit-test_t3427_unscored_driver.yaml'
+  - '.fabric/components/tests-unit-test_t3428_declarative_scoring.yaml'
+  - '.fabric/components/tests-unit-test_t3430_describe.yaml'
+  - '.fabric/components/tests-unit-test_t3430_enrich_describe.yaml'
+  - '.fabric/components/tools-bats-dead-negation-lint.yaml'
+  - '.fabric/components/tools-corpus_lint.yaml'
+  - '.fabric/components/tools-corpus_spec.yaml'
+  - '.fabric/components/tools-ewcr-arc0-writeset-scoped-coverage.yaml'
+  - '.fabric/components/tools-ewcr-contracts-check.yaml'
+  - '.fabric/components/tools-ewcr-trace-check.yaml'
+  - '.fabric/components/vendor-designer-aef-workflow-designer-0.11.0.yaml'
+  - '.fabric/components/vendor-designer-aef-workflow-designer-0.4.0.yaml'
+  - '.fabric/components/web-ask.yaml'
+  - '.fabric/components/web-blueprints-bvp.yaml'
+  - '.fabric/components/web-blueprints-config.yaml'
+  - '.fabric/components/web-blueprints-cron.yaml'
+  - '.fabric/components/web-blueprints-designer.yaml'
+  - '.fabric/components/web-blueprints-settings.yaml'
+  - '.fabric/components/web-blueprints-tasks.yaml'
+  - '.fabric/components/web-config.yaml'
+  - '.fabric/components/web-llm-manager.yaml'
+  - '.fabric/components/web-llm-ollama_provider.yaml'
+  - '.fabric/components/web-llm-openrouter_provider.yaml'
+  - '.fabric/components/web-llm-provider.yaml'
+  - '.fabric/components/web-secrets_store.yaml'
+  - '.fabric/components/web-shared.yaml'
+  - '.fabric/components/web-templates-arc_close.yaml'
+  - '.fabric/components/web-templates-arc_review.yaml'
+  - '.fabric/components/web-templates-bvp.yaml'
+  - '.fabric/components/web-templates-designer_ghosts.yaml'
+  - '.fabric/components/web-templates-designer_landing.yaml'
+  - '.fabric/components/web-templates-_error_csrf.yaml'
+  - '.fabric/components/web-templates-escalation_drift.yaml'
+  - '.fabric/components/web-templates-hooks.yaml'
+  - '.fabric/components/web-templates-orchestrator.yaml'
+  - '.fabric/components/web-templates-_partials-ask_answer_card.yaml'
+  - '.fabric/components/web-templates-_partials-search_input.yaml'
+  - '.fabric/components/web-templates-_partials-search_results.yaml'
+  - '.fabric/components/web-templates-pending.yaml'
+  - '.fabric/components/web-templates-_project_docs_list.yaml'
+  - '.fabric/components/web-templates-prompt_detail.yaml'
+  - '.fabric/components/web-templates-prompts_list.yaml'
+  - '.fabric/components/web-templates-reviewer_audit.yaml'
+  - '.fabric/components/web-templates-reviewer_overrides.yaml'
+  - '.fabric/components/web-templates-_stale_tasks_items.yaml'
+  - '.fabric/components/web-templates-timeline_session.yaml'
+  - '.fabric/components/web-templates-_work_queue_items.yaml'
+  - '.fabric/components/web-watchtower-feedback.yaml'
+  - '.fabric/components/web-watchtower-prioritizer.yaml'
+  - '.fabric/components/web-watchtower-rules.yaml'
+  - '.fabric/components/web-watchtower-scanner.yaml'
+  - '.fabric/components/web-watchtower-test_scan.yaml'
+  - '.tasks/active/T-3431-fabric-enrichment-at-every-session-start.md'
+  - '.tasks/completed/T-3428-bvp-rubric-driven-scoring-free-and-arc-s.md'
+  - 'tests/unit/t3431_fabric_session_start.bats'
+  - 'tests/unit/test_t3430_enrich_describe.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T14:01:30'
+    action: 'T-3431: file — fabric enrichment at every session start with the fabric quality line in the resume statement (operator ruling 2026-09-22, now on record; depends on T-3430)'
+  - time: '2026-09-22T15:30:15'
+    action: 'T-3431: fabric enrichment at every session start — enrich --quiet + hook + resume line'
+  - time: '2026-09-22T15:30:43'
+    action: 'T-3431: cron-registry — cross-reference the per-session describe counterpart'
+  - time: '2026-09-22T15:31:17'
+    action: 'T-3431: fabric card refresh — register side effect + live describe testing'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 92 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 92
+  commits: 4
+  files_changed: 159
+  lines_added: 1959
+  lines_removed: 513
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3431-fabric-enrichment-at-every-session-start.md
+generated_by: context-agent-hybrid
