@@ -4,17 +4,22 @@ type: script
 subsystem: watchtower
 location: web/llm/provider.py
 tags: []
-
-purpose: "LLM provider abstraction — Strategy-pattern interface and shared data types (LLMProvider, ModelInfo, StreamChunk) for hot-switchable providers (T-377)"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: LLM provider abstraction — Strategy-pattern interface and shared data types (LLMProvider, ModelInfo, StreamChunk)
+  for hot-switchable providers (T-377)
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/llm/manager.py
+  type: called_by
+- target: web/llm/manager.py
+  type: uses_by
+- target: web/llm/ollama_provider.py
+  type: called_by
+- target: web/llm/ollama_provider.py
+  type: uses_by
+- target: web/llm/openrouter_provider.py
+  type: called_by
+- target: web/llm/openrouter_provider.py
+  type: uses_by
 last_verified: 2026-09-08
 created_by: unknown
+last_enriched: '2026-09-22'

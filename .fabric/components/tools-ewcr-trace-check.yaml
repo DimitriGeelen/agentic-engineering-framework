@@ -6,7 +6,10 @@ location: tools/ewcr-trace-check.py
 tags: []
 purpose: EWCR Arc 0 — fence for the §13 invariant traceability matrix (T-3393).
 depends_on: []
-depended_by: []
+depended_by:
+- target: tests/unit/t3393_ewcr_traceability.bats
+  type: tests_by
 last_verified: 2026-09-19
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

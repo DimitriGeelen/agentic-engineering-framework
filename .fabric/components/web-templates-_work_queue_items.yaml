@@ -4,17 +4,9 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_work_queue_items.html
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: Work-in-progress queue items for the dashboard's work-queue widget, with a focus-set action per task.
+depends_on: []
+depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
+purpose_source: header-comment

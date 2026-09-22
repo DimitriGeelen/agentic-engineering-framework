@@ -4,17 +4,38 @@ type: script
 subsystem: watchtower
 location: web/llm/manager.py
 tags: []
-
-purpose: "LLM provider manager — registration, active-provider selection, hot-switching and failover between Ollama and OpenRouter (T-377)"
-
+purpose: LLM provider manager — registration, active-provider selection, hot-switching and failover between Ollama and OpenRouter
+  (T-377)
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/llm/provider.py
+  type: calls
+- target: web/config.py
+  type: calls
+- target: web/llm/ollama_provider.py
+  type: calls
+- target: web/shared.py
+  type: calls
+- target: web/secrets_store.py
+  type: calls
+- target: web/llm/openrouter_provider.py
+  type: calls
+- target: web/llm/provider.py
+  type: uses
+- target: web/config.py
+  type: uses
+- target: web/llm/ollama_provider.py
+  type: uses
+- target: web/shared.py
+  type: uses
+- target: web/secrets_store.py
+  type: uses
+- target: web/llm/openrouter_provider.py
+  type: uses
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/blueprints/settings.py
+  type: called_by
+- target: web/blueprints/settings.py
+  type: uses_by
 last_verified: 2026-09-08
 created_by: unknown
+last_enriched: '2026-09-22'

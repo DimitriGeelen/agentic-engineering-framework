@@ -44,9 +44,13 @@ depends_on:
   type: calls
 - target: lib/inception-readiness.sh
   type: calls
+- target: lib/section-extract.sh
+  type: calls
+- target: lib/human_review_state.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'
 depended_by:
 - target: C-004
   type: called_by
@@ -147,6 +151,8 @@ depended_by:
 - target: tests/unit/t3235_archived_horizon_invariant.bats
   type: called_by
 - target: agents/audit/audit.sh
+  type: called_by
+- target: lib/human_review_state.py
   type: called_by
 docs:
 - path: docs/articles/deep-dives/06-authority-model.md

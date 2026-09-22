@@ -5,8 +5,19 @@ subsystem: tests
 location: tests/unit/test_sidecar_status.py
 tags: []
 purpose: 'T-3417 — arc-011 sidecar status: out-of-band observer (round-1 review Δ4).'
-depends_on: []
+depends_on:
+- target: lib/sidecar/delivery.py
+  type: calls
+- target: lib/sidecar/delivery.py
+  type: uses
+- target: lib/sidecar/outbox.py
+  type: uses
+- target: lib/sidecar/inbox.py
+  type: uses
+- target: lib/sidecar/status.py
+  type: uses
 depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

@@ -5,8 +5,15 @@ subsystem: tests
 location: tests/unit/sidecar_audit_rail.bats
 tags: []
 purpose: 'T-3420 — arc-011 sidecar slice 8: the audit rail over the consult ledger.'
-depends_on: []
+depends_on:
+- target: lib/sidecar-audit.sh
+  type: tests
+- target: C-004
+  type: tests
+- target: lib/sidecar/outbox.py
+  type: tests
 depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

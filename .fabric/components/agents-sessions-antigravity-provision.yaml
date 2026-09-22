@@ -4,17 +4,13 @@ type: script
 subsystem: framework-core
 location: agents/sessions/antigravity/provision.sh
 tags: []
-
-purpose: "Provisions the Antigravity/OpenGravity (AGY) provider package into a target project (T-2417)"
-
+purpose: Provisions the Antigravity/OpenGravity (AGY) provider package into a target project (T-2417)
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: bin/fw
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/antigravity_steps.py
+  type: called_by
 last_verified: 2026-09-08
 created_by: unknown
+last_enriched: '2026-09-22'

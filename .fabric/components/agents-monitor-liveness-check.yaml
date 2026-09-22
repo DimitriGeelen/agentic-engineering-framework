@@ -4,11 +4,16 @@ type: script
 subsystem: audit
 location: agents/monitor/liveness-check.sh
 tags: []
-purpose: "Cron liveness monitor (every 1 min, T-1269/T-1273): checks TermLink hub, framework agent, Claude instance and Watchtower; appends .context/monitors/liveness.jsonl and writes liveness-latest.yaml."
+purpose: 'Cron liveness monitor (every 1 min, T-1269/T-1273): checks TermLink hub, framework agent, Claude instance and Watchtower;
+  appends .context/monitors/liveness.jsonl and writes liveness-latest.yaml.'
 depends_on:
 - target: lib/config.sh
   type: calls
-depended_by: []
+depended_by:
+- target: lib/cron_exec_bit.py
+  type: called_by
+- target: tests/unit/t3380_cron_exec_bit.bats
+  type: tests_by
 last_verified: 2026-04-15
 created_by: unknown
-last_enriched: '2026-04-23'
+last_enriched: '2026-09-22'

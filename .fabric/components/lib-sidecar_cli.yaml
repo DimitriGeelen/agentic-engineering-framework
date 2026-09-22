@@ -5,8 +5,19 @@ subsystem: framework-core
 location: lib/sidecar_cli.py
 tags: []
 purpose: '`fw sidecar` — the callable surface of the arc-011 peer-consult sidecar.'
-depends_on: []
-depended_by: []
+depends_on:
+- target: lib/sidecar/__init__.py
+  type: calls
+- target: lib/sidecar/e2e.py
+  type: calls
+- target: lib/sidecar/__init__.py
+  type: uses
+depended_by:
+- target: tests/unit/test_sidecar_e2e.py
+  type: uses_by
+- target: tests/unit/test_sidecar_sweep.py
+  type: uses_by
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

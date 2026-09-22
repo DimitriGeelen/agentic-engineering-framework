@@ -4,18 +4,18 @@ type: script
 subsystem: component-fabric
 location: agents/fabric/lib/underpopulated.py
 tags: []
-
-purpose: "Scan component cards for the under-populated class — a card that says nothing."
+purpose: Scan component cards for the under-populated class — a card that says nothing.
 purpose_source: docstring
-
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: agents/fabric/lib/describe.py
+  type: uses
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/audit/audit.sh
+  type: called_by
+- target: C-004
+  type: called_by
+- target: tests/unit/t3430_fabric_audit_doctor.bats
+  type: tests_by
 last_verified: 2026-09-22
 created_by: unknown
+last_enriched: '2026-09-22'

@@ -5,8 +5,15 @@ subsystem: tests
 location: tests/unit/t3248_useful_headroom.bats
 tags: []
 purpose: T-3248 — useful-headroom measurement (arc-012 E9).
-depends_on: []
+depends_on:
+- target: C-008
+  type: tests
+- target: C-007
+  type: tests
+- target: lib/context_tokens.py
+  type: tests
 depended_by: []
 last_verified: 2026-09-07
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

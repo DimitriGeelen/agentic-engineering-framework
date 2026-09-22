@@ -5,13 +5,19 @@ subsystem: framework-core
 location: tools/bats-dead-negation-lint.py
 tags: []
 purpose: 'T-3138: find bats assertions that cannot fail.'
-depends_on: []
+depends_on:
+- target: C-004
+  type: calls
 depended_by:
 - target: tests/lint/bats-dead-negation.bats
   type: tests_by
 - target: tools/bats-dead-negation-mutants.py
   type: called_by
+- target: agents/audit/audit.sh
+  type: called_by
+- target: C-004
+  type: called_by
 last_verified: 2026-08-25
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'
 purpose_source: docstring

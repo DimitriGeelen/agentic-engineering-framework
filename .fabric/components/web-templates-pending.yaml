@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/pending.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Pending cross-project/cross-machine action registry, rendered by web/blueprints/pending.py from pending-updates.yaml.
 depends_on: []
 depended_by:
 - target: web/blueprints/pending.py
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-04-23
 created_by: unknown
 last_enriched: '2026-04-23'
+purpose_source: header-comment

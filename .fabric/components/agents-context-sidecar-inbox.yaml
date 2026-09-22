@@ -6,7 +6,14 @@ location: agents/context/sidecar-inbox.sh
 tags: []
 purpose: 'sidecar-inbox.sh — UserPromptSubmit hook: surface pending peer consults.'
 depends_on: []
-depended_by: []
+depended_by:
+- target: agents/dispatch/preamble.md
+  type: called_by
+- target: C-009
+  type: called_by
+- target: tests/unit/sidecar_inbox_hook.bats
+  type: tests_by
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

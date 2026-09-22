@@ -5,8 +5,11 @@ subsystem: tests
 location: tests/unit/t3377_large_file_scan.bats
 tags: []
 purpose: 'T-3377 — large-file scan_tree: behaviour pinned against a FIXTURE repo.'
-depends_on: []
+depends_on:
+- target: agents/git/lib/large-file-scan.sh
+  type: tests
 depended_by: []
 last_verified: 2026-09-16
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

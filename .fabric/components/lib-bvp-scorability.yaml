@@ -6,7 +6,16 @@ location: lib/bvp-scorability.sh
 tags: []
 purpose: lib/bvp-scorability.sh — T-3428 (OBS-463 leg 3), arc-006.
 depends_on: []
-depended_by: []
+depended_by:
+- target: agents/audit/audit.sh
+  type: called_by
+- target: agents/termlink/bvp-estimator/estimator.py
+  type: called_by
+- target: C-004
+  type: called_by
+- target: tests/unit/test_t3428_declarative_scoring.py
+  type: called_by
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

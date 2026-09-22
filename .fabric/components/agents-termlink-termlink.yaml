@@ -15,6 +15,8 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: lib/paths.sh
+  type: calls
 depended_by:
 - target: bin/fw
   type: called_by
@@ -42,6 +44,8 @@ depended_by:
   type: called_by
 - target: tests/unit/t3038_session_scoped_focus.bats
   type: tests_by
+- target: tests/unit/t3422_dispatch_seeds_focus.bats
+  type: tests_by
 last_verified: 2026-03-23
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'

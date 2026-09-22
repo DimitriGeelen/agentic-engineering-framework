@@ -6,7 +6,18 @@ location: lib/aef_address.py
 tags: []
 purpose: 'T-3307 (arc-020 S1): V9 address grammar library.'
 depends_on: []
-depended_by: []
+depended_by:
+- target: lib/aef_circuit.py
+  type: called_by
+- target: lib/aef_circuit.py
+  type: uses_by
+- target: lib/aef_election.py
+  type: uses_by
+- target: lib/aef_resolve.py
+  type: called_by
+- target: lib/aef_resolve.py
+  type: uses_by
 last_verified: 2026-09-07
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

@@ -4,17 +4,9 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_project_docs_list.html
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: Project-docs list items, rendered by web/blueprints/core.py for docs beyond the dashboard's preview limit.
+depends_on: []
+depended_by: []
 last_verified: 2026-08-04
 created_by: unknown
+purpose_source: header-comment

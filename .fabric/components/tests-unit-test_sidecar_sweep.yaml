@@ -5,8 +5,19 @@ subsystem: tests
 location: tests/unit/test_sidecar_sweep.py
 tags: []
 purpose: 'T-3418 — arc-011 sidecar sweep: the cron cadence for resolve_expired (slice 7).'
-depends_on: []
+depends_on:
+- target: lib/sidecar/outbox.py
+  type: uses
+- target: lib/sidecar/delivery.py
+  type: uses
+- target: lib/sidecar/inbox.py
+  type: uses
+- target: lib/sidecar/status.py
+  type: uses
+- target: lib/sidecar_cli.py
+  type: uses
 depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/designer_ghosts.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Designer ghost-card grid, rendered by web/blueprints/designer.py:designer_ghosts.
 depends_on: []
 depended_by:
 - target: web/blueprints/designer.py
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-07-20
 created_by: unknown
 last_enriched: '2026-07-21'
+purpose_source: header-comment

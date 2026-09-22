@@ -5,8 +5,19 @@ subsystem: framework-core
 location: lib/cron_exec_bit.py
 tags: []
 purpose: 'T-3380: scripts a deployed crontab invokes DIRECTLY must be executable.'
-depends_on: []
-depended_by: []
+depends_on:
+- target: lib/exec-bit-drift.sh
+  type: calls
+- target: agents/monitor/liveness-check.sh
+  type: calls
+depended_by:
+- target: agents/audit/audit.sh
+  type: called_by
+- target: C-004
+  type: called_by
+- target: tests/unit/t3380_cron_exec_bit.bats
+  type: tests_by
 last_verified: 2026-09-17
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

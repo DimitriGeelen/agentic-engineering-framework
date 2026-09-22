@@ -5,8 +5,11 @@ subsystem: tests
 location: tests/unit/t3379_review_placeholder_foreign_port.bats
 tags: []
 purpose: T-3379 — the "Watchtower not running" placeholder must never name a port that something else already holds.
-depends_on: []
+depends_on:
+- target: lib/watchtower.sh
+  type: tests
 depended_by: []
 last_verified: 2026-09-17
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

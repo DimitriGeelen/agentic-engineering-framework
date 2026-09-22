@@ -8,6 +8,8 @@ purpose: corpus_lint — per-map + cross-map lint for the designer corpus (T-260
 depends_on:
 - target: tools/corpus_spec.py
   type: uses
+- target: policy/designer-pin.yaml
+  type: calls
 depended_by:
 - target: bin/fw
   type: called_by
@@ -21,5 +23,5 @@ depended_by:
   type: called_by
 last_verified: 2026-07-22
 created_by: unknown
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'
 purpose_source: docstring

@@ -6,7 +6,12 @@ location: tools/ewcr-contracts-check.py
 tags: []
 purpose: EWCR contracts v1 — freeze check (T-3385, Arc 0 candidate 2).
 depends_on: []
-depended_by: []
+depended_by:
+- target: tests/unit/t3385_ewcr_contracts_v1.bats
+  type: tests_by
+- target: tests/unit/t3388_ewcr_worked_procedure_fixture.bats
+  type: tests_by
 last_verified: 2026-09-18
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

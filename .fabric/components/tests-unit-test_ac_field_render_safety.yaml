@@ -5,8 +5,17 @@ subsystem: tests
 location: tests/unit/test_ac_field_render_safety.py
 tags: []
 purpose: 'T-3369: AC field rendering — escaped input, un-escaped output.'
-depends_on: []
+depends_on:
+- target: web/blueprints/tasks.py
+  type: calls
+- target: web/shared.py
+  type: calls
+- target: web/blueprints/tasks.py
+  type: registers
+- target: web/blueprints/tasks.py
+  type: uses
 depended_by: []
 last_verified: 2026-09-15
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

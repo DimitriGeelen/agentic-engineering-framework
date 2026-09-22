@@ -5,8 +5,19 @@ subsystem: tests
 location: tests/unit/test_sidecar_e2e.py
 tags: []
 purpose: 'T-3423 — arc-011 sidecar slice 9: the end-to-end harness state machine.'
-depends_on: []
+depends_on:
+- target: lib/sidecar/outbox.py
+  type: uses
+- target: lib/sidecar/delivery.py
+  type: uses
+- target: lib/sidecar/inbox.py
+  type: uses
+- target: lib/sidecar/e2e.py
+  type: uses
+- target: lib/sidecar_cli.py
+  type: uses
 depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

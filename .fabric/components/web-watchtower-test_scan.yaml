@@ -4,17 +4,25 @@ type: script
 subsystem: tests
 location: web/watchtower/test_scan.py
 tags: []
-
-purpose: "Test suite for the Watchtower scan engine (scanner/rules/prioritizer/feedback), colocated in web/watchtower/"
-
+purpose: Test suite for the Watchtower scan engine (scanner/rules/prioritizer/feedback), colocated in web/watchtower/
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/watchtower/scanner.py
+  type: calls
+- target: web/watchtower/rules.py
+  type: calls
+- target: web/watchtower/prioritizer.py
+  type: calls
+- target: web/watchtower/feedback.py
+  type: calls
+- target: web/watchtower/scanner.py
+  type: uses
+- target: web/watchtower/rules.py
+  type: uses
+- target: web/watchtower/prioritizer.py
+  type: uses
+- target: web/watchtower/feedback.py
+  type: uses
+depended_by: []
 last_verified: 2026-09-08
 created_by: unknown
+last_enriched: '2026-09-22'

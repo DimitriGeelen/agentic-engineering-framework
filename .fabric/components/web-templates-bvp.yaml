@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/bvp.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: BVP quadrant scatter plot of tasks/arcs by value score vs composite cost, served by web/blueprints/bvp.py.
 depends_on:
 - target: web/templates/base.html
   type: extends
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-05-19
 created_by: unknown
 last_enriched: '2026-05-20'
+purpose_source: header-comment

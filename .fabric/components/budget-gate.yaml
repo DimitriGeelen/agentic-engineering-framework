@@ -29,6 +29,8 @@ depends_on:
   type: calls
 - target: lib/context_tokens.py
   type: calls
+- target: C-008
+  type: calls
 depended_by:
 - target: C-009
   type: triggers
@@ -56,6 +58,8 @@ depended_by:
   type: tests_by
 - target: tests/unit/template_budget_parity.bats
   type: tests_by
+- target: tests/unit/t3248_useful_headroom.bats
+  type: tests_by
 shared_constants:
   TOKEN_WARN: 120000
   TOKEN_URGENT: 150000
@@ -67,4 +71,4 @@ docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'
   type: deep-dive
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'

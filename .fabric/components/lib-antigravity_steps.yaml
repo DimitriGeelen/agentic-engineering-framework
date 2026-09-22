@@ -5,8 +5,11 @@ subsystem: framework-core
 location: lib/antigravity_steps.py
 tags: []
 purpose: antigravity_steps.py — Antigravity Workflow Step Engine for AEF
-depends_on: []
+depends_on:
+- target: agents/sessions/antigravity/provision.sh
+  type: calls
 depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

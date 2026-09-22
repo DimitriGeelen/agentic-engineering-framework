@@ -306,4 +306,14 @@ depended_by:
   type: called_by
 - target: web/test_app.py
   type: uses_by
-last_enriched: '2026-09-05'
+- target: tests/unit/test_ac_field_render_safety.py
+  type: called_by
+- target: web/llm/manager.py
+  type: called_by
+- target: web/llm/manager.py
+  type: uses_by
+- target: web/watchtower/scanner.py
+  type: called_by
+- target: web/watchtower/scanner.py
+  type: uses_by
+last_enriched: '2026-09-22'

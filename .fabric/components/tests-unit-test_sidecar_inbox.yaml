@@ -5,8 +5,13 @@ subsystem: tests
 location: tests/unit/test_sidecar_inbox.py
 tags: []
 purpose: 'T-3406 — arc-011 sidecar inbox: cursor, dedupe, identity (slice 4).'
-depends_on: []
+depends_on:
+- target: lib/sidecar/outbox.py
+  type: uses
+- target: lib/sidecar/inbox.py
+  type: uses
 depended_by: []
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

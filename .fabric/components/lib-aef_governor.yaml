@@ -5,8 +5,13 @@ subsystem: framework-core
 location: lib/aef_governor.py
 tags: []
 purpose: 'arc-020 S5: environmental governor v1 — loadavg-based provisioning admission.'
-depends_on: []
-depended_by: []
+depends_on:
+- target: lib/config.sh
+  type: calls
+depended_by:
+- target: web/blueprints/config.py
+  type: called_by
 last_verified: 2026-09-07
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

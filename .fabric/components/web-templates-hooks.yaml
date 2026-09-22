@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/hooks.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Git-hooks status dashboard, rendered by web/blueprints/hooks.py.
 depends_on: []
 depended_by:
 - target: web/blueprints/hooks.py
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-05-05'
+purpose_source: header-comment

@@ -7,7 +7,14 @@ tags: []
 purpose: T-1856 anchor_task existence detection — extracted from agents/audit/audit.sh by T-3356 so the check is reachable
   without running the whole `--section structure` block.
 depends_on: []
-depended_by: []
+depended_by:
+- target: agents/audit/audit.sh
+  type: called_by
+- target: C-004
+  type: called_by
+- target: tests/unit/audit_anchor_task_existence.bats
+  type: tests_by
 last_verified: 2026-09-09
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

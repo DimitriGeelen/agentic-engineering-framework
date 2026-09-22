@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/escalation_drift.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: G-019 Layer C escalation-drift scanner results (H1/H2/H3 findings), rendered by web/blueprints/escalation.py.
 depends_on:
 - target: web/templates/base.html
   type: extends
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-04-28
 created_by: unknown
 last_enriched: '2026-04-29'
+purpose_source: header-comment

@@ -6,8 +6,13 @@ location: tests/unit/t3425_sidecar_read_allowlist.bats
 tags: []
 purpose: T-3425 (OBS-461) — the sidecar's read verbs and TermLink's channel reads are on the task gate's read-only allowlist;
   their write forms are not.
-depends_on: []
+depends_on:
+- target: agents/context/lib/safe-commands.sh
+  type: tests
+- target: bin/fw
+  type: tests
 depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

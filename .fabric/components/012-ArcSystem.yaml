@@ -1,7 +1,7 @@
 id: 012-ArcSystem.md
 name: 012-ArcSystem
 type: script
-subsystem: unknown
+subsystem: docs
 location: 012-ArcSystem.md
 tags: []
 purpose: An **arc** is a multi-task workspace grouping work by theme.

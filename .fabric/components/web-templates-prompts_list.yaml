@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/prompts_list.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Prompt-register listing page, rendered by web/blueprints/prompts.py:prompts_list.
 depends_on: []
 depended_by:
 - target: web/blueprints/prompts.py
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-04-18
 created_by: unknown
 last_enriched: '2026-04-19'
+purpose_source: header-comment

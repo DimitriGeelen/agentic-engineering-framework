@@ -64,6 +64,22 @@ depends_on:
   type: calls
 - target: lib/watchtower-staleness.sh
   type: calls
+- target: lib/audit-anchor-task.sh
+  type: calls
+- target: lib/exec-bit-drift.sh
+  type: calls
+- target: lib/sidecar-audit.sh
+  type: calls
+- target: lib/bvp-scorability.sh
+  type: calls
+- target: lib/cron_exec_bit.py
+  type: calls
+- target: tools/bats-dead-negation-lint.py
+  type: calls
+- target: agents/fabric/lib/underpopulated.py
+  type: calls
+- target: lib/fabric_doctor_facts.py
+  type: calls
 depended_by:
 - target: tests/unit/audit.bats
   type: called_by
@@ -73,5 +89,5 @@ depended_by:
   type: called_by
 last_verified: 2026-09-04
 created_by: unknown
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'
 purpose_source: header-comment

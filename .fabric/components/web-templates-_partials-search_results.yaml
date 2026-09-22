@@ -4,7 +4,7 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_partials/search_results.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Result-count summary and list, included by search.html inside #search-results-area.'
 depends_on: []
 depended_by:
 - target: web/templates/search.html
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

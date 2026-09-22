@@ -4,7 +4,7 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_partials/search_input.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Search bar + mode-pill controls included by search.html; the form GETs discovery.search_view via htmx.
 depends_on: []
 depended_by:
 - target: web/templates/search.html
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-09-03
 created_by: unknown
 last_enriched: '2026-09-03'
+purpose_source: header-comment

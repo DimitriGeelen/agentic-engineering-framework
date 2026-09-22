@@ -4,16 +4,12 @@ type: document
 subsystem: governance
 location: policy/standards/aef-bpmn-mapping-v1-partI.md
 tags: []
-
-purpose: "Frozen v1 Part I of the AEF-BPMN mapping standard: normative partition of aef: attributes into semantic (governance-bearing, compiled to/from task YAML) and presentational classes; vendored from 832-Workflow-designer (see .provenance.yaml sibling)."
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'Frozen v1 Part I of the AEF-BPMN mapping standard: normative partition of aef: attributes into semantic (governance-bearing,
+  compiled to/from task YAML) and presentational classes; vendored from 832-Workflow-designer (see .provenance.yaml sibling).'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: policy/standards/aef-bpmn-mapping-v1-partI.provenance.yaml
+  type: read_by
 last_verified: 2026-08-08
 created_by: unknown
+last_enriched: '2026-09-22'

@@ -3,26 +3,33 @@ name: designer-pin
 type: config
 subsystem: governance
 location: policy/designer-pin.yaml
-tags: [policy, designer, T-2521, vendoring]
-
-purpose: "Pinned Workflow Designer build record (T-2521): the AEF-832 integration contract naming the vendored release (tag, sha, artifact) of the 832-Workflow-designer single-file build. Bumped via pull-at-tag protocol, never edited in place."
-
-depends_on:
-  []
-
+tags:
+- policy
+- designer
+- T-2521
+- vendoring
+purpose: 'Pinned Workflow Designer build record (T-2521): the AEF-832 integration contract naming the vendored release (tag,
+  sha, artifact) of the 832-Workflow-designer single-file build. Bumped via pull-at-tag protocol, never edited in place.'
+depends_on: []
 depended_by:
-  - target: agents/designer/designer.sh
-    type: reads
-  - target: web/blueprints/designer.py
-    type: reads
-  - target: tools/corpus_lint.py
-    type: reads
-  - target: tools/corpus_spec.py
-    type: reads
-  - target: lib/init.sh
-    type: writes
-  - target: lib/upgrade.sh
-    type: writes
-
+- target: agents/designer/designer.sh
+  type: reads
+- target: web/blueprints/designer.py
+  type: reads
+- target: tools/corpus_lint.py
+  type: reads
+- target: tools/corpus_spec.py
+  type: reads
+- target: lib/init.sh
+  type: writes
+- target: lib/upgrade.sh
+  type: writes
+- target: tools/corpus_lint.py
+  type: called_by
+- target: tools/corpus_spec.py
+  type: called_by
+- target: web/blueprints/designer.py
+  type: called_by
 last_verified: 2026-09-08
 created_by: T-3350
+last_enriched: '2026-09-22'

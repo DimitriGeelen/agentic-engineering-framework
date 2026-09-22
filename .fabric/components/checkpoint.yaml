@@ -77,6 +77,10 @@ depended_by:
   type: called_by
 - target: agents/audit/audit.sh
   type: called_by
+- target: C-007
+  type: called_by
+- target: tests/unit/t3248_useful_headroom.bats
+  type: tests_by
 writes:
 - target: .context/working/.tool-counter
   contract: Text integer, incremented on every post-tool call
@@ -93,7 +97,7 @@ shared_constants:
   note: Duplicated in C-007 (budget-gate.sh)
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

@@ -18,6 +18,10 @@ depends_on:
   type: calls
 - target: web/config.py
   type: uses
+- target: web/llm/ollama_provider.py
+  type: calls
+- target: web/llm/ollama_provider.py
+  type: uses
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -30,4 +34,4 @@ depended_by:
   type: uses_by
 last_verified: 2026-03-12
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'

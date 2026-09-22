@@ -6,7 +6,14 @@ location: lib/sidecar-audit.sh
 tags: []
 purpose: lib/sidecar-audit.sh — arc-011 sidecar slice 8 (T-3420).
 depends_on: []
-depended_by: []
+depended_by:
+- target: agents/audit/audit.sh
+  type: called_by
+- target: C-004
+  type: called_by
+- target: tests/unit/sidecar_audit_rail.bats
+  type: tests_by
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

@@ -4,17 +4,17 @@ type: script
 subsystem: watchtower
 location: web/watchtower/scanner.py
 tags: []
-
-purpose: "Watchtower scan engine — reads project state (AUTHORITY tier) and writes structured YAML scan output"
-
+purpose: Watchtower scan engine — reads project state (AUTHORITY tier) and writes structured YAML scan output
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/shared.py
+  type: calls
+- target: web/shared.py
+  type: uses
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/watchtower/test_scan.py
+  type: called_by
+- target: web/watchtower/test_scan.py
+  type: uses_by
 last_verified: 2026-09-08
 created_by: unknown
+last_enriched: '2026-09-22'

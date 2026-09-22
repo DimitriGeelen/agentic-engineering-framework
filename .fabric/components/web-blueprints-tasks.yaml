@@ -30,7 +30,7 @@ depends_on:
   type: uses
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -99,3 +99,9 @@ depended_by:
   type: uses_by
 - target: agents/fabric/lib/enrich.py
   type: called_by
+- target: tests/unit/test_ac_field_render_safety.py
+  type: called_by
+- target: tests/unit/test_ac_field_render_safety.py
+  type: registered_by
+- target: tests/unit/test_ac_field_render_safety.py
+  type: uses_by

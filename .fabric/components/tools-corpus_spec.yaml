@@ -8,6 +8,8 @@ purpose: corpus_spec — declarative spec ⇄ designer-corpus BPMN (T-2603, arc 
 depends_on:
 - target: bin/fw
   type: calls
+- target: policy/designer-pin.yaml
+  type: calls
 depended_by:
 - target: agents/designer/designer.sh
   type: called_by
@@ -25,5 +27,5 @@ depended_by:
   type: uses_by
 last_verified: 2026-07-22
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-22'
 purpose_source: docstring

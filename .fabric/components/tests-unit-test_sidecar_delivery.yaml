@@ -5,8 +5,13 @@ subsystem: tests
 location: tests/unit/test_sidecar_delivery.py
 tags: []
 purpose: T-3404 — arc-011 sidecar uniform delivery transport (T-3397 Amendment 5, slice 2).
-depends_on: []
+depends_on:
+- target: lib/sidecar/outbox.py
+  type: uses
+- target: lib/sidecar/delivery.py
+  type: uses
 depended_by: []
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

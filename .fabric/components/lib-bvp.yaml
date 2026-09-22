@@ -21,7 +21,11 @@ depended_by:
   type: called_by
 - target: tests/lint/bvp-help-parity.bats
   type: tests_by
+- target: tests/unit/test_t3427_unscored_driver.py
+  type: called_by
+- target: tests/unit/test_t3428_declarative_scoring.py
+  type: called_by
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-22'
 purpose_source: header-comment

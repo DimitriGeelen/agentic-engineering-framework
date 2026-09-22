@@ -4,18 +4,22 @@ type: script
 subsystem: framework-core
 location: lib/fabric_doctor_facts.py
 tags: []
-
-purpose: "Flatten `underpopulated.py --json` into one tab-separated line for `fw doctor`."
+purpose: Flatten `underpopulated.py --json` into one tab-separated line for `fw doctor`.
 purpose_source: docstring
-
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: lib/cron_dry_run.py
+  type: calls
+- target: bin/fw
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/audit/audit.sh
+  type: called_by
+- target: C-004
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: tests/unit/t3430_fabric_audit_doctor.bats
+  type: tests_by
 last_verified: 2026-09-22
 created_by: unknown
+last_enriched: '2026-09-22'

@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/orchestrator.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Orchestrator dispatch-substrate dashboard, rendered by web/blueprints/orchestrator.py.
 depends_on:
 - target: web/templates/base.html
   type: extends
@@ -14,3 +14,4 @@ depended_by:
 last_verified: 2026-05-01
 created_by: unknown
 last_enriched: '2026-05-05'
+purpose_source: header-comment

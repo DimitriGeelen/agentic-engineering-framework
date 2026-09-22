@@ -5,8 +5,15 @@ subsystem: framework-core
 location: lib/aef_repo_source.py
 tags: []
 purpose: 'T-3312 (arc-020 S6): fleet repo-source + integrity verify.'
-depends_on: []
+depends_on:
+- target: lib/aef_resolve.py
+  type: calls
+- target: lib/aef_resolve.py
+  type: uses
+- target: lib/aef_election.py
+  type: uses
 depended_by: []
 last_verified: 2026-09-07
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

@@ -203,6 +203,10 @@ depended_by:
   type: called_by
 - target: agents/context/checkpoint.sh
   type: called_by
+- target: agents/termlink/termlink.sh
+  type: called_by
+- target: tests/unit/t3422_dispatch_seeds_focus.bats
+  type: tests_by
 last_verified: 2026-03-10
 created_by: T-412
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'

@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: agents/termlink/bvp-estimator/estimator.py
 tags: []
-purpose: "BVP estimator worker implementation (T-1922, v1-heuristic, deterministic): applies a rubric-based classifier to task bodies and writes bvp_scores_proposed under M3 v2-delta semantics."
+purpose: 'BVP estimator worker implementation (T-1922, v1-heuristic, deterministic): applies a rubric-based classifier to
+  task bodies and writes bvp_scores_proposed under M3 v2-delta semantics.'
 depends_on:
 - target: lib/arc.sh
   type: calls
@@ -16,6 +17,10 @@ depends_on:
   type: calls
 - target: agents/termlink/bvp-estimator/bvp-estimator.sh
   type: calls
+- target: policy/value-drivers.yaml
+  type: calls
+- target: lib/bvp-scorability.sh
+  type: calls
 depended_by:
 - target: lib/bvp.sh
   type: called_by
@@ -25,6 +30,8 @@ depended_by:
   type: tests_by
 - target: tests/unit/test_t3068_unknown_cost.py
   type: called_by
+- target: tests/unit/test_t3428_declarative_scoring.py
+  type: called_by
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-22'

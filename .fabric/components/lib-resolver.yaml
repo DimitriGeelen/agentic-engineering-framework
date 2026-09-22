@@ -20,6 +20,8 @@ depends_on:
   type: uses
 - target: lib/worker_identity.py
   type: uses
+- target: policy/value-drivers.yaml
+  type: calls
 depended_by:
 - target: lib/resolver.sh
   type: called_by
@@ -65,5 +67,5 @@ depended_by:
   type: called_by
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'
 purpose_source: docstring

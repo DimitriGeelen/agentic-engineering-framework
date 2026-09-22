@@ -6,8 +6,15 @@ location: tests/unit/test_t3428_declarative_scoring.py
 tags: []
 purpose: T-3428 (OBS-463 leg 2) — a driver scores from a declarative `scoring:` spec, not only from the hardcoded handler
   table.
-depends_on: []
+depends_on:
+- target: lib/bvp.sh
+  type: calls
+- target: lib/bvp-scorability.sh
+  type: calls
+- target: agents/termlink/bvp-estimator/estimator.py
+  type: calls
 depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

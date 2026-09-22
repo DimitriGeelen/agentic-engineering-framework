@@ -6,8 +6,13 @@ location: tests/unit/t3374_env_prefix_denylist.bats
 tags: []
 purpose: T-3374 (OBS-423) — the env-prefix stripper must refuse names that decide what the command it strips them from actually
   RESOLVES to.
-depends_on: []
+depends_on:
+- target: agents/context/lib/safe-commands.sh
+  type: tests
+- target: bin/fw
+  type: tests
 depended_by: []
 last_verified: 2026-09-16
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

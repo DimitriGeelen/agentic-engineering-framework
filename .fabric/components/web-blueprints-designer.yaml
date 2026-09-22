@@ -28,6 +28,8 @@ depends_on:
   type: uses
 - target: web/designer_registry.py
   type: uses
+- target: policy/designer-pin.yaml
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -41,5 +43,5 @@ depended_by:
   type: uses_by
 last_verified: 2026-07-10
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-22'
 purpose_source: docstring

@@ -5,8 +5,15 @@ subsystem: tests
 location: tests/unit/test_sidecar_termlink_transport.py
 tags: []
 purpose: T-3405 — arc-011 sidecar real TermLink transport + hub probe (Amendment 5, slice 3).
-depends_on: []
+depends_on:
+- target: lib/sidecar/outbox.py
+  type: uses
+- target: lib/sidecar/delivery.py
+  type: uses
+- target: lib/sidecar/termlink_transport.py
+  type: uses
 depended_by: []
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

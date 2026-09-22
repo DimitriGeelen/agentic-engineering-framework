@@ -5,8 +5,13 @@ subsystem: tests
 location: tests/unit/t3422_dispatch_seeds_focus.bats
 tags: []
 purpose: T-3422 — dispatch pre-seeds the worker's session-scoped focus file.
-depends_on: []
+depends_on:
+- target: lib/paths.sh
+  type: tests
+- target: agents/termlink/termlink.sh
+  type: tests
 depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

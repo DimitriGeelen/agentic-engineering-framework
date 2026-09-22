@@ -4,18 +4,18 @@ type: script
 subsystem: component-fabric
 location: agents/fabric/lib/describe.py
 tags: []
-
-purpose: "Derive a component card's `purpose` and `subsystem` from the source file itself."
+purpose: Derive a component card's `purpose` and `subsystem` from the source file itself.
 purpose_source: docstring
-
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: lib/render_surface.sh
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/fabric/lib/enrich.py
+  type: uses_by
+- target: agents/fabric/lib/underpopulated.py
+  type: uses_by
+- target: tests/unit/test_t3430_describe.py
+  type: called_by
 last_verified: 2026-09-22
 created_by: unknown
+last_enriched: '2026-09-22'

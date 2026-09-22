@@ -14,9 +14,11 @@ depends_on:
   type: calls
 - target: agents/context/inject-next-directive.py
   type: calls
+- target: bin/fw
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-07-07'
+last_enriched: '2026-09-22'
 depended_by:
 - target: agents/audit/self-audit.sh
   type: read_by
@@ -34,3 +36,5 @@ depended_by:
   type: tests_by
 - target: C-009
   type: called_by
+- target: tests/unit/t3431_fabric_session_start.bats
+  type: tests_by

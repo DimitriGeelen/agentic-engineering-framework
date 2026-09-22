@@ -5,8 +5,15 @@ subsystem: framework-core
 location: lib/aef_provision_log.py
 tags: []
 purpose: 'T-3313 (arc-020 S7): durable JSONL audit trail for auto-provision events.'
-depends_on: []
-depended_by: []
+depends_on:
+- target: lib/aef_resolve.py
+  type: calls
+- target: bin/fw
+  type: calls
+depended_by:
+- target: bin/fw
+  type: called_by
 last_verified: 2026-09-07
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

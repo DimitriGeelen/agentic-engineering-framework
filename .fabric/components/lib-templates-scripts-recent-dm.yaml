@@ -4,17 +4,11 @@ type: script
 subsystem: termlink-integration
 location: lib/templates/scripts/recent-dm.sh
 tags: []
-
-purpose: "Template skill script: per-peer DM conversation history reader (T-1862, /recent-dm)"
-
+purpose: 'Template skill script: per-peer DM conversation history reader (T-1862, /recent-dm)'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/templates/scripts/agent-chat-arc-recent.sh
+  type: calls
+depended_by: []
 last_verified: 2026-09-08
 created_by: unknown
+last_enriched: '2026-09-22'

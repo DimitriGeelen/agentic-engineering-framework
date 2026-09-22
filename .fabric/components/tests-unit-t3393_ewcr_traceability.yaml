@@ -5,8 +5,11 @@ subsystem: tests
 location: tests/unit/t3393_ewcr_traceability.bats
 tags: []
 purpose: T-3393 — the §13 invariant traceability matrix resolves, and its fence bites.
-depends_on: []
+depends_on:
+- target: tools/ewcr-trace-check.py
+  type: tests
 depended_by: []
 last_verified: 2026-09-19
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

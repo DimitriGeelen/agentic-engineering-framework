@@ -6,7 +6,16 @@ location: lib/sidecar/inbox.py
 tags: []
 purpose: 'arc-011 sidecar — inbox: consults addressed to this agent.'
 depends_on: []
-depended_by: []
+depended_by:
+- target: tests/unit/test_sidecar_e2e.py
+  type: uses_by
+- target: tests/unit/test_sidecar_inbox.py
+  type: uses_by
+- target: tests/unit/test_sidecar_status.py
+  type: uses_by
+- target: tests/unit/test_sidecar_sweep.py
+  type: uses_by
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

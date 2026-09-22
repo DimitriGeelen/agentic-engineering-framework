@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/reviewer_audit.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Corpus-mode reviewer audit results (Pass A drift signal, Pass B re-verification), rendered by web/blueprints/reviewer.py.
 depends_on:
 - target: web/templates/base.html
   type: extends
@@ -12,3 +12,4 @@ depended_by: []
 last_verified: 2026-04-26
 created_by: unknown
 last_enriched: '2026-04-26'
+purpose_source: header-comment

@@ -5,8 +5,11 @@ subsystem: framework-core
 location: tools/ewcr-arc0-writeset-scoped-coverage.py
 tags: []
 purpose: EWCR Arc 0 — write-set-SCOPED fabric coverage (T-3401, EWCR-ARC0-ATTEST-832 Round 1).
-depends_on: []
+depends_on:
+- target: lib/branch-hygiene.sh
+  type: calls
 depended_by: []
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

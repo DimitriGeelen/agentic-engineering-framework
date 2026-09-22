@@ -6,8 +6,11 @@ location: tests/unit/t3385_ewcr_contracts_v1.bats
 tags: []
 purpose: 'T-3385 — EWCR contracts v1 are FROZEN: seven draft 2020-12 schemas, one worked example each, sha256 manifest. tools/ewcr-contracts-check.py
   is the fence.'
-depends_on: []
+depends_on:
+- target: tools/ewcr-contracts-check.py
+  type: tests
 depended_by: []
 last_verified: 2026-09-18
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

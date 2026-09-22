@@ -6,8 +6,13 @@ location: tests/unit/sidecar_inbox_hook.bats
 tags: []
 purpose: 'T-3407 — sidecar-inbox UserPromptSubmit hook: silent-when-empty, surfaces when pending, peeks (never consumes),
   fails open.'
-depends_on: []
+depends_on:
+- target: agents/context/sidecar-inbox.sh
+  type: tests
+- target: bin/fw
+  type: tests
 depended_by: []
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

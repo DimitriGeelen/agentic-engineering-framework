@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/timeline_session.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Single-session timeline detail (full task list), rendered by web/blueprints/timeline.py:timeline_session.
 depends_on: []
 depended_by:
 - target: web/blueprints/timeline.py
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-08-03
 created_by: unknown
 last_enriched: '2026-08-23'
+purpose_source: header-comment

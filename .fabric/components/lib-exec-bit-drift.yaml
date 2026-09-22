@@ -5,8 +5,19 @@ subsystem: framework-core
 location: lib/exec-bit-drift.sh
 tags: []
 purpose: 'lib/exec-bit-drift.sh — T-3317 (OBS-336): exec-bit drift detector.'
-depends_on: []
-depended_by: []
+depends_on:
+- target: bin/fw
+  type: calls
+depended_by:
+- target: agents/audit/audit.sh
+  type: called_by
+- target: C-004
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: lib/cron_exec_bit.py
+  type: called_by
 last_verified: 2026-09-07
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

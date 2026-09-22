@@ -3,18 +3,21 @@ name: authority-envelope
 type: config
 subsystem: governance
 location: policy/authority-envelope.yaml
-tags: [policy, sovereign-authored, arc-013]
-
-purpose: "Sovereign-authored authority envelope (arc-013/T-2430): the trust partition deciding which agent actions may be committed autonomously vs queued to the human. RO to the agent in a deployed cage — the agent commits within the envelope but cannot change it."
-
-depends_on:
-  []
-
+tags:
+- policy
+- sovereign-authored
+- arc-013
+purpose: 'Sovereign-authored authority envelope (arc-013/T-2430): the trust partition deciding which agent actions may be
+  committed autonomously vs queued to the human. RO to the agent in a deployed cage — the agent commits within the envelope
+  but cannot change it.'
+depends_on: []
 depended_by:
-  - target: lib/govd_holder.py
-    type: reads
-  - target: agents/govd/govd.sh
-    type: reads
-
+- target: lib/govd_holder.py
+  type: reads
+- target: agents/govd/govd.sh
+  type: reads
+- target: agents/govd/govd.sh
+  type: read_by
 last_verified: 2026-09-08
 created_by: T-3350
+last_enriched: '2026-09-22'

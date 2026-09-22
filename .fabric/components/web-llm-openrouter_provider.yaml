@@ -4,17 +4,21 @@ type: script
 subsystem: watchtower
 location: web/llm/openrouter_provider.py
 tags: []
-
-purpose: "OpenRouter LLM provider — OpenAI-compatible API client behind the LLMProvider interface (T-377)"
-
+purpose: OpenRouter LLM provider — OpenAI-compatible API client behind the LLMProvider interface (T-377)
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/llm/provider.py
+  type: calls
+- target: web/llm/provider.py
+  type: uses
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/blueprints/settings.py
+  type: called_by
+- target: web/blueprints/settings.py
+  type: uses_by
+- target: web/llm/manager.py
+  type: called_by
+- target: web/llm/manager.py
+  type: uses_by
 last_verified: 2026-09-08
 created_by: unknown
+last_enriched: '2026-09-22'

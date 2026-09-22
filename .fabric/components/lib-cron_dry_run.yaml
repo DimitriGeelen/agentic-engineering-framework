@@ -17,7 +17,9 @@ depended_by:
   type: called_by
 - target: agents/audit/audit.sh
   type: called_by
+- target: lib/fabric_doctor_facts.py
+  type: called_by
 last_verified: 2026-05-20
 created_by: unknown
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'
 purpose_source: docstring

@@ -6,8 +6,11 @@ location: tests/unit/test_t3427_unscored_driver.py
 tags: []
 purpose: T-3427 (OBS-463) — a free driver with no scorer is UNSCORED, and the add verb says so before the Sovereign spends
   the slot.
-depends_on: []
+depends_on:
+- target: lib/bvp.sh
+  type: calls
 depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

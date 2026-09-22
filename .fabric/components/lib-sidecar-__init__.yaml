@@ -6,7 +6,12 @@ location: lib/sidecar/__init__.py
 tags: []
 purpose: arc-011 sidecar substrate (T-3402, T-3397 Amendment 5).
 depends_on: []
-depended_by: []
+depended_by:
+- target: lib/sidecar_cli.py
+  type: called_by
+- target: lib/sidecar_cli.py
+  type: uses_by
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

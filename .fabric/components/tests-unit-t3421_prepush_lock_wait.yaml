@@ -5,8 +5,15 @@ subsystem: tests
 location: tests/unit/t3421_prepush_lock_wait.bats
 tags: []
 purpose: T-3421 — the pre-push audit-lock wait is derived from the measured audit.
-depends_on: []
+depends_on:
+- target: lib/prepush-lock-wait.sh
+  type: tests
+- target: C-004
+  type: tests
+- target: agents/git/lib/hooks.sh
+  type: tests
 depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

@@ -7,7 +7,14 @@ tags: []
 purpose: 'lib/section-extract.sh — anchored section extraction for the task-file sections that gate build/inception completion,
   other than ## Verification'
 depends_on: []
-depended_by: []
+depended_by:
+- target: agents/context/check-active-task.sh
+  type: called_by
+- target: agents/task-create/update-task.sh
+  type: called_by
+- target: lib/inception.sh
+  type: called_by
 last_verified: 2026-09-05
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

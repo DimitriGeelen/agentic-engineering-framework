@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/prompt_detail.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Single prompt-register entry detail view, rendered by web/blueprints/prompts.py:prompt_detail.
 depends_on: []
 depended_by:
 - target: web/blueprints/prompts.py
@@ -12,3 +12,4 @@ depended_by:
 last_verified: 2026-04-18
 created_by: unknown
 last_enriched: '2026-04-19'
+purpose_source: header-comment

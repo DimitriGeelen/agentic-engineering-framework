@@ -4,18 +4,14 @@ type: script
 subsystem: tests
 location: tests/unit/test_t3430_describe.py
 tags: []
-
-purpose: "T-3430 — the fabric card deriver: what a file says about itself, or a refusal."
+purpose: 'T-3430 — the fabric card deriver: what a file says about itself, or a refusal.'
 purpose_source: docstring
-
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: C-004
+  type: calls
+- target: agents/fabric/lib/describe.py
+  type: calls
+depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
+last_enriched: '2026-09-22'

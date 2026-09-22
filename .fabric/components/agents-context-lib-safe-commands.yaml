@@ -49,6 +49,10 @@ depended_by:
   type: called_by
 - target: tests/unit/t3222_fetch_writes_file.bats
   type: called_by
+- target: tests/unit/t3374_env_prefix_denylist.bats
+  type: tests_by
+- target: tests/unit/t3425_sidecar_read_allowlist.bats
+  type: tests_by
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'

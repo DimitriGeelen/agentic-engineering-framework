@@ -24,6 +24,18 @@ depends_on:
   type: uses
 - target: web/secrets_store.py
   type: uses
+- target: web/llm/ollama_provider.py
+  type: calls
+- target: web/llm/manager.py
+  type: calls
+- target: web/llm/openrouter_provider.py
+  type: calls
+- target: web/llm/ollama_provider.py
+  type: uses
+- target: web/llm/manager.py
+  type: uses
+- target: web/llm/openrouter_provider.py
+  type: uses
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -50,4 +62,4 @@ depended_by:
   type: uses_by
 last_verified: 2026-03-09
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'

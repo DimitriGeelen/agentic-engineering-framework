@@ -78,6 +78,22 @@ depends_on:
   type: calls
 - target: lib/watchtower-staleness.sh
   type: calls
+- target: lib/audit-anchor-task.sh
+  type: calls
+- target: lib/exec-bit-drift.sh
+  type: calls
+- target: lib/sidecar-audit.sh
+  type: calls
+- target: lib/bvp-scorability.sh
+  type: calls
+- target: lib/cron_exec_bit.py
+  type: calls
+- target: tools/bats-dead-negation-lint.py
+  type: calls
+- target: agents/fabric/lib/underpopulated.py
+  type: calls
+- target: lib/fabric_doctor_facts.py
+  type: calls
 depended_by:
 - target: cron-audit
   type: triggers
@@ -196,6 +212,16 @@ depended_by:
   type: called_by
 - target: web/blueprints/config.py
   type: called_by
+- target: tests/unit/sidecar_audit_rail.bats
+  type: tests_by
+- target: tests/unit/t3421_prepush_lock_wait.bats
+  type: tests_by
+- target: tests/unit/t3430_fabric_audit_doctor.bats
+  type: tests_by
+- target: tests/unit/test_t3430_describe.py
+  type: called_by
+- target: tools/bats-dead-negation-lint.py
+  type: called_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'

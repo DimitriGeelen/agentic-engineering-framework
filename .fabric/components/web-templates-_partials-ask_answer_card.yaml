@@ -4,17 +4,10 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_partials/ask_answer_card.html
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'Markup for the #ask-answer-card AI-answer panel (model badge, conversation thread, status, answer body) that web/static/js/search-qa.js
+  populates.'
+depends_on: []
+depended_by: []
 last_verified: 2026-09-03
 created_by: unknown
+purpose_source: header-comment

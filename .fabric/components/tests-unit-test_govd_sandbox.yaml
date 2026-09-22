@@ -5,8 +5,13 @@ subsystem: tests
 location: tests/unit/test_govd_sandbox.py
 tags: []
 purpose: 'T-2433 (arc-013): sandbox profile emit / status / install — the static floor.'
-depends_on: []
+depends_on:
+- target: lib/govd_sandbox.py
+  type: calls
+- target: bin/fw
+  type: calls
 depended_by: []
 last_verified: 2026-09-20
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

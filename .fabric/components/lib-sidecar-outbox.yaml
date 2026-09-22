@@ -6,7 +6,24 @@ location: lib/sidecar/outbox.py
 tags: []
 purpose: arc-011 sidecar — same-host outbox message/flag/ack substrate.
 depends_on: []
-depended_by: []
+depended_by:
+- target: tests/unit/sidecar_audit_rail.bats
+  type: tests_by
+- target: tests/unit/test_sidecar_delivery.py
+  type: uses_by
+- target: tests/unit/test_sidecar_e2e.py
+  type: uses_by
+- target: tests/unit/test_sidecar_inbox.py
+  type: uses_by
+- target: tests/unit/test_sidecar_outbox.py
+  type: uses_by
+- target: tests/unit/test_sidecar_status.py
+  type: uses_by
+- target: tests/unit/test_sidecar_sweep.py
+  type: uses_by
+- target: tests/unit/test_sidecar_termlink_transport.py
+  type: uses_by
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

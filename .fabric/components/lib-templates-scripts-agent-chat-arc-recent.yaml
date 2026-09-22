@@ -4,17 +4,11 @@ type: script
 subsystem: termlink-integration
 location: lib/templates/scripts/agent-chat-arc-recent.sh
 tags: []
-
-purpose: "Template skill script: fleet-wide recent-posts reader for agent-chat-arc across all hubs (T-1849, /recent-chat)"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'Template skill script: fleet-wide recent-posts reader for agent-chat-arc across all hubs (T-1849, /recent-chat)'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/templates/scripts/recent-dm.sh
+  type: called_by
 last_verified: 2026-09-08
 created_by: unknown
+last_enriched: '2026-09-22'

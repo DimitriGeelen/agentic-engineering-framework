@@ -207,9 +207,17 @@ depends_on:
   type: calls
 - target: lib/cron-orphans.sh
   type: calls
+- target: lib/exec-bit-drift.sh
+  type: calls
+- target: lib/fabric_doctor_facts.py
+  type: calls
+- target: lib/govd_sandbox.py
+  type: calls
+- target: lib/aef_provision_log.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -1061,3 +1069,27 @@ depended_by:
   type: called_by
 - target: tests/unit/t3281_cron_orphan_scan.bats
   type: tests_by
+- target: agents/context/post-compact-resume.sh
+  type: called_by
+- target: agents/sessions/antigravity/provision.sh
+  type: called_by
+- target: lib/aef_provision_log.py
+  type: called_by
+- target: lib/exec-bit-drift.sh
+  type: called_by
+- target: lib/fabric_doctor_facts.py
+  type: called_by
+- target: lib/govd_sandbox.py
+  type: called_by
+- target: lib/sidecar/e2e.py
+  type: called_by
+- target: tests/unit/sidecar_inbox_hook.bats
+  type: tests_by
+- target: tests/unit/t3374_env_prefix_denylist.bats
+  type: tests_by
+- target: tests/unit/t3425_sidecar_read_allowlist.bats
+  type: tests_by
+- target: tests/unit/t3430_fabric_audit_doctor.bats
+  type: tests_by
+- target: tests/unit/test_govd_sandbox.py
+  type: called_by

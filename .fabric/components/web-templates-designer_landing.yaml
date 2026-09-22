@@ -4,10 +4,11 @@ type: template
 subsystem: watchtower
 location: web/templates/designer_landing.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Designer landing page corpus-card grid, rendered by web/blueprints/designer.py.
 depends_on: []
 depended_by:
 - target: web/blueprints/designer.py
   type: rendered_by
 last_verified: '2026-07-22'
 created_by: unknown
+purpose_source: header-comment

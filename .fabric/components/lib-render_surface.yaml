@@ -18,7 +18,9 @@ depended_by:
   type: tests_by
 - target: tests/unit/check_render_surface_human_ac_sigpipe.bats
   type: called_by
+- target: agents/fabric/lib/describe.py
+  type: called_by
 last_verified: 2026-05-09
 created_by: unknown
-last_enriched: '2026-08-23'
+last_enriched: '2026-09-22'
 purpose_source: header-comment

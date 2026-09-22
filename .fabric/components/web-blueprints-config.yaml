@@ -23,6 +23,8 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: lib/aef_governor.py
+  type: calls
 depended_by:
 - target: web/templates/config.html
   type: used-by
@@ -39,4 +41,4 @@ depended_by:
   type: uses_by
 last_verified: 2026-04-03
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'

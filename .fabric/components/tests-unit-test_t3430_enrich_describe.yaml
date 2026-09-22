@@ -4,18 +4,12 @@ type: script
 subsystem: tests
 location: tests/unit/test_t3430_enrich_describe.py
 tags: []
-
-purpose: "T-3430 — `fw fabric enrich --describe`: fill the placeholders, never overwrite."
+purpose: 'T-3430 — `fw fabric enrich --describe`: fill the placeholders, never overwrite.'
 purpose_source: docstring
-
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/fabric/lib/enrich.py
+  type: calls
+depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
+last_enriched: '2026-09-22'

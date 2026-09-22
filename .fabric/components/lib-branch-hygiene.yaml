@@ -19,7 +19,9 @@ depended_by:
   type: tests_by
 - target: agents/audit/audit.sh
   type: called_by
+- target: tools/ewcr-arc0-writeset-scoped-coverage.py
+  type: called_by
 last_verified: 2026-07-07
 created_by: unknown
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'
 purpose_source: header-comment

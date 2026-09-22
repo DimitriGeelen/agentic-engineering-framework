@@ -3,20 +3,23 @@ name: proxy-policy
 type: config
 subsystem: governance
 location: policy/proxy-policy.yaml
-tags: [policy, sovereign-authored, arc-013, govd]
-
-purpose: "Sovereign-authored proxy mediation policy (arc-013/T-2431): the relay reads it to allow or deny each tool_use the model emits; invariants are hard denies. RO to the agent uid in a deployed cage (Lock-1 Part 1)."
-
-depends_on:
-  []
-
+tags:
+- policy
+- sovereign-authored
+- arc-013
+- govd
+purpose: 'Sovereign-authored proxy mediation policy (arc-013/T-2431): the relay reads it to allow or deny each tool_use the
+  model emits; invariants are hard denies. RO to the agent uid in a deployed cage (Lock-1 Part 1).'
+depends_on: []
 depended_by:
-  - target: lib/govd_relay.py
-    type: reads
-  - target: lib/govd_policy.py
-    type: reads
-  - target: agents/govd/govd.sh
-    type: reads
-
+- target: lib/govd_relay.py
+  type: reads
+- target: lib/govd_policy.py
+  type: reads
+- target: agents/govd/govd.sh
+  type: reads
+- target: agents/govd/govd.sh
+  type: read_by
 last_verified: 2026-09-08
 created_by: T-3350
+last_enriched: '2026-09-22'

@@ -7,7 +7,12 @@ tags: []
 purpose: 'lib/prepush-lock-wait.sh — T-3421: derive the pre-push audit-lock wait from the measured audit, instead of asserting
   it.'
 depends_on: []
-depended_by: []
+depended_by:
+- target: agents/git/lib/hooks.sh
+  type: called_by
+- target: tests/unit/t3421_prepush_lock_wait.bats
+  type: tests_by
 last_verified: 2026-09-22
 created_by: unknown
 purpose_source: header-comment
+last_enriched: '2026-09-22'

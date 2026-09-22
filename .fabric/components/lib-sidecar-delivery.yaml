@@ -6,7 +6,20 @@ location: lib/sidecar/delivery.py
 tags: []
 purpose: arc-011 sidecar — uniform delivery transport for the outbox.
 depends_on: []
-depended_by: []
+depended_by:
+- target: tests/unit/test_sidecar_delivery.py
+  type: uses_by
+- target: tests/unit/test_sidecar_e2e.py
+  type: uses_by
+- target: tests/unit/test_sidecar_status.py
+  type: called_by
+- target: tests/unit/test_sidecar_status.py
+  type: uses_by
+- target: tests/unit/test_sidecar_sweep.py
+  type: uses_by
+- target: tests/unit/test_sidecar_termlink_transport.py
+  type: uses_by
 last_verified: 2026-09-21
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

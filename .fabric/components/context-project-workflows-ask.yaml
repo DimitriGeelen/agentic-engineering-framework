@@ -4,8 +4,10 @@ type: data
 subsystem: context-fabric
 location: .context/project/workflows/ask.yaml
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: 'Workflow config for `fw ask`: routes web/ask.py''s synchronous RAG answer through ollama-local with a litellm cloud
+  fallback on connection error.'
 depends_on: []
 depended_by: []
 last_verified: 2026-08-16
 created_by: unknown
+purpose_source: header-comment

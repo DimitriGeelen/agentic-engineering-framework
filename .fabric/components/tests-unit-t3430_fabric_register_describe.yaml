@@ -4,18 +4,13 @@ type: script
 subsystem: tests
 location: tests/unit/t3430_fabric_register_describe.bats
 tags: []
-
-purpose: "T-3430: `fw fabric register` derives purpose/subsystem instead of writing placeholders — and says so out loud when it cannot."
+purpose: 'T-3430: `fw fabric register` derives purpose/subsystem instead of writing placeholders — and says so out loud when
+  it cannot.'
 purpose_source: header-comment
-
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/fabric/lib/register.sh
+  type: tests
+depended_by: []
 last_verified: 2026-09-22
 created_by: unknown
+last_enriched: '2026-09-22'

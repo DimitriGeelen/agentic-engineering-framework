@@ -14,6 +14,8 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: lib/section-extract.sh
+  type: calls
 depended_by:
 - target: C-009
   type: triggered_by
@@ -123,4 +125,4 @@ docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'
   type: deep-dive
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'

@@ -5,8 +5,15 @@ subsystem: framework-core
 location: lib/govd_sandbox.py
 tags: []
 purpose: govd_sandbox — OS sandbox profile emit / install / drift (arc-013 / T-2433, design §7a).
-depends_on: []
-depended_by: []
+depends_on:
+- target: bin/fw
+  type: calls
+depended_by:
+- target: bin/fw
+  type: called_by
+- target: tests/unit/test_govd_sandbox.py
+  type: called_by
 last_verified: 2026-09-20
 created_by: unknown
 purpose_source: docstring
+last_enriched: '2026-09-22'

@@ -33,7 +33,9 @@ depended_by:
   type: called_by
 - target: web/blueprints/discovery.py
   type: uses_by
+- target: web/llm/ollama_provider.py
+  type: called_by
 last_verified: 2026-09-03
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'
 purpose_source: docstring

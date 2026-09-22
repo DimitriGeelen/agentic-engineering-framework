@@ -4,17 +4,13 @@ type: script
 subsystem: watchtower
 location: web/watchtower/prioritizer.py
 tags: []
-
-purpose: "Work-queue prioritization for the Watchtower scan engine — orders active tasks by issues > stale > active > captured"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: Work-queue prioritization for the Watchtower scan engine — orders active tasks by issues > stale > active > captured
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/watchtower/test_scan.py
+  type: called_by
+- target: web/watchtower/test_scan.py
+  type: uses_by
 last_verified: 2026-09-08
 created_by: unknown
+last_enriched: '2026-09-22'

@@ -23,7 +23,9 @@ depended_by:
   type: called_by
 - target: agents/context/checkpoint.sh
   type: called_by
+- target: tests/unit/t3248_useful_headroom.bats
+  type: tests_by
 last_verified: 2026-08-09
 created_by: unknown
-last_enriched: '2026-09-05'
+last_enriched: '2026-09-22'
 purpose_source: docstring

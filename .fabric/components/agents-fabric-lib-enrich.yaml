@@ -28,12 +28,16 @@ depends_on:
   type: calls
 - target: agents/context/check-inception-schema.sh
   type: calls
+- target: agents/fabric/lib/describe.py
+  type: uses
 depended_by:
 - target: tests/unit/t2457_fabric_atomic_card_write.bats
   type: tests_by
 - target: tests/unit/test_enrich_unresolved_targets.py
   type: called_by
+- target: tests/unit/test_t3430_enrich_describe.py
+  type: called_by
 last_verified: 2026-09-03
 created_by: unknown
-last_enriched: '2026-09-03'
+last_enriched: '2026-09-22'
 purpose_source: docstring

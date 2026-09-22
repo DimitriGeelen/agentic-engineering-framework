@@ -21,4 +21,6 @@ depended_by:
   type: called_by
 - target: tests/unit/resume.bats
   type: tests_by
-last_enriched: '2026-05-20'
+- target: tests/unit/t3431_fabric_session_start.bats
+  type: tests_by
+last_enriched: '2026-09-22'
