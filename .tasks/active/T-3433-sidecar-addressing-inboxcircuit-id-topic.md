@@ -293,6 +293,9 @@ python3 -c "import json; d=json.load(open('.context/sidecar/e2e/60867b67.json'))
 python3 -c "import json; d=json.load(open('.context/sidecar/e2e/8dbad116.json')); assert d['mode']=='peer' and d['peer']=='010-termlink'; assert d['topics']['responder'][0].startswith('inbox:'); print('peer verdict', d['verdict'])"
 bash -c 'set -eo pipefail; for f in lib/sidecar/circuit.py lib/sidecar/inbox.py lib/sidecar/status.py lib/sidecar/termlink_transport.py lib/sidecar/e2e.py lib/sidecar_cli.py; do cmp -s "$f" ".agentic-framework/$f"; done'
 test -f docs/reports/T-3433-circuit-addressing.md
+grep -q 'export FW_SIDECAR_AGENT_ID=' agents/termlink/termlink.sh && ! grep -q 'T-3433' agents/termlink/termlink.sh
+python3 -c "import sys; sys.path.insert(0,'.'); from lib.sidecar import circuit, inbox; assert inbox.inbox_topic() == circuit.topic_for_name(circuit.agent_name()), 'a peer addressing this agent by name would derive a different topic'"
+bin/fw sidecar status --probe > /tmp/.t3433-probe 2>&1 && grep -q 'hub probe:        ok' /tmp/.t3433-probe
 python3 -c "import yaml; d=yaml.safe_load(open('.context/inbox.yaml')); e=[x for x in d['observations'] if x.get('id')=='OBS-453'][0]; assert e['status']=='resolved' and e['promoted_to']=='T-3433'"
 
 ## RCA
@@ -513,3 +516,54 @@ python3 -c "import yaml; d=yaml.safe_load(open('.context/inbox.yaml')); e=[x for
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3433-sidecar-addressing-inboxcircuit-id-topic.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f65813bd
+- **Timestamp:** 2026-09-22T16:07:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_sidecar_circuit.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_termlink_transport.py tests/unit/test_sidecar_status.py tests/unit/test_sidecar_e2e.py -q `
+
+### 2026-09-22T16:07Z — reviewer static scan
+
+- **Action:** `bin/fw reviewer T-3433`, twice.
+- **Output:** first scan CONCERN/2 — `AC-verify-mismatch` on AC#4 (the AC names
+  `agents/termlink/termlink.sh` and no verification line touched it) and
+  `mock-only-integration` on the pytest line. The first was a fair hit: AC#4
+  claims the stanza is *unchanged* and nothing proved it, so three lines were
+  added — the stanza assertion, a live check that
+  `inbox_topic() == topic_for_name(agent_name())` (the session==agent collapse,
+  asserted against the running process rather than a fixture), and a live
+  `sidecar status --probe` hub call. Second scan CONCERN/1, that finding cleared.
+- **Context:** `mock-only-integration` persists and is left standing, not
+  overridden. It keys on the pytest line; the task's integration evidence is
+  elsewhere and is real — three live runs against the hub (`f12fa93d`,
+  `60867b67`, `8dbad116`), two live CLI lines, and a live hub probe. Filing a
+  TTL'd override to turn a heuristic CONCERN green looked worse than leaving an
+  accurate note next to it.
+
+### 2026-09-22T16:05Z — vendor/push interaction with the concurrent T-3434 worker
+
+- **Action:** `git push origin bleeding-edge` refused by the T-2240 pre-push gate.
+- **Output:** two causes, one mine. Mine: `fw vendor self` had been run but
+  `.agentic-framework/` was never committed (OBS-250 says sync *before* close —
+  the commit is part of the sync). Fixed in `T-3433: refresh vendored copies of
+  the six sidecar files`. Not mine: `lib/bus.sh` and `lib/dispatch.sh` are
+  uncommitted in the shared tree by T-3434, the self-vendor guard withholds them
+  by design, so their vendored copies stay stale against HEAD and the gate keeps
+  refusing.
+- **Context:** not bypassed. `FW_VENDOR_ALL=1` would ship another task's
+  unfinished work to consumers under my commit — the precise hazard the guard
+  exists to stop — and `--no-verify` is Tier 0. Instead the other worker was
+  told, through the sidecar this task just shipped
+  (`inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework/t3434-retry-ladder-r2`,
+  client_msg_id 8ef41fcf), with the exact `FW_VENDOR_ONLY=` line that unblocks
+  both of us. Push retried at close.
+
