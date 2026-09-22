@@ -112,12 +112,17 @@ Per-agent signing keys (follow-on; noted in Evolution).
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/sidecar/circuit.py`: `circuit_id(level="agent"|"project") -> str`, `topic_for_circuit(cid) -> "inbox:<cid>"`, `parse_circuit(cid) -> dict` (host, hub, project, session, agent — missing levels None); unit tests for full/agent, project-only, and truncation; project id uses the existing derivation (cite the function)
-- [ ] `termlink_transport.topic_for(msg)` returns `inbox:<circuit>` (project-level when `to` is a bare project id, agent-level when `to` is a full circuit or a dispatched worker name resolvable to one); `build_post_command` adds `--metadata from_circuit=<sender circuit>`; existing transport tests updated, new ones for both forms
-- [ ] `inbox.inbox_topic()` returns the new topic for this agent AND `inbox.legacy_topics()` returns the `sidecar:` alias; `pending()` drains both (cursor per topic, shared seen-set) — test: a consult on the legacy topic and one on the new topic both surface once
-- [ ] Dispatch stanza (`agents/termlink/termlink.sh`) and `FW_SIDECAR_AGENT_ID` unchanged for workers; `fw sidecar whoami` prints agent id, circuit id, and both topics; `fw sidecar status` lists cursors for both
+- [x] `lib/sidecar/circuit.py`: `circuit_id(level="agent"|"project") -> str`, `topic_for_circuit(cid) -> "inbox:<cid>"`, `parse_circuit(cid) -> dict` (host, hub, project, session, agent — missing levels None); unit tests for full/agent, project-only, and truncation; project id uses the existing derivation (cite the function)
+  - Evidence: `lib/sidecar/circuit.py` (272 lines); 25 tests in `tests/unit/test_sidecar_circuit.py` cover full/agent/project, truncation down the ladder, round-trip and the hub-anchor refusal. `project_id()` cites `lib/pickup.sh:42` (`basename "$PROJECT_ROOT"`).
+- [x] `termlink_transport.topic_for(msg)` returns `inbox:<circuit>` (project-level when `to` is a bare project id, agent-level when `to` is a full circuit or a dispatched worker name resolvable to one); `build_post_command` adds `--metadata from_circuit=<sender circuit>`; existing transport tests updated, new ones for both forms
+  - Evidence: `topic_for` delegates to `circuit.topic_for_name`; 17 tests green (6 new), incl. a guard that no sender writes `sidecar:`. Live: `from_circuit=//dimitrimintdev/cacc73ea32b121dd/999-Agentic-Engineering-Framework/t3433-circuit-addr`.
+- [x] `inbox.inbox_topic()` returns the new topic for this agent AND `inbox.legacy_topics()` returns the `sidecar:` alias; `pending()` drains both (cursor per topic, shared seen-set) — test: a consult on the legacy topic and one on the new topic both surface once
+  - Evidence: `test_a_consult_on_each_topic_both_surface_once`, plus dual-post collapse, per-topic cursors, and a seeding test so pre-T-3433 per-topic seen-sets are honoured. 15 inbox tests green.
+- [x] Dispatch stanza (`agents/termlink/termlink.sh`) and `FW_SIDECAR_AGENT_ID` unchanged for workers; `fw sidecar whoami` prints agent id, circuit id, and both topics; `fw sidecar status` lists cursors for both
+  - Evidence: stanza NOT edited — it names only agent ids and `fw sidecar` verbs, so it was already address-agnostic (verified by reading `_consult_stanza` in `agents/termlink/termlink.sh`). `whoami` prints agent id, exact circuit, host-qualified full id, durable project address, inbox topic and legacy read alias; `status` lists a cursor for every drained topic, at 0 when unread.
 - [ ] `fw sidecar e2e` (explicit + ambient) passes on the new topics — two live PASS records with `mode` and topic names in the JSON; then `fw sidecar e2e --peer 010-termlink` re-issued on the new address and its record committed (PASS or their-hops-open, per T-3426's rule)
-- [ ] Docs: `docs/reports/T-3433-circuit-addressing.md` (the two forms, the derivation, the transition, what the hub now does for us); OBS-453 marked resolved; vendored copies synced, `bin/fw vendor self --check` clean; all sidecar suites green
+- [x] Docs: `docs/reports/T-3433-circuit-addressing.md` (the two forms, the derivation, the transition, what the hub now does for us); OBS-453 marked resolved; vendored copies synced, `bin/fw vendor self --check` clean; all sidecar suites green
+  - Evidence: report written (172 lines) incl. the unmeasured-wake caveat; OBS-453 `status: resolved, promoted_to: T-3433` in `.context/inbox.yaml`. Vendor: all six sidecar files byte-identical to their vendored copies (scoped check in `## Verification`). The GLOBAL `fw vendor self --check` additionally covers `lib/bus.sh` + `lib/dispatch.sh`, which T-3434 holds uncommitted — the self-vendor guard withholds them by design ("withholding uncommitted file(s) not named by this caller"). See `## Decisions` for why the scoped check is the binding line.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,6 +283,18 @@ Per-agent signing keys (follow-on; noted in Evolution).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_sidecar_circuit.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_termlink_transport.py tests/unit/test_sidecar_status.py tests/unit/test_sidecar_e2e.py -q > /tmp/.t3433-pytest 2>&1 && grep -q passed /tmp/.t3433-pytest
+bin/fw sidecar whoami --json > /tmp/.t3433-who 2>&1 && grep -q '"inbox_topic": "inbox:' /tmp/.t3433-who
+grep -q '"legacy_topics": \["sidecar:' /tmp/.t3433-who
+bin/fw sidecar status > /tmp/.t3433-st 2>&1 && grep -q '^inbox topics:     inbox:' /tmp/.t3433-st
+grep -q 'sidecar:' /tmp/.t3433-st
+python3 -c "import json; d=json.load(open('.context/sidecar/e2e/f12fa93d.json')); assert d['verdict']=='PASS' and d['mode']=='explicit'; assert d['topics']['sender'][0].startswith('inbox:') and d['topics']['responder'][0].startswith('inbox:')"
+python3 -c "import json; d=json.load(open('.context/sidecar/e2e/60867b67.json')); assert d['verdict']=='PASS' and d['mode']=='ambient'; assert d['hops']['A1']['ok']; assert d['topics']['sender'][0].startswith('inbox:')"
+python3 -c "import json; d=json.load(open('.context/sidecar/e2e/8dbad116.json')); assert d['mode']=='peer' and d['peer']=='010-termlink'; assert d['topics']['responder'][0].startswith('inbox:'); print('peer verdict', d['verdict'])"
+bash -c 'set -eo pipefail; for f in lib/sidecar/circuit.py lib/sidecar/inbox.py lib/sidecar/status.py lib/sidecar/termlink_transport.py lib/sidecar/e2e.py lib/sidecar_cli.py; do cmp -s "$f" ".agentic-framework/$f"; done'
+test -f docs/reports/T-3433-circuit-addressing.md
+python3 -c "import yaml; d=yaml.safe_load(open('.context/inbox.yaml')); e=[x for x in d['observations'] if x.get('id')=='OBS-453'][0]; assert e['status']=='resolved' and e['promoted_to']=='T-3433'"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -318,6 +335,66 @@ Per-agent signing keys (follow-on; noted in Evolution).
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-22 — the ruling names five levels; the address carries four
+
+- **What changed:** the ruling's normative sentence ("five-level circuit id — host
+  FQDN / hub id / project id / session id / agent name") and its two concrete
+  address forms (`inbox:<hub>/<project>`, `inbox:<hub>/<project>/<session>/<agent>`)
+  do not agree about the host, and the forms are right. Measured: 010-termlink is
+  on **another host and the same hub** — it reads and writes our topics directly
+  (agent-chat-arc @1640/@1651) and we do not know its FQDN. A topic is an object
+  on a hub; the host is where an agent runs. Embedding our fqdn in a peer's
+  address would assert a level we do not have, which is the ruling's own "never
+  invent a level" rule turned against the ruling's own first sentence.
+- **Plan impact:** the address is hub-anchored. The host is not dropped — it is
+  relocated to the host-qualified `//` form carried in `metadata.from_circuit`,
+  which is what the ruling asked that metadata for ("origin precise even when the
+  destination is coarse"). Every level in the ladder is still used.
+- **Triggered:** the `//` authority marker (needed because the forms are
+  positional and two of them are otherwise both three segments); documented in
+  `docs/reports/T-3433-circuit-addressing.md`.
+
+### 2026-09-22 — session==agent is one string, and collapsing it is what makes the address derivable
+
+- **What changed:** the dispatch stanza (T-3407) exports `FW_SIDECAR_AGENT_ID`
+  and `FW_FOCUS_SESSION_KEY` from ONE value — the worker name. The 4-level form
+  would therefore emit that name twice, which is honest but useless: a peer
+  holding only the worker's name could not derive the same topic.
+- **Plan impact:** `session == agent` collapses to `<hub>/<project>/<agent>`, so
+  sender-derived and receiver-derived addresses are identical strings with no
+  shared state. The 3-form claims an agent under a project and does NOT claim a
+  session — that is why `parse_circuit` returns `session: None` for it.
+- **Triggered:** proven live rather than argued: run `f12fa93d`, where the parent
+  derived the topic from the bare worker name and the worker derived it from its
+  two env vars, and the consult landed. The stanza itself needed no edit, which
+  is what AC4's "unchanged" asked for.
+
+### 2026-09-22 — the wake event, which is the whole reason we moved, is the one thing we could not measure
+
+- **What changed:** post, `subscribe` and `cv-keys` all work on a slashed
+  `inbox:` id (measured before writing any code). `inbox.queued` did not appear
+  on `tl-vayovuqm`'s event bus for the compound id — **and did not appear for the
+  bare-id control either**. So this is a vantage-point blind spot on our side,
+  not a measured compound-id failure, and the two are indistinguishable from here.
+- **Plan impact:** none to the build; a real dent in the justification. The
+  benefit that motivated the prefix move is **claimed, not proven**. Recording it
+  as proven would have been the false green this framework keeps catching.
+- **Triggered:** the question is in agent-chat-arc @1672 to 010-termlink, who
+  traced the emit to hub `channel.rs:949`. If the match does not survive slashes,
+  the follow-on is theirs (a prefix-match fix) or ours (a flatter id) — either
+  way it is a decision with evidence, not a guess.
+
+### 2026-09-22 — follow-on: the circuit names the agent, the signature still names the host
+
+- **What changed:** nothing in this slice, but it is now precise enough to state.
+  Every consult still signs as the shared host key `d1993c2c3ec44c94` (T-3405),
+  so the circuit id identifies an agent while the signature identifies a machine
+  — which is why receipts would be self-satisfying today.
+- **Plan impact:** out of scope here, as the task said.
+- **Triggered:** per-agent signing keys (`TERMLINK_AGENT_ID` →
+  `~/.termlink/identities/<name>.key`, per @1641) remain the follow-on, and the
+  alias removal is a separate one-release-out slice.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -357,6 +434,68 @@ Per-agent signing keys (follow-on; noted in Evolution).
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-09-22 — the address is hub-anchored; the host rides in metadata
+
+- **Chose:** topic addresses start at the hub (`<hub>/<project>[/…]`). The host
+  appears only in the `//`-marked full form used for `metadata.from_circuit`.
+- **Why:** a topic is an object on a hub, and the one peer we actually consult
+  (010-termlink) is on a different host on the same hub. An address containing
+  our fqdn is underivable by them and asserts a level we do not have.
+- **Rejected:** host-first 5-segment addresses (`//` unnecessary, ladder literal)
+  — they make the durable role address underivable by a peer, which is the one
+  job that address has. Also rejected: dropping the host from the model entirely
+  — it is a real level and `parse_circuit` must be able to report it.
+
+### 2026-09-22 — `//` marks the host rather than a label or a segment count
+
+- **Chose:** RFC 3986 authority marker; `parse_circuit` keys on it.
+- **Why:** the forms are positional and two of them are three segments
+  (`host/hub/project` vs `hub/project/agent`), so counting cannot disambiguate.
+- **Rejected:** T-3287's V9 `label=value::` grammar — correct, and heavier than
+  this seam needs; the ruling's concrete forms are slash-separated. Also
+  rejected: always emitting five segments with blanks — that invents levels.
+
+### 2026-09-22 — `session == agent` collapses to the 3-form
+
+- **Chose:** emit `<hub>/<project>/<agent>` when the session key and the agent id
+  are the same string (every dispatched worker).
+- **Why:** it makes sender-derived and receiver-derived addresses identical, with
+  no shared state. Proven live in run `f12fa93d`.
+- **Rejected:** emitting the name twice (honest, but a peer holding the worker's
+  name cannot reproduce it); changing the stanza to mint a separate session id
+  (AC4 requires the stanza unchanged, and a second naming scheme is the thing
+  T-3407 removed).
+
+### 2026-09-22 — a bare `--to` is classified by `is_project_id`, with an override
+
+- **Chose:** three signals (it is us / a sibling project dir with
+  `.framework.yaml` / the fleet's `NNN-Name` numbering), plus
+  `fw sidecar send --level project|agent` to override, plus verbatim use of any
+  `--to` containing `/`.
+- **Why:** the peer projects we address are not local directories
+  (`010-termlink` is at `/opt/termlink` on another host), so a filesystem lookup
+  alone cannot classify them; the numbering convention covers the fleet and no
+  agent name in this corpus matches it.
+- **Rejected:** a live `termlink list` lookup (makes `topic_for` impure, slow and
+  untestable); requiring an explicit flag always (breaks every existing caller,
+  including the e2e harness).
+
+### 2026-09-22 — the binding vendor check is scoped to this task's files
+
+- **Chose:** `## Verification` asserts that each of the six sidecar files is
+  byte-identical to its vendored copy, rather than running the global
+  `bin/fw vendor self --check`.
+- **Why:** the global check also covers `lib/bus.sh` and `lib/dispatch.sh`, which
+  the concurrent T-3434 worker holds uncommitted; the self-vendor guard withholds
+  them by design ("withholding uncommitted file(s) not named by this caller"), so
+  the global check reports DRIFT for another task's in-flight work. A line whose
+  colour depends on a second task's working tree is exactly the mutable-corpus
+  anchor T-3326 forbids. The global check was still run by hand and its state is
+  reported in the handback.
+- **Rejected:** `FW_VENDOR_ALL=1` (ships another task's unfinished work to
+  consumers under my commit — the precise hazard the guard exists to stop);
+  waiting on T-3434 (couples two independent closes).
 
 ## Decision
 
