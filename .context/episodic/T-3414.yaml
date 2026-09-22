@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3414: Worker T-3412 skipped the vendored-path sync; pre-push gate blocked. Refresh vendored copies and record the autonomous-worker failure mode
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T08:09:04Z
+# ============================================================================
+
+task_id: T-3414
+task_name: "Worker T-3412 skipped the vendored-path sync; pre-push gate blocked. Refresh vendored copies and record the autonomous-worker failure mode"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T07:02:42Z
+completed: 2026-09-22T08:08:43Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-22T09:04:39+02:00
+last_commit: 2026-09-22T09:04:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refresh vendored copies T-3412 left stale; record the failure mode
+
+# Key outcomes
+outcomes:
+  - '`bin/fw vendor self` run and `--check` reports in-sync — synced with `FW_VENDOR_ONLY` naming only T-3412''s three files (the gate withholds uncommitted files a caller has not claimed, so this is the sanctioned path, not the `FW_VENDOR_ALL` bypass). Result: "synced 2 agents/ file(s)", VERSION 1.6.744, then "vendored .agentic-framework/ in sync with source"'
+  - 'The failure mode recorded as an observation (OBS filed under this task) — including the structural point that P-011 is author-controlled and therefore cannot catch a rule the author never wrote, and the candidate fix of DERIVING required verification lines from the task''s git diff rather than trusting author memory'
+  - 'T-3412''s own fix is not modified — this task touched only `.agentic-framework/` copies and `VERSION`; `lib/inception.sh`, `agents/context/check-active-task.sh` and `agents/task-create/create-task.sh` are unchanged from commit `0ec223c1e`'
+  - 'The push that was blocked now succeeds — `8bd9b13ec..551c22595` on attempt 18 (17 refusals were audit-lock contention from concurrent workers, retried rather than bypassed with `--no-verify`). T-3412''s fix is now on origin with its vendored copies in step'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/VERSION'
+  - '.tasks/active/T-3414-worker-t-3412-skipped-the-vendored-path-.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T09:04:39'
+    action: 'T-3414: refresh vendored copies T-3412 left stale; record the failure mode'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 66 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 66
+  commits: 1
+  files_changed: 6
+  lines_added: 392
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3414-worker-t-3412-skipped-the-vendored-path-.md
+generated_by: context-agent-hybrid
