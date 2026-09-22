@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3413: Install the four evidence-matched Claude Code plugins (pyright-lsp, semgrep, hookify, claude-md-management) and record their token cost
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T06:59:24Z
+# ============================================================================
+
+task_id: T-3413
+task_name: "Install the four evidence-matched Claude Code plugins (pyright-lsp, semgrep, hookify, claude-md-management) and record their token cost"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T06:55:36Z
+completed: 2026-09-22T06:58:59Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Install the four evidence-matched Claude Code plugins (pyright-lsp, semgrep, hookify, claude-md-management) and record their token cost
+
+# Key outcomes
+outcomes:
+  - 'All four installed successfully — then **semgrep was UNINSTALLED** for violating the standalone rule. Evidence, not inference: its `.mcp.json` registers an MCP server `guardian` whose command is a **shipped precompiled binary** (`scripts/hook` dispatching to `hook-linux-amd64`), its one skill is `install-mfw`, and the plugin references `https://semgrep.dev/dist/mfw/install.sh` and `https://semgrep.dev` — "Guardian" is the front-end to Semgrep''s hosted platform. Kept: `pyright-lsp`, `hookify`, `claude-md-management`'
+  - 'Component inventory AND projected token cost recorded per plugin:'
+  - '`bin/fw plugin-audit` re-run after install: **TASK-BYPASSING: 0** (TASK-AWARE 15, TASK-SILENT 87). No governance regression; `hookify`''s own PreToolUse/Stop/UserPromptSubmit hooks compose with our gate stack rather than bypassing it'
+  - 'Nothing added to the repo''s `.mcp.json`; `git status --short -- .mcp.json .claude/settings.json` returned empty. Installs are user-scope under `~/.claude`, so they did not collide with the T-3411 sequence workers holding this tree'
+  - 'Standalone verified per kept plugin — only Apache-license and package-source URLs, no service endpoints, no shipped binaries (`hookify`''s executables are readable Python hook scripts). `pyright-lsp` shipped the integration but not the checker, so `pyright` 1.1.414 was installed locally (`npm i -g`, resolves at `/root/.nvm/.../bin/pyright`); it now runs offline with no service behind it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3413-install-the-four-evidence-matched-claude.md
+generated_by: context-agent-hybrid
