@@ -21,6 +21,21 @@ jobs:
     \ Inert until someone arms continuous mode AND sets CONTINUOUS_SESSION \u2014\
     \ with either unset it refuses and logs why. Offset to :07 off the :00/:05/:10/:15/:30/:45\
     \ audit slots (T-3070 collision class), though it takes its own lock, not audit.lock."
+- id: sidecar-sweep-5m
+  name: Sidecar ack-ledger sweep (5 min)
+  schedule: '3,8,13,18,23,28,33,38,43,48,53,58 * * * *'
+  command: flock -n /var/lock/agentic-cron-sidecar-sweep-5m.lock -c 'fw sidecar sweep'
+  source_file: agentic-audit.crontab
+  origin_task: T-3418
+  status: active
+  description: "arc-011 peer-consult sidecar, slice 7. Every 5 minutes, flip STORED\
+    \ ack-ledger rows whose deadline has passed to UNKNOWN (lib/sidecar/outbox.py\
+    \ resolve_expired, T-3404), so a stuck or failed consult delivery is recorded\
+    \ rather than left indistinguishable from in-flight. Reports only — never\
+    \ re-sends; retry policy is OBS-447, the operator's. Idempotent and a no-op on a\
+    \ clean ledger. `fw sidecar status` (T-3417) shows the pre-sweep count as\
+    \ expired_unswept. Offset to :03/:08/... off the audit slots (T-3070 collision\
+    \ class); takes its own lock, not audit.lock."
 - id: reviewer-audit-daily
   name: Reviewer Layer-3 audit (daily Pass B)
   schedule: 37 4 * * *

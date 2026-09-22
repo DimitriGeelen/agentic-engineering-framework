@@ -103,6 +103,23 @@ def cmd_status(args) -> int:
     return 0
 
 
+def cmd_sweep(args) -> int:
+    """Flip past-deadline STORED rows to UNKNOWN. Reports; never re-sends.
+
+    Retry policy (OBS-447) is the operator's; a swept row is a recorded
+    failure, not a retried one. Exit 0 either way — a clean sweep is not an
+    error, and cron should not page on it.
+    """
+    flipped = outbox.resolve_expired()
+    if args.json:
+        print(json.dumps({"flipped": len(flipped), "client_msg_ids": flipped}))
+    else:
+        print(f"swept: {len(flipped)} row(s) flipped STORED -> UNKNOWN")
+        for cmid in flipped:
+            print(f"  {cmid}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="fw sidecar",
                                      description=__doc__.split("\n")[0])
@@ -135,6 +152,11 @@ def build_parser() -> argparse.ArgumentParser:
     st.add_argument("--probe", action="store_true",
                     help="also run the hub capability probe, reported separately")
     st.set_defaults(func=cmd_status)
+
+    sw = sub.add_parser("sweep", help="flip past-deadline STORED rows to UNKNOWN "
+                        "(cron cadence for resolve_expired; never re-sends)")
+    sw.add_argument("--json", action="store_true")
+    sw.set_defaults(func=cmd_sweep)
 
     return parser
 
