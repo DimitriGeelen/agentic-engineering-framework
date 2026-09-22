@@ -1459,9 +1459,19 @@ def main():
                         help="Run only the describe pass — no edge detection")
     parser.add_argument("--list-refusals", action="store_true",
                         help="Print every refusal, not just the first 10")
+    # T-3431: one summary line, no per-card output — for the SessionStart hook
+    # and `fw resume status`, where a 1,314-card corpus dump would blow the
+    # additionalContext budget every session. Implies --describe-only: edge
+    # recomputation is a distinct, slower job (13s measured on this corpus,
+    # over the 10s session-start budget) that stays an explicit `fw fabric
+    # enrich` call — the nightly cron only ever runs --describe-only too.
+    parser.add_argument("--quiet", action="store_true",
+                        help="One summary line only; implies --describe-only")
     parser.add_argument("cards", nargs="*",
                         help="Specific card paths to enrich (default: all)")
     args = parser.parse_args()
+    if args.quiet:
+        args.describe_only = True
 
     # Find project root (use PROJECT_ROOT env var if available, for embedded frameworks)
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1497,14 +1507,32 @@ def main():
         targets = cards
 
     mode = "DRY RUN" if args.dry_run else "ENRICHING"
-    print(f"\n=== Fabric Enrichment ({mode}) ===")
-    print(f"Processing {len(targets)} cards...\n")
+    if not args.quiet:
+        print(f"\n=== Fabric Enrichment ({mode}) ===")
+        print(f"Processing {len(targets)} cards...\n")
 
     # Phase 0: describe (T-3430) — runs BEFORE edges so a card the describe
     # pass routes into a subsystem is reported under that subsystem below.
     if args.describe:
         described, refusals, unrouted, touched = apply_describe(
             targets, project_root, args.dry_run)
+
+        if args.quiet:
+            # T-3431: recompute post-update counts from the same `targets`
+            # dict apply_describe just mutated in place — no second scan.
+            # This is the line the SessionStart hook and `fw resume status`
+            # inject verbatim.
+            todo_after = sum(1 for c in targets.values()
+                              if _describe.is_placeholder_purpose(c.get("purpose")))
+            unknown_after = sum(1 for c in targets.values()
+                                 if _describe.is_placeholder_subsystem(c.get("subsystem")))
+            no_edges = sum(1 for c in targets.values()
+                           if _describe.card_edge_count(c) == 0)
+            print(f"Fabric: {len(targets)} cards · {todo_after} TODO purpose · "
+                  f"{unknown_after} unknown subsystem · {no_edges} no edges · "
+                  f"{len(refusals)} refused this run (bin/fw fabric drift for ids)")
+            return 0
+
         print(f"=== Describe pass ===")
         print(f"described {described}, refused {len(refusals)}")
         shown = refusals if args.list_refusals else refusals[:10]

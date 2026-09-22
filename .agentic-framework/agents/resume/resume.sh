@@ -146,6 +146,21 @@ cmd_status() {
     fi
     echo ""
 
+    # T-3431 (D-592): Fabric quality line — mirrors the cache the SessionStart
+    # hook (post-compact-resume.sh) writes on every start/resume/compact, so
+    # `resume status` shows the same last-known counts without paying the
+    # ~3s describe scan on every invocation. Silent until the hook has run once.
+    local fabric_cache="$PROJECT_ROOT/.context/working/.fabric-describe.last"
+    if [ -f "$fabric_cache" ]; then
+        local fabric_line
+        fabric_line=$(cat "$fabric_cache" 2>/dev/null)
+        if [ -n "$fabric_line" ]; then
+            echo -e "${BOLD}Fabric Quality:${NC}"
+            echo "  $fabric_line"
+            echo ""
+        fi
+    fi
+
     # T-2365 (T-2158 S3): Continuous-mode status surface. Surfaces enabled,
     # iteration X/Y, tier_ceiling, last_resumed_at, expires_at, terminated
     # reason when present. Silent when the config file is absent (continuous-

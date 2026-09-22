@@ -155,3 +155,57 @@ def test_describe_does_not_disturb_edge_enrichment(project):
     res = run_enrich(project)
     assert "=== Summary ===" in res.stdout
     assert "Forward edges:" in res.stdout
+
+
+# ---------------------------------------------------------------------------
+# T-3431 — `--quiet`: one summary line, no per-card output, no edge phase.
+# ---------------------------------------------------------------------------
+
+def test_quiet_prints_exactly_one_summary_line(project):
+    res = run_enrich(project, "--quiet")
+    assert res.returncode == 0, res.stderr
+    lines = [ln for ln in res.stdout.splitlines() if ln.strip()]
+    assert len(lines) == 1, res.stdout
+    assert lines[0].startswith("Fabric: ")
+    assert "cards" in lines[0]
+    assert "TODO purpose" in lines[0]
+    assert "unknown subsystem" in lines[0]
+    assert "no edges" in lines[0]
+    assert "refused this run" in lines[0]
+
+
+def test_quiet_suppresses_headers_and_refusal_listing(project):
+    res = run_enrich(project, "--quiet")
+    assert "=== Fabric Enrichment" not in res.stdout
+    assert "=== Describe pass ===" not in res.stdout
+    assert "describes itself nowhere" not in res.stdout
+
+
+def test_quiet_still_writes_the_cards(project):
+    """--quiet is not --dry-run: the fill still lands on disk."""
+    run_enrich(project, "--quiet")
+    assert load(project, "lib-rotate")["purpose"].startswith("Rotate the fleet")
+
+
+def test_quiet_implies_describe_only_skips_edge_phase(project):
+    """The edge-recompute phase (13s measured on 1,314 live cards) never runs
+    under --quiet — it stays the cron's/an explicit call's job (T-3430)."""
+    res = run_enrich(project, "--quiet")
+    assert "Forward edges:" not in res.stdout
+    assert "Unresolved edge targets" not in res.stdout
+
+
+def test_quiet_counts_reflect_post_update_state(project):
+    """3 cards total; after the fill, 1 remains TODO (the genuine refusal)."""
+    res = run_enrich(project, "--quiet")
+    line = res.stdout.strip()
+    assert "Fabric: 3 cards" in line
+    assert "1 TODO purpose" in line
+    assert "1 refused this run" in line
+
+
+def test_quiet_honours_dry_run(project):
+    before = (project / ".fabric" / "components" / "lib-rotate.yaml").read_text()
+    res = run_enrich(project, "--quiet", "--dry-run")
+    assert res.returncode == 0, res.stderr
+    assert (project / ".fabric" / "components" / "lib-rotate.yaml").read_text() == before

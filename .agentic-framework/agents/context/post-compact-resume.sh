@@ -247,6 +247,35 @@ ${FABRIC_OVERVIEW}"
     fi
 fi
 
+# Fabric describe pass (T-3431, D-592) — a bounded `fw fabric enrich --describe`
+# on EVERY session start/resume/compact, not only the T-3430 nightly cron, so a
+# session is born with the best fabric the code can derive and sees what it
+# cannot. `--quiet` forces the fast describe-only path (~3s measured on 1,314
+# cards; full edge recomputation measured 13s — over budget, and stays the
+# cron's/explicit-call's job). Never blocks the session: on timeout or a
+# non-zero exit, the last-known line is read back from the cache file instead.
+FABRIC_DESCRIBE_TIMEOUT="${FW_FABRIC_DESCRIBE_TIMEOUT:-10}"
+FABRIC_CACHE="$PROJECT_ROOT/.context/working/.fabric-describe.last"
+if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
+    FABRIC_OUT=$(cd "$PROJECT_ROOT" && PROJECT_ROOT="$PROJECT_ROOT" timeout "$FABRIC_DESCRIBE_TIMEOUT" \
+        "$FRAMEWORK_ROOT/bin/fw" fabric enrich --describe --quiet 2>/dev/null)
+    FABRIC_RC=$?
+    if [ "$FABRIC_RC" -eq 0 ] && [ -n "$FABRIC_OUT" ]; then
+        printf '%s\n' "$FABRIC_OUT" > "$FABRIC_CACHE" 2>/dev/null
+    elif [ -f "$FABRIC_CACHE" ]; then
+        FABRIC_OUT=$(cat "$FABRIC_CACHE" 2>/dev/null)
+    else
+        FABRIC_OUT=""
+    fi
+    if [ -n "$FABRIC_OUT" ]; then
+        CONTEXT="${CONTEXT}
+
+## Fabric Quality
+${FABRIC_OUT}
+"
+    fi
+fi
+
 # Discovery findings (T-241 — surface WARN/FAIL discoveries at session start)
 DISC_FILE="$PROJECT_ROOT/.context/audits/discoveries/LATEST.yaml"
 if [ -f "$DISC_FILE" ]; then

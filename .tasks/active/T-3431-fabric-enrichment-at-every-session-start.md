@@ -14,7 +14,7 @@ description: >
   last known counts and moves on. Depends on T-3430 shipping --describe and the under-populated
   drift class.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -32,7 +32,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T12:00:48Z
-last_update: '2026-09-22T12:15:25Z'
+last_update: 2026-09-22T12:58:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,12 +85,18 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `agents/context/post-compact-resume.sh` (the one hook behind all three SessionStart matchers: startup, resume, compact) runs `timeout ${FW_FABRIC_DESCRIBE_TIMEOUT:-10} bin/fw fabric enrich --describe --quiet` and never fails the hook on timeout/error (exit 0, last-known counts printed instead)
-- [ ] The additionalContext the hook injects gains one line `Fabric: N cards · T TODO purpose · U unknown subsystem · E no edges · R refused this run (bin/fw fabric drift for ids)`; `fw resume status` prints the same line under its state block
-- [ ] `fw fabric enrich --describe --quiet` visits only cards that still carry a placeholder (purpose TODO or subsystem unknown), so the session-start call stays under the timeout on 1,314 cards — measured and recorded here; full sweeps remain the cron's job (T-3430)
-- [ ] Tests: the hook emits the fabric line on a fixture fabric with 2 TODO cards; the hook exits 0 and emits the last-known line when the enrich call is forced to fail (`FW_FABRIC_DESCRIBE_TIMEOUT=0`); `fw resume status` shows the line
-- [ ] `bin/fw enforcement baseline` re-run if `.claude/settings.json` changes (it should not — the hook script changes, not the wiring); vendored copies synced, `bin/fw vendor self --check` clean
-- [ ] Recorded: decision D-(this) "enrichment at every session start" points here; T-3430's cron description cross-references this task as the per-session counterpart
+- [x] `agents/context/post-compact-resume.sh` (the one hook behind all three SessionStart matchers: startup, resume, compact) runs `timeout ${FW_FABRIC_DESCRIBE_TIMEOUT:-10} bin/fw fabric enrich --describe --quiet` and never fails the hook on timeout/error (exit 0, last-known counts printed instead)
+  - Evidence: `agents/context/post-compact-resume.sh` (Fabric describe pass block, before the Discovery findings section). Live: `FW_FABRIC_DESCRIBE_TIMEOUT=0` forces the call to fail — hook still exits 0 and injects the cached line (proven in `tests/unit/t3431_fabric_session_start.bats`, test 2).
+- [x] The additionalContext the hook injects gains one line `Fabric: N cards · T TODO purpose · U unknown subsystem · E no edges · R refused this run (bin/fw fabric drift for ids)`; `fw resume status` prints the same line under its state block
+  - Evidence: `enrich.py --quiet` prints exactly this line (verbatim format, `agents/fabric/lib/enrich.py:apply_describe`'s quiet branch); the hook writes it to `.context/working/.fabric-describe.last` and injects it under `## Fabric Quality`; `agents/resume/resume.sh:cmd_status` reads the same cache file and prints it under `Fabric Quality:` right after the Git state block.
+- [x] `fw fabric enrich --describe --quiet` visits only cards that still carry a placeholder (purpose TODO or subsystem unknown), so the session-start call stays under the timeout on 1,314 cards — measured and recorded here; full sweeps remain the cron's job (T-3430)
+  - Evidence: `--quiet` forces `--describe-only` internally (skips the edge-recompute phase entirely — that phase alone measured 13s on this corpus, over budget). `apply_describe()` itself already only does file I/O (`derive_purpose`/`derive_subsystem`) for cards where `is_placeholder_purpose`/`is_placeholder_subsystem` is true — the ~1,280 non-placeholder cards are a cheap in-memory boolean check. **Measured live, 3 runs: 3.39s / 3.31s / 3.28s** on the full 1,323-card corpus (`build_index()`'s `yaml.safe_load` over every card is the dominant, unavoidable cost) — comfortably under the 10s default `FW_FABRIC_DESCRIBE_TIMEOUT`. Full `--describe` + edges measured 13.1s for comparison — over budget, which is why `--quiet` does not run it.
+- [x] Tests: the hook emits the fabric line on a fixture fabric with 2 TODO cards; the hook exits 0 and emits the last-known line when the enrich call is forced to fail (`FW_FABRIC_DESCRIBE_TIMEOUT=0`); `fw resume status` shows the line
+  - Evidence: `tests/unit/t3431_fabric_session_start.bats` — 5 tests green (2-TODO-card fixture, forced-fail fallback with cache-file identity check, no-`.fabric/` no-op, `resume status` shows the cached line, `resume status` silent with no cache yet). `tests/unit/test_t3430_enrich_describe.py` — 6 new `--quiet` tests added (17 total in file, all green): one-line-only output, headers/refusals suppressed, cards still written (not dry-run), edge phase skipped, post-update counts, `--dry-run` honoured.
+- [x] `bin/fw enforcement baseline` re-run if `.claude/settings.json` changes (it should not — the hook script changes, not the wiring); vendored copies synced, `bin/fw vendor self --check` clean
+  - Evidence: `.claude/settings.json` untouched (`git diff --quiet .claude/settings.json` exits 0). `fw doctor` → `OK Enforcement baseline intact`. `FW_VENDOR_ONLY="agents/context/post-compact-resume.sh agents/fabric/lib/enrich.py agents/resume/resume.sh" bin/fw vendor self` run, then `bin/fw vendor self --check` → "vendored .agentic-framework/ in sync with source."
+- [x] Recorded: decision D-(this) "enrichment at every session start" points here; T-3430's cron description cross-references this task as the per-session counterpart
+  - Evidence: D-592 (`.context/project/decisions.yaml`) already named this task ("implemented as T-3431") at filing time — no new decision needed. `.context/cron-registry.yaml`'s `fabric-describe-daily` entry description now cross-references T-3431/D-592 as the per-session counterpart; `fw cron generate` + `fw doctor` → `OK Cron registry in sync`, no "edited but not generated" WARN.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -251,6 +257,16 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/context/post-compact-resume.sh
+bash -n agents/resume/resume.sh
+python3 -c "import ast; ast.parse(open('agents/fabric/lib/enrich.py').read())"
+out=$(python3 -m pytest tests/unit/test_t3430_enrich_describe.py -q 2>&1); echo "$out" | grep -q "17 passed" && ! echo "$out" | grep -q "failed"
+out=$(bats tests/unit/t3431_fabric_session_start.bats 2>&1); echo "$out" | grep -q "^ok 5 " && ! echo "$out" | grep -q "^not ok"
+timeout 15 bin/fw fabric enrich --describe --quiet
+bin/fw vendor self --check
+git diff --quiet .claude/settings.json
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -322,14 +338,15 @@ bvp_scores_proposed:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-22 — `--quiet` forces `--describe-only` semantics rather than literally running edges too
+- **Chose:** `enrich.py --quiet` internally sets `args.describe_only = True` regardless of the flags passed, skipping the forward/reverse edge-computation phase entirely, and prints exactly one line: `Fabric: N cards · T TODO purpose · U unknown subsystem · E no edges · R refused this run (bin/fw fabric drift for ids)`. The hook and `fw resume status` inject this line verbatim.
+- **Why:** Measured live: `--describe-only` (no edges) is ~3.3s on the full 1,323-card corpus; `--describe` with the edge pass is 13.1s — over the 10s default `FW_FABRIC_DESCRIBE_TIMEOUT`. The nightly T-3430 cron already only ever runs `--describe-only` for the same reason ("the nightly sweep has no business recomputing the dependency graph"). Session start inherits that same boundary rather than inventing a different one. The AC's literal invocation (`enrich --describe --quiet`) is honoured at the call-site; `--quiet` is what narrows the actual work performed.
+- **Rejected:** (a) A separate raw-text pre-filter that skips YAML-parsing non-placeholder cards before `build_index()` — unnecessary once edges are already out of scope, since `apply_describe()` only does real file I/O on placeholder cards; the ~3.3s floor is `yaml.safe_load` over 1,323 files, which is inherent to any full-corpus fabric scan (paid identically by `fw doctor`/`fw audit`/`fw fabric drift` today) and did not need re-solving here. (b) A background/`nohup` hook invocation with a cached-summary read — the ground truth text allowed this as a fallback if the foreground path couldn't be made fast enough, but 3.3s comfortably fits inside the 10s budget so the simpler foreground call was kept.
+
+### 2026-09-22 — `fw resume status` reads the cache file rather than re-running the scan
+- **Chose:** `resume.sh:cmd_status` reads `.context/working/.fabric-describe.last` (the same cache file the hook writes) instead of invoking `fw fabric enrich --describe --quiet` itself.
+- **Why:** `resume status` is documented as a "routine check" callers may run repeatedly in one session (CLAUDE.md recommends `resume quick` over `resume status` for that reason); paying the ~3.3s scan cost on every invocation is unnecessary when the SessionStart hook already refreshes the cache once per session. The line is only as stale as the last session-start/resume/compact event, which is the same freshness bound the additionalContext line has.
+- **Rejected:** Re-running the live scan inside `cmd_status` — correct but slower for no accuracy gain in the common case, and duplicates work the hook already did moments earlier.
 
 ## Decision
 
@@ -347,3 +364,41 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3431-fabric-enrichment-at-every-session-start.md
 - **Context:** Initial task creation
+
+### 2026-09-22T12:58:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-09-22 — build [t3431-session-enrich]
+- **Action:** Added `--quiet` to `agents/fabric/lib/enrich.py` (one-line summary,
+  implies `--describe-only`), wired `agents/context/post-compact-resume.sh` to run
+  `timeout ${FW_FABRIC_DESCRIBE_TIMEOUT:-10} bin/fw fabric enrich --describe --quiet`
+  on every SessionStart (startup/resume/compact) and cache the line to
+  `.context/working/.fabric-describe.last`, and wired `agents/resume/resume.sh`
+  (`cmd_status`) to print the same cached line under its Git-state block.
+- **Measured:** `--quiet` (describe-only path) 3.28-3.39s on the live 1,323-card
+  corpus, 3 runs; full `--describe` + edge recompute 13.1s (over the 10s default
+  budget, why `--quiet` skips it). Foreground call kept — no background/`nohup`
+  fallback needed.
+- **Tests:** `tests/unit/t3431_fabric_session_start.bats` (new, 5 tests) — fixture
+  fabric, 2-TODO-card emit, forced-fail-via-`FW_FABRIC_DESCRIBE_TIMEOUT=0` fallback,
+  no-`.fabric/` no-op, `resume status` shows/hides the line. 6 new tests added to
+  `tests/unit/test_t3430_enrich_describe.py` (17 total, all green) for `--quiet`
+  itself. `bin/fw fabric register` run on the new test file (T-3430 auto-derived a
+  real purpose from its header comment).
+- **Side effect noted, not a defect:** `bin/fw fabric register` auto-runs a full
+  non-dry-run `enrich.py` (pre-existing behaviour, `register.sh:135,393`), which
+  recomputed edges across 145 live `.fabric/components/*.yaml` cards as a normal
+  consequence of registering the new test file — all 145 verified still valid YAML;
+  this is standard `register` behaviour, unrelated to the `--quiet` change.
+- **Observed, out of scope:** `fw resume status` crashes on the LIVE corpus today
+  (`agents/resume/resume.sh: line ~188/195: ... invalid arithmetic operator`,
+  inside `get_active_tasks`) — confirmed pre-existing via `git stash` (identical
+  crash with this task's edits removed). Some active task's title/body content
+  breaks a `$((...))` count. My Fabric Quality line prints correctly *before* the
+  crash point, and all 5 new bats tests pass in an isolated fixture project
+  unaffected by the live corpus, so this task's ACs are unaffected — but the
+  pre-existing `resume status` unit tests (`tests/unit/resume.bats`, 4 tests) are
+  already red on this repo for the same unrelated reason (confirmed both before
+  and after this task's changes). Not registered as a new concern — out of scope
+  for this task's file list, flagging here per CLAUDE.md's "don't silently work
+  around it" guidance.
