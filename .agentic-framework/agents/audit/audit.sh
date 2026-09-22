@@ -835,7 +835,7 @@ if [ -f "$TASKS_DIR/templates/default.md" ]; then
 else
     warn "Task template missing" \
          ".tasks/templates/default.md not found" \
-         "Copy zzz-default.md to .tasks/templates/default.md"
+         "Re-run fw init to reseed it, or copy .tasks/templates/default.md from the framework repo"
 fi
 
 # T-1279 (G-052) / T-3107 (slice 2 of 3): duplicate task IDs, over the WHOLE
