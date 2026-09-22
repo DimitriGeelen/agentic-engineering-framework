@@ -131,3 +131,69 @@ def test_slow_path_records_injected_later(sidecar):
 
     assert result.state == outbox.INJECTED_LATER
     assert outbox.latest_ack_state(cmid)["state"] == outbox.INJECTED_LATER
+
+
+# ── T-3434: the universal retry ladder's fields on every row ──────────────────
+
+def test_deliver_records_attempt_1_and_schedules_rung_0(sidecar):
+    delivery, outbox = sidecar
+    from datetime import datetime, timezone
+    cmid = _store(outbox)
+    _sent, transport = _recording_transport()
+    at = datetime(2026, 9, 22, 12, 0, tzinfo=timezone.utc)
+
+    delivery.deliver(cmid, transport, now=at)
+
+    row = outbox.latest_ack_state(cmid)
+    assert row["attempts"] == 1
+    assert row["rung"] == 0
+    # A delivered message is still scheduled: the hub took it, nobody read it
+    # yet, and unread is D-600's second failure class.
+    assert row["next_retry_at"] == "2026-09-22T12:01:00+00:00"
+
+
+def test_a_failed_delivery_carries_the_same_ladder_fields(sidecar):
+    delivery, outbox = sidecar
+    from datetime import datetime, timezone
+    cmid = _store(outbox)
+
+    def boom(_msg):
+        raise delivery.TransportError("hub down")
+
+    delivery.deliver(cmid, boom, now=datetime(2026, 9, 22, 12, 0, tzinfo=timezone.utc))
+
+    row = outbox.latest_ack_state(cmid)
+    assert row["state"] == outbox.STORED
+    assert row["attempts"] == 1 and row["rung"] == 0
+    assert row["next_retry_at"] == "2026-09-22T12:01:00+00:00"
+    assert "transport-failed" in row["error"]
+
+
+def test_a_retry_passes_its_own_attempt_number_and_gets_the_next_rung(sidecar):
+    delivery, outbox = sidecar
+    from datetime import datetime, timezone
+    cmid = _store(outbox)
+    _sent, transport = _recording_transport()
+
+    # attempt 3 sits on rung 1 (the 5-minute rung).
+    delivery.deliver(cmid, transport, attempts=3,
+                     now=datetime(2026, 9, 22, 12, 0, tzinfo=timezone.utc))
+
+    row = outbox.latest_ack_state(cmid)
+    assert row["attempts"] == 3 and row["rung"] == 1
+    assert row["next_retry_at"] == "2026-09-22T12:05:00+00:00"
+
+
+def test_the_last_attempt_schedules_nothing(sidecar):
+    delivery, outbox = sidecar
+    cmid = _store(outbox)
+    _sent, transport = _recording_transport()
+
+    delivery.deliver(cmid, transport, attempts=16)  # ladder exhausted after 16
+
+    row = outbox.latest_ack_state(cmid)
+    assert row["attempts"] == 16
+    # `rung` looks backward — attempt 16 was made on the last rung — while
+    # `next_retry_at` looks forward, and there is no forward left.
+    assert row["rung"] == 7
+    assert row["next_retry_at"] is None

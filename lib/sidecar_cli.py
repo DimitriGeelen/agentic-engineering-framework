@@ -23,7 +23,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lib.sidecar import delivery, e2e, inbox, outbox, status as status_mod  # noqa: E402
+from lib.sidecar import delivery, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
 from lib.sidecar import termlink_transport as transport  # noqa: E402
 
 
@@ -104,19 +104,26 @@ def cmd_status(args) -> int:
 
 
 def cmd_sweep(args) -> int:
-    """Flip past-deadline STORED rows to UNKNOWN. Reports; never re-sends.
+    """Drive the universal retry ladder one tick (T-3434, D-600).
 
-    Retry policy (OBS-447) is the operator's; a swept row is a recorded
-    failure, not a retried one. Exit 0 either way — a clean sweep is not an
-    error, and cron should not page on it.
+    OBS-447 is ruled, so the sweep no longer merely records failures: it
+    re-posts what never reached the hub, escalates what the hub holds unread
+    (inbox nudge from the 15-minute rung, operator from the 1-day rung), and
+    dead-letters after the last rung. Exit 0 either way — a clean sweep is not
+    an error, and cron should not page on it. The ladder lives in
+    lib/retry_ladder.py; the walk lives in lib/sidecar/retry.py.
     """
-    flipped = outbox.resolve_expired()
+    report = retry.sweep(now=args.now)
     if args.json:
-        print(json.dumps({"flipped": len(flipped), "client_msg_ids": flipped}))
-    else:
-        print(f"swept: {len(flipped)} row(s) flipped STORED -> UNKNOWN")
-        for cmid in flipped:
-            print(f"  {cmid}")
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return 0
+    print(f"swept: {report['considered']} open row(s), {report['due']} due  ->  "
+          f"{report['reposted']} reposted, {report['nudged']} nudged, "
+          f"{report['operator']} to operator, {report['answered']} answered, "
+          f"{report['deadlettered']} dead-lettered")
+    for action in report["actions"]:
+        detail = action.get("reason") or action.get("state") or ""
+        print(f"  {action['verb']:<22} {action['client_msg_id']}  {detail}")
     return 0
 
 
@@ -201,9 +208,12 @@ def build_parser() -> argparse.ArgumentParser:
                     help="also run the hub capability probe, reported separately")
     st.set_defaults(func=cmd_status)
 
-    sw = sub.add_parser("sweep", help="flip past-deadline STORED rows to UNKNOWN "
-                        "(cron cadence for resolve_expired; never re-sends)")
+    sw = sub.add_parser("sweep", help="drive the universal retry ladder one tick: "
+                        "re-post, escalate, or dead-letter every due row (T-3434)")
     sw.add_argument("--json", action="store_true")
+    sw.add_argument("--now", default=None,
+                    help="ISO-8601 instant to sweep as-of (testing and replay; "
+                         "default: the real clock)")
     sw.set_defaults(func=cmd_sweep)
 
     ee = sub.add_parser("e2e", help="live end-to-end check: real hub, real dispatched "
