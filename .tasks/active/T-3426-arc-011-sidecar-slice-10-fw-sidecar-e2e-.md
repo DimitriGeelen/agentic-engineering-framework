@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T10:11:39Z
-last_update: '2026-09-22T10:15:19Z'
+last_update: 2026-09-22T20:51:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -368,3 +368,20 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3426-arc-011-sidecar-slice-10-fw-sidecar-e2e-.md
 - **Context:** Initial task creation
+
+### 2026-09-22 17:05Z — second and third two-party windows (parent session, autonomous run)
+- **Run `8dbad116`** (issued by T-3433's worker on the NEW `inbox:cacc73ea32b121dd/010-termlink`
+  address, committed under T-3433): H1 PASS, H2 PASS (3 envelopes carrying our client_msg_id on
+  their inbox — the T-3434 ladder re-posted twice inside the window), H4/H5 FAIL — no ACK on our
+  conversation within 30 min. Same shape as `ab947312` on the old address: our hops close, theirs
+  stay open.
+- **Re-run for this task at 16:47Z** on the new address: killed at ~17:03Z by the session
+  harness's low-memory guard before any record was written (host had 25 GB available of 64 GB;
+  the guard fired on its own threshold). No record file, nothing to commit. The consult it posted
+  will be re-posted by the ladder until acked, which TermLink will see as a repeated e2e question.
+- **Asks outstanding to TermLink:** agent-chat-arc @1671 and a real sidecar consult on the new
+  address (client_msg_id a8717ecc, INJECTED_NOW): confirm their subscriber wakes on `inbox.queued`
+  for `inbox:cacc73ea32b121dd/010-termlink`, then answer the next `--peer` run. No reply as of
+  17:05Z on our inbox or the chat.
+- **Status of the last AC:** blocked on the peer, not on this repo. Nothing more can be done from
+  this side except re-issuing the run once they signal; not re-issued blind again this run.
