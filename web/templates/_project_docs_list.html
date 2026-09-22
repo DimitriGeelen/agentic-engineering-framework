@@ -1,3 +1,4 @@
+{# Project-docs list items, rendered by web/blueprints/core.py for docs beyond the dashboard's preview limit. #}
 {% for doc in docs %}
 <li>
     <a href="{{ url_for('core.project_doc', doc=doc.doc_id) }}"

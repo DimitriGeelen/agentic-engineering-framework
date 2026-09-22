@@ -1,3 +1,4 @@
+{# Stale-task list items for the dashboard's stale-tasks widget. #}
 {% for t in items %}
 <li>
     <a href="/tasks/{{ t.id }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">

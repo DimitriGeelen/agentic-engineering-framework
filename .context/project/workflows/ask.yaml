@@ -1,3 +1,5 @@
+# Workflow config for `fw ask`: routes web/ask.py's synchronous RAG answer through
+# ollama-local with a litellm cloud fallback on connection error.
 task_type: ask
 # T-1719 A3: fw ask's provider-routing decision.
 #
