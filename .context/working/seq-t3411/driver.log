@@ -1,0 +1,108 @@
+[seq 06:30:57Z] round 1: dispatching seq-t3411-r1-review (timeout 21600s)
+Spawned session 'seq-t3411-r1-review' via tmux backend
+Waiting for session to register (timeout: 30s)...
+Session 'seq-t3411-r1-review' is ready
+[0;32mOK[0m  Session 'seq-t3411-r1-review' registered
+  Tagged: T-3411
+  Task-type: build
+Worker spawned: seq-t3411-r1-review (wdir: /tmp/tl-dispatch/seq-t3411-r1-review)
+[seq 06:30:59Z] round 1: waiting on seq-t3411-r1-review
+[seq 06:40:41Z] round 1: review OK (18841 bytes)
+[seq 06:40:41Z] round 1: dispatching seq-t3411-r1-procasfit (timeout 21600s)
+Spawned session 'seq-t3411-r1-procasfit' via tmux backend
+Waiting for session to register (timeout: 30s)...
+Session 'seq-t3411-r1-procasfit' is ready
+[0;32mOK[0m  Session 'seq-t3411-r1-procasfit' registered
+  Tagged: T-3411
+  Task-type: build
+Worker spawned: seq-t3411-r1-procasfit (wdir: /tmp/tl-dispatch/seq-t3411-r1-procasfit)
+[seq 06:40:42Z] round 1: waiting on seq-t3411-r1-procasfit
+[seq 07:00:55Z] round 1: procasfit OK (13069 bytes)
+[seq 07:00:56Z] round 1 complete
+[seq 07:00:56Z] round 2: dispatching seq-t3411-r2-review (timeout 21600s)
+Spawned session 'seq-t3411-r2-review' via tmux backend
+Waiting for session to register (timeout: 30s)...
+Session 'seq-t3411-r2-review' is ready
+[0;32mOK[0m  Session 'seq-t3411-r2-review' registered
+  Tagged: T-3411
+  Task-type: build
+Worker spawned: seq-t3411-r2-review (wdir: /tmp/tl-dispatch/seq-t3411-r2-review)
+[seq 07:00:57Z] round 2: waiting on seq-t3411-r2-review
+[seq 07:09:26Z] round 2: review OK (20271 bytes)
+[seq 07:09:27Z] round 2: dispatching seq-t3411-r2-procasfit (timeout 21600s)
+Spawned session 'seq-t3411-r2-procasfit' via tmux backend
+Waiting for session to register (timeout: 30s)...
+Session 'seq-t3411-r2-procasfit' is ready
+[0;32mOK[0m  Session 'seq-t3411-r2-procasfit' registered
+  Tagged: T-3411
+  Task-type: build
+Worker spawned: seq-t3411-r2-procasfit (wdir: /tmp/tl-dispatch/seq-t3411-r2-procasfit)
+[seq 07:09:28Z] round 2: waiting on seq-t3411-r2-procasfit
+[seq 07:58:00Z] round 2: procasfit OK (16690 bytes)
+[seq 07:58:01Z] round 2 complete
+[seq 07:58:01Z] round 3: dispatching seq-t3411-r3-review (timeout 21600s)
+Spawned session 'seq-t3411-r3-review' via tmux backend
+Waiting for session to register (timeout: 30s)...
+Session 'seq-t3411-r3-review' is ready
+[0;32mOK[0m  Session 'seq-t3411-r3-review' registered
+  Tagged: T-3411
+  Task-type: build
+Worker spawned: seq-t3411-r3-review (wdir: /tmp/tl-dispatch/seq-t3411-r3-review)
+[seq 07:58:03Z] round 3: waiting on seq-t3411-r3-review
+[seq 08:05:20Z] round 3: review OK (20973 bytes)
+[seq 08:05:20Z] round 3: dispatching seq-t3411-r3-procasfit (timeout 21600s)
+Spawned session 'seq-t3411-r3-procasfit' via tmux backend
+Waiting for session to register (timeout: 30s)...
+Session 'seq-t3411-r3-procasfit' is ready
+[0;32mOK[0m  Session 'seq-t3411-r3-procasfit' registered
+  Tagged: T-3411
+  Task-type: build
+Worker spawned: seq-t3411-r3-procasfit (wdir: /tmp/tl-dispatch/seq-t3411-r3-procasfit)
+[seq 08:05:21Z] round 3: waiting on seq-t3411-r3-procasfit
+[seq 08:17:35Z] round 3: procasfit OK (15255 bytes)
+[seq 08:17:35Z] round 3 complete
+[seq 08:17:35Z] round 4: dispatching seq-t3411-r4-review (timeout 21600s)
+Spawned session 'seq-t3411-r4-review' via tmux backend
+Waiting for session to register (timeout: 30s)...
+Session 'seq-t3411-r4-review' is ready
+[0;32mOK[0m  Session 'seq-t3411-r4-review' registered
+  Tagged: T-3411
+  Task-type: build
+Worker spawned: seq-t3411-r4-review (wdir: /tmp/tl-dispatch/seq-t3411-r4-review)
+[seq 08:17:37Z] round 4: waiting on seq-t3411-r4-review
+[seq 08:24:16Z] round 4: review OK (23880 bytes)
+[seq 08:24:16Z] round 4: dispatching seq-t3411-r4-procasfit (timeout 21600s)
+Spawned session 'seq-t3411-r4-procasfit' via tmux backend
+Waiting for session to register (timeout: 30s)...
+Session 'seq-t3411-r4-procasfit' is ready
+[0;32mOK[0m  Session 'seq-t3411-r4-procasfit' registered
+  Tagged: T-3411
+  Task-type: build
+Worker spawned: seq-t3411-r4-procasfit (wdir: /tmp/tl-dispatch/seq-t3411-r4-procasfit)
+[seq 08:24:17Z] round 4: waiting on seq-t3411-r4-procasfit
+[seq 09:26:33Z] round 4: procasfit OK (19745 bytes)
+[seq 09:26:33Z] round 4 complete
+[seq 09:26:33Z] round 5: dispatching seq-t3411-r5-review (timeout 21600s)
+  Focus seeded: focus.seq-t3411-r5-review.yaml -> T-3411
+Spawned session 'seq-t3411-r5-review' via tmux backend
+Waiting for session to register (timeout: 30s)...
+Session 'seq-t3411-r5-review' is ready
+OK  Session 'seq-t3411-r5-review' registered
+  Tagged: T-3411
+  Task-type: build
+Worker spawned: seq-t3411-r5-review (wdir: /tmp/tl-dispatch/seq-t3411-r5-review)
+[seq 09:26:34Z] round 5: waiting on seq-t3411-r5-review
+[seq 09:32:11Z] round 5: review OK (28237 bytes)
+[seq 09:32:11Z] round 5: dispatching seq-t3411-r5-procasfit (timeout 21600s)
+  Focus seeded: focus.seq-t3411-r5-procasfit.yaml -> T-3411
+Spawned session 'seq-t3411-r5-procasfit' via tmux backend
+Waiting for session to register (timeout: 30s)...
+Session 'seq-t3411-r5-procasfit' is ready
+OK  Session 'seq-t3411-r5-procasfit' registered
+  Tagged: T-3411
+  Task-type: build
+Worker spawned: seq-t3411-r5-procasfit (wdir: /tmp/tl-dispatch/seq-t3411-r5-procasfit)
+[seq 09:32:13Z] round 5: waiting on seq-t3411-r5-procasfit
+[seq 09:36:59Z] round 5: procasfit OK (14563 bytes)
+[seq 09:37:00Z] round 5 complete
+[seq 09:37:00Z] sequence complete: rounds 1..5

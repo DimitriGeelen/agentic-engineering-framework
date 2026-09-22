@@ -1,0 +1,135 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3434: universal message retry ladder: shared lib (2x1m,2x5m,2x15m,2x1h,2x4h,2x1d,2x1w,2x1mo) with re-post vs escalate per rung, receiver dedupe mandatory, dead-letter + audit WARN; sidecar first, driven by the sweep cron (OBS-447 ruling)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-22T16:15:43Z
+# ============================================================================
+
+task_id: T-3434
+task_name: "universal message retry ladder: shared lib (2x1m,2x5m,2x15m,2x1h,2x4h,2x1d,2x1w,2x1mo) with re-post vs escalate per rung, receiver dedupe mandatory, dead-letter + audit WARN; sidecar first, driven by the sweep cron (OBS-447 ruling)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-22T12:43:27Z
+completed: 2026-09-22T16:13:10Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-22T17:47:58+02:00
+last_commit: 2026-09-22T18:08:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shared retry ladder lib (D-600) — 16 attempts over 8 rungs, two-class verbs, urgent out of scope. the sidecar becomes the ladder's first consumer — ledger fields, and a sweep that works instead of records. dead-letters are their own audit class, and 'expired' now means a missed rung. receiver-side dedupe on the bus leg — the ladder outlives the hub's TTL. the report, the cron description, and a 'released' marker the live ledger needed
+
+# Key outcomes
+outcomes:
+  - '`lib/retry_ladder.py` (pure, no I/O): `LADDER = [(2,60),(2,300),(2,900),(2,3600),(2,14400),(2,86400),(2,604800),(2,2592000)]`; `next_attempt(attempts, last_at) -> (rung_index, due_at)|None` (None = exhausted → dead-letter); `verb_for(rung) -> "repost"|"escalate:nudge"|"escalate:operator"|"deadletter"` (nudge from the 15-min rung, operator surface from the 1-day rung, dead-letter after the last); unit tests pin every rung boundary and exhaustion; `urgent` accepted as a parameter but raises NotImplementedError with the pointer to the separate design (explicitly out of scope)'
+  - 'Sidecar as first consumer: ack-ledger rows gain `attempts`, `next_retry_at`, `rung`; `delivery.deliver()` records attempt 1; `fw sidecar sweep` (the 5-minute cron) walks STORED rows: un-posted (transport error recorded) → re-post when due; posted-but-unread (INJECTED_* with no reply/receipt on the conversation) → escalate per rung: nudge = one pointer message to the recipient''s project-level inbox, operator = `fw note` observation + Watchtower notice, dead-letter = state UNKNOWN + reason `ladder-exhausted`; audit WARN counts dead-letters (extends T-3420''s rail)'
+  - 'Receiver dedupe is enforced for every kind: `inbox.pending()` already dedupes on client_msg_id; add the same seen-set to `fw pickup process` and `lib/bus` receive paths (or record in Evolution which of those already dedupe and why)'
+  - 'Tests: sweep on a fixture ledger advances rungs correctly across simulated time (now injectable), re-posts exactly on due rungs, escalates instead of re-posting for INJECTED rows, dead-letters after the last rung with the audit-visible count; no duplicates on the hub for a message that was read (fake hub)'
+  - '`docs/reports/T-3434-retry-ladder.md`: the schedule, the two failure classes, why it outlives the hub''s dedupe window (receiver dedupe mandatory), what urgent will change (pointer only); OBS-447 marked resolved; vendored copies synced, sidecar + sweep suites green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-22 — `verb_for` takes the failure class, not just the rung'
+    chose: '`verb_for(rung, *, posted=True)`. The single-argument call the AC names returns the escalation mapping (repost, repost, nudge×3, operator×3, deadletter); `posted=False` returns `repost` on every rung.'
+    rationale: 'D-600 defines two classes with different verbs, but the AC specifies a one-argument signature. A keyword with the AC''s mapping as its default satisfies both: the documented call is exactly what the AC says, and the second class is expressible without a parallel function.'
+    alternatives_rejected: ['deciding the class inside the sweep and never telling the library — that puts half the ruling in a consumer, where the next consumer has to rederive it.']
+  - decision: '2026-09-22 — `rung` looks backward, `next_retry_at` looks forward'
+    chose: 'the row''s `rung` names the rung THIS attempt was made on; the next rung is derived (`rung_for(attempts)`) rather than stored.'
+    rationale: 'the first cut stored the NEXT rung, which made the row read as a lie in forensics ("attempt 2, rung 1" when attempt 2 was on rung 0) and gave two places to disagree about where a message is going. One stored fact, one derived.'
+    alternatives_rejected: ['storing both. Two fields that must agree are two fields that can''t.']
+  - decision: '2026-09-22 — the sweep reads replies with a peek, never a drain'
+    chose: 'reply detection walks our own inbox topic from cursor 0 and never writes the cursor; one hub read per sweep, results cached as a conversation set.'
+    rationale: '`fw sidecar inbox` owns that cursor. A cron job that consumed an agent''s unread consults in order to decide whether to retry would be worse than the bug.'
+    alternatives_rejected: ['a per-message `channel subscribe --conversation-id` (one hub call per open row — 27 calls on the live ledger''s first tick).']
+  - decision: '2026-09-22 — pickup keeps its own dedupe; the gap is filed, not patched'
+    chose: 'record pickup''s existing SHA256 + 7-day-cooldown dedupe and file OBS-472 for the cooldown-vs-ladder-span mismatch.'
+    rationale: 'pickup is not a ladder producer today, so there is no live defect; and widening the cooldown changes what pickup *means* (a concern re-raised after a week is currently a new signal, deliberately). That is the operator''s call.'
+    alternatives_rejected: ['adding a second id-keyed seen-set beside the hash one — two dedupe mechanisms on one path drift, and neither owner knows which fired.']
+  - decision: '2026-09-22 — the ladder does not adopt pre-T-3434 deliveries'
+    chose: 'a row with no `attempts` field in a posted state is closed; the same row still `STORED` joins at rung 0.'
+    rationale: 'measured, not theorised — the first live sweep claimed 27 of 34 rows. Escalating conversations that finished weeks ago is noise the operator pays for. A never-delivered row is the opposite case: that is what the ladder is for.'
+    alternatives_rejected: ['an age cap (picks an arbitrary number and still adopts recent history); a ledger migration (rewrites an append-only file).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/bus.sh'
+  - '.agentic-framework/lib/dispatch.sh'
+  - '.agentic-framework/lib/retry_ladder.py'
+  - '.agentic-framework/lib/sidecar-audit.sh'
+  - '.agentic-framework/lib/sidecar/delivery.py'
+  - '.agentic-framework/lib/sidecar/outbox.py'
+  - '.agentic-framework/lib/sidecar/retry.py'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - '.context/cron-registry.yaml'
+  - '.context/inbox.yaml'
+  - 'docs/reports/T-3434-retry-ladder.md'
+  - '.fabric/components/lib-retry_ladder.yaml'
+  - '.fabric/components/lib-sidecar-circuit.yaml'
+  - '.fabric/components/lib-sidecar-retry.yaml'
+  - '.fabric/components/tests-unit-test_retry_ladder.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_circuit.yaml'
+  - 'lib/bus.sh'
+  - 'lib/dispatch.sh'
+  - 'lib/retry_ladder.py'
+  - 'lib/sidecar-audit.sh'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/delivery.py'
+  - 'lib/sidecar/outbox.py'
+  - 'lib/sidecar/retry.py'
+  - 'tests/unit/lib_bus.bats'
+  - 'tests/unit/sidecar_audit_rail.bats'
+  - 'tests/unit/test_retry_ladder.py'
+  - 'tests/unit/test_sidecar_delivery.py'
+  - 'tests/unit/test_sidecar_sweep.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T17:47:58'
+    action: 'T-3434: shared retry ladder lib (D-600) — 16 attempts over 8 rungs, two-class verbs, urgent out of scope'
+  - time: '2026-09-22T17:55:29'
+    action: 'T-3434: the sidecar becomes the ladder''s first consumer — ledger fields, and a sweep that works instead of records'
+  - time: '2026-09-22T18:00:20'
+    action: 'T-3434: dead-letters are their own audit class, and ''expired'' now means a missed rung'
+  - time: '2026-09-22T18:02:58'
+    action: 'T-3434: receiver-side dedupe on the bus leg — the ladder outlives the hub''s TTL'
+  - time: '2026-09-22T18:08:42'
+    action: 'T-3434: the report, the cron description, and a ''released'' marker the live ledger needed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 209 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 209
+  commits: 5
+  files_changed: 31
+  lines_added: 2298
+  lines_removed: 98
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3434-universal-message-retry-ladder-shared-li.md
+generated_by: context-agent-hybrid

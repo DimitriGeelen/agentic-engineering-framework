@@ -9,12 +9,12 @@ description: >
   at register+enrich time (refuse, never guess), add an under-populated class to drift,
   and a cron that sweeps TODO cards — 792 of 1314 cards carry the template TODO (OBS-464)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/fabric/fabric.sh, agents/fabric/lib/describe.py, agents/fabric/lib/drift.sh, agents/fabric/lib/enrich.py, agents/fabric/lib/register.sh, agents/fabric/lib/underpopulated.py, bin/fw, lib/fabric_doctor_facts.py, tests/unit/t3430_fabric_audit_doctor.bats, tests/unit/t3430_fabric_drift_underpopulated.bats, tests/unit/t3430_fabric_register_describe.bats, tests/unit/test_t3430_describe.py, tests/unit/test_t3430_enrich_describe.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T11:54:03Z
-last_update: '2026-09-22T12:00:33Z'
-date_finished:
+last_update: 2026-09-22T12:30:13Z
+date_finished: 2026-09-22T12:30:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -442,3 +442,22 @@ this task.
   green: 66 pytest passed; the two bats skips in the baseline
   (`# skip audit lock held by a concurrent run`) are the shared audit lock
   under a concurrent worker, not a defect.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8cf04a6a
+- **Timestamp:** 2026-09-22T12:32:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Cron entry `fabric-describe-daily` in `.context/cron-registry.yaml` (own `flock`, `origin_task: T-3430`, off the audit minute), `fw cron generate` + `fw cron install` run, doctor "Cron registry in syn
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: Cron entry `fabric-describe-daily` in `.context/cron-registry.yaml` (own `flock`, `origin_task: T-3430`, off the audit minute), `fw cron generate` + ``
+- **AC#6 (Agent)** — Live on this repo: one `fw fabric enrich --describe` run — before/after counts of TODO purposes and unknown subsystems recorded here (expected: a large drop, and a refusal list naming files that genui
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/search.py in: Live on this repo: one `fw fabric enrich --describe` run — before/after counts of TODO purposes and unknown subsystems recorded here (expected: a larg`
+
+### 2026-09-22T12:30:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

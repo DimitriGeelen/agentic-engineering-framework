@@ -1,12 +1,12 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-19T03:23:02.706451+00:00
-corpus_total: 2905
-bug_class_total: 514
+generated: 2026-09-22T03:23:02.653533+00:00
+corpus_total: 2930
+bug_class_total: 515
 bug_class_pct: 17
 h1_flagged: 367
 h1_pct_of_bug_class: 71
-h2_repeat_patterns: 167
+h2_repeat_patterns: 169
 h3_flagged: 265
 h3_pct_of_bug_class: 51
 recent_30d_flagged: 8
@@ -30,15 +30,15 @@ recent_sample:
     name: "liveness-check.sh false negative: probe /api/_identity and match project_root, n"
 h2_top:
   - learning: "P-011"
-    task_count: 2680
+    task_count: 2743
   - learning: "L-387"
-    task_count: 2420
+    task_count: 2477
   - learning: "L-291"
-    task_count: 1194
+    task_count: 1219
   - learning: "L-398"
-    task_count: 937
+    task_count: 957
   - learning: "P-010"
-    task_count: 544
+    task_count: 565
   - learning: "L-399"
     task_count: 105
   - learning: "L-006"

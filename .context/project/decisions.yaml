@@ -4209,3 +4209,38 @@ decisions:
     date: 2026-09-22
     task: T-3435
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-604
+    decision: "`verb_for(rung, *, posted=True)`. The single-argument call the AC names"
+    scope: project
+    date: 2026-09-22
+    task: T-3434
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-605
+    decision: "the row's `rung` names the rung THIS attempt was made on; the next"
+    scope: project
+    date: 2026-09-22
+    task: T-3434
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-606
+    decision: "reply detection walks our own inbox topic from cursor 0 and never"
+    scope: project
+    date: 2026-09-22
+    task: T-3434
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-607
+    decision: "record pickup's existing SHA256 + 7-day-cooldown dedupe and file"
+    scope: project
+    date: 2026-09-22
+    task: T-3434
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-608
+    decision: "a row with no `attempts` field in a posted state is closed; the same"
+    scope: project
+    date: 2026-09-22
+    task: T-3434
+    rationale: "Auto-captured from task file on completion"
