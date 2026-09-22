@@ -361,3 +361,22 @@ def test_cli_sweep_passes_now_through_and_reports_every_verb(sc, capsys, monkeyp
     text = capsys.readouterr().out
     assert rc == 0
     assert "1 reposted" in text and "1 nudged" in text and "m1" in text
+
+
+def test_a_delivery_made_before_the_ladder_existed_is_not_adopted(sc):
+    """34 such rows were live when the ladder shipped; none may be re-opened."""
+    _cli, outbox, _status, retry, _delivery = sc
+    cmid = outbox.write_message(from_id="sweeper-test", to="agentB", body="old",
+                                conversation_id="conv-ancient")
+    row = {"client_msg_id": cmid, "target": "agentB", "hub": None,
+           "state": outbox.INJECTED_NOW, "deadline": None, "error": None,
+           "ts": (T0 - timedelta(days=30)).isoformat()}
+    with open(outbox._ledger_path(), "w", encoding="utf-8") as fh:
+        fh.write(json.dumps(row) + "\n")
+
+    posted, transport = _recorder()
+    report = retry.sweep(now=T0, transport=transport, probe=_ok_probe,
+                         reader=_empty_reader)
+
+    assert report["considered"] == 0
+    assert posted == []

@@ -76,10 +76,27 @@ def _now(now: str | datetime | None) -> datetime:
 
 
 def is_open(row: dict) -> bool:
-    """Is the ladder still responsible for this message?"""
-    if row.get("state") == outbox.UNKNOWN:
+    """Is the ladder still responsible for this message?
+
+    Three ways a row is closed, and the third is the one that needs saying.
+    A row with no `attempts` field predates T-3434; if it is also in a posted
+    state, it was DELIVERED before the ladder existed and was never promised
+    escalation. The ladder does not adopt it — re-opening every consult this
+    project ever delivered would fire a month of nudges at peers about
+    conversations that are long finished. (The live ledger held 34 such rows
+    when the ladder shipped.) A pre-T-3434 row that is still STORED is a
+    different matter: it never reached anyone, which is exactly what the
+    ladder is for, so it joins at rung 0.
+    """
+    state = row.get("state")
+    if state == outbox.UNKNOWN:
         return False
-    return not (row.get("error") or "").startswith(ANSWERED)
+    if (row.get("error") or "").startswith(ANSWERED):
+        return False
+    if row.get("attempts") is None and state in (outbox.INJECTED_NOW,
+                                                 outbox.INJECTED_LATER):
+        return False
+    return True
 
 
 def latest_rows() -> dict[str, dict]:

@@ -11,7 +11,13 @@
 #   fw_sidecar_ledger_facts <project_root>
 #
 #     stdout : one tab-separated line
-#              UNKNOWN<TAB>EXPIRED_UNSWEPT<TAB>STORED<TAB>DELIVERED<TAB>TOTAL
+#              UNKNOWN<TAB>EXPIRED_UNSWEPT<TAB>STORED<TAB>DELIVERED<TAB>TOTAL<TAB>DEAD_LETTERS
+#
+#              DEAD_LETTERS (T-3434) is a SUBSET of UNKNOWN: the rows the
+#              universal retry ladder gave up on, `ladder-exhausted` after 16
+#              attempts or `ladder-unretryable` when the durable message file
+#              went missing. It is appended last so a caller reading five
+#              fields keeps working.
 #     rc 0   : facts printed
 #     rc 1   : the sidecar has never been used under <project_root>
 #              (no .context/sidecar/outbox/) — the caller stays silent
@@ -42,7 +48,8 @@ try:
     delivered = int(l.get("INJECTED_NOW", 0)) + int(l.get("INJECTED_LATER", 0))
     print("\t".join(str(x) for x in (
         int(l.get("UNKNOWN", 0)), int(s.get("expired_unswept", 0)),
-        int(l.get("STORED", 0)), delivered, int(s.get("messages_total", 0)))))
+        int(l.get("STORED", 0)), delivered, int(s.get("messages_total", 0)),
+        int(s.get("dead_letters", 0)))))
 except Exception:
     sys.exit(2)
 ' || return 2

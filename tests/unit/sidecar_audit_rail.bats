@@ -3,11 +3,18 @@
 #
 # `fw_sidecar_ledger_facts <root>` (lib/sidecar-audit.sh) is the fact function
 # behind audit.sh's check_sidecar_ledger. It prints one tab-separated line
-#     UNKNOWN  EXPIRED_UNSWEPT  STORED  DELIVERED  TOTAL
-# read from the sidecar's own files under <root> — never the hub. Four states
-# are pinned here against a fixture ledger: never used (silent, rc 1), clean
-# (zeros), UNKNOWN>0, expired_unswept>0. The fifth test pins the design rule
-# that the audit check body contains no `termlink` token at all.
+#     UNKNOWN  EXPIRED_UNSWEPT  STORED  DELIVERED  TOTAL  DEAD_LETTERS
+# read from the sidecar's own files under <root> — never the hub.
+#
+# T-3434 appended a sixth field, DEAD_LETTERS: the subset of UNKNOWN the
+# universal retry ladder gave up on (`ladder-exhausted` / `ladder-unretryable`).
+# It is named separately from UNKNOWN because the remedy differs — an UNKNOWN
+# the ladder is still working needs patience, a dead-letter needs a decision.
+#
+# States pinned here against a fixture ledger: never used (silent, rc 1), clean
+# (zeros), UNKNOWN>0, expired_unswept>0, dead-letters counted and distinguished
+# from plain UNKNOWN. The last test pins the design rule that the audit check
+# body contains no `termlink` token at all.
 
 load ../test_helper
 
@@ -37,6 +44,13 @@ ledger_row() {
         "$id" "$state" "$deadline" >> "$TEST_ROOT/.context/sidecar/awaiting-ack.jsonl"
 }
 
+# ladder_row ID STATE ERROR ATTEMPTS — a post-T-3434 row carrying ladder fields.
+ladder_row() {
+    local id="$1" state="$2" error="$3" attempts="${4:-16}"
+    printf '{"client_msg_id":"%s","target":"peer","hub":null,"state":"%s","deadline":null,"error":"%s","attempts":%s,"next_retry_at":null,"rung":7,"ts":"2026-09-22T08:00:00+00:00"}\n' \
+        "$id" "$state" "$error" "$attempts" >> "$TEST_ROOT/.context/sidecar/awaiting-ack.jsonl"
+}
+
 run_facts() {
     run bash -c "source '$SIDECAR_AUDIT_LIB'; fw_sidecar_ledger_facts '$TEST_ROOT'"
 }
@@ -54,7 +68,7 @@ run_facts() {
     ledger_row b INJECTED_LATER
     run_facts
     [ "$status" -eq 0 ]
-    [ "$output" = $'0\t0\t0\t2\t0' ]
+    [ "$output" = $'0\t0\t0\t2\t0\t0' ]
 }
 
 @test "UNKNOWN rows are counted in field 1; a later row for the same id supersedes" {
@@ -76,7 +90,56 @@ run_facts() {
     ledger_row fresh STORED "2999-01-01T00:00:00+00:00"
     run_facts
     [ "$status" -eq 0 ]
-    [ "$output" = $'0\t1\t2\t0\t0' ]
+    [ "$output" = $'0\t1\t2\t0\t0\t0' ]
+}
+
+@test "T-3434: a ladder-exhausted row is counted in field 6 as well as field 1" {
+    make_outbox
+    ladder_row dead UNKNOWN "ladder-exhausted"
+    ladder_row gone UNKNOWN "ladder-unretryable: message file missing"
+    run_facts
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s' "$output" | cut -f1)" = "2" ]   # both are UNKNOWN
+    [ "$(printf '%s' "$output" | cut -f6)" = "2" ]   # both are dead-letters
+}
+
+@test "T-3434: an UNKNOWN the ladder did not produce is NOT a dead-letter" {
+    make_outbox
+    ledger_row plain UNKNOWN
+    ladder_row dead UNKNOWN "ladder-exhausted"
+    run_facts
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s' "$output" | cut -f1)" = "2" ]
+    [ "$(printf '%s' "$output" | cut -f6)" = "1" ]
+}
+
+@test "T-3434: a row held between rungs is in flight, not expired-unswept" {
+    make_outbox
+    # attempts=1, next rung due in the far future: the ladder is holding it on
+    # purpose. Before T-3434 its 30-second transport deadline would have read
+    # as a missed sweep and WARNed on every in-flight message.
+    printf '{"client_msg_id":"held","target":"peer","hub":null,"state":"STORED","deadline":"2000-01-01T00:00:00+00:00","error":"transport-failed: hub down","attempts":1,"next_retry_at":"2999-01-01T00:00:00+00:00","rung":0,"ts":"2026-09-22T08:00:00+00:00"}\n' \
+        >> "$TEST_ROOT/.context/sidecar/awaiting-ack.jsonl"
+    run_facts
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s' "$output" | cut -f2)" = "0" ]
+    [ "$(printf '%s' "$output" | cut -f3)" = "1" ]
+}
+
+@test "T-3434: a row whose rung came due and was not worked IS expired-unswept" {
+    make_outbox
+    printf '{"client_msg_id":"late","target":"peer","hub":null,"state":"STORED","deadline":null,"error":"transport-failed: hub down","attempts":1,"next_retry_at":"2000-01-01T00:00:00+00:00","rung":0,"ts":"2026-09-22T08:00:00+00:00"}\n' \
+        >> "$TEST_ROOT/.context/sidecar/awaiting-ack.jsonl"
+    run_facts
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s' "$output" | cut -f2)" = "1" ]
+}
+
+@test "T-3434: the audit WARN names the dead-letter class and its reason" {
+    body=$(awk '/^check_sidecar_ledger\(\) \{/{f=1} f{print} f&&/^\}/{exit}' "$AUDIT_SH")
+    [ -n "$body" ]
+    printf '%s' "$body" | grep -q 'dead-letter'
+    printf '%s' "$body" | grep -q 'ladder-exhausted'
 }
 
 @test "audit check body reads our own ledger only: no termlink token in check_sidecar_ledger" {
