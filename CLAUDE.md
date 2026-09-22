@@ -1159,7 +1159,7 @@ When surfacing an arc-mutating action to the operator — `fw arc close`, `fw ar
 | Review proposed driver (no human needed) | Verdict column on `/arcs/<slug>` | `fw arc review-driver <slug> "<name>" [--all] [--dry-run]` (T-3429) |
 | Approve proposed driver | Button on `/arcs/<slug>` (proposed_scoped_drivers table) | `fw arc approve-driver <slug> "<name>" --weight N` — **default path, reviewer-gated, no flag** (T-3429) |
 | Approve `--none` | Form on `/arcs/<slug>` | `fw arc approve-driver <slug> --none --justification "…" --from-watchtower` |
-| Add ad-hoc driver | Form on `/arcs/<slug>` | `fw arc approve-driver <slug> "<name>" --weight N --rationale "…"` (reviewer-gated) |
+| Add ad-hoc driver | Form on `/arcs/<slug>` | `fw arc approve-driver <slug> "<name>" --weight N --rationale "…" --scoring-file <path>` — reviewer-gated; the Watchtower form still posts `--from-watchtower` (an ad-hoc driver has no proposal to carry a `scoring:` spec, so give it one with `--scoring-file` or use the override) |
 | Remove scoped driver | Button on `/arcs/<slug>` | `fw arc remove-driver <slug> "<name>" --rationale "…" --from-watchtower` |
 | Adjust scoped weight | Slider on `/arcs/<slug>` | `fw arc set-scoped-weight <slug> "<name>" <N> --from-watchtower` |
 

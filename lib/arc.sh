@@ -1246,7 +1246,7 @@ arc_dispatch() {
 
 arc_approve_driver() {
     local id="" name="" weight="" rationale="" justification="" want_none=false
-    local i_am_human=false from_watchtower=false all_reviewed=false
+    local i_am_human=false from_watchtower=false all_reviewed=false scoring_file=""
     while [ $# -gt 0 ]; do
         case "$1" in
             --weight) weight="$2"; shift 2;;
@@ -1256,6 +1256,7 @@ arc_approve_driver() {
             --i-am-human) i_am_human=true; shift;;
             --from-watchtower) from_watchtower=true; shift;;
             --all-reviewed) all_reviewed=true; shift;;   # T-3429 (D-586)
+            --scoring-file) scoring_file="$2"; shift 2;;  # T-3429: give an ad-hoc driver a mechanism
             --help|-h) _arc_approve_help; return 0;;
             *)
                 if [ -z "$id" ]; then id="$1"
@@ -1382,8 +1383,10 @@ for sd in (d.get('scoped_drivers') or []):
         local inline_entry
         inline_entry=$(python3 -c '
 import json, sys
-print(json.dumps({"name": sys.argv[1], "weight": int(sys.argv[2]),
-                  "rationale": sys.argv[3]}))' "$name" "$w" "$rationale")
+e = {"name": sys.argv[1], "weight": int(sys.argv[2]), "rationale": sys.argv[3]}
+if len(sys.argv) > 4 and sys.argv[4]:
+    e["scoring_file"] = sys.argv[4]
+print(json.dumps(e))' "$name" "$w" "$rationale" "$scoring_file")
         reviewer_json=$(FW_ARC_REVIEW_INLINE_ENTRY="$inline_entry" \
             _arc_driver_review_run "$f" "$PROJECT_ROOT" "$name" "false" "json")
         local review_rc=$?
@@ -2014,6 +2017,8 @@ _arc_approve_help() {
     echo "  entry is recorded as approved_by: reviewer:<id> with the verdict attached."
     echo "  On FAIL nothing is approved and the failed checks are named."
     echo "    Preview a verdict: fw arc review-driver <arc-id> \"<name>\" --dry-run"
+    echo "    --scoring-file P   give an ad-hoc driver (one with no proposal behind it) the"
+    echo "                       scoring spec check (a) needs; schema in policy/value-drivers.yaml"
     echo "    --all-reviewed     approve every proposed driver that passes, up to the cap"
     echo ""
     echo "  OVERRIDE PATH: --i-am-human / --from-watchtower approve WITHOUT the reviewer,"

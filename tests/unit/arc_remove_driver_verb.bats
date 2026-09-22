@@ -168,9 +168,32 @@ proposed_scoped_drivers: []
 YAML
 }
 
+# T-3429 (D-586) updated the three tests below. The unflagged approve path no
+# longer passes straight through — it runs the external value-driver reviewer,
+# which needs a scoring mechanism (check a) and a rationale that names a
+# directive it differs from (check c). The tests' SUBJECT is unchanged (is
+# --rationale accepted, is it persisted verbatim); only the fixture's quality
+# moved to what the reviewer now requires. The back-compat test moved to the
+# --i-am-human override, which is where the old unflagged behaviour now lives.
+
+# A scoring spec that passes the T-3428 validator, for the reviewer's check (a).
+write_scoring_file() {
+    mkdir -p "$PROJECT_ROOT/policy"
+    cat > "$PROJECT_ROOT/policy/t1976-fixture-scoring.yaml" <<'YAML'
+kind: signals
+levels:
+  3:
+    keywords: ["fixture"]
+YAML
+}
+REVIEWABLE_RATIONALE="Distinguishes from D2 (Reliability): D2 is about no silent failures at run time, this fixture driver is about something else entirely."
+
 @test "T-1976: arc_approve_driver accepts --rationale flag (was 'Unexpected arg')" {
     setup_approve_fixture
-    run arc_approve_driver "approve-fixture" "rationale-driver" --weight 3 --rationale "rationale should be accepted and persisted on the entry per R6 friction"
+    write_scoring_file
+    run arc_approve_driver "approve-fixture" "rationale-driver" --weight 3 \
+        --scoring-file policy/t1976-fixture-scoring.yaml \
+        --rationale "$REVIEWABLE_RATIONALE"
     [ "$status" -eq 0 ]
     [[ "$output" == *"rationale-driver"* ]]
     # Persisted: rationale field on the scoped_drivers entry
@@ -180,17 +203,32 @@ YAML
 
 @test "T-1976: arc_approve_driver persists rationale text verbatim" {
     setup_approve_fixture
-    run arc_approve_driver "approve-fixture" "alpha" --weight 4 --rationale "this rationale string should round-trip into the yaml verbatim"
+    write_scoring_file
+    run arc_approve_driver "approve-fixture" "alpha" --weight 4 \
+        --scoring-file policy/t1976-fixture-scoring.yaml \
+        --rationale "this rationale should round-trip into the yaml verbatim, and it distinguishes itself from D3 (Usability)"
     [ "$status" -eq 0 ]
-    run grep -F "this rationale string should round-trip into the yaml verbatim" "$ARCS_DIR/approve-fixture.yaml"
+    run grep -F "this rationale should round-trip into the yaml verbatim" "$ARCS_DIR/approve-fixture.yaml"
     [ "$status" -eq 0 ]
 }
 
-@test "T-1976: arc_approve_driver without --rationale still works (back-compat)" {
+@test "T-1976: arc_approve_driver without --rationale still works on the override path" {
+    # T-3429: a rationale-less approval cannot pass check (c) by construction —
+    # zero chars, no directive named. The override path is where that call now
+    # lives, and it still records approved_by: human.
     setup_approve_fixture
-    run arc_approve_driver "approve-fixture" "no-rationale-driver" --weight 3
+    run arc_approve_driver "approve-fixture" "no-rationale-driver" --weight 3 --i-am-human
     [ "$status" -eq 0 ]
     [[ "$output" == *"no-rationale-driver"* ]]
+}
+
+@test "T-3429: an ad-hoc driver with no scoring mechanism is refused on the default path" {
+    setup_approve_fixture
+    run arc_approve_driver "approve-fixture" "no-mechanism-driver" --weight 3 \
+        --rationale "$REVIEWABLE_RATIONALE"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"did not pass review"* ]]
+    [[ "$output" == *"FAILED (a) scorable"* ]]
 }
 
 # --- T-1979: dedup + proposal cleanup regressions ---
@@ -222,7 +260,17 @@ proposed_scoped_drivers:
     weight: 3
     source: agent
     ts: 2026-02-02T00:00:00Z
-    rationale: this proposal rationale satisfies the thirty-character minimum
+    # T-3429: proposals now carry a scoring: spec, because the reviewer's check
+    # (a) is what the default approve path runs. The T-1979 subject below
+    # (proposal removal on approval) is unchanged.
+    rationale: >-
+      Distinguishes from D2 (Reliability): this proposal rationale satisfies both
+      the length floor and the directive-naming requirement of check (c).
+    scoring:
+      kind: signals
+      levels:
+        3:
+          keywords: ["fixture"]
   - name: other-proposal
     weight: 2
     source: agent
@@ -245,7 +293,7 @@ YAML
 
 @test "T-1979: arc_approve_driver removes matching proposal on successful approval" {
     setup_dedup_fixture
-    run arc_approve_driver "dedup-fixture" "pending-driver" --weight 3 --rationale "approving the pending proposal should also remove it from proposed list"
+    run arc_approve_driver "dedup-fixture" "pending-driver" --weight 3 --rationale "Distinguishes from D2 (Reliability): approving the pending proposal should also remove it from the proposed list"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Removed matching proposal for 'pending-driver'"* ]]
     # pending-driver now in scoped, not in proposed
@@ -265,8 +313,13 @@ print('PROPOSED:', pp_names)
 
 @test "T-1979: arc_approve_driver does NOT emit removal info when no proposal matched" {
     setup_dedup_fixture
+    write_scoring_file
     # Approve a name that is NOT in proposed_scoped_drivers — should be quiet.
-    run arc_approve_driver "dedup-fixture" "fresh-name" --weight 2 --rationale "a fresh driver name not present in proposed list should not trigger info"
+    # T-3429: an ad-hoc name has no proposal to carry a spec, so --scoring-file
+    # is how it reaches check (a) at all.
+    run arc_approve_driver "dedup-fixture" "fresh-name" --weight 2 \
+        --scoring-file policy/t1976-fixture-scoring.yaml \
+        --rationale "Distinguishes from D2 (Reliability): a fresh driver name not in the proposed list should not trigger the removal info line"
     [ "$status" -eq 0 ]
     [[ "$output" != *"Removed matching proposal"* ]]
     # Proposed list intact (both original proposals still there).
