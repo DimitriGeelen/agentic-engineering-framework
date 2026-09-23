@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3446: Geelen & Company design language for Streichliste struktur page
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-23T22:28:04Z
+# ============================================================================
+
+task_id: T-3446
+task_name: "Geelen & Company design language for Streichliste struktur page"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-23T22:14:18Z
+completed: 2026-09-23T22:27:49Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Geelen & Company design language for Streichliste struktur page
+
+# Key outcomes
+outcomes:
+  - 'Tokens derived from the real Geelen sources at exact values (23 colours in 2 themes,'
+  - 'Contrast checked per token against its stated ground in BOTH themes; the one failing'
+  - 'Brand book (`README.md`) states the adaptation rule, content fundamentals, visual'
+  - 'Page redesign proposal names the concrete defects in the live `struktur.html`, with a'
+  - 'Evidence specification separates status (hue) from provenance (form) and says why the'
+  - 'Dragon copied byte-for-byte from the brand repo and uploaded as an asset, never redrawn'
+  - '9 component previews written, each with its `@dsCard` marker; 8 carry guidelines'
+  - 'Published as a Design System artifact from the type, index written last'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 13
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3446-geelen--company-design-language-for-stre.md
+generated_by: context-agent-hybrid
