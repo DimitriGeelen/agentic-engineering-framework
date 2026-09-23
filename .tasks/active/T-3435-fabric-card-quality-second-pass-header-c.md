@@ -314,12 +314,24 @@ timeout 900 python3 -m pytest tests/unit/test_fabric_coupling_token.py tests/uni
 # tests/unit/fabric_coverage_single_source.bats is deliberately excluded here — OBS-093
 # (registered by this task) is a pre-existing hang + wording-mismatch in code neither
 # T-3435 nor T-3431 own; excluding it is a documented decision, not a silent drop.
-# tests/unit/fabric_watch_pattern_fitness.bats is also excluded (2026-09-22, parent
+# tests/unit/fabric_watch_pattern_fitness.bats WAS also excluded (2026-09-22, parent
 # session): each of its 6 tests shells `audit.sh --sections structure` on a fixture,
-# and that section now runs the framework's tests/lint suite (~4 min per call, measured
-# at load 7/24) — 24+ min for one file, so the 900 s ceiling exits 124 on every host.
-# T-3435 did not touch watch patterns or audit.sh; the file guards T-2737. Observation
-# filed via `fw note` (audit-on-fixture cost), see ## Decisions.
+# and that section ran the framework's tests/lint suite regardless of PROJECT_ROOT
+# (~4 min per call, measured at load 7/24) — 24+ min for one file, so the 900 s
+# ceiling exited 124 on every host. T-3435 did not touch watch patterns or audit.sh;
+# the file guards T-2737. Observation filed via `fw note` (audit-on-fixture cost),
+# see ## Decisions.
+#
+# T-3443 (2026-09-23) fixed the underlying defect — audit.sh's structure-section
+# invariant-suite and dead-negation checks now skip (with an [INFO] line) when
+# PROJECT_ROOT != FRAMEWORK_ROOT, since both are properties of the framework repo,
+# not of the fixture being audited. Re-measured: this file now completes in ~12s
+# under `timeout 900` (was 124/timeout before). The file is RUNNABLE AGAIN and the
+# exclusion above is comment-only history; it stays out of this line as a separate
+# note (not re-added to the timeout 900 bats line below) because re-running it
+# surfaced 2 pre-existing, unrelated `not ok` failures (wording drift between this
+# file's expected string and current `pass_over()` output — OBS-487) that are their
+# own fix, out of both T-3435's and T-3443's scope.
 timeout 900 bats tests/unit/fabric.bats tests/unit/fabric_drift_data_artifact.bats tests/unit/fabric_drift_orphaned_gitignored.bats tests/unit/fabric_globstar.bats tests/unit/fabric_register_slug.bats tests/unit/t2457_fabric_atomic_card_write.bats tests/unit/t3049_fabric_url_location.bats tests/unit/t3430_fabric_audit_doctor.bats tests/unit/t3430_fabric_drift_underpopulated.bats tests/unit/t3430_fabric_register_describe.bats tests/unit/test_fabric_exclude.bats > /tmp/.t3435-v-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3435-v-bats.out
 bin/fw vendor self --check > /tmp/.t3435-v-vendor.out 2>&1; echo "$(cat /tmp/.t3435-v-vendor.out)" | grep -q "in sync with source"
 
