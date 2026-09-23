@@ -4373,3 +4373,12 @@ decisions:
     date: 2026-09-22
     task: T-3211
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-626
+    decision: "Reviewer-closeable delegation (operator ruling 2026-09-23, verbatim: 'if it is not high risk, agent can use the reviewer agent which is critical for review and with a positive outcome close it'): a human-owned task whose open criteria are deterministic may be delegated by the agent — its deterministic [REVIEW] criteria become [REVIEWER] Agent criteria, ownership moves to agent, and a PASS verdict from fw reviewer lets the normal close proceed without a human tick. High-risk carve-outs stay human and are never converted: taste/prose judgement (T-1947 vocabulary), inception go/no-go, act-in-the-world (publish, deploy, send, external side effects), tier-0 or bypass approvals, sovereignty fields (bvp confirm, arc close, driver approval), and render surfaces (T-1766). Origin: 832's measurement (consult 832-T833): reviewer-closeable 0 of 342 open criteria, operator-only 212, because deterministic Human criteria are written [REVIEW] 84 of 84 times; our own corpus shows 43 of 43 above-median now-tasks human-owned. Mechanism: T-3445."
+    scope: project
+    date: 2026-09-23
+    task: T-3445
+    rationale: "The delegation the operator grants today reaches nothing; the carve-out list keeps every genuinely human decision human while the deterministic remainder closes on evidence the reviewer produces. Ownership default of promote (human) stays as the entry state; delegation is an explicit, logged, per-task act."
+    alternatives_rejected:
+      - "letting any PASS verdict close any task regardless of AC class (would close taste and act-in-the-world items); changing promote's owner default to agent (removes the Sovereign entry point 832 and we both rely on)"
