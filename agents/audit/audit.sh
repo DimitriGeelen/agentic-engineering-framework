@@ -2824,6 +2824,28 @@ check_self_vendor_drift() {
 }
 check_self_vendor_drift
 
+# T-3443: both check_invariant_suite and check_dead_negation_lint below scan
+# $FRAMEWORK_ROOT/tests — a property of the framework repository, not of
+# whatever project PROJECT_ROOT points at. Before this, a fixture project audit
+# (PROJECT_ROOT = a synthetic 3-file dir, FRAMEWORK_ROOT = this repo, e.g. any
+# bats test that shells `audit.sh --sections structure`) paid the full cost of
+# both checks anyway: `timeout 300 bats tests/lint/` (110 tests) plus the
+# dead-negation source scan. Measured 2026-09-22: one such fixture audit inside
+# tests/unit/fabric_watch_pattern_fitness.bats took ~4 min; that file shells six,
+# so it alone needed 24+ min, and any verification line bundling it under
+# `timeout 900` exited 124 regardless of host load (T-3435's close was blocked
+# twice on exactly this).
+#
+# Resolves both paths (`pwd -P`) rather than comparing the raw strings, so a
+# symlinked or trailing-slash PROJECT_ROOT does not read as a different
+# directory than an unresolved FRAMEWORK_ROOT.
+_t3443_project_is_framework_root() {
+    local _p _f
+    _p=$(cd "$PROJECT_ROOT" 2>/dev/null && pwd -P) || return 1
+    _f=$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P) || return 1
+    [ -n "$_p" ] && [ "$_p" = "$_f" ]
+}
+
 # T-2837: run the structural invariant suite (tests/lint/) from audit.
 #
 # The suite had a runner since T-2697 (`fw test invariants`, and inside
@@ -2842,6 +2864,11 @@ check_self_vendor_drift
 # clean" are different states, and collapsing them is the exact failure mode this
 # check exists to end.
 check_invariant_suite() {
+    if ! _t3443_project_is_framework_root; then
+        info "Invariant suite (tests/lint) skipped — framework-repo property; PROJECT_ROOT is not the framework repo"
+        return 0
+    fi
+
     local _dir="$FRAMEWORK_ROOT/tests/lint"
     [ -d "$_dir" ] || return 0
     ls "$_dir"/*.bats >/dev/null 2>&1 || return 0
@@ -2962,6 +2989,11 @@ check_invariant_suite
 # scan over *.bats files, no subprocess, no bats binary required, no timeout
 # risk. Measured: ~748 files in well under a second.
 check_dead_negation_lint() {
+    if ! _t3443_project_is_framework_root; then
+        info "Dead-negation lint (tests/) skipped — framework-repo property; PROJECT_ROOT is not the framework repo"
+        return 0
+    fi
+
     local _tool="$FRAMEWORK_ROOT/tools/bats-dead-negation-lint.py"
     [ -f "$_tool" ] || return 0
     local _dir="$FRAMEWORK_ROOT/tests"
