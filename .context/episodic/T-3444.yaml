@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3444: 832 (consult 832-T833, 2026-09-23) fixed CTL-029 in their vendored audit.sh and asks us to take it upstream: the completable-but-not-completed predicate (T-2055) counts only the ### Agent section and fires on 'unticked==0 and ticked>0', reading neither owner: human nor ### Human — so every correctly partial-complete task (owner human, open [REVIEW] AC, the state CLAUDE.md prescribes) emits a standing WARN whose only remedy is prohibited (agent closing a human-owned task). They had four such remediation tasks filed. Fix: skip when owner: human AND at least one unticked ### Human criterion; still fires for abandoned agent-owned tasks, owner-human with all Human ACs ticked, and owner-human with no ### Human section. Four control branches in their tools/_t833-ctl029-partial-complete-controls.sh (extracts our predicate, exits 3 if not found). Our own T-3435 and T-3429 are in exactly this state today.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-23T17:24:27Z
+# ============================================================================
+
+task_id: T-3444
+task_name: "832 (consult 832-T833, 2026-09-23) fixed CTL-029 in their vendored audit.sh and asks us to take it upstream: the completable-but-not-completed predicate (T-2055) counts only the ### Agent section and fires on 'unticked==0 and ticked>0', reading neither owner: human nor ### Human — so every correctly partial-complete task (owner human, open [REVIEW] AC, the state CLAUDE.md prescribes) emits a standing WARN whose only remedy is prohibited (agent closing a human-owned task). They had four such remediation tasks filed. Fix: skip when owner: human AND at least one unticked ### Human criterion; still fires for abandoned agent-owned tasks, owner-human with all Human ACs ticked, and owner-human with no ### Human section. Four control branches in their tools/_t833-ctl029-partial-complete-controls.sh (extracts our predicate, exits 3 if not found). Our own T-3435 and T-3429 are in exactly this state today."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-23T11:44:29Z
+completed: 2026-09-23T17:23:54Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-23T19:17:28+02:00
+last_commit: 2026-09-23T19:17:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix — CTL-029 skips owner:human partial-complete tasks with an open Human AC
+
+# Key outcomes
+outcomes:
+  - 'CTL-029 skips a task when `owner: human` AND at least one unticked criterion exists'
+  - 'bats with the four control branches on fixture tasks; the test extracts the predicate'
+  - 'Live, recorded here: the CTL-029 WARN lines before and after on this corpus; T-3435'
+  - 'Vendored `agents/audit/audit.sh` synced; `bin/fw vendor self --check` clean; 832 told'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix — CTL-029 skips owner:human partial-complete tasks with an open Human AC'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-3444-832-consult-832-t833-2026-09-23-fixed-ct.md'
+  - 'tests/unit/t3444_ctl029_partial_complete.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-23T19:17:28'
+    action: 'T-3444: fix — CTL-029 skips owner:human partial-complete tasks with an open Human AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 339 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 339
+  commits: 1
+  files_changed: 6
+  lines_added: 707
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3444-832-consult-832-t833-2026-09-23-fixed-ct.md
+generated_by: context-agent-hybrid
