@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3443: audit.sh --sections structure runs the framework's own tests/lint invariant suite (timeout 300 bats tests/lint/, 110 tests) and the dead-negation lint even when PROJECT_ROOT is a synthetic fixture project. Measured 2026-09-22: one fixture audit in tests/unit/fabric_watch_pattern_fitness.bats took ~4 min (control test, load 7/24 cores); that file runs 6 such audits, so it alone needs 24+ min and any verification line bundling it under timeout 900 exits 124 regardless of host load (T-3435 close blocked twice on this). Two defects: (1) the invariant suite is a framework-repo property and should be skipped when PROJECT_ROOT != FRAMEWORK_ROOT; (2) every bats test that shells audit.sh on a fixture pays the full structure cost — a --sections structure run on a 3-file fixture should be seconds. Sibling of the fabric_coverage_single_source.bats exclusion noted in T-3435.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-23T18:10:42Z
+# ============================================================================
+
+task_id: T-3443
+task_name: "audit.sh --sections structure runs the framework's own tests/lint invariant suite (timeout 300 bats tests/lint/, 110 tests) and the dead-negation lint even when PROJECT_ROOT is a synthetic fixture project. Measured 2026-09-22: one fixture audit in tests/unit/fabric_watch_pattern_fitness.bats took ~4 min (control test, load 7/24 cores); that file runs 6 such audits, so it alone needs 24+ min and any verification line bundling it under timeout 900 exits 124 regardless of host load (T-3435 close blocked twice on this). Two defects: (1) the invariant suite is a framework-repo property and should be skipped when PROJECT_ROOT != FRAMEWORK_ROOT; (2) every bats test that shells audit.sh on a fixture pays the full structure cost — a --sections structure run on a 3-file fixture should be seconds. Sibling of the fabric_coverage_single_source.bats exclusion noted in T-3435."
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-22T21:30:18Z
+completed: 2026-09-23T18:05:40Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-23T20:04:38+02:00
+last_commit: 2026-09-23T20:05:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix — audit.sh --sections structure skips framework-repo-only checks on non-framework PROJECT_ROOT. fabric — register new bats test component card. docs — T-3435 exclusion comment updated: fabric_watch_pattern_fitness.bats runnable again. record — measurement record, RCA, and Decisions
+
+# Key outcomes
+outcomes:
+  - '`check_invariant_suite` and the dead-negation lint run only when `PROJECT_ROOT` resolves'
+  - 'Measured: `PROJECT_ROOT=<fixture> bash agents/audit/audit.sh --sections structure` on a'
+  - 'bats: fixture audit emits the two `[INFO]` skip lines and no `Invariant suite` PASS/FAIL'
+  - 'Existing suites that shell the audit on fixtures are re-run and their timing recorded:'
+  - 'Vendored `agents/audit/audit.sh` synced; `bin/fw vendor self --check` clean; audit'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix — audit.sh --sections structure skips framework-repo-only checks on non-framework PROJECT_ROOT'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-23 — Cron-touching verification rule does not apply'
+  - decision: '2026-09-23 — Path-comparison method: resolved `pwd -P`, not string equality'
+    chose: '`_t3443_project_is_framework_root()` resolves both `PROJECT_ROOT` and `FRAMEWORK_ROOT` via `cd ... && pwd -P` before comparing, per the AC''s explicit instruction.'
+    rationale: 'a symlinked path (e.g. a vendored consumer where `.agentic-framework` is a symlink) or a trailing-slash `PROJECT_ROOT` would compare unequal to an unresolved `FRAMEWORK_ROOT` under plain string equality even when they name the same directory — a false "not the framework repo" that would wrongly skip the checks on the framework repo itself.'
+    alternatives_rejected: ['plain `[ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ]` (both vars are already absolute per `lib/paths.sh`, but not guaranteed symlink-resolved or trailing-slash-normalised — rejected per the AC''s own reasoning).']
+  - decision: '2026-09-23 — OBS-487 (pre-existing wording-mismatch) left unfixed'
+    chose: 'file OBS-487 and leave `tests/unit/fabric_watch_pattern_fitness.bats`''s 2 `not ok` results (unrelated string-format drift between the test''s expected text and current `pass_over()` output) unfixed.'
+    rationale: 'the operator''s dispatch instructions were explicit and narrow ("Five Agent ACs, no Human ACs... Do not widen it"); AC 4 only requires the file to *complete* under `timeout 900` (it does, in ~12s) and the exclusion comment to be updated to say so, not for its tests to pass. The wording drift is a separate, pre-existing bug unmasked by this fix (the assertions never got a chance to run before, because the whole file always hit the 900s ceiling first).'
+    alternatives_rejected: ['fixing the wording drift inline — out of scope, no reviewing AC covers it, and it is unrelated to the PROJECT_ROOT/FRAMEWORK_ROOT scoping defect this task exists to close.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - '.fabric/components/tests-unit-t3443_audit_structure_framework_scope.yaml'
+  - '.tasks/active/T-3435-fabric-card-quality-second-pass-header-c.md'
+  - '.tasks/active/T-3443-auditsh---sections-structure-runs-the-fr.md'
+  - 'tests/unit/t3443_audit_structure_framework_scope.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-23T20:04:38'
+    action: 'T-3443: fix — audit.sh --sections structure skips framework-repo-only checks on non-framework PROJECT_ROOT'
+  - time: '2026-09-23T20:05:06'
+    action: 'T-3443: fabric — register new bats test component card'
+  - time: '2026-09-23T20:05:14'
+    action: 'T-3443: docs — T-3435 exclusion comment updated: fabric_watch_pattern_fitness.bats runnable again'
+  - time: '2026-09-23T20:05:32'
+    action: 'T-3443: record — measurement record, RCA, and Decisions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1235 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1235
+  commits: 4
+  files_changed: 8
+  lines_added: 645
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3443-auditsh---sections-structure-runs-the-fr.md
+generated_by: context-agent-hybrid
