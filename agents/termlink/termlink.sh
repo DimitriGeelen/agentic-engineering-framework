@@ -420,7 +420,15 @@ cmd_status() {
             termlink list 2>/dev/null | grep -q "$name" && session_alive="yes" || true
             local task_tag=""
             [ -f "$wdir/task" ] && task_tag=" [$(cat "$wdir/task")]"
-            printf "  %-20s  status: %-20s  session: %s%s\n" "$name" "$status" "$session_alive" "$task_tag"
+            # T-3440: exit 0 is not the whole story — surface whether the task
+            # the worker was dispatched for actually reached a close.
+            local close_tag=""
+            if [ -f "$wdir/close_state" ]; then
+                local cs
+                cs=$(cat "$wdir/close_state" 2>/dev/null)
+                [ "$cs" = "n/a" ] || close_tag="  close: $cs"
+            fi
+            printf "  %-20s  status: %-20s  session: %s%s%s\n" "$name" "$status" "$session_alive" "$task_tag" "$close_tag"
         done
         echo ""
     fi
@@ -1151,6 +1159,20 @@ cmd_result() {
 
     local wdir="$DISPATCH_DIR/$name"
     [ -d "$wdir" ] || die "No dispatch directory for worker '$name'"
+
+    # T-3440: lead with the close verdict. A worker that ended its turn waiting
+    # on a background job exits 0 with a perfectly readable result and an open
+    # task — the parent needs to see that without opening the worker directory.
+    if [ -f "$wdir/close_state" ]; then
+        local cs ct=""
+        cs=$(cat "$wdir/close_state" 2>/dev/null)
+        [ -f "$wdir/task" ] && ct=$(cat "$wdir/task" 2>/dev/null)
+        if [ "$cs" = "incomplete" ]; then
+            echo -e "${YELLOW}WARN${NC}  close_state: incomplete — ${ct:-the dispatched task} is still started-work (worker exited 0, close not run)"
+        elif [ "$cs" != "n/a" ]; then
+            echo "close_state: $cs${ct:+ ($ct)}"
+        fi
+    fi
 
     if [ -f "$wdir/result.md" ]; then
         cat "$wdir/result.md"
