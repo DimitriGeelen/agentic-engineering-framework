@@ -3444,6 +3444,82 @@ check_bvp_driver_scorability() {
 }
 check_bvp_driver_scorability
 
+# T-3429 (arc-006, D-586). Arc-scoped drivers are now added by DEFAULT, on the
+# word of a static reviewer instead of an operator click. That trade is only
+# honest if the reviewer's verdict is still on the entry afterwards: an
+# `approved_by: reviewer:...` row with no `reviewer:` block is an unfalsifiable
+# claim — it reads exactly like a certified driver and carries no evidence that
+# anything was ever checked. Same false-green family as the port-3000 lines: the
+# row that asserts nothing is indistinguishable from the row that asserts
+# everything, so nothing ever prompts anyone to look.
+#
+# WARN, never FAIL, one line per entry so the driver name is actionable. Silent
+# when no in-progress arc has scoped drivers — a project that never approved one
+# gets neither a clean bill of health it did not earn nor a nag.
+check_arc_driver_reviewer_record() {
+    local _arcs_dir="$PROJECT_ROOT/.context/arcs"
+    [ -d "$_arcs_dir" ] || return 0
+
+    local _out
+    _out=$(python3 - "$_arcs_dir" <<'PY' 2>/dev/null
+import sys
+from pathlib import Path
+
+import yaml
+
+arcs = Path(sys.argv[1])
+total = 0
+bad = []
+for f in sorted(arcs.glob("*.yaml")):
+    try:
+        arc = yaml.safe_load(f.read_text()) or {}
+    except Exception:
+        continue
+    if str(arc.get("status") or "").lower() != "in-progress":
+        continue
+    for sd in (arc.get("scoped_drivers") or []):
+        if not isinstance(sd, dict):
+            continue
+        total += 1
+        by = str(sd.get("approved_by") or "")
+        if not by.startswith("reviewer:"):
+            continue
+        rv = sd.get("reviewer")
+        name = sd.get("name") or sd.get("id") or "?"
+        if not isinstance(rv, dict) or not rv:
+            bad.append((f.name, name, by, "no reviewer: block"))
+        elif str(rv.get("verdict") or "").lower() == "fail":
+            failed = [k for k, c in (rv.get("checks") or {}).items()
+                      if isinstance(c, dict) and c.get("verdict") == "fail"]
+            bad.append((f.name, name, by,
+                        "verdict: fail (" + ", ".join(sorted(failed) or ["?"]) + ")"))
+print(total)
+for row in bad:
+    print("\t".join(str(x) for x in row))
+PY
+)
+    [ -n "$_out" ] || return 0
+    local _total
+    _total=$(printf '%s\n' "$_out" | head -1)
+    [ "${_total:-0}" -eq 0 ] 2>/dev/null && return 0
+
+    local _rows
+    _rows=$(printf '%s\n' "$_out" | tail -n +2 | grep . || true)
+    if [ -z "$_rows" ]; then
+        pass "Arc driver reviewer records: $_total scoped driver(s) on in-progress arcs, every reviewer-approved one carries its verdict"
+        return 0
+    fi
+
+    local _f _name _by _why
+    while IFS=$'\t' read -r _f _name _by _why; do
+        [ -z "$_name" ] && continue
+        warn "Arc scoped driver '$_name' claims reviewer approval without a usable verdict" \
+             ".context/arcs/$_f: approved_by: $_by but $_why — the row reads as certified and carries no evidence anything was checked (T-3429, D-586)" \
+             "Run: bin/fw arc review-driver ${_f%.yaml} \"$_name\" --dry-run — then fix the driver or remove it with 'bin/fw arc remove-driver'"
+    done <<< "$_rows"
+}
+check_arc_driver_reviewer_record
+
 # T-3262 (G-099). `fw doctor` (bin/fw:2390+) already compares the
 # continuous-run wrapper ledger against the turn-driver state and WARNs when
 # they disagree — but doctor is pull-only, and it was THIS daily cron that
@@ -5590,6 +5666,8 @@ for fname in sorted(os.listdir(active_dir)):
     status = status_m.group(1).strip()
     if status not in ("started-work", "issues"):
         continue
+    owner_m = re.search(r"^owner:\s*(\S+)", fm, re.MULTILINE)
+    owner = owner_m.group(1).strip() if owner_m else ""
 
     body = text[fm_match.end():]
     ac_start = re.search(r"^## Acceptance Criteria\s*$", body, re.MULTILINE)
@@ -5629,6 +5707,27 @@ for fname in sorted(os.listdir(active_dir)):
     if real_ac_count == 0:
         continue
     if unticked == 0 and ticked > 0:
+        # T-3444: owner:human with an open ### Human criterion is the
+        # partial-complete state CLAUDE.md prescribes (Agent ACs done,
+        # human verification pending) — not a shipped-but-unclosed task.
+        # Only owner:human suppresses; still fires for owner:human once
+        # every Human criterion is ticked, or when no ### Human section
+        # exists at all (human_unticked stays 0 in both cases).
+        human_unticked = 0
+        if owner == "human":
+            human_h = re.search(r"^### Human\s*$", ac_block, re.MULTILINE)
+            if human_h:
+                hrest = ac_block[human_h.end():]
+                next_h3h = re.search(r"^### |^## ", hrest, re.MULTILINE)
+                human_scan = hrest[: next_h3h.start()] if next_h3h else hrest
+                for line in human_scan.splitlines():
+                    m = AC_PAT.match(line)
+                    if not m or PLACEHOLDER_PAT.match(line):
+                        continue
+                    if m.group(1) != "x":
+                        human_unticked += 1
+        if owner == "human" and human_unticked > 0:
+            continue
         print(f"{task_id}|{status}")
 PYEOF
 )

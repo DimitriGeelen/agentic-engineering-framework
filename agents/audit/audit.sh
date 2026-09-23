@@ -5666,6 +5666,8 @@ for fname in sorted(os.listdir(active_dir)):
     status = status_m.group(1).strip()
     if status not in ("started-work", "issues"):
         continue
+    owner_m = re.search(r"^owner:\s*(\S+)", fm, re.MULTILINE)
+    owner = owner_m.group(1).strip() if owner_m else ""
 
     body = text[fm_match.end():]
     ac_start = re.search(r"^## Acceptance Criteria\s*$", body, re.MULTILINE)
@@ -5705,6 +5707,27 @@ for fname in sorted(os.listdir(active_dir)):
     if real_ac_count == 0:
         continue
     if unticked == 0 and ticked > 0:
+        # T-3444: owner:human with an open ### Human criterion is the
+        # partial-complete state CLAUDE.md prescribes (Agent ACs done,
+        # human verification pending) — not a shipped-but-unclosed task.
+        # Only owner:human suppresses; still fires for owner:human once
+        # every Human criterion is ticked, or when no ### Human section
+        # exists at all (human_unticked stays 0 in both cases).
+        human_unticked = 0
+        if owner == "human":
+            human_h = re.search(r"^### Human\s*$", ac_block, re.MULTILINE)
+            if human_h:
+                hrest = ac_block[human_h.end():]
+                next_h3h = re.search(r"^### |^## ", hrest, re.MULTILINE)
+                human_scan = hrest[: next_h3h.start()] if next_h3h else hrest
+                for line in human_scan.splitlines():
+                    m = AC_PAT.match(line)
+                    if not m or PLACEHOLDER_PAT.match(line):
+                        continue
+                    if m.group(1) != "x":
+                        human_unticked += 1
+        if owner == "human" and human_unticked > 0:
+            continue
         print(f"{task_id}|{status}")
 PYEOF
 )
