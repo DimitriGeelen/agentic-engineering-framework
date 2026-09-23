@@ -4382,3 +4382,24 @@ decisions:
     rationale: "The delegation the operator grants today reaches nothing; the carve-out list keeps every genuinely human decision human while the deterministic remainder closes on evidence the reviewer produces. Ownership default of promote (human) stays as the entry state; delegation is an explicit, logged, per-task act."
     alternatives_rejected:
       - "letting any PASS verdict close any task regardless of AC class (would close taste and act-in-the-world items); changing promote's owner default to agent (removes the Sovereign entry point 832 and we both rely on)"
+
+  - id: D-627
+    decision: "leave `route-cache.json`'s `model_stats` shape untouched and let an incomplete"
+    scope: project
+    date: 2026-09-23
+    task: T-3440
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-628
+    decision: "exactly three values — `incomplete`, `closed`, `n/a` — with `n/a` covering no"
+    scope: project
+    date: 2026-09-23
+    task: T-3440
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-629
+    decision: "wrap the post-step in `T-3440 close-state check (start/end)` markers and have the"
+    scope: project
+    date: 2026-09-23
+    task: T-3440
+    rationale: "Auto-captured from task file on completion"

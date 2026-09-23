@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3440: Dispatched claude -p workers end their turn while 'waiting' on a run_in_background Bash job, and the process exits before the notification can arrive — the close is never run. Seen three times on 2026-09-22: T-3433 (push + peer e2e detached, turn ended), T-3435/T-3431 earlier, T-3211 ('The background bash test run will notify me on completion — no need to poll.' as the final message, task left started-work with the work done). In a claude -p worker there is no next turn: a background job is a fire-and-forget. Structural fix candidates: (1) agents/dispatch/preamble.md states 'never use run_in_background; run tests inline with a timeout' for workers; (2) the dispatch stanza sets a marker the harness reads to disable background jobs; (3) the driver treats 'exit_code=0 but task still started-work' as a failed step and reports it. The parent has been finishing these closes by hand.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-23T11:58:12Z
+# ============================================================================
+
+task_id: T-3440
+task_name: "Dispatched claude -p workers end their turn while 'waiting' on a run_in_background Bash job, and the process exits before the notification can arrive — the close is never run. Seen three times on 2026-09-22: T-3433 (push + peer e2e detached, turn ended), T-3435/T-3431 earlier, T-3211 ('The background bash test run will notify me on completion — no need to poll.' as the final message, task left started-work with the work done). In a claude -p worker there is no next turn: a background job is a fire-and-forget. Structural fix candidates: (1) agents/dispatch/preamble.md states 'never use run_in_background; run tests inline with a timeout' for workers; (2) the dispatch stanza sets a marker the harness reads to disable background jobs; (3) the driver treats 'exit_code=0 but task still started-work' as a failed step and reports it. The parent has been finishing these closes by hand."
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-22T21:29:33Z
+completed: 2026-09-23T11:57:46Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-23T13:50:19+02:00
+last_commit: 2026-09-23T13:55:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  preamble — scope run_in_background to parent sessions, add worker no-background rule. run.sh post-step decides close_state; incomplete is not a success. fw termlink result/status surface close_state. bats — close_state verdicts, the warning, and the preamble rule
+
+# Key outcomes
+outcomes:
+  - '`agents/dispatch/preamble.md` no longer tells a worker to use `run_in_background`; the'
+  - 'The dispatch post-step in `agents/termlink/termlink.sh` (the run.sh template) checks,'
+  - '`fw termlink result <name>` and `fw termlink status` surface `close_state` so the parent'
+  - 'bats: a fixture project with one started-work task and a stub run.sh exit 0 → `meta.json`'
+  - 'Vendored copies synced for `agents/termlink/termlink.sh` and `agents/dispatch/preamble.md`;'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-23 — where the `incomplete` outcome value is recorded'
+    chose: 'leave `route-cache.json`''s `model_stats` shape untouched and let an incomplete close increment `failures`; write the literal `incomplete` value to a new append-only sidecar `dispatch-close-states.jsonl` beside the cache, plus `meta.json` and `$WDIR/close_state`.'
+    rationale: 'the cache is shared with the TermLink hub and pinned by T-1650''s schema fixture; the boundary gate (correctly) prevents verifying the Rust deserialiser from this session. `failures` already means "not a success", which is exactly the judgement being recorded, and the sidecar keeps the richer value without asking another repo''s parser to tolerate it.'
+    alternatives_rejected: ['an `incompletes` key inside `ModelStats` (unverifiable cross-repo risk for a counter); a new top-level key in `RouteCache` (same risk, same reason); counting an incomplete close as a success with the detail only in `meta.json` (that is the false green this task exists to remove).']
+  - decision: '2026-09-23 — `n/a` as the residual verdict'
+    chose: 'exactly three values — `incomplete`, `closed`, `n/a` — with `n/a` covering no task dispatched, no task file found, a non-zero exit, and any status outside `started-work`/`work-completed`. Both surfaces print nothing for `n/a`.'
+    rationale: 'the check exists to assert one thing. Where it cannot assert it, silence is honest and a fourth vocabulary word is a cost every reader pays forever.'
+    alternatives_rejected: ['`unknown`/`other` as a separate state (more vocabulary, no new decision it would change); treating `issues`/`captured` as incomplete (the rule says nothing about them, and a worker that hit `issues` reported that itself).']
+  - decision: '2026-09-23 — testing the template by extraction rather than by dispatching'
+    chose: 'wrap the post-step in `T-3440 close-state check (start/end)` markers and have the bats suite lift that region out of the live `termlink.sh` into a stub run.sh.'
+    rationale: 'the logic lives inside a quoted heredoc that is only materialised by a real dispatch. Extraction tests the shipped text with no `claude -p`, no TermLink session and no network, and editing the block moves the assertions (house style: t3346).'
+    alternatives_rejected: ['re-implementing the logic in the test (pins a copy, not the ship); running a real dispatch (needs a live worker and minutes per case).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/dispatch/preamble.md'
+  - 'agents/termlink/termlink.sh'
+  - 'tests/unit/t3440_close_state.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-23T13:50:19'
+    action: 'T-3440: preamble — scope run_in_background to parent sessions, add worker no-background rule'
+  - time: '2026-09-23T13:52:29'
+    action: 'T-3440: run.sh post-step decides close_state; incomplete is not a success'
+  - time: '2026-09-23T13:53:02'
+    action: 'T-3440: fw termlink result/status surface close_state'
+  - time: '2026-09-23T13:55:07'
+    action: 'T-3440: bats — close_state verdicts, the warning, and the preamble rule'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 868 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 868
+  commits: 4
+  files_changed: 3
+  lines_added: 350
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3440-dispatched-claude--p-workers-end-their-t.md
+generated_by: context-agent-hybrid

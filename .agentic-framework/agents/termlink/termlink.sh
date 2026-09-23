@@ -145,8 +145,16 @@ _resolve_dispatch_model() {
 # Key shape mirrors /opt/termlink RouteCache (route_cache.rs):
 #   model_stats["<model>:<task_type>"] = {model, task_type, successes,
 #                                          failures, last_used}
+#
+# T-3440: a 4th arg carries the dispatch's close_state ("incomplete" | "closed" |
+# "n/a"). An incomplete close is NOT a success — the worker exited 0 with its task
+# still started-work — so it lands in `failures`, and exit 0 alone no longer buys a
+# success. The literal `incomplete` value is recorded in an append-only sidecar
+# (dispatch-close-states.jsonl) rather than as a new ModelStats key: route-cache.json
+# is shared with the TermLink hub's Rust RouteCache and its field set is pinned by
+# tests/fixtures/termlink-route-cache-schema.json (T-1650). New file, no reader broken.
 _route_cache_record_outcome() {
-    local model="$1" task_type="$2" exit_code="$3"
+    local model="$1" task_type="$2" exit_code="$3" close_state="${4:-}" task="${5:-}"
     [ -n "$model" ] && [ -n "$task_type" ] && [ -n "$exit_code" ] || return 0
     command -v python3 >/dev/null 2>&1 || return 0
     local cache_file
@@ -155,15 +163,34 @@ _route_cache_record_outcome() {
     cache_dir=$(dirname "$cache_file")
     mkdir -p "$cache_dir" 2>/dev/null || return 0
     [ -w "$cache_dir" ] || return 0
-    python3 - "$cache_file" "$model" "$task_type" "$exit_code" <<'PY' 2>/dev/null || true
+    python3 - "$cache_file" "$model" "$task_type" "$exit_code" "$close_state" "$task" <<'PY' 2>/dev/null || true
 import fcntl, json, os, sys, tempfile
 from datetime import datetime, timezone
 
 cache_file, model, task_type, exit_code = (
     sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 )
+close_state = sys.argv[5] if len(sys.argv) > 5 else ""
+task = sys.argv[6] if len(sys.argv) > 6 else ""
 key = f"{model}:{task_type}"
-ok = (exit_code == "0")
+incomplete = (close_state == "incomplete")
+ok = (exit_code == "0") and not incomplete
+
+# T-3440 sidecar: the outcome VALUE, uncollapsed, in a file only we read.
+if close_state:
+    try:
+        side = os.path.join(os.path.dirname(cache_file) or ".",
+                            "dispatch-close-states.jsonl")
+        with open(side, "a") as f:
+            f.write(json.dumps({
+                "ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "model": model, "task_type": task_type, "task": task,
+                "exit_code": exit_code, "close_state": close_state,
+                "outcome": ("incomplete" if incomplete
+                            else ("success" if ok else "failure")),
+            }) + "\n")
+    except Exception:
+        pass
 
 lock_path = cache_file + ".lock"
 lock_fd = open(lock_path, "w")
@@ -393,7 +420,15 @@ cmd_status() {
             termlink list 2>/dev/null | grep -q "$name" && session_alive="yes" || true
             local task_tag=""
             [ -f "$wdir/task" ] && task_tag=" [$(cat "$wdir/task")]"
-            printf "  %-20s  status: %-20s  session: %s%s\n" "$name" "$status" "$session_alive" "$task_tag"
+            # T-3440: exit 0 is not the whole story — surface whether the task
+            # the worker was dispatched for actually reached a close.
+            local close_tag=""
+            if [ -f "$wdir/close_state" ]; then
+                local cs
+                cs=$(cat "$wdir/close_state" 2>/dev/null)
+                [ "$cs" = "n/a" ] || close_tag="  close: $cs"
+            fi
+            printf "  %-20s  status: %-20s  session: %s%s%s\n" "$name" "$status" "$session_alive" "$task_tag" "$close_tag"
         done
         echo ""
     fi
@@ -983,11 +1018,63 @@ if command -v jq >/dev/null 2>&1 && [ -f "$WDIR/meta.json" ]; then
         || rm -f "$WDIR/meta.json.tmp"
 fi
 
+# --- T-3440 close-state check (start) ---
+# A `claude -p` worker has no next turn. If it ended its turn waiting on a
+# background job, the close never ran and exit 0 means nothing: the work may be
+# done but the task is still open and nobody is left alive to close it (three
+# instances on 2026-09-22 — T-3211, T-3431/T-3435, T-3433). Decide here, while
+# the task id and the exit code are both in hand.
+#   incomplete — exit 0, task file still in .tasks/active/ as started-work
+#   closed     — task in .tasks/completed/, or work-completed in active/
+#                (partial-complete, waiting on a Human AC — the worker did its part)
+#   n/a        — no task dispatched, no task file found, non-zero exit, or any
+#                other status (nothing to assert)
+CLOSE_TASK=""
+[ -f "$WDIR/task" ] && CLOSE_TASK=$(cat "$WDIR/task" 2>/dev/null)
+CLOSE_STATE="n/a"
+if [ -n "$CLOSE_TASK" ] && [ "${EXIT_CODE:-1}" = "0" ]; then
+    _cs_found=""
+    for _cs_cand in "$PROJECT_DIR/.tasks/completed/$CLOSE_TASK"-*.md \
+                    "$PROJECT_DIR/.tasks/completed/$CLOSE_TASK.md"; do
+        [ -f "$_cs_cand" ] || continue
+        CLOSE_STATE="closed"; _cs_found="$_cs_cand"; break
+    done
+    if [ -z "$_cs_found" ]; then
+        for _cs_cand in "$PROJECT_DIR/.tasks/active/$CLOSE_TASK"-*.md \
+                        "$PROJECT_DIR/.tasks/active/$CLOSE_TASK.md"; do
+            [ -f "$_cs_cand" ] || continue
+            _cs_status=$(grep -m1 '^status:' "$_cs_cand" 2>/dev/null \
+                | sed 's/^status:[[:space:]]*//; s/[[:space:]]*$//')
+            case "$_cs_status" in
+                started-work)   CLOSE_STATE="incomplete" ;;
+                work-completed) CLOSE_STATE="closed" ;;
+                *)              CLOSE_STATE="n/a" ;;
+            esac
+            break
+        done
+    fi
+fi
+echo "$CLOSE_STATE" > "$WDIR/close_state"
+if [ "$CLOSE_STATE" = "incomplete" ]; then
+    echo "WARNING: worker exited 0 but $CLOSE_TASK is still started-work — close not run"
+fi
+# Same best-effort jq pattern as the meta.json rewrite above.
+if command -v jq >/dev/null 2>&1 && [ -f "$WDIR/meta.json" ]; then
+    jq --arg cs "$CLOSE_STATE" --arg ct "$CLOSE_TASK" \
+       '.close_state = $cs | .close_state_task = $ct' \
+       "$WDIR/meta.json" > "$WDIR/meta.json.tmp" 2>/dev/null \
+        && mv "$WDIR/meta.json.tmp" "$WDIR/meta.json" \
+        || rm -f "$WDIR/meta.json.tmp"
+fi
+# --- T-3440 close-state check (end) ---
+
 # T-1669 Step 2: record outcome into route_cache so future dispatches can
 # learn from it. Best-effort — missing model / task_type / fw skips silently.
+# T-3440: --close-state rides along; an incomplete close is not a success.
 if [ -n "$MODEL" ] && [ -n "$TASK_TYPE" ] && [ -n "$FW_BIN" ] && [ -x "$FW_BIN" ]; then
     "$FW_BIN" termlink record-outcome \
         --model "$MODEL" --task-type "$TASK_TYPE" --exit-code "$EXIT_CODE" \
+        --close-state "$CLOSE_STATE" --task "$CLOSE_TASK" \
         >/dev/null 2>&1 || true
 fi
 
@@ -1072,6 +1159,20 @@ cmd_result() {
 
     local wdir="$DISPATCH_DIR/$name"
     [ -d "$wdir" ] || die "No dispatch directory for worker '$name'"
+
+    # T-3440: lead with the close verdict. A worker that ended its turn waiting
+    # on a background job exits 0 with a perfectly readable result and an open
+    # task — the parent needs to see that without opening the worker directory.
+    if [ -f "$wdir/close_state" ]; then
+        local cs ct=""
+        cs=$(cat "$wdir/close_state" 2>/dev/null)
+        [ -f "$wdir/task" ] && ct=$(cat "$wdir/task" 2>/dev/null)
+        if [ "$cs" = "incomplete" ]; then
+            echo -e "${YELLOW}WARN${NC}  close_state: incomplete — ${ct:-the dispatched task} is still started-work (worker exited 0, close not run)"
+        elif [ "$cs" != "n/a" ]; then
+            echo "close_state: $cs${ct:+ ($ct)}"
+        fi
+    fi
 
     if [ -f "$wdir/result.md" ]; then
         cat "$wdir/result.md"
@@ -1169,16 +1270,18 @@ cmd_help() {
 # Called from dispatch run.sh after the worker exits, and usable directly for
 # tests / manual replay. No-op on missing args (best-effort recording).
 cmd_record_outcome() {
-    local model="" task_type="" exit_code=""
+    local model="" task_type="" exit_code="" close_state="" task=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --model) model="$2"; shift 2 ;;
             --task-type) task_type="$2"; shift 2 ;;
             --exit-code) exit_code="$2"; shift 2 ;;
+            --close-state) close_state="$2"; shift 2 ;;   # T-3440
+            --task) task="$2"; shift 2 ;;                 # T-3440
             *) die "Unknown option: $1" ;;
         esac
     done
-    _route_cache_record_outcome "$model" "$task_type" "$exit_code"
+    _route_cache_record_outcome "$model" "$task_type" "$exit_code" "$close_state" "$task"
 }
 
 # --- Main routing ---

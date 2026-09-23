@@ -86,6 +86,32 @@ When done, your final message should be ≤ 5 lines:
   One-sentence summary
 ```
 
+### Never background a job — a worker has no next turn (T-3440)
+
+You are a `claude -p` worker. When your turn ends, your process ends. There is no
+later turn in which a notification can reach you, so a backgrounded job is
+fire-and-forget: its result reaches nobody, and the work that was supposed to
+follow it never happens.
+
+- **NEVER use `run_in_background: true`** — not for a Bash call, not for a Task
+  agent. The rule in §Orchestrator-Side Rules that says to background big agents
+  is for a parent session, not for you.
+- **Run every test, build and long command inline, under `timeout`** — e.g.
+  `timeout 900 bats tests/unit/foo.bats`. Blocking is fine; that is what the
+  timeout is for. Your dispatch timeout is the outer bound.
+- **Finish every unit to its close in the same turn** — the commit, the
+  `bin/fw task update T-XXX --status work-completed`, the push. "The background
+  job will notify me on completion — no need to poll" is the exact sentence that
+  left three tasks in `started-work` on 2026-09-22 (T-3211, T-3431/T-3435,
+  T-3433) with the work done and nobody left alive to close them.
+
+The driver checks this now: on exit 0 with the dispatched task still
+`started-work`, the run.sh post-step writes `close_state: incomplete` into the
+worker's `meta.json`, prints a warning naming the task, and records the outcome
+as incomplete rather than success. `fw termlink result` and `fw termlink status`
+surface it, so an unclosed task is visible to the parent without opening the
+worker directory.
+
 ### Commit the post-transition diff (L-419, T-1985 + T-1951 origin)
 
 If your worker's final action is `bin/fw task update T-XXX --status work-completed`,
@@ -175,8 +201,13 @@ working as designed.
 
 ## Orchestrator-Side Rules
 
-After dispatching agents:
-1. Use `run_in_background: true` for any agent expected to produce >500 tokens
+**Scope: a parent session using the Task tool.** These rules are for the session
+that survives the dispatch and can read a result on a later turn. They do NOT
+apply inside a dispatched `claude -p` worker, which has no later turn — see
+§TermLink Workers → "Never background a job".
+
+After dispatching agents (parent sessions using the Task tool):
+1. Use `run_in_background: true` for any Task-tool agent expected to produce >500 tokens
 2. Read only the final summary from the agent (last 5 lines of output)
 3. If you need details, read the output file the agent wrote — don't ask the agent
 4. NEVER use `TaskOutput` with `block: true` for background agents (returns full JSONL transcript)
