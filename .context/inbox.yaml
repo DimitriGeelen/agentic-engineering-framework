@@ -5296,3 +5296,10 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-505
+  text: "The project-boundary gate (T-559, check-project-boundary) has the same scope boundary as Tier 0 (T-2742): it matches the Bash command STRING, so an agent-authored script the agent then runs is outside it. Measured 2026-09-24 while building run-me.sh for the operator: 'ls /opt/0503-codex-cli-playground' was refused earlier in the session, but './run-me.sh --dry-run' ran sha256sum over two files in that same project and printed their hashes, because the outside path lives inside the script rather than in the command line. The read was read-only and was the operator's explicit request, so no harm here — recording it because CLAUDE.md's own rule is 'do not treat the gate did not fire as evidence that an action was permitted', and the boundary gate's coverage reads as broader than it is. Sibling of the Tier-0 scope boundary already pinned by tests/unit/tier0_scope_boundary.bats; a matching pin for the boundary gate would make the limit falsifiable rather than folklore."
+  captured: 2026-09-24T19:41:36Z
+  context_task: T-3389
+  tags: [governance]
+  status: pending
+  promoted_to: null

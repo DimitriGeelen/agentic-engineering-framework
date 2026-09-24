@@ -17,12 +17,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-08-03T16:51:01Z
-last_update: 2026-09-24T19:38:56Z
+last_update: 2026-09-24T18:52:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -41,15 +41,6 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
       (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-09-24T19:00:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 4
-      effort: 7
-    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
-      (workflow:inception); effort=7 (lines=195,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-03T17:00:12Z'
@@ -157,15 +148,15 @@ its ordering is better than the one I started with: declare the questions, then 
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -255,29 +246,7 @@ go/no-go stays the operator's, and why the recommendation is to narrow rather th
 
 ## Decision
 
-**Decision**: DEFER
-
-**Rationale**: The evidence the DEFER waited for existed in this repository the whole time.
-Three findings, each reversing part of the original framing:
-
-1. **The mechanism already exists.** `bin/fw:987-991` already excludes `init`, `help`,
-   `version`, `update`, `hook`, `vendor` and help queries — read-only verbs among them. This
-   is a list edit, not a redesign.
-2. **The ordering that looked load-bearing is an artefact.** T-519 moved `do_vendor` earlier
-   because a bash function was called before it was defined (`bin/fw:470-472`, T-519's
-   Context). No policy intent rides on it.
-3. **No caller relies on this; the one that reached it was harmed.**
-   `tests/unit/install_verify_no_cwd_init.bats:1-12` records a live incident measured
-   against GitHub master on 2026-08-04: the documented `curl | bash` install ran `fw doctor`,
-   hit this branch under a non-TTY pipe, and **seeded a complete project into whatever
-   directory the user was standing in**, behind a green "Step 3/3 passes" checkmark. T-2799
-   fixed the caller (`install.sh:456,461`), leaving the branch intact for every other caller.
-
-Counter-evidence was sought. `tests/unit/fw_help_no_autoinit.bats:76` asserts the branch
-still fires — but as a discriminating control so the help-exclusion tests cannot pass
-vacuously, not as a dependency. It would be re-pointed at a write verb, a test edit.
-
-**Date**: 2026-09-24T19:38:55Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -286,31 +255,3 @@ vacuously, not as a dependency. It would be re-pointed at a write verb, a test e
 
 ### 2026-09-24T18:52:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-09-24T19:38:55Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** DEFER
-- **Rationale:** The evidence the DEFER waited for existed in this repository the whole time.
-Three findings, each reversing part of the original framing:
-
-1. **The mechanism already exists.** `bin/fw:987-991` already excludes `init`, `help`,
-   `version`, `update`, `hook`, `vendor` and help queries — read-only verbs among them. This
-   is a list edit, not a redesign.
-2. **The ordering that looked load-bearing is an artefact.** T-519 moved `do_vendor` earlier
-   because a bash function was called before it was defined (`bin/fw:470-472`, T-519's
-   Context). No policy intent rides on it.
-3. **No caller relies on this; the one that reached it was harmed.**
-   `tests/unit/install_verify_no_cwd_init.bats:1-12` records a live incident measured
-   against GitHub master on 2026-08-04: the documented `curl | bash` install ran `fw doctor`,
-   hit this branch under a non-TTY pipe, and **seeded a complete project into whatever
-   directory the user was standing in**, behind a green "Step 3/3 passes" checkmark. T-2799
-   fixed the caller (`install.sh:456,461`), leaving the branch intact for every other caller.
-
-Counter-evidence was sought. `tests/unit/fw_help_no_autoinit.bats:76` asserts the branch
-still fires — but as a discriminating control so the help-exclusion tests cannot pass
-vacuously, not as a dependency. It would be re-pointed at a write verb, a test edit.
-
-### 2026-09-24T19:38:56Z — status-update [task-update-agent]
-- **Change:** horizon: now → later
-- **Change:** status: preserved at started-work (T-1589 shipping evidence)
-- **Reason:** Inception decision: DEFER — parking task
