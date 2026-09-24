@@ -8,7 +8,7 @@ description: >
   never by the scoped --section structure run the pre-push hook actually pays — so
   both timeouts derive from a stale number
 
-status: issues
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-24T21:04:57Z
-last_update: 2026-09-24T21:29:55Z
+last_update: 2026-09-24T21:32:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -524,5 +524,45 @@ itself gated to full runs only (unchanged). Then re-run the live proof
 (`bin/fw audit --section structure`, ~5.5 min) and confirm `section_runs:` appears with a
 fresh timestamp before touching AC4/AC5/AC6 or vendoring.
 
+### 2026-09-24T23:40Z — push not yet successful; concurrent activity discovered on the shared checkout [t3451-ledger-staleness]
+
+Two pushes attempted, both blocked (neither via bypass — no `--no-verify`/`--force`/
+`FW_ALLOW_*` used):
+1. First `git push origin bleeding-edge`: blocked by the self-vendor-drift gate (T-2240).
+   Fixed with `bin/fw vendor self`, committed (`9a22d44cb`).
+2. Second push: the pre-push hook's own `fw audit --section structure` run (another
+   ~5.5 min) found 3 FAILs, 2 REF-scoped (in the commits being pushed): a dead-negation
+   lint violation I introduced in the new test file (line 350, `! cmd` not last-statement —
+   fixed and committed, `c24f5018a`), and an invariant-suite count that was almost
+   certainly the same violation counted twice. Did not re-attempt the push after this fix —
+   see below.
+
+**While fixing #2, discovered `agents/audit/audit.sh` had a THIRD, uncommitted change in
+the working tree that I did not author** — the exact fix I diagnosed above (moving
+`section_mark ""` outside the full-runs-only guard), with its own new comment block, dated
+after my critical-budget stop. `git log` also shows a `T-3090: Session handover` commit
+(author: Dimitri Geelen) landing on `bleeding-edge` HEAD *after* my two commits, and a wide
+spread of unrelated unstaged changes across `docs/generated/components/*`, `VERSION`,
+other `.tasks/*` files, appearing while I worked. This contradicts the dispatch's stated
+"no other worker is on this tree" — there is clearly a concurrent process (very likely the
+operator's own interactive session / continuous-run wrapper, sharing this exact checkout)
+active during this task.
+
+**Left the mystery audit.sh edit uncommitted and untouched** — I did not write it, did not
+verify it, and committing someone else's in-flight, unverified change under my own task
+would be exactly the "shipping an unrun guess" failure this task already stopped once to
+avoid. Did not attempt a third push given (a) critical context budget, (b) a shifting
+working tree makes a clean push risky right now, (c) the real fix may already be in
+progress by whoever made that edit. **Two of my three commits (`ba9b6348c`, `9a22d44cb`,
+`c24f5018a`) are on local `bleeding-edge` but NOT YET PUSHED to origin.**
+
+**Recommend the operator/next session:** `git status` and `git diff agents/audit/audit.sh`
+before doing anything else, decide whether to keep, verify, or discard that uncommitted
+edit, then retry `git push origin bleeding-edge` (which will run the ~5.5 min audit gate
+again).
+
 ### 2026-09-24T21:29:55Z — status-update [task-update-agent]
 - **Change:** status: started-work → issues
+
+### 2026-09-24T21:32:42Z — status-update [task-update-agent]
+- **Change:** status: issues → started-work
