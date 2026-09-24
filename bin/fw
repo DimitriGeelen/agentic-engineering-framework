@@ -2323,6 +2323,28 @@ PY
         fi
     fi
 
+    # Check: unclosable-misfiled class (T-3449)
+    # Mirrors agents/audit/audit.sh's CTL-029 INFO line. Not a WARN tier —
+    # these tasks are already counted inside CTL-029's broader
+    # completable-but-not-closed set; this just names how many of that count
+    # are the specific owner:human / zero-Human-criteria / all-Agent-ticked
+    # shape that `fw task delegate` declines and an agent cannot close.
+    # INFO only, never WARN: same reasoning as the AC — surfacing is the
+    # whole job, closing is the operator's.
+    local _um_cli="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/unclosable_misfiled.py"
+    if [ -f "$_um_cli" ] && [ -d "$PROJECT_ROOT/.tasks/active" ]; then
+        local _um_facts _um_count
+        _um_facts=$(PROJECT_ROOT="$PROJECT_ROOT" PYTHONPATH="${FRAMEWORK_ROOT:-$PROJECT_ROOT}" \
+                    python3 -m lib.unclosable_misfiled scan --facts 2>/dev/null || true)
+        if [ -n "$_um_facts" ]; then
+            IFS=$'\t' read -r _um_count _ <<< "$_um_facts"
+            if [ "${_um_count:-0}" -gt 0 ] 2>/dev/null; then
+                echo -e "  ${CYAN}INFO${NC}  Unclosable-misfiled: $_um_count active task(s) — owner:human, no Human criteria, all Agent ACs ticked"
+                echo -e "         Run: bin/fw review-queue  (READY TO CLOSE section — per-task evidence, one command each)"
+            fi
+        fi
+    fi
+
     # Check: framework MCP manifest (T-2265, arc-010 Slice 2)
     # T-2461: framework ASSETS (manifest, tool-set, manifest.py) live under
     # FRAMEWORK_ROOT — which equals PROJECT_ROOT in the framework repo, but is
