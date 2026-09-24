@@ -93,17 +93,28 @@ structure_range() {
 }
 
 @test "T-3062: the push timeout leaves headroom above the pre-push gate" {
-    # The two numbers this class is about, asserted against each other rather
-    # than each being separately plausible.
-    default=$(grep -oP '_push_timeout="\$\{FW_HANDOVER_PUSH_TIMEOUT:-\K[0-9]+' "$HANDOVER" | head -1)
-    [ -n "$default" ] || { echo "could not read the push timeout default"; false; }
+    # T-3450: FW_HANDOVER_PUSH_TIMEOUT is no longer a single static literal —
+    # it is derived per push from the measured gate cost
+    # (lib/prepush-lock-wait.sh fw_handover_push_timeout_default), because a
+    # static number re-derives this exact failure the moment the gate outgrows
+    # it (it did: ~59s at T-3062, 268s by 2026-09-22, 32s of headroom left
+    # under the old 300). What this static check can still assert is the
+    # derivation's floor — the worst case for a tiny or zero measurement.
+    PLW="$FW_ROOT/lib/prepush-lock-wait.sh"
+    [ -f "$PLW" ] || { echo "lib/prepush-lock-wait.sh not found"; false; }
+
+    grep -q 'fw_handover_push_timeout_default "\$PROJECT_ROOT"' "$HANDOVER" \
+        || { echo "handover.sh no longer derives the push timeout via fw_handover_push_timeout_default — the number is asserted-once again, not measured"; false; }
+
+    floor=$(grep -oP '^FW_PUSH_TIMEOUT_FLOOR=\K[0-9]+' "$PLW" | head -1)
+    [ -n "$floor" ] || { echo "could not read FW_PUSH_TIMEOUT_FLOOR from $PLW"; false; }
 
     # Measured post-split cost of `--section structure` on this repo is ~59s.
     # The floor is deliberately well above it: a bound that only just clears
     # the current measurement re-arms the moment any check grows, which is the
     # exact failure being fixed.
-    [ "$default" -ge 180 ] \
-        || { echo "push timeout default is ${default}s; the pre-push gate alone measures ~59s"; false; }
+    [ "$floor" -ge 180 ] \
+        || { echo "push timeout floor is ${floor}s; the pre-push gate alone measures ~59s"; false; }
 }
 
 @test "T-3062: the pre-push hook runs a scoped section, not the full audit" {
