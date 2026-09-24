@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3448: Streichliste landing page design for streichliste.de
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-24T07:54:13Z
+# ============================================================================
+
+task_id: T-3448
+task_name: "Streichliste landing page design for streichliste.de"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-24T07:53:24Z
+completed: 2026-09-24T07:53:58Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Streichliste landing page design for streichliste.de
+
+# Key outcomes
+outcomes:
+  - 'Live page measured, not assumed: name position, section offsets, overflow'
+  - 'Landing sequence answers a stranger''s questions in their own order, name first'
+  - 'The zero is explained in the same breath it is shown, never left hanging'
+  - 'One concrete example (Fuehrungszeugnis) carries the method in place of a methodology section'
+  - '"Was Streichliste nicht tut" promoted onto the landing page'
+  - 'Three weighted doors, each saying what is behind it'
+  - 'Full German copy deck recorded so the implementing agent writes no new copy'
+  - 'Published to the design system with the index read immediately before the write'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 0
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3448-streichliste-landing-page-design-for-str.md
+generated_by: context-agent-hybrid
