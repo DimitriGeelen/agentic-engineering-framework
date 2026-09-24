@@ -303,7 +303,14 @@
     {# Proposed drivers — agent-suggested, awaiting approve / approve-none #}
     {% if bvp_info.proposed_drivers %}
     <h3>Proposed scoped drivers ({{ bvp_info.proposed_drivers|length }} awaiting approval)</h3>
-    <p class="muted">Estimator-proposed drivers. Approve up to 3 (M2; weight ≤6), or approve none with justification (R6: ≥30 chars).</p>
+    {# T-3429 (D-586): the operator-approval step is no longer the default path.
+       Approve runs the external value-driver reviewer; the verdict below is the
+       one it will act on. #}
+    <p class="muted">Estimator-proposed drivers. <strong>Approve</strong> runs the value-driver reviewer
+      — checks (a) scorable, (b) distinct, (c) distinguishes — and adds the driver only on PASS
+      (<code>approved_by: reviewer:…</code>). Up to 3 (M2; weight ≤6), or approve none with
+      justification (R6: ≥30 chars). Refresh every verdict:
+      <code>bin/fw arc review-driver {{ arc_slug }} --all</code>.</p>
     {% for p in bvp_info.proposed_drivers %}
     <article style="margin-bottom: 1rem; padding: 0.8rem;">
         <header style="margin-bottom: 0.5rem;">
@@ -313,6 +320,23 @@
             <strong>{{ p.get('name', '?')|replace('-', ' ')|title }}</strong>
             <code class="muted" style="margin-left: 0.4rem; font-size: 0.85em; opacity: 0.7;">{{ p.get('name', '?') }}</code>
             <small class="muted">· proposed {{ p.get('ts', '—') }} by {{ p.get('source', 'agent') }}</small>
+            {# T-3429: verdict up front, so the Approve button's outcome is
+               readable without pressing it. #}
+            {% if p.get('reviewer_state') == 'pass' %}
+            <span style="margin-left: 0.5rem; padding: 0.1rem 0.5rem; border-radius: 0.3rem;
+                         background: var(--pico-ins-color, #2a7); color: #fff; font-size: 0.8em;"
+                  title="Reviewed {{ p.get('reviewer_ts', '—') }} — checks (a) scorable, (b) distinct, (c) distinguishes">
+              Reviewer: PASS</span>
+            {% elif p.get('reviewer_state') == 'fail' %}
+            <span style="margin-left: 0.5rem; padding: 0.1rem 0.5rem; border-radius: 0.3rem;
+                         background: var(--pico-del-color, #c33); color: #fff; font-size: 0.8em;"
+                  title="Reviewed {{ p.get('reviewer_ts', '—') }}">
+              Reviewer: FAIL — {{ p.get('reviewer_failed', [])|join(', ') }}</span>
+            {% else %}
+            <span class="muted" style="margin-left: 0.5rem; font-size: 0.8em;"
+                  title="No reviewer: block on this proposal yet — Approve will run the reviewer now">
+              Reviewer: not reviewed</span>
+            {% endif %}
         </header>
         {% if p.get('rationale') %}<p>{{ p.rationale }}</p>{% endif %}
         <form method="POST" action="/api/arc/{{ arc_slug }}/approve-driver" style="display: inline;">
@@ -322,6 +346,11 @@
             <label>Rationale: <input type="text" name="rationale" value="{{ p.get('rationale', '') }}" minlength="10" style="width: 22em;" required></label>
             <button type="submit">Approve</button>
         </form>
+        {% if p.get('reviewer_state') == 'fail' %}
+        <p class="muted"><small>Approve will refuse while the reviewer fails. Fix the driver
+          (a missing <code>scoring:</code> spec is the usual one — T-3428), or override with
+          <code>bin/fw arc approve-driver {{ arc_slug }} "{{ p.get('name', '') }}" --i-am-human</code>.</small></p>
+        {% endif %}
     </article>
     {% endfor %}
     {% else %}

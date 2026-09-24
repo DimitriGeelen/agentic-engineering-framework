@@ -79,6 +79,18 @@ _arc_source_membership_lib() {
 }
 _arc_source_membership_lib
 
+# T-3429 (D-586): the external value-driver reviewer. Defines
+# `arc_review_driver` and `_arc_driver_review_run` — the static check that
+# replaced the operator-approval step as the DEFAULT path through
+# `arc_approve_driver`. Same idempotent-source shape as the membership lib.
+_arc_source_driver_review_lib() {
+    local script_dir
+    script_dir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+    # shellcheck source=lib/arc-driver-review.sh
+    . "${script_dir}/arc-driver-review.sh"
+}
+_arc_source_driver_review_lib
+
 # ─── helpers ────────────────────────────────────────────────────────────────
 
 _arc_validate_id() {
@@ -1207,6 +1219,7 @@ arc_dispatch() {
         abandon) arc_abandon "$@";;
         migrate) arc_migrate "$@";;
         approve-driver)   arc_approve_driver   "$@";;   # T-1926 (arc-006)
+        review-driver)    arc_review_driver    "$@";;   # T-3429 (arc-006, D-586)
         remove-driver)    arc_remove_driver    "$@";;   # T-1976 (arc-006)
         set-scoped-weight) arc_set_scoped_weight "$@";; # T-1977 (arc-006)
         show-suggestions) arc_show_suggestions "$@";;   # T-1926 (arc-006)
@@ -1233,7 +1246,7 @@ arc_dispatch() {
 
 arc_approve_driver() {
     local id="" name="" weight="" rationale="" justification="" want_none=false
-    local i_am_human=false from_watchtower=false
+    local i_am_human=false from_watchtower=false all_reviewed=false scoring_file=""
     while [ $# -gt 0 ]; do
         case "$1" in
             --weight) weight="$2"; shift 2;;
@@ -1242,6 +1255,8 @@ arc_approve_driver() {
             --justification) justification="$2"; shift 2;;
             --i-am-human) i_am_human=true; shift;;
             --from-watchtower) from_watchtower=true; shift;;
+            --all-reviewed) all_reviewed=true; shift;;   # T-3429 (D-586)
+            --scoring-file) scoring_file="$2"; shift 2;;  # T-3429: give an ad-hoc driver a mechanism
             --help|-h) _arc_approve_help; return 0;;
             *)
                 if [ -z "$id" ]; then id="$1"
@@ -1279,6 +1294,12 @@ arc_approve_driver() {
         echo "OK: arc '$id' approved with no scoped drivers (--none)."
         echo "  Justification logged to .context/audits/arc-scoped-driver-bypass.jsonl"
         return 0
+    fi
+
+    # ── --all-reviewed path (T-3429, D-586) ──
+    if [ "$all_reviewed" = "true" ]; then
+        _arc_approve_all_reviewed "$id" "$rationale"
+        return $?
     fi
 
     # ── approve-driver normal path ──
@@ -1346,12 +1367,61 @@ for sd in (d.get('scoped_drivers') or []):
         return 1
     fi
 
-    if ! _arc_approve_driver_acd_gate "approve-driver" "$i_am_human" "$from_watchtower"; then
-        return 1
+    # ── T-3429 (D-586): the reviewer, not the operator, is the default gate. ──
+    #
+    # Operator ruling 2026-09-22: "per default just create them and add them; if
+    # needed institute an external value driver reviewer". So the §ACD refusal
+    # that used to stand here became the OVERRIDE path (--i-am-human /
+    # --from-watchtower still approve directly, recorded as approved_by: human),
+    # and an unflagged call now runs the static reviewer instead of refusing.
+    # Cap 3, weight ≤6 (M2) and the T-1979 dedup above are unchanged — the
+    # ruling moved WHO certifies quality, not WHAT the structural limits are.
+    local approved_by="human" reviewer_json=""
+    if [ "$i_am_human" = "false" ] && [ "$from_watchtower" = "false" ]; then
+        # An ad-hoc name with no proposed entry is reviewed from the arguments
+        # (see FW_ARC_REVIEW_INLINE_ENTRY in lib/arc-driver-review.sh).
+        local inline_entry
+        inline_entry=$(python3 -c '
+import json, sys
+e = {"name": sys.argv[1], "weight": int(sys.argv[2]), "rationale": sys.argv[3]}
+if len(sys.argv) > 4 and sys.argv[4]:
+    e["scoring_file"] = sys.argv[4]
+print(json.dumps(e))' "$name" "$w" "$rationale" "$scoring_file")
+        reviewer_json=$(FW_ARC_REVIEW_INLINE_ENTRY="$inline_entry" \
+            _arc_driver_review_run "$f" "$PROJECT_ROOT" "$name" "false" "json")
+        local review_rc=$?
+        if [ "$review_rc" -ne 0 ]; then
+            echo "Error: driver '$name' did not pass review — not approved." >&2
+            echo "" >&2
+            python3 - "$reviewer_json" >&2 <<'PYREPORT'
+import json, sys
+try:
+    d = json.loads(sys.argv[1] or "{}")
+except Exception:
+    d = {}
+if d.get("error"):
+    print("  " + d["error"])
+for r in d.get("reviewed") or []:
+    for k in ("a", "b", "c"):
+        c = (r.get("checks") or {}).get(k) or {}
+        if c.get("verdict") == "fail":
+            print("  FAILED (%s) %s: %s" % (k, c.get("check"), c.get("reason")))
+PYREPORT
+            echo "" >&2
+            echo "  Re-run the review after fixing it:" >&2
+            echo "    fw arc review-driver $id \"$name\" --dry-run" >&2
+            echo "" >&2
+            echo "  Overrides (the operator-approval path, now the exception — T-3429/D-586):" >&2
+            echo "    --i-am-human       human typing into an agent session" >&2
+            echo "    --from-watchtower  Flask backend POST" >&2
+            return 1
+        fi
+        approved_by="reviewer:${FW_ARC_REVIEWER_ID:-static-v1}"
+        echo "Reviewer PASS ($approved_by) — checks (a) scorable, (b) distinct, (c) distinguishes."
     fi
 
     # Append + flip-if-draft via python (preserves YAML structure).
-    python3 - "$f" "$name" "$w" "$rationale" <<'PY'
+    python3 - "$f" "$name" "$w" "$rationale" "$approved_by" "$reviewer_json" <<'PY'
 import os, sys, datetime
 try:
     from ruamel.yaml import YAML
@@ -1362,6 +1432,8 @@ except ImportError:
     HAS_RUAMEL = False
 
 fn, name, weight, rationale = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
+approved_by = sys.argv[5] if len(sys.argv) > 5 else "human"
+reviewer_json = sys.argv[6] if len(sys.argv) > 6 else ""
 
 if HAS_RUAMEL:
     with open(fn) as fh: data = yaml_r.load(fh)
@@ -1371,9 +1443,26 @@ else:
 
 sd = data.get('scoped_drivers') or []
 ts = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')
-entry = {'name': name, 'weight': weight, 'approved_at': ts}
+entry = {'name': name, 'weight': weight, 'approved_at': ts, 'approved_by': approved_by}
 if rationale:
     entry['rationale'] = rationale
+# T-3429: carry the verdict onto the approved entry. Without it, an
+# `approved_by: reviewer:...` row is an unfalsifiable claim — which is exactly
+# what check_arc_driver_reviewer_record (agents/audit/audit.sh) WARNs about.
+if reviewer_json:
+    import json as _json
+    try:
+        _rv = _json.loads(reviewer_json)
+    except Exception:
+        _rv = None
+    if isinstance(_rv, dict):
+        for _r in (_rv.get('reviewed') or []):
+            if _r.get('name') == name:
+                entry['reviewer'] = {'verdict': _r.get('verdict'),
+                                     'checks': _r.get('checks'),
+                                     'ts': _r.get('ts'),
+                                     'reviewer_id': _r.get('reviewer_id')}
+                break
 sd.append(entry)
 data['scoped_drivers'] = sd
 
@@ -1834,17 +1923,110 @@ arc_rescore() {
     fi
 }
 
+# T-3429 (D-586): approve every proposed driver that passes review, in proposal
+# order, stopping at the M2 cap of 3 and naming what it skipped.
+#
+# Serial on purpose: each approval changes the cap headroom and the dedup set
+# the NEXT review reads, so the reviews cannot be batched up front — the second
+# driver has to be judged against the arc as the first one left it.
+_arc_approve_all_reviewed() {
+    local id="$1" rationale_override="${2:-}"
+    local f
+    f="$(_arc_path "$id")"
+
+    local names
+    names=$(python3 - "$f" <<'PY'
+import sys, yaml
+d = yaml.safe_load(open(sys.argv[1])) or {}
+for p in (d.get('proposed_scoped_drivers') or []):
+    if isinstance(p, dict) and p.get('name'):
+        print(p['name'])
+PY
+)
+    if [ -z "$names" ]; then
+        echo "No proposed scoped drivers on arc '$id' — nothing to approve."
+        return 0
+    fi
+
+    local approved=0 failed=0 skipped=0
+    local skipped_names=""
+    while IFS= read -r dname; do
+        [ -z "$dname" ] && continue
+        local count
+        count=$(python3 -c "
+import yaml
+d = yaml.safe_load(open('$f')) or {}
+print(len(d.get('scoped_drivers') or []))
+")
+        if [ "$count" -ge 3 ]; then
+            skipped=$((skipped + 1))
+            skipped_names="$skipped_names$dname, "
+            continue
+        fi
+        # Weight from the proposal (proposals use `weight:` or `weight_suggestion:`).
+        local w rat
+        w=$(python3 - "$f" "$dname" <<'PY'
+import sys, yaml
+d = yaml.safe_load(open(sys.argv[1])) or {}
+for p in (d.get('proposed_scoped_drivers') or []):
+    if isinstance(p, dict) and p.get('name') == sys.argv[2]:
+        print(p.get('weight') or p.get('weight_suggestion') or 3)
+        break
+PY
+)
+        rat="$rationale_override"
+        if [ -z "$rat" ]; then
+            rat=$(python3 - "$f" "$dname" <<'PY'
+import sys, yaml
+d = yaml.safe_load(open(sys.argv[1])) or {}
+for p in (d.get('proposed_scoped_drivers') or []):
+    if isinstance(p, dict) and p.get('name') == sys.argv[2]:
+        print((p.get('rationale') or '').strip())
+        break
+PY
+)
+        fi
+        if arc_approve_driver "$id" "$dname" --weight "${w:-3}" --rationale "$rat"; then
+            approved=$((approved + 1))
+        else
+            failed=$((failed + 1))
+        fi
+    done <<< "$names"
+
+    echo ""
+    echo "--all-reviewed on arc '$id': $approved approved, $failed refused by review, $skipped skipped."
+    if [ "$skipped" -gt 0 ]; then
+        echo "  Skipped (scoped_drivers: at the M2 cap of 3): ${skipped_names%, }"
+        echo "  Free a slot first: fw arc remove-driver $id \"<name>\" --rationale \"<≥30 chars why>\""
+    fi
+    [ "$failed" -gt 0 ] && return 1
+    return 0
+}
+
 _arc_approve_help() {
     echo "Usage:"
-    echo "  fw arc approve-driver <arc-id> \"<name>\" [--weight N] [--i-am-human|--from-watchtower]"
+    echo "  fw arc approve-driver <arc-id> \"<name>\" [--weight N] [--rationale R]"
+    echo "  fw arc approve-driver <arc-id> --all-reviewed"
     echo "  fw arc approve-driver <arc-id> --none --justification \"<≥30 chars>\""
     echo ""
     echo "  Appends to scoped_drivers: (cap 3, M2 weight ≤6, default weight=3)."
     echo "  On first approval — or on --none — flips arc status: draft → in-progress."
-    echo "  --none --justification declares the arc has no scoped drivers worth tracking;"
-    echo "  the justification is logged to .context/audits/arc-scoped-driver-bypass.jsonl."
     echo ""
-    echo "  Refuses under \$CLAUDECODE=1 unless --i-am-human or --from-watchtower (M6, §ACD)."
+    echo "  DEFAULT PATH (T-3429, D-586): the external value-driver reviewer certifies"
+    echo "  the driver — checks (a) scorable, (b) distinct, (c) distinguishes — and the"
+    echo "  entry is recorded as approved_by: reviewer:<id> with the verdict attached."
+    echo "  On FAIL nothing is approved and the failed checks are named."
+    echo "    Preview a verdict: fw arc review-driver <arc-id> \"<name>\" --dry-run"
+    echo "    --scoring-file P   give an ad-hoc driver (one with no proposal behind it) the"
+    echo "                       scoring spec check (a) needs; schema in policy/value-drivers.yaml"
+    echo "    --all-reviewed     approve every proposed driver that passes, up to the cap"
+    echo ""
+    echo "  OVERRIDE PATH: --i-am-human / --from-watchtower approve WITHOUT the reviewer,"
+    echo "  recorded as approved_by: human. The operator ruling made this the exception."
+    echo ""
+    echo "  --none --justification declares the arc has no scoped drivers worth tracking;"
+    echo "  it stays §ACD-gated (a negative ruling is sovereign) and the justification is"
+    echo "  logged to .context/audits/arc-scoped-driver-bypass.jsonl."
 }
 
 _arc_approve_driver_acd_gate() {

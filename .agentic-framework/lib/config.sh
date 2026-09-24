@@ -302,6 +302,17 @@ FW_CONFIG_REGISTRY=(
     # chosen so the WARN fires with real runway left to raise the ceiling or
     # investigate, rather than at the T-3070 measurement itself (0.58).
     "AUDIT_TIMEOUT_WARN_FRACTION|0.70|Fraction of AUDIT_TIMEOUT (or FW_AUDIT_FULL_TIMEOUT) at which fw doctor WARNs that the last recorded full-audit run is eating into its timeout headroom (agents/audit/audit.sh, bin/fw do_doctor). T-3127."
+    # T-3451. The 'structure' section timing (.context/audits/full-audit-timing.yaml
+    # section_runs: entry) backs two pre-push gate derivations
+    # (fw_prepush_lock_wait_default, fw_handover_push_timeout_default,
+    # lib/prepush-lock-wait.sh) but is only refreshed when a scoped or full
+    # `fw audit` actually runs that section — on a host where pushes stop or
+    # cron drifts, the number can go stale with nothing surfacing it. `fw
+    # doctor` WARNs when the measurement backing those derivations is older
+    # than this many days (fw_audit_timing_is_stale). 7 chosen so a week of
+    # inactivity is noticed before it compounds into the kind of staleness
+    # T-3451 found (2 days already meant a 21% understatement of true cost).
+    "AUDIT_STRUCTURE_TIMING_STALE_DAYS|7|Days after which fw doctor WARNs that the 'structure' section timing backing fw_prepush_lock_wait_default / fw_handover_push_timeout_default (lib/prepush-lock-wait.sh) is stale. T-3451."
     # arc-020 S5 (D5 bound 2). Per-core normalized 1-min loadavg ceiling for
     # provisioning admission: under it allow, at/over it defer, at/over 2x it
     # deny — deny/defer always logged. Retrofits the load-62 incident. The
