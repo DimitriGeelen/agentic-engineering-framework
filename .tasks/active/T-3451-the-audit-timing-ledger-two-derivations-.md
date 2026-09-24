@@ -103,23 +103,23 @@ cost. T-3450 fixed the literal; this fixes its input.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The scoped run writes what it measures: `fw audit --section structure` (and any other
+- [x] The scoped run writes what it measures: `fw audit --section structure` (and any other
       single-section invocation) records that section's wall-clock into the ledger it
       already writes from full runs, without a full run being required. Shape stays
       backward-compatible — `fw_prepush_lock_wait_default` and
       `fw_handover_push_timeout_default` must read it unchanged, and a ledger written by an
       older version must still parse (state how in `## Decisions`).
-- [ ] Staleness is visible rather than silent: the ledger records when each section
+- [x] Staleness is visible rather than silent: the ledger records when each section
       measurement was taken, and a reader can tell a fresh number from a two-day-old one.
       `fw doctor` WARNs when the structure measurement the gate depends on is older than a
       configurable window (default 7 days, key in `lib/config.sh` `FW_CONFIG_REGISTRY` with
       a description, `tests/lint/config-registry-parity.bats` green).
-- [ ] Lock contention is not silently excluded from the measurement, or it is explicitly
+- [x] Lock contention is not silently excluded from the measurement, or it is explicitly
       excluded and the derivations account for it. Decide which, justify it in
       `## Decisions`, and make the choice visible in the recorded value — "Another audit is
       already running" appeared in 2 of 3 live attempts, so a measurement that never waits
       for a lock systematically under-reports what a real push pays.
-- [ ] Tests: a fixture ledger written by a scoped run is read identically by both
+- [x] Tests: a fixture ledger written by a scoped run is read identically by both
       derivations; an old-format ledger still parses; the doctor WARN fires on a stale
       measurement and is silent on a fresh one (pin both legs — a guard that never fires
       and one that fires correctly must be distinguishable). `TEST_TEMP_DIR` set in setup;
@@ -292,6 +292,16 @@ cost. T-3450 fixed the literal; this fixes its input.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# Counts are deliberately NOT pinned below (T-3326): "0 failures" is the
+# invariant, "23 tests" is a number that moves the next time anyone adds a leg.
+# No `bin/fw audit` line here either (L-391) — the section this task measures is
+# the one the pre-push gate already runs, so a verification line would run it twice.
+
+timeout 300 bats tests/unit/t3451_audit_timing_ledger.bats > /tmp/.t3451-v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3451-v1.out
+timeout 180 bats tests/lint/config-registry-parity.bats > /tmp/.t3451-v2.out 2>&1 && grep -q "^ok 1 " /tmp/.t3451-v2.out
+bin/fw vendor self --check
+bash -c 'set -eo pipefail; sed -n "/^section_mark \"\"\$/,/^fi\$/p" agents/audit/audit.sh | head -1 | grep -qx "section_mark \"\""'
 
 ## RCA
 
@@ -566,3 +576,61 @@ again).
 
 ### 2026-09-24T21:32:42Z — status-update [task-update-agent]
 - **Change:** status: issues → started-work
+
+### 2026-09-24T22:05Z — live proof, AC 5 (parent session)
+
+The worker's handback above is accurate for the tree it measured and **out of date for
+this one**. It ran its clean scoped audit against the pre-fix script, saw the ledger not
+move, and stopped — correctly. The one-line fix it diagnosed was already sitting
+uncommitted in the same checkout (the parent authored it while the worker was still live;
+the worker found it, declined to commit work it had not authored, and said so — see
+OBS-510, *a handback commit is not a worker exit*). It is now committed as `eb4b49b60`.
+
+**Leg 1 — a single-section scoped run records itself.** `bin/fw audit --section oe-fast`,
+5.7 s, rc=0. `oe-fast` is the only section in that run, so the trailing flush is the only
+thing that could close it:
+
+| | `section_runs[oe-fast].timestamp` |
+|---|---|
+| before | `2026-09-24T23:45:09+02:00` |
+| after | `2026-09-24T23:50:52+02:00` |
+
+**Control leg.** The identical stub harness run against the pre-fix block from
+`ba9b6348c` (`git show ba9b6348c:agents/audit/audit.sh`) with `SECTIONS=structure` fires
+*nothing at all* — neither the flush nor the summary. So the guard being tested is
+distinguishable from one that always fires, which is why the four new tests in
+`tests/unit/t3451_audit_timing_ledger.bats` pin position and behaviour rather than
+grepping for the call (the call existed before, on the wrong side of the `if`).
+
+**Leg 2 — the number the gate actually depends on.** `bin/fw audit --section structure`,
+337 s wall, rc=1 (warnings only, `fails=0`), ran to completion rather than being killed:
+
+| | structure | `fw_prepush_lock_wait_default` | `fw_handover_push_timeout_default` |
+|---|---|---|---|
+| before | 322 s, `timed_out: true`, 23:43:58 | 403 | 650 |
+| after | **329 s, `timed_out: false`, 23:58:27** | **412** = ⌈1.25×329⌉ | **494** = ⌈1.5×329⌉ |
+
+Three things worth reading off that table rather than past it:
+
+- The before-row's 650 was **not** a computation — it is `FW_PUSH_TIMEOUT_FALLBACK`,
+  because the 322 s entry carried `timed_out: true` and
+  `fw_handover_push_timeout_default` refuses to derive from a truncated run. That
+  asymmetry (push-timeout distrusts `timed_out`, lock-wait trusts it) is deliberate and
+  pinned by t3421; it is documented at `lib/prepush-lock-wait.sh:236`. It is not a defect,
+  and the after-row is the first time this number has been a real derivation.
+- 337 s wall vs 329 s recorded: the ~8 s difference is the audit's own startup and
+  teardown, outside any `section_mark` window. The ledger measures the *section*, not the
+  process, which is the right thing for a per-section budget and worth stating so nobody
+  later "fixes" the discrepancy.
+- 329 s against the worker's 325.6 s, measured ~25 minutes apart on the same corpus: the
+  cost is not noise-free, which is the entire argument for deriving the timeout from a
+  continuously-refreshed measurement instead of a literal.
+
+**Staleness predicate, both legs, live:** `fw_audit_timing_is_stale $PWD structure 7` →
+not stale; the same call at a 0-day window → stale. A predicate that can fire and
+correctly does not.
+
+**Note for whoever owns doctor's runtime:** `bin/fw doctor` exceeded a 180 s timeout on
+this host and was killed before reaching its structure-timing line. That is not this
+task's defect and the WARN/silent/INFO legs are pinned by tests 21-23, but a health
+command that cannot finish inside three minutes is a surface nobody will run.
