@@ -15,9 +15,9 @@ A completed task qualifies when ALL of:
 
 ## Population examined
 
-- completed inceptions: 457
-- with a GO recorded:   361
-- findings:             186
+- completed inceptions: 463
+- with a GO recorded:   367
+- findings:             185
 
 These are candidates for triage, not confirmed abandoned decisions:
 some may have shipped work that was simply never linked back. Deciding
@@ -139,7 +139,6 @@ which is which is the judgement this check exists to force.
 - T-1141 — .tasks/completed/T-1141-pickup-pl-007-never-dump-terminal-comman.md
 - T-1139 — .tasks/completed/T-1139-add-patch-delivery-type-to-pickup-proces.md
 - T-1136 — .tasks/completed/T-1136-upstream-session-init-concerns-check-fro.md
-- T-1135 — .tasks/completed/T-1135-persistent-termlink-agent-sessions--alwa.md
 - T-1134 — .tasks/completed/T-1134-upstream-portable-date-helpers-from-010-.md
 - T-1129 — .tasks/completed/T-1129-pickup-4-learnings-from-termlink-session.md
 - T-1126 — .tasks/completed/T-1126-codify-termlink-communication-protocol-i.md

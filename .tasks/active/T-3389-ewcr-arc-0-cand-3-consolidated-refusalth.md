@@ -8,12 +8,12 @@ description: >
   section 3). Not startable until the operator transfers them. Peer-transfer gap,
   distinct from Q-15.
 
-status: captured
+status: work-completed
 workflow_type: specification
-owner: agent
-horizon: later
+owner: human
+horizon: now
 tags: [ewcr, arc0]
-components: []
+components: [tools/ewcr-arc0-writeset-scoped-coverage.py]
 related_tasks: [T-3147, T-3384, T-3145]
 arc_id: ewcr-arc0-contract-evidence
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -27,8 +27,8 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-18T15:39:14Z
-last_update: '2026-09-18T15:45:20Z'
-date_finished:
+last_update: 2026-09-24T20:39:28Z
+date_finished: 2026-09-24T20:39:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -79,10 +79,14 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `docs/research/executable-workflow/contracts/v1/refusal-threat-matrix.md` consolidates every blocker finding from the four reviews into rows: finding id → source review → threat → refusal scenario → responsible component → verification fence
-- [ ] Every row's refusal scenario references the T-3385 `refusal` schema and an arch §13 scenario id; rows with no §13 scenario are flagged as NEW scenarios for the operator to accept
-- [ ] The count of arch §13 scenarios the current substrate would already fail is produced (the missing measurement named in questions-and-dispositions.md §3) and recorded in the matrix header
-- [ ] No runtime code
+- [x] `docs/research/executable-workflow/contracts/v1/refusal-threat-matrix.md` consolidates every blocker finding from the four reviews into rows: finding id → source review → threat → refusal scenario → responsible component → verification fence
+      — 19 rows: Claude 6 (CL-1..6), Z.ai 5 (ZA-2..6), DeepSeek 3 (DS-1..3), Mistral 5 (MS-1..5); every review contributes ≥1, asserted by a verification line with a control leg.
+- [x] Every row's refusal scenario references the T-3385 `refusal` schema and an arch §13 scenario id; rows with no §13 scenario are flagged as NEW scenarios for the operator to accept
+      — each row carries a `reason_code` and `scenario_refs` in the frozen `refusal.schema.json` vocabulary; two findings had no §13 scenario and are proposed **unnumbered** for the operator to accept (N-1 per-attempt task mutation from DS-1; N-2 credential-scope excess from MS-3).
+- [x] The count of arch §13 scenarios the current substrate would already fail is produced (the missing measurement named in questions-and-dispositions.md §3) and recorded in the matrix header
+      — **14 of 20 would fail, 1 would pass, 5 not applicable yet**, each with a file:line or command output; header/body parity asserted by a verification line with a control leg.
+- [x] No runtime code
+      — asserted mechanically: no commit whose subject starts `T-3389:` touched `lib|bin|agents|web|tools`.
 
 ### Human
 - [ ] [REVIEW] Transfer the four external review findings (Claude, Z.ai, DeepSeek, Mistral — roadmap §4 Arc 0 task 3) into `docs/research/executable-workflow/reviews/` so this task becomes startable
@@ -259,6 +263,15 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-3389: the two transferred reviews hash exactly to the values 832 published.
+test "$(sha256sum docs/research/executable-workflow/reviews/T-032-deepseek-review-response.md | cut -d" " -f1)" = "4dae4098b2602b2794525292e1aa3053e0c486b23a67d9c3292ce80dc3a4d8a9"
+test "$(sha256sum docs/research/executable-workflow/reviews/T-032-mistral-review-response.md | cut -d" " -f1)" = "0eecb8af7be56ba045581167ef66b73fd9d2aa17fcd241f84defc0e7d17bfb0e"
+timeout 300 python3 tools/ewcr-contracts-check.py > /tmp/.t3389-contracts 2>&1
+timeout 300 python3 tools/ewcr-trace-check.py > /tmp/.t3389-trace 2>&1
+python3 -c 'import re,collections; t=open("docs/research/executable-workflow/contracts/v1/refusal-threat-matrix.md").read(); c=collections.Counter(m.group(1) for m in re.finditer(r"^\| ([A-Z]{2})-[0-9]+ \|", t, re.M)); assert set(c)=={"CL","ZA","DS","MS"} and min(c.values())>=1 and sum(c.values())==19, c'
+python3 -c 'import re; t=open("docs/research/executable-workflow/contracts/v1/refusal-threat-matrix.md").read(); assert "**14 of 20 would fail. 1 would pass. 5 are not applicable yet.**" in t; assert len(re.findall(r"\| \*\*would-fail\*\* \|",t))==14 and len(re.findall(r"\| \*\*would-pass\*\* \|",t))==1 and len(re.findall(r"\| not-applicable-yet \|",t))==5'
+test -z "$(git log --format="%H" --grep="^T-3389:" -20 | xargs -r -n1 git diff-tree --no-commit-id --name-only -r | sort -u | grep -E "^(lib|bin|agents|web|tools)/")"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -328,6 +341,58 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+*(The DEFER below was correct when written on 2026-09-19 — it named an evidence gap.
+The gap closed on 2026-09-24 when the operator ran `run-me.sh` and both reviews landed
+with matching hashes. Superseded, kept for the record at the end of this section.)*
+
+**Recommendation:** GO — the matrix is built, both fences are green, and one Human AC is now satisfiable on evidence
+
+**Rationale:** The evidence gap that made DEFER correct on 2026-09-19 is closed. All four
+reviews are in this repository or in the pinned dossier, and the two transferred files
+hash **exactly** to the values 832 published on the DM rail — verified twice, and pinned
+as verification lines so they re-run rather than resting on a sentence. Nothing in the
+matrix is reconstructed from memory: every row cites a review section, and every substrate
+claim cites a file:line or a command's output.
+
+The deliverable is `contracts/v1/refusal-threat-matrix.md` — 19 blocker rows (Claude 6,
+Z.ai 5, DeepSeek 3, Mistral 5), each mapping a finding to a `reason_code` and
+`scenario_refs` in the frozen `refusal.schema.json` vocabulary, a responsible component,
+and either a runnable fence or a named gap. Plus the measurement
+`questions-and-dispositions.md` §3 called missing: **14 of 20** §13 scenarios would fail on
+the current substrate, 1 passes, 5 have nothing to fail yet.
+
+**Which Human AC the operator now needs to tick — and which to leave:**
+
+1. **Tick AC 1 (transfer).** It happened. `docs/research/executable-workflow/reviews/`
+   holds both files with matching sha256 and a `PROVENANCE.md` recording who moved them,
+   when, and why by hand. One deviation worth naming rather than hiding: the AC's step 3
+   said to add the hashes to `source-manifest.yaml` as a new revision; they went into
+   `PROVENANCE.md` and the matrix header instead, both of which are hash-checked by this
+   task's verification lines. If you want them in `source-manifest.yaml` too, say so and
+   it is a one-line follow-up — I did not edit that file on my own judgement because it is
+   the packet's provenance record, not mine.
+2. **Do NOT tick AC 2 (rule DeepSeek and Mistral out of scope).** It is now moot and
+   ticking it would record a scope ruling that did not happen. Both families are **in**
+   scope and dispositioned in the matrix: DS-1..3 and MS-1..5. The AC's own text says only
+   one of the two routes is needed, and route 1 is the one that ran.
+
+**Evidence:**
+- `sha256sum` on both reviews matches the published values exactly (verification lines 1–2)
+- `python3 tools/ewcr-contracts-check.py` → OK, 7 schemas, 7 examples, hashes match (line 3)
+- `python3 tools/ewcr-trace-check.py` → OK, 20 invariants traced (line 4) — `traceability.yaml` was **not edited**
+- 19 rows, every review contributing ≥1, asserted by line 5; a control leg confirms the assertion fails when a row is removed
+- Header/body parity on 14/1/5 asserted by line 6; control leg confirms it fails when one verdict is flipped
+- No runtime code: line 7 asserts no T-3389 commit touched `lib|bin|agents|web|tools`
+- Agreement with `traceability.yaml` tabulated row-by-row in matrix §5.2 — 12 overlapping scenarios, no contradiction found, so nothing to record in `## Decisions` under that heading
+- Two NEW scenarios proposed rather than numbered (N-1 per-attempt mutation from DS-1; N-2 credential-scope excess from MS-3), plus independent corroboration that §13 #14 has no `reason_code` in the frozen enum
+
+**What this does not settle:** whether 832's exit-clause 2 is closed. This gives all four
+review families an AEF-side disposition, which is what clause 2 needs *from this
+repository*. Their register is theirs to move.
+
+
+<details><summary>Superseded DEFER of 2026-09-19</summary>
+
 **Recommendation:** DEFER — pending an operator choice between two named options
 
 **Rationale:** This is a genuine evidence gap, not a confidence hedge. The task cannot
@@ -371,6 +436,8 @@ leaving the arithmetic open indefinitely.
 - Sibling clause 1 **is** answered and landed: `arc-0-clause-1-attestation.md` (T-3394, commit `174f31777`)
 - Arc-0 exit status: clause 1 answered (pending 832's operator), clause 2 blocked here, clause 3 (2/6) is 832's register
 
+</details>
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -398,3 +465,24 @@ leaving the arithmetic open indefinitely.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3389-ewcr-arc-0-cand-3-consolidated-refusalth.md
 - **Context:** Initial task creation
+
+### 2026-09-24T20:39:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e842c030
+- **Timestamp:** 2026-09-24T20:39:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] Transfer the four external review findings (Claude, Z.ai, DeepSeek, Mistral — roadmap §4 Arc 0 task 3) into `docs/research/executable-workflow/reviews/` so this task becomes startable
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows the c' in Expected: four files present, hashes in the manifest, `git log --oneline -1 -- docs/research/executable-workflow/reviews` shows the commit`
+
+### 2026-09-24T20:39:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

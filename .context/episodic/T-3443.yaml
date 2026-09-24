@@ -90,10 +90,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 1235
-  commits: 4
-  files_changed: 8
-  lines_added: 645
+  commits: 5
+  files_changed: 10
+  lines_added: 745
   lines_removed: 7
+  footprint_refreshed_at: '2026-09-23T18:11:26Z'
+  footprint_refreshed_by_commit: 52fc9a5b1
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3443-auditsh---sections-structure-runs-the-fr.md

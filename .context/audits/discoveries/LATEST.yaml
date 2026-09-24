@@ -1,24 +1,40 @@
-timestamp: 2026-09-16T19:35:01Z
+timestamp: 2026-09-24T20:00:02Z
 findings:
-  - id: D1
+  - id: D4
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (18/2892)"
-  - id: D2
-    level: FAIL
-    check: "D2: Human review queue — 225 task(s) waiting >30d: T-100131(72d) T-100188(72d) T-1701(112d) T-1702(108d) T-1707(112d) T-1718(112d) T-1773(125d) T-1774(125d) T-1775(125d) T-1776(108d) T-1796(126d) T-1797(126d) T-1799(126d) T-1801(126d) T-1802(126d) T-1803(126d) T-1805(126d) T-1806(126d) T-1807(126d) T-1808(126d) T-1810(126d) T-1811(126d) T-1818(125d) T-1827(117d) T-1834(124d) T-1842(117d) T-1843(117d) T-1844(117d) T-1891(121d) T-1909(119d) T-1910(119d) T-1911(119d) T-1928(120d) T-1929(120d) T-1930(120d) T-1933(120d) T-1934(119d) T-1935(119d) T-1936(119d) T-1939(119d) T-1947(119d) T-1951(117d) T-1954(119d) T-1955(119d) T-1957(119d) T-1960(118d) T-1961(118d) T-1963(118d) T-1964(119d) T-1965(119d) T-1968(118d) T-1969(118d) T-1970(118d) T-1971(118d) T-1976(117d) T-1977(118d) T-1978(117d) T-1980(117d) T-1982(118d) T-1984(117d) T-1985(117d) T-1988(117d) T-1989(113d) T-1990(112d) T-1991(117d) T-1992(113d) T-1993(113d) T-1994(112d) T-1999(116d) T-2002(112d) T-2003(113d) T-2004(113d) T-2006(113d) T-2008(113d) T-2009(113d) T-2010(113d) T-2011(113d) T-2012(113d) T-2013(113d) T-2015(113d) T-2016(113d) T-2017(113d) T-2018(113d) T-2019(113d) T-2020(113d) T-2021(113d) T-2022(113d) T-2023(113d) T-2024(113d) T-2025(113d) T-2026(113d) T-2027(113d) T-2028(113d) T-2029(113d) T-2031(113d) T-2033(113d) T-2034(113d) T-2038(113d) T-2039(113d) T-2040(113d) T-2041(113d) T-2043(113d) T-2044(113d) T-2045(113d) T-2046(113d) T-2047(113d) T-2049(113d) T-2051(112d) T-2054(112d) T-2062(111d) T-2063(111d) T-2064(111d) T-2065(111d) T-2066(111d) T-2075(110d) T-2077(110d) T-2080(110d) T-2082(110d) T-2084(110d) T-2085(110d) T-2086(110d) T-2087(110d) T-2088(110d) T-2089(110d) T-2102(109d) T-2103(109d) T-2106(109d) T-2110(109d) T-2111(109d) T-2112(109d) T-2114(109d) T-2116(109d) T-2117(109d) T-2119(102d) T-2136(108d) T-2160(107d) T-2167(106d) T-2174(106d) T-2175(106d) T-2176(102d) T-2179(106d) T-2183(95d) T-2185(104d) T-2192(105d) T-2222(102d) T-2240(100d) T-2265(99d) T-2274(99d) T-2278(99d) T-2281(99d) T-2332(97d) T-2335(57d) T-2336(97d) T-2342(97d) T-2349(72d) T-2369(95d) T-2373(95d) T-2376(95d) T-2395(36d) T-2403(93d) T-2406(93d) T-2417(92d) T-2428(90d) T-2430(90d) T-2463(72d) T-2474(84d) T-2479(72d) T-2525(67d) T-2529(67d) T-2530(67d) T-2555(58d) T-2558(58d) T-2561(58d) T-2563(58d) T-2565(58d) T-2578(57d) T-2586(57d) T-2589(57d) T-2596(56d) T-2618(54d) T-2623(51d) T-2624(51d) T-2629(51d) T-2630(51d) T-2631(51d) T-2632(51d) T-2634(50d) T-2651(50d) T-2674(49d) T-2686(48d) T-2713(46d) T-2741(44d) T-2774(44d) T-2775(43d) T-2780(43d) T-2781(43d) T-2787(43d) T-2807(42d) T-2809(42d) T-2831(41d) T-2838(40d) T-2842(40d) T-2864(39d) T-2870(39d) T-2891(38d) T-2896(38d) T-2904(37d) T-2905(37d) T-2974(33d) T-2979(33d) T-2986(33d) T-2994(33d) T-3006(32d) T-3010(32d) T-3011(32d) T-3012(32d) T-3013(32d) T-3016(32d) T-3017(32d) T-3019(32d) T-3024(31d) T-3028(31d) T-3030(31d) T-3046(29d) T-3065(30d) T-3066(30d) T-3078(27d) T-3080(27d) T-3090(27d) T-3091(27d) T-3094(27d) T-3096(27d) T-3124(23d) T-3127(19d) T-3130(22d) T-3132(22d) T-3139(22d) T-3140(22d) T-3142(22d) T-3144(21d) T-3157(21d) T-3175(18d) T-3176(21d) T-3180(21d) T-3185(20d) T-3200(20d) T-3204(19d) T-3217(17d) T-3221(17d) T-3243(15d) T-3251(14d)"
-    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
-  - id: D8
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - id: D5
+    level: WARN
+    check: "D5: Task lifecycle — 14 anomaly(s): T-801(174d-active) T-802(174d-active) T-803(174d-active) T-2899(46d-active) T-1542(150d-active) T-1624(146d-active) T-1820(133d-active) T-2170(114d-active) T-2268(107d-active) T-2485(92d-active) (+4 more)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D13
+    level: WARN
+    check: "D13: Inception limbo — 8 task(s): A=7/B=1 T-1611(A:1hu) T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2428(A:1hu) T-2770(B)"
+    mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
+  - id: D3
     level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
-  - id: D10
+    check: "D3: Commit velocity — normal (PASS today=34 avg=44 ratio=0.8x)"
+  - id: D7
     level: PASS
-    check: "D10: Decision-without-dialogue — none detected"
-  - id: D11
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 34_commits_24h)"
+  - id: D6
     level: PASS
-    check: "D11: Gap register staleness — all gaps fresh"
+    check: "D6: Completion velocity — normal (PASS recent=11.0 earlier=6.7)"
+  - id: D12
+    level: PASS
+    check: "D12: Bypass log — no log file"
+  - id: D9
+    level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
+  - id: D14
+    level: PASS
+    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
+  - id: D15
+    level: PASS
+    check: "D15: Inception limbo state — none (PASS no_limbo)"
 
 summary:
-  pass: 4
-  warn: 0
-  fail: 1
-  total: 5
+  pass: 8
+  warn: 2
+  fail: 0
+  total: 10

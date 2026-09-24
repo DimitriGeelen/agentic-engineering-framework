@@ -73,10 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 339
-  commits: 1
-  files_changed: 6
-  lines_added: 707
+  commits: 2
+  files_changed: 8
+  lines_added: 790
   lines_removed: 2
+  footprint_refreshed_at: '2026-09-23T17:26:11Z'
+  footprint_refreshed_by_commit: 5053b5d78
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3444-832-consult-832-t833-2026-09-23-fixed-ct.md

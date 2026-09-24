@@ -4996,3 +4996,9 @@ X'` returning empty group."
   task: T-3425
   date: 2026-09-22
   context: Added via context agent
+- id: L-677
+  learning: "Sourcing an fw AGENT script to read one of its values EXECUTES it. Measured 2026-09-24: 'source agents/handover/handover.sh' to inspect the push-timeout variable ran the whole handover agent, and with PROJECT_ROOT unset it created /handovers/ at the filesystem ROOT with a lock file and a dangling LATEST.md symlink (no commit was made, no document written). Agent scripts under agents/ are executables with top-level side effects; library files under lib/ are the sourceable surface and expose the same values as functions — here lib/prepush-lock-wait.sh:134 fw_handover_push_timeout_default is exactly what I wanted. Rule: to read a value an agent computes, source the lib/ file that defines it, or run the agent's own read-only verb; never source agents/*.sh. Sibling of the Tier-0 scope boundary (T-2742): a side effect that lives inside a script is invisible to the command string a gate inspects."
+  source: unknown
+  task: T-3450
+  date: 2026-09-24
+  context: Added via context agent
