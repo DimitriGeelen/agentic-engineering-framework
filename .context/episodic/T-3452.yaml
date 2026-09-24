@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3452: fw doctor cannot finish inside a usable window — T-3451's staleness WARN and every other doctor check ship into a command that gets killed before reaching them
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-24T23:07:18Z
+# ============================================================================
+
+task_id: T-3452
+task_name: "fw doctor cannot finish inside a usable window — T-3451's staleness WARN and every other doctor check ship into a command that gets killed before reaching them"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-24T22:25:56Z
+completed: 2026-09-24T23:06:56Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-25T00:46:19+02:00
+last_commit: 2026-09-25T01:06:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  measure fw doctor — one check is half the command, and it is an inverted alarm. doctor now states what it cost, and a killed run says where it stopped
+
+# Key outcomes
+outcomes:
+  - '**Measured, not estimated:** `fw doctor`''s end-to-end wall-clock on this host is'
+  - '**The specific regression that motivated this task is confirmed or refuted:** with'
+  - '**If confirmed, the cost is reduced or made observable — and which one is a stated'
+  - '**No check is deleted or weakened to buy speed** without that being called out'
+  - '**A regression guard exists, with both legs distinguishable:** a test pins the'
+  - 'Vendored copies synced for every touched file under `lib/ agents/ bin/`;'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-3452-fw-doctor-cannot-finish-inside-a-usable-.md'
+  - '.tasks/completed/T-3453-fw-doctors-watchtower-smoke-test-is-an-i.md'
+  - 'tests/unit/t3452_doctor_cost_observability.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-25T00:46:19'
+    action: 'T-3452: measure fw doctor — one check is half the command, and it is an inverted alarm'
+  - time: '2026-09-25T01:06:39'
+    action: 'T-3452: doctor now states what it cost, and a killed run says where it stopped'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 41
+  commits: 2
+  files_changed: 5
+  lines_added: 830
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3452-fw-doctor-cannot-finish-inside-a-usable-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3453: fw doctor's Watchtower smoke test is an inverted alarm — it prints a result only when the smoke test found nothing, and stays silent when it found failures
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-24T22:56:27Z
+# ============================================================================
+
+task_id: T-3453
+task_name: "fw doctor's Watchtower smoke test is an inverted alarm — it prints a result only when the smoke test found nothing, and stays silent when it found failures"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-24T22:46:42Z
+completed: 2026-09-24T22:56:02Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-25T00:55:46+02:00
+last_commit: 2026-09-25T00:55:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the Watchtower smoke check reported only when it had nothing to report
+
+# Key outcomes
+outcomes:
+  - '**A failing smoke test produces a visible line.** When `web/smoke_test.py` reports'
+  - '**The capture no longer conflates "the script failed" with "the script found'
+  - '**A parse failure can never render as silence.** The print logic has no gap: every'
+  - '**Tests pin both legs, and the failing leg is demonstrated against the pre-fix'
+  - '**The real failures this was masking are named, not silently fixed.** The profiled'
+  - 'Vendored copies synced for every touched file under `bin/ lib/ web/`;'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-3453-fw-doctors-watchtower-smoke-test-is-an-i.md'
+  - 'tests/unit/t3453_doctor_smoke_inverted_alarm.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-25T00:55:46'
+    action: 'T-3453: the Watchtower smoke check reported only when it had nothing to report'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 4
+  lines_added: 710
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3453-fw-doctors-watchtower-smoke-test-is-an-i.md
+generated_by: context-agent-hybrid

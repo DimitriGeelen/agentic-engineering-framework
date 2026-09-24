@@ -1,8 +1,10 @@
 ---
-id: T-3453
-name: "fw doctor's Watchtower smoke test is an inverted alarm — it prints a result only when the smoke test found nothing, and stays silent when it found failures"
+id: T-3452
+name: "fw doctor cannot finish inside a usable window — T-3451's staleness WARN and
+  every other doctor check ship into a command that gets killed before reaching them"
 description: >
-  fw doctor's Watchtower smoke test is an inverted alarm — it prints a result only when the smoke test found nothing, and stays silent when it found failures
+  fw doctor cannot finish inside a usable window — T-3451's staleness WARN and every
+  other doctor check ship into a command that gets killed before reaching them
 
 status: work-completed
 workflow_type: build
@@ -21,9 +23,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-24T22:46:42Z
-last_update: 2026-09-24T22:56:02Z
-date_finished: 2026-09-24T22:56:02Z
+created: 2026-09-24T22:25:56Z
+last_update: 2026-09-24T23:06:56Z
+date_finished: 2026-09-24T23:06:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,86 +36,170 @@ date_finished: 2026-09-24T22:56:02Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-24T22:30:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-24T22:30:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3453: fw doctor's Watchtower smoke test is an inverted alarm — it prints a result only when the smoke test found nothing, and stays silent when it found failures
+# T-3452: fw doctor cannot finish inside a usable window — T-3451's staleness WARN and every other doctor check ship into a command that gets killed before reaching them
 
 ## Context
 
-Split out of T-3452 (which measured `fw doctor`'s runtime) per one-bug-one-task. T-3452's
-profiling found that the single largest cost in `fw doctor` — 76-126 s of a 155-212 s run
-— was a check that discarded its own result whenever it had one. Full mechanism in
-`## RCA`; the short version is that the check was **visible exactly when it was useless
-and silent exactly when it had found something**.
+Found while closing T-3451, whose deliverable is a `fw doctor` WARN. A live `bin/fw
+doctor` was killed by a 180 s bound before it reached that WARN, which raised the
+question this task answers: what does doctor actually cost, and is its newest check
+reachable?
 
-### Live, before and after
+### Measurement (AC 1) — three profiled runs on this host, 2026-09-25
 
-The same command, same host, same corpus. Before, across three profiled runs: no smoke
-line at any position, a 76-126 s silent span sitting between `OK Hook configuration
-valid` and `OK TermLink`. After:
+Profiled by prefixing every output line with its elapsed time, so the cost of a check is
+the gap before the line it produces.
 
-```
-  +  78.4s (at  138.1s)   WARN  Watchtower smoke: 5/53 endpoints failed
-```
+| run | total | largest single gap | position of that gap |
+|---|---|---|---|
+| 1 | **212.3 s** | 125.9 s | ends at 179.5 s |
+| 2 | **155.0 s** | 76.9 s | ends at 127.9 s |
+| 3 | **166.7 s** | 78.5 s | ends at 135.5 s |
 
-The cost is unchanged — that is T-3452's subject, not this one. What changed is that the
-78 s now buys a verdict instead of nothing.
+The run-to-run spread is itself a finding: 155–212 s for the same corpus, minutes apart.
+The top costs, consistent across runs:
 
-### What the silence was hiding (AC 5)
+| check | cost |
+|---|---|
+| **Watchtower smoke test** (silent span before the `OK TermLink` line) | **76–126 s** |
+| port3000 hygiene | 21–25 s |
+| Plugin task-awareness | ~11 s |
+| Session tokens | 6–11 s |
+| Hook exercise from /tmp | ~6 s |
 
-Six endpoints fail the probe, and they are disproportionately the operator's own decision
-surfaces:
+One check is roughly half the command. Everything else is small.
 
-| endpoint | probe verdict | measured directly |
-|---|---|---|
-| `/` | timed out | **HTTP 200** in 9.45 s |
-| `/metrics` | timed out | **HTTP 200** in 6.25 s |
-| `/inception` | timed out | **HTTP 200** in 2.57 s |
-| `/approvals` | timed out | **HTTP 200** in 2.23 s |
-| `/cron`, `/docs/generated` | timed out | not individually measured |
+**A mis-attribution worth recording, because the next person will make it too.** The
+profile blames the line that *follows* a silent span, so the 126 s reads as if it were
+the `OK TermLink (termlink 0.12.13)` line. It is not: `termlink --version` measured
+**0.016 s**. The cost belongs to the Watchtower smoke-test block above it
+(`bin/fw:3150-3186`), which emits nothing at all. Two further hypotheses were formed and
+refuted before the real one landed — that `smoke_test.py` contaminated stdout with its
+`FW_SECRET_KEY` warning (it goes to stderr; stdout is clean JSON), and that the bare
+`curl -sf .../health` at `bin/fw:3164` was hanging unbounded (it returns in 0.022 s).
 
-**They are slow, not broken.** Every one returns 200 when probed on its own;
-`web/smoke_test.py:122` uses a hard-coded `timeout=5`, and these pages exceed it under
-the probe's back-to-back sequential load against a single-threaded Flask process. So the
-honest reading is "six pages are near or over a five-second budget", not "six pages are
-down".
+### Confirmed (AC 2)
 
-Naming this rather than fixing it is deliberate and is what AC 5 asked for. Two follow-on
-questions are left open rather than answered here, because each is a separate call:
-whether a 5 s bar is the right one for a 3438-task corpus, and whether `smoke_test.py`
-should report *slow* distinguishably from *broken* — it currently renders both as
-`"error": "timed out"`, which is the same conflation-of-two-states that caused this bug
-one layer up.
+Yes, and the mechanism is precise. The structure-timing check T-3451 added is the
+**last check doctor runs** — it appeared at 155.0 s and 166.7 s of runs that ended at
+155.0 s and 166.7 s. Being last makes it the first casualty of any bound: run 1 (212 s)
+would not have reached it under a 180 s timeout, which is exactly what was observed.
+
+The earlier 180 s kill is therefore explained and was not a contention artefact. But the
+finding is larger than the check that prompted it: **nothing in doctor is reachable
+under a bound smaller than doctor's own tail**, and doctor's tail moves by 60 s between
+runs for reasons nobody measures.
+
+### The dominant cost is also an inverted alarm (OBS-512, split out per one-bug-one-task)
+
+The 78–126 s smoke-test block does not merely cost — it discards its own result whenever
+it has one. `web/smoke_test.py` exits **1** when any endpoint fails while still writing
+complete JSON. `bin/fw:3166` captures it as `$(… || echo '{"failed":0,"passed":0,…}')`,
+so on failure the fallback object is **appended** to the real one; `json.load` raises
+*Extra data*; all three parses at `bin/fw:3168-3170` fall back to `0`; and the print
+logic at `3171-3174` (`if failed==0 && passed>0` … `elif failed>0`) matches neither
+branch. Nothing is printed.
+
+On a healthy run the script exits 0, no fallback is appended, and `OK Watchtower smoke
+test (53/53 endpoints)` prints normally. **So the check is visible exactly when it is
+useless and silent exactly when it has found something.** Across the three profiled runs
+it printed nothing while 1–6 endpoints were genuinely failing, `/` among them.
+
+That is a distinct defect from this task's subject and is filed as OBS-512 rather than
+folded in here.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] **A failing smoke test produces a visible line.** When `web/smoke_test.py` reports
-      one or more failed endpoints, `fw doctor` emits a WARN naming the failed count and
-      total. Today it emits nothing, because the script exits 1 while still writing full
-      JSON and `bin/fw:3166` captures `$(… || echo '{fallback}')`, concatenating two JSON
-      documents into one unparseable string.
-- [x] **The capture no longer conflates "the script failed" with "the script found
-      failures".** Exit status and stdout are captured separately, so a non-zero exit that
-      still produced valid JSON is read as a *result*, not as an error. A genuinely absent
-      or unparseable payload remains distinguishable from a clean zero-failure run.
-- [x] **A parse failure can never render as silence.** The print logic has no gap: every
-      reachable combination of (parsed / unparsed, failed>0 / failed==0 / passed==0)
-      produces exactly one line. The specific hole being closed is `failed==0 &&
-      passed==0`, which today matches neither the OK branch nor the WARN branch and so
-      prints nothing at all.
-- [x] **Tests pin both legs, and the failing leg is demonstrated against the pre-fix
-      code.** A fixture stub standing in for `smoke_test.py` that exits 1 with valid JSON
-      must produce a WARN; one that exits 0 with a clean result must produce the OK line.
-      Showing only that the fixed code passes is not sufficient — the pre-fix behaviour
-      must be shown to fail the new test, or the test is not guarding anything.
-      `TEST_TEMP_DIR` set in setup; no bare `! grep -q`; no live corpus counts (T-3326).
-- [x] **The real failures this was masking are named, not silently fixed.** The profiled
-      runs found 1-6 genuinely failing Watchtower endpoints including `/`. Once doctor
-      reports them, record what they are. Fixing them is NOT this task — this task makes
-      them visible; whether they are real defects is a separate finding.
-- [x] Vendored copies synced for every touched file under `bin/ lib/ web/`;
+- [x] **Measured, not estimated:** `fw doctor`'s end-to-end wall-clock on this host is
+      recorded here, together with a per-check breakdown identifying which checks
+      dominate it. No fix is designed before this number exists — the whole defect class
+      this task belongs to (T-3450, T-3451, L-621) is *acting on an unmeasured cost*, and
+      repeating that here would be the joke telling itself.
+- [x] **The specific regression that motivated this task is confirmed or refuted:** with
+      the measurement in hand, state whether `fw doctor` actually fails to reach its
+      structure-timing check (the T-3451 staleness WARN) inside a window an operator or a
+      script would plausibly allow, and if so, at what position in the run it dies. If it
+      turns out doctor completes fine and the earlier 180s kill was an artefact of
+      contention with the concurrent audit, say so plainly and close this as
+      not-a-defect — a refuted hypothesis recorded is a result, not a failure.
+- [x] **If confirmed, the cost is reduced or made observable — and which one is a stated
+      choice, not a drift.** Either doctor completes inside a bounded window, or it
+      reports progress such that a killed run names the checks it did and did not reach.
+      Silent truncation is the thing being fixed: per L-621, a check that cannot finish
+      inside the window bounding it does not fail, it goes *unmeasured*, and unmeasured
+      reads identically to green.
+- [x] **No check is deleted or weakened to buy speed** without that being called out
+      explicitly in `## Decisions
+
+**Chose observability over reduction (AC 3 is an either/or; this states which).**
+Doctor's cost is concentrated in three probes — Watchtower smoke test 85 s, port3000
+hygiene ratchet 30 s, plugin task-awareness 18 s of a 172 s run. Every one of them is a
+real check that finds real things; the smoke test in particular had just been shown
+(T-3453) to be reporting six genuinely-slow operator surfaces that nobody could see.
+Making doctor fast by making it check less would have traded a measured problem for an
+unmeasured one, which is the failure mode AC 4 exists to forbid. **No check was deleted,
+skipped, reordered or given a shorter timeout.** The runtime is unchanged at ~172 s; what
+changed is that doctor now says so, and a killed run says where it stopped.
+
+**Chose coarse phases over per-check instrumentation.** Nine markers, placed at the
+checks the measurement identified as expensive, rather than instrumenting ~60 checks
+inside a 3000-line function. The purpose is to answer "how far did it get and what did it
+cost", and the measurement showed the cost is concentrated — so a handful of phases
+carries essentially the whole signal at a fraction of the regression risk to the
+framework's primary health command.
+
+**The killed-run report does NOT fire under a bare `timeout`, and that is documented in
+the code rather than papered over.** GNU `timeout` puts the command in its own process
+group and signals the *group*, so bash dies alongside the child it is waiting on and
+never reaches the handler — the caller sees `Terminated` and exit 124 with no report.
+Measured three ways: bare `timeout 60` → no report; `timeout --foreground 25` → report,
+exit 124; `kill -TERM <pid>` → report, exit 143. The caveat and the `--foreground` remedy
+are written at the trap's definition in `bin/fw`, and a test asserts that note is still
+there, because a helper that silently does nothing under the most common way of bounding
+a command is worse than no helper.
+
+**Did not change the trap to work around the group-kill.** Options existed (re-exec into
+its own session, install a wrapper). Both add process-management complexity to `bin/fw`'s
+router for a case the caller can fix with one flag, and the framework's own bounded
+callers are ours to adjust. Left as a documented caller contract.` with the coverage given up. Making the command fast by
+      making it check less is the failure mode this AC exists to name in advance.
+- [x] **A regression guard exists, with both legs distinguishable:** a test pins the
+      budget/observability property this task lands, and is demonstrated to fail against
+      the pre-fix behaviour rather than merely passing against the post-fix one. `TEST_TEMP_DIR`
+      set in setup; no bare `! grep -q`; no live corpus counts pinned (T-3326).
+- [x] Vendored copies synced for every touched file under `lib/ agents/ bin/`;
       `bin/fw vendor self --check` clean.
 
 ### Human
@@ -275,12 +361,12 @@ one layer up.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 #
-# No `bin/fw doctor` line here: doctor is a ~170s command and the block under
-# test is sed-extracted and exercised against stubs by the bats file, which is
-# both faster and hermetic. No live endpoint counts are pinned (T-3326) — the
-# stubs carry fixed numbers, the live corpus does not.
+# No `bin/fw doctor` line and no duration pinned (T-3326): doctor is a ~170s
+# command and its runtime is exactly the thing that moves between hosts. The
+# bats file drives the sed-extracted helpers directly, which is hermetic and
+# fast; what it pins is the observability contract, not a number.
 
-timeout 300 bats tests/unit/t3453_doctor_smoke_inverted_alarm.bats > /tmp/.t3453-v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3453-v1.out
+timeout 300 bats tests/unit/t3452_doctor_cost_observability.bats > /tmp/.t3452-v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3452-v1.out
 bash -n bin/fw
 bin/fw vendor self --check
 
@@ -299,54 +385,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `fw doctor` printed no Watchtower smoke-test line at all across three
-consecutive profiled runs, while the probe itself was running and consuming 76–126 s —
-roughly half of doctor's total runtime. Six endpoints were failing the probe the whole
-time, `/`, `/approvals` and `/inception` among them, and doctor said nothing.
-
-**Root cause:** `set -euo pipefail` is on at `bin/fw:12`, so a bare
-`x=$(cmd)` where `cmd` exits non-zero aborts the script. The original code satisfied
-errexit with `|| echo '{"failed":0,"passed":0,…}'` *inside* the command substitution.
-That is correct only if a non-zero exit means "no output". `web/smoke_test.py` exits **1
-whenever any endpoint fails** while still writing its complete JSON — so on precisely the
-runs that carry information, the fallback object was appended to a payload that was
-already there. The capture became two concatenated JSON documents, `json.load` raised
-*Extra data*, and each of the three independent parses at `bin/fw:3168-3170` fell back to
-`0` through its own `2>/dev/null || echo 0`.
-
-The final link is the print logic. It read `if failed==0 && passed>0` → OK,
-`elif failed>0` → WARN. The state the parse failures produce — `failed==0 && passed==0` —
-matched **neither**, and there was no `else`. So three layers of individually-reasonable
-defensive fallbacks composed into silence.
-
-**Why structurally allowed:** the failure is *inverted*, which is why it survived. On a
-healthy run the script exits 0, nothing is appended, the JSON parses, and
-`OK Watchtower smoke test (53/53 endpoints)` prints exactly as intended. The check
-therefore looked alive every time anyone had reason to glance at it, and went quiet only
-when it had something to say. Nobody audits a check for being *too* quiet on a bad day,
-because a missing WARN is indistinguishable from a passing system — the same false-green
-family as L-621 (a gate that cannot finish inside its window does not fail, it goes
-unmeasured) and as the port-3000 class in CLAUDE.md, where 224 assertions returned 200
-from the wrong server. A red line gets noticed; an absent line never prompts anyone.
-
-Two further structural contributors, both worth naming because they are independently
-reusable mistakes: `|| fallback` inside a command substitution **conflates "the command
-failed" with "the command produced nothing"**, which is false for any tool that reports
-findings through its exit status; and parsing one payload with three separate
-interpreter invocations lets them disagree with each other, which is exactly what
-happened — all three failed, each silently, each to its own default.
-
-**Prevention:** `tests/unit/t3453_doctor_smoke_inverted_alarm.bats` sed-extracts the real
-block from `bin/fw` and drives it with stub `smoke_test.py` scripts, one per reachable
-state. The guard that matters is not the four positive legs but the **control**: it
-extracts the *pre-fix* block from git ref `e7e8ec72a` and asserts that the same failing
-stub produced no verdict line and incremented no warning counter. Without that leg the
-suite would pass just as happily against the broken code. A sixth test asserts every stub
-yields exactly one verdict line, so the next person to add a branch cannot reintroduce a
-silent state; a seventh forbids the `|| echo '{` shape inside the substitution by name;
-an eighth pins the premise itself — that `smoke_test.py` exits non-zero while emitting
-valid JSON — so if that ever changes, a red test says so instead of a stale comment.
 
 ## Evolution
 
@@ -403,6 +441,38 @@ valid JSON — so if that ever changes, a red test says so instead of a stale co
 
 ## Decisions
 
+**Chose observability over reduction (AC 3 is an either/or; this states which).**
+Doctor's cost is concentrated in three probes — Watchtower smoke test 85 s, port3000
+hygiene ratchet 30 s, plugin task-awareness 18 s of a 172 s run. Every one of them is a
+real check that finds real things; the smoke test in particular had just been shown
+(T-3453) to be reporting six genuinely-slow operator surfaces that nobody could see.
+Making doctor fast by making it check less would have traded a measured problem for an
+unmeasured one, which is the failure mode AC 4 exists to forbid. **No check was deleted,
+skipped, reordered or given a shorter timeout.** The runtime is unchanged at ~172 s; what
+changed is that doctor now says so, and a killed run says where it stopped.
+
+**Chose coarse phases over per-check instrumentation.** Nine markers, placed at the
+checks the measurement identified as expensive, rather than instrumenting ~60 checks
+inside a 3000-line function. The purpose is to answer "how far did it get and what did it
+cost", and the measurement showed the cost is concentrated — so a handful of phases
+carries essentially the whole signal at a fraction of the regression risk to the
+framework's primary health command.
+
+**The killed-run report does NOT fire under a bare `timeout`, and that is documented in
+the code rather than papered over.** GNU `timeout` puts the command in its own process
+group and signals the *group*, so bash dies alongside the child it is waiting on and
+never reaches the handler — the caller sees `Terminated` and exit 124 with no report.
+Measured three ways: bare `timeout 60` → no report; `timeout --foreground 25` → report,
+exit 124; `kill -TERM <pid>` → report, exit 143. The caveat and the `--foreground` remedy
+are written at the trap's definition in `bin/fw`, and a test asserts that note is still
+there, because a helper that silently does nothing under the most common way of bounding
+a command is worse than no helper.
+
+**Did not change the trap to work around the group-kill.** Options existed (re-exec into
+its own session, install a wrapper). Both add process-management complexity to `bin/fw`'s
+router for a case the caller can fix with one flag, and the framework's own bounded
+callers are ours to adjust. Left as a documented caller contract.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -424,24 +494,24 @@ valid JSON — so if that ever changes, a red test says so instead of a stale co
 
 ## Updates
 
-### 2026-09-24T22:46:42Z — task-created [task-create-agent]
+### 2026-09-24T22:25:56Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3453-fw-doctors-watchtower-smoke-test-is-an-i.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3452-fw-doctor-cannot-finish-inside-a-usable-.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b28df08e
-- **Timestamp:** 2026-09-24T22:56:09Z
+- **Scan ID:** R-5f142c66
+- **Timestamp:** 2026-09-24T23:07:01Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
 - **Findings:** 1
 
-**Per-AC findings:**
+**Verification-level findings:**
 
-- **AC#1 (Agent)** — **A failing smoke test produces a visible line.** When `web/smoke_test.py` reports
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/smoke_test.py in: **A failing smoke test produces a visible line.** When `web/smoke_test.py` reports`
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `timeout 300 bats tests/unit/t3452_doctor_cost_observability.bats > /tmp/.t3452-v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3452-v1.out`
 
-### 2026-09-24T22:56:02Z — status-update [task-update-agent]
+### 2026-09-24T23:06:56Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

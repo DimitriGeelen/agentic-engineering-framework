@@ -1,10 +1,8 @@
 ---
-id: T-3452
-name: "fw doctor cannot finish inside a usable window — T-3451's staleness WARN and
-  every other doctor check ship into a command that gets killed before reaching them"
+id: T-3454
+name: "two gates offer mutually exclusive bypass contracts — focus-drift requires an FW_SWITCH_FOCUS=1 env prefix that the partial-complete gate then refuses because an assignment prefix is not on the read-only allowlist"
 description: >
-  fw doctor cannot finish inside a usable window — T-3451's staleness WARN and every
-  other doctor check ship into a command that gets killed before reaching them
+  two gates offer mutually exclusive bypass contracts — focus-drift requires an FW_SWITCH_FOCUS=1 env prefix that the partial-complete gate then refuses because an assignment prefix is not on the read-only allowlist
 
 status: started-work
 workflow_type: build
@@ -23,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-24T22:25:56Z
-last_update: '2026-09-24T22:30:35Z'
-date_finished:
+created: 2026-09-24T23:09:20Z
+last_update: 2026-09-24T23:09:20Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,171 +34,42 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-24T22:30:13Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=294,acs=8)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-24T22:30:35Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3452: fw doctor cannot finish inside a usable window — T-3451's staleness WARN and every other doctor check ship into a command that gets killed before reaching them
+# T-3454: two gates offer mutually exclusive bypass contracts — focus-drift requires an FW_SWITCH_FOCUS=1 env prefix that the partial-complete gate then refuses because an assignment prefix is not on the read-only allowlist
 
 ## Context
 
-Found while closing T-3451, whose deliverable is a `fw doctor` WARN. A live `bin/fw
-doctor` was killed by a 180 s bound before it reached that WARN, which raised the
-question this task answers: what does doctor actually cost, and is its newest check
-reachable?
-
-### Measurement (AC 1) — three profiled runs on this host, 2026-09-25
-
-Profiled by prefixing every output line with its elapsed time, so the cost of a check is
-the gap before the line it produces.
-
-| run | total | largest single gap | position of that gap |
-|---|---|---|---|
-| 1 | **212.3 s** | 125.9 s | ends at 179.5 s |
-| 2 | **155.0 s** | 76.9 s | ends at 127.9 s |
-| 3 | **166.7 s** | 78.5 s | ends at 135.5 s |
-
-The run-to-run spread is itself a finding: 155–212 s for the same corpus, minutes apart.
-The top costs, consistent across runs:
-
-| check | cost |
-|---|---|
-| **Watchtower smoke test** (silent span before the `OK TermLink` line) | **76–126 s** |
-| port3000 hygiene | 21–25 s |
-| Plugin task-awareness | ~11 s |
-| Session tokens | 6–11 s |
-| Hook exercise from /tmp | ~6 s |
-
-One check is roughly half the command. Everything else is small.
-
-**A mis-attribution worth recording, because the next person will make it too.** The
-profile blames the line that *follows* a silent span, so the 126 s reads as if it were
-the `OK TermLink (termlink 0.12.13)` line. It is not: `termlink --version` measured
-**0.016 s**. The cost belongs to the Watchtower smoke-test block above it
-(`bin/fw:3150-3186`), which emits nothing at all. Two further hypotheses were formed and
-refuted before the real one landed — that `smoke_test.py` contaminated stdout with its
-`FW_SECRET_KEY` warning (it goes to stderr; stdout is clean JSON), and that the bare
-`curl -sf .../health` at `bin/fw:3164` was hanging unbounded (it returns in 0.022 s).
-
-### Confirmed (AC 2)
-
-Yes, and the mechanism is precise. The structure-timing check T-3451 added is the
-**last check doctor runs** — it appeared at 155.0 s and 166.7 s of runs that ended at
-155.0 s and 166.7 s. Being last makes it the first casualty of any bound: run 1 (212 s)
-would not have reached it under a 180 s timeout, which is exactly what was observed.
-
-The earlier 180 s kill is therefore explained and was not a contention artefact. But the
-finding is larger than the check that prompted it: **nothing in doctor is reachable
-under a bound smaller than doctor's own tail**, and doctor's tail moves by 60 s between
-runs for reasons nobody measures.
-
-### The dominant cost is also an inverted alarm (OBS-512, split out per one-bug-one-task)
-
-The 78–126 s smoke-test block does not merely cost — it discards its own result whenever
-it has one. `web/smoke_test.py` exits **1** when any endpoint fails while still writing
-complete JSON. `bin/fw:3166` captures it as `$(… || echo '{"failed":0,"passed":0,…}')`,
-so on failure the fallback object is **appended** to the real one; `json.load` raises
-*Extra data*; all three parses at `bin/fw:3168-3170` fall back to `0`; and the print
-logic at `3171-3174` (`if failed==0 && passed>0` … `elif failed>0`) matches neither
-branch. Nothing is printed.
-
-On a healthy run the script exits 0, no fallback is appended, and `OK Watchtower smoke
-test (53/53 endpoints)` prints normally. **So the check is visible exactly when it is
-useless and silent exactly when it has found something.** Across the three profiled runs
-it printed nothing while 1–6 endpoints were genuinely failing, `/` among them.
-
-That is a distinct defect from this task's subject and is filed as OBS-512 rather than
-folded in here.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] **Measured, not estimated:** `fw doctor`'s end-to-end wall-clock on this host is
-      recorded here, together with a per-check breakdown identifying which checks
-      dominate it. No fix is designed before this number exists — the whole defect class
-      this task belongs to (T-3450, T-3451, L-621) is *acting on an unmeasured cost*, and
-      repeating that here would be the joke telling itself.
-- [x] **The specific regression that motivated this task is confirmed or refuted:** with
-      the measurement in hand, state whether `fw doctor` actually fails to reach its
-      structure-timing check (the T-3451 staleness WARN) inside a window an operator or a
-      script would plausibly allow, and if so, at what position in the run it dies. If it
-      turns out doctor completes fine and the earlier 180s kill was an artefact of
-      contention with the concurrent audit, say so plainly and close this as
-      not-a-defect — a refuted hypothesis recorded is a result, not a failure.
-- [x] **If confirmed, the cost is reduced or made observable — and which one is a stated
-      choice, not a drift.** Either doctor completes inside a bounded window, or it
-      reports progress such that a killed run names the checks it did and did not reach.
-      Silent truncation is the thing being fixed: per L-621, a check that cannot finish
-      inside the window bounding it does not fail, it goes *unmeasured*, and unmeasured
-      reads identically to green.
-- [x] **No check is deleted or weakened to buy speed** without that being called out
-      explicitly in `## Decisions
-
-**Chose observability over reduction (AC 3 is an either/or; this states which).**
-Doctor's cost is concentrated in three probes — Watchtower smoke test 85 s, port3000
-hygiene ratchet 30 s, plugin task-awareness 18 s of a 172 s run. Every one of them is a
-real check that finds real things; the smoke test in particular had just been shown
-(T-3453) to be reporting six genuinely-slow operator surfaces that nobody could see.
-Making doctor fast by making it check less would have traded a measured problem for an
-unmeasured one, which is the failure mode AC 4 exists to forbid. **No check was deleted,
-skipped, reordered or given a shorter timeout.** The runtime is unchanged at ~172 s; what
-changed is that doctor now says so, and a killed run says where it stopped.
-
-**Chose coarse phases over per-check instrumentation.** Nine markers, placed at the
-checks the measurement identified as expensive, rather than instrumenting ~60 checks
-inside a 3000-line function. The purpose is to answer "how far did it get and what did it
-cost", and the measurement showed the cost is concentrated — so a handful of phases
-carries essentially the whole signal at a fraction of the regression risk to the
-framework's primary health command.
-
-**The killed-run report does NOT fire under a bare `timeout`, and that is documented in
-the code rather than papered over.** GNU `timeout` puts the command in its own process
-group and signals the *group*, so bash dies alongside the child it is waiting on and
-never reaches the handler — the caller sees `Terminated` and exit 124 with no report.
-Measured three ways: bare `timeout 60` → no report; `timeout --foreground 25` → report,
-exit 124; `kill -TERM <pid>` → report, exit 143. The caveat and the `--foreground` remedy
-are written at the trap's definition in `bin/fw`, and a test asserts that note is still
-there, because a helper that silently does nothing under the most common way of bounding
-a command is worse than no helper.
-
-**Did not change the trap to work around the group-kill.** Options existed (re-exec into
-its own session, install a wrapper). Both add process-management complexity to `bin/fw`'s
-router for a case the caller can fix with one flag, and the framework's own bounded
-callers are ours to adjust. Left as a documented caller contract.` with the coverage given up. Making the command fast by
-      making it check less is the failure mode this AC exists to name in advance.
-- [x] **A regression guard exists, with both legs distinguishable:** a test pins the
-      budget/observability property this task lands, and is demonstrated to fail against
-      the pre-fix behaviour rather than merely passing against the post-fix one. `TEST_TEMP_DIR`
-      set in setup; no bare `! grep -q`; no live corpus counts pinned (T-3326).
-- [x] Vendored copies synced for every touched file under `lib/ agents/ bin/`;
-      `bin/fw vendor self --check` clean.
+- [ ] **The collision is reproduced from a fixture, not just narrated.** A test drives
+      `check-active-task.sh` with focus on a partial-complete task and a command whose
+      target is a different (closed) task, and shows that the focus-drift gate's own
+      prescribed remedy (`FW_SWITCH_FOCUS=1 <cmd>`) is then refused by the
+      partial-complete gate because an assignment prefix is not classifiable by
+      `agents/context/lib/safe-commands.sh`. Both refusals pinned, so a fix cannot
+      silently half-land.
+- [ ] **The read-only classifier tolerates a leading `VAR=value` / `VAR=$(…)` assignment
+      and the `time` keyword** — it strips them and classifies what remains, rather than
+      refusing what it cannot parse. This is OBS-511's subject and is the shared root: the
+      same blindness refuses `start=$(date +%s) git push` and `time bin/fw doctor`, so
+      measuring a gated command is itself gated.
+- [ ] **No gate is weakened.** Stripping a leading assignment must not let a write through:
+      a command whose *remainder* is a write is still classified as a write. Pin the
+      adversarial case (`FOO=1 rm -rf x`, `time tee f`) alongside the benign one, or the
+      fix has traded a usability bug for a safety hole.
+- [ ] **Tests distinguish fires-correctly from never-fires,** demonstrated against the
+      pre-fix classifier. `TEST_TEMP_DIR` set in setup; no bare `! grep -q`; no live corpus
+      counts (T-3326).
+- [ ] **Related to T-3299, and the relationship is stated.** T-3299 is the same class one
+      gate over (G-020 blocking both escape routes its own message prescribes). Say in
+      `## Decisions` whether these are one fix or two, rather than letting two tasks drift
+      toward the same patch.
+- [ ] Vendored copies synced for every touched file; `bin/fw vendor self --check` clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -360,15 +229,6 @@ callers are ours to adjust. Left as a documented caller contract.` with the cove
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-#
-# No `bin/fw doctor` line and no duration pinned (T-3326): doctor is a ~170s
-# command and its runtime is exactly the thing that moves between hosts. The
-# bats file drives the sed-extracted helpers directly, which is hermetic and
-# fast; what it pins is the observability contract, not a number.
-
-timeout 300 bats tests/unit/t3452_doctor_cost_observability.bats > /tmp/.t3452-v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3452-v1.out
-bash -n bin/fw
-bin/fw vendor self --check
 
 ## RCA
 
@@ -441,38 +301,6 @@ bin/fw vendor self --check
 
 ## Decisions
 
-**Chose observability over reduction (AC 3 is an either/or; this states which).**
-Doctor's cost is concentrated in three probes — Watchtower smoke test 85 s, port3000
-hygiene ratchet 30 s, plugin task-awareness 18 s of a 172 s run. Every one of them is a
-real check that finds real things; the smoke test in particular had just been shown
-(T-3453) to be reporting six genuinely-slow operator surfaces that nobody could see.
-Making doctor fast by making it check less would have traded a measured problem for an
-unmeasured one, which is the failure mode AC 4 exists to forbid. **No check was deleted,
-skipped, reordered or given a shorter timeout.** The runtime is unchanged at ~172 s; what
-changed is that doctor now says so, and a killed run says where it stopped.
-
-**Chose coarse phases over per-check instrumentation.** Nine markers, placed at the
-checks the measurement identified as expensive, rather than instrumenting ~60 checks
-inside a 3000-line function. The purpose is to answer "how far did it get and what did it
-cost", and the measurement showed the cost is concentrated — so a handful of phases
-carries essentially the whole signal at a fraction of the regression risk to the
-framework's primary health command.
-
-**The killed-run report does NOT fire under a bare `timeout`, and that is documented in
-the code rather than papered over.** GNU `timeout` puts the command in its own process
-group and signals the *group*, so bash dies alongside the child it is waiting on and
-never reaches the handler — the caller sees `Terminated` and exit 124 with no report.
-Measured three ways: bare `timeout 60` → no report; `timeout --foreground 25` → report,
-exit 124; `kill -TERM <pid>` → report, exit 143. The caveat and the `--foreground` remedy
-are written at the trap's definition in `bin/fw`, and a test asserts that note is still
-there, because a helper that silently does nothing under the most common way of bounding
-a command is worse than no helper.
-
-**Did not change the trap to work around the group-kill.** Options existed (re-exec into
-its own session, install a wrapper). Both add process-management complexity to `bin/fw`'s
-router for a case the caller can fix with one flag, and the framework's own bounded
-callers are ours to adjust. Left as a documented caller contract.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -494,7 +322,7 @@ callers are ours to adjust. Left as a documented caller contract.
 
 ## Updates
 
-### 2026-09-24T22:25:56Z — task-created [task-create-agent]
+### 2026-09-24T23:09:20Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3452-fw-doctor-cannot-finish-inside-a-usable-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3454-two-gates-offer-mutually-exclusive-bypas.md
 - **Context:** Initial task creation

@@ -5338,3 +5338,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-511
+  text: "Read-only allowlist gap, named by two different gates within ten minutes. agents/context/lib/safe-commands.sh cannot classify a command whose line begins with a shell assignment or the time keyword, so it refuses it rather than proving it is a read. Refused: a bare git push prefixed with start=$(date +%s) to measure how long the pre-push gate took, and time timeout 900 bin/fw doctor to measure doctor's runtime. Both are pure measurements of an otherwise-permitted command. The partial-complete gate's own block message invites this filing verbatim: if it genuinely only reads, that is a gap in the allowlist worth filing. The cost is not the refusal - running the command bare is trivial - it is the direction of the pressure. Measuring what a gate costs requires wrapping the gated command in a timing harness, and the harness is exactly what converts an allowed command into a refused one, so the habit the gate trains is to stop measuring and start guessing. That is the same failure class as T-3450 and T-3451, where an unmeasured cost was carried as a literal for days. Candidate fix: strip a leading VAR=$(...) assignment or a leading time keyword before classifying the remainder, then classify what is left."
+  captured: 2026-09-24T22:27:16Z
+  context_task: T-3452
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-512
+  text: "fw doctor's Watchtower smoke test is an INVERTED ALARM: it reports only when it has nothing to report. web/smoke_test.py exits 1 when any endpoint fails, while still writing its complete JSON to stdout. bin/fw:3166 captures it as smoke_result=$(python3 web/smoke_test.py --port P --json 2>/dev/null || echo '{\"failed\":0,\"passed\":0,\"total\":0,\"error\":\"script failed\"}'). Because the script wrote its JSON AND exited non-zero, the || fires and the fallback object is APPENDED to the real one. The captured value is two concatenated JSON documents, so all three json.load parses at bin/fw:3168-3170 raise Extra data, each falls back to 0 via its own 2>/dev/null || echo 0, and smoke_failed=0 smoke_passed=0. The print logic at 3171-3174 is 'if failed==0 AND passed>0 print OK; elif failed>0 print WARN' - zero/zero matches neither, so NOTHING is printed. On a healthy run the script exits 0, no fallback is appended, the JSON parses, and OK Watchtower smoke test (53/53 endpoints) prints normally. So the check is visible exactly when it is useless and silent exactly when it has found something. Measured on this host: the block costs 78-126s, roughly half of fw doctor's 155-212s total runtime, and in three consecutive profiled doctor runs it emitted no line at all while 1 to 6 endpoints were genuinely failing, including / itself. Fix shape: capture stdout and exit status separately rather than using || inside the substitution, and add an else branch so an unparseable or zero/zero result WARNs rather than vanishing - a parse failure must never render as silence."
+  captured: 2026-09-24T22:45:30Z
+  context_task: T-3452
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-513
+  text: "Two gates prescribe mutually exclusive remedies, leaving a legitimate action with no permitted route. State: focus is on T-3451 which is partial-complete (work-completed, owner human, still in active/), and the action is a git commit of T-3452's close artefacts. The focus-drift gate (T-1730) refuses because the commit targets T-3452 and names FW_SWITCH_FOCUS=1 as the universal remedy, explicitly noting that option 1 is unavailable since a closed task cannot be focused. Adding that prefix then trips the partial-complete gate (T-3174), whose own message says a bare git commit IS allowed here - but the env prefix makes the line unclassifiable by agents/context/lib/safe-commands.sh, so it is refused with 'this command writes nothing the gate can detect'. Remove the prefix and focus-drift refuses again. The two remedies cannot be satisfied simultaneously. Same root as OBS-511: the classifier cannot parse a leading assignment. Same CLASS as T-3299, already open, where the G-020 scope gate blocks both escape routes its own block message prescribes - so this is a recurrence of a known pattern at a second pair of gates, which makes it structural rather than incidental. Worth noting how the dead end is reached: it is the ordinary consequence of closing a task, because closing clears focus and the trailing close artefacts then have no owning task (OBS-250). The practical escape was to file this task and commit under it, which is exactly the 'file a new task just to run one command' outcome OBS-250 names as the dead end rather than the fix."
+  captured: 2026-09-24T23:10:13Z
+  context_task: T-3454
+  tags: []
+  status: pending
+  promoted_to: null
