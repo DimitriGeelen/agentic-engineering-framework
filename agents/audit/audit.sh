@@ -7543,17 +7543,29 @@ fi
 echo ""
 fi # end arc-completion
 
-# T-3127: flush the last section's timing and persist the full-run record.
-# Full (unscoped) runs only — section-scoped cron runs don't answer the
-# timeout-headroom question this exists for (see AUDIT_TIMING_FILE comment
-# above). Reaching this line means the run was NOT killed by the watchdog —
-# the TERM trap owns that path and writes timed_out: true instead.
+# Flush the last section's timing, then persist the full-run record.
+# Reaching this line means the run was NOT killed by the watchdog — the TERM
+# trap owns that path and writes timed_out: true instead.
+#
+# T-3451: the flush is OUTSIDE the guard. `section_mark` closes the section
+# opened before it, so on a `--section structure` run the one section that
+# matters is only ever closed here — when this call sat inside the
+# full-runs-only `if`, a scoped run measured its section and then discarded
+# the measurement, which is precisely why the ledger went stale while the
+# pre-push gate paid a cost nobody recorded.
+#
+# T-3127: `_audit_write_timing_yaml` stays full-runs-only. It writes the
+# whole-run record (total_seconds vs the AUDIT_TIMEOUT ceiling), and a scoped
+# run's total answers a different question — see the AUDIT_TIMING_FILE comment
+# above. Per-section facts go to section_runs: from section_mark; the full-run
+# summary stays gated. Two records, two lifetimes, one file.
+#
 # (Trailing comment on the `if` line below is deliberate — t3070's regression
 # test extracts the AUDIT_TIMEOUT resolution block via an exact-line sed
 # match on `if [ -z "$SECTIONS" ]; then`; an identical bare line here would
 # re-trigger that same sed range and pull this block into the extraction.)
+section_mark ""
 if [ -z "$SECTIONS" ]; then  # T-3127: full runs only
-    section_mark ""
     _audit_write_timing_yaml 0 "" "$SECONDS"
 fi
 
