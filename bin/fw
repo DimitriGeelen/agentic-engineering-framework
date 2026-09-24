@@ -2294,6 +2294,35 @@ PY
         fi
     fi
 
+    # Check: delegation surface (T-3445, mechanism for D-626)
+    # Mirrors agents/audit/audit.sh:check_delegation_surface. Doctor is
+    # pull-only and the audit's structure section is cron'd; both read the same
+    # single scan (`surface --facts`) so the two rails cannot disagree about
+    # what the corpus looks like. WARN only on the conjunction — zero delegable
+    # criteria AND an operator-only backlog past the threshold. Silent when the
+    # project has no .tasks/active.
+    local _del_cli="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/delegation_cli.py"
+    if [ -f "$_del_cli" ] && [ -d "$PROJECT_ROOT/.tasks/active" ]; then
+        local _del_thr _del_facts _del_level _del_rc _del_as _del_oo _del_tasks _del_list
+        _del_thr=$(fw_config_int DELEGATION_SURFACE_WARN 2>/dev/null || echo 50)
+        _del_facts=$(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$PROJECT_ROOT}" \
+                     PYTHONPATH="${FRAMEWORK_ROOT:-$PROJECT_ROOT}" \
+                     FW_DELEGATION_SURFACE_WARN="$_del_thr" \
+                     python3 -m lib.delegation_cli surface --facts 2>/dev/null || true)
+        if [ -n "$_del_facts" ]; then
+            IFS=$'\t' read -r _del_level _del_rc _del_as _del_oo _del_tasks _del_thr _del_list <<< "$_del_facts"
+            if [ "${_del_level:-}" = "WARN" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  Delegation surface: 0 reviewer-closeable criteria while $_del_oo are operator-only (threshold $_del_thr)"
+                echo -e "         $_del_tasks active task(s) with open Human criteria — the D-626 delegation reaches nothing"
+                echo -e "         Run: bin/fw reviewer surface"
+                warnings=$((warnings + 1))
+            elif [ -n "${_del_level:-}" ]; then
+                echo -e "  ${GREEN}OK${NC}  Delegation surface: reviewer-closeable $_del_rc, agent-self $_del_as, operator-only $_del_oo (across $_del_tasks active task(s))"
+                [ -n "${_del_list:-}" ] && echo -e "         delegable now: $_del_list — bin/fw task delegate <id> --dry-run"
+            fi
+        fi
+    fi
+
     # Check: framework MCP manifest (T-2265, arc-010 Slice 2)
     # T-2461: framework ASSETS (manifest, tool-set, manifest.py) live under
     # FRAMEWORK_ROOT — which equals PROJECT_ROOT in the framework repo, but is

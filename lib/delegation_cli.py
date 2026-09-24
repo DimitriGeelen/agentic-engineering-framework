@@ -441,6 +441,18 @@ def cmd_surface(args) -> int:
     if args.json:
         print(json.dumps(report, indent=2))
         return 0
+    if args.facts:
+        # One TSV line for the audit + doctor rails, so both read the same
+        # numbers from the same scan rather than each re-deriving them —
+        # the shape lib/fabric_doctor_facts.py uses for the same reason.
+        d = report["by_delegation"]
+        print("\t".join(str(x) for x in (
+            level,
+            d[REVIEWER_CLOSEABLE], d[AGENT_SELF], d[OPERATOR_ONLY],
+            report["tasks_with_open_human_criteria"], threshold,
+            ",".join(report["delegable_tasks"][:5]),
+        )))
+        return 0
     colour = YELLOW if level == "WARN" else GREEN
     print(f"{BOLD}Delegation surface{NC} ({RULING}, threshold {threshold})")
     print(f"  {colour}{level}{NC}  {message}")
@@ -473,6 +485,8 @@ def main(argv=None) -> int:
     s = sub.add_parser("surface", help="corpus delegation surface report")
     s.add_argument("--json", action="store_true")
     s.add_argument("--warn-threshold", type=int, default=None)
+    s.add_argument("--facts", action="store_true",
+                   help="one TSV line for the audit and doctor rails")
     s.set_defaults(fn=cmd_surface)
 
     args = p.parse_args(argv)
