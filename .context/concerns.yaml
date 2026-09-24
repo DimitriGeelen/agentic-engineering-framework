@@ -1,3 +1,47 @@
+- id: OBS-256
+  type: structural
+  severity: medium
+  surface: 'web/shared.py:count_unchecked_human_acs (and everything built on
+    it — fw review-queue VERDICT section, Watchtower /approvals) requires the
+    literal heading `### Human` with nothing else on the line. A
+    suffix-qualified heading like `### Human (Slice 1)` or `### Human
+    (T-1679 split — residual visual render …)` does not match `^### Human\s*$`,
+    so any unticked Human AC filed under such a heading is invisible to both
+    surfaces.'
+  detected_in: T-3449 (found while building the unclosable-misfiled predicate
+    — lib/delegation.py:human_criteria was already hardened suffix-tolerant
+    per T-3288 for the identical reason, but web/shared.py's function was
+    never ported)
+  symptom: 'Two live active tasks — T-1062, T-1718 — each carry a genuine,
+    unticked `[REVIEW]` Human criterion under a `### Human (...)`-suffixed
+    heading. `count_unchecked_human_acs` returns 0 for both. Neither task
+    appears in `fw review-queue`''s VERDICT section or Watchtower
+    /approvals — the operator has an outstanding review that no existing
+    surface will ever show.'
+  root_cause: 'The regex `^### Human\s*$(.*?)(?=^#{1,3} |\Z)` anchors
+    end-of-line immediately after "Human". T-3288 hardened the sibling
+    parser in lib/delegation.py (`_SUBHEAD_RE` + `.startswith("human")`,
+    suffix-tolerant) after finding tasks that qualify the heading with
+    slice/split context — but the fix was scoped to the delegation
+    classifier and never ported to web/shared.py, which predates it and is
+    what the live review queue and /approvals actually call.'
+  prevention: 'NOT FIXED. T-3449 worked around it locally: its own new
+    function (web.shared.count_human_acs_total) was written with a
+    suffix-tolerant regex (`### Human\b[^\n]*$`) from the start, so the
+    unclosable-misfiled predicate does not inherit the bug. The real fix —
+    porting the same `\b` boundary into count_unchecked_human_acs, plus a
+    test fixture pinning a suffix-qualified heading (T-1062 and T-1718 are
+    live fixtures) — is intentionally left for a separate task per CLAUDE.md
+    Task Sizing Rules ("one bug = one task"); T-3449''s own bug is the
+    unclosable-misfiled class, not this one.'
+  blast_radius: 'fw review-queue VERDICT section, Watchtower /approvals — any
+    active task whose ### Human heading carries a suffix qualifier'
+  observed: '2026-09-24'
+  status: open
+  related:
+  - T-3449
+  - T-3288
+  follow_up_task: null
 - id: OBS-255
   type: structural
   severity: high
