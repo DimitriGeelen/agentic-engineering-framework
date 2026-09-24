@@ -14,7 +14,7 @@ description: >
   lacks markers be honoured rather than discarded as stale (bin/fw:185), which is
   what routes the test harness into this branch in the first place.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -22,7 +22,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-03T16:51:01Z
-last_update: '2026-08-03T17:00:12Z'
+last_update: 2026-09-24T18:52:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,6 +89,45 @@ bvp_scores_proposed:
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
 
+Filed 2026-09-24 (autonomous run) before any research, at the G-067 gate's insistence —
+its ordering is better than the one I started with: declare the questions, then measure.
+
+- **IW-1: Does the vendor-before-auto-init ordering (T-519) encode a requirement that
+  auto-init must be able to vendor, or is it an artefact?**
+  confidence: 3
+  disposition: answered
+  rationale: artefact. `bin/fw:470-472` and T-519's own Context — `do_vendor()` was called
+  by `do_init` before it was defined in the file; a bash function-ordering bug, no policy
+  intent. Nothing rides on the ordering.
+
+- **IW-2: Which callers actually rely on scripted (non-TTY) auto-init — i.e. would break
+  if a known read-only verb stopped initialising?**
+  confidence: 3
+  disposition: answered
+  rationale: none in this repository, and the one caller that reached it was harmed —
+  `tests/unit/install_verify_no_cwd_init.bats:1-12` records a live incident measured
+  against GitHub master 2026-08-04 where the documented `curl | bash` install ran
+  `fw doctor`, hit this branch under a non-TTY pipe, and seeded a full project into the
+  user's cwd behind a green checkmark. T-2799 fixed the CALLER (`install.sh:456,461`), not
+  the branch. `fw_help_no_autoinit.bats:76` pins the branch firing, but as a discriminating
+  control against vacuous passes, not as a dependency. Consumer projects unsearched (T-559).
+
+- **IW-3: Is an exclusion list the right mechanism, and does one already exist?**
+  confidence: 3
+  disposition: answered
+  rationale: it already exists and already contains read-only verbs — `bin/fw:987-991`
+  excludes `init`, `help`/`-h`/`--help`, `version`/`-v`/`--version`, `update`, `hook`,
+  `vendor`, plus any `--help` query, and T-2835 added `_fw_cmd_is_known`. The live question
+  is which verbs belong on the existing list, not whether to build one.
+
+- **IW-4: What does a caller lose if a read-only verb refuses instead of initialising?**
+  confidence: 3
+  disposition: answered
+  rationale: nothing that is not already lost. Since T-2835 an unknown verb from a
+  non-project directory already refuses with a clear error rather than bootstrapping, so
+  the alternative behaviour is built, shipped, and already the norm for the neighbouring
+  case. The user gets an error naming `fw init` instead of an unrequested ~27 MB tree.
+
 ## Exploration Plan
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
@@ -149,9 +188,50 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — narrow, not remove
 
-**Rationale:** Evidence genuinely incomplete: the non-TTY auto-init branch (bin/fw:534) predates this session and its consumers are unenumerated. Deciding whether to remove or narrow it requires knowing who depends on scripted auto-init — which needs a grep across consumer projects and the cron/CI surfaces, not yet done. This is an evidence gap, not a confidence hedge.
+*(Supersedes the DEFER of 2026-08-03, which was correct when written: it named an evidence
+gap, and the gap is now closed. Research: `docs/reports/T-2770-readonly-auto-init.md`.)*
+
+**Rationale:** The evidence the DEFER waited for existed in this repository the whole time.
+Three findings, each reversing part of the original framing:
+
+1. **The mechanism already exists.** `bin/fw:987-991` already excludes `init`, `help`,
+   `version`, `update`, `hook`, `vendor` and help queries — read-only verbs among them. This
+   is a list edit, not a redesign.
+2. **The ordering that looked load-bearing is an artefact.** T-519 moved `do_vendor` earlier
+   because a bash function was called before it was defined (`bin/fw:470-472`, T-519's
+   Context). No policy intent rides on it.
+3. **No caller relies on this; the one that reached it was harmed.**
+   `tests/unit/install_verify_no_cwd_init.bats:1-12` records a live incident measured
+   against GitHub master on 2026-08-04: the documented `curl | bash` install ran `fw doctor`,
+   hit this branch under a non-TTY pipe, and **seeded a complete project into whatever
+   directory the user was standing in**, behind a green "Step 3/3 passes" checkmark. T-2799
+   fixed the caller (`install.sh:456,461`), leaving the branch intact for every other caller.
+
+Counter-evidence was sought. `tests/unit/fw_help_no_autoinit.bats:76` asserts the branch
+still fires — but as a discriminating control so the help-exclusion tests cannot pass
+vacuously, not as a dependency. It would be re-pointed at a write verb, a test edit.
+
+**Proposal:** add the read-only query verbs (`status`, `list`, `show`, `doctor`, …) to the
+existing exclusion list. Keep auto-init for write verbs, where a caller plausibly means
+"set this up". Keep the interactive dialogue untouched — a human at a prompt is asked, not
+surprised. Since T-2835 the refusal path (a clear error naming `fw init`) is already built
+and already the norm for unknown verbs, so nothing new is needed to fall back to.
+
+**Evidence:**
+- `docs/reports/T-2770-readonly-auto-init.md` — full research artefact, findings §1–§4,
+  recommendation and build slices §5.
+- Live-incident record: `tests/unit/install_verify_no_cwd_init.bats:1-12` (T-2799).
+- Prior narrowings that explicitly deferred this question: T-2769, T-2835 — both say so in
+  code comments at `bin/fw:977` and `bin/fw:995-1010`.
+- All four IW questions now `disposition: answered`, confidence 3.
+
+**What is still unknown, stated plainly:** consumer projects were **not** searched for
+reliance on scripted auto-init. The project-boundary gate (T-559) refuses that from this
+session, and a per-project read-only census is a separate, larger unit. So the finding is
+"no evidence of reliance in this repository, and unsearched elsewhere" — which is why the
+go/no-go stays the operator's, and why the recommendation is to narrow rather than remove.
 
 ## Decisions
 
@@ -172,3 +252,6 @@ bvp_scores_proposed:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-09-24T18:52:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
