@@ -5303,3 +5303,10 @@ observations:
   tags: [governance]
   status: pending
   promoted_to: null
+- id: OBS-506
+  text: "Anchoring a task-file edit on a section HEADING STRING matches that heading's own mention in prose. Two instances within one hour, 2026-09-24, same class, one by a worker and one by the parent repairing it: (1) the T-3389 worker's Recommendation edit used s.index('## Decisions'), which matched a backticked mention inside Human AC 2's step text hundreds of lines ABOVE the real heading, splicing the whole tail (RCA/Evolution/Recommendation/Decisions) into the middle of a criterion and taking the file 38K to 59.7K; (2) the parent's repair split on the string '**Recommendation:** GO', which matched the TEMPLATE COMMENT's 'GO / NO-GO / DEFER' example line rather than the real recommendation, pulling template text into the live block. Task files are especially prone because the template embeds examples of every heading and marker they contain. Rule: anchor on a line-anchored regex (caret ## Decisions dollar), never a bare substring; and after any structural edit assert each heading occurs exactly once before committing. Both were caught by counting headings, which is the cheap check worth making standard. A helper that rewrites a NAMED section would remove the hazard rather than relying on care. Recorded under T-3450 because T-3389 was closed when this was written."
+  captured: 2026-09-24T20:40:38Z
+  context_task: T-3450
+  tags: [bug]
+  status: pending
+  promoted_to: null
