@@ -5239,3 +5239,56 @@ concerns:
     scoping its own Verification bats invocation to exclude this one file
     rather than fix code outside its scope — see T-3435''s Decisions section
     for the exact evidence and the excluded-file list.'
+- id: G-106
+  type: gap
+  title: TermLink `agent search` does not scan `dm:*` channels — a substantive
+    peer reply on a DM rail is invisible to every search-based check, and
+    reports as "absent" rather than "unsearched"
+  description: 'Measured 2026-09-24 (T-3442, origin OBS-482): 832''s substantive
+    answer on EWCR clause 2 sat unread for 3+ weeks on
+    `dm:3bba15e681b3a078:d1993c2c3ec44c94` (offset 2), while five independent
+    EWCR drives each ran `termlink agent search` (five terms, 1002 envelopes
+    scanned) and reported the artefacts that reply named as absent. The
+    control: `termlink agent search "consolidated AEF-owned per-finding"`
+    returns 0 posts of 1002 scanned, while that exact phrase is verbatim at
+    the named DM offset. `agent search` structurally cannot see `dm:*`
+    topics — it scans `agent-chat-arc`-shaped channels — so a peer''s answer
+    routed via DM (rather than the shared chat-arc) is silently excluded
+    from every search a caller runs, and nothing in the tool''s output
+    distinguishes "searched and absent" from "never in scope". 832
+    independently diagnosed the receiving side of the same incident
+    (no reader on the mailbox) at offset 7 of the same rail; that half is
+    ours and is the receiving-end fix T-3442 ships
+    (`lib/sidecar/dm.py`, `fw sidecar inbox`/`status`/`dm-stale`).'
+  spec_reference: T-3442 AC3; dm:3bba15e681b3a078:d1993c2c3ec44c94 offset 2
+    (832''s answer); docs/reports/EWCR/drive-7-procasfit-handback.md
+  severity: medium
+  status: open
+  detected_in: T-3442
+  observed: '2026-09-24'
+  reported_by: self (T-3442, promoted from OBS-482)
+  blast_radius: cross-project — any caller on any TermLink hub that treats
+    `agent search` as a superset of every channel a peer might answer on
+  homed_to: 010-termlink
+  home_rationale: 'Gap homing (T-1333) — the fix is inside TermLink''s own
+    `agent search` implementation (extend it to cover `dm:*`, or document
+    the exclusion explicitly so callers stop assuming coverage). AEF cannot
+    fix another project''s search tool; the ask was sent via the arc-011
+    sidecar (`fw sidecar send --to 010-termlink`) rather than filed only
+    here, since a local-only entry would be invisible to whoever can act on
+    it. Mirrored here as the AEF-side observation per the homing rule''s
+    "cross-link, home where the fix lands" clause.'
+  consult:
+    mechanism: fw sidecar send --to 010-termlink
+    client_msg_id: d2360e35-1b28-491e-86d3-8a82547a8669
+    sent: '2026-09-24'
+  what_works_now: Our own receiving-side gap (no DM reader) is closed by
+    T-3442 — dm:* rails addressed to our identity are now enumerated,
+    drained, and surfaced in `fw doctor`/`fw audit` as a WARN when unread
+    content is more than 24h old.
+  what_remains: TermLink response to the T-3442 consult — either `agent
+    search` gains `dm:*` coverage, or its `--help`/docs are updated to state
+    the exclusion explicitly. Revisit if the consult (client_msg_id above)
+    goes unanswered past its retry ladder.
+  related_tasks:
+  - T-3442
