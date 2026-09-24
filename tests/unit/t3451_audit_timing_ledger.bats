@@ -252,6 +252,72 @@ _extract_fn() {
     grep -q '_audit_record_section_run "\$_SECTION_MARK_NAME" "\$_dur" 0' "$AUDIT"
 }
 
+# ── AC1, the fix itself: the TRAILING flush must run on scoped runs too.
+#
+#    `section_mark ""` closes the section opened before it, so on a
+#    `--section structure` run — exactly what the pre-push hook executes —
+#    the one section that matters is only ever closed by this trailing call.
+#    While it sat inside the full-runs-only `if`, a scoped run measured its
+#    section and then threw the measurement away, which is why the ledger
+#    went stale while the gate paid a cost nobody recorded.
+#
+#    This is a POSITIONAL fix, so a grep for the call is not enough — the
+#    call existed before, on the wrong side of the guard. Both legs are
+#    pinned so they stay tellable apart: the flush must escape the guard,
+#    and `_audit_write_timing_yaml` must stay inside it (a scoped run's
+#    total_seconds answers a different question than the full-run ceiling).
+
+_extract_trailing_flush() {
+    sed -n '/^section_mark ""$/,/^fi$/p' "$AUDIT"
+}
+
+@test "trailing flush: the block extracts, and section_mark comes BEFORE the guard opens" {
+    _extract_trailing_flush > "$TEST_TEMP_DIR/tail.sh"
+    [ -s "$TEST_TEMP_DIR/tail.sh" ]
+    # First line, column 0 — outside the guard, not indented within it.
+    [ "$(head -1 "$TEST_TEMP_DIR/tail.sh")" = 'section_mark ""' ]
+    # And the guard really is the next thing, so this is the right block.
+    grep -q '^if \[ -z "\$SECTIONS" \]; then' "$TEST_TEMP_DIR/tail.sh"
+}
+
+# Run the real extracted block with both collaborators stubbed, and record
+# which of them fired. Scope is the only variable between the two legs.
+_run_trailing_flush_with_scope() {
+    _extract_trailing_flush > "$TEST_TEMP_DIR/tail.sh"
+    bash -c "
+        SECTIONS='$1'
+        SECONDS=42
+        section_mark() { echo 'FLUSH'; }
+        _audit_write_timing_yaml() { echo 'SUMMARY'; }
+        source '$TEST_TEMP_DIR/tail.sh'
+    "
+}
+
+@test "trailing flush: a SCOPED run flushes its last section but writes no full-run summary" {
+    run _run_trailing_flush_with_scope "structure"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"FLUSH"* ]]
+    # The regression leg: before the fix this said nothing at all.
+    [[ "$output" != *"SUMMARY"* ]]
+}
+
+@test "trailing flush: a FULL run flushes its last section AND writes the full-run summary" {
+    run _run_trailing_flush_with_scope ""
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"FLUSH"* ]]
+    [[ "$output" == *"SUMMARY"* ]]
+}
+
+@test "trailing flush: the t3070 sed anchor still resolves to its own block, not this one" {
+    # t3070 extracts the AUDIT_TIMEOUT resolution block by an exact-line sed
+    # match on `if [ -z "$SECTIONS" ]; then`. The guard line here carries a
+    # trailing comment precisely so it does NOT match that anchor and pull
+    # this block into t3070's extraction. Pin that, or the next person to
+    # "tidy" the comment away breaks a test in a different file.
+    run grep -c '^if \[ -z "\$SECTIONS" \]; then$' "$AUDIT"
+    [ "$output" = "1" ]
+}
+
 # ── AC3: lock contention is explicitly excluded from the measurement, and
 #    the writer says so in the recorded value ──
 
