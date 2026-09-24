@@ -7789,6 +7789,9 @@ print('0')
                     echo "              closure on owner: human, so one action remains"
                     echo "              and it is yours (T-3178)"
                     echo "  PAUSED    — dispatched workers awaiting an answer (T-1808)"
+                    echo "  READY TO CLOSE — owner:human, no real Human criteria, all"
+                    echo "              Agent ACs ticked. Work is finished, not awaiting"
+                    echo "              judgement — one command closes each (T-3449)"
                     echo "  VERDICT   — active tasks with unchecked Human ACs"
                     echo ""
                     echo "Each row is prefixed by the agent's recommendation verdict (GO/DEFER/"
@@ -7900,6 +7903,16 @@ try:
     import decided_unclosed as _du
 except Exception:
     _du = None
+
+# T-3449: UNCLOSABLE — owner:human, zero real ### Human criteria, all
+# ### Agent criteria ticked. Same FW_LIB_DIR reasoning as decided_unclosed
+# above (the predicate ships with the framework, not the project).
+try:
+    sys.path.insert(0, _lib_dir)
+    import unclosable_misfiled as _um
+    um_rows = _um.scan_active(ROOT)
+except Exception:
+    um_rows = []
 
 # T-2405: --arc <id> filter. Resolve user input to canonical (arc-NNN, slug)
 # pair by reading .context/arcs/*.yaml. Accepts either form.
@@ -8085,7 +8098,7 @@ if os.environ.get("FW_REVQ_IDS") == "1":
 # tasks awaiting human review." over a corpus whose ONLY outstanding item is an
 # inception awaiting closure — a confident false negative, which is the exact
 # failure this section was added to end rather than relocate.
-if not rows and not decision_rows and not paused_rows and not decided_rows:
+if not rows and not decision_rows and not paused_rows and not decided_rows and not um_rows:
     print("No tasks awaiting human review.")
     sys.exit(0)
 
@@ -8144,6 +8157,19 @@ if paused_rows:
         print(f"\033[36m{age_label:>5}\033[0m  {did_short:<10}  {pr['task_id']:<8}  {sev_col}[{sev}]\033[0m {q}")
     print()
 
+# T-3449: READY TO CLOSE — owner:human, zero real ### Human criteria, every
+# ### Agent criterion ticked. Placed ABOVE VERDICT on purpose: this is not a
+# task awaiting judgement (VERDICT's framing), it is finished work with no
+# route to closure — `fw task delegate` declines it (nothing to convert),
+# and an agent cannot close a human-owned task directly. Per-task evidence
+# only, no batch-close affordance (CLAUDE.md §Human Task Completion Rule).
+if um_rows:
+    print(f"\033[1mREADY TO CLOSE — owner:human, no Human criteria, work already done ({len(um_rows)})\033[0m")
+    for m in um_rows:
+        print(f"  {m.task_id:<8}  {str(m.age_days)+'d':>5}  {m.agent_ac_count} agent AC(s) done")
+        print(f"    cd {ROOT} && bin/fw task update {m.task_id} --status work-completed")
+    print()
+
 if rows:
     print(f"\033[1mVERDICT — Human ACs awaiting verification ({len(rows)})\033[0m")
     print(f"\033[1m{'VERDICT':<7}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
@@ -8162,14 +8188,17 @@ if defer: parts.append(f"\033[33m{defer} DEFER\033[0m")
 if nogo: parts.append(f"\033[31m{nogo} NO-GO\033[0m")
 if unk: parts.append(f"\033[90m{unk} ?\033[0m")
 if no_rec: parts.append(f"\033[36m{no_rec} NO-REC\033[0m")
-total = len(rows) + len(decision_rows) + len(paused_rows) + len(decided_rows)
+total = len(rows) + len(decision_rows) + len(paused_rows) + len(decided_rows) + len(um_rows)
 verif_only = f"{len(rows)} task(s) awaiting human review" if rows else ""
 dec_only = f"{len(decision_rows)} pending decision(s)" if decision_rows else ""
 paused_only = f"{len(paused_rows)} paused dispatch(es)" if paused_rows else ""
 # T-3178: counted in the summary too — a section the operator can see but the
 # tally omits is a quieter version of the same omission.
 decided_only = f"{len(decided_rows)} awaiting closure" if decided_rows else ""
-summary = " · ".join(s for s in (dec_only, decided_only, paused_only, verif_only) if s)
+# T-3449: same reasoning — "ready to close" is closer to zero-friction than
+# any other bucket, so it leads the summary.
+ready_only = f"{len(um_rows)} ready to close" if um_rows else ""
+summary = " · ".join(s for s in (ready_only, dec_only, decided_only, paused_only, verif_only) if s)
 if parts:
     print(f"\n\033[2m{summary}\033[0m  ({' / '.join(parts)})")
 elif summary:
