@@ -8,7 +8,7 @@ description: >
   grown to 268s — derive it from the measured structure seconds the way T-3421 derives
   the audit lock wait
 
-status: started-work
+status: issues
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-24T20:09:16Z
-last_update: '2026-09-24T20:10:19Z'
+last_update: 2026-09-24T20:57:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,6 +55,16 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=3 (body:portability-abstraction); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-24T20:15:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=316,acs=7)
     rubric_sha: e4a00f38e801
 ---
 
@@ -93,30 +103,60 @@ the push timeout instead of adding a second, differently-shaped rule.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `FW_HANDOVER_PUSH_TIMEOUT` unset derives from the measured structure seconds rather
+- [x] `FW_HANDOVER_PUSH_TIMEOUT` unset derives from the measured structure seconds rather
       than defaulting to 300: reuse `lib/prepush-lock-wait.sh`'s reader (do not write a
       second YAML parser — if the existing function is not reusable as-is, extract it so
       both callers share one, and say so in `## Decisions`). Budget = gate + network, so
       the derived value must exceed the lock wait, not equal it: state the multiplier and
       floor chosen and why, clamp it, and keep a fallback for a missing or timed-out
       timing file. An explicitly-set `FW_HANDOVER_PUSH_TIMEOUT` still wins.
-- [ ] The value actually used is printed or logged when a push starts, so a future killed
+      Evidence: `fw_handover_push_timeout_default` (lib/prepush-lock-wait.sh) reuses the
+      extracted `fw_audit_timing_read_structure_seconds` reader; dominance over
+      `fw_prepush_lock_wait_default` proven by construction (multiplier 1.5 > 1.25, floor
+      180 > 90, cap 900 > 600, fallback 650 > lock's cap 600) and checked live across 8
+      measured values + the timed-out edge (all `push > lock`, see ## Decisions).
+      handover.sh:108-125 honours explicit `FW_HANDOVER_PUSH_TIMEOUT` first.
+- [x] The value actually used is printed or logged when a push starts, so a future killed
       push shows what budget it had. Today the warning names the ceiling but nothing names
       where the ceiling came from.
-- [ ] `tests/unit/t3062_push_timeout_budget.bats` (which pins the gate-cost relationship)
+      Evidence: handover.sh now echoes `Push timeout: ${_push_timeout}s
+      (${_push_timeout_source})` before every push attempt, and the KILLED warning line
+      also carries `${_push_timeout_source}`. Confirmed live in `/tmp/t3450-handover-proof.log:31,85`.
+- [x] `tests/unit/t3062_push_timeout_budget.bats` (which pins the gate-cost relationship)
       stays green, and is extended — or a sibling added — asserting: a timing file with a
       large structure value yields a proportionally larger timeout; a missing file yields
       the fallback; a timed-out run is ignored rather than trusted; an explicit env var
       overrides all of it. `TEST_TEMP_DIR` set in setup; no bare `! grep -q`.
+      Evidence: that exact filename does not exist in this repo (a stale reference already
+      present in handover.sh's own comment, predating this task — see ## Decisions). Added
+      `tests/unit/t3450_push_timeout_derivation.bats` as the sibling: 15/15 green, covering
+      all four named cases plus the dominance property. `tests/unit/t3421_prepush_lock_wait.bats`
+      (the actual analogous precedent file) stays 7/7 green — behaviour unchanged.
+      `tests/unit/handover_push_timeout.bats` has 3 pre-existing failures unrelated to this
+      task (stale literal-value assertions predating T-3062's bump to 300) — not touched,
+      out of scope.
 - [ ] Live, recorded here: the derived value on this host with the current timing file, the
       current structure seconds it came from, and one real `fw handover --commit` whose
       push completes without exit 124. If the push is still killed, do not raise the
       number blindly — record the new measurement and stop, because that means the gate
       grew again and the answer is to trim the gate, not to widen the budget.
-- [ ] Vendored `agents/handover/handover.sh` and any touched `lib/` file synced;
+      **NOT satisfied — see ## Updates 2026-09-24T20:50Z.** Derived value on this host:
+      402s (from ledger `structure: 268` seconds, dated 2026-09-22). A direct `git push`
+      landed clean (audit fails=0, no exit 124). A subsequent real `fw handover --commit`
+      WAS killed at exit 124 — but a freshly, cleanly measured `bin/fw audit --section
+      structure` (no lock contention) just now took **325s wall-clock**, not 268s. The
+      gate has grown since the ledger was last written, and the ledger itself is stale
+      (only updated by a full unscoped audit, last run 2026-09-22). Stopping per this AC's
+      own instruction rather than widening the multiplier/floor/cap to paper over it.
+- [x] Vendored `agents/handover/handover.sh` and any touched `lib/` file synced;
       `bin/fw vendor self --check` clean. If a new config key is introduced, it goes in
       `lib/config.sh` `FW_CONFIG_REGISTRY` with a description (`tests/lint/
       config-registry-parity.bats` must stay green).
+      Evidence: `bin/fw vendor self` run, committed (6016115f1); `bin/fw vendor self
+      --check` → "vendored .agentic-framework/ in sync with source." No new config key
+      introduced — `FW_HANDOVER_PUSH_TIMEOUT` already existed pre-task (unregistered
+      before and after; out of scope to register it here). `tests/lint/config-registry-
+      parity.bats` 3/3 green (unaffected).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,19 +319,43 @@ the push timeout instead of adding a second, differently-shaped rule.
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** Three consecutive handovers on 2026-09-24 hit `exit 124 — Push to origin was
+KILLED at 300s`, each needing a manual `git push` afterwards. Live during this task, even
+after the derived fix landed, a real `fw handover --commit` was *still* killed at the newly
+derived 402s.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `agents/handover/handover.sh:108` bounded `git push` at a static literal
+(`${FW_HANDOVER_PUSH_TIMEOUT:-300}`) asserting a number for a cost (the pre-push structure
+audit) that changes every time a check is added to that section. T-3062 set 300 with ~241s
+of headroom over a ~59s gate; by 2026-09-22 the gate had grown to 268s, leaving 32s. This
+task's fix replaces the literal with a derivation from the measured cost
+(`fw_handover_push_timeout_default`, lib/prepush-lock-wait.sh) — but the live proof (AC4)
+surfaced a *second*, deeper instance of the same root cause one layer down: the ledger the
+derivation reads (`.context/audits/full-audit-timing.yaml`) is itself a static snapshot,
+written only by a full unscoped `fw audit` run, not by the scoped `--section structure` run
+the pre-push hook actually invokes on every push. A clean, uncontended, freshly-measured
+`bin/fw audit --section structure` just now took 325s wall-clock — the ledger still said
+268s, 2 days stale. The number moved again, one layer further down than this task reaches.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** Nothing re-measures or invalidates the ledger on a cadence
+tied to how often it is actually relied on. It is written as a side effect of *full* audit
+runs (cron, `fw audit` with no `--section` filter) and read by two different derivations
+(`fw_prepush_lock_wait_default`, and now `fw_handover_push_timeout_default`) that both
+implicitly assume "last full-audit measurement" tracks "current per-push gate cost" closely
+enough. On a host where full audits run irregularly (and where concurrent workers sharing
+this checkout contend for the audit lock — "Another audit is already running" appeared in 2
+of 3 live push attempts today), that assumption silently degrades and nothing flags it.
+
+**Prevention:** Not implemented in this task — see AC4's explicit instruction ("record the
+new measurement and stop... the answer is to trim the gate, not widen the budget") and
+§Execution Model's "dispatch the fix, never the search" for unlocalised debugging. Candidate
+follow-ups, named but not filed as new tasks (out of scope — "Do not widen it"):
+(1) have the pre-push hook itself update the ledger's `structure` entry after every scoped
+run, not just full-audit runs, so the number the derivation reads tracks the number the gate
+actually pays; (2) a doctor WARN when the ledger's timestamp is older than N days, sibling to
+the existing `AUDIT_TIMEOUT_WARN_FRACTION` staleness check; (3) trim the `structure` section
+itself (T-3062's original remedy) if 325s is confirmed as a real, sustained regression rather
+than one contended sample.
 
 ## Evolution
 
@@ -348,14 +412,61 @@ the push timeout instead of adding a second, differently-shaped rule.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-24 — extraction vs. wrapping fw_prepush_lock_wait_default
+- **Chose:** extracted the ledger-parsing awk block out of `fw_prepush_lock_wait_default`
+  into a new shared function `fw_audit_timing_read_structure_seconds` (plus a sibling
+  `fw_audit_timing_last_run_timed_out`), and rewrote `fw_prepush_lock_wait_default` to call
+  it. `fw_handover_push_timeout_default` calls the same reader independently, with its own
+  multiplier/floor/cap/fallback.
+- **Why:** the AC required reusing "the reader" without writing a second YAML parser. A
+  simpler alternative (call `fw_prepush_lock_wait_default` directly and add a fixed buffer)
+  was tried first and rejected — see below.
+- **Rejected — `push_timeout = fw_prepush_lock_wait_default(root) + buffer`:** this
+  guarantees dominance trivially (buffer > 0) in the *normal* path, but breaks the AC's
+  explicit "a timed-out run is ignored rather than trusted" requirement, because
+  `fw_prepush_lock_wait_default`'s own pinned tests (t3421) assert it *does* trust a
+  timed-out ledger's measured value. Proxying through it would make the push-timeout
+  inherit that same trust, which this task's AC explicitly asks it not to. Extracting the
+  raw reader let each derivation apply its own trust policy over the same parsed value.
+
+### 2026-09-24 — dominance by construction, not by runtime comparison
+- **Chose:** push-timeout knobs are each strictly larger than lock-wait's: multiplier 1.5
+  (vs 1.25), floor 180 (vs 90), cap 900 (vs 600), fallback 650 (vs 360). Verified by
+  exhaustive check across 8 measured values (10, 100, 150, 268, 480, 600, 700, 1000) plus
+  the timed-out edge — `push > lock` holds in every case, pinned in
+  `tests/unit/t3450_push_timeout_derivation.bats`.
+- **Why:** the fallback value (650) is deliberately *not* a naive scale-up of lock-wait's
+  360 fallback (which would give ~468 following the 1.3x pattern of the other knobs).
+  650 was chosen specifically to exceed `FW_PREPUSH_LOCK_WAIT_CAP` (600) — the worst case
+  `fw_prepush_lock_wait_default` can ever return — because push's fallback fires on a
+  timed-out ledger while lock-wait, on that exact same ledger, does NOT fall back (it
+  trusts the measured value regardless, per its own pinned behaviour). Without this,
+  a timed-out ledger with a large measured value would have push fall back to a *smaller*
+  number than the lock wait it must exceed — reproducing the exact ordering bug this task
+  exists to prevent, one level down.
+
+### 2026-09-24 — the AC's own test-filename reference is stale
+- **Chose:** treated `tests/unit/t3062_push_timeout_budget.bats` (named in both this task's
+  AC text and in a pre-existing handover.sh comment) as a stale reference rather than a
+  blocking discrepancy, added the coverage as a new sibling file
+  (`tests/unit/t3450_push_timeout_derivation.bats`) instead.
+- **Why:** the filename does not exist anywhere in this repo's history (`git log --all` on
+  the path returns nothing) — it appears to be a copy-paste of a filename that was never
+  actually created when the comment in handover.sh:106 was written. The real pinning file
+  is `tests/unit/handover_push_timeout.bats`, which independently already carried 3
+  pre-existing failures (stale literal-value assertions from T-1277/T-1341, predating
+  T-3062's bump of the default to 300) that are unrelated to this task's change and were
+  left untouched, per scope discipline ("Do not widen it").
+
+### 2026-09-24 — stopped at AC4 rather than widening constants
+- **Chose:** did not raise the multiplier/floor/cap after a real `fw handover --commit`
+  was killed at the newly-derived 402s.
+- **Why:** AC4 explicitly instructs this: a kill after the fix means the gate grew again,
+  and the fix for that is trimming the gate (or the measurement pipeline that feeds the
+  derivation), not widening the budget further. A freshly-measured, uncontended
+  `bin/fw audit --section structure` took 325s — the ledger the derivation reads still
+  said 268s (2 days stale, only updated by full unscoped audits). Recorded in ## RCA;
+  candidate follow-ups named there but not implemented, per task scope.
 
 ## Decision
 
@@ -373,3 +484,62 @@ the push timeout instead of adding a second, differently-shaped rule.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3450-handover-push-timeout-is-a-static-300s-w.md
 - **Context:** Initial task creation
+
+### 2026-09-24T20:50Z — AC4 live proof: derived timeout works, but the gate has grown past what the ledger records [t3450-push-timeout]
+
+**What was built (AC1/2/3/5, all verified green):**
+- `lib/prepush-lock-wait.sh`: extracted `fw_audit_timing_read_structure_seconds` (shared
+  ledger reader) and `fw_audit_timing_last_run_timed_out`; added
+  `fw_handover_push_timeout_default` (1.5x / floor 180 / cap 900 / fallback 650 — each
+  knob strictly larger than `fw_prepush_lock_wait_default`'s, proven to dominate it at
+  every measured value including the timed-out edge). `fw_prepush_lock_wait_default`
+  itself refactored to call the shared reader; behaviour unchanged, its own 7 pinned
+  tests (t3421) still green.
+- `agents/handover/handover.sh`: `_push_timeout` now resolves explicit env var → derived
+  default → hardcoded 300 only if the lib is missing; logs
+  `Push timeout: ${_push_timeout}s (${_push_timeout_source})` on every push attempt and in
+  the KILLED warning.
+- `tests/unit/t3450_push_timeout_derivation.bats`: new, 15/15 green — proportional scaling,
+  floor/cap, missing/non-numeric/timed-out fallback, dominance across 8 values + the
+  timed-out edge, explicit-env-var override, source logging.
+- `tests/lint/prepush-gate-budget.bats`: the T-3062 "push timeout leaves headroom" test
+  grepped a literal (`${FW_HANDOVER_PUSH_TIMEOUT:-300}`) this task's change removed —
+  caught live when the pre-push audit REF-FAILed on our own push. Rewrote the assertion to
+  check the derivation's floor constant instead. Full `tests/lint/` (110 tests) green after.
+- Vendor sync: `bin/fw vendor self` + `bin/fw vendor self --check` clean.
+- Commits on `bleeding-edge` (all landed on `origin/bleeding-edge`, confirmed via
+  `git fetch` + `git rev-parse HEAD origin/bleeding-edge` matching): b287beaad..6ec65b8f6
+  range includes b3ed1ca0d (derivation), 0ca68917b (tests), d2faa7061 (fabric card),
+  6016115f1 (vendor sync), 6ec65b8f6 (lint fix).
+
+**What was NOT achieved — AC4's live push proof:**
+Live derivation on this host: `structure` ledger says 268s (dated 2026-09-22) →
+`fw_handover_push_timeout_default` returns 402s. A direct `git push` (after fixing vendor
+drift and the lint invariant) completed cleanly: audit ran to completion, fails=0, no exit
+124. But a subsequent real `fw handover --commit` (the literal AC4 ask) WAS killed at exit
+124 at the derived 402s — log: `WARNING: Push to origin was KILLED at 402s (derived
+from .../full-audit-timing.yaml)`. That run hit lock contention first
+("Another audit is already running — exiting", "Audit lock held — waiting up to 335s")
+before its own structure audit could even start, consistent with another process (plausibly
+the sibling T-3389 worker sharing this checkout, or host cron) also hitting the audit lock.
+
+To separate "contention" from "the gate itself grew," ran a clean, uncontended
+`bin/fw audit --section structure` immediately after (no lock-wait line in its output):
+**325s wall-clock**, not 268s. The ledger the derivation reads is stale — it is written
+only by full unscoped `fw audit` runs (last one 2026-09-22), not by the scoped
+`--section structure` invocation the pre-push hook and this measurement both actually run.
+So even without contention, the real current gate cost already eats most of the derived
+402s budget, and any contention on top of that exceeds it.
+
+**Per AC4's own instruction, did not widen the multiplier/floor/cap.** This is a second,
+deeper instance of the same root-cause class the task fixes at the handover.sh layer: a
+number derived from a measurement that goes stale. Filed the finding in ## RCA with
+candidate follow-ups (ledger updated on every scoped run, staleness WARN in doctor, or
+trimming `structure` itself) — none implemented here, per "Do not widen it."
+
+**Status:** AC4 left unchecked. AC1/2/3/5 done and verified. Not calling
+`--status work-completed`. Posting to agent-chat-arc and handing back per the operator's
+standing order.
+
+### 2026-09-24T20:57:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → issues
