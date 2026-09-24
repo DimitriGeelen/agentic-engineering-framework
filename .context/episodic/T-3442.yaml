@@ -1,0 +1,112 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3442: DM rails addressed to our agent key have no reader and no search covers them: sidecar lists and drains dm:* rails, doctor/audit WARN on unread, TermLink asked to cover DM in agent search (OBS-482)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-24T16:01:35Z
+# ============================================================================
+
+task_id: T-3442
+task_name: "DM rails addressed to our agent key have no reader and no search covers them: sidecar lists and drains dm:* rails, doctor/audit WARN on unread, TermLink asked to cover DM in agent search (OBS-482)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-22T21:30:00Z
+completed: 2026-09-24T16:01:09Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-09-24T17:47:50+02:00
+last_commit: 2026-09-24T18:01:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  dm.py — enumerate dm:* rails addressed to our identity, cursors + unread. consult + concerns — ask 010-termlink to cover dm:* in agent search. tests + fabric card — 15 pytest cases for lib/sidecar/dm.py. doctor + audit WARN on stale unread DM rails. vendor sync — DM rail sidecar files to .agentic-framework/. record — 5 Agent ACs ticked with evidence, Decisions + Evolution filled
+
+# Key outcomes
+outcomes:
+  - '`fw sidecar inbox --peek` and `fw sidecar status` list every `dm:*:<our-key>` and'
+  - '`fw doctor` WARNs `DM rail <id> has N unread post(s), oldest <age>` when any such rail has'
+  - 'A consult is sent to `010-termlink` on the sidecar (recorded client_msg_id in this task)'
+  - 'pytest: fixture hub state with one DM rail addressed to our key carrying 3 posts and a'
+  - 'Live: run on this host lists `dm:3bba15e681b3a078:d1993c2c3ec44c94` with its unread count'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-24 — "our key" for DM rails = TermLink identity fingerprint, not a circuit id'
+    chose: '`dm.identity_fingerprint()` reads `termlink whoami --json`''s `session.identity_fingerprint` (machine-wide, T-3405) as the key `dm:<a>:<b>` rails are matched against, and surfaces it on `fw sidecar whoami` as `identity_fingerprint` (the AC''s "signing key `fw sidecar whoami` reports").'
+    rationale: 'DM rail names are TermLink''s own convention, not ours to choose (unlike `inbox:<circuit-id>` topics, T-3433) — the two segments are literally the two identities `termlink agent contact`/`channel dm` used. Confirmed live: this session''s `identity_fingerprint` is `d1993c2c3ec44c94`, which matches the second segment of the target rail `dm:3bba15e681b3a078:d1993c2c3ec44c94`.'
+    alternatives_rejected: ['`circuit.hub_id()` (that is the HUB''s fingerprint, a different value); a project- or agent-scoped circuit id (DM rails are not addressed that way — TermLink does not know our circuit convention).']
+  - decision: '2026-09-24 — unread count for `summary()`/`stale()` is a live hub call, not derived from `status.snapshot()`'
+    chose: '`dm.summary()` and `dm.stale()` call `termlink channel list --prefix dm:` directly; `sidecar_cli.py:cmd_status` merges the result into the printed/JSON output alongside (not inside) `status_mod.snapshot()`.'
+    rationale: 'see Evolution entry above — `status.snapshot()`''s documented invariant is hub-free, and DM rail existence/counts have no durable local record to read instead.'
+    alternatives_rejected: ['folding `dm_rails` into `snapshot()` itself (would silently break the documented "never asks the hub" claim for every other caller of `snapshot()`, including `fw_sidecar_ledger_facts`''s ack-ledger read).']
+  - decision: '2026-09-24 — meta envelopes (topic_metadata/receipt/reaction/redaction/edit) advance the cursor but are not counted as "posts"'
+    chose: '`dm.pending()` reads every envelope from the cursor (so the cursor advances past them, matching what a real drain saw) but excludes meta `msg_type`s from the returned list; `dm._unread_count()`/`dm.stale()` treat the DM rail''s `count`/ `latest_offset` as the ground truth for "how many posts exist" (which includes meta envelopes, since TermLink''s own counters do) but hunt specifically for CONTENT when reporting an age.'
+    rationale: 'matches what `termlink channel unread --help` itself documents excluding, and avoids `fw sidecar inbox` printing an empty "post" for a `topic_metadata` banner (every DM rail''s offset 0, observed live on every one of the 11 real rails checked).'
+    alternatives_rejected: ['treating every envelope as content (would print junk `topic_metadata` banners as if they were peer messages); excluding meta from the cursor advance too (would leave meta envelopes permanently "unread" and understate `count`-derived totals in `summary()`).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/sidecar-audit.sh'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/dm.py'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/lib-sidecar-dm.yaml'
+  - 'lib/sidecar-audit.sh'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/dm.py'
+  - '.tasks/active/T-3442-ewcr-clause-2-the-six-independent-search.md'
+  - 'tests/unit/test_sidecar_dm.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-24T17:47:50'
+    action: 'T-3442: dm.py — enumerate dm:* rails addressed to our identity, cursors + unread'
+  - time: '2026-09-24T17:57:24'
+    action: 'T-3442: consult + concerns — ask 010-termlink to cover dm:* in agent search'
+  - time: '2026-09-24T17:57:32'
+    action: 'T-3442: tests + fabric card — 15 pytest cases for lib/sidecar/dm.py'
+  - time: '2026-09-24T17:57:48'
+    action: 'T-3442: doctor + audit WARN on stale unread DM rails'
+  - time: '2026-09-24T17:58:23'
+    action: 'T-3442: vendor sync — DM rail sidecar files to .agentic-framework/'
+  - time: '2026-09-24T18:01:05'
+    action: 'T-3442: record — 5 Agent ACs ticked with evidence, Decisions + Evolution filled'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 2551 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2551
+  commits: 6
+  files_changed: 14
+  lines_added: 1626
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3442-ewcr-clause-2-the-six-independent-search.md
+generated_by: context-agent-hybrid

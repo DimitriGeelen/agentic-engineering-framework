@@ -6,12 +6,12 @@ name: "DM rails addressed to our agent key have no reader and no search covers t
 description: >
   Promoted from observation OBS-482
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent   # operator assignment 2026-09-23 ("On two, okay that's fine"); no fw verb sets owner — edit recorded on the task
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/sidecar-audit.sh, lib/sidecar_cli.py, lib/sidecar/dm.py]
 related_tasks: []
 arc_id: arc-011
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -25,8 +25,8 @@ arc_id: arc-011
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T21:30:00Z
-last_update: 2026-09-24T15:41:40Z
-date_finished:
+last_update: 2026-09-24T16:01:09Z
+date_finished: 2026-09-24T16:01:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -466,3 +466,15 @@ bin/fw vendor self --check
 
 ### 2026-09-24T15:40:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6221990d
+- **Timestamp:** 2026-09-24T16:01:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-24T16:01:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
