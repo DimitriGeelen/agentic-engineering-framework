@@ -4459,3 +4459,31 @@ decisions:
     date: 2026-09-24
     task: T-3445
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-638
+    decision: "`dm.identity_fingerprint()` reads `termlink whoami --json`'s"
+    scope: project
+    date: 2026-09-24
+    task: T-3442
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-639
+    decision: "`dm.summary()` and `dm.stale()` call `termlink channel list --prefix dm:`"
+    scope: project
+    date: 2026-09-24
+    task: T-3442
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-640
+    decision: "`dm.pending()` reads every envelope from the cursor (so the cursor advances"
+    scope: project
+    date: 2026-09-24
+    task: T-3442
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-641
+    decision: "The predicate's Human-side check"
+    scope: project
+    date: 2026-09-24
+    task: T-3449
+    rationale: "Auto-captured from task file on completion"
