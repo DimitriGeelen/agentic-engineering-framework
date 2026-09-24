@@ -173,7 +173,28 @@ def _ensure_agent_subhead(lines: list[str]) -> list[str]:
 
 
 def verification_line(task_id: str) -> str:
-    return f'bin/fw reviewer {task_id} 2>&1 | grep -q "Overall:.*PASS"'
+    """The close-gate line that makes a PASS verdict the thing that closes the task.
+
+    NOT the form the task spec and CLAUDE.md's `[REVIEWER]` conversion rule both
+    prescribe (`bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"`). That
+    form is self-defeating HERE, measured on the T-9001 fixture 2026-09-24: the
+    reviewer's own `l387-sigpipe-risk` detector flags a streaming command piped
+    into a terminal `grep -q`, so writing it into `## Verification` makes the
+    reviewer emit a finding against the very line that reads its verdict —
+    `Overall: CONCERN`, the grep misses, and the delegated task can never close.
+    Every delegated task would have inherited that, which is the difference
+    between a mechanism and a trap.
+
+    This is the redirect shape `detect_l387_sigpipe_risk`'s own docstring names
+    as the safe rewrite, and CLAUDE.md's `## Verification` guidance calls THE
+    DEFAULT. `&&` rather than `;` keeps the reviewer's exit code in the verdict
+    (T-3203): a sequence is judged only on its last command.
+    """
+    out = f"/tmp/.fw-reviewer-{task_id}.out"
+    return (
+        f'bin/fw reviewer {task_id} > {out} 2>&1 && '
+        f'grep -q "Overall:.*PASS" {out}'
+    )
 
 
 def _append_verification(lines: list[str], task_id: str) -> tuple[list[str], bool]:
