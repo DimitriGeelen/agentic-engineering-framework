@@ -4403,3 +4403,59 @@ decisions:
     date: 2026-09-23
     task: T-3440
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-630
+    decision: "`_t3443_project_is_framework_root()` resolves both `PROJECT_ROOT` and"
+    scope: project
+    date: 2026-09-23
+    task: T-3443
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-631
+    decision: "file OBS-487 and leave `tests/unit/fabric_watch_pattern_fitness.bats`'s"
+    scope: project
+    date: 2026-09-23
+    task: T-3443
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-632
+    decision: "emit `bin/fw reviewer T-XXX > /tmp/.fw-reviewer-T-XXX.out 2>&1 && grep -q \"Overall:.*PASS\" /tmp/.fw-reviewer-T-XXX.out`"
+    scope: project
+    date: 2026-09-24
+    task: T-3445
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-633
+    decision: "keep AC 2's rule (ownership moves only when no Human criterion remains"
+    scope: project
+    date: 2026-09-24
+    task: T-3445
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-634
+    decision: "render-surface → tier0-or-bypass → sovereignty-field → inception-decision"
+    scope: project
+    date: 2026-09-24
+    task: T-3445
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-635
+    decision: "add a 9th class (`agent-self`, the T-2143 / T-2147 audience axis) because"
+    scope: project
+    date: 2026-09-24
+    task: T-3445
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-636
+    decision: "write the frontmatter in `lib/delegation_cli.py`, with"
+    scope: project
+    date: 2026-09-24
+    task: T-3445
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-637
+    decision: "`fw task delegate` calls `lib/render_surface.sh:task_touches_render_surface`"
+    scope: project
+    date: 2026-09-24
+    task: T-3445
+    rationale: "Auto-captured from task file on completion"

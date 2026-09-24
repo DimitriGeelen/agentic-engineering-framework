@@ -12,12 +12,12 @@ description: >
   agent ownership, and lets a PASS verdict from fw reviewer close it (operator ruling
   2026-09-23)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/config.sh, lib/delegation_cli.py, lib/delegation.py, tests/unit/t3445_delegation_close_path.bats, tests/unit/test_delegation_classifier.py, web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -30,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-23T11:45:08Z
-last_update: '2026-09-24T15:15:11Z'
-date_finished:
+last_update: 2026-09-24T15:19:51Z
+date_finished: 2026-09-24T15:19:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -520,8 +520,8 @@ committing or reverting, since the repo cut v1.7.0 today and VERSION was out of 
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f3bf4d21
-- **Timestamp:** 2026-09-24T15:18:42Z
+- **Scan ID:** R-a26a1a18
+- **Timestamp:** 2026-09-24T15:20:12Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -531,3 +531,6 @@ committing or reverting, since the repo cut v1.7.0 today and VERSION was out of 
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `timeout 300 python3 -m pytest tests/unit/test_delegation_classifier.py -q > /tmp/.t3445-pytest.out 2>&1 && grep -q "passed" /tmp/.t3445-pytest.out`
+
+### 2026-09-24T15:19:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
