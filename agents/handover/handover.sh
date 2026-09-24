@@ -103,9 +103,28 @@ _push_to_remotes() {
     #
     # So the number is not a network budget, it is `gate cost + network`, and it
     # needs real headroom above the gate or this returns the moment some check
-    # grows. tests/unit/t3062_push_timeout_budget.bats pins the relationship;
-    # it is the assertion, this comment is only the reason.
-    _push_timeout="${FW_HANDOVER_PUSH_TIMEOUT:-300}"
+    # grows. tests/unit/handover_push_timeout.bats pins the relationship; it is
+    # the assertion, this comment is only the reason.
+    #
+    # T-3450: the static 300 above was itself an instance of exactly this
+    # failure — 300 had ~241s of headroom over the gate at T-3062 (~59s) and
+    # 32s of headroom by 2026-09-22 (gate grown to 268s), and three handovers
+    # on 2026-09-24 were killed at exit 124 as a result. The default is now
+    # derived per push from the measured gate cost (lib/prepush-lock-wait.sh,
+    # fw_handover_push_timeout_default) instead of asserted once and left to
+    # rot; an explicit FW_HANDOVER_PUSH_TIMEOUT still wins outright.
+    _push_timeout_source="explicit FW_HANDOVER_PUSH_TIMEOUT"
+    if [ -n "${FW_HANDOVER_PUSH_TIMEOUT:-}" ]; then
+        _push_timeout="$FW_HANDOVER_PUSH_TIMEOUT"
+    elif [ -f "$FRAMEWORK_ROOT/lib/prepush-lock-wait.sh" ]; then
+        . "$FRAMEWORK_ROOT/lib/prepush-lock-wait.sh"
+        _push_timeout=$(fw_handover_push_timeout_default "$PROJECT_ROOT")
+        _push_timeout_source="derived from $PROJECT_ROOT/.context/audits/full-audit-timing.yaml"
+    else
+        _push_timeout=300
+        _push_timeout_source="hardcoded fallback (lib/prepush-lock-wait.sh not found)"
+    fi
+    echo -e "  ${CYAN}Push timeout: ${_push_timeout}s (${_push_timeout_source})${NC}"
     # T-1255 (G-007): When >1 remote is configured AND `origin` is one of them,
     # push ONLY to origin. Mirroring (e.g. github) is OneDev's job via
     # .onedev-buildspec.yml's PushRepository job. Pushing directly to mirror
@@ -141,7 +160,7 @@ _push_to_remotes() {
             # at the caller that does the bounding.
             if [ "$_exit" -eq 124 ]; then
                 _push_kind="killed"
-                echo -e "  ${YELLOW}WARNING: Push to $remote_name was KILLED at ${_push_timeout}s — the pre-push gate did not finish, so NO verdict was produced (T-3063).${NC}" >&2
+                echo -e "  ${YELLOW}WARNING: Push to $remote_name was KILLED at ${_push_timeout}s (${_push_timeout_source}) — the pre-push gate did not finish, so NO verdict was produced (T-3063).${NC}" >&2
                 echo -e "  ${YELLOW}         This is not 'the gate refused you'. Measure it: time bin/fw audit --section structure${NC}" >&2
             else
                 _push_kind="refused"
