@@ -1,0 +1,21 @@
+id: tests/unit/t3450_push_timeout_derivation.bats
+name: t3450_push_timeout_derivation
+type: script
+subsystem: tests
+location: tests/unit/t3450_push_timeout_derivation.bats
+tags: []
+
+purpose: "T-3450 — the handover push timeout is derived from the measured audit gate cost, instead of a static 300."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-24
+created_by: unknown
