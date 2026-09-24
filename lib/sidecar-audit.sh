@@ -55,3 +55,49 @@ except Exception:
 ' || return 2
     return 0
 }
+
+# fw_sidecar_dm_stale_facts <project_root> [threshold_hours]
+#
+#   T-3442: DM rails (dm:<a>:<b>) are TermLink's own two-identity topics, not
+#   ours to create or receive into automatically — nothing drains them, so a
+#   rail addressed to our identity can sit unread indefinitely (origin:
+#   832's clause-2 answer sat 3+ weeks unread while five drives reported the
+#   artefacts it named as absent). This is deliberately NOT the same
+#   out-of-band guarantee `fw_sidecar_ledger_facts` above relies on — a
+#   DM rail's unread count has no durable local answer, only the hub knows,
+#   so this function calls the hub (via `fw sidecar dm-stale`) rather than
+#   reading files. It degrades the same way: rc 1 when there is nothing to
+#   check, rc 2 when the check could not run at all, never printing zeros
+#   for a check that did not happen.
+#
+#     stdout : one line per stale rail, TAB-separated: TOPIC<TAB>UNREAD<TAB>AGE_HOURS
+#     rc 0   : facts printed (possibly empty — no rail is stale)
+#     rc 1   : termlink is not installed, or no identity fingerprint could
+#              be derived — the caller stays silent, same as an unused sidecar
+#     rc 2   : sidecar_cli.py is missing, or the dm-stale call itself failed
+#              to produce parseable JSON — the caller should say so
+fw_sidecar_dm_stale_facts() {
+    local root="${1:?fw_sidecar_dm_stale_facts: project root required}"
+    local threshold_hours="${2:-24}"
+    command -v termlink >/dev/null 2>&1 || return 1
+
+    local lib_dir
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    [ -f "$lib_dir/sidecar_cli.py" ] || return 2
+
+    local rows
+    rows=$(FRAMEWORK_ROOT="$root" timeout 30 python3 "$lib_dir/sidecar_cli.py" \
+           dm-stale --threshold-hours "$threshold_hours" --json 2>/dev/null) || return 2
+    [ -n "$rows" ] || return 2
+
+    printf '%s' "$rows" | python3 -c '
+import json, sys
+try:
+    rows = json.load(sys.stdin)
+    for r in rows:
+        print("\t".join(str(r[k]) for k in ("topic", "unread", "age_hours")))
+except Exception:
+    sys.exit(2)
+' || return 2
+    return 0
+}

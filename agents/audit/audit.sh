@@ -3380,8 +3380,41 @@ check_sidecar_ledger() {
     # shellcheck source=/dev/null
     source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
 
+    local _bad=0
+
+    # T-3442: DM rails (dm:<a>:<b>) addressed to our TermLink identity are a
+    # SEPARATE fact source from the ack ledger below — nothing drains them
+    # automatically, so a rail can sit unread indefinitely regardless of
+    # whether this project has ever SENT a consult (origin: 832's
+    # substantive clause-2 answer, 3+ weeks unread on exactly such a rail).
+    # Checked BEFORE the outbox-existence gate below on purpose: a project
+    # that never sent anything can still have an unread rail addressed to
+    # it, so this must not inherit the ledger's "no outbox → stay silent"
+    # short-circuit. WARN, never FAIL: an operator-attention item, not a
+    # framework defect.
+    local _dm_rows _dm_rc
+    _dm_rows=$(fw_sidecar_dm_stale_facts "$PROJECT_ROOT" 24); _dm_rc=$?
+    if [ "$_dm_rc" -eq 2 ]; then
+        _bad=1
+        warn "Sidecar: DM-rail staleness check could not run" \
+             "fw sidecar dm-stale --json produced no readable output" \
+             "Run: bin/fw sidecar dm-stale --json — an unreadable check is the same silent-failure shape as an unreadable ledger (T-3420)"
+    elif [ "$_dm_rc" -eq 0 ] && [ -n "$_dm_rows" ]; then
+        _bad=1
+        local _dm_topic _dm_unread _dm_age _dm_age_disp
+        while IFS=$'\t' read -r _dm_topic _dm_unread _dm_age; do
+            [ -z "$_dm_topic" ] && continue
+            _dm_age_disp=$(awk -v h="$_dm_age" 'BEGIN{if (h>=48) printf "%.1fd", h/24; else printf "%.0fh", h}')
+            warn "DM rail $_dm_topic has $_dm_unread unread post(s), oldest $_dm_age_disp" \
+                 "fw sidecar dm-stale --json: unread=$_dm_unread age_hours=$_dm_age on $_dm_topic" \
+                 "Run: bin/fw sidecar inbox --peek to confirm, then bin/fw sidecar inbox to drain and read it"
+        done <<< "$_dm_rows"
+    fi
+
     local _facts _rc _unknown _expired _stored _delivered _total _deadletters
     _facts=$(fw_sidecar_ledger_facts "$PROJECT_ROOT"); _rc=$?
+    # No outbox — the ledger has nothing to report. Any DM WARN above has
+    # already been printed by this point, so returning here does not lose it.
     [ "$_rc" -eq 1 ] && return 0
     if [ "$_rc" -ne 0 ] || [ -z "$_facts" ]; then
         warn "Sidecar ledger unreadable" \
@@ -3392,7 +3425,6 @@ check_sidecar_ledger() {
     IFS=$'\t' read -r _unknown _expired _stored _delivered _total _deadletters <<< "$_facts"
     : "${_deadletters:=0}"   # five-field ledgers predate T-3434's column
 
-    local _bad=0
     if [ "${_deadletters:-0}" -gt 0 ]; then
         # T-3434: a dead-letter is the retry ladder giving up after all 16
         # attempts (or losing the durable message file). It is a SUBSET of
@@ -3416,6 +3448,7 @@ check_sidecar_ledger() {
              "fw sidecar status: expired_unswept=$_expired; cron 'sidecar-sweep-5m' should work each due rung within 5 minutes" \
              "Run: bin/fw cron status sidecar-sweep-5m && bin/fw sidecar sweep — if the sweep advances them, the cron slot is dead, not the ledger (T-3418, T-3434)"
     fi
+
     if [ "$_bad" -eq 0 ]; then
         pass "Sidecar ledger: $_total consult(s), $_delivered delivered, ${_stored} in flight, 0 UNKNOWN, 0 dead-lettered, 0 expired-unswept"
     fi
