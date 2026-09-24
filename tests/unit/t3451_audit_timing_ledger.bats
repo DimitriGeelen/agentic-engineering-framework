@@ -347,8 +347,11 @@ EOF
     run _run_doctor_block "$(date -Iseconds)"
     [ "$status" -eq 0 ]
     echo "$output" | grep -q 'GREEN:.*Structure-section timing is current'
-    ! echo "$output" | grep -q 'YELLOW:'
     echo "$output" | grep -q 'warnings=0'
+    # T-3138/T-3191 dead-negation lint: a bare `! cmd` must be the test's LAST
+    # statement (or ||-guarded) or its failure never fails the test. Last on
+    # purpose here.
+    ! echo "$output" | grep -q 'YELLOW:'
 }
 
 @test "doctor: unmeasured structure timing is an INFO, not a WARN, and does not count as an issue" {
