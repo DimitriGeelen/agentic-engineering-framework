@@ -25,15 +25,19 @@
     slice/split context — but the fix was scoped to the delegation
     classifier and never ported to web/shared.py, which predates it and is
     what the live review queue and /approvals actually call.'
-  prevention: 'NOT FIXED. T-3449 worked around it locally: its own new
-    function (web.shared.count_human_acs_total) was written with a
-    suffix-tolerant regex (`### Human\b[^\n]*$`) from the start, so the
-    unclosable-misfiled predicate does not inherit the bug. The real fix —
-    porting the same `\b` boundary into count_unchecked_human_acs, plus a
-    test fixture pinning a suffix-qualified heading (T-1062 and T-1718 are
-    live fixtures) — is intentionally left for a separate task per CLAUDE.md
-    Task Sizing Rules ("one bug = one task"); T-3449''s own bug is the
-    unclosable-misfiled class, not this one.'
+  prevention: 'NOT FIXED. T-3449 worked around it locally: its own function
+    (lib/unclosable_misfiled.py:count_human_acs_total — kept OUT of
+    web/shared.py entirely, since that file is a declared render surface
+    per lib/render_surface.sh and any touch to it trips the P-013 gate) was
+    written with a suffix-tolerant regex (`### Human\b[^\n]*$`) from the
+    start, so the unclosable-misfiled predicate does not inherit the bug.
+    The real fix — porting the same `\b` boundary into
+    web/shared.py:count_unchecked_human_acs, plus a test fixture pinning a
+    suffix-qualified heading (T-1062 and T-1718 are live fixtures) — is
+    intentionally left for a separate task per CLAUDE.md Task Sizing Rules
+    ("one bug = one task"); T-3449''s own bug is the unclosable-misfiled
+    class, not this one. That follow-up task WILL touch web/shared.py and
+    WILL need a real `[REVIEW]` Human AC per P-013 — unlike this workaround.'
   blast_radius: 'fw review-queue VERDICT section, Watchtower /approvals — any
     active task whose ### Human heading carries a suffix qualifier'
   observed: '2026-09-24'

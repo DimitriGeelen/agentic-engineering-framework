@@ -41,14 +41,20 @@ so treating it as zero here would not just be wrong, it would recommend an
 action the close gate does not even allow un-bypassed.
 
 The Human side of this predicate therefore does NOT use
-`lib.delegation.parse_criteria`. It uses `web.shared.count_human_acs_total`
-(T-3449, sibling of the T-3139-fixed `count_unchecked_human_acs`), which
-scans for `### Human` wherever it sits in the WHOLE document, not just inside
-`## Acceptance Criteria` — the scope T-3139 already established as correct
-for exactly this reason, with a portable inline fallback when `web/` is not
-on the import path (consumer projects without Watchtower vendored — same
-fallback shape `bin/fw`'s review-queue command already carries for the same
-function).
+`lib.delegation.parse_criteria`. It uses its own `count_human_acs_total`
+(below), sibling in ALGORITHM to `web.shared.count_unchecked_human_acs`
+(T-3139) — same whole-document scope, same comment strip — but a SEPARATE
+function living only here, not imported from `web/shared.py`. That is a
+deliberate placement choice, not laziness: `web/shared.py` is a declared
+render surface (`lib/render_surface.sh:RENDER_SURFACE_PATTERNS`, P-013/T-1766),
+so ANY change to that file — even a pure backend helper nothing renders —
+trips the render-surface gate and demands a `[REVIEW]` Human AC on whatever
+task touches it. This predicate module has no rendering surface of its own,
+so it stays out of that file entirely, at the cost of one small duplicated
+function. `web.shared.count_unchecked_human_acs` itself has the identical
+suffix-intolerance gap this function fixes locally (see OBS-256 in
+`.context/concerns.yaml`) — left unfixed there deliberately, a separate task
+per CLAUDE.md "one bug, one task", not a placement it inherits.
 
 The Agent side has no equivalent hazard — `### Agent` is always the first
 subhead directly under `## Acceptance Criteria` in every task this corpus
@@ -74,24 +80,27 @@ if str(_HERE.parent) not in sys.path:
 
 from lib.delegation import Criterion, frontmatter, parse_criteria  # noqa: E402
 
-try:
-    from web.shared import count_human_acs_total  # noqa: E402
-except ImportError:
-    # Portable fallback — same algorithm as web.shared.count_human_acs_total
-    # (T-3449) / count_unchecked_human_acs (T-3139/T-1581), for contexts where
-    # web/ isn't on the import path (e.g. a consumer project without
-    # Watchtower vendored). Mirrors the identical fallback bin/fw's
-    # review-queue command already carries for count_unchecked_human_acs.
-    def count_human_acs_total(body: str) -> int:  # type: ignore[misc]
-        if not body:
-            return 0
-        text = _re.sub(r"<!--.*?-->", "", body, flags=_re.DOTALL)
-        total = 0
-        for m in _re.finditer(
-            r"^### Human\b[^\n]*$(.*?)(?=^#{1,3} |\Z)", text, _re.MULTILINE | _re.DOTALL,
-        ):
-            total += len(_re.findall(r"^\s*-\s*\[[ xX]\]", m.group(1), _re.MULTILINE))
-        return total
+
+def count_human_acs_total(body: str) -> int:
+    """Count ALL `### Human` AC lines — checked AND unchecked (T-3449).
+
+    Algorithm sibling of `web.shared.count_unchecked_human_acs` (T-3139:
+    whole-document scope, comment-stripped) — see module docstring for why
+    this is a separate function here rather than a shared import. Also
+    suffix-tolerant (`### Human\\b`, not `### Human\\s*$`) — T-1062 and
+    T-1718 carry real, unticked `[REVIEW]` criteria under headings like
+    `### Human (Slice 1)` / `### Human (T-1679 split — …)`, which an
+    exact-only anchor reads as zero.
+    """
+    if not body:
+        return 0
+    text = _re.sub(r"<!--.*?-->", "", body, flags=_re.DOTALL)
+    total = 0
+    for m in _re.finditer(
+        r"^### Human\b[^\n]*$(.*?)(?=^#{1,3} |\Z)", text, _re.MULTILINE | _re.DOTALL,
+    ):
+        total += len(_re.findall(r"^\s*-\s*\[[ xX]\]", m.group(1), _re.MULTILINE))
+    return total
 
 
 def agent_criteria(text: str) -> list[Criterion]:
