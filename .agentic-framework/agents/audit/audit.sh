@@ -5843,6 +5843,28 @@ PYEOF
              "active task(s)" "CTL-029: No completable-but-not-completed active tasks" \
              "" ".tasks/active/ holds no task files — the completability scan had nothing to consider"
     fi
+
+    # T-3449: how many of CTL-029's completable-but-unclosed count are the
+    # STRANDED shape specifically — owner:human, zero real ### Human
+    # criteria, every ### Agent criterion ticked. Not a new WARN tier: these
+    # tasks are already inside the count above (or, when owner:human with a
+    # real Human criterion, correctly excluded from it by T-3444's
+    # narrowing). This line names the subset and points at the one place it
+    # is actionable (`fw review-queue`'s READY TO CLOSE section), because
+    # `fw task delegate` declines this shape (nothing deterministic to
+    # convert — D-626 reaches nothing here) and an agent cannot close a
+    # human-owned task directly.
+    _um_cli="$FRAMEWORK_ROOT/lib/unclosable_misfiled.py"
+    if [ -f "$_um_cli" ] && [ -d "$PROJECT_ROOT/.tasks/active" ]; then
+        _um_facts=$(PROJECT_ROOT="$PROJECT_ROOT" PYTHONPATH="$FRAMEWORK_ROOT" \
+                    python3 -m lib.unclosable_misfiled scan --facts 2>/dev/null || true)
+        if [ -n "$_um_facts" ]; then
+            IFS=$'\t' read -r _um_count _um_ids <<< "$_um_facts"
+            if [ "${_um_count:-0}" -gt 0 ] 2>/dev/null; then
+                info "CTL-029: $_um_count of the above are unclosable-misfiled (owner:human, no Human criteria, all Agent ACs ticked) — see: bin/fw review-queue"
+            fi
+        fi
+    fi
 fi
 
 # ============================================

@@ -1046,6 +1046,43 @@ def count_unchecked_human_acs(body: str) -> int:
     return total
 
 
+def count_human_acs_total(body: str) -> int:
+    """Count ALL `### Human` AC lines — checked AND unchecked (T-3449).
+
+    Sibling of `count_unchecked_human_acs`, same whole-document /
+    comment-stripped scope (T-3139), same reason: the "owner:human, zero real
+    Human criteria" class (`lib.unclosable_misfiled`) needs the total, not
+    just the open count, and it needs the T-3139 scope specifically — a
+    `### Human` heading hidden behind an intervening `## ` heading (the
+    T-3029/T-2420 class) still carries a real, load-bearing criterion, and a
+    scan bounded to `## Acceptance Criteria` would miss it and misreport the
+    task as having none. See `count_unchecked_human_acs` docstring for the
+    full scope rules; they apply identically here except `[ ]` vs `[x]`.
+
+    Suffix-tolerant (`### Human\\b`, not `### Human\\s*$`) — T-1062 and T-1718
+    carry real, unticked `[REVIEW]` criteria under headings like
+    `### Human (Slice 1)` / `### Human (T-1679 split — …)`. Matched
+    exact-only, both read as zero Human ACs, which is wrong twice over: wrong
+    for this predicate (a false "safe to one-command-close"), and — found
+    only by building this — also wrong for `count_unchecked_human_acs`
+    itself, which uses the same exact-only anchor and is what the live
+    review-queue VERDICT section and /approvals actually call. That sibling
+    bug is intentionally NOT fixed here (OBS-256, CLAUDE.md "one bug, one
+    task" — this function's own regex is written correctly from the start,
+    which is authoring new code, not patching the existing one).
+    """
+    if not body:
+        return 0
+    text = _strip_html_comments(body)
+    total = 0
+    for m in re_mod.finditer(
+        r"^### Human\b[^\n]*$(.*?)(?=^#{1,3} |\Z)",
+        text, re_mod.MULTILINE | re_mod.DOTALL,
+    ):
+        total += len(re_mod.findall(r"^\s*-\s*\[[ xX]\]", m.group(1), re_mod.MULTILINE))
+    return total
+
+
 def needs_human_review(body: str) -> bool:
     """Boolean wrapper over `count_unchecked_human_acs`.
 

@@ -1,0 +1,21 @@
+id: tests/unit/test_unclosable_misfiled.py
+name: test_unclosable_misfiled
+type: script
+subsystem: tests
+location: tests/unit/test_unclosable_misfiled.py
+tags: []
+
+purpose: "T-3449 — owner:human tasks with no real Human criteria and all Agent criteria ticked have no route to closure."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-24
+created_by: unknown
