@@ -23,7 +23,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lib.sidecar import circuit, delivery, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
+from lib.sidecar import circuit, delivery, dm, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
 from lib.sidecar import termlink_transport as transport  # noqa: E402
 
 
@@ -42,6 +42,11 @@ def cmd_whoami(args) -> int:
             "project_circuit": circuit.circuit_id("project"),
             "inbox_topic": inbox.inbox_topic(),
             "legacy_topics": inbox.legacy_topics(),
+            # T-3442: the TermLink identity fingerprint, distinct from every
+            # circuit id above — machine-wide (T-3405), and the key DM rails
+            # (dm:<a>:<b>) are addressed with. `dm.rails_for_key()` defaults
+            # to this same value.
+            "identity_fingerprint": dm.identity_fingerprint(),
         }
     except circuit.CircuitError as exc:
         print(f"whoami: no address can be derived — {exc}", file=sys.stderr)
@@ -56,6 +61,8 @@ def cmd_whoami(args) -> int:
         print(f"inbox topic:   {payload['inbox_topic']}")
         for topic in payload["legacy_topics"]:
             print(f"legacy (read): {topic}")
+        print(f"identity fp:   {payload['identity_fingerprint'] or '- (termlink unreachable)'}"
+              "   (DM rail key, machine-wide — T-3405)")
     return 0
 
 
@@ -99,10 +106,23 @@ def cmd_send(args) -> int:
 
 def cmd_inbox(args) -> int:
     messages = inbox.pending(advance=not args.peek)
+    # T-3442: `--peek` shows DM rail SUMMARIES (count/cursor/unread, no hub
+    # drain of content) — the same shape `fw sidecar status` prints. A
+    # non-peek call actually drains unread DM posts (like the consult inbox
+    # above) and advances each rail's cursor.
+    dm_rows = dm.summary() if args.peek else []
+    dm_posts = [] if args.peek else dm.pending(advance=True)
+
     if args.json:
-        print(json.dumps(messages, indent=2))
+        payload = {"consults": messages}
+        if args.peek:
+            payload["dm_rails"] = dm_rows
+        else:
+            payload["dm_posts"] = dm_posts
+        print(json.dumps(payload, indent=2))
         return 0
-    if not messages:
+
+    if not messages and not (dm_rows or dm_posts):
         print(f"no pending consults on {inbox.inbox_topic()}")
         return 0
     for msg in messages:
@@ -111,11 +131,29 @@ def cmd_inbox(args) -> int:
               f"[{msg.get('conversation_id')}] ---")
         print(msg.get("body", ""))
         print()
+    if args.peek:
+        for row in dm_rows:
+            print(f"dm rail {row['topic']}: count={row['count']} "
+                  f"cursor={row['cursor']} unread={row['unread']}")
+    else:
+        for msg in dm_posts:
+            sender = msg.get("from") or "unknown"
+            print(f"--- dm @{msg.get('offset')} on {msg.get('topic')} "
+                  f"from {sender} ---")
+            print(msg.get("body", ""))
+            print()
     return 0
 
 
 def cmd_status(args) -> int:
     snap = status_mod.snapshot()
+    # T-3442: DM rail summary is queried HERE, separately from
+    # status_mod.snapshot() — snapshot()'s one design rule is that it reads
+    # only our own durable state and never asks the hub (see status.py's
+    # module docstring). Listing which dm:* rails exist has no durable
+    # answer of its own, so it is merged in at the CLI boundary instead of
+    # folded into the hub-free function.
+    dm_rows = dm.summary()
     probe = None
     if args.probe:
         # Kept apart from the file-derived numbers on purpose: the hub's
@@ -124,11 +162,17 @@ def cmd_status(args) -> int:
         probe = {"ok": verdict.ok, "reason": verdict.reason}
     if args.json:
         payload = dict(snap)
+        payload["dm_rails"] = dm_rows
         if probe is not None:
             payload["hub_probe"] = probe
         print(json.dumps(payload, indent=2))
         return 0
     print(status_mod.render(snap))
+    if dm_rows:
+        print("dm rails:")
+        for row in dm_rows:
+            print(f"  {row['topic']}: count={row['count']} "
+                  f"cursor={row['cursor']} unread={row['unread']}")
     if probe is not None:
         print(f"hub probe:        {'ok' if probe['ok'] else 'REFUSED'} — {probe['reason']}")
     return 0
@@ -206,6 +250,20 @@ def cmd_e2e(args) -> int:
     return 0 if report["verdict"] == "PASS" else 1
 
 
+def cmd_dm_stale(args) -> int:
+    """Rails with an unread content post older than `--threshold-hours` —
+    the fact both `fw doctor` and `fw audit`'s `check_sidecar_ledger` read
+    for the T-3442 AC2 WARN. Exit 0 always (a WARN is not a command
+    failure); the caller decides what a non-empty list means."""
+    rows = dm.stale(min_age_hours=args.threshold_hours)
+    if args.json:
+        print(json.dumps(rows, indent=2))
+        return 0
+    for row in rows:
+        print(f"{row['topic']}\t{row['unread']}\t{row['age_hours']}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="fw sidecar",
                                      description=__doc__.split("\n")[0])
@@ -269,6 +327,13 @@ def build_parser() -> argparse.ArgumentParser:
                     help="keep the throwaway inbox cursors after the run")
     ee.add_argument("--json", action="store_true")
     ee.set_defaults(func=cmd_e2e)
+
+    ds = sub.add_parser("dm-stale", help="dm:* rails addressed to us with an unread "
+                        "content post older than --threshold-hours (T-3442, "
+                        "fw doctor / fw audit fact source)")
+    ds.add_argument("--threshold-hours", type=float, default=24.0)
+    ds.add_argument("--json", action="store_true")
+    ds.set_defaults(func=cmd_dm_stale)
 
     return parser
 
