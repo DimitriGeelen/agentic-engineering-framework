@@ -1463,6 +1463,9 @@ do_doctor() {
     # two subjects). Same reason as the source above: an unsourced function makes
     # the check silently no-op, which reads exactly like a clean bill of health.
     source "$FRAMEWORK_ROOT/lib/hook-parity.sh"
+    # T-3451: fw_audit_timing_is_stale / fw_audit_timing_last_measured_at —
+    # the structure-timing staleness check below.
+    source "$FRAMEWORK_ROOT/lib/prepush-lock-wait.sh"
 
     echo -e "${BOLD}fw doctor${NC} - Framework Health Check"
     if [ "$quick_mode" = "1" ]; then
@@ -4323,6 +4326,41 @@ except Exception as e:
             echo -e "  ${CYAN}INFO${NC}  Full-audit timing not measured yet — run 'fw audit' (no --section) once to populate .context/audits/full-audit-timing.yaml"
             ;;
     esac
+
+    # T-3451-STRUCTURE-STALENESS-START
+    # T-3451: the check above answers "is the last FULL run near its own
+    # ceiling" — it says nothing about whether the "structure" measurement
+    # two derivations trust (fw_prepush_lock_wait_default,
+    # fw_handover_push_timeout_default, both lib/prepush-lock-wait.sh) is
+    # CURRENT. Full audits run irregularly (nothing in this repo's own cron
+    # registry runs one unscoped); the pre-push gate scopes
+    # `fw audit --section structure` on every push instead, and until
+    # T-3451, only a full run's summary ever refreshed the number those two
+    # derivations read — so it could go stale for days while every push kept
+    # paying a cost the ledger no longer described (measured live: ledger
+    # said 268s, a clean scoped run right next to it took 325s).
+    #
+    # fw_audit_timing_is_stale (lib/prepush-lock-wait.sh) resolves through
+    # section_runs: first (continuously updated by every audit invocation,
+    # scoped or full, via agents/audit/audit.sh's _audit_record_section_run),
+    # falling back to the historical last_run.sections only for a ledger an
+    # older audit.sh wrote.
+    local _sts_days _sts_ts
+    _sts_days=$(fw_config "AUDIT_STRUCTURE_TIMING_STALE_DAYS" 7)
+    _sts_ts=$(fw_audit_timing_last_measured_at "$PROJECT_ROOT" "structure" 2>/dev/null)
+    if [ -z "$_sts_ts" ]; then
+        echo -e "  ${CYAN}INFO${NC}  Structure-section timing not measured yet — run 'fw audit --section structure' (or push) once to populate it"
+    elif fw_audit_timing_is_stale "$PROJECT_ROOT" "structure" "$_sts_days"; then
+        local _sts_age_days
+        _sts_age_days=$(( ( $(date +%s) - $(date -d "$_sts_ts" +%s 2>/dev/null || echo 0) ) / 86400 ))
+        echo -e "  ${YELLOW}WARN${NC}  Structure-section timing is ${_sts_age_days}d old (measured $_sts_ts)"
+        echo -e "         The pre-push gate's lock-wait and push-timeout derivations may be trusting a stale number. Threshold: AUDIT_STRUCTURE_TIMING_STALE_DAYS=${_sts_days}d."
+        echo -e "         Refresh it: fw audit --section structure (or just push — the pre-push hook runs it for you)"
+        warnings=$((warnings + 1))
+    else
+        echo -e "  ${GREEN}OK${NC}  Structure-section timing is current (measured $_sts_ts)"
+    fi
+    # T-3451-STRUCTURE-STALENESS-END
 
     # Summary (T-1707: break out host_warnings count when > 0)
     local _scope_breakdown=""

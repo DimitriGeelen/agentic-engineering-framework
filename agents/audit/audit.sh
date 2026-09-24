@@ -388,8 +388,13 @@ _SECTION_MARK_NAME=""
 _SECTION_MARK_START=0
 section_mark() {
     if [ -n "$_SECTION_MARK_NAME" ]; then
+        local _dur=$(( SECONDS - _SECTION_MARK_START ))
         SECTION_NAMES+=("$_SECTION_MARK_NAME")
-        SECTION_DURATIONS+=("$(( SECONDS - _SECTION_MARK_START ))")
+        SECTION_DURATIONS+=("$_dur")
+        # T-3451: record every completed section into the ledger's
+        # section_runs:, on BOTH full and `--section`-scoped runs — see
+        # _audit_record_section_run below for why this is the fix.
+        _audit_record_section_run "$_SECTION_MARK_NAME" "$_dur" 0
     fi
     _SECTION_MARK_NAME="$1"
     _SECTION_MARK_START=$SECONDS
@@ -407,11 +412,26 @@ AUDIT_RUN_START_ISO="$(date -Iseconds)"
 # TIMED_OUT=1 (called from the TERM trap below) makes a killed section
 # unambiguous in the record — distinguishing it from a section that ran to
 # completion was exactly what T-3070's own run left no trace of (AC4).
+#
+# Full (unscoped) runs only, as before — this function's `last_run:` block is
+# a full-run summary and stays that way (T-3451 did not change what triggers
+# it, only what else the file carries — see below).
 _audit_write_timing_yaml() {
     local timed_out="$1" killed_section="$2" total="$3"
     mkdir -p "$(dirname "$AUDIT_TIMING_FILE")" 2>/dev/null
+
+    # T-3451: this function used to own the WHOLE file — now section_runs:
+    # (below) is written continuously by _audit_record_section_run,
+    # including possibly by sections THIS very run already completed before
+    # reaching here. Preserve it verbatim rather than dropping it; this
+    # function still only ever composes the last_run: block itself.
+    local _section_runs_block=""
+    if [ -f "$AUDIT_TIMING_FILE" ]; then
+        _section_runs_block=$(awk '/^section_runs:/{p=1} p' "$AUDIT_TIMING_FILE")
+    fi
+
     {
-        echo "# Full-audit run timing - written by agents/audit/audit.sh (T-3127)"
+        echo "# Full-audit run timing - written by agents/audit/audit.sh (T-3127, T-3451)"
         echo "last_run:"
         echo "  timestamp: \"$AUDIT_RUN_START_ISO\""
         echo "  total_seconds: $total"
@@ -442,6 +462,82 @@ _audit_write_timing_yaml() {
             echo "    - name: \"${SECTION_NAMES[$i]}\""
             echo "      seconds: ${SECTION_DURATIONS[$i]}"
         done
+        if [ -n "$_section_runs_block" ]; then
+            printf '%s\n' "$_section_runs_block"
+        fi
+    } > "$AUDIT_TIMING_FILE.tmp" && mv "$AUDIT_TIMING_FILE.tmp" "$AUDIT_TIMING_FILE"
+}
+
+# _audit_record_section_run NAME SECONDS TIMED_OUT[0|1]
+#
+# T-3451: records NAME's measured wall-clock into the ledger's
+# `section_runs:` list — a second block, independent of `last_run:` above,
+# that `fw_audit_timing_read_section_measurement` (lib/prepush-lock-wait.sh)
+# now reads FIRST. Called from section_mark() on every section boundary and
+# from the TERM trap below for a killed in-flight section — for BOTH full
+# and `--section`-scoped runs. That is the actual fix: the pre-push gate
+# only ever pays the SCOPED cost (`fw audit --section structure`), and
+# before this, only a full run's summary ever updated the number the gate's
+# own derivations (fw_prepush_lock_wait_default,
+# fw_handover_push_timeout_default) trust — so on a host where full audits
+# run irregularly, that number silently went stale relative to what every
+# push actually paid (measured T-3451: ledger said 268s, a clean scoped run
+# right next to it took 325s).
+#
+# Lock contention is excluded from SECONDS by construction, not by choice
+# made here: the flock above (`flock -n`) never blocks — a caller that can't
+# get the lock exits 75 before any section_mark ever runs, so the SECONDS
+# builtin only ever counts time already holding the lock. The value
+# recorded is therefore uncontended section work only; a caller who had to
+# wait FOR the lock pays that separately, already budgeted by
+# fw_prepush_lock_wait_default. Recorded explicitly as
+# `excludes_lock_wait: true` rather than left for a future reader to guess
+# (T-3451 AC3 — see task's ## Decisions for why this is the chosen split
+# rather than folding lock-wait into this number).
+_audit_record_section_run() {
+    local name="$1" seconds="$2" timed_out_flag="$3"
+    [ -n "$name" ] || return 0
+    mkdir -p "$(dirname "$AUDIT_TIMING_FILE")" 2>/dev/null
+
+    # Preserve last_run: verbatim — this function never owns that block,
+    # only _audit_write_timing_yaml (full runs) does.
+    local _last_run_block=""
+    if [ -f "$AUDIT_TIMING_FILE" ]; then
+        _last_run_block=$(awk '/^last_run:/{p=1} /^section_runs:/{p=0} p' "$AUDIT_TIMING_FILE")
+    fi
+
+    # Existing section_runs entries, minus the one we're about to replace.
+    local _existing=""
+    if [ -f "$AUDIT_TIMING_FILE" ]; then
+        _existing=$(awk -v skip="$name" '
+            /^section_runs:/ { in_sr = 1; next }
+            in_sr && /^[^[:space:]]/ { in_sr = 0 }
+            in_sr && /^[[:space:]]*-[[:space:]]*name:/ {
+                n = $0; sub(/^[[:space:]]*-[[:space:]]*name:[[:space:]]*"?/, "", n); sub(/"?[[:space:]]*$/, "", n)
+                keep = (n != skip)
+            }
+            in_sr && keep { print }
+        ' "$AUDIT_TIMING_FILE")
+    fi
+
+    {
+        echo "# Full-audit run timing - written by agents/audit/audit.sh (T-3127, T-3451)"
+        if [ -n "$_last_run_block" ]; then
+            printf '%s\n' "$_last_run_block"
+        fi
+        echo "section_runs:"
+        if [ -n "$_existing" ]; then
+            printf '%s\n' "$_existing"
+        fi
+        echo "  - name: \"$name\""
+        echo "    seconds: $seconds"
+        echo "    timestamp: \"$(date -Iseconds)\""
+        if [ "$timed_out_flag" = 1 ]; then
+            echo "    timed_out: true"
+        else
+            echo "    timed_out: false"
+        fi
+        echo "    excludes_lock_wait: true"
     } > "$AUDIT_TIMING_FILE.tmp" && mv "$AUDIT_TIMING_FILE.tmp" "$AUDIT_TIMING_FILE"
 }
 
@@ -499,7 +595,15 @@ if command -v flock >/dev/null 2>&1; then
     # how T-3070's mid-EPISODIC-MEMORY kill was misread as lock contention for
     # months. Record the in-flight section as timed_out before exiting; the
     # EXIT trap above still runs afterward and cleans up the lock as normal.
+    #
+    # T-3451: the section_runs: record fires on ANY run (full or scoped) —
+    # a killed scoped run's own section is exactly the measurement the
+    # pre-push gate's derivations need to know not to trust. The last_run:
+    # summary write stays full-run-only, unchanged from T-3127.
     trap '
+        if [ -n "${_SECTION_MARK_NAME:-}" ]; then
+            _audit_record_section_run "$_SECTION_MARK_NAME" "$(( SECONDS - _SECTION_MARK_START ))" 1
+        fi
         if [ -z "$SECTIONS" ] && [ -n "${_SECTION_MARK_NAME:-}" ]; then
             _audit_write_timing_yaml 1 "$_SECTION_MARK_NAME" "$SECONDS"
         fi

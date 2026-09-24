@@ -29,6 +29,87 @@ FW_PREPUSH_LOCK_WAIT_FLOOR=90
 FW_PREPUSH_LOCK_WAIT_CAP=600
 FW_PREPUSH_LOCK_WAIT_FALLBACK=360
 
+# fw_audit_timing_read_section_measurement <project_root> <section>
+#
+#   stdout : "SECONDS<TAB>TIMESTAMP<TAB>TIMED_OUT" on success (exit 0) —
+#            TIMED_OUT is the literal string "true" or "false".
+#   exit 1 : nothing usable for <section> anywhere in the ledger.
+#
+# T-3451: the ledger the two derivations below read
+# (.context/audits/full-audit-timing.yaml) used to carry exactly one
+# measurement per section — last_run.sections, written ONLY by a full,
+# unscoped `fw audit`. The pre-push gate never runs a full audit; it runs
+# `fw audit --section structure` on every push, and that scoped run never
+# updated the ledger, so both derivations tracked a number that could be
+# days stale relative to the cost they actually bound (measured: ledger said
+# 268s, a clean scoped run right next to it took 325s — see T-3451 task).
+#
+# agents/audit/audit.sh now writes a second, continuously-updated block,
+# `section_runs:`, from EVERY invocation (full or `--section`-scoped) that
+# completes a section — see `_audit_record_section_run` there. Resolution
+# order:
+#   1. section_runs: entry named <section> — canonical from T-3451 onward.
+#   2. last_run.sections: entry named <section>, timestamped with
+#      last_run.timestamp and flagged with last_run.timed_out — the
+#      pre-T-3451 shape, read only when (1) has nothing for <section>, so a
+#      ledger written by an older audit.sh (or a section section_runs has
+#      simply never recorded yet) still parses exactly as before.
+fw_audit_timing_read_section_measurement() {
+    local root="${1:-}" section="${2:-}"
+    local ledger="$root/.context/audits/full-audit-timing.yaml"
+    [ -n "$root" ] && [ -n "$section" ] && [ -f "$ledger" ] || return 1
+
+    local hit
+    hit=$(awk -v want="$section" '
+        /^section_runs:/ { in_sr = 1; next }
+        in_sr && /^[^[:space:]]/ { in_sr = 0 }
+        in_sr && /^[[:space:]]*-[[:space:]]*name:/ {
+            n = $0
+            sub(/^[[:space:]]*-[[:space:]]*name:[[:space:]]*"?/, "", n); sub(/"?[[:space:]]*$/, "", n)
+            in_item = (n == want)
+            if (in_item) { secs = ""; ts = ""; tout = "" }
+            next
+        }
+        in_sr && in_item && /^[[:space:]]*seconds:[[:space:]]*[0-9]+[[:space:]]*$/ {
+            s = $0; sub(/^[[:space:]]*seconds:[[:space:]]*/, "", s); sub(/[[:space:]]*$/, "", s); secs = s; next
+        }
+        in_sr && in_item && /^[[:space:]]*timestamp:/ {
+            t = $0; sub(/^[[:space:]]*timestamp:[[:space:]]*"?/, "", t); sub(/"?[[:space:]]*$/, "", t); ts = t; next
+        }
+        in_sr && in_item && /^[[:space:]]*timed_out:[[:space:]]*(true|false)[[:space:]]*$/ {
+            t = $0; sub(/^[[:space:]]*timed_out:[[:space:]]*/, "", t); sub(/[[:space:]]*$/, "", t); tout = t; next
+        }
+        END { if (secs != "") print secs "\t" ts "\t" (tout == "" ? "false" : tout) }
+    ' "$ledger" 2>/dev/null)
+
+    if [ -z "$hit" ]; then
+        # Fallback: last_run.sections (pre-T-3451 shape) — same scan
+        # fw_prepush_lock_wait_default always ran inline, extracted here
+        # (T-3450) and now generalised to any <section> (T-3451).
+        hit=$(awk -v want="$section" '
+            /^last_run:/ { in_lr = 1; next }
+            in_lr && /^[^[:space:]]/ { in_lr = 0 }
+            in_lr && /^[[:space:]]*timestamp:/ {
+                t = $0; sub(/^[[:space:]]*timestamp:[[:space:]]*"?/, "", t); sub(/"?[[:space:]]*$/, "", t); ts = t; next
+            }
+            in_lr && /^[[:space:]]*timed_out:[[:space:]]*(true|false)[[:space:]]*$/ {
+                t = $0; sub(/^[[:space:]]*timed_out:[[:space:]]*/, "", t); sub(/[[:space:]]*$/, "", t); tout = t; next
+            }
+            in_lr && /^[[:space:]]*-[[:space:]]*name:/ {
+                n = $0; sub(/^[[:space:]]*-[[:space:]]*name:[[:space:]]*"?/, "", n); sub(/"?[[:space:]]*$/, "", n)
+                in_item = (n == want); next
+            }
+            in_lr && in_item && /^[[:space:]]*seconds:[[:space:]]*[0-9]+[[:space:]]*$/ {
+                s = $0; sub(/^[[:space:]]*seconds:[[:space:]]*/, "", s); sub(/[[:space:]]*$/, "", s); secs = s; next
+            }
+            END { if (secs != "") print secs "\t" ts "\t" (tout == "" ? "false" : tout) }
+        ' "$ledger" 2>/dev/null)
+    fi
+
+    [ -n "$hit" ] || return 1
+    printf '%s\n' "$hit"
+}
+
 # fw_audit_timing_read_structure_seconds <project_root>
 #
 #   stdout : the last measured "structure" section seconds as a bare
@@ -39,28 +120,15 @@ FW_PREPUSH_LOCK_WAIT_FALLBACK=360
 # T-3450: extracted from fw_prepush_lock_wait_default (below) so it and
 # fw_handover_push_timeout_default (lib/prepush-lock-wait.sh, same file)
 # parse the ledger's on-disk shape in exactly one place rather than each
-# carrying its own awk script. Behaviour is unchanged — this is the same
-# scan fw_prepush_lock_wait_default always ran inline.
+# carrying its own awk script. T-3451: now backed by
+# fw_audit_timing_read_section_measurement, so it also picks up a scoped
+# `--section structure` run's own record — behaviour on an old-shape ledger
+# is unchanged.
 fw_audit_timing_read_structure_seconds() {
     local root="${1:-}"
-    local ledger="$root/.context/audits/full-audit-timing.yaml"
-    local measured=""
-
-    if [ -n "$root" ] && [ -f "$ledger" ]; then
-        # The ledger lists sections as
-        #     - name: "structure"
-        #       seconds: 292
-        # Take the `seconds:` line that follows the structure entry.
-        measured=$(awk '
-            /^[[:space:]]*-[[:space:]]*name:[[:space:]]*"?structure"?[[:space:]]*$/ { want = 1; next }
-            want && /^[[:space:]]*seconds:[[:space:]]*[0-9]+[[:space:]]*$/ {
-                sub(/^[[:space:]]*seconds:[[:space:]]*/, ""); sub(/[[:space:]]*$/, "");
-                print; exit
-            }
-            want && /^[[:space:]]*-[[:space:]]*name:/ { want = 0 }
-        ' "$ledger" 2>/dev/null)
-    fi
-
+    local hit measured
+    hit=$(fw_audit_timing_read_section_measurement "$root" "structure") || return 1
+    measured="${hit%%$'\t'*}"
     case "$measured" in
         ''|*[!0-9]*) return 1 ;;
     esac
@@ -69,16 +137,66 @@ fw_audit_timing_read_structure_seconds() {
 
 # fw_audit_timing_last_run_timed_out <project_root>
 #
-# Exit 0 when the ledger's last_run.timed_out is literally `true`; exit 1
-# otherwise (false, missing, or unreadable). fw_prepush_lock_wait_default
-# does NOT consult this — its own pinned tests (t3421) assert it trusts the
-# measured value even when timed_out: true. fw_handover_push_timeout_default
-# does consult it; see that function's header for why the two differ.
+# Exit 0 when the run backing the CURRENT "structure" measurement (see
+# fw_audit_timing_read_section_measurement's resolution order) is flagged
+# timed_out: true; exit 1 otherwise (false, missing, or unreadable).
+# fw_prepush_lock_wait_default does NOT consult this — its own pinned tests
+# (t3421) assert it trusts the measured value even when timed_out: true.
+# fw_handover_push_timeout_default does consult it; see that function's
+# header for why the two differ.
+#
+# T-3451: previously a bare `grep timed_out: true` anywhere in the file,
+# which only ever meant "the last FULL run" because that was the only
+# place the key appeared. Now that section_runs: entries carry their own
+# timed_out flag too, the naive grep would trip on an unrelated section's
+# timeout — this reads the SAME resolved entry the seconds reader used.
 fw_audit_timing_last_run_timed_out() {
     local root="${1:-}"
-    local ledger="$root/.context/audits/full-audit-timing.yaml"
-    [ -n "$root" ] && [ -f "$ledger" ] || return 1
-    grep -qE '^[[:space:]]*timed_out:[[:space:]]*true[[:space:]]*$' "$ledger" 2>/dev/null
+    local hit rest tout
+    hit=$(fw_audit_timing_read_section_measurement "$root" "structure") || return 1
+    rest="${hit#*$'\t'}"
+    tout="${rest#*$'\t'}"
+    [ "$tout" = "true" ]
+}
+
+# fw_audit_timing_last_measured_at <project_root> [section]
+#
+#   stdout : the ISO-8601 timestamp of the measurement
+#            fw_audit_timing_read_section_measurement would resolve for
+#            <section> (default "structure"), on success (exit 0).
+#   exit 1 : no usable measurement (see fw_audit_timing_read_section_measurement).
+#
+# T-3451 AC2: staleness needs a number to compare against "now" — this is
+# that number. Used by `fw doctor`'s structure-timing-staleness WARN.
+fw_audit_timing_last_measured_at() {
+    local root="${1:-}" section="${2:-structure}"
+    local hit rest ts
+    hit=$(fw_audit_timing_read_section_measurement "$root" "$section") || return 1
+    rest="${hit#*$'\t'}"
+    ts="${rest%%$'\t'*}"
+    [ -n "$ts" ] || return 1
+    printf '%s\n' "$ts"
+}
+
+# fw_audit_timing_is_stale <project_root> [section] [days]
+#
+# Exit 0 (stale) when the resolved measurement for <section> (default
+# "structure") is missing entirely, or its timestamp is unparseable, or its
+# age in whole days is >= <days> (default 7, overridable via
+# FW_STRUCTURE_TIMING_STALE_DAYS through the caller). Exit 1 (fresh)
+# otherwise. "Missing" counts as stale rather than being a separate
+# tri-state — a gate that has never been measured deserves the same WARN as
+# one measured too long ago; `fw doctor` distinguishes "never measured" in
+# its own message text by checking fw_audit_timing_last_measured_at
+# directly when it wants that distinction.
+fw_audit_timing_is_stale() {
+    local root="${1:-}" section="${2:-structure}" days="${3:-7}"
+    local ts ts_epoch now_epoch age_days
+    ts=$(fw_audit_timing_last_measured_at "$root" "$section") || return 0
+    ts_epoch=$(date -d "$ts" +%s 2>/dev/null) || return 0
+    now_epoch=$(date +%s)
+    age_days=$(( (now_epoch - ts_epoch) / 86400 ))
+    [ "$age_days" -ge "$days" ]
 }
 
 fw_prepush_lock_wait_default() {

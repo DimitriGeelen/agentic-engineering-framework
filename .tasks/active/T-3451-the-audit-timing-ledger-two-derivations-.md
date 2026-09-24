@@ -8,7 +8,7 @@ description: >
   never by the scoped --section structure run the pre-push hook actually pays — so
   both timeouts derive from a stale number
 
-status: started-work
+status: issues
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-24T21:04:57Z
-last_update: '2026-09-24T21:05:59Z'
+last_update: 2026-09-24T21:29:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,6 +55,16 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=3 (body:portability-abstraction); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-24T21:15:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=322,acs=8)
     rubric_sha: e4a00f38e801
 ---
 
@@ -285,6 +295,49 @@ cost. T-3450 fixed the literal; this fixes its input.
 
 ## RCA
 
+**Symptom:** Live proof (AC4/AC5 evidence-gathering) ran a real, clean, uncontended
+`bin/fw audit --section structure` (325.6s wall-clock, confirmed via `time`). The ledger
+(`.context/audits/full-audit-timing.yaml`) was **unchanged** afterward — no `section_runs:`
+block appeared, `fw_audit_timing_read_structure_seconds` still returned the pre-existing
+stale `268` from the 2026-09-22 full run, and `fw_audit_timing_is_stale` still reported
+"not stale" (wrongly — it was reading the same 2-day-old number the whole task exists to
+stop trusting).
+
+**Root cause:** `section_mark()` (agents/audit/audit.sh) only records a section into
+`_audit_record_section_run` when a NEW section starts (it records the section that just
+*ended*). The LAST section in any run is only flushed by an explicit trailing call —
+`section_mark ""` at what was line 7555-7557 — and that trailing flush is wrapped in
+`if [ -z "$SECTIONS" ]; then # T-3127: full runs only`. A `--section structure` invocation
+runs exactly one section, calls `section_mark "structure"` once at its start, and then
+NEVER calls `section_mark` again (no next section to rotate into) — so structure's own
+completion is never recorded, because the only flush path that would catch it is gated
+to unscoped runs. The mid-run rotations (section_mark firing for section 2, 3, ... N)
+work correctly for a multi-section scoped run (e.g. the cron line running
+`--section structure,compliance,quality,discovery`); it is specifically the SINGLE- or
+LAST-section case — which is exactly what the pre-push hook invokes every push
+(`--section structure` alone) — that silently drops its own measurement.
+
+**Why structurally allowed:** I added `_audit_record_section_run` calls at `section_mark()`
+(mid-run rotation) and at the TERM trap (killed in-flight section), and verified both via
+sed-extracted unit tests (tests/unit/t3451_audit_timing_ledger.bats, 19/19 green) — but
+never ran the ACTUAL end-to-end scoped-run path before the live-proof step, because a real
+`--section structure` run costs ~325s and I deferred it to the AC4/AC5 evidence step by
+design (cheap unit tests first). The unit tests exercise `_audit_record_section_run`
+directly (extracted function, fed synthetic args) — they prove the function itself is
+correct, but none of them exercise the CALLER wiring for the single/last-section case,
+because that wiring lives in the trailing flush block I did not touch. Classic gap between
+"the unit works" and "the unit is reachable from the path that matters" — the exact
+class T-3450's own AC4 flagged one layer up.
+
+**Prevention:** Not implemented — this task stops here per the operator's standing order
+("if a live step fails ... write the failure verbatim ... and stop with a HANDBACK").
+The fix is understood and small (move `section_mark ""` out of the
+`if [ -z "$SECTIONS" ]; then` guard so it runs unconditionally — the `_audit_write_timing_yaml`
+full-run summary call stays gated, only the flush that feeds `_audit_record_section_run`
+needs to run always) but is UNVERIFIED — applying it now, at critical context budget, with
+Bash access restricted to commit/push/handover, would mean shipping an unrun guess as the
+literal fix a whole task exists to get right. Left for the next worker.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -354,14 +407,59 @@ cost. T-3450 fixed the literal; this fixes its input.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-24 — canonical ledger shape: a second, independent `section_runs:` block
+- **Chose:** added a NEW top-level `section_runs:` list, written by
+  `_audit_record_section_run` (agents/audit/audit.sh) from every section any audit
+  invocation (full OR `--section`-scoped) completes. `lib/prepush-lock-wait.sh`'s
+  `fw_audit_timing_read_section_measurement` reads it FIRST, falling back to the
+  pre-existing `last_run.sections` shape only when `section_runs:` has no entry for the
+  wanted section. `_audit_write_timing_yaml` (full-run summary writer) and
+  `_audit_record_section_run` each preserve the OTHER's block verbatim (re-read from disk
+  immediately before writing) so neither write path clobbers the other.
+- **Why:** the AC requires backward compatibility — old ledgers (no `section_runs:` at
+  all) must still parse, and `last_run.total_seconds`/`ceiling_seconds`/`timed_out` are
+  read elsewhere (lib/audit_timing.py, `fw doctor`'s AUDIT_TIMEOUT_WARN_FRACTION check) in
+  a shape I must not disturb. A second, independent, continuously-updated block is
+  additive rather than reshaping `last_run:` in place.
+- **Rejected:** overwriting `last_run.sections` from a scoped run — would make `last_run:`
+  mean "last run of EITHER kind", breaking `lib/audit_timing.py`'s full-run-ceiling-headroom
+  semantics (it needs the last FULL run specifically, not the last anything).
+
+### 2026-09-24 — lock contention explicitly excluded from the measurement (AC3)
+- **Chose:** `_audit_record_section_run` writes `excludes_lock_wait: true` on every entry.
+  The exclusion is structural, not a policy choice made in this function: `flock -n` above
+  never blocks — a caller that cannot get the lock exits 75 before any `section_mark` ever
+  runs, so bash's `SECONDS` builtin (used for all timing here) only ever counts time
+  already holding the lock.
+- **Why:** a caller who HAD to wait for a contended lock pays that cost separately, already
+  budgeted by `fw_prepush_lock_wait_default` — folding it into the section's own seconds
+  would conflate "cost of the check" with "how unlucky was the scheduling", making the
+  number incomparable run to run.
+- **Rejected (named, not implemented):** making the push-timeout derivation ADD the lock-wait
+  budget on top of the section-seconds budget for a true worst-case bound. This is very
+  likely the actual remaining gap behind the live push failures T-3450 saw (wait for
+  someone else's audit, THEN pay your own) — but AC5 and the operator's standing order are
+  explicit: a third instance of "the budget is still too small" means fixing the GATE, not
+  widening any multiplier, and that is a different, Sovereign-scoped task.
+
+### 2026-09-24 — HANDBACK before AC4/AC5/AC6: live proof surfaced a wiring gap this task did not fix
+- **Chose:** stopped without applying the fix, per the operator's standing order (a live
+  step failing means stop and report, not push through) and because context hit critical
+  budget (Bash restricted to commit/push/handover) at the same moment the gap surfaced.
+- **Why:** see `## RCA`. The scoped-run write path (`_audit_record_section_run` wired into
+  `section_mark` and the TERM trap) is correct and unit-pinned (19/19 green,
+  tests/unit/t3451_audit_timing_ledger.bats) but UNREACHABLE for a single/last-section run
+  — which is exactly the shape the pre-push hook invokes on every push
+  (`--section structure` alone) — because the trailing flush that would catch the run's
+  only section (`section_mark ""` at the old line 7555-7557) is still gated to
+  `[ -z "$SECTIONS" ]` (full runs only), a gate this task needed to loosen and did not.
+  Confirmed live: a real, clean 325.6s `bin/fw audit --section structure` left the ledger
+  completely unchanged (still 268s / 2026-09-22, still read as "not stale").
+- **Rejected:** applying the one-line-looking fix (unconditionally call `section_mark ""`
+  before the full-run-only `_audit_write_timing_yaml` call) without re-running the full
+  ~325s live proof to confirm it actually closes the gap. Shipping an unverified guess as
+  the literal deliverable of a task about trusting measurements would be the same failure
+  class one level up.
 
 ## Decision
 
@@ -379,3 +477,52 @@ cost. T-3450 fixed the literal; this fixes its input.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3451-the-audit-timing-ledger-two-derivations-.md
 - **Context:** Initial task creation
+
+### 2026-09-24T23:45Z — HANDBACK: live proof failed, wiring gap found, stopping [t3451-ledger-staleness]
+
+**Built (unit-verified, 19/19 green in `tests/unit/t3451_audit_timing_ledger.bats`, plus all
+41 pre-existing sibling tests in t3421/t3450/t3127/t3202/t3070 still green — zero
+regressions):**
+- `lib/prepush-lock-wait.sh`: new `fw_audit_timing_read_section_measurement` (generalizes
+  the ledger reader to any section, resolving `section_runs:` first, `last_run.sections`
+  as fallback); `fw_audit_timing_read_structure_seconds` and
+  `fw_audit_timing_last_run_timed_out` rebuilt on top of it (same public signature/contract);
+  new `fw_audit_timing_last_measured_at` and `fw_audit_timing_is_stale`.
+- `agents/audit/audit.sh`: new `_audit_record_section_run` (writes/upserts a
+  `section_runs:` entry, preserving `last_run:` verbatim); wired into `section_mark()`
+  (mid-run rotation) and the TERM trap (killed in-flight section), for BOTH full and
+  scoped runs; `_audit_write_timing_yaml` (full-run writer) now preserves `section_runs:`
+  verbatim instead of dropping it.
+- `bin/fw`: new `fw doctor` WARN block (marked `T-3451-STRUCTURE-STALENESS-{START,END}`
+  for extraction) — WARN when the structure measurement is older than
+  `AUDIT_STRUCTURE_TIMING_STALE_DAYS` (default 7), OK when fresh, INFO when unmeasured.
+- `lib/config.sh` + `web/blueprints/config.py`: registered `AUDIT_STRUCTURE_TIMING_STALE_DAYS`
+  (`tests/lint/config-registry-parity.bats` 3/3 green).
+
+**Live proof (AC4/AC5) — FAILED, per the operator's standing order:**
+Before: ledger said `structure: 268s` (2026-09-22, 2 days stale) → lock wait 335s, push
+timeout 402s, `fw_audit_timing_is_stale` → not stale (wrongly).
+Ran a real, clean, uncontended `bin/fw audit --section structure`: **325.6s wall-clock**
+(`time` output: `real 5m25.626s`), confirming T-3450's own measurement was not a one-off.
+**After: ledger completely unchanged** — no `section_runs:` block, still reads 268s, still
+"not stale". Root cause in `## RCA`: the trailing flush that records a run's LAST section
+is gated to full-runs-only, and a `--section structure` run's only section IS its last
+section, so it is never flushed. The mid-run wiring is correct; this one caller path is
+not. Did not attempt AC5's `fw handover --commit` push proof, since the ledger the push
+timeout derives from was never actually refreshed by this run — there is nothing new to
+prove yet.
+
+**Stopping here, HANDBACK, per standing order + budget:** context hit critical
+(~95%/800K) mid-investigation, which restricts further Bash to commit/push/handover and
+blocks Write/Edit to source files. Posted to agent-chat-arc. Status → `issues`. Not
+touching T-3450 (still `issues`, AC4 still blocked — this task does NOT unblock it yet).
+
+**For the next worker:** the fix is understood, small, and UNVERIFIED — move
+`section_mark ""` out of the `if [ -z "$SECTIONS" ]; then` guard (agents/audit/audit.sh,
+was line ~7555) so the trailing flush always runs; keep `_audit_write_timing_yaml 0 "" "$SECONDS"`
+itself gated to full runs only (unchanged). Then re-run the live proof
+(`bin/fw audit --section structure`, ~5.5 min) and confirm `section_runs:` appears with a
+fresh timestamp before touching AC4/AC5/AC6 or vendoring.
+
+### 2026-09-24T21:29:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → issues
