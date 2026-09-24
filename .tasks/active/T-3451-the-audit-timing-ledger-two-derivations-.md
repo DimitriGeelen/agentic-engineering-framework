@@ -135,6 +135,32 @@ cost. T-3450 fixed the literal; this fixes its input.
       unblocked by this task (do not close T-3450 yourself — say so in the handback).
 
 ### Human
+
+- [ ] [REVIEW] The new config key reads correctly on the Watchtower /config page
+
+  This task registered one new key, `AUDIT_STRUCTURE_TIMING_STALE_DAYS`, in both
+  config sources — `lib/config.sh` and `web/blueprints/config.py`. The second of those
+  is a render surface, which is why P-013 asked for your eyes here. Nothing about the
+  page's layout changed; what needs a human is whether the row reads as a usable
+  setting to someone who has never seen it, because the description string is the only
+  explanation this key will ever get.
+
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` — open the
+     URL it prints, then go to `/config` (currently http://192.168.10.107:3002/config).
+  2. Find the row `AUDIT_STRUCTURE_TIMING_STALE_DAYS`.
+
+  **Expected:** the row shows default `7`, and a description that tells you what goes
+  stale and what depends on it, without having to open any source file. The row sits in
+  the table like every other key — no wrapped cell, no overflowing description column,
+  no raw markup.
+
+  **If not:** say which part fails — a layout break is a different fix from a
+  description that does not explain itself. If it is the wording, quote the sentence you
+  would rather read and it will be changed in `lib/config.sh` and
+  `web/blueprints/config.py` together (they are parity-checked by
+  `tests/lint/config-registry-parity.bats`, so they move as a pair).
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -301,6 +327,7 @@ cost. T-3450 fixed the literal; this fixes its input.
 timeout 300 bats tests/unit/t3451_audit_timing_ledger.bats > /tmp/.t3451-v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3451-v1.out
 timeout 180 bats tests/lint/config-registry-parity.bats > /tmp/.t3451-v2.out 2>&1 && grep -q "^ok 1 " /tmp/.t3451-v2.out
 bin/fw vendor self --check
+bin/fw watchtower current
 bash -c 'set -eo pipefail; sed -n "/^section_mark \"\"\$/,/^fi\$/p" agents/audit/audit.sh | head -1 | grep -qx "section_mark \"\""'
 
 ## RCA
@@ -414,6 +441,55 @@ literal fix a whole task exists to get right. Left for the next worker.
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+
+**Rationale:** The defect is fixed, the fix is proven on the path that was failing, and
+the one thing left for you is a wording call, not a correctness call. Two derivations
+that bound the pre-push gate were reading a number written only by full audits, while
+the cost they bound is paid by a scoped `--section structure` run on every push. That
+number was two days old. Now every completed section records itself, on scoped runs as
+well as full ones, and both derivations recompute from it. The proof is a real
+`fw handover --commit` that hit lock contention — the exact condition that killed two of
+three earlier attempts — waited 412 s for the lock, pushed inside a 494 s derived budget,
+and returned rc=0 with no exit 124. No multiplier, floor or cap was widened; the
+escalation branch reserved for a third failure was not needed, because the gate had not
+grown, only the reading of it had gone stale.
+
+The Human AC exists because registering the new config key touched
+`web/blueprints/config.py`, which P-013 treats as a render surface. I have already
+checked the mechanical half — Watchtower was restarted, `bin/fw watchtower current`
+confirms the running process is newer than every file under `web/`, and the key appears
+on `/config`. What is left is the part a curl cannot answer: whether the description
+reads as an explanation to someone meeting the key for the first time.
+
+**Evidence:**
+- `eb4b49b60` — the fix: the trailing section flush moved out of the full-runs-only
+  guard. One line; the guard itself deliberately unchanged, byte-for-byte, because
+  t3070 extracts that exact line with sed.
+- `dce75e5c0` — four tests pinning it **positionally**. The call already existed before
+  this task, on the wrong side of the `if`, so every grep-for-the-call test passes
+  equally on the broken code. Verified discriminating by running the same stub harness
+  against the pre-fix block from `ba9b6348c`: it fires nothing at all.
+- Live, scoped, single-section: `bin/fw audit --section oe-fast` moved that section's
+  ledger timestamp 23:45:09 → 23:50:52. Under the old code a scoped run wrote nothing.
+- Live, the number the gate uses: `bin/fw audit --section structure`, 337 s wall, ran to
+  completion. Ledger 322 s `timed_out: true` → **329 s `timed_out: false`**; lock wait
+  403 → **412**; push timeout 650 → **494**. The 650 was never a derivation — it is the
+  fallback constant, taken because the previous entry was a watchdog-killed run.
+- `bin/fw handover --commit` — rc=0, 515 s, 8 unpushed commits → 0, contention absorbed,
+  zero occurrences of `124`.
+- 23/23 in `tests/unit/t3451_audit_timing_ledger.bats`; 4/4 P-011 verification lines;
+  `bin/fw vendor self --check` in sync.
+- T-3450's AC 4 is recorded and ticked against this run's evidence. **T-3450 is
+  deliberately not closed by me** — this task's own AC 6 forbids it, and the session that
+  produced the evidence should not also certify that it cleared another task's bar.
+
+**One thing I did not fix, surfaced rather than buried:** `bin/fw doctor` exceeded a
+180 s timeout on this host and was killed before it reached its own structure-timing
+line. The WARN/silent/INFO legs are pinned by tests, so the feature is sound — but a
+health command that cannot finish inside three minutes is one nobody will run. That is a
+separate task and a separate call about what doctor should cost.
 
 ## Decisions
 
