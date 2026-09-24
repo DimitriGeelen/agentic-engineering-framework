@@ -3162,24 +3162,64 @@ else:
     fi
     _doctor_wt_port=$(echo "$_doctor_wt_url" | grep -oP ':\K\d+$' || echo "${FW_PORT:-3000}")
     if [ -n "$_doctor_wt_url" ] && curl -sf "${_doctor_wt_url}/health" >/dev/null 2>&1; then
-        local smoke_result
-        smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "$_doctor_wt_port" --json 2>/dev/null || echo '{"failed":0,"passed":0,"total":0,"error":"script failed"}')
-        local smoke_passed smoke_failed smoke_total
-        smoke_passed=$(echo "$smoke_result" | python3 -c "import sys,json;print(json.load(sys.stdin).get('passed',0))" 2>/dev/null || echo 0)
-        smoke_failed=$(echo "$smoke_result" | python3 -c "import sys,json;print(json.load(sys.stdin).get('failed',0))" 2>/dev/null || echo 0)
-        smoke_total=$(echo "$smoke_result" | python3 -c "import sys,json;print(json.load(sys.stdin).get('total',0))" 2>/dev/null || echo 0)
-        if [ "${smoke_failed:-0}" = "0" ] && [ "${smoke_passed:-0}" -gt 0 ]; then
-            echo -e "  ${GREEN}OK${NC}  Watchtower smoke test ($smoke_passed/$smoke_total endpoints)"
+        # T-3453: capture stdout and exit status SEPARATELY.
+        #
+        # `smoke_test.py` exits 1 when any endpoint fails, while still writing
+        # its complete JSON. The previous form was
+        #     smoke_result=$(python3 … || echo '{"failed":0,"passed":0,…}')
+        # where the `|| echo` existed to satisfy `set -e` (line 12) — a bare
+        # substitution of a command that exits 1 aborts the script. But on
+        # exactly the runs that matter the script HAD produced its JSON, so the
+        # fallback object was APPENDED to it, `json.load` raised "Extra data",
+        # all three parses below fell back to 0, and the print logic — which
+        # had no branch for failed==0 && passed==0 — printed NOTHING.
+        #
+        # Net effect: doctor reported the smoke test only when the smoke test
+        # had found nothing, and went silent whenever it found something. The
+        # cost was paid either way (76-126s on the origin host, roughly half of
+        # `fw doctor`'s total runtime).
+        #
+        # `cmd && rc=0 || rc=$?` is a compound, so errexit is suppressed the
+        # same way `|| echo` suppressed it — but the payload stays clean.
+        # Declare first: `local x=$(…)` would mask the exit status in `local`'s
+        # own return value.
+        local smoke_result smoke_rc
+        smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "$_doctor_wt_port" --json 2>/dev/null) && smoke_rc=0 || smoke_rc=$?
+        # One parse, not three: three independent `json.load`s could disagree
+        # with each other, and did — each failed silently to its own `|| echo 0`.
+        # `UNPARSED` is a value the caller must handle, not a zero that hides.
+        local smoke_parsed smoke_state smoke_passed smoke_failed smoke_total
+        smoke_parsed=$(printf '%s' "$smoke_result" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    print('UNPARSED 0 0 0'); raise SystemExit(0)
+print('PARSED %d %d %d' % (d.get('passed', 0), d.get('failed', 0), d.get('total', 0)))
+" 2>/dev/null) || smoke_parsed="UNPARSED 0 0 0"
+        read -r smoke_state smoke_passed smoke_failed smoke_total <<< "$smoke_parsed"
+        # Every reachable combination below produces exactly one line. The hole
+        # this closes is failed==0 && passed==0, which matched neither the OK
+        # nor the WARN branch and so rendered as silence — indistinguishable
+        # from the check not existing.
+        if [ "$smoke_state" != "PARSED" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Watchtower smoke: result unreadable (exit $smoke_rc, ${#smoke_result} bytes) — the probe ran but its verdict could not be parsed"
+            warnings=$((warnings + 1))
         elif [ "${smoke_failed:-0}" -gt 0 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Watchtower smoke: $smoke_failed/$smoke_total endpoints failed"
             local smoke_errors
-            smoke_errors=$(echo "$smoke_result" | python3 -c "
+            smoke_errors=$(printf '%s' "$smoke_result" | python3 -c "
 import sys,json
 d=json.load(sys.stdin)
 for e in d.get('errors',[])[:3]:
     print(f\"         {e['path']}: {e.get('error','?')}\")
 " 2>/dev/null || true)
             [ -n "$smoke_errors" ] && echo "$smoke_errors"
+            warnings=$((warnings + 1))
+        elif [ "${smoke_passed:-0}" -gt 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  Watchtower smoke test ($smoke_passed/$smoke_total endpoints)"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Watchtower smoke: probe reported 0 passed and 0 failed (exit $smoke_rc) — nothing was actually checked"
             warnings=$((warnings + 1))
         fi
     fi
