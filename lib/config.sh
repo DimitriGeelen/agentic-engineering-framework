@@ -254,6 +254,13 @@ FW_CONFIG_REGISTRY=(
     "DEV_BRANCH|bleeding-edge|The sanctioned development branch — what the persistent session commits to, what branch-hygiene measures 'landed' against, and the only writer of RELEASE_BRANCH (lib/branch-hygiene.sh). T-3185/T-3187/T-3188."
     "RELEASE_BRANCH|master|The consumer install surface — the branch fw release tag-and-release fast-forwards before cutting the tag. Nothing authors it directly (lib/release.sh, agents/git/lib/master-guard.sh). T-3185/T-3190."
     "RETIRE_WHEN_ADVISORY|1|Enable the audit retire_when advisory rail for free drivers; 0 silences the section entirely (agents/audit/audit.sh). T-2169."
+    # T-3445 (mechanism for D-626). The conjunction is the signal, not either
+    # half: zero reviewer-closeable criteria is unremarkable in a small corpus,
+    # and a large operator-only backlog is unremarkable while some of it is
+    # being delegated. Both at once means the delegation the operator granted
+    # reaches nothing — which is the state 832 measured (0 of 342) and asked us
+    # to make visible.
+    "DELEGATION_SURFACE_WARN|50|Operator-only open-Human-criteria count above which fw audit and fw doctor WARN, but only while reviewer-closeable is 0 (agents/audit/audit.sh, lib/delegation.py:surface_verdict). T-3445 / D-626."
     "GITIGNORE_REGISTER_ADVISORY|1|Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it (agents/audit/audit.sh, lib/gitignore-register.sh). T-2994."
     # T-3024 (T-3022 slice E'). Handovers are 68% of indexed corpus volume and 79%
     # of its growth, ~97% redundant between consecutive files, with zero executable

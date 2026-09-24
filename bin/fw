@@ -4898,6 +4898,23 @@ else:
 PYTASK_VERIFY
             fi
             ;;
+        delegate)
+            # T-3445 (mechanism for D-626): reviewer-closeable delegation. Classifies
+            # a task's open `### Human` criteria, converts the deterministic ones to
+            # `[REVIEWER]` Agent criteria, refuses the six carve-outs, and moves
+            # ownership only when nothing is left for the operator to answer.
+            #
+            # PYTHONPATH=$FRAMEWORK_ROOT so `python3 -m lib.delegation_cli` resolves
+            # in vendored consumers where lib/ lives at .agentic-framework/lib/ —
+            # same reason as the `reviewer` route below (T-1642).
+            if [ -z "${1:-}" ]; then
+                echo -e "${RED}Usage: fw task delegate T-XXX [--dry-run] [--json]${NC}" >&2
+                exit 1
+            fi
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                python3 -m lib.delegation_cli delegate "$@"
+            ;;
         review-batch)
             # T-2182 / T-2181 Slice 1: emit a markdown table of full Watchtower URLs
             # for multi-task handoff in chat. Composes from emit_review_batch in
@@ -5022,6 +5039,7 @@ PYTASK_VERIFY
             echo "                    --rubber-stamp-only, --review-only"
             echo "  review T-XXX      Print clickable URL + QR code for Human AC review"
             echo "  review-batch T-A T-B [...]  Emit markdown table of full URLs for multi-task chat handoff (T-2182)"
+            echo "  delegate T-XXX [--dry-run]  Delegate deterministic [REVIEW] criteria to the reviewer (D-626 / T-3445)"
             echo "  revisit-due       Show tasks whose revisit_at is <= today UTC (G-053 / T-1452)"
             echo ""
             echo "Usage:"
@@ -5033,6 +5051,8 @@ PYTASK_VERIFY
             echo '  fw task review T-631  # Print URL + QR for Human AC review'
             echo '  fw task review T-631 --poll  # Poll until all Human ACs checked'
             echo '  fw task review-batch T-A T-B T-C  # Markdown table of full URLs (chat handoff)'
+            echo '  fw task delegate T-XXX --dry-run  # Classify Human criteria; write nothing'
+            echo '  fw task delegate T-XXX            # Convert the deterministic ones, take ownership'
             echo '  fw task list --status captured --type build'
             echo '  fw task list --tag watchtower'
             echo '  fw task show T-001'
@@ -5409,6 +5429,7 @@ case "$cmd" in
             echo "Usage:"
             echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task (inline)"
             echo "  fw reviewer T-XXX --dispatch [--timeout N] [--json]         Scan via isolated TermLink worker (T-1951)"
+            echo "  fw reviewer surface [--json] [--warn-threshold N]           Delegation surface (D-626 / T-3445)"
             echo "  fw reviewer audit [--pass-a [--baseline [--force]] | --pass-b]"
             echo "                    [--limit N] [--quiet] [--timeout N]"
             echo "                                                               Layer 3 daily corpus re-scan"
@@ -5455,6 +5476,18 @@ case "$cmd" in
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.dispatch_cli "${_dispatch_args[@]}"
+        fi
+        # T-3445 (D-626): corpus delegation surface — how many open Human criteria
+        # are reviewer-closeable / agent-self / operator-only. 832's ask (a).
+        if [ "${1:-}" = "surface" ]; then
+            shift
+            # 4-tier resolution (flag > env > .framework.yaml > registry default)
+            # happens in fw_config; the CLI only ever sees a resolved integer.
+            source "$FW_LIB_DIR/config.sh"
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                FW_DELEGATION_SURFACE_WARN="$(fw_config_int DELEGATION_SURFACE_WARN)" \
+                python3 -m lib.delegation_cli surface "$@"
         fi
         if [ "${1:-}" = "audit" ]; then
             shift
