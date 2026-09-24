@@ -51,6 +51,7 @@ SETTINGS = [
     ("DEV_BRANCH", "bleeding-edge", "The sanctioned development branch — what the session commits to, what branch-hygiene measures 'landed' against, and the only writer of RELEASE_BRANCH; T-3185/T-3187/T-3188"),
     ("RELEASE_BRANCH", "master", "The consumer install surface — the branch fw release tag-and-release fast-forwards before cutting the tag; nothing authors it directly; T-3185/T-3190"),
     ("RETIRE_WHEN_ADVISORY", "1", "Enable the audit retire_when advisory rail for free drivers; 0 silences the section; T-2169"),
+    ("DELEGATION_SURFACE_WARN", "50", "Operator-only open-Human-criteria count above which fw audit and fw doctor WARN, but only while reviewer-closeable is 0 (lib/delegation.py:surface_verdict); T-3445 / D-626"),
     ("GITIGNORE_REGISTER_ADVISORY", "1", "Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it; T-2994"),
     ("INDEX_STALE_DAYS", "7", "Days before fw doctor WARNs that the vector index is stale, measured from the corpus manifest's build time; T-3013"),
     ("RECALL_USAGE_DAYS", "7", "Window fw doctor looks back over for semantic-recall queries; zero rows in the window WARNs — the G-064 zero-consumer signal; T-3019"),

@@ -3552,6 +3552,47 @@ PY
 }
 check_arc_driver_reviewer_record
 
+# T-3445 (mechanism for D-626) — the delegation surface. 832's ask (a).
+#
+# The operator ruled that a human-owned task whose open criteria are
+# deterministic may be delegated to the agent and closed on a reviewer PASS.
+# That ruling can be true and reach nothing, and for a while it did: 832
+# measured 0 reviewer-closeable criteria out of 342, because every
+# deterministic Human criterion is written `[REVIEW]` and `[REVIEW]` means
+# human-only. A ruling with no delegable surface looks exactly like a ruling
+# nobody has needed yet — which is why this is a rail and not a note.
+#
+# WARN only on the CONJUNCTION (reviewer-closeable 0 AND operator-only above
+# FW_DELEGATION_SURFACE_WARN, default 50). Either half alone is unremarkable:
+# a small corpus legitimately has no delegable criteria, and a large
+# operator-only backlog is fine while some of it is being delegated. Silent on
+# a project with no active tasks; never FAILs. Mirrored in `fw doctor`.
+check_delegation_surface() {
+    [ -d "$PROJECT_ROOT/.tasks/active" ] || return 0
+    local _cli="$FRAMEWORK_ROOT/lib/delegation_cli.py"
+    [ -f "$_cli" ] || return 0
+
+    local _threshold _facts
+    _threshold="${FW_DELEGATION_SURFACE_WARN:-50}"
+    _facts=$(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+             PYTHONPATH="$FRAMEWORK_ROOT" FW_DELEGATION_SURFACE_WARN="$_threshold" \
+             python3 -m lib.delegation_cli surface --facts 2>/dev/null || true)
+    [ -n "$_facts" ] || return 0
+
+    local _level _rc _as _oo _tasks _thr _delegable
+    IFS=$'\t' read -r _level _rc _as _oo _tasks _thr _delegable <<< "$_facts"
+    [ -n "${_level:-}" ] || return 0
+
+    if [ "$_level" = "WARN" ]; then
+        warn "Delegation surface: 0 reviewer-closeable criteria while $_oo are operator-only (threshold $_thr)" \
+             "$_tasks active task(s) carry open Human criteria; reviewer-closeable $_rc, agent-self $_as, operator-only $_oo — the D-626 delegation reaches nothing" \
+             "Run: bin/fw reviewer surface — then 'bin/fw task delegate <id> --dry-run' on anything it lists; if nothing is delegable, the criteria are written [REVIEW] where they should be [REVIEWER] (CLAUDE.md §AC Classification Guidance)"
+    else
+        pass "Delegation surface: reviewer-closeable $_rc, agent-self $_as, operator-only $_oo across $_tasks active task(s) with open Human criteria"
+    fi
+}
+check_delegation_surface
+
 # T-3262 (G-099). `fw doctor` (bin/fw:2390+) already compares the
 # continuous-run wrapper ledger against the turn-driver state and WARNs when
 # they disagree — but doctor is pull-only, and it was THIS daily cron that

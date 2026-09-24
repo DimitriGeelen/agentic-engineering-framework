@@ -2210,6 +2210,64 @@ else:
         fi
     fi
 
+    # Check: arc driver reviewer records (T-3429, D-586)
+    # Mirrors agents/audit/audit.sh:check_arc_driver_reviewer_record. Arc-scoped
+    # drivers are added by DEFAULT now, on a static reviewer's word rather than
+    # an operator click — so an `approved_by: reviewer:...` entry that carries no
+    # `reviewer:` block (or a failing one) is a certification claim with nothing
+    # behind it. WARN-only. Silent when no in-progress arc has scoped drivers.
+    if [ -d "$PROJECT_ROOT/.context/arcs" ]; then
+        local _adr_out _adr_total _adr_rows
+        _adr_out=$(python3 - "$PROJECT_ROOT/.context/arcs" <<'PY' 2>/dev/null
+import sys
+from pathlib import Path
+
+import yaml
+
+total = 0
+bad = []
+for f in sorted(Path(sys.argv[1]).glob("*.yaml")):
+    try:
+        arc = yaml.safe_load(f.read_text()) or {}
+    except Exception:
+        continue
+    if str(arc.get("status") or "").lower() != "in-progress":
+        continue
+    for sd in (arc.get("scoped_drivers") or []):
+        if not isinstance(sd, dict):
+            continue
+        total += 1
+        if not str(sd.get("approved_by") or "").startswith("reviewer:"):
+            continue
+        rv = sd.get("reviewer")
+        name = sd.get("name") or sd.get("id") or "?"
+        if not isinstance(rv, dict) or not rv:
+            bad.append((f.name, name, "no reviewer: block"))
+        elif str(rv.get("verdict") or "").lower() == "fail":
+            bad.append((f.name, name, "verdict: fail"))
+print(total)
+for row in bad:
+    print("\t".join(str(x) for x in row))
+PY
+)
+        if [ -n "$_adr_out" ]; then
+            _adr_total=$(printf '%s\n' "$_adr_out" | head -1)
+            _adr_rows=$(printf '%s\n' "$_adr_out" | tail -n +2 | grep . || true)
+            if [ "${_adr_total:-0}" -gt 0 ] 2>/dev/null; then
+                if [ -n "$_adr_rows" ]; then
+                    echo -e "  ${YELLOW}WARN${NC}  $(printf '%s\n' "$_adr_rows" | grep -c .) arc scoped driver(s) claim reviewer approval without a usable verdict"
+                    printf '%s\n' "$_adr_rows" | while IFS=$'\t' read -r _adr_f _adr_name _adr_why; do
+                        [ -n "$_adr_name" ] && echo -e "         $_adr_name (.context/arcs/$_adr_f) — $_adr_why"
+                    done
+                    echo -e "         Run: bin/fw arc review-driver <arc> \"<name>\" --dry-run  (T-3429, D-586)"
+                    warnings=$((warnings + 1))
+                else
+                    echo -e "  ${GREEN}OK${NC}  Arc driver reviewer records: $_adr_total scoped driver(s), every reviewer-approved one carries its verdict"
+                fi
+            fi
+        fi
+    fi
+
     # Check: fabric card quality (T-3430, OBS-464)
     # Mirrors agents/audit/audit.sh:check_fabric_underpopulated. A card that
     # says nothing is invisible to every other fabric check — it IS registered,
@@ -2232,6 +2290,35 @@ else:
                 echo -e "         TODO purpose: $_fab_todo, unknown subsystem: $_fab_unknown, no edges: $_fab_noedges"
                 echo -e "         Run: bin/fw fabric enrich --describe-only  (then: bin/fw fabric drift)"
                 warnings=$((warnings + 1))
+            fi
+        fi
+    fi
+
+    # Check: delegation surface (T-3445, mechanism for D-626)
+    # Mirrors agents/audit/audit.sh:check_delegation_surface. Doctor is
+    # pull-only and the audit's structure section is cron'd; both read the same
+    # single scan (`surface --facts`) so the two rails cannot disagree about
+    # what the corpus looks like. WARN only on the conjunction — zero delegable
+    # criteria AND an operator-only backlog past the threshold. Silent when the
+    # project has no .tasks/active.
+    local _del_cli="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/delegation_cli.py"
+    if [ -f "$_del_cli" ] && [ -d "$PROJECT_ROOT/.tasks/active" ]; then
+        local _del_thr _del_facts _del_level _del_rc _del_as _del_oo _del_tasks _del_list
+        _del_thr=$(fw_config_int DELEGATION_SURFACE_WARN 2>/dev/null || echo 50)
+        _del_facts=$(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$PROJECT_ROOT}" \
+                     PYTHONPATH="${FRAMEWORK_ROOT:-$PROJECT_ROOT}" \
+                     FW_DELEGATION_SURFACE_WARN="$_del_thr" \
+                     python3 -m lib.delegation_cli surface --facts 2>/dev/null || true)
+        if [ -n "$_del_facts" ]; then
+            IFS=$'\t' read -r _del_level _del_rc _del_as _del_oo _del_tasks _del_thr _del_list <<< "$_del_facts"
+            if [ "${_del_level:-}" = "WARN" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  Delegation surface: 0 reviewer-closeable criteria while $_del_oo are operator-only (threshold $_del_thr)"
+                echo -e "         $_del_tasks active task(s) with open Human criteria — the D-626 delegation reaches nothing"
+                echo -e "         Run: bin/fw reviewer surface"
+                warnings=$((warnings + 1))
+            elif [ -n "${_del_level:-}" ]; then
+                echo -e "  ${GREEN}OK${NC}  Delegation surface: reviewer-closeable $_del_rc, agent-self $_del_as, operator-only $_del_oo (across $_del_tasks active task(s))"
+                [ -n "${_del_list:-}" ] && echo -e "         delegable now: $_del_list — bin/fw task delegate <id> --dry-run"
             fi
         fi
     fi
@@ -4840,6 +4927,23 @@ else:
 PYTASK_VERIFY
             fi
             ;;
+        delegate)
+            # T-3445 (mechanism for D-626): reviewer-closeable delegation. Classifies
+            # a task's open `### Human` criteria, converts the deterministic ones to
+            # `[REVIEWER]` Agent criteria, refuses the six carve-outs, and moves
+            # ownership only when nothing is left for the operator to answer.
+            #
+            # PYTHONPATH=$FRAMEWORK_ROOT so `python3 -m lib.delegation_cli` resolves
+            # in vendored consumers where lib/ lives at .agentic-framework/lib/ —
+            # same reason as the `reviewer` route below (T-1642).
+            if [ -z "${1:-}" ]; then
+                echo -e "${RED}Usage: fw task delegate T-XXX [--dry-run] [--json]${NC}" >&2
+                exit 1
+            fi
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                python3 -m lib.delegation_cli delegate "$@"
+            ;;
         review-batch)
             # T-2182 / T-2181 Slice 1: emit a markdown table of full Watchtower URLs
             # for multi-task handoff in chat. Composes from emit_review_batch in
@@ -4964,6 +5068,7 @@ PYTASK_VERIFY
             echo "                    --rubber-stamp-only, --review-only"
             echo "  review T-XXX      Print clickable URL + QR code for Human AC review"
             echo "  review-batch T-A T-B [...]  Emit markdown table of full URLs for multi-task chat handoff (T-2182)"
+            echo "  delegate T-XXX [--dry-run]  Delegate deterministic [REVIEW] criteria to the reviewer (D-626 / T-3445)"
             echo "  revisit-due       Show tasks whose revisit_at is <= today UTC (G-053 / T-1452)"
             echo ""
             echo "Usage:"
@@ -4975,6 +5080,8 @@ PYTASK_VERIFY
             echo '  fw task review T-631  # Print URL + QR for Human AC review'
             echo '  fw task review T-631 --poll  # Poll until all Human ACs checked'
             echo '  fw task review-batch T-A T-B T-C  # Markdown table of full URLs (chat handoff)'
+            echo '  fw task delegate T-XXX --dry-run  # Classify Human criteria; write nothing'
+            echo '  fw task delegate T-XXX            # Convert the deterministic ones, take ownership'
             echo '  fw task list --status captured --type build'
             echo '  fw task list --tag watchtower'
             echo '  fw task show T-001'
@@ -5351,6 +5458,7 @@ case "$cmd" in
             echo "Usage:"
             echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task (inline)"
             echo "  fw reviewer T-XXX --dispatch [--timeout N] [--json]         Scan via isolated TermLink worker (T-1951)"
+            echo "  fw reviewer surface [--json] [--warn-threshold N]           Delegation surface (D-626 / T-3445)"
             echo "  fw reviewer audit [--pass-a [--baseline [--force]] | --pass-b]"
             echo "                    [--limit N] [--quiet] [--timeout N]"
             echo "                                                               Layer 3 daily corpus re-scan"
@@ -5397,6 +5505,18 @@ case "$cmd" in
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                 PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.dispatch_cli "${_dispatch_args[@]}"
+        fi
+        # T-3445 (D-626): corpus delegation surface — how many open Human criteria
+        # are reviewer-closeable / agent-self / operator-only. 832's ask (a).
+        if [ "${1:-}" = "surface" ]; then
+            shift
+            # 4-tier resolution (flag > env > .framework.yaml > registry default)
+            # happens in fw_config; the CLI only ever sees a resolved integer.
+            source "$FW_LIB_DIR/config.sh"
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                FW_DELEGATION_SURFACE_WARN="$(fw_config_int DELEGATION_SURFACE_WARN)" \
+                python3 -m lib.delegation_cli surface "$@"
         fi
         if [ "${1:-}" = "audit" ]; then
             shift

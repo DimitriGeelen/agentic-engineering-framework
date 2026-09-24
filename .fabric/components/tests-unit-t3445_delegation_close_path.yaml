@@ -1,0 +1,21 @@
+id: tests/unit/t3445_delegation_close_path.bats
+name: t3445_delegation_close_path
+type: script
+subsystem: tests
+location: tests/unit/t3445_delegation_close_path.bats
+tags: []
+
+purpose: "T-3445 — the delegated close path, end to end, on two fixtures."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-24
+created_by: unknown

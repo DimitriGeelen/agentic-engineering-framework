@@ -789,6 +789,10 @@ Human ACs represent real verification steps. Unvalidated deliverables carry down
 
 **The test:** "Can I cite specific evidence that this task's Human ACs are satisfied?" If yes, suggest closing with that evidence. If no, either help the human execute the verification steps, or move on.
 
+**Delegation, when the open criteria are deterministic (D-626, T-3445).** The rule above asks whether you can cite evidence a human AC is *already* satisfied. There is a second question: whether that human AC needed to be a human AC at all. Operator ruling 2026-09-23, verbatim — *"if it is not high risk, agent can use the reviewer agent which is critical for review and with a positive outcome close it."* `fw task delegate T-XXX [--dry-run]` classifies a human-owned task's open Human criteria, converts the deterministic ones to `[REVIEWER]` Agent criteria (Steps/Expected/If-not verbatim), moves ownership to agent **only when nothing is left for you to answer**, and lets the existing reviewer auto-tick (T-1985) plus the normal close gates finish it. Six classes are never converted: taste, inception go/no-go, act-in-the-world, tier-0-or-bypass, sovereignty fields, and render surfaces. Every delegation writes a line to `.context/working/delegations.jsonl`. **Start with `--dry-run`** — it prints the class of every criterion and writes nothing. This does not replace the evidence test: a criterion the classifier cannot read stays the operator's, because the tie-break is *when in doubt, human*.
+
+Why the verb exists rather than the judgement call: the delegation the operator granted reached nothing. 832 measured 0 reviewer-closeable criteria out of 342 open ones, because deterministic Human criteria are written `[REVIEW]` 84 times out of 84 — and `[REVIEW]` means human-only. `fw reviewer surface` reports the corpus counts; `fw audit` and `fw doctor` WARN when reviewer-closeable is 0 while operator-only exceeds `FW_DELEGATION_SURFACE_WARN` (default 50).
+
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
 
@@ -918,6 +922,8 @@ When writing acceptance criteria, use this risk matrix to decide Human vs Agent:
 4. **Mechanical execution** — no judgment needed, just "run X, check Y"
 
 **When in doubt, make it Human** — false negatives (missing a broken thing) are worse than false positives (asking the human unnecessarily).
+
+**Getting it wrong at author time is now recoverable (D-626, T-3445).** The bias above is the right one to hold while writing, and it will over-route: a criterion whose Expected clause is a shell check does not become the operator's problem just because you filed it under `### Human`. `fw task delegate T-XXX --dry-run` names the class of every open Human criterion on a task and tells you which would convert to `[REVIEWER]`; `fw task delegate T-XXX` performs the conversion, logged, per task, one criterion at a time. The classifier's carve-outs are the same six this section's risk matrix already treats as human — taste, inception go/no-go, irreversible external action, tier-0-or-bypass, sovereignty fields, render surfaces (item 5) — and every carve-out outranks `deterministic`, so a grep-able Expected clause never delegates an irreversible act. The routing-discipline ladder (T-1878 / T-1947 / T-2143 / T-2147) is still the author-time discipline; delegation is the after-the-fact remedy for the criteria it missed, not a licence to route carelessly.
 
 **RUBBER-STAMP conversion rule:** If a Human AC has `[RUBBER-STAMP]` prefix and its Steps section contains only deterministic shell commands with clear expected output, it SHOULD be an Agent AC with verification commands in `## Verification` instead. The machine is more reliable than a human for pass/fail checks.
 
