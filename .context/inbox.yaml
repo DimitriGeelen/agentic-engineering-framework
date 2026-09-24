@@ -5275,3 +5275,24 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-502
+  text: "T-3440's close_state check has a blind spot the same day it landed: it asks whether the dispatched task CLOSED, not whether the work was PUSHED. Measured 2026-09-24 on worker t3442-dm-rails (T-3442): the worker closed its task correctly (5/5 ACs, in completed/), then backgrounded its git push and ended its turn with the words 'I'll stop here and simply wait — the notification for the background push will arrive automatically'. A claude -p worker has no next turn, so the push never ran; 7 commits sat local until the parent pushed them. close_state would have read 'closed' — a clean success signal over unpushed work. Two gaps: (1) the T-3440 preamble rule ('never background a job') did not reach or did not bind this worker — check whether the updated preamble is actually injected into the dispatch stanza, because if it is, prose alone is not enough; (2) close_state should also compare the task branch against its upstream and record 'unpushed: N' when the worker leaves commits behind. Sibling of OBS-481; do not close T-3440's class until the push leg is covered."
+  captured: 2026-09-24T17:12:04Z
+  context_task: T-3426
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-503
+  text: "A task that is owner: human with NO real ### Human criteria and ALL Agent criteria ticked has no route to closure. Measured 2026-09-24: at least 6 such tasks in active/ (T-1274, T-1542, T-2205, T-2410, T-2420, T-3335), work complete, sitting open — some for months. fw task delegate (D-626, T-3445) declines them: 'no open Human criteria, converted 0, owner: human (unchanged)' — the verb converts deterministic Human criteria, and these have none to convert. Closing them is 'completing a human-owned task', which agent authority forbids. So the only remedy is the operator closing each by hand, and nothing surfaces them as a distinct class: they sit inside the 316-row 'Human ACs awaiting verification' queue indistinguishable from tasks that genuinely await judgement. CTL-029 (T-3444) correctly still fires on them, which is how they were found. Two candidate fixes, both needing a ruling: (a) fw review-queue / audit break this class out with a one-command close per task, (b) extend delegate to the vacuous case — a task with zero open Human criteria trivially satisfies 'all open criteria are deterministic', but vacuous truth is exactly what should be checked with the operator rather than assumed. Sibling of the T-767 mis-filing class."
+  captured: 2026-09-24T17:34:07Z
+  context_task: T-3426
+  tags: [governance]
+  status: pending
+  promoted_to: null
+- id: OBS-504
+  text: "Two defects in task creation, both hit on T-3449 (fw work-on 'name' --type build) 2026-09-24. (1) NAME MANGLING: the requested name contained the literal 'owner:human'; the created frontmatter reads 'owner: agenthuman' — something rewrote the substring, inserting 'agent' and a space into the middle of a word inside the task NAME. A title describing ownership semantics cannot survive creation intact, and the corruption is silent. Suspect an owner-normalising substitution applied to the whole file or the name string rather than to the frontmatter field. (2) BLANK OWNER: 'owner:' was written empty, same as T-3444 got from fw note promote earlier. An empty owner is not a valid state — every gate that branches on owner (CTL-029, delegation, partial-complete routing, the review queue) has to guess. Both fixed by hand on T-3449 and recorded there. A frontmatter validator at creation would catch the second; the first needs whatever performs the substitution to be scoped to the field."
+  captured: 2026-09-24T17:35:40Z
+  context_task: T-3449
+  tags: [bug]
+  status: pending
+  promoted_to: null
