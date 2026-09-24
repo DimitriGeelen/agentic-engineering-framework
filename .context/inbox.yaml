@@ -5062,15 +5062,15 @@ observations:
   captured: 2026-09-22T15:24:59Z
   context_task: T-3435
   tags: [bug]
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-472
   text: "T-3434: fw pickup process dedupes on a SHA256 content hash with a 7-day cooldown (lib/pickup.sh:119 pickup_dedup_check), but the universal retry ladder (D-600) runs to ~76 days with rungs at 1 week and 1 month. A ladder re-post of an identical pickup at day 8+ would fall outside the cooldown and be processed twice. Not a live defect today — the ladder's only producer is the sidecar, and pickup is not yet a ladder consumer — but it must be closed before pickup adopts the ladder. Widening the cooldown is a governance change, not a chore: the 7-day window exists so a concern re-raised later reads as a NEW signal."
   captured: 2026-09-22T16:02:48Z
   context_task: T-3434
   tags: [sidecar]
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-473
   text: "audit.sh pre-push FAIL 'Self-vendor drift: libs class — 2 file(s) out of sync (T-2244)' prints the FABRIC mitigation ('Run: bin/fw fabric enrich --describe-only ... bin/fw fabric drift') instead of the vendor remedy ('bin/fw vendor self' / FW_VENDOR_ONLY=...). Seen 2026-09-22 16:59Z in a push refused while T-3429's worker had committed lib files not yet vendored. The remedy line is the one thing an agent reads under a blocked push; a wrong one sends it to the wrong verb. Likely a shared mitigation variable not reset between the fabric under-populated check and check_self_vendor_drift."
   captured: 2026-09-22T16:45:43Z
@@ -5133,19 +5133,145 @@ observations:
   captured: 2026-09-22T19:18:09Z
   context_task: T-3211
   tags: [bug]
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-482
   text: "EWCR clause-2: the six 'independent' searches in drive 6 §3 shared one blind spot — termlink agent search does not cover DM channels, and 832's substantive clause-2 response was sitting in one. Measured control: the phrase 'consolidated AEF-owned per-finding' is verbatim in dm:3bba15e681b3a078:d1993c2c3ec44c94 offset [2] and 'termlink agent search \"consolidated AEF-owned per-finding\"' returns 0 posts of 1002 envelopes scanned. That DM states DeepSeek and Mistral raw reviews DO exist in the governed 0503 dossier at named paths with verified sha256 (T-032-deepseek-review-response.md = 4dae4098...; T-032-mistral-review-response.md = 0eecb8af...), and that what is missing is AEF's consolidated per-finding disposition tables, not the artefacts. Drives 2-6 all reported clause 2 as 'artefacts absent' on a search method that structurally could not see the reply. 832 offset [7] independently diagnosed the mailbox as having no reader. Sovereign question S1 changes shape as a result; surfaced in docs/reports/EWCR/drive-7-procasfit-handback.md, not decided here."
   captured: 2026-09-22T19:40:03Z
   context_task: T-3439
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-483
   text: "tests/unit/handover_push_timeout.bats tests 64/65/68 grep agents/handover/handover.sh and agents/context/checkpoint.sh for strings that no longer exist ('timed out after', 'FW_HANDOVER_PUSH_TIMEOUT:-60', 'timeout \"$_ah_total_timeout\"') — absent at 0eddfe08e~1 and at HEAD, so red since whichever refactor removed them; tests/unit/t100144_handover_divergence.bats test 'wires divergence + nudge into the document' is red at the parent commit as well. Same class as T-3436 (fabric_globstar.bats, red 130 days): nothing runs tests/unit to completion (OBS-392), so tests that pin a removed mechanism stay red unseen until a task close happens to bundle the file. Found 2026-09-22 closing T-3211. Fix: re-pin each to the current mechanism or delete with reason; one task."
   captured: 2026-09-22T20:45:34Z
   context_task: T-3211
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-484
+  text: "fw note promote copies the whole observation text into name: and does not escape it: OBS-482 contained a double-quoted phrase, so T-3442's frontmatter is unparseable YAML (yaml error at line 2, fw bvp estimate fails, every reader of the file breaks) from the moment the verb created it. Two defects: (1) name: must be a short summary (first sentence or 120 chars) with the full text in description:/Context, (2) any string written to frontmatter must be YAML-escaped (L-370 already says this for generated YAML). Also: promote sets owner: human (agents/observe/observe.sh:344) by design, which puts every promoted task behind the human-owned-task boundary — correct as a Sovereign default, but worth stating in the promote output so the agent does not plan work on it."
+  captured: 2026-09-22T21:33:58Z
+  context_task: T-3442
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-485
+  text: "832 (consult 832-T833, 2026-09-23) fixed CTL-029 in their vendored audit.sh and asks us to take it upstream: the completable-but-not-completed predicate (T-2055) counts only the ### Agent section and fires on 'unticked==0 and ticked>0', reading neither owner: nor ### Human — so every correctly partial-complete task (owner human, open [REVIEW] AC, the state CLAUDE.md prescribes) emits a standing WARN whose only remedy is prohibited (agent closing a human-owned task). They had four such remediation tasks filed. Fix: skip when owner: human AND at least one unticked ### Human criterion; still fires for abandoned agent-owned tasks, owner-human with all Human ACs ticked, and owner-human with no ### Human section. Four control branches in their tools/_t833-ctl029-partial-complete-controls.sh (extracts our predicate, exits 3 if not found). Our own T-3435 and T-3429 are in exactly this state today."
+  captured: 2026-09-22T22:14:05Z
+  context_task: T-3389
+  tags: [bug]
+  status: promoted
+  promoted_to: task
+- id: OBS-486
+  text: "832's operator asks (consult 832-T833): a positive external-reviewer verdict on a low-risk item should close the task without a human tick. They measured first with tools/_t770-delegation-boundary.py over 342 open criteria: REVIEWER-CLOSEABLE 0, AGENT-SELF 130, OPERATOR-ONLY 212 — zero reviewer-closeable, because every deterministic criterion is written [REVIEW] under ### Human (84 of 84) despite default.md's rule to prefix [REVIEWER] under ### Agent when Expected is grep-able. Three asks in increasing change: (a) fw reviewer/audit report when the reviewer-closeable set is 0 while operator-only is large (cheapest, they take first); (b) enforce the routing rule at authoring/reviewer time; (c) let a [REVIEWER] AC under ### Agent with a PASS verdict close the task. (c) changes the delegation boundary and is the operator's; (a) and (b) are framework changes to surface/enforce an existing rule. Our T-1878/T-1947/T-2143/T-2147 ladder covers author-time routing; the measurement says it is not reaching."
+  captured: 2026-09-22T22:14:05Z
+  context_task: T-3389
+  tags: [governance]
+  status: pending
+  promoted_to: null
+- id: OBS-487
+  text: "tests/unit/fabric_watch_pattern_fitness.bats T-2737 control + PASS-size tests ('not ok 1', 'not ok 4') expect literal string 'all 1 watched file(s) registered', but current pass_over() wording (T-3105) emits 'all watched files registered — examined 1 watched file(s)'. Pre-existing wording drift, unmasked by T-3443 (which fixed the file's 24+min timeout so these assertions now actually execute instead of being killed by timeout first). Not caused by T-3443; out of its narrow scope to fix."
+  captured: 2026-09-23T17:59:28Z
+  context_task: T-3443
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-488
+  text: "sidecar consult to e2e-f12fa93d-responder unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation e2e-f12fa93d, client_msg_id 0c3b30af-62cc-4139-940d-fdb44f99b835). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T02:58:01Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-489
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/e2e-f12fa93d-sender unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation e2e-f12fa93d, client_msg_id 6ad47880-d12f-4ce4-8e1e-fde1ba9ba1a5). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T02:58:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-490
+  text: "sidecar consult to e2e-60867b67-responder unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation e2e-60867b67, client_msg_id d6336d2f-523e-4fe8-a790-a04fe1326477). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T02:58:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-491
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/t3433-circuit-addr unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation t3433-t3434-vendor, client_msg_id 0d7cf3a7-a9bf-4ca9-84ac-fadf2899531d). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T03:08:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-492
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/e2e-60867b67-sender unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation e2e-60867b67, client_msg_id 7faa72e5-fbd5-48f0-8000-9b1796db63fa). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T03:08:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-493
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/t3434-retry-ladder-r2 unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation t3433-t3434-vendor, client_msg_id 8ef41fcf-c8be-408f-896f-0ab00a17335d). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T03:08:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-494
+  text: "sidecar consult to 010-termlink unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation e2e-8dbad116, client_msg_id c91c5585-329a-462e-9d5e-e23c17baef55). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T03:08:03Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-495
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/t3434-retry-ladder-r2 unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation t3433-t3434-vendor, client_msg_id f05b4a16-3ff5-4f38-96da-9d38ca19791e). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T03:23:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-496
+  text: "sidecar consult to cacc73ea32b121dd/010-termlink unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation consult-010-termlink, client_msg_id a8717ecc-a77d-4de5-b86f-b596582f6a8a). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T03:43:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-497
+  text: "sidecar consult to 010-termlink unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation e2e-2c98349e, client_msg_id b557900e-9c6b-41f9-adfd-708244210c40). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T03:43:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-498
+  text: "sidecar consult to cacc73ea32b121dd/832-Workflow-designer unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation 832-T829-THREE-ASKS, client_msg_id e6316141-4599-426c-b111-99df94ef52c3). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T08:03:01Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-499
+  text: "sidecar consult to cacc73ea32b121dd/832-Workflow-designer unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation 832-T830-H3-RULED, client_msg_id a2318830-fc2a-45da-bd82-3ca06f5fbee5). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T08:43:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-500
+  text: "sidecar consult to cacc73ea32b121dd/832-Workflow-designer unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation 832-T833-CTL029-AND-REVIEWER-CLOSURE, client_msg_id 92601532-97c1-48d4-b7fe-435380cfd54a). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-24T09:38:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-501
+  text: "fw release tag-and-release leaves bleeding-edge unpushed after a release. Measured on the v1.7.0 cut (2026-09-24): the verb creates the VERSION-reconcile commit (29f3b0286, tag-as-canonical T-3242) on the local dev branch, fast-forwards master to it and pushes master + the tag — but never pushes bleeding-edge. Result: origin/master leads origin/bleeding-edge by exactly that commit, which inverts the release-train invariant CLAUDE.md states ('bleeding-edge is master's only writer, so master can never lead it') and is the precondition the NEXT release refuses on ('master is ahead of HEAD'). Self-healing only if a human notices and pushes. Fix: push the dev branch as part of tag-and-release, or refuse to start when the dev branch has unpushed commits. Low severity today because the parent noticed and pushed immediately; the failure mode is a session that releases and ends."
+  captured: 2026-09-24T14:33:16Z
+  context_task: T-3445
   tags: [bug]
   status: pending
   promoted_to: null
