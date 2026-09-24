@@ -1428,6 +1428,60 @@ show_version() {
 
 # --- Doctor Command ---
 
+# --- Doctor cost observability (T-3452) ---------------------------------
+#
+# `fw doctor` measured 155-212s across three profiled runs on the origin host,
+# and nothing in its output said so. That matters more than it sounds: the
+# checks run in a fixed order and the LAST one (T-3451's structure-timing
+# staleness WARN) sat at 155.0s and 166.7s of runs that ended at exactly those
+# numbers. Anything bounding doctor below its own tail silently truncates it,
+# and a truncated run is indistinguishable from a clean one — the same
+# false-green family as L-621 ("a gate that cannot finish inside the window
+# bounding it does not block, it goes unmeasured").
+#
+# Deliberately coarse. These phases exist to answer "how far did it get and
+# what did it cost", not to profile every check — the measurement in T-3452
+# showed the cost is concentrated in a handful of probes, so a handful of
+# phases is the whole signal. No check's logic is touched.
+_DOCTOR_PHASE=""
+_DOCTOR_PHASE_START=0
+_DOCTOR_T0=0
+_DOCTOR_PHASE_LOG=""
+
+# _doctor_phase <name> — close the open phase, open a new one.
+# An empty name closes the last phase without opening another (the flush).
+_doctor_phase() {
+    if [ -n "${_DOCTOR_PHASE:-}" ]; then
+        _DOCTOR_PHASE_LOG="${_DOCTOR_PHASE_LOG}$(( SECONDS - _DOCTOR_PHASE_START ))|${_DOCTOR_PHASE}"$'\n'
+    fi
+    _DOCTOR_PHASE="${1:-}"
+    _DOCTOR_PHASE_START=$SECONDS
+}
+
+# Fired from a trap when doctor is killed mid-run. States plainly that the
+# remaining checks are UNMEASURED rather than passing, because the default
+# reading of a truncated run is the wrong one.
+#
+# CALLER-SIDE CAVEAT, measured (T-3452): this fires on a TERM delivered to the
+# doctor shell, but NOT under a bare `timeout N bin/fw doctor`. GNU timeout puts
+# the command in its own process group and signals the GROUP, so bash dies
+# alongside the child it is waiting on and never reaches the handler — you get
+# "Terminated" and exit 124 with no report. Use `timeout --foreground N bin/fw
+# doctor`, which signals only the command and yields the report plus exit 124.
+# Verified both ways: bare timeout → no report; --foreground → report; direct
+# `kill -TERM <pid>` → report, exit 143.
+_doctor_killed_report() {
+    echo ""
+    echo "fw doctor was KILLED after $(( SECONDS - _DOCTOR_T0 ))s, during: ${_DOCTOR_PHASE:-startup}"
+    echo "  Every check after this point did NOT run. They are UNMEASURED, not passing."
+    if [ -n "${_DOCTOR_PHASE_LOG:-}" ]; then
+        echo "  Phases completed (slowest first):"
+        printf '%s' "$_DOCTOR_PHASE_LOG" | sort -t'|' -k1,1nr | head -5 \
+            | while IFS='|' read -r _p_s _p_n; do echo "    ${_p_s}s  ${_p_n}"; done
+    fi
+    exit 143
+}
+
 do_doctor() {
     # T-2452/F6: --quick — project-only fast mode. Skips the slow host/network
     # probes (mirror divergence ls-remote, litellm/ollama/watchtower curls,
@@ -1458,6 +1512,12 @@ do_doctor() {
     # run prints 'command not found' twice and the consumer checks silently
     # no-op (empty loop is indistinguishable from "no consumers").
     source "$FRAMEWORK_ROOT/lib/config.sh"
+
+    # T-3452: start the clock and arm the killed-run report before any check runs.
+    _DOCTOR_T0=$SECONDS
+    _DOCTOR_PHASE_LOG=""
+    _doctor_phase "startup"
+    trap '_doctor_killed_report' INT TERM
     # T-3112: fw_hook_parity_delta / fw_hook_parity_linked_worktrees — shared by
     # the Consumer Projects loop and the Worktrees audit below (same predicate,
     # two subjects). Same reason as the source above: an unsourced function makes
@@ -1959,6 +2019,7 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
         warnings=$((warnings + 1))
     fi
 
+    _doctor_phase "hook exercise from /tmp"  # T-3452
     # Check 6c: Hook exercise from /tmp (T-1629, B-3a of T-1626).
     # Active probe — runs each configured hook from /tmp (foreign CWD that
     # mimics agent cd-drift) and reports any whose path doesn't resolve.
@@ -2005,6 +2066,7 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
         echo -e "  ${GREEN}OK${NC}  All agent scripts executable"
     fi
 
+    _doctor_phase "plugin task-awareness"  # T-3452
     # Check 8: Plugin task-awareness
     if [ -x "$AGENTS_DIR/audit/plugin-audit.sh" ]; then
         local bypassing_count
@@ -2398,6 +2460,7 @@ PY
         fi
     fi
 
+    _doctor_phase "port3000 hygiene ratchet"  # T-3452
     # Check: port-3000 hygiene ratchet (T-2894, set-level sibling of T-2732's
     # per-item close gate). T-2732's P-011 gate fires once per task close and
     # says nothing about the population already in the repo, and cannot see a
@@ -3147,6 +3210,7 @@ else:
         warnings=$((warnings + 1))
     fi
 
+    _doctor_phase "Watchtower smoke test"  # T-3452
     # Check: Watchtower smoke test (T-486) — run if server is reachable
     # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)
     if _doctor_quick_skip "Watchtower smoke test (HTTP probes)"; then :; else
@@ -3225,6 +3289,7 @@ for e in d.get('errors',[])[:3]:
     fi
     fi  # T-2452/F6: end --quick guard for Watchtower smoke test
 
+    _doctor_phase "TermLink checks"  # T-3452
     # Check: TermLink (optional cross-terminal session communication)
     if command -v termlink >/dev/null 2>&1; then
         local tl_version
@@ -3445,6 +3510,7 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
         warnings=$((warnings + 1))
     fi
 
+    _doctor_phase "token usage / task debt"  # T-3452
     # Check: Token usage (T-806)
     if [ -f "$FW_LIB_DIR/costs.sh" ]; then
         local token_info
@@ -3514,6 +3580,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         local consumer_issues=0
         local fw_settings_file="$FRAMEWORK_ROOT/.claude/settings.json"
         echo ""
+        _doctor_phase "consumer projects"  # T-3452
         echo -e "  ${BOLD}Consumer Projects${NC}"
         for fw_yaml in $(fw_consumer_yamls); do
             [ -f "$fw_yaml" ] || continue
@@ -3903,6 +3970,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
     # found by elimination across root crontab, /etc/cron.d, systemctl).
     if _doctor_quick_skip "Autonomous Dispatch"; then :; else
     echo ""
+    _doctor_phase "autonomous dispatch"  # T-3452
     echo -e "  ${BOLD}Autonomous Dispatch${NC}"
     if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files resolver-loop.timer >/dev/null 2>&1; then
         if systemctl is-active --quiet resolver-loop.timer 2>/dev/null; then
@@ -4367,6 +4435,7 @@ except Exception as e:
             ;;
     esac
 
+    _doctor_phase "audit-timing staleness"  # T-3452
     # T-3451-STRUCTURE-STALENESS-START
     # T-3451: the check above answers "is the last FULL run near its own
     # ceiling" — it says nothing about whether the "structure" measurement
@@ -4401,6 +4470,17 @@ except Exception as e:
         echo -e "  ${GREEN}OK${NC}  Structure-section timing is current (measured $_sts_ts)"
     fi
     # T-3451-STRUCTURE-STALENESS-END
+
+    # T-3452: reaching here means the run completed, so disarm the killed-run
+    # trap before anything else — leaving it armed would let an interrupt during
+    # the summary print a "KILLED, checks did not run" report about a doctor that
+    # had in fact finished every check.
+    trap - INT TERM
+    _doctor_phase ""
+    echo ""
+    echo -e "  ${CYAN}INFO${NC}  fw doctor completed in $(( SECONDS - _DOCTOR_T0 ))s — slowest phases:"
+    printf '%s' "$_DOCTOR_PHASE_LOG" | sort -t'|' -k1,1nr | head -3 \
+        | while IFS='|' read -r _p_s _p_n; do echo "           ${_p_s}s  ${_p_n}"; done
 
     # Summary (T-1707: break out host_warnings count when > 0)
     local _scope_breakdown=""

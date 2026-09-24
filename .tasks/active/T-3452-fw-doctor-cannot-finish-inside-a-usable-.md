@@ -154,20 +154,52 @@ folded in here.
       turns out doctor completes fine and the earlier 180s kill was an artefact of
       contention with the concurrent audit, say so plainly and close this as
       not-a-defect — a refuted hypothesis recorded is a result, not a failure.
-- [ ] **If confirmed, the cost is reduced or made observable — and which one is a stated
+- [x] **If confirmed, the cost is reduced or made observable — and which one is a stated
       choice, not a drift.** Either doctor completes inside a bounded window, or it
       reports progress such that a killed run names the checks it did and did not reach.
       Silent truncation is the thing being fixed: per L-621, a check that cannot finish
       inside the window bounding it does not fail, it goes *unmeasured*, and unmeasured
       reads identically to green.
-- [ ] **No check is deleted or weakened to buy speed** without that being called out
-      explicitly in `## Decisions` with the coverage given up. Making the command fast by
+- [x] **No check is deleted or weakened to buy speed** without that being called out
+      explicitly in `## Decisions
+
+**Chose observability over reduction (AC 3 is an either/or; this states which).**
+Doctor's cost is concentrated in three probes — Watchtower smoke test 85 s, port3000
+hygiene ratchet 30 s, plugin task-awareness 18 s of a 172 s run. Every one of them is a
+real check that finds real things; the smoke test in particular had just been shown
+(T-3453) to be reporting six genuinely-slow operator surfaces that nobody could see.
+Making doctor fast by making it check less would have traded a measured problem for an
+unmeasured one, which is the failure mode AC 4 exists to forbid. **No check was deleted,
+skipped, reordered or given a shorter timeout.** The runtime is unchanged at ~172 s; what
+changed is that doctor now says so, and a killed run says where it stopped.
+
+**Chose coarse phases over per-check instrumentation.** Nine markers, placed at the
+checks the measurement identified as expensive, rather than instrumenting ~60 checks
+inside a 3000-line function. The purpose is to answer "how far did it get and what did it
+cost", and the measurement showed the cost is concentrated — so a handful of phases
+carries essentially the whole signal at a fraction of the regression risk to the
+framework's primary health command.
+
+**The killed-run report does NOT fire under a bare `timeout`, and that is documented in
+the code rather than papered over.** GNU `timeout` puts the command in its own process
+group and signals the *group*, so bash dies alongside the child it is waiting on and
+never reaches the handler — the caller sees `Terminated` and exit 124 with no report.
+Measured three ways: bare `timeout 60` → no report; `timeout --foreground 25` → report,
+exit 124; `kill -TERM <pid>` → report, exit 143. The caveat and the `--foreground` remedy
+are written at the trap's definition in `bin/fw`, and a test asserts that note is still
+there, because a helper that silently does nothing under the most common way of bounding
+a command is worse than no helper.
+
+**Did not change the trap to work around the group-kill.** Options existed (re-exec into
+its own session, install a wrapper). Both add process-management complexity to `bin/fw`'s
+router for a case the caller can fix with one flag, and the framework's own bounded
+callers are ours to adjust. Left as a documented caller contract.` with the coverage given up. Making the command fast by
       making it check less is the failure mode this AC exists to name in advance.
-- [ ] **A regression guard exists, with both legs distinguishable:** a test pins the
+- [x] **A regression guard exists, with both legs distinguishable:** a test pins the
       budget/observability property this task lands, and is demonstrated to fail against
       the pre-fix behaviour rather than merely passing against the post-fix one. `TEST_TEMP_DIR`
       set in setup; no bare `! grep -q`; no live corpus counts pinned (T-3326).
-- [ ] Vendored copies synced for every touched file under `lib/ agents/ bin/`;
+- [x] Vendored copies synced for every touched file under `lib/ agents/ bin/`;
       `bin/fw vendor self --check` clean.
 
 ### Human
@@ -328,6 +360,15 @@ folded in here.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# No `bin/fw doctor` line and no duration pinned (T-3326): doctor is a ~170s
+# command and its runtime is exactly the thing that moves between hosts. The
+# bats file drives the sed-extracted helpers directly, which is hermetic and
+# fast; what it pins is the observability contract, not a number.
+
+timeout 300 bats tests/unit/t3452_doctor_cost_observability.bats > /tmp/.t3452-v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3452-v1.out
+bash -n bin/fw
+bin/fw vendor self --check
 
 ## RCA
 
@@ -399,6 +440,38 @@ folded in here.
 -->
 
 ## Decisions
+
+**Chose observability over reduction (AC 3 is an either/or; this states which).**
+Doctor's cost is concentrated in three probes — Watchtower smoke test 85 s, port3000
+hygiene ratchet 30 s, plugin task-awareness 18 s of a 172 s run. Every one of them is a
+real check that finds real things; the smoke test in particular had just been shown
+(T-3453) to be reporting six genuinely-slow operator surfaces that nobody could see.
+Making doctor fast by making it check less would have traded a measured problem for an
+unmeasured one, which is the failure mode AC 4 exists to forbid. **No check was deleted,
+skipped, reordered or given a shorter timeout.** The runtime is unchanged at ~172 s; what
+changed is that doctor now says so, and a killed run says where it stopped.
+
+**Chose coarse phases over per-check instrumentation.** Nine markers, placed at the
+checks the measurement identified as expensive, rather than instrumenting ~60 checks
+inside a 3000-line function. The purpose is to answer "how far did it get and what did it
+cost", and the measurement showed the cost is concentrated — so a handful of phases
+carries essentially the whole signal at a fraction of the regression risk to the
+framework's primary health command.
+
+**The killed-run report does NOT fire under a bare `timeout`, and that is documented in
+the code rather than papered over.** GNU `timeout` puts the command in its own process
+group and signals the *group*, so bash dies alongside the child it is waiting on and
+never reaches the handler — the caller sees `Terminated` and exit 124 with no report.
+Measured three ways: bare `timeout 60` → no report; `timeout --foreground 25` → report,
+exit 124; `kill -TERM <pid>` → report, exit 143. The caveat and the `--foreground` remedy
+are written at the trap's definition in `bin/fw`, and a test asserts that note is still
+there, because a helper that silently does nothing under the most common way of bounding
+a command is worse than no helper.
+
+**Did not change the trap to work around the group-kill.** Options existed (re-exec into
+its own session, install a wrapper). Both add process-management complexity to `bin/fw`'s
+router for a case the caller can fix with one flag, and the framework's own bounded
+callers are ours to adjust. Left as a documented caller contract.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
