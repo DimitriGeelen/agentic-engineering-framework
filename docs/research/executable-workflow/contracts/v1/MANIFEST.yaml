@@ -18,3 +18,26 @@ schemas:
   sha256: b77a8bc94013c033a816c870cd072ca1b9f4d557871e00f1c4ab2688d014fe2c
 - file: transition-envelope.schema.json
   sha256: 8e038ac2eca9baa3984f713d92183dd681b2ba63523682d27a591ea6251076df
+
+# Prose contracts and trace/analysis surfaces in this directory. INDEX ONLY —
+# the fence (tools/ewcr-contracts-check.py) hashes `schemas:` above and nothing
+# here. Recording a sha256 for these would read as frozen while being unverified,
+# which is the false green this arc exists to prevent. Each document names its
+# own fence in the table below.
+documents:
+- file: task-lifecycle-contract.md
+  frozen_by: T-3386
+  fence: python3 tools/ewcr-contracts-check.py
+- file: evidence-and-idempotency.md
+  frozen_by: T-3387
+  fence: python3 tools/ewcr-contracts-check.py
+- file: traceability.yaml
+  frozen_by: T-3393
+  fence: python3 tools/ewcr-trace-check.py
+- file: refusal-threat-matrix.md
+  frozen_by: T-3389
+  fence: python3 tools/ewcr-contracts-check.py
+  note: >
+    Consolidated refusal/threat matrix over the four external reviews. Carries the
+    §13 would-fail measurement (14 of 20). Its review-source sha256 values are
+    checked by T-3389's own verification lines, not by a fence in this directory.
