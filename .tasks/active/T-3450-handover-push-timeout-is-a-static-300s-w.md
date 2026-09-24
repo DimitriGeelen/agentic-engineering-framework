@@ -8,7 +8,7 @@ description: >
   grown to 268s — derive it from the measured structure seconds the way T-3421 derives
   the audit lock wait
 
-status: issues
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-24T20:09:16Z
-last_update: 2026-09-24T20:57:05Z
+last_update: 2026-09-24T22:14:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,6 +55,23 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=3 (body:portability-abstraction); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-24T22:14:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-09-24T20:15:12Z'
@@ -135,7 +152,7 @@ the push timeout instead of adding a second, differently-shaped rule.
       `tests/unit/handover_push_timeout.bats` has 3 pre-existing failures unrelated to this
       task (stale literal-value assertions predating T-3062's bump to 300) — not touched,
       out of scope.
-- [ ] Live, recorded here: the derived value on this host with the current timing file, the
+- [x] Live, recorded here: the derived value on this host with the current timing file, the
       current structure seconds it came from, and one real `fw handover --commit` whose
       push completes without exit 124. If the push is still killed, do not raise the
       number blindly — record the new measurement and stop, because that means the gate
@@ -543,3 +560,50 @@ standing order.
 
 ### 2026-09-24T20:57:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → issues
+
+### 2026-09-25T00:20Z — AC 4 satisfied by T-3451 (parent session)
+
+AC 4 was blocked, not wrong. The derivation this task shipped was correct the whole
+time; its input was stale. T-3451 fixed the input — `agents/audit/audit.sh` now records
+every completed section, on scoped runs as well as full ones, so the ledger this function
+reads is refreshed by the very `--section structure` run the pre-push hook pays for.
+
+**The three things this AC asked to be recorded here:**
+
+| | value | source |
+|---|---|---|
+| structure seconds | **329 s**, `timed_out: false`, measured 2026-09-24T23:58:27+02:00 | `.context/audits/full-audit-timing.yaml` `section_runs[structure]`, written by a real `bin/fw audit --section structure` (337 s wall, rc=1 warnings-only, `fails=0`) |
+| derived push timeout | **494 s** = ceil(1.5 x 329) | `fw_handover_push_timeout_default` |
+| derived lock wait | **412 s** = ceil(1.25 x 329) | `fw_prepush_lock_wait_default` |
+
+**The real push, `bin/fw handover --commit`, rc=0, 515 s wall, 8 unpushed commits -> 0:**
+
+```
+Push timeout: 494s (derived from .context/audits/full-audit-timing.yaml)
+Another audit is already running - exiting (no verdict produced)
+Audit lock held - waiting up to 412s for it to free (FW_PREPUSH_LOCK_WAIT=412, 0 disables)
+Fail: 0
+Pushed to origin OK
+```
+
+Zero occurrences of `124` in the run. Note what that log shows and an earlier attempt did
+not: **lock contention actually happened on this run** - the very condition that killed
+two of the three previous attempts - and the derived 412 s wait absorbed it rather than
+the push dying under it. The previous derived value (402 s) came from a ledger reading
+268 s dated two days earlier; before T-3451's fix landed, the last structure entry was a
+watchdog-killed 322 s flagged `timed_out: true`, which made
+`fw_handover_push_timeout_default` fall back to the 650 s constant rather than derive at
+all. 494 s is the first value this function has ever computed from a measurement it
+could trust.
+
+No multiplier, floor or cap was widened. This AC's own instruction - *"do not raise the
+number blindly"* - was not reached, because the gate did not grow; the reading of it was
+simply wrong.
+
+**This task is NOT closed by the agent that produced its evidence.** T-3451's AC 6 says
+so explicitly, and producer-not-judge says it independently: the session that fixed the
+input should not also certify that the fix satisfied a different task's bar. Every Agent
+AC here is now ticked and the close is a single command for whoever picks it up.
+
+### 2026-09-24T22:14:12Z — status-update [task-update-agent]
+- **Change:** status: issues → started-work

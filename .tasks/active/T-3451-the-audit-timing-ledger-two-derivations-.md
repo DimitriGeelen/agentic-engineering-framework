@@ -124,13 +124,13 @@ cost. T-3450 fixed the literal; this fixes its input.
       measurement and is silent on a fresh one (pin both legs — a guard that never fires
       and one that fires correctly must be distinguishable). `TEST_TEMP_DIR` set in setup;
       no bare `! grep -q`.
-- [ ] Live, recorded here: the measured structure seconds before and after one scoped run,
+- [x] Live, recorded here: the measured structure seconds before and after one scoped run,
       the derived lock wait and push timeout that result, and **one real
       `fw handover --commit` whose push completes without exit 124** — which is T-3450's
       AC 4, unblocked. If it still fails, record the new measurement and STOP: do not widen
       any multiplier, because a third instance of the same class means the gate itself is
       the thing to fix, not its budget.
-- [ ] Vendored copies synced for every touched file under `lib/ agents/`; `bin/fw vendor
+- [x] Vendored copies synced for every touched file under `lib/ agents/`; `bin/fw vendor
       self --check` clean. T-3450 is updated from `issues` to reflect that its AC 4 is
       unblocked by this task (do not close T-3450 yourself — say so in the handback).
 
@@ -634,3 +634,46 @@ correctly does not.
 this host and was killed before reaching its structure-timing line. That is not this
 task's defect and the WARN/silent/INFO legs are pinned by tests 21-23, but a health
 command that cannot finish inside three minutes is a surface nobody will run.
+
+### 2026-09-25T00:25Z — AC 5 closed by a real push, AC 6 closed (parent session)
+
+**AC 5's remaining leg.** `bin/fw handover --commit` — rc=0, 515 s wall, 8 unpushed
+commits to 0, zero occurrences of `124` anywhere in the run:
+
+```
+Push timeout: 494s (derived from .context/audits/full-audit-timing.yaml)
+Another audit is already running - exiting (no verdict produced)
+Audit lock held - waiting up to 412s for it to free (FW_PREPUSH_LOCK_WAIT=412, 0 disables)
+Fail: 0
+Pushed to origin OK
+```
+
+The middle two lines are the part worth not skimming. **Lock contention actually
+occurred on this run** — the condition present in two of the three failed attempts that
+produced this task — and the derived 412 s wait absorbed it instead of the push dying
+under it. So this is not a pass obtained by getting lucky on an uncontended run; it is a
+pass on the contended path, which is the one the gate is for.
+
+That also retires the open question AC 3 left standing. The recorded measurement carries
+`excludes_lock_wait: true` — the section timer deliberately measures the audit's own
+work, not the wait for someone else's — and the wait is accounted for *separately*, in
+`fw_prepush_lock_wait_default`, from the same number. One measurement, two consumers,
+neither of them silently folding the other's cost in. The 515 s total exceeding the
+494 s push timeout is exactly that separation visible in the wall clock: the lock wait is
+not spent inside the push budget.
+
+**AC 6.** `bin/fw vendor self --check` → *"vendored .agentic-framework/ in sync with
+source"*, rc=0. The only vendored-class file this task touched is
+`agents/audit/audit.sh`, synced in `eb4b49b60` with `FW_VENDOR_ONLY` so no other
+session's dirty files were swept in. `tests/unit/` is not a vendored class.
+
+T-3450 is updated off `issues` and its AC 4 recorded and ticked against this run's
+evidence. **It is deliberately NOT closed here** — this AC says so, and producer-not-judge
+says it independently. Its close is one command for whoever takes it.
+
+**What this task did not do, on purpose.** No multiplier, floor or cap was widened. The
+standing instruction in AC 5 was that a third instance of this class means the gate is
+the thing to fix rather than its budget — that branch was not taken, because the gate had
+not grown. 268 -> 325 -> 329 s is a cost that drifts slowly; what failed was reading a
+two-day-old number as if it were current. The fix was to make the reading track the cost,
+and the numbers now move on their own.
