@@ -5310,3 +5310,31 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-507
+  text: "A push LANDED while the pre-push audit reported Fail: 1. Measured 2026-09-24 21:17Z: 'git push origin bleeding-edge' printed 'Fail: 1' (self-vendor drift, libs class, T-2244) and still completed 0e793c4d0..4261f46ab. The T-2244 self-vendor gate is documented as blocking a push on drift, and the earlier push in this same session (20:40Z) was REFUSED on exactly this check — so the behaviour is not consistent between two runs minutes apart. Candidate explanations, none verified: the FAIL came from a section evaluated after the block decision; the drift appeared between the check and the push; or the blocking predicate reads a different scope than the reported summary. Worth pinning either way, because 'the gate reported a failure and the push went through' is a false-green of the kind the framework treats as worst-class: a reader seeing Fail: 1 assumes the push was stopped. Context: a concurrent worker (T-3451) was mid-edit on the two drifted files (lib/prepush-lock-wait.sh, lib/config.sh), which is a legitimate transient state the gate may or may not be meant to tolerate — that question is part of the finding, not an excuse for it."
+  captured: 2026-09-24T21:20:33Z
+  context_task: T-3451
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-508
+  text: "arc-019 (ewcr-arc0-contract-evidence) is CLOSE-READY as of 2026-09-24: all 20 members work-completed, anchor T-3147 has zero unticked Human ACs, and the headline mechanic is now demonstrable rather than asserted. Headline: 'operator opens the Arc 0 page, picks any pilot invariant or review finding, and sees it traced to a versioned contract, a refusal scenario, a responsible component, and an executable verification fence they can run.' Demo artefact: docs/research/executable-workflow/contracts/v1/refusal-threat-matrix.md (T-3389) — 19 rows across all four external reviews; verified live on row CL-1, which traces finding to threat to reason_code ambiguous_identity with scenario_refs [12] to component (Arc 2 cand 1, explicitly 'No Fabric card: green-field (C4)') to fence (explicitly 'gap:' plus what would prove it). Rows with no component or fence say so rather than inventing one, which is the refusal-fidelity property the arc exists to establish. Supporting: contracts/v1/traceability.yaml + tools/ewcr-trace-check.py (20 invariants, exit 0) and tools/ewcr-contracts-check.py (7 schemas, hashes match). fw arc close is agent-refused (T-1671) and correctly so; surfaced at the Watchtower close form, which returns 200. Not closed by me."
+  captured: 2026-09-24T21:25:21Z
+  context_task: T-3451
+  tags: [governance]
+  status: pending
+  promoted_to: null
+- id: OBS-509
+  text: "An inception decision was recorded whose VERDICT contradicts its own stored RATIONALE. T-2770, decided 2026-09-24 via Watchtower: '## Decision / **Decision**: DEFER', immediately followed by '**Rationale**: The evidence the DEFER waited for existed in this repository the whole time' and three numbered findings that each argue the change should proceed — verbatim the agent's GO recommendation block. Whatever the cause (the form defaulting to DEFER while auto-populating rationale from ## Recommendation, or a deliberate DEFER with the rationale field auto-filled), the artefact now reads as 'DEFER because the evidence is complete', which is incoherent to any later reader and is the false-green class this framework treats as worst: a record that looks decided and argues the opposite. Two secondary defects on the same task: (1) it stayed status started-work rather than moving to a terminal state after a decision; (2) no revisit_at was set, which CLAUDE.md and T-1451 require on DEFER so G-053 can surface it as ripe — the 2026-09-22 handover already counted 14 such orphaned DEFERs and this is the next. NOT corrected by the agent: the decision is the operator's and changing it, even to make it self-consistent, would be an agent overwriting a Sovereign record. Candidate fix: the decide path should either copy the rationale for the verdict actually chosen or refuse to auto-fill across verdicts, and should prompt for revisit_at on DEFER."
+  captured: 2026-09-24T21:33:00Z
+  context_task: T-3451
+  tags: [governance]
+  status: pending
+  promoted_to: null
+- id: OBS-510
+  text: "A dispatched worker's HANDBACK commit was read as its exit. T-3451's worker committed ba9b6348c at 23:30 with 'Status: issues ... stopping per the operator standing order', and the parent (me) then resumed T-3451 and edited agents/audit/audit.sh at 23:33. The worker was NOT finished: its result.jsonl was still being written at 23:47, 17 minutes later, and it independently detected the concurrent edits and flagged that the 'no other worker is on this tree' clause in its own dispatch prompt had been violated - by the parent. Two things compose into this: (1) T-3440 records close_state, which asks whether the task closed, not whether the worker process exited - a worker that hands back without closing leaves close_state incomplete and keeps running; (2) a handback written into a commit message is the most legible exit signal a worker produces, and it is not an exit signal at all. What a parent must check before touching a dispatched worker's files: the PID under the dispatch wrapper, and the mtime of /tmp/tl-dispatch/<name>/result.jsonl. Neither was checked. No damage: the parent's edit was the same one-line fix the worker's own handback specified, and the worker's subsequent scoped run recorded it working. But the parent had no way to know that in advance."
+  captured: 2026-09-24T21:48:18Z
+  context_task: T-3451
+  tags: []
+  status: pending
+  promoted_to: null

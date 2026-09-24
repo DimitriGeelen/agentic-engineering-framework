@@ -8,12 +8,12 @@ description: >
   never by the scoped --section structure run the pre-push hook actually pays — so
   both timeouts derive from a stale number
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/config.sh, lib/prepush-lock-wait.sh, web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-24T21:04:57Z
-last_update: 2026-09-24T21:32:42Z
-date_finished:
+last_update: 2026-09-24T22:16:45Z
+date_finished: 2026-09-24T22:16:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -753,3 +753,20 @@ the thing to fix rather than its budget — that branch was not taken, because t
 not grown. 268 -> 325 -> 329 s is a cost that drifts slowly; what failed was reading a
 two-day-old number as if it were current. The fix was to make the reading track the cost,
 and the numbers now move on their own.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f3098821
+- **Timestamp:** 2026-09-24T22:16:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 136
+     - evidence: `bash -c 'set -eo pipefail; sed -n "/^section_mark \"\"\$/,/^fi\$/p" agents/audit/audit.sh | head -1 | grep -qx "section_mark \"\""'`
+
+### 2026-09-24T22:16:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

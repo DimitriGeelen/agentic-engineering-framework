@@ -4487,3 +4487,24 @@ decisions:
     date: 2026-09-24
     task: T-3449
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-642
+    decision: "added a NEW top-level `section_runs:` list, written by"
+    scope: project
+    date: 2026-09-24
+    task: T-3451
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-643
+    decision: "`_audit_record_section_run` writes `excludes_lock_wait: true` on every entry."
+    scope: project
+    date: 2026-09-24
+    task: T-3451
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-644
+    decision: "stopped without applying the fix, per the operator's standing order (a live"
+    scope: project
+    date: 2026-09-24
+    task: T-3451
+    rationale: "Auto-captured from task file on completion"

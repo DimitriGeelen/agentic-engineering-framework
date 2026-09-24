@@ -1,4 +1,4 @@
-# Full-audit run timing - written by agents/audit/audit.sh (T-3127)
+# Full-audit run timing - written by agents/audit/audit.sh (T-3127, T-3451)
 last_run:
   timestamp: "2026-09-22T17:56:41+02:00"
   total_seconds: 1556
@@ -51,3 +51,34 @@ last_run:
       seconds: 1
     - name: "arc-completion"
       seconds: 14
+section_runs:
+  - name: "traceability"
+    seconds: 227
+    timestamp: "2026-09-25T00:03:52+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "episodic"
+    seconds: 100
+    timestamp: "2026-09-25T00:05:32+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "discovery-trends"
+    seconds: 46
+    timestamp: "2026-09-25T00:06:18+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "structure"
+    seconds: 330
+    timestamp: "2026-09-25T00:11:54+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "oe-research"
+    seconds: 5
+    timestamp: "2026-09-25T00:15:08+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "oe-fast"
+    seconds: 0
+    timestamp: "2026-09-25T00:15:08+02:00"
+    timed_out: false
+    excludes_lock_wait: true
