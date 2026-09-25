@@ -5513,3 +5513,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-536
+  text: "T-3469's tier classifier counts a prose mention as propagation, so a task that merely DISCUSSES a finding relabels it. Found by using it: filing 4 build tasks moved the candidate count 25->18 when only 5 inceptions were genuinely linked (expected 20). The extra 2 moved because T-3469's own task file quotes the audit Evidence line 'T-3114, T-3108, T-3100, T-3084, T-3081' in its Result block, and T-3469 is a build task created after those inceptions. T-3100 and T-3081 have no implementing work; they were reclassified purely by being named in prose. The direction of the error is the bad one: a body mention cannot remove a finding (only a declared related_tasks link does that, and that part is sound) but it CAN move one out of the candidate tier, so the tier under-reports abandoned decisions. That is the same shape as the defect T-3469 fixed, one level down. Scale is 2 of 25 and the tier is advisory, never a gate. Candidate fix: require the mentioning task to declare a component overlap or name the inception in a structured field rather than prose. Not done inside a triage task. See docs/reports/T-3470-go-scope-candidate-triage.md."
+  captured: 2026-09-25T15:03:04Z
+  context_task: T-3470
+  tags: []
+  status: pending
+  promoted_to: null
