@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-24T23:09:20Z
-last_update: 2026-09-25T05:46:05Z
+last_update: 2026-09-25T06:37:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,36 +72,115 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Hit live, twice, while committing T-3452's close artefacts. Focus sat on T-3451
+(partial-complete: `work-completed`, `owner: human`, still in `active/`) and the action was
+a commit attributed to T-3452, which was already closed.
+
+- The **focus-drift gate** (T-1730) refused, and its own message prescribed
+  `FW_SWITCH_FOCUS=1 <cmd>` as the universal remedy — correctly noting that option 1
+  (focus the target) was impossible, since a closed task cannot be focused.
+- Adding that prefix then hit the **partial-complete gate** (T-3174), whose own message
+  says a bare `git commit` *is* allowed here — refused as *"this command writes nothing
+  the gate can detect"*.
+- Dropping the prefix returned to the focus-drift refusal.
+
+Two gates, two prescribed remedies, no line satisfying both.
+
+### Correction to the filed root cause
+
+OBS-513 and OBS-511 recorded the root as *"the read-only classifier cannot parse a
+leading assignment"*. **That is wrong, and the real cause is narrower.** The general
+classifier has handled env prefixes since T-3374 — `_fw_strip_env_prefixes`
+(`safe-commands.sh:216`) with a denylist of execution-causing names, called at lines 302
+and 392. What it was never called from is `_fw_is_git_commit_clause` (:1164), which
+anchored on `^git[[:space:]]+commit`. An env prefix broke that anchor, so the commit
+stopped being recognised as a commit clause, fell through to
+`_fw_single_command_is_safe`, and was correctly refused as a write.
+
+So the primitive existed and was sound; one predicate simply did not use it. Recording
+the correction because "the classifier is blind to assignments" would have sent the next
+person to rewrite a working security primitive.
+
+The `time` half of OBS-511 *is* a real general gap and is fixed here too. Its other half
+— `start=$(date +%s) git push` — is **not** a bug: command substitution deliberately
+disqualifies the allowance (`:1305`), because a substitution can run anything. That stays.
+
+### Live proof
+
+Same deadlock state (focus on partial-complete T-3451, commit attributed to closed
+T-3452), the command that was refused twice:
+
+```
+FW_SWITCH_FOCUS=1 git commit --dry-run -m 'T-3452: live probe of the T-3454 fix'
+  -> On branch bleeding-edge ...   (not blocked; --dry-run created nothing)
+```
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **The collision is reproduced from a fixture, not just narrated.** A test drives
+- [x] **The collision is reproduced from a fixture, not just narrated.** A test drives
       `check-active-task.sh` with focus on a partial-complete task and a command whose
       target is a different (closed) task, and shows that the focus-drift gate's own
       prescribed remedy (`FW_SWITCH_FOCUS=1 <cmd>`) is then refused by the
       partial-complete gate because an assignment prefix is not classifiable by
       `agents/context/lib/safe-commands.sh`. Both refusals pinned, so a fix cannot
       silently half-land.
-- [ ] **The read-only classifier tolerates a leading `VAR=value` / `VAR=$(…)` assignment
+- [x] **The read-only classifier tolerates a leading `VAR=value` / `VAR=$(…)` assignment
       and the `time` keyword** — it strips them and classifies what remains, rather than
       refusing what it cannot parse. This is OBS-511's subject and is the shared root: the
       same blindness refuses `start=$(date +%s) git push` and `time bin/fw doctor`, so
       measuring a gated command is itself gated.
-- [ ] **No gate is weakened.** Stripping a leading assignment must not let a write through:
+- [x] **No gate is weakened.** Stripping a leading assignment must not let a write through:
       a command whose *remainder* is a write is still classified as a write. Pin the
       adversarial case (`FOO=1 rm -rf x`, `time tee f`) alongside the benign one, or the
       fix has traded a usability bug for a safety hole.
-- [ ] **Tests distinguish fires-correctly from never-fires,** demonstrated against the
+- [x] **Tests distinguish fires-correctly from never-fires,** demonstrated against the
       pre-fix classifier. `TEST_TEMP_DIR` set in setup; no bare `! grep -q`; no live corpus
       counts (T-3326).
-- [ ] **Related to T-3299, and the relationship is stated.** T-3299 is the same class one
+- [x] **Related to T-3299, and the relationship is stated.** T-3299 is the same class one
       gate over (G-020 blocking both escape routes its own message prescribes). Say in
-      `## Decisions` whether these are one fix or two, rather than letting two tasks drift
+      `## Decisions
+
+**T-3299 is the same class but a different fix, so they stay separate (AC 5).** T-3299 is
+G-020 blocking both escape routes its own message prescribes; its fix is to allowlist
+metadata-only `fw task update` at that checkpoint and correct the message. Nothing about
+prefix parsing touches it — `fw task update` is not safe-listed there *at all*. Merging
+them would have produced one task with two unrelated patches and a shared excuse. T-3299
+is also `owner: human`, so not mine to close. What the two share is a **pattern worth
+naming**: a gate whose block message prescribes a remedy that another gate, or the same
+gate, then refuses. That is now two confirmed instances at two different gate pairs,
+which makes it structural. A third should stop being filed as a bug and start being
+filed as a contract test every gate message must pass.
+
+**Reused `_fw_strip_env_prefixes` rather than adding a second regex.** That primitive
+already carries the denylist of execution-causing names (`PATH`, `LD_*`, `BASH_ENV`,
+`GIT_EDITOR`, `IFS`, …), and its own header says why there must be exactly one copy:
+"two copies of a security predicate is two chances to fix only one". Reusing it means
+`PATH=/tmp git commit` still fails the match — the strip halts at the denied name and the
+residue does not look like a commit clause — so the fix **fails closed** by construction
+rather than by a second list someone must remember to update.
+
+**`time` is stripped; `/usr/bin/time` is not.** The shell keyword changes nothing about
+what resolves or executes. `/usr/bin/time` is a real program with its own options, and
+`-o FILE` writes a file. Pinned both ways.
+
+**Safe because stripping only ever exposes the remainder to the same classification.**
+Write detection (`has_bash_write_pattern`) runs against the ORIGINAL, unstripped line at
+every call site, so `time rm -rf x` and `time sed -i s/a/b/ f` are still blocked. Pinned.
+
+**A note on how the tests lied first.** Two assertions failed on the first run and both
+looked like real regressions — `FOO=$(id) …` appeared to slip through the
+command-substitution guard, and `time sed -i` appeared to become safe. Neither was true.
+The harness interpolated the command into the shell source `bash -c` parses, so it
+expanded `$(id)` before the predicate ever saw it, and the nested quotes in
+`bash -c 'rm x'` collided with the wrapper's. The second also measured
+`is_bash_safe_command` *alone*, which is one half of a two-part gate: `sed -i` has always
+been safe-listed by that predicate and is blocked by `has_bash_write_pattern`, which the
+caller composes with it. Commands now travel through the environment, and the verdict
+helper composes both predicates the way `check-active-task.sh` does.` whether these are one fix or two, rather than letting two tasks drift
       toward the same patch.
-- [ ] Vendored copies synced for every touched file; `bin/fw vendor self --check` clean.
+- [x] Vendored copies synced for every touched file; `bin/fw vendor self --check` clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,6 +340,16 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# The second line runs the nine PRE-EXISTING safe-command suites, not just this
+# task's own. The whole risk of this change is regression in a security
+# predicate, so the neighbours are the check that matters: 179 of the 195 are
+# theirs, and a fix that admits something they forbid should go red there.
+
+timeout 600 bats tests/unit/t3454_gate_contract_collision.bats > /tmp/.t3454-v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3454-v1.out
+timeout 900 bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/t3179_partial_complete_commit.bats tests/unit/t3221_commit_exemption_clause.bats tests/unit/t3245_trailer_quote_strip.bats tests/unit/t3374_env_prefix_denylist.bats tests/unit/test_safe_commands_git_commit.bats > /tmp/.t3454-v2.out 2>&1 && grep -q "^ok 1 " /tmp/.t3454-v2.out
+bash -n agents/context/lib/safe-commands.sh
+bin/fw vendor self --check
 
 ## RCA
 
@@ -332,6 +421,44 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+**T-3299 is the same class but a different fix, so they stay separate (AC 5).** T-3299 is
+G-020 blocking both escape routes its own message prescribes; its fix is to allowlist
+metadata-only `fw task update` at that checkpoint and correct the message. Nothing about
+prefix parsing touches it — `fw task update` is not safe-listed there *at all*. Merging
+them would have produced one task with two unrelated patches and a shared excuse. T-3299
+is also `owner: human`, so not mine to close. What the two share is a **pattern worth
+naming**: a gate whose block message prescribes a remedy that another gate, or the same
+gate, then refuses. That is now two confirmed instances at two different gate pairs,
+which makes it structural. A third should stop being filed as a bug and start being
+filed as a contract test every gate message must pass.
+
+**Reused `_fw_strip_env_prefixes` rather than adding a second regex.** That primitive
+already carries the denylist of execution-causing names (`PATH`, `LD_*`, `BASH_ENV`,
+`GIT_EDITOR`, `IFS`, …), and its own header says why there must be exactly one copy:
+"two copies of a security predicate is two chances to fix only one". Reusing it means
+`PATH=/tmp git commit` still fails the match — the strip halts at the denied name and the
+residue does not look like a commit clause — so the fix **fails closed** by construction
+rather than by a second list someone must remember to update.
+
+**`time` is stripped; `/usr/bin/time` is not.** The shell keyword changes nothing about
+what resolves or executes. `/usr/bin/time` is a real program with its own options, and
+`-o FILE` writes a file. Pinned both ways.
+
+**Safe because stripping only ever exposes the remainder to the same classification.**
+Write detection (`has_bash_write_pattern`) runs against the ORIGINAL, unstripped line at
+every call site, so `time rm -rf x` and `time sed -i s/a/b/ f` are still blocked. Pinned.
+
+**A note on how the tests lied first.** Two assertions failed on the first run and both
+looked like real regressions — `FOO=$(id) …` appeared to slip through the
+command-substitution guard, and `time sed -i` appeared to become safe. Neither was true.
+The harness interpolated the command into the shell source `bash -c` parses, so it
+expanded `$(id)` before the predicate ever saw it, and the nested quotes in
+`bash -c 'rm x'` collided with the wrapper's. The second also measured
+`is_bash_safe_command` *alone*, which is one half of a two-part gate: `sed -i` has always
+been safe-listed by that predicate and is blocked by `has_bash_write_pattern`, which the
+caller composes with it. Commands now travel through the environment, and the verdict
+helper composes both predicates the way `check-active-task.sh` does.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

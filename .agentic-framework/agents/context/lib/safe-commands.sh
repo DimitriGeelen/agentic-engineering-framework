@@ -213,12 +213,37 @@ _fw_env_prefix_is_denied() {
 # `env PATH=/tmp cat x` a distinct bypass from `PATH=/tmp cat x`. Two copies of
 # a security predicate is two chances to fix only one; the duplication is
 # removed rather than the denylist being pasted into both.
+# T-3454: the loop also consumes a leading `time` keyword. `time` changes
+# nothing about what resolves or what executes — it reports how long the
+# remainder took — but an unstripped `time` made the whole line unclassifiable,
+# so the gate refused it as "writes nothing the gate can detect". The effect was
+# perverse rather than merely inconvenient: MEASURING the cost of an otherwise
+# permitted command required a wrapper that turned it into a refusal, so the
+# pressure ran against measuring. That is a bad direction for a framework whose
+# repeated failure mode is acting on unmeasured cost (T-3450, T-3451, L-621).
+#
+# Safe for the same reason the NAME=VALUE strip is safe: stripping only ever
+# exposes the REMAINDER to the identical classification, and write detection
+# (has_bash_write_pattern) runs against the ORIGINAL, unstripped line at every
+# call site. `time rm -rf x` strips to `rm -rf x`, which is still a write and
+# still blocked. Interleaving is handled because both forms are consumed by the
+# same loop, so `time FOO=1 git status` and `FOO=1 time git status` behave alike.
 _fw_strip_env_prefixes() {
-    local c="$1" _name
-    while [[ "$c" =~ ^([A-Za-z_][A-Za-z0-9_]*)=[^[:space:]]+[[:space:]]+(.*)$ ]]; do
-        _name="${BASH_REMATCH[1]}"
-        _fw_env_prefix_is_denied "$_name" && break
-        c="${BASH_REMATCH[2]}"
+    local c="$1" _name _prev=""
+    while [ "$c" != "$_prev" ]; do
+        _prev="$c"
+        if [[ "$c" =~ ^([A-Za-z_][A-Za-z0-9_]*)=[^[:space:]]+[[:space:]]+(.*)$ ]]; then
+            _name="${BASH_REMATCH[1]}"
+            _fw_env_prefix_is_denied "$_name" && break
+            c="${BASH_REMATCH[2]}"
+            continue
+        fi
+        # Bare `time` and POSIX `time -p`. Deliberately NOT `/usr/bin/time`,
+        # which takes its own options (-o FILE writes a file) and is a real
+        # program rather than a shell keyword.
+        if [[ "$c" =~ ^time([[:space:]]+-p)?[[:space:]]+(.*)$ ]]; then
+            c="${BASH_REMATCH[2]}"
+        fi
     done
     _FW_ENV_STRIPPED="$c"
 }
@@ -1161,10 +1186,29 @@ _fw_find_has_action_predicate() {
     return 1
 }
 
+# T-3454: env prefixes are stripped before the match, which is what makes the
+# T-3179 partial-complete allowance reachable at all.
+#
+# The measured deadlock: focus sits on a partial-complete task, the commit
+# targets a DIFFERENT (closed) task, so the focus-drift gate refuses and its
+# block message prescribes `FW_SWITCH_FOCUS=1 <cmd>` as the universal remedy —
+# correctly noting that focusing the target is impossible because it is closed.
+# Adding that prefix then broke this regex, so the commit was no longer
+# recognised as a commit clause, fell through to _fw_single_command_is_safe,
+# and was refused as a write. Drop the prefix and focus-drift refuses again.
+# Two gates, two prescribed remedies, no line satisfying both — the same class
+# as T-3299, where G-020 blocks both escape routes its own message names.
+#
+# Reuses _fw_strip_env_prefixes rather than adding a second regex: that
+# primitive already carries the denylist of execution-causing names, so
+# `PATH=/tmp git commit` still fails this match (the strip stops at the denied
+# name, the residue does not look like a commit clause) and is refused. Fails
+# closed, and there is one copy of the denylist rather than two.
 _fw_is_git_commit_clause() {
     local seg
     seg="$(_fw_strip_quoted "$1")" || return 1
     seg="${seg#"${seg%%[![:space:]]*}"}"
+    _fw_strip_env_prefixes "$seg"; seg="$_FW_ENV_STRIPPED"
     [[ "$seg" =~ ^git[[:space:]]+commit([[:space:]]|$) ]]
 }
 
