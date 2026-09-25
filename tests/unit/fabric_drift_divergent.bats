@@ -80,76 +80,73 @@ run_drift() {
     [[ "$output" != *"undeclared:"* ]]
 }
 
+# A LIB_DIR whose enrich.py always fails — the "detector cannot run" state.
+# SHIM is set for the caller; teardown does not need it, mktemp -d is per-test.
+make_failing_shim() {
+    SHIM=$(mktemp -d)
+    cp "$LIB_DIR/drift.sh" "$SHIM/drift.sh"
+    cp "$LIB_DIR/underpopulated.py" "$SHIM/underpopulated.py"
+    cp "$LIB_DIR/expand_patterns.py" "$SHIM/expand_patterns.py" 2>/dev/null || true
+    printf 'import sys\nsys.exit(3)\n' > "$SHIM/enrich.py"
+}
+
+# Run do_drift in a real `set -euo pipefail` bash process.
+#
+# Deliberately NOT `run do_drift` with errexit set in the test body: bats' `run`
+# masks errexit inside the invoked function, so a mid-section abort caused by an
+# uncaptured command substitution passes such a test silently. Measured — with
+# `|| _div_rc=$?` removed, `run do_drift` still reported UNKNOWN and still exited
+# 0, while this probe form produced no output at all and exited 3. A separate
+# bash process is the only shape that observes the failure it claims to observe.
+errexit_probe() {
+    cat > "$SHIM/probe.sh" <<'PROBE'
+#!/bin/bash
+set -euo pipefail
+ensure_fabric_dirs() { :; }
+source "$LIB_DIR/drift.sh"
+do_drift --summary
+echo "PROBE-REACHED-END"
+PROBE
+    PROJECT_ROOT="$TMP_PROJECT" FABRIC_DIR="$TMP_PROJECT/.fabric" \
+        COMPONENTS_DIR="$COMPONENTS_DIR" LIB_DIR="$SHIM" \
+        RED="" GREEN="" YELLOW="" CYAN="" BOLD="" NC="" \
+        bash "$SHIM/probe.sh"
+}
+
 @test "a detector that cannot run reports UNKNOWN, never 0" {
     card lib/consumer.sh ''
-    # Point LIB_DIR's enrich.py at a copy that exits non-zero. The section must
-    # say UNKNOWN: with a bare `0` an operator cannot tell a clean corpus from a
-    # broken reader, which is the whole reason the rc is captured.
-    local shim
-    shim=$(mktemp -d)
-    cp "$LIB_DIR/drift.sh" "$shim/drift.sh"
-    cp "$LIB_DIR/underpopulated.py" "$shim/underpopulated.py"
-    cp "$LIB_DIR/expand_patterns.py" "$shim/expand_patterns.py" 2>/dev/null || true
-    printf 'import sys\nsys.exit(3)\n' > "$shim/enrich.py"
-    export PROJECT_ROOT="$TMP_PROJECT"
-    export FABRIC_DIR="$TMP_PROJECT/.fabric"
-    export COMPONENTS_DIR
-    export LIB_DIR="$shim"
-    export RED="" GREEN="" YELLOW="" CYAN="" BOLD="" NC=""
-    ensure_fabric_dirs() { :; }
-    source "$shim/drift.sh"
-    run do_drift --summary
+    make_failing_shim
+    # The section must say UNKNOWN: with a bare `0` an operator cannot tell a
+    # clean corpus from a broken reader, which is the reason the rc is captured.
+    run errexit_probe
     [[ "$output" == *"UNKNOWN"* ]]
     [[ "$output" == *"This is NOT 'no divergence'"* ]]
     [[ "$output" == *"divergent: UNKNOWN"* ]]
     # And it must NOT claim zero.
     [[ "$output" != *"divergent: 0"* ]]
-    rm -rf "$shim"
+    rm -rf "$SHIM"
 }
 
 @test "exit status is 0 even when the detector fails — drift stays advisory" {
     card lib/consumer.sh ''
-    local shim
-    shim=$(mktemp -d)
-    cp "$LIB_DIR/drift.sh" "$shim/drift.sh"
-    cp "$LIB_DIR/underpopulated.py" "$shim/underpopulated.py"
-    cp "$LIB_DIR/expand_patterns.py" "$shim/expand_patterns.py" 2>/dev/null || true
-    printf 'import sys\nsys.exit(3)\n' > "$shim/enrich.py"
-    export PROJECT_ROOT="$TMP_PROJECT"
-    export FABRIC_DIR="$TMP_PROJECT/.fabric"
-    export COMPONENTS_DIR
-    export LIB_DIR="$shim"
-    export RED="" GREEN="" YELLOW="" CYAN="" BOLD="" NC=""
-    ensure_fabric_dirs() { :; }
-    source "$shim/drift.sh"
-    run do_drift
+    make_failing_shim
+    run errexit_probe
     [ "$status" -eq 0 ]
-    rm -rf "$shim"
+    rm -rf "$SHIM"
 }
 
-@test "a failing detector does not abort the function mid-section" {
-    # Under the inherited `set -e` an uncaptured command substitution failure
-    # kills do_drift after the header and before the summary. The summary line
-    # is the evidence that the rest of the function still ran.
+@test "a failing detector does not abort the function mid-section under set -e" {
+    # Under `set -e` an uncaptured command-substitution failure kills do_drift
+    # after this section's header and before the summary. PROBE-REACHED-END is
+    # the evidence that the function returned and its caller continued.
     card lib/consumer.sh ''
-    local shim
-    shim=$(mktemp -d)
-    cp "$LIB_DIR/drift.sh" "$shim/drift.sh"
-    cp "$LIB_DIR/underpopulated.py" "$shim/underpopulated.py"
-    cp "$LIB_DIR/expand_patterns.py" "$shim/expand_patterns.py" 2>/dev/null || true
-    printf 'import sys\nsys.exit(3)\n' > "$shim/enrich.py"
-    export PROJECT_ROOT="$TMP_PROJECT"
-    export FABRIC_DIR="$TMP_PROJECT/.fabric"
-    export COMPONENTS_DIR
-    export LIB_DIR="$shim"
-    export RED="" GREEN="" YELLOW="" CYAN="" BOLD="" NC=""
-    ensure_fabric_dirs() { :; }
-    set -e
-    source "$shim/drift.sh"
-    run do_drift --summary
+    make_failing_shim
+    run errexit_probe
+    [ "$status" -eq 0 ]
     [[ "$output" == *"Summary:"* ]]
     [[ "$output" == *"unregistered:"* ]]
-    rm -rf "$shim"
+    [[ "$output" == *"PROBE-REACHED-END"* ]]
+    rm -rf "$SHIM"
 }
 
 @test "the four existing sections and every existing summary key survive" {
