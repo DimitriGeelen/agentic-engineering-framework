@@ -310,11 +310,19 @@ CRONREGEOF
 
     #@init: yaml-5rc .context/bypass-log.yaml bypasses
     # Git hook bypass log
+    #
+    # F-21: this must stay a bare `bypasses:` key, NOT `bypasses: []`. The
+    # appender (agents/git/lib/bypass.sh log_bypass_entry) only writes this
+    # header when the file is missing; if the file already exists (as it does
+    # right after `fw init`), the appender skips straight to `cat >>` with
+    # block-sequence items under the existing key. A flow-style `bypasses: []`
+    # followed by block-sequence items is not valid YAML, so every project's
+    # first logged bypass corrupted the file.
     if [ ! -f "$target_dir/.context/bypass-log.yaml" ]; then
         cat > "$target_dir/.context/bypass-log.yaml" << 'BYPASSEOF'
 # Git hook bypass log
 # Entries auto-added by post-commit hook when --no-verify is detected
-bypasses: []
+bypasses:
 BYPASSEOF
     fi
 

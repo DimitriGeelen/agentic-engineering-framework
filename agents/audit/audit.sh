@@ -2363,7 +2363,13 @@ print(f'{unenriched} {total}')
                  "Graph coverage below target" \
                  "Run: fw fabric enrich"
         else
-            pass "Fabric edges: $fabric_enriched/$fabric_total cards enriched ($fabric_unenriched without edges)"
+            # F-24: this line only ever measured depends_on/depended_by edges — it
+            # never read purpose/subsystem. "cards enriched" claimed a broader
+            # property (usable content) than the check tests, so a card with a
+            # placeholder purpose and subsystem: unknown still counted as
+            # "enriched" as long as it had an edge. Wording now matches what is
+            # actually measured; it does not claim content quality.
+            pass "Fabric edges: $fabric_enriched/$fabric_total cards have edges ($fabric_unenriched without edges)"
         fi
     fi
 fi
