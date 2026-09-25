@@ -5457,3 +5457,10 @@ observations:
   tags: [sidecar]
   status: pending
   promoted_to: null
+- id: OBS-528
+  text: "sidecar consult to cacc73ea32b121dd/832-Workflow-designer unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation 832-T830-H3-RULED, client_msg_id a2318830-fc2a-45da-bd82-3ca06f5fbee5). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T08:48:02Z
+  context_task: T-3451
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
