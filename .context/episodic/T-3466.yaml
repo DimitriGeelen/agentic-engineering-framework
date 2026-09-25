@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3466: Fix read-only allowlist gaps (F-15) and git-commit task-file dirt (F-17)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T11:39:51Z
+# ============================================================================
+
+task_id: T-3466
+task_name: "Fix read-only allowlist gaps (F-15) and git-commit task-file dirt (F-17)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-25T11:24:53Z
+completed: 2026-09-25T11:39:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-25T13:28:19+02:00
+last_commit: 2026-09-25T13:28:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  write real ACs for F-15/F-17 dispatch fix
+
+# Key outcomes
+outcomes:
+  - 'F-15 reproduced-or-not is confirmed against this source with file:line evidence'
+  - 'F-15: `X=$(git status)` (command-substitution assignment wrapping an allowlisted'
+  - 'F-15: `python3 -m pytest` shape evaluated against the existing script-execution'
+  - 'F-15: existing safe-commands bats suite still passes (no regression on prior'
+  - 'F-17 reproduced-or-not is confirmed against this source with file:line evidence'
+  - 'F-17: `fw git commit -m "T-XXX: ..."` leaves a clean working tree (the Updates'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'write real ACs for F-15/F-17 dispatch fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-25 — F-15: decline to widen `python3 -m pytest` into the allowlist'
+    chose: 'do NOT add `python3 -m pytest` (or any pytest/test-runner shape) to `is_bash_safe_command`. Left it classified unsafe (gated).'
+    rationale: '`agents/context/lib/safe-commands.sh:568-570` already states, for the adjacent `sed|awk|...` filter category, that `bats`, `make`, `python3 <file>` and `./script.sh` are deliberately excluded because "a file''s contents are not visible to a command-string scan, so executing one is never provably read-only" (citing CLAUDE.md §Enforcement Tiers, T-2742, the Tier 0 scope boundary). `python3 -m pytest <path>` imports and executes every test module under `<path>` — including arbitrary module-level code in test files and `conftest.py` — which is the identical class this file already refuses to admit for the sibling shapes. There is no narrower form (e.g. `--collect-only`) that avoids executing file content, since collection still imports the modules.'
+    alternatives_rejected: ['implementing the dispatch''s suggested widening as specified. Rejected because it would contradict a design boundary this same file states explicitly and enforces for near-identical inputs a few lines away — not because the friction it causes isn''t real (five refusals in the dispatching session''s own transcript were cited as motivation).']
+  - decision: '2026-09-25 — F-15: `VAR=$(cmd)` recognizer scoped to the terminal-assignment shape only'
+    chose: 'recognize and delegate ONLY when the entire (post-trim) segment matches `^[A-Za-z_][A-Za-z0-9_]*=\$\(.*\)[[:space:]]*$` — i.e. the whole statement is one assignment from a substitution, nothing else on the line.'
+    rationale: 'the file''s T-2834 header comment scoped its "deliberately not handled" exclusion to the general case of `$(...)` as an argument to an OUTER command (e.g. `curl "$(fw watchtower url)/page"`), where extracting and judging the substitution alone would risk admitting the outer command on the strength of an inner one it shares no safety property with. A terminal assignment has no outer command — the substitution''s effect IS the entire line''s effect — so that risk does not apply to this narrower shape.'
+    alternatives_rejected: ['generalizing to recognize `$(...)` anywhere on a command line. Rejected per the file''s own stated reasoning above; doing so was not what either reproduction case in the dispatch needed, and it is the wider, riskier version of the same idea.']
+  - decision: '2026-09-25 — F-17: pathspec-scoped commits keep the pre-fix (post-commit) ordering'
+    chose: 'the pre-commit timestamp-bump-and-stage fix applies only when `bypass != true` AND no `--` pathspec was given (the ordinary whole-index `git add -A && git commit` flow). Pathspec-scoped commits (`git.sh commit -m "..." -- path1 path2`) fall back to the original post-commit ordering.'
+    rationale: 'first attempt auto-appended the task file to a given pathspec so its bump could ride in the same commit. That broke 2 of `tests/unit/handover_commit_scope.bats`''s T-3090 tests, which pin "a pathspec-scoped commit takes EXACTLY the given paths, no more, no fewer" — a deliberate safety property protecting a concurrent writer''s staged-but- uncommitted work from being absorbed (origin: commit d3d3e49db incident). Silently widening a caller''s explicit path scope to include a file it didn''t ask for is the same class of defect T-3090 was filed to close, just for a different file.'
+    alternatives_rejected: ['auto-injecting the task file into the pathspec array (implemented, then reverted after the test failures above).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3466-fix-read-only-allowlist-gaps-f-15-and-gi.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-25T13:28:19'
+    action: 'T-3466: write real ACs for F-15/F-17 dispatch fix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 1
+  files_changed: 1
+  lines_added: 325
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3466-fix-read-only-allowlist-gaps-f-15-and-gi.md
+generated_by: context-agent-hybrid

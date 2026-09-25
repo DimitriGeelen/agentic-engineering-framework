@@ -4,10 +4,10 @@ name: "Fix read-only allowlist gaps (F-15) and git-commit task-file dirt (F-17)"
 description: >
   Fix read-only allowlist gaps (F-15) and git-commit task-file dirt (F-17)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T11:24:53Z
-last_update: 2026-09-25T11:24:53Z
-date_finished: null
+last_update: 2026-09-25T11:39:28Z
+date_finished: 2026-09-25T11:39:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-25T11:30:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=288,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-25T11:30:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3466: Fix read-only allowlist gaps (F-15) and git-commit task-file dirt (F-17)
@@ -50,17 +78,17 @@ so the working tree is dirty the instant the commit returns.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] F-15 reproduced-or-not is confirmed against this source with file:line evidence
-- [ ] F-15: `X=$(git status)` (command-substitution assignment wrapping an allowlisted
+- [x] F-15 reproduced-or-not is confirmed against this source with file:line evidence
+- [x] F-15: `X=$(git status)` (command-substitution assignment wrapping an allowlisted
       read) is classified safe by `is_bash_safe_command`, while `X=$(rm -rf /tmp/x)`
       (substitution wrapping a genuine write) is still classified unsafe
-- [ ] F-15: `python3 -m pytest` shape evaluated against the existing script-execution
+- [x] F-15: `python3 -m pytest` shape evaluated against the existing script-execution
       exclusion boundary (safe-commands.sh:568-570, CLAUDE.md §Enforcement Tiers
       T-2742) — decision (widen or decline) recorded in Decisions with rationale
-- [ ] F-15: existing safe-commands bats suite still passes (no regression on prior
+- [x] F-15: existing safe-commands bats suite still passes (no regression on prior
       pinned contracts)
-- [ ] F-17 reproduced-or-not is confirmed against this source with file:line evidence
-- [ ] F-17: `fw git commit -m "T-XXX: ..."` leaves a clean working tree (the Updates
+- [x] F-17 reproduced-or-not is confirmed against this source with file:line evidence
+- [x] F-17: `fw git commit -m "T-XXX: ..."` leaves a clean working tree (the Updates
       entry is written before or included in the commit, not after)
 
 ### Human
@@ -229,6 +257,70 @@ timeout 300 bats tests/unit/safe_commands*.bats > /tmp/.t3466-bats.out 2>&1; ech
 
 ## RCA
 
+**F-15 — Symptom:** `is_bash_safe_command` refused two everyday read-only shapes:
+`VAR=$(readonly-cmd)` (a terminal assignment from a command substitution) and
+`python3 -m pytest ...` (a test runner). Both were reported as "not on the
+read-only allowlist" by the active-task PreToolUse gate with no task active.
+
+**F-15 — Root cause (VAR=$(cmd) shape):** the file's own T-2834 header comment
+documents command substitution as "Deliberately NOT handled" — a general
+exclusion made for the case where `$(...)` is an ARGUMENT to another command
+(widening there risks admitting an outer command on the strength of an inner
+one it doesn't share safety with, e.g. conflating `curl` with whatever a
+substituted argument resolves to). The general exclusion also covered the
+narrower, unambiguous case where the ENTIRE line is one terminal assignment —
+`VAR=$(cmd)`, nothing else — where there is no outer command to conflate with.
+
+**F-15 — Root cause (python3 -m pytest shape):** NOT a gap — this is the
+`python3|python` case arm's DELIBERATE design, correctly applied. The same file
+explicitly excludes `bats`, `make`, `python3 <file>` and `./script.sh` on the
+stated ground (safe-commands.sh:568-570, citing CLAUDE.md §Enforcement Tiers
+T-2742) that "a file's contents are not visible to a command-string scan, so
+executing one is never provably read-only." `python3 -m pytest <path>` executes
+arbitrary Python from whatever test files `<path>` resolves to — the identical
+class. Implementing the dispatch's suggested widening would have silently
+reopened a hole this codebase closed on purpose elsewhere in the same function.
+Declined; see Decisions.
+
+**F-15 — Why structurally allowed:** the allowlist is grown incident-by-incident
+(this file's own history: T-2834, T-2988, T-3096, T-3222, T-3344, T-3374 are all
+"measured this shape gated, widened narrowly"), so an unmeasured shape simply
+stays gated until someone hits it and reports it, by design — the file's stated
+failure direction is "misjudging safe as unsafe merely sends it to the task
+gate" (line 107-109), i.e. the cost of a gap is friction, not a security hole.
+
+**F-15 — Prevention:** the new terminal-assignment recognizer is additive and
+delegates to the existing chain-aware entry point recursively, so future
+allowlist widenings automatically extend to `VAR=$(...)`-wrapped forms too,
+rather than needing their own copy of the recognizer.
+
+**F-17 — Symptom:** `fw git commit -m "T-XXX: ..."` returned success but left
+the working tree dirty immediately afterward — `git status` showed the just-
+committed task file modified again, with only its `last_update:` frontmatter
+timestamp changed.
+
+**F-17 — Root cause:** `agents/git/lib/commit.sh:do_commit` ran `git commit`
+first (was line 172) and only THEN called `update_task_timestamp` (was line
+177 → `agents/git/lib/common.sh:52`, a `sed -i` on `last_update:`). The bump
+was therefore never present in the commit it was describing; it became a
+trailing, always-one-commit-behind dirty diff.
+
+**F-17 — Why structurally allowed:** nothing checks "is the tree clean
+immediately after `fw git commit` returns" as its own invariant — the
+consuming project's audit checks `uncommitted-changes` generically, so a
+framework-manufactured dirty diff looks identical to real uncommitted drift,
+and the specific commit-then-mutate ordering was never itself under test
+(the T-3090 pathspec suite tests WHICH paths land in a commit, not whether
+the tree is clean immediately after).
+
+**F-17 — Prevention:** the fix moves the write before the commit for the
+common (no-pathspec, non-bypass) flow, so the tree is clean by construction
+for the everyday `git add -A && git commit` path. Pathspec-scoped commits
+(T-3090, handover-class callers) deliberately keep the OLD post-commit
+ordering — see Decisions — so this is a partial, scope-limited prevention, not
+a universal one; the corroborating sibling in the dispatch (parking-a-task
+deadlock) is the same family and is explicitly out of scope here.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -298,6 +390,83 @@ timeout 300 bats tests/unit/safe_commands*.bats > /tmp/.t3466-bats.out 2>&1; ech
 
 ## Decisions
 
+### 2026-09-25 — F-15: decline to widen `python3 -m pytest` into the allowlist
+- **Chose:** do NOT add `python3 -m pytest` (or any pytest/test-runner shape) to
+  `is_bash_safe_command`. Left it classified unsafe (gated).
+- **Why:** `agents/context/lib/safe-commands.sh:568-570` already states, for the
+  adjacent `sed|awk|...` filter category, that `bats`, `make`, `python3 <file>`
+  and `./script.sh` are deliberately excluded because "a file's contents are
+  not visible to a command-string scan, so executing one is never provably
+  read-only" (citing CLAUDE.md §Enforcement Tiers, T-2742, the Tier 0 scope
+  boundary). `python3 -m pytest <path>` imports and executes every test module
+  under `<path>` — including arbitrary module-level code in test files and
+  `conftest.py` — which is the identical class this file already refuses to
+  admit for the sibling shapes. There is no narrower form (e.g.
+  `--collect-only`) that avoids executing file content, since collection still
+  imports the modules.
+- **Rejected:** implementing the dispatch's suggested widening as specified.
+  Rejected because it would contradict a design boundary this same file states
+  explicitly and enforces for near-identical inputs a few lines away — not
+  because the friction it causes isn't real (five refusals in the dispatching
+  session's own transcript were cited as motivation).
+
+### 2026-09-25 — F-15: `VAR=$(cmd)` recognizer scoped to the terminal-assignment shape only
+- **Chose:** recognize and delegate ONLY when the entire (post-trim) segment
+  matches `^[A-Za-z_][A-Za-z0-9_]*=\$\(.*\)[[:space:]]*$` — i.e. the whole
+  statement is one assignment from a substitution, nothing else on the line.
+- **Why:** the file's T-2834 header comment scoped its "deliberately not
+  handled" exclusion to the general case of `$(...)` as an argument to an
+  OUTER command (e.g. `curl "$(fw watchtower url)/page"`), where extracting
+  and judging the substitution alone would risk admitting the outer command on
+  the strength of an inner one it shares no safety property with. A terminal
+  assignment has no outer command — the substitution's effect IS the entire
+  line's effect — so that risk does not apply to this narrower shape.
+- **Rejected:** generalizing to recognize `$(...)` anywhere on a command line.
+  Rejected per the file's own stated reasoning above; doing so was not what
+  either reproduction case in the dispatch needed, and it is the wider, riskier
+  version of the same idea.
+- **Verified:** `X=$(echo $(hostname))` (nested substitution) classifies safe —
+  the prefix/suffix strip is exactly correct for a well-formed match regardless
+  of nesting depth, since only the outermost `VAR=$(` / trailing `)` are
+  stripped. `X=$(git status && rm -rf /tmp)` stays gated, because the
+  recognizer delegates to the top-level chain-aware entry point
+  (`is_bash_safe_command`), which requires every `&&`-joined clause inside the
+  substitution to be independently safe.
+- **Known limitation, not fixed here:** `_fw_chain_split` (the top-level
+  splitter) does not track parentheses, only quotes. So a chain operator
+  INSIDE a substitution on an otherwise-terminal assignment, e.g.
+  `X=$(git status && echo ok)`, gets split at the top level before reaching
+  the new recognizer, and the resulting fragments (`X=$(git status`, `echo
+  ok)`) match nothing — the whole line stays gated. Verified this is NOT a
+  regression: the identical input was already gated before this fix (tested
+  against the pre-fix source via `git stash`). Fixing it would require paren-
+  tracking in `_fw_chain_split` itself, a materially larger change touching the
+  file's most load-bearing function, and neither of the two dispatch
+  reproduction cases needs it. Left as a known gap, not silently widened.
+
+### 2026-09-25 — F-17: pathspec-scoped commits keep the pre-fix (post-commit) ordering
+- **Chose:** the pre-commit timestamp-bump-and-stage fix applies only when
+  `bypass != true` AND no `--` pathspec was given (the ordinary whole-index
+  `git add -A && git commit` flow). Pathspec-scoped commits (`git.sh commit -m
+  "..." -- path1 path2`) fall back to the original post-commit ordering.
+- **Why:** first attempt auto-appended the task file to a given pathspec so its
+  bump could ride in the same commit. That broke 2 of
+  `tests/unit/handover_commit_scope.bats`'s T-3090 tests, which pin "a
+  pathspec-scoped commit takes EXACTLY the given paths, no more, no fewer" —
+  a deliberate safety property protecting a concurrent writer's staged-but-
+  uncommitted work from being absorbed (origin: commit d3d3e49db incident).
+  Silently widening a caller's explicit path scope to include a file it didn't
+  ask for is the same class of defect T-3090 was filed to close, just for a
+  different file.
+- **Rejected:** auto-injecting the task file into the pathspec array
+  (implemented, then reverted after the test failures above).
+- **Consequence:** F-17 is fixed for the everyday flow this finding's symptom
+  describes, not universally. A pathspec-scoped commit whose message
+  references an active task still leaves that task file dirty afterward,
+  identically to pre-fix behaviour. This is the narrower, already-accepted
+  cost of a narrower, already-deliberate caller (handover-class commits),
+  not a regression.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -323,3 +492,19 @@ timeout 300 bats tests/unit/safe_commands*.bats > /tmp/.t3466-bats.out 2>&1; ech
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3466-fix-read-only-allowlist-gaps-f-15-and-gi.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2383785a
+- **Timestamp:** 2026-09-25T11:39:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-09-25T11:39:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
