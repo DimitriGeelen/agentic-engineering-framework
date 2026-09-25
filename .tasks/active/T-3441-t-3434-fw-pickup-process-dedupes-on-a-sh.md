@@ -1,15 +1,20 @@
 ---
-id: T-3455
-name: "raise CONTEXT_WINDOW to 1000000 — the budget cap was a 800K dial under a 1M-context
-  model, so the gate was trimming a fifth of the available window"
+id: T-3441
+name: "T-3434: fw pickup process dedupes on a SHA256 content hash with a 7-day cooldown
+  (lib/pickup.sh:119 pickup_dedup_check), but the universal retry ladder (D-600) runs
+  to ~76 days with rungs at 1 week and 1 month. A ladder re-post of an identical pickup
+  at day 8+ would fall outside the cooldown and be processed twice. Not a live defect
+  today — the ladder's only producer is the sidecar, and pickup is not yet a ladder
+  consumer — but it must be closed before pickup adopts the ladder. Widening the cooldown
+  is a governance change, not a chore: the 7-day window exists so a concern re-raised
+  later reads as a NEW signal."
 description: >
-  raise CONTEXT_WINDOW to 1000000 — the budget cap was a 800K dial under a 1M-context
-  model, so the gate was trimming a fifth of the available window
+  Promoted from observation OBS-472
 
-status: started-work
+status: captured
 workflow_type: build
-owner: agent
-horizon: now
+owner: human
+horizon: later
 tags: []
 components: []
 related_tasks: []
@@ -23,8 +28,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-25T05:44:20Z
-last_update: '2026-09-25T05:45:31Z'
+created: 2026-09-22T21:29:46Z
+last_update: 2026-09-22T21:31:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -37,17 +42,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-25T05:45:13Z'
+  - ts: '2026-09-22T21:30:11Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=280,acs=5)
+      (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-25T05:45:31Z'
+  - ts: '2026-09-22T21:30:29Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -66,7 +71,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3455: raise CONTEXT_WINDOW to 1000000 — the budget cap was a 800K dial under a 1M-context model, so the gate was trimming a fifth of the available window
+# T-3441: T-3434: fw pickup process dedupes on a SHA256 content hash with a 7-day cooldown (lib/pickup.sh:119 pickup_dedup_check), but the universal retry ladder (D-600) runs to ~76 days with rungs at 1 week and 1 month. A ladder re-post of an identical pickup at day 8+ would fall outside the cooldown and be processed twice. Not a live defect today — the ladder's only producer is the sidecar, and pickup is not yet a ladder consumer — but it must be closed before pickup adopts the ladder. Widening the cooldown is a governance change, not a chore: the 7-day window exists so a concern re-raised later reads as a NEW signal.
 
 ## Context
 
@@ -76,19 +81,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `CONTEXT_WINDOW` resolves to `1000000` and is **persisted**, not merely set for one
-      session: `bin/fw config get CONTEXT_WINDOW` returns it, and `.framework.yaml` carries
-      it so a fresh session, a cron job and a clone all inherit it.
-      Verified: `.framework.yaml:29` → `CONTEXT_WINDOW: 1000000`.
-- [x] The budget gate reads the new value rather than a cached or hard-coded one.
-      Verified live: `agents/context/checkpoint.sh status` reported `~34% of the
-      1000000-token budget cap` immediately after the change, having reported `~42% of the
-      800000-token budget cap` minutes earlier at essentially the same token count. The
-      denominator moved, so the ladder moved with it.
-- [x] The escalation rungs scale off the cap rather than being independent literals —
-      otherwise raising the ceiling would leave warn/urgent/critical where they were and
-      the new cap would be cosmetic. Confirmed by the same before/after reading: the
-      percentage recomputed against the new denominator rather than staying put.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -248,15 +242,6 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-#
-# Pinning the literal 1000000 is correct here and is not the T-3326 anti-pattern:
-# that rule forbids anchoring to mutable CORPUS state (live counts, a named arc's
-# status). This value is the task's own deliverable, and the gate runs it once at
-# close. The second line asserts persistence specifically — resolution alone would
-# still pass if the value lived only in this shell's environment.
-
-test "$(bin/fw config get CONTEXT_WINDOW)" = "1000000"
-grep -q '^CONTEXT_WINDOW: 1000000$' .framework.yaml
 
 ## RCA
 
@@ -350,7 +335,10 @@ grep -q '^CONTEXT_WINDOW: 1000000$' .framework.yaml
 
 ## Updates
 
-### 2026-09-25T05:44:20Z — task-created [task-create-agent]
+### 2026-09-22T21:29:46Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3455-raise-contextwindow-to-1000000--the-budg.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3441-t-3434-fw-pickup-process-dedupes-on-a-sh.md
 - **Context:** Initial task creation
+
+### 2026-09-22T21:31:33Z — status-update [task-update-agent]
+- **Change:** horizon: now → later

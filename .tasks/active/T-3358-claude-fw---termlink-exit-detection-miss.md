@@ -514,3 +514,22 @@ open-ended by construction and every unenumerated prompt is a silent hang.
   has direct fleet SSH access to run the same provenance check by hand:
   `command -v claude-fw && grep -c '__CLAUDE_FW_EXIT_' "$(readlink -f "$(command -v claude-fw)")"`
   on each root-fleet host (0 = stale copy, needs the T-3346 marker fix).
+
+### 2026-09-22 16:55Z — in-boundary provenance on this host (parent session, autonomous run)
+- **Found:** `/usr/bin/claude-fw` on dimitrimintdev is a 14,971-byte copy dated 2026-08-01,
+  owned by no package (`dpkg -S` finds nothing), with the `^user@` prompt regex present
+  (1 hit) and the T-3346 `__CLAUDE_FW_EXIT_` marker absent (0 hits); it does not delegate to
+  any project's vendored copy. HEAD `bin/claude-fw` has marker 4, regex 0. Root's
+  interactive PATH puts `/root/.local/bin` (the T-2854 router) before `/usr/bin`, so a bare
+  `claude-fw` from a shell resolves to the router — but any launcher whose PATH lacks
+  `~/.local/bin` (cron, systemd units, tmux started with a minimal env) resolves to the
+  stale copy. Every live wrapper process observed at 16:50Z runs a project-local
+  `.agentic-framework/bin/claude-fw`, so the stale copy is a latent hazard here, not the
+  active one.
+- **Not done, and why:** probing the consumer projects' vendored copies (`/opt/*/
+  .agentic-framework/bin/claude-fw`) is refused by the project-boundary gate (T-559) from
+  this session, by design; that half of AC 1 needs a per-project TermLink dispatch or the
+  operator's hand, as the entry above already says. Replacing `/usr/bin/claude-fw` is a
+  host-level change outside this project's tree and is proposed, not executed:
+  `cd /opt/999-Agentic-Engineering-Framework && sudo mv /usr/bin/claude-fw /usr/bin/claude-fw.pre-T3346.bak && sudo ln -s /root/.local/bin/claude-fw /usr/bin/claude-fw`
+  (reversible; the router then serves every PATH order).
