@@ -382,6 +382,25 @@ def build_ambient():
 # Collects parse errors per-request so templates can surface them.
 _yaml_errors: list[str] = []
 
+# T-3458: parse with libyaml's C loader when the binding is present.
+#
+# Measured on the dashboard route (`/`, cProfile over a warm request): 6.81s of
+# 7.62s — 89% of the whole request — was `yaml.load`, 28 of those calls arriving
+# through load_yaml below. The corpus size was never the problem; the parser was.
+# `yaml.safe_load` silently selects the pure-Python SafeLoader even on a host
+# where `yaml.__with_libyaml__` is True, which it is here.
+#
+# CSafeLoader implements the same YAML 1.1 safe subset as SafeLoader, so this is
+# a speed change and not a semantics change — but that claim is checked rather
+# than asserted: `tests/unit/t3458_yaml_c_loader.bats` parses every YAML file the
+# dashboard touches with both loaders and requires the results to be equal, and
+# the before/after page bytes were compared for identity (see the task).
+#
+# Falls back cleanly: a source build of PyYAML without the C extension keeps the
+# previous behaviour rather than failing to import (D4 portability — this must
+# not assume libyaml is present on a consumer's host).
+_YAML_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
 
 def load_yaml(path, *, label: str = ""):
     """Load a YAML file. Log and collect errors instead of silently returning {}."""
@@ -390,7 +409,7 @@ def load_yaml(path, *, label: str = ""):
         return {}
     try:
         with open(path) as f:
-            data = yaml.safe_load(f)
+            data = yaml.load(f, Loader=_YAML_LOADER)
         return data if isinstance(data, (dict, list)) else {}
     except yaml.YAMLError as exc:
         desc = label or path.name
@@ -420,7 +439,7 @@ def load_scan() -> dict | None:
         return None
     try:
         with open(latest) as f:
-            data = yaml.safe_load(f)
+            data = yaml.load(f, Loader=_YAML_LOADER)  # T-3458
         if isinstance(data, dict) and data.get("schema_version"):
             return data
     except Exception:
@@ -1198,8 +1217,14 @@ def get_episodic_tags():
             if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
                 continue
             try:
+                # T-3458: this loop parses EVERY .context/episodic/T-*.yaml —
+                # thousands of files — so it is the single largest YAML cost on
+                # a cold request, and the one place the 12x parser difference
+                # measured in isolation actually has thousands of documents to
+                # apply to. It was missed by the first pass of that change,
+                # which touched only load_yaml; the task's own test caught it.
                 with open(f) as fh:
-                    edata = yaml.safe_load(fh)
+                    edata = yaml.load(fh, Loader=_YAML_LOADER)
                 if isinstance(edata, dict):
                     tags[edata.get("task_id", f.stem)] = edata.get("tags", [])
             except yaml.YAMLError:
