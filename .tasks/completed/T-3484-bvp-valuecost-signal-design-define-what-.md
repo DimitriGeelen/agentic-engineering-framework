@@ -6,16 +6,16 @@ description: >
   Inception: BVP value+cost signal design: define what the feedback loop measures,
   from token cost per unit of work to cross-agent adoption as a value signal
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-09-25T22:04:21Z
-last_update: 2026-09-25T22:28:24Z
-date_finished: 2026-09-25T22:28:24Z
+last_update: '2026-09-25T22:15:10Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -135,15 +135,15 @@ several turn out to be partly unavailable and saying so is the point.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -200,11 +200,7 @@ T-3482 GO recorded. IW-2 (what ground truth the loop scores against) now has ope
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: T-3482 GO recorded. IW-2 (what ground truth the loop scores against) now has operator input: cost from real token usage; value from usage, rework, operator-correction volume, a post-implementation revisit, and cross-agent adoption by peer projects. This task turns those into measurable definitions and states honestly where attribution does not yet exist.
-
-**Date**: 2026-09-25T22:28:23Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -213,32 +209,3 @@ T-3482 GO recorded. IW-2 (what ground truth the loop scores against) now has ope
 
 ### 2026-09-25T22:05:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-09-25T22:28:23Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** T-3482 GO recorded. IW-2 (what ground truth the loop scores against) now has operator input: cost from real token usage; value from usage, rework, operator-correction volume, a post-implementation revisit, and cross-agent adoption by peer projects. This task turns those into measurable definitions and states honestly where attribution does not yet exist.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-5bbe6696
-- **Timestamp:** 2026-09-25T22:28:25Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-23824136
-- **Timestamp:** 2026-09-25T22:28:25Z
-- **Overall:** CONFIRMED
-- **Claims:** 1
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `T-3482` | task | ✓ pass |
-
-### 2026-09-25T22:28:24Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

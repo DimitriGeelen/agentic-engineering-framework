@@ -78,12 +78,25 @@ will learn from numbers it invented.
 
 **Source:** `.context/dispatches.jsonl`, joined on `task_id`.
 
-**Known bias, recorded rather than smoothed:** only dispatched work is
-attributable, and the dispatched set is *not a random sample* — CLAUDE.md's own
-table shows inception dispatches pass 0% and refactors 65%. Calibrating cost on
-that fraction alone teaches the model about the work we happen to dispatch. The
-ledger therefore carries `attributable`, and any calibration must report the
-attributable fraction alongside its result.
+**Known bias, now MEASURED (T-3486 backfill, last 300 completed tasks):**
+
+| | |
+|---|---:|
+| attributable | **23** |
+| unattributable | 277 |
+| **fraction** | **7.67 %** |
+
+**This is far starker than the row count implies.** "1,107 of 2,565 dispatch rows
+carry tokens" reads as ~43 % coverage; per *task* it is **7.67 %**, because many
+rows belong to the same few dispatched tasks while most completed work was done
+in a parent session and cannot be attributed at all.
+
+So the cost axis calibrates on roughly **one task in thirteen**, and that
+thirteenth is not a random one — it is whatever we chose to dispatch, a set
+CLAUDE.md's own table shows is skewed (inception 0 % verification pass, refactor
+65 %). `attributable_fraction()` therefore returns **with every calibration**
+rather than on request: a calibration that does not print its fraction beside its
+result is reporting a biased estimate as a plain one.
 
 **Gap, not solved here:** per-task attribution inside a parent session. Naming
 it is the deliverable; closing it needs turn-level task attribution that does
