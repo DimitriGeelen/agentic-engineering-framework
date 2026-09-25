@@ -4,10 +4,10 @@ name: "refresh vendored self-copies for the T-3454/F-17 safe-commands and commit
 description: >
   refresh vendored self-copies for the T-3454/F-17 safe-commands and commit.sh edits, and return the session to bleeding-edge after OBS-534
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T13:05:50Z
-last_update: 2026-09-25T13:05:50Z
-date_finished: null
+last_update: 2026-09-25T13:14:45Z
+date_finished: 2026-09-25T13:14:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -69,11 +69,11 @@ register. It only restores this checkout to the sanctioned branch.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `bin/fw vendor self` run and `bin/fw vendor self --check` reports clean (no DRIFT line)
-- [ ] The refreshed `.agentic-framework/` files are committed by name, and the two named stale files are byte-identical to their `agents/` sources
-- [ ] `bleeding-edge` fast-forwarded to HEAD with zero divergence (`git log HEAD..bleeding-edge` empty both before and after), and HEAD checked out on `bleeding-edge`
-- [ ] All previously-unpushed commits are on `origin/bleeding-edge` (`git log origin/bleeding-edge..HEAD` empty), with the pre-push gate satisfied rather than bypassed
-- [ ] The T-3187 branch-identity guard no longer reports `wrong-branch` for this checkout
+- [x] `bin/fw vendor self` run and `bin/fw vendor self --check` reports clean (no DRIFT line)
+- [x] The refreshed `.agentic-framework/` files are committed by name, and the two named stale files are byte-identical to their `agents/` sources
+- [x] `bleeding-edge` fast-forwarded to HEAD with zero divergence (`git log HEAD..bleeding-edge` empty both before and after), and HEAD checked out on `bleeding-edge`
+- [x] All previously-unpushed commits are on `origin/bleeding-edge` (`git log origin/bleeding-edge..HEAD` empty), with the pre-push gate satisfied rather than bypassed
+- [x] The T-3187 branch-identity guard no longer reports `wrong-branch` for this checkout
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -345,3 +345,20 @@ out=$(bash -c 'FRAMEWORK_ROOT="$PWD" PROJECT_ROOT="$PWD" source lib/branch-hygie
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3468-refresh-vendored-self-copies-for-the-t-3.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2ae550c2
+- **Timestamp:** 2026-09-25T13:14:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 140
+     - evidence: `out=$(bash -c 'FRAMEWORK_ROOT="$PWD" PROJECT_ROOT="$PWD" source lib/branch-hygiene.sh; fw_branch_hygiene' 2>&1); ! echo "$out" | grep -q "wrong-branch"`
+
+### 2026-09-25T13:14:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
