@@ -1151,6 +1151,85 @@ def resolve_edges(raw_edges, loc_to_id, source_id, unresolved=None,
 
 
 # ---------------------------------------------------------------------------
+# Detection dispatch — the single definition of "what counts as an import"
+# ---------------------------------------------------------------------------
+
+def read_source(location, framework_root):
+    """Read a card's source file, or return None if it cannot be read.
+
+    Extracted alongside detect_raw_edges so every caller reads the *same
+    number of bytes*. A reader with a smaller cap would silently disagree with
+    the enricher about the edges of exactly the files the cap was raised for.
+
+    T-2511: was 100_000 — bin/fw (349 KB, the central dispatcher that exec's
+    nearly every lib/agent script) had all its dispatch routing past byte 100K
+    truncated away, hiding 65+ real edges and leaving lib/pause.sh,
+    lib/worktree.sh, orchestrator-graph.py edgeless. 2 MB covers every
+    realistic source file (largest is ~350 KB) with headroom.
+    """
+    source_path = os.path.join(framework_root, location)
+    if not os.path.exists(source_path):
+        return None
+    try:
+        with open(source_path, "r", errors="replace") as f:
+            return f.read(2_000_000)
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def detect_raw_edges(location, content, framework_root):
+    """Dispatch to the right detector(s) for one source file. Returns [(loc, type)].
+
+    Extracted from compute_forward_edges so the WRITE path (enrichment) and the
+    READ path (`fw fabric drift`'s card-vs-source divergence section) share one
+    definition of "what counts as an import". Two copies of this dispatch would
+    be free to disagree, and a drift report that disagrees with the enricher is
+    worse than no drift report — it sends readers to fix edges the enricher then
+    declines to write, or stays silent on edges the enricher would add. Single
+    source of truth, deliberately: any detector added below is picked up by both
+    paths with no second edit.
+    """
+    raw_edges = []
+
+    # Determine file type — check extension, fall back to shebang
+    is_bash = location.endswith(".sh")
+    is_bats = location.endswith(".bats")
+    is_python = location.endswith(".py")
+    is_html = location.endswith(".html")
+    is_ts_js = any(location.endswith(ext) for ext in ('.ts', '.tsx', '.js', '.jsx'))
+    is_rust = location.endswith(".rs")
+    if not (is_bash or is_bats or is_python or is_html or is_ts_js or is_rust):
+        first_line = content.split("\n", 1)[0] if content else ""
+        if "bash" in first_line or "sh" in first_line:
+            is_bash = True
+        elif "python" in first_line:
+            is_python = True
+
+    if is_bats:
+        raw_edges.extend(detect_bats_deps(content, location, framework_root))
+    elif is_bash:
+        raw_edges.extend(detect_bash_sources(content, location, framework_root))
+    elif is_python:
+        raw_edges.extend(detect_python_imports(content, location, framework_root))
+        raw_edges.extend(detect_python_path_refs(content, location, framework_root))  # T-1758
+        raw_edges.extend(detect_blueprint_registration(content, location, framework_root))
+        raw_edges.extend(detect_generic_python_imports(content, location, framework_root))  # L-CONSUMER-001 prototype
+    elif is_html:
+        raw_edges.extend(detect_template_deps(content, location, framework_root))
+    elif is_ts_js:
+        raw_edges.extend(detect_ts_js_imports(content, location, framework_root))
+    elif is_rust:
+        raw_edges.extend(detect_rust_deps(content, location, framework_root))
+
+    # T-2511: fw-hook dispatcher edges (`fw hook <name>` → agents/context/<name>.sh)
+    # run on EVERY card regardless of type — the primary source is
+    # .claude/settings.json (a .json file that no type-detector above scans).
+    raw_edges.extend(detect_fw_hook_dispatch(content, location, framework_root))
+
+    return raw_edges
+
+
+# ---------------------------------------------------------------------------
 # Forward pass — detect depends_on for each card
 # ---------------------------------------------------------------------------
 
@@ -1171,56 +1250,11 @@ def compute_forward_edges(cards, loc_to_id, framework_root, unresolved=None):
         if not location:
             continue
 
-        source_path = os.path.join(framework_root, location)
-        if not os.path.exists(source_path):
+        content = read_source(location, framework_root)
+        if content is None:
             continue
 
-        try:
-            with open(source_path, "r", errors="replace") as f:
-                # T-2511: was 100_000 — bin/fw (349 KB, the central dispatcher that
-                # exec's nearly every lib/agent script) had all its dispatch routing
-                # past byte 100K truncated away, hiding 65+ real edges and leaving
-                # lib/pause.sh, lib/worktree.sh, orchestrator-graph.py edgeless. 2 MB
-                # covers every realistic source file (largest is ~350 KB) with headroom.
-                content = f.read(2_000_000)
-        except (OSError, UnicodeDecodeError):
-            continue
-
-        # Determine file type — check extension, fall back to shebang
-        raw_edges = []
-        is_bash = location.endswith(".sh")
-        is_bats = location.endswith(".bats")
-        is_python = location.endswith(".py")
-        is_html = location.endswith(".html")
-        is_ts_js = any(location.endswith(ext) for ext in ('.ts', '.tsx', '.js', '.jsx'))
-        is_rust = location.endswith(".rs")
-        if not (is_bash or is_bats or is_python or is_html or is_ts_js or is_rust):
-            first_line = content.split("\n", 1)[0] if content else ""
-            if "bash" in first_line or "sh" in first_line:
-                is_bash = True
-            elif "python" in first_line:
-                is_python = True
-
-        if is_bats:
-            raw_edges.extend(detect_bats_deps(content, location, framework_root))
-        elif is_bash:
-            raw_edges.extend(detect_bash_sources(content, location, framework_root))
-        elif is_python:
-            raw_edges.extend(detect_python_imports(content, location, framework_root))
-            raw_edges.extend(detect_python_path_refs(content, location, framework_root))  # T-1758
-            raw_edges.extend(detect_blueprint_registration(content, location, framework_root))
-            raw_edges.extend(detect_generic_python_imports(content, location, framework_root))  # L-CONSUMER-001 prototype
-        elif is_html:
-            raw_edges.extend(detect_template_deps(content, location, framework_root))
-        elif is_ts_js:
-            raw_edges.extend(detect_ts_js_imports(content, location, framework_root))
-        elif is_rust:
-            raw_edges.extend(detect_rust_deps(content, location, framework_root))
-
-        # T-2511: fw-hook dispatcher edges (`fw hook <name>` → agents/context/<name>.sh)
-        # run on EVERY card regardless of type — the primary source is
-        # .claude/settings.json (a .json file that no type-detector above scans).
-        raw_edges.extend(detect_fw_hook_dispatch(content, location, framework_root))
+        raw_edges = detect_raw_edges(location, content, framework_root)
 
         if not raw_edges:
             continue
