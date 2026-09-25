@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3462: sidecar slice 0 (OBS-529): answered_conversations() is blind to the legacy topic, so answered conversations never close and ride the full retry ladder into a silent operator queue
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T10:16:27Z
+# ============================================================================
+
+task_id: T-3462
+task_name: "sidecar slice 0 (OBS-529): answered_conversations() is blind to the legacy topic, so answered conversations never close and ride the full retry ladder into a silent operator queue"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T09:50:45Z
+completed: 2026-09-25T10:16:02Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-09-25T12:15:46+02:00
+last_commit: 2026-09-25T12:15:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-011 slice 0 — the sweep could not see replies on the rail they arrive on
+
+# Key outcomes
+outcomes:
+  - '**A reply on the legacy rail closes the ack row.** `answered_conversations()` returns'
+  - '**The two readers cannot drift apart again.** The fix is a single shared helper that'
+  - '**Nothing that was already closing stops closing.** A reply on the circuit topic'
+  - '**The peek stays a peek.** `answered_conversations()` must not advance any inbox'
+  - '**Tests pin the failing leg against the pre-fix code**, not just the fixed code: a'
+  - '**The DEFAULT_LIMIT=100 peek window is recorded, not silently inherited.**'
+  - 'Vendored copies synced for every touched file under `lib/`; `bin/fw vendor self'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - '.agentic-framework/lib/sidecar/retry.py'
+  - '.context/episodic/T-3461.yaml'
+  - 'lib/sidecar/inbox.py'
+  - 'lib/sidecar/retry.py'
+  - '.tasks/active/T-3462-sidecar-slice-0-obs-529-answeredconversa.md'
+  - '.tasks/completed/T-3461-sidecar-architecture-review--is-there-a-.md'
+  - 'tests/unit/test_sidecar_answered_topics.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-25T12:15:46'
+    action: 'T-3462: arc-011 slice 0 — the sweep could not see replies on the rail they arrive on'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:parallel-execution-aef]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25
+  commits: 1
+  files_changed: 8
+  lines_added: 461
+  lines_removed: 227
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3462-sidecar-slice-0-obs-529-answeredconversa.md
+generated_by: context-agent-hybrid

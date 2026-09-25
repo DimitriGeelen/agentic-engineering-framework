@@ -1,5 +1,5 @@
-# Audit Results - 2026-09-25-1144
-timestamp: 2026-09-25T09:44:59Z
+# Audit Results - 2026-09-25-1205
+timestamp: 2026-09-25T10:05:19Z
 sections: "structure"
 summary:
   pass: 36
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3448 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3449 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 31 project YAML file(s)"
   - level: PASS
@@ -56,7 +56,7 @@ findings:
   - level: PASS
     check: "No stale-slice-references (L-417) — examined 307 file(s) under web/templates web/blueprints lib"
   - level: WARN
-    check: "Found 185 GO-scope-not-propagated inception(s) of 367 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
+    check: "Found 186 GO-scope-not-propagated inception(s) of 368 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
     mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
   - level: PASS
     check: "Fabric: 1337 registered card(s)"
@@ -128,7 +128,7 @@ findings:
   - level: PASS
     check: "Arc driver reviewer records: 7 scoped driver(s) on in-progress arcs, every reviewer-approved one carries its verdict"
   - level: PASS
-    check: "Delegation surface: reviewer-closeable 13, agent-self 1, operator-only 336 across 320 active task(s) with open Human criteria"
+    check: "Delegation surface: reviewer-closeable 13, agent-self 1, operator-only 335 across 319 active task(s) with open Human criteria"
   - level: WARN
     check: "Continuous-run wrapper last recorded ARMED but the turn driver is not"
     mitigation: "fw continuous arm --hours N --iterations N --directive '...' (T-3225). Same drift class as the 74-day and 8-day prior incidents (G-099)."

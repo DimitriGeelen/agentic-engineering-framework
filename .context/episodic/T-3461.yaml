@@ -1,0 +1,112 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3461: Sidecar architecture review — is there a coherent design description, and is the mechanism actually working in practice
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T10:02:30Z
+# ============================================================================
+
+task_id: T-3461
+task_name: "Sidecar architecture review — is there a coherent design description, and is the mechanism actually working in practice"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T09:11:46Z
+completed: 2026-09-25T10:02:14Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-25T11:17:24+02:00
+last_commit: 2026-09-25T12:02:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar architecture review — the escalation ladder ends in a queue nobody reads. the sidecar round-trip traced hop by hop, plus a telemetry design — and the root cause found on the way. D-645 — build toward the T-3397 design; blobs ride TermLink file transfer. governance correction — inception undecided, tasks un-arced, build started early. file OBS-532 — the inception gate has an ungated near-synonym
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-09-25.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/full-audit-timing.yaml'
+  - '.context/episodic/T-3397.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/watchtower.log'
+  - 'docs/architecture/sidecar-roundtrip-and-telemetry.md'
+  - 'docs/architecture/sidecar-target-architecture.md'
+  - 'docs/reports/T-3461-sidecar-architecture-review.md'
+  - '.tasks/active/T-3461-sidecar-architecture-review--is-there-a-.md'
+  - '.tasks/active/T-3462-sidecar-slice-0-obs-529-answeredconversa.md'
+  - '.tasks/completed/T-3461-sidecar-architecture-review--is-there-a-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-25T11:17:24'
+    action: 'T-3461: sidecar architecture review — the escalation ladder ends in a queue nobody reads'
+  - time: '2026-09-25T11:29:15'
+    action: 'T-3461: the sidecar round-trip traced hop by hop, plus a telemetry design — and the root cause found on the way'
+  - time: '2026-09-25T11:44:51'
+    action: 'T-3461: D-645 — build toward the T-3397 design; blobs ride TermLink file transfer'
+  - time: '2026-09-25T11:54:07'
+    action: 'T-3461: governance correction — inception undecided, tasks un-arced, build started early'
+  - time: '2026-09-25T12:02:19'
+    action: 'T-3461: file OBS-532 — the inception gate has an ungated near-synonym'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 50 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:parallel-execution-aef]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 50
+  commits: 6
+  files_changed: 28
+  lines_added: 1996
+  lines_removed: 340
+  footprint_refreshed_at: '2026-09-25T10:02:40Z'
+  footprint_refreshed_by_commit: 5b2467982
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3461-sidecar-architecture-review--is-there-a-.md
+generated_by: context-agent-hybrid

@@ -8683,3 +8683,16 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthro'
   command: 'git add .tasks/ .context/ && FW_SWITCH_FOCUS=1 git commit -q -m T-3459: close (partial-complete) — /metrics under the bar, one [REVIEW] open
 
 Co-Authored-By: Claude Opus 5 (1M context) <noreply@ant'
+- timestamp: '2026-09-25T10:02:14Z'
+  task: 'T-3461'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-09-25T10:16:50Z'
+  task: 'T-3426'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3462'
+  command: 'git add .tasks/ .context/ && FW_SWITCH_FOCUS=1 git commit -q -m T-3462: close artefacts — arc-011 slice 0 landed, the sweep can see replies
+
+Co-Authored-By: Claude Opus 5 (1M context) <noreply@anth'

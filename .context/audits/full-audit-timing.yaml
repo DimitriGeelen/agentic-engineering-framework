@@ -82,31 +82,6 @@ section_runs:
     timestamp: "2026-09-25T10:30:03+02:00"
     timed_out: false
     excludes_lock_wait: true
-  - name: "traceability"
-    seconds: 191
-    timestamp: "2026-09-25T11:03:16+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "episodic"
-    seconds: 81
-    timestamp: "2026-09-25T11:04:37+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "discovery-trends"
-    seconds: 40
-    timestamp: "2026-09-25T11:05:17+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "oe-research"
-    seconds: 4
-    timestamp: "2026-09-25T11:15:07+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "oe-fast"
-    seconds: 0
-    timestamp: "2026-09-25T11:15:07+02:00"
-    timed_out: false
-    excludes_lock_wait: true
   - name: "compliance"
     seconds: 0
     timestamp: "2026-09-25T11:39:58+02:00"
@@ -122,8 +97,33 @@ section_runs:
     timestamp: "2026-09-25T11:40:33+02:00"
     timed_out: false
     excludes_lock_wait: true
+  - name: "traceability"
+    seconds: 183
+    timestamp: "2026-09-25T12:03:07+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "episodic"
+    seconds: 84
+    timestamp: "2026-09-25T12:04:31+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "discovery-trends"
+    seconds: 43
+    timestamp: "2026-09-25T12:05:14+02:00"
+    timed_out: false
+    excludes_lock_wait: true
   - name: "structure"
-    seconds: 298
-    timestamp: "2026-09-25T11:49:58+02:00"
+    seconds: 302
+    timestamp: "2026-09-25T12:10:21+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "oe-research"
+    seconds: 5
+    timestamp: "2026-09-25T12:15:08+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "oe-fast"
+    seconds: 0
+    timestamp: "2026-09-25T12:15:08+02:00"
     timed_out: false
     excludes_lock_wait: true

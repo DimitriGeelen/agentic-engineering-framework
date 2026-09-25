@@ -43232,3 +43232,47 @@ scan_id: R-f2895d1f
 task_id: T-3459
 payload:
   task_file: .tasks/active/T-3459-metrics-is-the-last-operator-surface-ove.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T10:02:15Z'
+scan_id: R-5f748af9
+task_id: T-3461
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T10:02:15Z'
+scan_id: R-5f748af9
+task_id: T-3461
+payload:
+  task_file: .tasks/active/T-3461-sidecar-architecture-review--is-there-a-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-25T10:02:15Z'
+scan_id: RC-dc4f397f
+task_id: T-3461
+payload:
+  overall: CONFIRMED
+  claim_count: 6
+---
+kind: scan_emitted
+timestamp: '2026-09-25T10:16:10Z'
+scan_id: R-666fde98
+task_id: T-3462
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T10:16:10Z'
+scan_id: R-666fde98
+task_id: T-3462
+payload:
+  task_file: .tasks/active/T-3462-sidecar-slice-0-obs-529-answeredconversa.md

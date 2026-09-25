@@ -6,17 +6,17 @@ description: >
   Inception: Sidecar architecture review — is there a coherent design description,
   and is the mechanism actually working in practice
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [arc:parallel-execution-aef]
 components: []
 related_tasks: []
 arc_id: parallel-execution-aef
 created: 2026-09-25T09:11:46Z
-last_update: 2026-09-25T09:53:24Z
-date_finished:
+last_update: 2026-09-25T10:02:14Z
+date_finished: 2026-09-25T10:02:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -145,15 +145,15 @@ push notifications disabled. The last rung of an escalation ladder built to reco
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -270,7 +270,30 @@ filed and shelved (`horizon: later`) pending this decision.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Supersedes my earlier two-piece recommendation. The review found something larger than a
+slow terminus: **the sidecar design and the sidecar implementation are different
+architectures, and nothing recorded the divergence.**
+
+T-3397 (949 lines, `arc_id: parallel-execution-aef`) specifies a receiver-side API the
+sender calls directly, which writes a message file and atomically sets a companion flag
+file — *"push, not pull"*, explicitly *"not a hub-broadcast subscriber"* — plus a
+write-time readiness check for the busy case, store-then-maybe-inject ordering, and a
+symmetric API where the reply is the same call with sender and target swapped. What
+shipped is hub-broadcast pub/sub polled by a 5-minute cron: the exact thing the design
+says it is not.
+
+Operator ruling 2026-09-25: **build toward the design, do not ratify the divergence.**
+Binary blobs — which had zero capture anywhere before this task — ride TermLink file
+transfer *through the sidecar API*, not session-to-session, because `termlink file receive`
+only processes events arriving after the receiver starts and `send` targets an ephemeral
+session id rather than a durable circuit address.
+
+Recorded as **D-645**. Target architecture and build order:
+`docs/architecture/sidecar-target-architecture.md`.
+
+**Date**: 2026-09-25T10:02:13Z
 
 ## Updates
 
@@ -282,3 +305,65 @@ filed and shelved (`horizon: later`) pending this decision.
 
 ### 2026-09-25T09:53:24Z — status-update [task-update-agent]
 - **Change:** tags: +arc:parallel-execution-aef
+
+### 2026-09-25T10:02:13Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Supersedes my earlier two-piece recommendation. The review found something larger than a
+slow terminus: **the sidecar design and the sidecar implementation are different
+architectures, and nothing recorded the divergence.**
+
+T-3397 (949 lines, `arc_id: parallel-execution-aef`) specifies a receiver-side API the
+sender calls directly, which writes a message file and atomically sets a companion flag
+file — *"push, not pull"*, explicitly *"not a hub-broadcast subscriber"* — plus a
+write-time readiness check for the busy case, store-then-maybe-inject ordering, and a
+symmetric API where the reply is the same call with sender and target swapped. What
+shipped is hub-broadcast pub/sub polled by a 5-minute cron: the exact thing the design
+says it is not.
+
+Operator ruling 2026-09-25: **build toward the design, do not ratify the divergence.**
+Binary blobs — which had zero capture anywhere before this task — ride TermLink file
+transfer *through the sidecar API*, not session-to-session, because `termlink file receive`
+only processes events arriving after the receiver starts and `send` targets an ephemeral
+session id rather than a durable circuit address.
+
+Recorded as **D-645**. Target architecture and build order:
+`docs/architecture/sidecar-target-architecture.md`.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5f748af9
+- **Timestamp:** 2026-09-25T10:02:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-dc4f397f
+- **Timestamp:** 2026-09-25T10:02:15Z
+- **Overall:** CONFIRMED
+- **Claims:** 6
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/architecture/sidecar-target-architecture.md` | file | ✓ pass |
+| `.context/inbox.yaml` | file | ✓ pass |
+| `T-3397` | task | ✓ pass |
+| `T-3462` | task | ✓ pass |
+| `T-3396` | task | ✓ pass |
+| `T-3426` | task | ✓ pass |
+
+### 2026-09-25T10:02:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
