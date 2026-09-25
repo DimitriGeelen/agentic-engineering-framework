@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3480: F-25: check-project-boundary blind to sibling git worktrees
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T21:03:32Z
+# ============================================================================
+
+task_id: T-3480
+task_name: "F-25: check-project-boundary blind to sibling git worktrees"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T20:20:29Z
+completed: 2026-09-25T21:03:04Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-25T22:29:47+02:00
+last_commit: 2026-09-25T22:29:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  F-25 fix — check-project-boundary admits sibling git worktrees
+
+# Key outcomes
+outcomes:
+  - 'Write/Edit gate (`check-project-boundary.sh` bash case statement) admits'
+  - 'Bash gate (all four Python patterns: cd, fw-invocation, write-redirect,'
+  - 'A path inside a genuinely foreign, unrelated git repo is still blocked'
+  - 'New bats tests in `tests/integration/check_project_boundary.bats` pin'
+  - 'Full existing `tests/integration/check_project_boundary.bats` suite'
+  - 'Fix committed on branch `dispatch-f25` via git plumbing; main checkout''s'
+  - 'Handback report written under `docs/reports/` on `dispatch-f25`,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'F-25 fix — check-project-boundary admits sibling git worktrees'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-project-boundary.sh'
+  - 'docs/reports/T-3480-f25-check-project-boundary-sibling-worktree.md'
+  - 'tests/integration/check_project_boundary.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-25T22:29:47'
+    action: 'T-3480: F-25 fix — check-project-boundary admits sibling git worktrees'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 42 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 42
+  commits: 1
+  files_changed: 3
+  lines_added: 354
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3480-f-25-check-project-boundary-blind-to-sib.md
+generated_by: context-agent-hybrid
