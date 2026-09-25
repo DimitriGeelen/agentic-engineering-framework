@@ -220,7 +220,71 @@ PYEOF
     fi
 
     echo ""
-    echo -e "${BOLD}Summary:${NC} unregistered: $unregistered, orphaned: $orphaned, stale: $stale, under-populated: $under_populated"
+
+    # 5. Divergent cards — card vs source. Section 3 walks the edges a card
+    # DECLARES and asks whether the targets still resolve. Nothing above walks
+    # the converse: whether the source imports something the card never
+    # mentions. So a card can name one edge out of ten and every check above
+    # agrees it is fine, because each one only ever audits what the map already
+    # says. Section 4 catches the degenerate zero-edge case; it has no opinion
+    # about three declared edges against ten real imports.
+    #
+    # Detection is delegated to enrich.py --report-divergence, which is
+    # read-only and shares detect_raw_edges() with the enricher's write path.
+    # Reusing the enricher instead of writing a second detector here is the
+    # point: two detectors would be free to disagree, and a drift report that
+    # disagrees with the enricher sends readers to add edges the enricher then
+    # declines to write.
+    echo -e "${CYAN}Divergent cards (card vs source):${NC}"
+    local divergent=0 _div_raw _div_rc=0 _div_edges=0 _div_extra=0 _div_unres=0
+    # `|| _div_rc=$?` for two distinct reasons:
+    # (1) under the inherited `set -e`, a failing command substitution inside an
+    #     assignment aborts the function — drift would die mid-section having
+    #     printed this header and nothing else, with the summary never reached.
+    # (2) without the rc, a detector that CANNOT RUN is indistinguishable from a
+    #     detector that found nothing. "divergent: 0" on a broken reader is
+    #     precisely the failure this section exists to abolish, so it must not be
+    #     reachable from here — hence UNKNOWN below, never 0.
+    _div_raw=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$LIB_DIR/enrich.py" \
+        --report-divergence 2>/dev/null) || _div_rc=$?
+    if [ "$_div_rc" -ne 0 ] || ! grep -q '^##DIVERGENT_CARDS=' <<<"$_div_raw"; then
+        echo "  ? UNKNOWN — the divergence detector did not run (enrich.py" \
+             "--report-divergence exited $_div_rc). This is NOT 'no divergence'."
+        divergent="UNKNOWN"
+    else
+        divergent=$(sed -n 's/^##DIVERGENT_CARDS=\([0-9]*\)##$/\1/p' <<<"$_div_raw")
+        _div_edges=$(sed -n 's/^##DIVERGENT_EDGES=\([0-9]*\)##$/\1/p' <<<"$_div_raw")
+        _div_extra=$(sed -n 's/^##DIVERGENT_EXTRA=\([0-9]*\)##$/\1/p' <<<"$_div_raw")
+        _div_unres=$(sed -n 's/^##DIVERGENT_UNRESOLVED_ACTIONABLE=\([0-9]*\)##$/\1/p' <<<"$_div_raw")
+        : "${divergent:=0}" "${_div_edges:=0}" "${_div_extra:=0}" "${_div_unres:=0}"
+        # Cap the listing like section 4 does: the counts are always exact, only
+        # the enumeration is abridged, and it says so.
+        local _shown=0
+        while IFS=$'\t' read -r _tag _loc _missing; do
+            [ "$_tag" = "DIVERGENT" ] || continue
+            if [ "$_shown" -lt 10 ]; then
+                echo "  ! $_loc → undeclared: $_missing"
+                _shown=$((_shown + 1))
+            fi
+        done <<<"$_div_raw"
+        if [ "$divergent" -gt "$_shown" ]; then
+            echo "  … and $((divergent - _shown)) more"
+        fi
+        if [ "$divergent" -eq 0 ]; then
+            echo "  (none)"
+        else
+            echo "  $divergent card(s), $_div_edges undeclared edge(s)"
+            echo "  Fix: bin/fw fabric enrich"
+        fi
+        if [ "$_div_extra" -gt 0 ] || [ "$_div_unres" -gt 0 ]; then
+            echo "  (informational: $_div_extra declared edge(s) the detectors" \
+                 "cannot see; $_div_unres detected import(s) whose target is a" \
+                 "real file with no card)"
+        fi
+    fi
+
+    echo ""
+    echo -e "${BOLD}Summary:${NC} unregistered: $unregistered, orphaned: $orphaned, stale: $stale, under-populated: $under_populated, divergent: $divergent"
 
     if [ "$summary_flag" = "--summary" ]; then
         echo "unregistered: $unregistered"
@@ -230,8 +294,14 @@ PYEOF
         echo "under-populated-todo-purpose: $up_todo"
         echo "under-populated-unknown-subsystem: $up_unknown"
         echo "under-populated-no-edges: $up_noedges"
+        echo "divergent: $divergent"
+        echo "divergent-edges: $_div_edges"
     fi
 
+    # Unchanged on purpose. Every section above is advisory and do_drift has
+    # always returned 0; a newly-added class must not be the thing that turns a
+    # consumer's pipeline red on upgrade. UNKNOWN is reported in the output and
+    # in the --summary keys, never in the exit status.
     return 0
 }
 
