@@ -140,15 +140,30 @@ def answered_conversations(*, reader=inbox.default_reader,
     A peek: cursor 0, and the inbox cursor is never written. Matching mirrors
     `e2e.is_ack` — the conversation id must match and the message must not be
     our own.
+
+    T-3462 (OBS-529): reads `inbox.read_topics()` — EVERY topic the reader
+    drains — not `inbox_topic()` alone. It previously peeked the circuit topic
+    only, while `pending()` drained circuit + legacy, so a reply arriving on
+    the legacy rail was invisible HERE while being perfectly visible to the
+    agent. The row stayed open and the ladder ran to completion on a
+    conversation that had been answered: re-post, nudge, then an operator
+    notice, every five minutes. Measured on this corpus the day it was found —
+    circuit topic 0 foreign conversations, legacy topic 8, including all three
+    that had reached rung 5.
+
+    Still a peek across every topic: cursor 0, no cursor written, no seen-set
+    touched. `fw sidecar inbox` owns those; a sweep that consumed messages
+    would hide them from the agent, which is a worse bug than the one this
+    fixes.
     """
     me = agent or inbox.agent_id()
-    topic = inbox.inbox_topic(me)
     answered: set[str] = set()
-    for env in reader(topic, 0, inbox.DEFAULT_LIMIT) or []:
-        meta = env.get("metadata") or {}
-        conversation = meta.get("conversation_id")
-        if conversation and meta.get("from_agent") != me:
-            answered.add(conversation)
+    for topic in inbox.read_topics(me):
+        for env in reader(topic, 0, inbox.DEFAULT_LIMIT) or []:
+            meta = env.get("metadata") or {}
+            conversation = meta.get("conversation_id")
+            if conversation and meta.get("from_agent") != me:
+                answered.add(conversation)
     return answered
 
 

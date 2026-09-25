@@ -67,6 +67,29 @@ def legacy_topics(agent: str | None = None) -> list[str]:
     return [circuit.legacy_topic_for(agent or agent_id())]
 
 
+def read_topics(agent: str | None = None) -> list[str]:
+    """Every topic a reader for `agent` must consult. THE one definition.
+
+    T-3462 (OBS-529): this list used to be written out at each call site, and
+    the two copies drifted the moment the T-3433 transition widened one of
+    them. `pending()` was widened to drain circuit + legacy; `retry.
+    answered_conversations()` was not, and kept peeking the circuit topic
+    alone.
+
+    The consequence was not a missing message — `pending()` still surfaced
+    everything — it was that the SWEEP could not see a reply. A peer answering
+    on the legacy rail left the ack-ledger row open, so every five minutes the
+    retry ladder re-posted, nudged, and eventually fired an operator notice
+    for a conversation that had been answered days earlier. Measured
+    2026-09-25: the circuit topic held 0 foreign conversations and the legacy
+    topic held 8, including all three that had climbed to rung 5.
+
+    So: one function, called by both. A future address change widens this and
+    every reader follows. Adding a topic at a call site is the bug.
+    """
+    return [inbox_topic(agent)] + legacy_topics(agent)
+
+
 def _state_path():
     path = outbox._root() / ".context" / "sidecar" / "inbox-state.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -148,7 +171,7 @@ def pending(agent: str | None = None, *, reader=default_reader,
     With `advance` (the default) the cursors and the seen-set move, so a
     second call returns nothing new. `advance=False` is a peek.
     """
-    topics = [inbox_topic(agent)] + legacy_topics(agent)
+    topics = read_topics(agent)  # T-3462: the one definition, shared with the sweep
     state = load_state()
 
     seen = list(state.get("seen") or [])

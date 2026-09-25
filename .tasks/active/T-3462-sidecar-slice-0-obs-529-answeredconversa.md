@@ -1,13 +1,17 @@
 ---
 id: T-3462
-name: "sidecar slice 0 (OBS-529): answered_conversations() is blind to the legacy topic, so answered conversations never close and ride the full retry ladder into a silent operator queue"
+name: "sidecar slice 0 (OBS-529): answered_conversations() is blind to the legacy
+  topic, so answered conversations never close and ride the full retry ladder into
+  a silent operator queue"
 description: >
-  sidecar slice 0 (OBS-529): answered_conversations() is blind to the legacy topic, so answered conversations never close and ride the full retry ladder into a silent operator queue
+  sidecar slice 0 (OBS-529): answered_conversations() is blind to the legacy topic,
+  so answered conversations never close and ride the full retry ladder into a silent
+  operator queue
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [arc:parallel-execution-aef]
 components: []
 related_tasks: []
@@ -23,8 +27,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T09:50:45Z
-last_update: 2026-09-25T09:53:31Z
-date_finished: null
+last_update: 2026-09-25T10:10:46Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,20 +39,103 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-25T10:00:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=276,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-25T10:00:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3462: sidecar slice 0 (OBS-529): answered_conversations() is blind to the legacy topic, so answered conversations never close and ride the full retry ladder into a silent operator queue
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+arc-011 slice 0, authorised by the T-3461 GO (D-645). **Not part of the target
+architecture** — a one-line-class fix to the architecture that runs today, taken first
+because it is live and actively generating false alarms whatever we build next.
+
+`pending()` was widened for the T-3433 circuit transition to drain `inbox:<circuit>` AND
+the legacy `sidecar:<agent>` alias. `answered_conversations()` was not. The topic list was
+written out separately at each call site and only one copy moved.
+
+The consequence was not a lost message — `pending()` surfaced everything to the agent — it
+was that the **sweep could not see a reply**. A peer answering on the legacy rail left the
+ack row open, so every five minutes the ladder re-posted, nudged, and finally fired an
+operator notice for a conversation answered days earlier. Those notices land in
+`.context/inbox.yaml`: 319 pending, no renderer, notify disabled. The system generated
+false alarms it could not hear.
+
+### Before / after, live on this corpus
+
+```
+BEFORE  answered_conversations() -> set()          (empty)
+AFTER   answered_conversations() -> 8 conversations
+          832-T829-THREE-ASKS
+          832-T830-H3-RULED
+          832-T833-CTL029-AND-REVIEWER-CLOSURE     <- all three had reached rung 5
+          832-BRANCH-TOPOLOGY-T805
+          1409-sprind-xfer-20260922T125753Z
+          T-3062-consult / T-3406-demo / T-3407-worker
+```
+
+Circuit topic: 6 envelopes, **0** foreign conversations. Legacy topic: 21 envelopes,
+**8** foreign conversations. Every reply the sweep needed was on the rail it wasn't reading.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A reply on the legacy rail closes the ack row.** `answered_conversations()` returns
+      the conversations present on *every* topic the reader drains, not just the circuit
+      topic. Verified live: the eight foreign conversations currently sitting on
+      `sidecar:999-Agentic-Engineering-Framework` — including the three that escalated to
+      rung 5 — appear in its return value, where today it returns the empty set.
+- [x] **The two readers cannot drift apart again.** The fix is a single shared helper that
+      both `inbox.pending()` and `retry.answered_conversations()` call, not the same topic
+      list written out twice. Two copies is how this happened: `pending()` was widened for
+      the T-3433 transition and the answered-check was not. A test asserts both call sites
+      resolve the identical topic set.
+- [x] **Nothing that was already closing stops closing.** A reply on the circuit topic
+      still closes its row. This is the leg that catches a "fix" that swaps one blindness
+      for another.
+- [x] **The peek stays a peek.** `answered_conversations()` must not advance any inbox
+      cursor or touch the seen-set — `fw sidecar inbox` owns those, and a sweep that
+      consumed messages would make them invisible to the agent. Pinned, because widening
+      the topic list is exactly the change that could break it.
+- [x] **Tests pin the failing leg against the pre-fix code**, not just the fixed code: a
+      fixture where the only reply is on the legacy rail must FAIL against the pre-fix
+      `answered_conversations()` and pass after. `TEST_TEMP_DIR` in setup; no bare
+      `! grep -q`; no live corpus counts pinned (T-3326).
+- [x] **The DEFAULT_LIMIT=100 peek window is recorded, not silently inherited.**
+      `answered_conversations()` reads from cursor 0 with a 100-message limit, so once a
+      topic passes 100 messages the oldest conversations fall out of view permanently.
+      Not in scope to fix here — but stated in `## Decisions` with the measured
+      headroom, so the next person meets a known deferral rather than a fresh surprise.
+- [x] Vendored copies synced for every touched file under `lib/`; `bin/fw vendor self
+      --check` clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -208,6 +295,13 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# No live corpus counts pinned (T-3326): the 8-conversation before/after is dated
+# evidence in ## Context. The pytest file drives fixture topics only.
+
+timeout 600 python3 -m pytest tests/unit/test_sidecar_answered_topics.py -q > /tmp/.t3462-v1.out 2>&1 && grep -q "passed" /tmp/.t3462-v1.out
+timeout 900 python3 -m pytest tests/unit/test_sidecar_sweep.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_outbox.py tests/unit/test_sidecar_delivery.py tests/unit/test_retry_ladder.py -q > /tmp/.t3462-v2.out 2>&1 && grep -q "passed" /tmp/.t3462-v2.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -224,6 +318,42 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 15 of 45 sidecar messages climbed the retry ladder to rung 4-5 over 10-12
+attempts, 14 ending `escalated:operator`. Three of them were consults to 832 that 832 had
+already answered days earlier. `retry.answered_conversations()` returned the empty set on
+a corpus holding eight answered conversations.
+
+**Root cause:** the list of topics a reader must consult was written out separately at two
+call sites. T-3433's circuit-addressing transition widened one — `inbox.pending()`, to
+drain `inbox:<circuit>` **and** the legacy `sidecar:<agent>` alias — and did not widen the
+other. `answered_conversations()` kept peeking the circuit topic alone. Replies on the
+legacy rail were fully visible to the agent and completely invisible to the sweep.
+
+**Why structurally allowed:** three things had to line up, and all three did.
+
+1. **Duplication with no shared definition.** Two hand-written copies of one list. Nothing
+   forced them to move together, so a correct, careful widening of one was a silent
+   breakage of the other.
+2. **The failure is invisible from the surface that reports health.** `fw sidecar status`
+   showed `45 delivered, 0 in flight, 0 dead-letters` throughout, because delivery
+   genuinely succeeded. What broke was *closure*, which nothing counts.
+3. **The escalations it manufactured were themselves silent** — `fw note` into
+   `.context/inbox.yaml`, 319 pending, no Watchtower renderer, notify disabled. A false
+   alarm nobody can hear is indistinguishable from no alarm, so the noise never prompted
+   anyone to look.
+
+`answered_conversations()` had **zero test coverage** before this task. The function that
+closes the loop was the one function nothing exercised, which is why a transition that
+touched its sibling never surfaced it.
+
+**Prevention:** `inbox.read_topics()` is now the single definition, called by both. Adding
+a topic at a call site — the shape of the original defect — is what a test now catches:
+`test_pending_and_answered_resolve_the_same_topics` asserts both callers consult an
+identical topic list, and `test_every_read_topic_is_actually_consulted` pins that every
+topic in that list is really read, so a future third rail is covered by construction
+rather than by remembering to edit this file. The legacy-rail legs were demonstrated to
+FAIL against the pre-fix code (5 of 10 red) before being accepted as a guard.
 
 ## Evolution
 
@@ -248,6 +378,26 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+**What this slice changed about arc-011's direction:** nothing — and that is the point of
+it being slice 0. The arc's direction was set by the T-3461 GO (D-645): build toward the
+T-3397 receiver-API design. This slice deliberately does **not** move toward that design;
+it repairs the architecture currently running so it stops emitting false escalations while
+the real work proceeds.
+
+**What it changed about how the arc will be built:** the sweep is now trustworthy as a
+measurement source. Before this, "messages that escalated" conflated *nobody answered* with
+*we could not see the answer*, so any telemetry built on the ladder would have inherited
+that conflation — including the escalation-precision metric proposed in
+`docs/architecture/sidecar-roundtrip-and-telemetry.md`. Slice 6 now has a baseline worth
+measuring against.
+
+**A finding for the slices ahead:** the defect was duplication of a definition across two
+readers, and the target architecture adds *more* readers — a receiver-side API, a flag
+watcher, a readiness gate, two confirmation endpoints. Every one of them will need the
+topic/address list. `read_topics()` exists now so they take it rather than restate it. If
+slice 1 hand-writes an address list, it is re-introducing this bug before the fix has
+aged a week.
 
 ## Recommendation
 
@@ -279,6 +429,27 @@ date_finished: null
 -->
 
 ## Decisions
+
+**Fixed structurally, not locally.** The obvious patch is to add the legacy topic to
+`answered_conversations()`. That reproduces the defect's cause — two hand-written copies of
+one list — with the copies merely agreeing for now. Instead both callers now use
+`inbox.read_topics()`, one definition. A future address change widens that and every reader
+follows; adding a topic at a call site is the bug, and a test asserts the two call sites
+resolve the identical topic set.
+
+**The peek stays a peek, deliberately.** Widening the topic list is exactly the change that
+could start consuming an agent's unread consults, because `answered_conversations()` now
+touches every topic `fw sidecar inbox` owns. It still reads from cursor 0 and writes
+nothing — pinned by a test that snapshots `inbox-state.json` across the call.
+
+**DEFERRED, stated so the next person meets a known deferral rather than a surprise:
+`DEFAULT_LIMIT = 100`.** `answered_conversations()` reads from cursor 0 with a 100-envelope
+limit **per topic**, so once a topic passes 100 messages its oldest conversations fall out
+of the peek window permanently and their rows can never close. Measured headroom today:
+circuit 6, legacy 21 — roughly 79 messages of margin on the busier rail. Not fixed here
+because paging changes the read pattern for every caller and belongs with the receiver-side
+rework (slice 1), not bolted onto a one-line correction. If traffic grows before slice 1
+lands, this bites silently and in exactly the same shape as the bug being fixed.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -312,3 +483,7 @@ date_finished: null
 
 ### 2026-09-25T09:53:31Z — status-update [task-update-agent]
 - **Change:** tags: +arc:parallel-execution-aef
+
+### 2026-09-25T10:10:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
