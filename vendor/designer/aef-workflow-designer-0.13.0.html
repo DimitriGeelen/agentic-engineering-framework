@@ -243,6 +243,46 @@ font-family: 'Outfit';
     cursor: pointer;
   }
   .brand-version:hover { color: var(--accent); }
+  /* T-808 — the APP's version, deliberately NOT .brand-version above.
+     .brand-version is orphaned CSS: T-158 retired the toolbar badge it styled, and that
+     badge showed the WORKFLOW's contract version (document metadata the operator edits in
+     the properties panel). Reusing its class for the build number would put two different
+     meanings behind one name and make T-158's tombstone comment read as if the badge were
+     back. Different meaning, different class. */
+  .brand-appversion {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--surface-3);
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.02em;
+  }
+  /* T-821 (F-05) — the fault indicator. ABSENT, not greyed, when there is nothing to
+     report: a chrome element that is always present teaches the eye to stop seeing it,
+     and this one is only worth anything at the moment it appears. Warm amber rather
+     than red — these are recorded conditions the editor survived, not a crash, and
+     overstating them would train the operator to dismiss the badge. */
+  .brand-fault {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #1d1400;
+    background: #e8b339;
+    border: 1px solid #c9952a;
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    /* nowrap + inline-flex, because the default wrapped the glyph above the count and
+       made the badge twice the height of the version pill beside it. DOM geometry was
+       correct throughout — it took reading a rendered screenshot to see it. */
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    line-height: 1.4;
+  }
+  .brand-fault:hover { background: #f2c556; }
   .btn-icon {
     font-family: var(--sans);
     font-size: 14px;
@@ -1136,6 +1176,14 @@ font-family: 'Outfit';
     <div class="brand">
       <span class="brand-mark">AEF · BPMN</span>
       <span class="brand-title">Workflow Designer</span>
+      <!-- T-808 (F-10): which build is this? Populated from APP_VERSION at init — left
+           empty here on purpose, because a literal in the markup would be a SECOND copy
+           of the version and the whole point of the guard is that there is exactly one. -->
+      <span class="brand-appversion" id="brand-appversion" title="Designer build loaded in this page. Not the workflow's version — that is edited in the properties panel."></span>
+      <!-- T-821 (F-05): recorded failures. `hidden` here and cleared only by
+           renderFaultIndicator() when the ring is non-empty — the element's PRESENCE is
+           the signal, so it must start absent rather than empty. -->
+      <button class="brand-fault" id="brand-fault" hidden title="Conditions the editor recorded rather than swallowed. Click to read them."></button>
       <span class="brand-separator">·</span>
       <!-- T-154: the workflow-picker <select> is replaced by this brand-area "Open project"
            button (operator decision — one unified full-corpus entry point, no half-populated
@@ -1381,6 +1429,16 @@ font-family: 'Outfit';
           <marker id="arrow-selected" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)" />
           </marker>
+          <!-- T-598: source-end direction cue. Smaller than the destination head, and
+               orient="auto" NOT "auto-start-reverse" — a start marker with the reversing
+               orientation points back at its own source, which is the opposite of the
+               flow indication this is for. -->
+          <marker id="arrow-source" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--text-dim)" />
+          </marker>
+          <marker id="arrow-source-selected" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)" />
+          </marker>
         </defs>
         <g id="g-pool"></g>
         <!-- T-286: id badges paint BELOW edges by default (arrows carry flow semantics;
@@ -1529,6 +1587,11 @@ font-family: 'Outfit';
             <span>Fit lane names — wrap on '·'/word, then shrink to 8px, then ellipsize (full name on hover)</span>
           </label>
           <label class="settings-row">
+            <input type="checkbox" id="set-wrap-labels">
+            <span>Wrap long labels — break event/gateway names wider than the cap onto stacked lines</span>
+            <span class="settings-hint">off = one line however long, the pre-T-600 behaviour</span>
+          </label>
+          <label class="settings-row">
             <span>Label size</span>
             <select id="set-label-size" class="settings-num">
               <option value="s">S</option>
@@ -1669,10 +1732,19 @@ function deriveSlug(displayName) {
 // NOT deriveSlug, and the adjacency is deliberate so the next reader sees the
 // difference. deriveSlug above is a SUMMARISER for node labels — first word longer
 // than one character, truncated to 16. Using it for machine identity collapses
-// distinct documents onto a shared first token: measured over the 14 corpus documents
-// that reach the id fallback it yields 4 ids (`process` ×8, `proc` ×4, `id`, a hash),
-// and all 4 PASS the validator — a loud save-time rejection turned into a silent
-// collision (T-501 §Decision item 1).
+// distinct documents onto a shared first token, and all of the collapsed ids PASS the
+// validator — a loud save-time rejection turned into a silent collision (T-501
+// §Decision item 1).
+//
+// T-563 re-measured this through the real page (tools/_t563-fallback-id-derivation-cdp.mjs).
+// The figure previously written here — "4 ids (`process` ×8, `proc` ×4, `id`, a hash)" —
+// does not reproduce. Over the same 14 documents deriveSlug yields 7 distinct ids:
+// `process` ×6, then `hauptprozess`, `eu`, `authored`, `empty`, `later`, `no`. There is
+// no `proc` bucket, because deriveSlug is applied to procNAME and the four
+// lane-provenance documents carry real names ("Authored lanes" -> `authored`) rather
+// than `Proc_`-prefixed ids. Same direction, smaller collapse: 10 distinct -> 7. The
+// argument stands on the direction; the number was wrong and is corrected rather than
+// quietly dropped.
 //
 // These two were written inline at three sites (renameActiveWorkflow, the ID property
 // field, createFromPendingRef) and judged by a fourth inline regex in the save guard,
@@ -1835,16 +1907,51 @@ const NODE_DEFAULTS = {
 // authorable everywhere. Note the ordering: `note` is LAST in each list so it renders
 // below the structured fields rather than pushing them down.
 const AEF_FIELDS = {
-  startEvent:   ['triggeredBy', 'contextReads', 'note'],
-  endEvent:     ['emits', 'note'],
+  // T-618: `determinism` is not a new field — it is an AUTHORED one the panel could not
+  // show. Census (tools/_t618-determinism-census.py): 215 occurrences across 7 node types
+  // in examples/, vocabulary `deterministic` (166) / `stochastic` (42) / `human` (7).
+  // Before T-570 the editor loaded those values, rendered them nowhere, and destroyed them
+  // on save; after T-570 it carries them invisibly. Either way the operator could not see
+  // or edit a single one. It is offered on exactly the types the corpus annotates —
+  // including events and gateways, which is where a guess would have missed it.
+  //
+  // `sideEffect` (40 uses, task-like only) rides alongside because it is the field that
+  // actually decides retry safety, and determinism does NOT imply it: customer-refund's
+  // n_execute is determinism="deterministic" with sideEffect="charge reversed on payment
+  // provider; ledger entry written; receipt emailed". Deterministic and never re-runnable.
+  //
+  // NOT a contract change. metaKeys stays at 20 and both keys ride T-570's carriage
+  // (carriedKeys, below) — nothing here is ratified with 999-AEF, and the frozen standard
+  // docs/standards/aef-bpmn-mapping-v1.md is untouched.
+  startEvent:   ['determinism', 'triggeredBy', 'contextReads', 'note'],
+  endEvent:     ['determinism', 'emits', 'note'],
   // T-197 (IW-9 v1.1): node-level `owner` is NOT authorable — it derives from
   // the node's lane authority (Axis 1). The panel shows it read-only via
   // ownerFromAuthority(); it is retained in the metaKeys writer for O-2
   // reverse-render laning, but never offered as an editable field here.
-  serviceTask:  ['horizon', 'workflowType', 'tier', 'agentType', 'endpoint', 'contextReads', 'artifactsWrites', 'note'],
-  userTask:     ['horizon', 'workflowType', 'tier', 'endpoint', 'decisionOutputs', 'note'],
-  scriptTask:   ['horizon', 'workflowType', 'tier', 'endpoint', 'contextReads', 'artifactsWrites', 'note'],
-  exclusiveGateway: ['decisionInput', 'decisionOwner', 'note'],
+  // T-589: `fabricRef` and `links` are offered on the four task-like types — the ones
+  // that can carry an implementation and therefore have code, tests and a fabric card to
+  // point at. Both sit ABOVE `note` per the ordering rule stated above: they are
+  // structured fields, and `note` stays last.
+  serviceTask:  ['horizon', 'workflowType', 'tier', 'determinism', 'agentType', 'endpoint', 'contextReads', 'artifactsWrites', 'sideEffect', 'fabricRef', 'links', 'note'],
+  userTask:     ['horizon', 'workflowType', 'tier', 'determinism', 'endpoint', 'decisionOutputs', 'fabricRef', 'links', 'note'],
+  scriptTask:   ['horizon', 'workflowType', 'tier', 'determinism', 'endpoint', 'contextReads', 'artifactsWrites', 'sideEffect', 'fabricRef', 'links', 'note'],
+  // T-810 (value review F-11): `decisionOutputs` is the THIRD authored-but-unshowable field
+  // found here, after T-566 (305 values) and T-618 (215). The corpus carries
+  // <aef:decisionOutputs> on exclusiveGateway 17 times and on userTask 6; the panel offered
+  // it on userTask only, so 17 of 23 values a human had written could be neither seen nor
+  // edited. Nothing was lost — FIELD_META, the exporter and the importer all handle the
+  // field type-agnostically, and T-570's carriage preserves it on save — but the operator
+  // had no way to know it was there.
+  //
+  // Adding it here is the whole fix, and it follows T-618's stated principle verbatim:
+  // offer the field on exactly the types the corpus annotates. `decisionInput` and
+  // `decisionOutputs` are the input and output halves of one gateway decision, so a gateway
+  // that can author one and not the other was always the odd shape.
+  //
+  // Ordering per the rule above: structured fields first, `note` last. Kept adjacent to
+  // `decisionInput` so the pair reads together in the panel.
+  exclusiveGateway: ['determinism', 'decisionInput', 'decisionOutputs', 'decisionOwner', 'note'],
   parallelGateway: ['note'],
   linkEventThrow: ['workflowRef', 'name', 'targetWorkflow', 'linkId', 'note'],
   linkEventCatch: ['workflowRef', 'name', 'targetWorkflow', 'linkId', 'note'],
@@ -1856,7 +1963,7 @@ const AEF_FIELDS = {
   eventError:   ['errorStatus', 'hostRef', 'boundaryPos', 'interrupting', 'note'],
   eventTimer:   ['timerSpec', 'hostRef', 'boundaryPos', 'interrupting', 'note'],
   eventMessage: ['busTopic', 'hostRef', 'boundaryPos', 'interrupting', 'note'],
-  subProcess:   ['horizon', 'workflowType', 'tier', 'endpoint', 'contextReads', 'artifactsWrites', 'scopeOf', 'note'],
+  subProcess:   ['horizon', 'workflowType', 'tier', 'determinism', 'endpoint', 'contextReads', 'artifactsWrites', 'sideEffect', 'scopeOf', 'fabricRef', 'links', 'note'],
 };
 
 // T-308 (T-244 GO, path b): neutral presentation for a BARE catch event.
@@ -1922,6 +2029,23 @@ const FIELD_META = {
   emits:          { label: 'Emits',           hint: 'event name(s)', textarea: false },
   tier:           { label: 'Tier',            hint: '0=tier0 / 1 / 2 / 3', special: 'tier' },
   agentType:      { label: 'Agent type',      hint: 'primary | termlink-worker | human', special: 'select', options: ['primary', 'termlink-worker', 'human'] },
+  // T-618: the vocabulary is NOT designed here — it is read off the corpus. Census over
+  // examples/ (tools/_t618-determinism-census.py): deterministic 166, stochastic 42,
+  // human 7, across 7 node types. A select rather than free text because those three are
+  // the whole authored set and a runtime has to branch on them.
+  //
+  // `human` is the value a first-principles design would have missed: the axis is not
+  // agent-vs-code, it is whether the result can be checked without re-running the step,
+  // and a human decision is the third case. It is why this is a select of the corpus's
+  // three values and not a boolean.
+  determinism:    { label: 'Determinism',     hint: 'deterministic | stochastic | human', special: 'select', options: ['', 'deterministic', 'stochastic', 'human'] },
+  // Prose, deliberately. It records WHAT the step already did to the world, and a runtime
+  // that wants to know "may I retry this?" cannot infer that from `determinism`:
+  // customer-refund's n_execute is deterministic AND carries "charge reversed on payment
+  // provider; ledger entry written; receipt emailed". Deterministic and never re-runnable.
+  // A decidable retry-safety flag is a separate field and a separate question (T-617 IW-4,
+  // which roadmap §2.1 puts in AEF's Arc 1) — this one stays honest prose until that lands.
+  sideEffect:     { label: 'Side effect',     hint: 'what this step already did to the world (retry hazard)', textarea: true },
   endpoint:       { label: 'Endpoint',        hint: 'fw … | agent prompt | watchtower view', textarea: true },
   decisionInput:  { label: 'Decision input',  hint: 'expression, e.g. ${findings.confidence}', textarea: false },
   decisionOwner:  { label: 'Decision owner',  hint: 'agent | human | framework', special: 'select', options: ['agent', 'human', 'framework'] },
@@ -1958,6 +2082,13 @@ const FIELD_META = {
   // read-only. This entry is retained only as the value-vocabulary of record;
   // it is not rendered by the panel loop.
   owner:          { label: 'Owner',           hint: 'derived from lane authority — read-only (IW-9)', special: 'derived', options: ['', 'human', 'agent'] },
+  // T-589: the two navigation fields. Both are SCALARS by deliberate constraint — they ride
+  // T-570's <aef:meta> carriage (any scalar key not in scalarHandled is carried verbatim), so
+  // neither adds an aef: element, neither touches metaKeys (still 20), and neither puts the
+  // frozen standard in scope. A structured value would need its own emitter and would then be
+  // a contract change, which is why `links` is newline-separated text and not an array.
+  fabricRef:      { label: 'Fabric component', hint: 'component card name · opens the card', special: 'fabricLink' },
+  links:          { label: 'Links',            hint: 'code · tests · one URL per line', special: 'linkList' },
 };
 
 // I/O contract — which node types declare typed inputs/outputs, and the type vocabulary.
@@ -2209,6 +2340,11 @@ function laneAtY(y) {
 // incapable of reaching the exporter (same discipline as T-308's session-intent Set).
 let _laneReconcileCount = 0;
 
+// T-603: which <bpmn:process> elements the last parse did NOT import, and how much
+// content each held. Same discipline as _laneReconcileCount above — a report about the
+// import, kept outside `state` so it is structurally incapable of reaching the exporter.
+let _processSkipReport = [];
+
 // T-315: which lanes the last parse had to GROW to contain their own declared
 // members, and by how much. Same discipline as _laneReconcileCount above — a
 // report about the import, kept outside `state` so it is structurally incapable
@@ -2216,6 +2352,150 @@ let _laneReconcileCount = 0;
 // it is a real edit to the document, not a render-time fudge. What stays out is
 // the narration about it.)
 let _laneGrowReport = [];
+
+// ============================================================================
+//  Fault record (T-821, F-05) — failures become evidence
+// ============================================================================
+// Before this existed the editor had 46 `catch (_) {}` sites and no error surface of any
+// kind. The review's reading: a bare catch is the precise inverse of D1 Antifragility,
+// whose definition is "failures are learning events" — a failure that cannot become one
+// because nothing records it happened. It also capped the review itself: ~93 inventoried
+// items carried reading D (UNMEASURED) because no channel existed that could carry
+// evidence even incidentally.
+//
+// DECLARED THIS EARLY ON PURPOSE. The first caller is the routing-prefs restore ~15 lines
+// below, at module top level. `let`/`const` hoist but do not initialise, so a recorder
+// defined next to APP_VERSION (~line 10100) would put every top-level call site in the
+// temporal dead zone and throw ReferenceError — turning a silent failure into a broken
+// editor, the one outcome worse than the silence being fixed.
+const FAULT_KEY = 'aefFaults';
+const FAULT_MAX = 50;          // bounded: a fault loop must not become the quota problem
+let _faults = [];
+
+// Every caller is inside a `catch` whose whole contract is "never break the editor". So
+// this may not throw, and returns nothing anyone branches on. The guards are not
+// defensive habit — they are the contract that makes it safe to call from those sites.
+function aefRecordFault(code, detail) {
+  try {
+    const rec = {
+      code: String(code),
+      detail: (detail && detail.message) ? String(detail.message)
+            : (detail == null ? '' : String(detail)).slice(0, 300),
+      ts: Date.now(),
+      v: (typeof APP_VERSION === 'string') ? APP_VERSION : '?',
+    };
+    // COALESCE a repeat of the same condition instead of pushing a row per occurrence.
+    // Seen by reading the rendered panel, not by reasoning about it: a quota error fires
+    // on EVERY preference write, so twelve identical rows filled the view and fifty would
+    // have evicted every other condition in the ring. A record that evicts the evidence
+    // is not evidence. Keep the first time it was seen, move the last, count the rest.
+    const last = _faults.length ? _faults[_faults.length - 1] : null;
+    if (last && last.code === rec.code && last.detail === rec.detail) {
+      last.n = (last.n || 1) + 1;
+      last.ts = rec.ts;
+    } else {
+      _faults.push(rec);
+    }
+    if (_faults.length > FAULT_MAX) _faults = _faults.slice(-FAULT_MAX);
+    // Persisting is best-effort BY NECESSITY, not laziness: one of the conditions this
+    // records IS localStorage refusing writes (quota). When that is the fault, this write
+    // fails too — and the in-memory ring still holds it, so the session's own surface
+    // stays correct even when nothing can be carried to the next one. Said explicitly
+    // because a reader will otherwise take this catch for the habit T-821 removed.
+    try { localStorage.setItem(FAULT_KEY, JSON.stringify(_faults)); } catch (_) {}
+    try { renderFaultIndicator(); } catch (_) {}
+  } catch (_) { /* the recorder is the one place silence is still the correct answer */ }
+}
+
+function aefFaults() { return _faults.slice(); }
+
+function aefClearFaults() {
+  _faults = [];
+  try { localStorage.removeItem(FAULT_KEY); } catch (_) {}
+  try { renderFaultIndicator(); } catch (_) {}
+}
+
+// The surface. Absence IS the healthy state — see the note on .brand-fault.
+function renderFaultIndicator() {
+  const b = document.getElementById('brand-fault');
+  if (!b) return;
+  if (!_faults.length) { b.hidden = true; return; }
+  b.hidden = false;
+  b.textContent = '\u26a0 ' + _faults.length;
+}
+
+function showFaultPanel() {
+  const backdrop = document.createElement('div');
+  backdrop.id = 'fault-panel';
+  backdrop.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.55);'
+    + 'display:flex;align-items:center;justify-content:center;font:13px system-ui,sans-serif';
+  const close = () => backdrop.remove();
+  backdrop.onclick = e => { if (e.target === backdrop) close(); };
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'background:var(--panel,#1e2530);color:var(--fg,#e6edf3);'
+    + 'border:1px solid var(--border,#334);border-radius:10px;width:min(620px,94%);'
+    + 'max-height:75vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.5)';
+
+  const head = document.createElement('div');
+  head.style.cssText = 'padding:15px 16px 8px';
+  const h = document.createElement('strong');
+  h.textContent = '\u26a0 Recorded conditions';
+  h.style.cssText = 'display:block;font-size:15px';
+  const sub = document.createElement('div');
+  sub.style.cssText = 'margin-top:5px;color:var(--muted,#8b95a5);font-size:12px;line-height:1.4';
+  // Says what it is AND what it is not. Without the second sentence an operator reads a
+  // list of failures as a list of things currently broken and goes looking for damage.
+  sub.textContent = 'Things the editor handled instead of crashing. The editor kept working; '
+    + 'each line is a failure that would otherwise have left no trace at all.';
+  head.append(h, sub);
+
+  const body = document.createElement('div');
+  body.style.cssText = 'padding:6px 16px 0;overflow:auto;font-family:var(--mono,monospace);font-size:12px';
+  _faults.slice().reverse().forEach(f => {
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:6px 0;border-top:1px solid var(--border,#334);line-height:1.5';
+    let when = '';
+    try { when = new Date(f.ts).toLocaleString(); } catch (_) { when = String(f.ts); }
+    const code = document.createElement('div');
+    code.textContent = f.code;
+    code.style.cssText = 'color:#e8b339';
+    const meta = document.createElement('div');
+    meta.style.cssText = 'color:var(--muted,#8b95a5)';
+    meta.textContent = when + ' \u00b7 build v' + f.v + ((f.n > 1) ? ' \u00b7 \u00d7' + f.n + ' (last)' : '');
+    row.append(code, meta);
+    if (f.detail) {
+      const d = document.createElement('div');
+      d.textContent = f.detail;
+      d.style.cssText = 'white-space:pre-wrap;word-break:break-word';
+      row.appendChild(d);
+    }
+    body.appendChild(row);
+  });
+
+  const foot = document.createElement('div');
+  foot.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;padding:12px 16px 14px';
+  const copy = document.createElement('button');
+  copy.className = 'btn'; copy.type = 'button'; copy.textContent = 'Copy';
+  copy.onclick = () => {
+    const txt = _faults.map(f => [f.ts, f.v, f.code, f.detail].join('\t')).join('\n');
+    // The copy path is itself one of the instrumented sites (clipboard-write). If it
+    // fails here it records a fault while the panel showing faults is open — correct,
+    // and the indicator behind the backdrop updates for the next open.
+    try { navigator.clipboard.writeText(txt); } catch (e) { aefRecordFault('clipboard-write', e); }
+  };
+  const clear = document.createElement('button');
+  clear.className = 'btn'; clear.type = 'button'; clear.textContent = 'Clear';
+  clear.onclick = () => { aefClearFaults(); close(); };
+  const done = document.createElement('button');
+  done.className = 'btn btn-primary'; done.type = 'button'; done.textContent = 'Close';
+  done.onclick = close;
+  foot.append(copy, clear, done);
+
+  panel.append(head, body, foot);
+  backdrop.appendChild(panel);
+  document.body.appendChild(backdrop);
+}
 
 // ============================================================================
 //  State
@@ -2235,22 +2515,22 @@ try {
   if (Number.isFinite(_storedRouting.straightenTol) && _storedRouting.straightenTol >= 0) routingPrefs.straightenTol = _storedRouting.straightenTol;
   if ([0, 4, 8].includes(_storedRouting.channelSep)) routingPrefs.channelSep = _storedRouting.channelSep;
   if ([0, 8, 16].includes(_storedRouting.routingMargin)) routingPrefs.routingMargin = _storedRouting.routingMargin;
-} catch (_) {}
+} catch (e) { aefRecordFault('prefs-restore:routing', e); }   // T-821: settings silently reverting is a real, confusing condition
 function setRoutingAttach(mode) {
   routingPrefs.attach = mode;
-  try { localStorage.setItem('aefRoutingPrefs', JSON.stringify(routingPrefs)); } catch (_) {}
+  try { localStorage.setItem('aefRoutingPrefs', JSON.stringify(routingPrefs)); } catch (e) { aefRecordFault('prefs-persist:routing', e); }
   renderEdges();
 }
 function setStraightenTol(px) {
   routingPrefs.straightenTol = Math.max(0, Math.min(40, Math.round(px) || 0));
-  try { localStorage.setItem('aefRoutingPrefs', JSON.stringify(routingPrefs)); } catch (_) {}
+  try { localStorage.setItem('aefRoutingPrefs', JSON.stringify(routingPrefs)); } catch (e) { aefRecordFault('prefs-persist:routing', e); }
   renderEdges();
 }
 // Channel separation (T-098, survey option 2): pitch of the T-097 fan/join
 // corridor channels — 0 restores the pre-T-097 converging look.
 function setChannelSep(px) {
   routingPrefs.channelSep = [0, 4, 8].includes(px) ? px : 8;
-  try { localStorage.setItem('aefRoutingPrefs', JSON.stringify(routingPrefs)); } catch (_) {}
+  try { localStorage.setItem('aefRoutingPrefs', JSON.stringify(routingPrefs)); } catch (e) { aefRecordFault('prefs-persist:routing', e); }
   renderEdges();
 }
 // Routing margin (T-106, survey option 3): extra clearance (0/8/16px) added to
@@ -2259,7 +2539,7 @@ function setChannelSep(px) {
 // Render-only (PD-044): re-renders live (PL-012), never mutates stored geometry.
 function setRoutingMargin(px) {
   routingPrefs.routingMargin = [0, 8, 16].includes(px) ? px : 8;
-  try { localStorage.setItem('aefRoutingPrefs', JSON.stringify(routingPrefs)); } catch (_) {}
+  try { localStorage.setItem('aefRoutingPrefs', JSON.stringify(routingPrefs)); } catch (e) { aefRecordFault('prefs-persist:routing', e); }
   renderEdges();
 }
 
@@ -2274,25 +2554,25 @@ try {
   if (typeof _storedSnap.magnet === 'boolean') snapPrefs.magnet = _storedSnap.magnet;
   if (typeof _storedSnap.grid === 'boolean') snapPrefs.grid = _storedSnap.grid;
   if (Number.isFinite(_storedSnap.gridSize) && _storedSnap.gridSize >= 4) snapPrefs.gridSize = _storedSnap.gridSize;
-} catch (_) {}
+} catch (e) { aefRecordFault('prefs-restore:snap', e); }
 function setSnapPref(key, value) {
   snapPrefs[key] = value;
-  try { localStorage.setItem('aefSnapPrefs', JSON.stringify(snapPrefs)); } catch (_) {}
+  try { localStorage.setItem('aefSnapPrefs', JSON.stringify(snapPrefs)); } catch (e) { aefRecordFault('prefs-persist:snap', e); }
 }
 
 // Lane-label fit ladder (T-084) — editor-local (localStorage), same seam
 // discipline as routingPrefs/snapPrefs: render-only, never in the document.
-let labelPrefs = { laneFit: true, showLane: true, showIds: true, showEdge: true, showPool: true, size: 'm' };
+let labelPrefs = { laneFit: true, wrapNames: true, showLane: true, showIds: true, showEdge: true, showPool: true, size: 'm' };
 try {
   const _storedLabel = JSON.parse(localStorage.getItem('aefLabelPrefs') || '{}');
   if (typeof _storedLabel.laneFit === 'boolean') labelPrefs.laneFit = _storedLabel.laneFit;
-  for (const k of ['showLane', 'showIds', 'showEdge', 'showPool'])
+  for (const k of ['wrapNames', 'showLane', 'showIds', 'showEdge', 'showPool'])
     if (typeof _storedLabel[k] === 'boolean') labelPrefs[k] = _storedLabel[k];
   if (['s', 'm', 'l'].includes(_storedLabel.size)) labelPrefs.size = _storedLabel.size;
-} catch (_) {}
+} catch (e) { aefRecordFault('prefs-restore:label', e); }
 function setLabelPref(key, value) {
   labelPrefs[key] = value;
-  try { localStorage.setItem('aefLabelPrefs', JSON.stringify(labelPrefs)); } catch (_) {}
+  try { localStorage.setItem('aefLabelPrefs', JSON.stringify(labelPrefs)); } catch (e) { aefRecordFault('prefs-persist:label', e); }
   renderAll();
 }
 
@@ -2311,10 +2591,10 @@ try {
   if (typeof _storedView.colSpacing === 'number' && _storedView.colSpacing >= 130 && _storedView.colSpacing <= 360) viewPrefs.colSpacing = _storedView.colSpacing;
   if (typeof _storedView.paletteHidden === 'boolean') viewPrefs.paletteHidden = _storedView.paletteHidden;
   if (typeof _storedView.propsHidden === 'boolean') viewPrefs.propsHidden = _storedView.propsHidden;
-} catch (_) {}
+} catch (e) { aefRecordFault('prefs-restore:view', e); }
 function setViewPref(key, value) {
   viewPrefs[key] = value;
-  try { localStorage.setItem('aefViewPrefs', JSON.stringify(viewPrefs)); } catch (_) {}
+  try { localStorage.setItem('aefViewPrefs', JSON.stringify(viewPrefs)); } catch (e) { aefRecordFault('prefs-persist:view', e); }
   applyViewChrome();
   renderAll();
 }
@@ -2396,7 +2676,6 @@ function loadFromLibrary(key) {
   mode = 'select';
   refreshDisplayIds();
   renderAll();
-  refreshLibraryUI();
   if (typeof setLoadedSavedVersion === 'function') setLoadedSavedVersion(null);  // T-157: switching library workflows clears the snapshot badge
   return true;
 }
@@ -2610,7 +2889,7 @@ function aefEmitReady() {
       workflow: (state.workflowMeta && state.workflowMeta.id) || '',
       uids: state.nodes.map(n => n.uid),
     }, '*');
-  } catch (_) { /* seam must never break the editor */ }
+  } catch (e) { aefRecordFault('annotation-seam', e); }   // T-821: still never breaks the editor — now it leaves a trace
 }
 function _stripAnnotationLayer(root) {
   try { root.querySelectorAll('.aef-annotation').forEach(e => e.remove()); } catch (_) {}
@@ -2657,26 +2936,30 @@ window.addEventListener('message', ev => {
   if (!d || d.type !== 'aef:annotate') return;
   // T-261: wire-canonical carrier is `nodes` (AEF's live /api/overlay posts it
   // verbatim through their wrapper); `annotations` stays as the documented alias.
-  try { aefApplyAnnotations(Array.isArray(d.nodes) ? d.nodes : d.annotations); } catch (_) { /* never break the editor */ }
+  try { aefApplyAnnotations(Array.isArray(d.nodes) ? d.nodes : d.annotations); } catch (e) { aefRecordFault('annotation-apply', e); }
 });
-function refreshLibraryUI() {
-  const picker = $('workflow-picker');
-  if (!picker) return;
-  picker.innerHTML = '';
-  // Sort by id for stable display
-  const keys = Array.from(library.keys()).sort();
-  for (const k of keys) {
-    const wf = library.get(k);
-    const opt = document.createElement('option');
-    opt.value = k;
-    const title = wf.workflowMeta?.title || wf.workflowMeta?.id || k;
-    opt.textContent = title;
-    if (k === activeKey) opt.selected = true;
-    picker.appendChild(opt);
-  }
-  // T-158: contract-version badge removed from the toolbar; the version is edited in the
-  // properties "Workflow version" field instead. (Was: update #brand-version textContent.)
-}
+// T-814 (value review F-17) — refreshLibraryUI is GONE, and this note is why.
+//
+// It populated a <select id="workflow-picker"> with the library's workflows. T-154 replaced
+// that dropdown with the brand-area "Open project" button — an operator decision, recorded
+// in the markup above: "one unified full-corpus entry point, no half-populated dropdown."
+//
+// The ELEMENT went; the FUNCTION and its ten call sites did not. Its first statement was
+// `const picker = $('workflow-picker'); if (!picker) return;` and nothing with that id has
+// existed in this file since. Every statement after that guard touched `picker` alone, so
+// the function was a pure no-op: called ten times, returning immediately every time, reading
+// nothing and writing nothing.
+//
+// Why this one was deleted when almost nothing else was: T-742 inventoried 93 items —
+// five zero-use schema constructs, four zero-use io types, five never-instantiated node
+// types, ten zero-reference functions — and this is the ONLY one that cleared the evidence
+// bar for DELETE. The rest are UNMEASURED, and unmeasured means investigate, not remove.
+// What cleared it here is not disuse; it is a positive, recorded reason the need is gone
+// (T-154) plus a predicate that provably cannot fire.
+//
+// If a workflow picker ever returns, it needs a new function against the new element, not
+// this one resurrected — the T-158 note it carried is preserved on the properties panel's
+// "Workflow version" field, which is where that value is edited now.
 
 // Create a new empty workflow and add it to the library, making it active.
 function createNewWorkflow() {
@@ -2713,7 +2996,6 @@ function createNewWorkflow() {
   multiSelect.clear();
   refreshDisplayIds();
   renderAll();
-  refreshLibraryUI();
   if (typeof setLoadedSavedVersion === 'function') setLoadedSavedVersion(null);  // T-157: new map = no snapshot
 }
 
@@ -2748,7 +3030,6 @@ function renameActiveWorkflow(newId) {
   if (state.pool && state.pool.id === `Pool_${activeKey}`) state.pool.id = `Pool_${newId}`;
   library.set(newId, state);
   activeKey = newId;
-  refreshLibraryUI();
   return true;
 }
 
@@ -3210,11 +3491,70 @@ function renderNodes() {
     gNodes.appendChild(g);
   }
   fitNodeLabels();
+  wrapOverlongBelowLabels();
   deCollideBelowLabels();
   adjustLabelPlacements();
   adjustEdgeLabelPlacements();
   addIdBadgeHalos();
   layerIdBadges();
+}
+
+// Overlong below-label wrap (T-600): gateway/event names render on a single line
+// below the shape, and T-105's de-collision only re-wraps the ones that actually HIT
+// another below-label. A long sentence with no neighbour therefore never wrapped —
+// it stayed one line and sprawled sideways out of the geometry it belongs to
+// (operator screenshot 2026-08-26: hum_3_run "run halted - operator kill switch"
+// running across the lane divider). This pass gives every below-label a WIDTH CAP and
+// wraps the ones that exceed it, contested or not.
+//
+// It runs BEFORE deCollideBelowLabels() and adjustLabelPlacements() on purpose: both
+// of those already handle multi-line blocks, and adjustLabelPlacements() only re-stacks
+// the text elements it finds — it never re-wraps — so a label moved to the side of a
+// circle would otherwise stay one long line no matter how wide.
+//
+// The cap is MEASURED (getComputedTextLength), never a char estimate: PL-008 — estimated
+// char widths diverged from real metrics far enough to move labels onto other edges.
+// Labels at or under the cap are left alone, so T-105's contract that uncontested short
+// labels stay single-line and tightly packed is preserved exactly. Render-only (PD-044).
+function wrapOverlongBelowLabels() {
+  if (!labelPrefs.wrapNames) return;
+  const CAP = { s: 150, m: 165, l: 180 }[labelPrefs.size];
+  const lineH = { s: 11, m: 12, l: 14 }[labelPrefs.size];
+  const MIN_CH = 8;   // floor: below this even short words stop fitting on a line
+  const isBelow = n => n.type === 'startEvent' || n.type === 'endEvent' ||
+    n.type.endsWith('Gateway') || n.type.startsWith('linkEvent') || n.type.startsWith('event');
+  for (const n of state.nodes) {
+    if (!isBelow(n)) continue;
+    const all = Array.from(gNodes.querySelectorAll(`text[data-nl="${n.uid}"]`));
+    let els = all.filter(t => t.getAttribute('class') === 'node-label');
+    if (els.length !== 1) continue;                      // already multi-line — leave it
+    const w = els[0].getComputedTextLength();
+    if (!w || w <= CAP) continue;                        // fits — single line stands
+    const g = els[0].parentNode;
+    const lx = els[0].getAttribute('x');
+    const ly = +els[0].getAttribute('y');                // first line keeps its baseline
+    const idEl = all.find(t => t.getAttribute('class') === 'node-id-badge');
+    // Seed the char budget from the measured overshoot, then tighten until every
+    // rendered line is inside the cap. Bounded by MIN_CH so an unbreakable token
+    // (one long word) terminates instead of looping.
+    let ch = Math.max(MIN_CH, Math.floor(n.name.length * CAP / w));
+    for (;;) {
+      for (const t of els) t.remove();
+      els = wrapText(n.name, ch).map((line, i) => {
+        const t = el('text', { x: lx, y: ly + i * lineH, class: 'node-label',
+                               'text-anchor': 'middle', 'data-nl': n.uid }, [text(line)]);
+        // INSERT before the id badge, never append after it. adjustLabelPlacements()
+        // stacks a node's label elements in DOCUMENT ORDER, so appending would put the
+        // id above the name once the block moves to the side of the shape.
+        if (idEl && idEl.parentNode === g) g.insertBefore(t, idEl); else g.appendChild(t);
+        return t;
+      });
+      if (ch <= MIN_CH || els.every(t => t.getComputedTextLength() <= CAP)) break;
+      ch--;
+    }
+    // The id badge sat one line-height under a single-line name; push it below the block.
+    if (idEl) idEl.setAttribute('y', ly + els.length * lineH);
+  }
 }
 
 // Below-label de-collision (T-105): gateway/event names render single-line below the
@@ -3244,9 +3584,14 @@ function deCollideBelowLabels() {
     const ly = +els[0].getAttribute('y'); // first line keeps its original baseline
     for (const t of els) t.remove();
     const lines = wrapText(n.name, ch);
-    for (let i = 0; i < lines.length; i++)
-      g.appendChild(el('text', { x: lx, y: ly + i * lineH, class: 'node-label', 'text-anchor': 'middle', 'data-nl': n.uid }, [text(lines[i])]));
     const idEl = Array.from(gNodes.querySelectorAll(`text[data-nl="${n.uid}"]`)).find(t => t.getAttribute('class') === 'node-id-badge');
+    for (let i = 0; i < lines.length; i++) {
+      const t = el('text', { x: lx, y: ly + i * lineH, class: 'node-label', 'text-anchor': 'middle', 'data-nl': n.uid }, [text(lines[i])]);
+      // T-600: insert before the id badge, never after — adjustLabelPlacements() stacks
+      // a node's label elements in DOCUMENT ORDER, so an appended name line ends up
+      // BELOW the id once the block is moved to the side of the shape.
+      if (idEl && idEl.parentNode === g) g.insertBefore(t, idEl); else g.appendChild(t);
+    }
     if (idEl) idEl.setAttribute('y', ly + lines.length * lineH);
   };
   const budgets = { s: [17, 14, 12], m: [15, 13, 11], l: [13, 11, 10] }[labelPrefs.size];
@@ -3358,6 +3703,33 @@ function adjustLabelPlacements() {
     }
     return count;
   };
+  // Pool and lane furniture as obstacles (T-601). segCrossings and nodeOverlaps
+  // are the only two families the scorer used to know, so a placement sitting on
+  // the lane header strip, hanging outside the pool, or reaching over a lane
+  // divider scored a clean 0 and was kept. The divider case is the one that
+  // matters most: a lane encodes WHO acts, so a label drawn over the next lane
+  // attributes the step to the wrong actor. Geometry mirrors renderPool() exactly
+  // — same px/pw/ph, same band stacking from POOL_Y + POOL_HEADER.
+  const px = POOL_X, py = POOL_Y;
+  const pw = contentRightEdge() - POOL_X;
+  const ph = poolHeight();
+  const bandTop = py + POOL_HEADER;
+  const laneBands = [];
+  let bandY = bandTop;
+  for (const lane of getLanes()) { laneBands.push({ y1: bandY, y2: bandY + lane.height }); bandY += lane.height; }
+  // No lanes means no furniture to respect — score exactly as before rather than
+  // calling every label out-of-bounds against a pool that isn't there.
+  const hasPool = laneBands.length > 0 && pw > 0 && ph > 0;
+  const poolPenalty = (r) => {
+    if (!hasPool) return 0;
+    let c = 0;
+    if (r.x1 < px || r.x2 > px + pw || r.y1 < bandTop || r.y2 > py + ph) c++;  // left the pool interior
+    if (r.x1 < px + LANE_HEADER) c++;                                          // on the lane header strip
+    let touched = 0;
+    for (const b of laneBands) if (r.y2 > b.y1 && r.y1 < b.y2) touched++;
+    if (touched > 1) c++;                                                      // straddles a divider
+    return c;
+  };
   // Score a placement by MEASURING the rendered text (getBBox) against the
   // stashed polylines and neighbouring node boxes. Estimated char widths
   // diverged enough from real metrics to move labels onto other edges —
@@ -3368,7 +3740,7 @@ function adjustLabelPlacements() {
       const bb = t.getBBox();
       if (bb.width === 0) continue;
       const r = { x1: bb.x - 1, x2: bb.x + bb.width + 1, y1: bb.y - 1, y2: bb.y + bb.height + 1 };
-      sc += segCrossings(r) + nodeOverlaps(r, self);
+      sc += segCrossings(r) + nodeOverlaps(r, self) + poolPenalty(r);
     }
     return sc;
   };
@@ -3376,27 +3748,47 @@ function adjustLabelPlacements() {
     if (!isLabelBelow(n)) continue;
     const els = Array.from(gNodes.querySelectorAll(`text[data-nl="${n.uid}"]`));
     if (els.length < 2) continue;
-    if (bboxScore(els, n) === 0) continue; // uncontested — keep the default placement
+    const scDefault = bboxScore(els, n);
+    if (scDefault === 0) continue; // uncontested — keep the default placement
     const d = NODE_DEFAULTS[n.type];
     const cy = n.y + d.h / 2;
     const orig = els.map(t => ({ x: t.getAttribute('x'), y: t.getAttribute('y'), a: t.getAttribute('text-anchor') }));
     // Stack all label lines (wrapped name lines + id, T-105) vertically centred on
     // the shape's cy at the side. For the legacy 2-element (name+id) case this
     // reproduces the original cy-2 / cy+10 placement exactly.
+    // The node's own lane band, so a side-placed stack can be kept inside it.
+    const band = laneBands.find(b => cy >= b.y1 && cy < b.y2);
     const place = (x, anchor) => {
-      const total = els.length, LH = 12;
+      const total = els.length, LH = 12, ASC = 11, DESC = 7;
+      // First baseline. Unclamped this is the historical cy-2 / cy+10 stack for
+      // the 2-element name+id case, and stays so whenever the band has room.
+      let b0 = cy - (total - 1) / 2 * LH + 4;
+      if (band) {
+        const lo = band.y1 + ASC, hi = band.y2 - DESC - (total - 1) * LH;
+        if (hi >= lo) b0 = Math.max(lo, Math.min(b0, hi));   // slide into the lane, never squash
+      }
       els.forEach((t, i) => {
         t.setAttribute('x', x);
-        t.setAttribute('y', cy + (i - (total - 1) / 2) * LH + 4);
+        t.setAttribute('y', b0 + i * LH);
         t.setAttribute('text-anchor', anchor);
       });
     };
-    place(n.x + d.w + 8, 'start');            // try right of the shape
-    if (bboxScore(els, n) === 0) continue;
+    const RIGHT = () => place(n.x + d.w + 8, 'start');
+    RIGHT();                                  // try right of the shape
+    const scRight = bboxScore(els, n);
+    if (scRight === 0) continue;
     place(n.x - 8, 'end');                    // try left of the shape
-    if (bboxScore(els, n) === 0) continue;
-    // No perfectly clean side — restore the default below placement rather
-    // than trade one collision for another.
+    const scLeft = bboxScore(els, n);
+    if (scLeft === 0) continue;
+    // No perfectly clean side. The original rule restored the default here,
+    // "rather than trade one collision for another" — sound while every obstacle
+    // was an edge line or a node box and the candidates were interchangeable.
+    // T-601 made them comparable: a placement on the lane header, or reaching
+    // over a divider into the next lane, is worse than crossing an edge, because
+    // the lane says WHO acts. So keep the STRICTLY best candidate, and let ties
+    // keep the default so an unimproved label never moves for nothing.
+    if (scLeft < scDefault && scLeft < scRight) continue;             // already placed left
+    if (scRight < scDefault && scRight <= scLeft) { RIGHT(); continue; }
     els.forEach((t, i) => { t.setAttribute('x', orig[i].x); t.setAttribute('y', orig[i].y); t.setAttribute('text-anchor', orig[i].a); });
   }
 }
@@ -3609,7 +4001,7 @@ function renderEdges() {
 
     // Port-aware anchors. If an endpoint of *this* edge is being dragged, the
     // dragged endpoint follows the cursor (with optional snap to a port).
-    let sp, tp;
+    let sp, tp, points, path;
     let effectiveSrc = src, effectiveTgt = tgt;
     let effectiveSrcPort = e.sourcePort, effectiveTgtPort = e.targetPort;
     // T-204 S2·3 (T-168): a boundary event's outgoing edge exits its host perimeter
@@ -3619,7 +4011,16 @@ function renderEdges() {
     const srcPortEff = (srcBoundaryHost && (!e.sourcePort || e.sourcePort === 'auto'))
       ? boundaryOutwardPort(src, srcBoundaryHost)
       : e.sourcePort;
-    if (isBeingDragged && edgeDrag.role === 'source') {
+    if (!isBeingDragged) {
+      // T-423: the settled case is computed by the SAME function the DI exporter calls,
+      // so the canvas and the emitted bpmndi:BPMNEdge cannot disagree. The drag cases
+      // below keep their own code — see computeEdgeGeometry() for why.
+      const geo = computeEdgeGeometry(e, src, tgt);
+      points = geo.points;
+      path   = geo.path;
+      sp     = points[0];
+      tp     = points[points.length - 1];
+    } else if (edgeDrag.role === 'source') {
       sp = edgeDrag.previewPt || edgeDrag.cursorPt;
       // If snapping, the effective source for routing is the snap node + port.
       if (edgeDrag.snapNodeId) {
@@ -3627,7 +4028,7 @@ function renderEdges() {
         if (snap) { effectiveSrc = snap; effectiveSrcPort = edgeDrag.snapPort; }
       }
       tp = anchorPoint(tgt, e.targetPort, sp);
-    } else if (isBeingDragged && edgeDrag.role === 'target') {
+    } else if (edgeDrag.role === 'target') {
       tp = edgeDrag.previewPt || edgeDrag.cursorPt;
       if (edgeDrag.snapNodeId) {
         const snap = findNode(edgeDrag.snapNodeId);
@@ -3635,62 +4036,37 @@ function renderEdges() {
       }
       sp = anchorPoint(src, srcPortEff, tp);
     } else {
+      // A drag with neither role — no interactive geometry to honour, so fall back to
+      // the plain anchors. Kept rather than dropped: `isBeingDragged` only requires a
+      // cursor point, and leaving sp/tp undefined here would throw in the handle render.
       sp = anchorPoint(src, srcPortEff, firstWp ? firstWp : centerOf(tgt));
       tp = anchorPoint(tgt, e.targetPort, lastWp ? lastWp : centerOf(src));
     }
 
-    // Multi-edge spread (A1 + B3): if this edge shares a side with sibling edges,
-    // distribute it perpendicular to the exit direction so they don't overlap.
-    // We don't apply spread to the *dragged* endpoint — that's following the cursor.
-    if (!isBeingDragged) {
-      const sDir = exitDirection(src, sp, srcPortEff || 'auto');
-      const tDir = exitDirection(tgt, tp, e.targetPort || 'auto');
-      const sOff = spreadOffset(e, 'source', sDir, src);
-      const tOff = spreadOffset(e, 'target', tDir, tgt);
-      sp = applySpread(sp, sDir, sOff);
-      tp = applySpread(tp, tDir, tOff);
-      // Corridor channels (T-097): per-rank stub extension so fan/join siblings
-      // turn in separate lanes. User routing overrides win — no channel then.
-      const hasRouteOverride = wps.length > 0 ||
-        (e.routingHints && Object.keys(e.routingHints).length > 0) ||
-        typeof e.detourY === 'number';
-      e._chanS = hasRouteOverride ? 0 : channelExtra(e, 'source', sDir, src);
-      e._chanT = hasRouteOverride ? 0 : channelExtra(e, 'target', tDir, tgt);
-      // Straightening pass (T-073): near-aligned auto anchors slide onto a
-      // shared axis so the edge renders straight instead of as a 2-corner jog.
-      // Render-only — node positions are untouched. Skipped for pinned ports,
-      // spread-offset siblings, manual waypoints, hints, and loop detours.
-      if (sOff === 0 && tOff === 0 && wps.length === 0 &&
-          (!srcPortEff || srcPortEff === 'auto') &&
-          (!e.targetPort || e.targetPort === 'auto') &&
-          !(e.routingHints && Object.keys(e.routingHints).length > 0) &&
-          typeof e.detourY !== 'number') {
-        const st = straightenAnchors(src, tgt, sp, tp, sDir, tDir);
-        if (st) { sp = st.sp; tp = st.tp; }
+    // Drag-only geometry. Only the non-dragged end gets spread; no channels while
+    // dragging. The settled case took the computeEdgeGeometry() branch above and has
+    // already applied spread, channels and straightening there.
+    if (isBeingDragged) {
+      if (edgeDrag.role === 'source') {
+        e._chanS = 0; e._chanT = 0;
+        const tDir = exitDirection(tgt, tp, e.targetPort || 'auto');
+        const tOff = spreadOffset(e, 'target', tDir, tgt);
+        tp = applySpread(tp, tDir, tOff);
+      } else if (edgeDrag.role === 'target') {
+        e._chanS = 0; e._chanT = 0;
+        const sDir = exitDirection(src, sp, srcPortEff || 'auto');
+        const sOff = spreadOffset(e, 'source', sDir, src);
+        sp = applySpread(sp, sDir, sOff);
       }
-    } else if (edgeDrag.role === 'source') {
-      // Only the non-dragged end gets spread; no channels while dragging
-      e._chanS = 0; e._chanT = 0;
-      const tDir = exitDirection(tgt, tp, e.targetPort || 'auto');
-      const tOff = spreadOffset(e, 'target', tDir, tgt);
-      tp = applySpread(tp, tDir, tOff);
-    } else if (edgeDrag.role === 'target') {
-      e._chanS = 0; e._chanT = 0;
-      const sDir = exitDirection(src, sp, srcPortEff || 'auto');
-      const sOff = spreadOffset(e, 'source', sDir, src);
-      sp = applySpread(sp, sDir, sOff);
+      points = [sp, ...wps, tp];
+      // Build a temporary edge shape with effective ports for the router.
+      const effectiveEdge = { ...e, sourcePort: effectiveSrcPort, targetPort: effectiveTgtPort };
+      path = routePathFromPoints(points, effectiveSrc, effectiveTgt, wps.length > 0, effectiveEdge);
     }
-    const points = [sp, ...wps, tp];
-
-    // Build a temporary edge shape with effective ports for the router.
-    const effectiveEdge = isBeingDragged
-      ? { ...e, sourcePort: effectiveSrcPort, targetPort: effectiveTgtPort }
-      : e;
-    const path = routePathFromPoints(points, effectiveSrc, effectiveTgt, wps.length > 0, effectiveEdge);
 
     const g = el('g', { class: 'edge' + (isSelected ? ' selected' : '') + (isBeingDragged ? ' dragging' : '') + (isFloating ? ' floating' : ''), 'data-id': e.id });
     g.appendChild(el('path', { d: path, class: 'edge-hit' }));
-    g.appendChild(el('path', { d: path, class: 'edge-path', 'marker-end': isSelected ? 'url(#arrow-selected)' : 'url(#arrow)' }));
+    g.appendChild(el('path', { d: path, class: 'edge-path', 'marker-start': isSelected ? 'url(#arrow-source-selected)' : 'url(#arrow-source)', 'marker-end': isSelected ? 'url(#arrow-selected)' : 'url(#arrow)' }));
 
     if (e.name && labelPrefs.showEdge && !isBeingDragged) {
       // Place on the ACTUAL routed polyline (not the pre-route points) and lift
@@ -5138,6 +5514,78 @@ function routePathFromPoints(points, src, tgt, hasManualWaypoints, edge) {
   return 'M' + poly.map(p => `${p.x} ${p.y}`).join(' L');
 }
 
+// ---- T-423 (T-357 step 2): the ONE computation of a non-interactive edge's geometry ----
+//
+// Extracted rather than duplicated, deliberately. Emitting BPMN DI needs the same
+// polyline the canvas draws. Computing it a second time inside the exporter would be
+// this week's recurring shape — two lists governing one value with nothing holding them
+// in correspondence (T-566 AEF_FIELDS vs metaKeys, T-570 import vs export, T-572 a test
+// named parity that asserts a subset) — except in geometry, where the drift renders as a
+// diagram that is subtly WRONG rather than as anything that fails.
+//
+// Interaction state is deliberately NOT a parameter. The drag branches in renderEdges()
+// keep their own code, because a half-dragged edge has no business being exported. What
+// remains is a pure function of the MODEL, and that is the property export determinism
+// rests on: the same document emits the same bytes whether or not the canvas has ever
+// rendered it. An emitter that read render state would produce one set of DI bytes on a
+// visible canvas and another headless, which is a spurious diff on every save.
+function computeEdgeGeometry(e, src, tgt) {
+  const wps = e.waypoints || [];
+  const firstWp = wps[0];
+  const lastWp = wps[wps.length - 1];
+
+  // T-204 S2·3 (T-168): a boundary event's outgoing edge exits its host perimeter
+  // outward. Auto source only — an explicit port pin still wins.
+  const srcBoundaryHost = boundaryHostOf(src);
+  const srcPortEff = (srcBoundaryHost && (!e.sourcePort || e.sourcePort === 'auto'))
+    ? boundaryOutwardPort(src, srcBoundaryHost)
+    : e.sourcePort;
+
+  let sp = anchorPoint(src, srcPortEff, firstWp ? firstWp : centerOf(tgt));
+  let tp = anchorPoint(tgt, e.targetPort, lastWp ? lastWp : centerOf(src));
+
+  // Multi-edge spread (A1 + B3), corridor channels (T-097), straightening (T-073).
+  const sDir = exitDirection(src, sp, srcPortEff || 'auto');
+  const tDir = exitDirection(tgt, tp, e.targetPort || 'auto');
+  const sOff = spreadOffset(e, 'source', sDir, src);
+  const tOff = spreadOffset(e, 'target', tDir, tgt);
+  sp = applySpread(sp, sDir, sOff);
+  tp = applySpread(tp, tDir, tOff);
+  const hasRouteOverride = wps.length > 0 ||
+    (e.routingHints && Object.keys(e.routingHints).length > 0) ||
+    typeof e.detourY === 'number';
+  e._chanS = hasRouteOverride ? 0 : channelExtra(e, 'source', sDir, src);
+  e._chanT = hasRouteOverride ? 0 : channelExtra(e, 'target', tDir, tgt);
+  if (sOff === 0 && tOff === 0 && wps.length === 0 &&
+      (!srcPortEff || srcPortEff === 'auto') &&
+      (!e.targetPort || e.targetPort === 'auto') &&
+      !(e.routingHints && Object.keys(e.routingHints).length > 0) &&
+      typeof e.detourY !== 'number') {
+    const st = straightenAnchors(src, tgt, sp, tp, sDir, tDir);
+    if (st) { sp = st.sp; tp = st.tp; }
+  }
+
+  const points = [sp, ...wps, tp];
+  const path = routePathFromPoints(points, src, tgt, wps.length > 0, e);
+  // The ROUTED polyline, not `points`. routePathFromPoints stashes _renderedPolyline in
+  // its no-waypoint branch ONLY, so reading that field would silently give the wrong
+  // answer (a stale value, or none) for every manually-routed edge. Reading it back off
+  // the path string covers both branches by construction.
+  return { points, path, polyline: polylineFromPath(path) };
+}
+
+// 'M x y L x y L …' -> [{x,y}, …]. routePathFromPoints is the only producer of that
+// string and both of its branches emit this exact form.
+function polylineFromPath(path) {
+  if (!path) return [];
+  const out = [];
+  for (const m of String(path).matchAll(/(-?[\d.]+)\s+(-?[\d.]+)/g)) {
+    const x = parseFloat(m[1]), y = parseFloat(m[2]);
+    if (Number.isFinite(x) && Number.isFinite(y)) out.push({ x, y });
+  }
+  return out;
+}
+
 // For intermediate joins in manually-routed paths, infer a reasonable exit/arrival
 // direction from the relative geometry of neighboring points.
 function inferIntermediateExit(from, to) {
@@ -5292,7 +5740,6 @@ function renderProperties() {
     }
     sMeta.appendChild(field('Title', wm.title || '', v => {
       wm.title = v;
-      refreshLibraryUI();
     }, { hint: 'human-readable name shown in picker' }));
     // Labelled "Workflow version" (not bare "Version") to disambiguate the manual
     // contract-version bump from the saved-snapshot revisions ("saved · vN" / the
@@ -5301,7 +5748,6 @@ function renderProperties() {
       const trimmed = (v || '').trim();
       if (!trimmed) return;
       wm.version = trimmed;
-      refreshLibraryUI();
     }, { mono: true, hint: 'bump manually when contract changes' }));
     sMeta.appendChild(field('Description', wm.description || '', v => {
       wm.description = v;
@@ -5775,6 +6221,29 @@ function renderProperties() {
         jumpBtn.title = _tw ? ('Open ' + _tw) : 'Set a target workflow first';
         jumpBtn.onclick = () => jumpToWorkflow(_tw);
         sAef.appendChild(jumpBtn);
+      } else if (meta.special === 'fabricLink') {
+        // T-589: a normal text field, plus a live anchor to the component card when the
+        // value is non-empty. The href is ROOT-RELATIVE by design: this page is served at
+        // /designer by the same Watchtower origin that serves /fabric/component/<name>, so
+        // the browser resolves it against whatever host and port actually served the page.
+        // That is what makes the link follow a moved Watchtower for free. A base read from
+        // .context/working/watchtower.url cannot work here — this is a browser, it has no
+        // filesystem — and a hard-coded :3000 would already be wrong (it serves on 3013).
+        const wrapFR = field(meta.label, n.aef[f] || '', v => { n.aef[f] = v; }, { mono: true, hint: meta.hint });
+        const refVal = (n.aef[f] || '').trim();
+        // Empty renders as a plain field with NO anchor — a dead link that always looks
+        // clickable is worse than no link, and /fabric/component/ with no name is a 404.
+        if (refVal) wrapFR.appendChild(linkRow('/fabric/component/' + encodeURIComponent(refVal), '→ open ' + refVal + ' card'));
+        sAef.appendChild(wrapFR);
+      } else if (meta.special === 'linkList') {
+        // T-589: newline-separated URLs, each rendered as its own anchor. A line that is
+        // not navigable renders as muted TEXT rather than a broken link, so a note-to-self
+        // among the URLs neither disappears nor pretends to be clickable.
+        const wrapLL = field(meta.label, n.aef[f] || '', v => { n.aef[f] = v; }, { mono: true, textarea: true, hint: meta.hint });
+        for (const ln of (n.aef[f] || '').split('\n').map(s => s.trim()).filter(Boolean)) {
+          wrapLL.appendChild(isNavigableUrl(ln) ? linkRow(ln, ln) : plainRow(ln));
+        }
+        sAef.appendChild(wrapLL);
       } else {
         sAef.appendChild(field(meta.label, n.aef[f] || '', v => { n.aef[f] = v; }, { mono: true, textarea: meta.textarea, hint: meta.hint }));
       }
@@ -6002,6 +6471,46 @@ function field(label, value, onInput, opts = {}) {
   }
   wrap.appendChild(inp);
   return wrap;
+}
+// ── T-589: the designer's entire navigation surface ────────────────────────────────
+// Measured before building (and independently by 001-CashWeb on the pinned 0.11.0):
+// `linkify` 0, `window.open` 0, `location.href` 0, literal `<a ` 0, and the sole
+// createElement('a') in the file is the download button. The page could not navigate
+// anywhere. Everything below is therefore new code, not a variant of an existing path,
+// which is why the rule about what becomes a link is written down rather than assumed.
+function isNavigableUrl(s) {
+  // WHITELIST, not a blacklist of dangerous schemes. This value is authored in one
+  // project and rendered inside another's embedded designer, so the rendering side must
+  // not have to trust the authoring side. Only two shapes are made clickable:
+  //   - a root-relative path (/fabric/component/x) — same origin as whatever served us
+  //   - an explicit http:// or https:// URL
+  // Everything else renders as text: a bare word, a filesystem path, and — the reason
+  // this is a whitelist — `javascript:`, `data:` and any other scheme, which a
+  // "reject the ones I know are bad" rule would have to enumerate correctly forever.
+  // `//host/path` is excluded too: it looks root-relative but is protocol-relative and
+  // resolves off-origin.
+  if (/^\/[^/]/.test(s)) return true;
+  return /^https?:\/\/\S+$/i.test(s);
+}
+function linkRow(href, text) {
+  const a = document.createElement('a');
+  a.href = href;
+  a.textContent = text;
+  a.target = '_blank';
+  // noopener: the opened page must not get a handle on this window via opener.
+  a.rel = 'noopener noreferrer';
+  a.className = 'field-link';
+  a.style.cssText = 'display:block;margin:3px 0 0;font-size:.86em;word-break:break-all;'
+    + 'color:var(--accent,#4da3ff)';
+  return a;
+}
+function plainRow(text) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  d.title = 'Not shown as a link — only http(s):// URLs and root-relative /paths are made clickable';
+  d.style.cssText = 'display:block;margin:3px 0 0;font-size:.86em;word-break:break-all;'
+    + 'color:var(--muted,#8b95a5)';
+  return d;
 }
 function selectField(label, value, options, onInput, hint) {
   const wrap = document.createElement('div');
@@ -6265,6 +6774,7 @@ function syncSettingsUI() {
   $('set-snap-grid').checked = snapPrefs.grid;
   $('set-grid-size').value = snapPrefs.gridSize;
   $('set-lane-fit').checked = labelPrefs.laneFit;
+  $('set-wrap-labels').checked = labelPrefs.wrapNames;
   $('set-row-spacing').value = viewPrefs.rowSpacing;
   $('set-col-spacing').value = viewPrefs.colSpacing;
   $('set-branch-pitch').value = viewPrefs.branchPitch;
@@ -6303,6 +6813,7 @@ $('set-routing-margin').addEventListener('change', e => setRoutingMargin(parseIn
 $('set-snap-magnet').addEventListener('change', e => setSnapPref('magnet', e.target.checked));
 $('set-snap-grid').addEventListener('change', e => setSnapPref('grid', e.target.checked));
 $('set-lane-fit').addEventListener('change', e => setLabelPref('laneFit', e.target.checked));
+$('set-wrap-labels').addEventListener('change', e => setLabelPref('wrapNames', e.target.checked));
 // Density / branch pitch are VIEW controls — apply them LIVE so the change is
 // visibly reflected on the canvas immediately (T-104: field report that changing
 // them "did nothing" — the old design only stored the pref and waited for a
@@ -7062,7 +7573,7 @@ function commitHistory(beforeXml) {
 // Push-BEFORE a definite mutation (drag-commit, add, delete). Snapshots current
 // state and clears redo. Cheap (~14 nodes); never throws into a handler.
 function pushHistory() {
-  try { commitHistory(buildBpmnXml(state)); } catch (_) { /* best-effort */ }
+  try { commitHistory(buildBpmnXml(state)); } catch (e) { aefRecordFault('history-commit', e); }   // T-821: a lost undo step is felt later, far from here
 }
 // Snapshot without committing — for button ops that decide post-hoc whether to record.
 function snapshotState() { try { return buildBpmnXml(state); } catch (_) { return null; } }
@@ -7078,7 +7589,6 @@ function _restoreSnapshot(xml) {
   multiSelect = new Set();
   refreshDisplayIds();
   renderAll();
-  refreshLibraryUI();
   scheduleAutosave();
   return true;
 }
@@ -7428,6 +7938,15 @@ function maybeShowLaneFixNotice() {
     parts.push(`${g.length} lane${g.length === 1 ? '' : 's'} could not fit ` +
                `${g.length === 1 ? 'its' : 'their'} own content — band${g.length === 1 ? '' : 's'} ` +
                `grown, no nodes moved: ${which}`);
+  }
+  // T-603: a skipped process is the only one of the three that means CONTENT IS NOT ON
+  // THIS CANVAS. It is stated last because it is the one the reader must not miss, and
+  // it names the element ids so the operator can go and look at what was left behind.
+  const sk = _processSkipReport || [];
+  if (sk.length) {
+    const which = sk.map(x => `${x.id}${x.name ? ` "${x.name}"` : ''} (${x.n} element${x.n === 1 ? '' : 's'})`).join(', ');
+    parts.push(`this file declares ${sk.length + 1} processes and only one can be opened — ` +
+               `NOT imported, and NOT saved back: ${which}`);
   }
   const show = parts.length > 0;
   if (show && msg) msg.textContent = '⚠ ' + parts.join('; ');
@@ -8325,7 +8844,6 @@ $('btn-reset').onclick = () => {
   refreshDisplayIds();
   setMode('select');
   renderAll();
-  refreshLibraryUI();
 };
 $('btn-xml').onclick = () => {
   $('xml-output').innerHTML = colorizeXml(buildBpmnXml(state));
@@ -8334,7 +8852,9 @@ $('btn-xml').onclick = () => {
 $('btn-close-xml').onclick = () => { $('xml-panel').classList.remove('visible'); };
 $('btn-copy-xml').onclick = async () => {
   const raw = buildBpmnXml(state);
-  try { await navigator.clipboard.writeText(raw); } catch (_) {}
+  // T-821: was silent. A copy that does not reach the clipboard and says nothing is the
+  // failure an operator is most likely to blame themselves for.
+  try { await navigator.clipboard.writeText(raw); } catch (e) { aefRecordFault('clipboard-write', e); }
 };
 $('btn-save').onclick = () => {
   saveActiveToLibrary();
@@ -8596,10 +9116,12 @@ async function saveToProject() {
       setLoadedSavedVersion(data.v);   // T-157: now on the newly-saved snapshot
       refreshUuidIndex();   // T-240: a save can make a ghost uuid live (claim) — rebind
     } else {
+      aefRecordFault('save-to-project', data.error || ('HTTP ' + res.status));
       alert('Save to project failed: ' + (data.error || ('HTTP ' + res.status)));
       if (btn) btn.textContent = label || '⤓ Save to project';
     }
   } catch (e) {
+    aefRecordFault('save-to-project', e);
     alert('Save to project failed: ' + (e && e.message || e));
     if (btn) btn.textContent = label || '⤓ Save to project';
   }
@@ -8626,7 +9148,7 @@ async function revertToVersion(id, v) {
     setLoadedSavedVersion(v);   // T-157: now viewing snapshot vN
     // Accurate, action-free confirmation (T-148) — NOT the autosave-restore banner.
     if (typeof showToast === 'function') showToast(`↩ Reverted to ${id} v${v}.`);
-  } catch (e) { alert('Revert failed: ' + (e && e.message || e)); }
+  } catch (e) { aefRecordFault('revert', e); alert('Revert failed: ' + (e && e.message || e)); }
 }
 // T-165: non-destructive counterpart to Revert. Loads version vN into the editor in place
 // for viewing/editing, framed as "open" rather than "roll back". Same load mechanism; the
@@ -8640,7 +9162,7 @@ async function openVersionInPlace(id, v) {
     adoptImportedXml(bpmn, { userImport: false, replace: true });
     setLoadedSavedVersion(v);   // reflect that we're now viewing snapshot vN
     if (typeof showToast === 'function') showToast(`⤢ Opened ${id} v${v}.`);
-  } catch (e) { alert('Open failed: ' + (e && e.message || e)); }
+  } catch (e) { aefRecordFault('open', e); alert('Open failed: ' + (e && e.message || e)); }
 }
 // T-167: archive a single saved version (recoverable). Confirms, POSTs scope:'version'.
 async function deleteVersion(id, v) {
@@ -8659,7 +9181,7 @@ async function deleteVersion(id, v) {
     if (!res.ok || !d.ok) { alert('Delete failed: ' + (d.error || ('HTTP ' + res.status))); return; }
     if (typeof showToast === 'function') showToast(`🗑 Deleted ${id} v${v}.`);
     closeVersionsModal(); openVersionsModal();   // refresh
-  } catch (e) { alert('Delete failed: ' + (e && e.message || e)); }
+  } catch (e) { aefRecordFault('delete', e); alert('Delete failed: ' + (e && e.message || e)); }
 }
 // T-167: keep only the newest saved version; archive the rest. POSTs scope:'prune-old'.
 async function pruneOldVersions(id) {
@@ -8678,7 +9200,7 @@ async function pruneOldVersions(id) {
     if (!res.ok || !d.ok) { alert('Prune failed: ' + (d.error || ('HTTP ' + res.status))); return; }
     if (typeof showToast === 'function') showToast(`Kept only ${id} v${d.kept}.`);
     closeVersionsModal(); openVersionsModal();   // refresh
-  } catch (e) { alert('Prune failed: ' + (e && e.message || e)); }
+  } catch (e) { aefRecordFault('prune', e); alert('Prune failed: ' + (e && e.message || e)); }
 }
 
 // Neutral ▦ thumbnail placeholder — shared by the Versions modal and the Open-project
@@ -8711,7 +9233,7 @@ async function openVersionsModal() {
   try {
     const res = await fetch(`/api/versions?id=${encodeURIComponent(id)}`);
     if (res.ok) list = await res.json();
-  } catch (_) { /* fall through to empty state */ }
+  } catch (e) { aefRecordFault('list-fetch', e); }   // T-821: an empty list and a failed fetch look identical to the operator
   list = Array.isArray(list) ? list.slice().sort((a, b) => b.v - a.v) : [];
 
   const backdrop = document.createElement('div');
@@ -8895,6 +9417,7 @@ async function openProjectMap(m) {
     // T-157: reflect the loaded snapshot (or clear for a rendered baseline).
     setLoadedSavedVersion(ot.kind === 'version' ? ot.v : null);
   } catch (e) {
+    aefRecordFault('map-open', e);
     alert('Could not open “' + m.id + '”: ' + (e && e.message || e));
   }
 }
@@ -8963,7 +9486,7 @@ async function onDeleteWorkflow(m) {
     if (typeof showToast === 'function') showToast(`🗑 Deleted ${m.id} (archived to _trash).`);
     closeProjectModal();
     openProjectModal();   // re-fetch /api/list so the deleted map is gone from the browser
-  } catch (e) { alert('Delete failed: ' + (e && e.message || e)); }
+  } catch (e) { aefRecordFault('delete', e); alert('Delete failed: ' + (e && e.message || e)); }
 }
 
 // opts.pick(mapId): when supplied, this opens in PICK mode — a card click returns the
@@ -8988,7 +9511,7 @@ async function openProjectModal(opts) {
       // which is the very condition this list exists to surface.
       ghosts = pickMode ? [] : (Array.isArray(d.ghosts) ? d.ghosts : []);
     }
-  } catch (_) { /* fall through to empty state */ }
+  } catch (e) { aefRecordFault('list-fetch', e); }   // T-821: an empty list and a failed fetch look identical to the operator
 
   const backdrop = document.createElement('div');
   backdrop.id = 'project-modal';
@@ -9171,7 +9694,7 @@ async function openPendingRefModal() {
       ghosts = Array.isArray(d.ghosts) ? d.ghosts : [];
       maps = Array.isArray(d.maps) ? d.maps : [];
     }
-  } catch (_) { /* fall through to empty state */ }
+  } catch (e) { aefRecordFault('list-fetch', e); }   // T-821: an empty list and a failed fetch look identical to the operator
   // name-match suggest-only (T-228): a ghost whose name equals a live map's title/id is likely
   // an already-existing map the operator forgot to open — offer it, never auto-adopt over it.
   const liveByName = new Map();
@@ -9307,7 +9830,6 @@ function createFromPendingRef(ghost) {
   multiSelect.clear();
   refreshDisplayIds();
   renderAll();
-  refreshLibraryUI();
   if (typeof setLoadedSavedVersion === 'function') setLoadedSavedVersion(null);   // new map = no snapshot
   if (typeof showToast === 'function') {
     showToast(`🔗 New map adopts pending ref ${ghost.uuid.slice(0, 8)}… — Save to project to claim it.`);
@@ -9343,7 +9865,6 @@ function adoptImportedXml(text, opts) {
   multiSelect.clear();
   refreshDisplayIds();
   renderAll();
-  refreshLibraryUI();
   // Clean-on-import (T-099): only for user-facing imports AND only when the
   // operator has opted in. cleanLayout() mutates geometry, so it must never
   // fire on programmatic/internal adoption (test sweeps, re-adoption) — PD-044.
@@ -9397,6 +9918,7 @@ $('btn-load').onclick = () => {
       adoptImportedXml(text, { userImport: true });
     } catch (e) {
       console.error('Load failed:', e);
+      aefRecordFault('workflow-parse', e);   // T-821: the alert is seen once and gone
       alert('Failed to parse workflow file:\n' + e.message);
     }
   };
@@ -9417,6 +9939,7 @@ $('btn-load').onclick = () => {
     adoptImportedXml(await res.text(), { userImport: true });
     _loadSrcKey = activeKey;   // T-234: remember which map identity this ?load adopted
   } catch (e) {
+    aefRecordFault('deeplink-load', e);
     console.error('Deep-link load failed:', e);
     alert('Could not load workflow from URL:\n' + e.message);
   }
@@ -9707,6 +10230,14 @@ function aefExtensionXml(node) {
 // The PREFIX is load-bearing for compatibility and must not change: documents
 // exported by all 11 prior releases carry it, and both readers match on it.
 const DI_TRAILER_PREFIX = 'BPMN DI (visual layout) omitted';
+// NO LONGER EMITTED as of T-423 — DI is now written unconditionally, so a comment
+// claiming DI is omitted would contradict the bytes beside it. Kept, not deleted, and
+// the distinction matters: DI_TRAILER_PREFIX is live (readDocComment matches on it to
+// keep a boilerplate-only comment out of a map's doc slot, and AEF's corpus_spec.py:194
+// does the same on their side), while this full string is the CANONICAL SPELLING that
+// tests/test_emitted_comment_claims.py holds any future emit site to. Deleting it would
+// leave that guard with nothing to compare against, and the next person to re-introduce
+// a "DI omitted" comment would type it by hand — which is precisely the T-361 defect.
 const DI_TRAILER = `${DI_TRAILER_PREFIX}; node geometry travels as aef:position`;
 
 // T-399: PRODUCER IDENTITY — the answer to "did we export this document?"
@@ -9728,13 +10259,43 @@ const DI_TRAILER = `${DI_TRAILER_PREFIX}; node geometry travels as aef:position`
 // they would have to assert our identity, which is a lie about provenance rather
 // than an accidental overlap of vocabulary.
 //
-// exporterVersion is DELIBERATELY NOT EMITTED. src carries no version constant, so
-// sourcing it would mean a second copy of VERSION living inside this file, kept in
-// step with the real one by good intentions — the exact duplicate-constant class
-// T-361 exists to prevent, ten lines above its own tombstone. Identity does not
-// need the version; if a per-release marker is ever wanted it needs build-time
-// substitution and a guard, which is a separate task.
+// exporterVersion is DELIBERATELY NOT EMITTED, and that is unchanged.
+//
+// T-808 UPDATE — this paragraph used to open "src carries no version constant".
+// That sentence is now false: APP_VERSION exists ten lines below. Correcting it
+// rather than leaving it is the whole T-361 lesson — a comment whose central claim
+// has quietly stopped being true ships inside bytes AEF pins by sha, and both prior
+// investigations of this very block asked WHERE a comment appeared without asking
+// whether it was TRUE.
+//
+// What the original objection actually was, and why it still stands for the EMITTER:
+// a second copy of VERSION "kept in step with the real one by good intentions" is the
+// duplicate-constant class T-361 exists to prevent. APP_VERSION is not kept in step by
+// good intentions — tools/_t808-version-parity.sh fails the release before dist/ is
+// written if it drifts. So the objection is answered for a UI string.
+//
+// It is NOT answered for exporterVersion, and that is a different decision, not an
+// oversight: emitting it would change the bytes of every exported document, and AEF
+// pins our artifacts by sha256. Adding a per-release field to the seam is theirs to
+// agree to, not ours to start doing because a constant became available. Identity
+// still does not need the version.
 const BPMN_EXPORTER = 'aef-workflow-designer';
+
+// T-808 (value review F-10) — the product's own version, for the human looking at it.
+//
+// WHY THIS EXISTS. Served bytes sat four releases behind src for weeks and nothing in
+// the product said so; F-01's consequence was a field bug report (T-293) that turned out
+// to be "a faithful test of old code" (FP-009). The operator could not tell which build
+// was on screen, because no build says.
+//
+// WHY A LITERAL AND NOT BUILD-TIME SUBSTITUTION. release-designer.sh asserts
+// `diff -q SRC ARTIFACT` — the released artifact IS the source, byte for byte, and AEF
+// pins that sha. Substituting at build time would break that contract for a string in a
+// header. A literal keeps the contract; the guard is what keeps the literal honest.
+//
+// KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
+// wired into release-designer.sh ahead of every write to dist/.
+const APP_VERSION = '0.13.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -9926,6 +10487,14 @@ function buildBpmnXml(s) {
     const outgoing = s.edges.filter(e => e.source === n.id).map(e => `      <bpmn:outgoing>${displayIdOf(e)}</bpmn:outgoing>`).join('\n');
     lines.push(``);
     lines.push(`    <bpmn:${tag} id="${escAttr(nodeDisplayId)}" name="${escAttr(n.name)}"${boundaryAttrs}>`);
+    // T-602: documentation first — the BPMN XSD orders tBaseElement as
+    // documentation* then extensionElements?, so emitting it after the aef block
+    // would produce a schema-invalid element.
+    for (const d of (n.documentation || [])) {
+      const attrs = (d.id ? ` id="${escAttr(d.id)}"` : '') +
+                    (d.textFormat ? ` textFormat="${escAttr(d.textFormat)}"` : '');
+      lines.push(`      <bpmn:documentation${attrs}>${escText(d.text)}</bpmn:documentation>`);
+    }
     const aefBlock = aefExtensionXml(n);
     if (aefBlock) lines.push(aefBlock.trimEnd());
     if (incoming) lines.push(incoming);
@@ -9944,9 +10513,13 @@ function buildBpmnXml(s) {
     const srcRef = srcNode ? displayIdOf(srcNode) : e.source;
     const tgtRef = tgtNode ? displayIdOf(tgtNode) : e.target;
     lines.push(`    <bpmn:sequenceFlow id="${escAttr(edgeDisplayId)}"${nameAttr} sourceRef="${escAttr(srcRef)}" targetRef="${escAttr(tgtRef)}">`);
-    if (e.condition) {
-      lines.push(`      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${escText(e.condition)}</bpmn:conditionExpression>`);
-    }
+    // T-690: extensionElements MUST precede conditionExpression. BPMN's tBaseElement declares
+    // extensionElements as the first element of the sequence, and tSequenceFlow extends it, so
+    // conditionExpression can only follow. This emitted them the other way round for the life of
+    // the exporter — 113 occurrences across 24 of 24 corpus maps, every one schema-invalid.
+    // Nothing caught it because every check the corpus had was name-based, and a name scan is
+    // precisely the check that discards order. The condition block now lives below, after the
+    // extensionElements close tag.
     const wps = e.waypoints || [];
     const hasPort = (e.sourcePort && e.sourcePort !== 'auto') || (e.targetPort && e.targetPort !== 'auto');
     // Always emit extensionElements to preserve the edge uid
@@ -9979,38 +10552,97 @@ function buildBpmnXml(s) {
       lines.push(`        </aef:routing>`);
     }
     lines.push(`      </bpmn:extensionElements>`);
+    // T-690: emitted here, AFTER extensionElements, per tBaseElement's element order.
+    if (e.condition) {
+      lines.push(`      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${escText(e.condition)}</bpmn:conditionExpression>`);
+    }
     lines.push(`    </bpmn:sequenceFlow>`);
   }
 
   lines.push(`  </bpmn:process>`);
   lines.push(``);
-  // T-340 ruling (b), export half: re-emit DI ONLY when the document we imported
-  // carried it. Not "always emit DI" — that would rewrite all 126 aef:position-only
-  // documents in the corpus and force AEF to re-pin bytes for a change none of their
-  // readers asked for.
+  // SUPERSEDED 2026-08-23 (T-423). This block previously read:
   //
-  // The trailer and the DI block are mutually exclusive by construction, and that is
-  // load-bearing rather than tidiness: DI_TRAILER states in prose that DI is OMITTED.
-  // Emitting both would ship a sentence that contradicts the bytes three lines below
-  // it — which is precisely the T-361 defect (a trailer whose claim had no referent)
-  // committed a second time, in the same constant, by the change that was supposed to
-  // make the claim true.
-  if (s.sourceCarriedDi) {
-    const wfId = escAttr(s.workflowMeta.id);
-    lines.push(`  <bpmndi:BPMNDiagram id="BPMNDiagram_${wfId}">`);
-    lines.push(`    <bpmndi:BPMNPlane id="BPMNPlane_${wfId}" bpmnElement="Process_${wfId}">`);
-    for (const n of s.nodes) {
-      const def = NODE_DEFAULTS[n.type] || { w: 120, h: 48 };
-      if (typeof n.x !== 'number' || typeof n.y !== 'number') continue;
-      lines.push(`      <bpmndi:BPMNShape id="BPMNShape_${escAttr(displayIdOf(n))}" bpmnElement="${escAttr(displayIdOf(n))}">`);
-      lines.push(`        <dc:Bounds x="${n.x.toFixed(1)}" y="${n.y.toFixed(1)}" width="${def.w}" height="${def.h}"/>`);
-      lines.push(`      </bpmndi:BPMNShape>`);
-    }
-    lines.push(`    </bpmndi:BPMNPlane>`);
-    lines.push(`  </bpmndi:BPMNDiagram>`);
-  } else {
-    lines.push(`  <!-- ${DI_TRAILER} -->`);   // T-361: was a hardcoded duplicate of DI_TRAILER
+  //   "T-340 ruling (b), export half: re-emit DI ONLY when the document we imported
+  //    carried it. Not 'always emit DI' — that would rewrite all 126 aef:position-only
+  //    documents in the corpus and force AEF to re-pin bytes for a change none of their
+  //    readers asked for."
+  //
+  // The rule is now gone and so is its reason, which is the part worth recording: the
+  // second sentence was FALSE when written, and T-473 measured it. AEF pins none of the
+  // 24 corpus maps and holds no copy of `examples/aef-processes/rendered/` at all (their
+  // T-2522, rail 584 Q1/Q3). `source_bpmn_sha` is a provenance field their own
+  // bpmn_promote.py writes about THEIR staged files; it has never pinned our bytes. The
+  // seam cost of emitting DI everywhere is therefore zero, and the only real cost is
+  // one-party and ours: `_t308-export-byte-identity` goes 24/24 drifted against a
+  // baseline we own and refresh. Rewriting a comment rather than leaving it to be read
+  // as fact is T-509/T-523's lesson applied to the file that taught it.
+  //
+  // T-423 (T-357 step 2): DI is now emitted UNCONDITIONALLY, replacing T-340's
+  // "re-emit only when the input carried it". The beneficiary is any standard viewer
+  // (bpmn.io, Camunda) — measured, not assumed: `bpmndi` occurs exactly once in AEF's
+  // source, a namespace declaration with no reader and no writer (rail 417), and there
+  // is no DI generator anywhere on either side. So this is net-new capability and nobody
+  // is waiting on the bytes.
+  //
+  // ADDITIVE, WHICH IS THE WHOLE PROPERTY: aef:position is still written on every node,
+  // unchanged, and the intent extensions (forceStraight, routingHint, loopDetour,
+  // anchors, aef:waypoint) are untouched. Spike 3 established DI has no vocabulary for
+  // layout INTENT, only for computed results — so DI cannot carry them and must not be
+  // read as having replaced them. Step 3, not this task, is where aef:position goes.
+  //
+  // THE TRAILER'S `else` IS NOW UNREACHABLE, deliberately and with AEF's ruling behind
+  // it. DI_TRAILER states in prose that DI is OMITTED; emitting both would ship a
+  // sentence contradicting the bytes three lines below it, which is the T-361 defect
+  // committed a second time. AEF confirmed their reader uses the prefix as a NEGATIVE
+  // filter (corpus_spec.py:194, keeping the trailer out of a map's doc slot), never as a
+  // positive requirement — so a document carrying no trailer matches nothing and lands
+  // correctly. Their constant stays, because all 11 prior releases' documents carry it.
+  // DROPPING the string is safe; REWORDING it is not (they pin three live wordings and a
+  // fourth would reopen their T-2682 hole). This task stops emitting it and rewords
+  // nothing — DI_TRAILER_PREFIX is still what our own readDocComment matches on.
+  const wfId = escAttr(s.workflowMeta.id);
+  lines.push(`  <bpmndi:BPMNDiagram id="BPMNDiagram_${wfId}">`);
+  lines.push(`    <bpmndi:BPMNPlane id="BPMNPlane_${wfId}" bpmnElement="Process_${wfId}">`);
+  for (const n of s.nodes) {
+    const def = NODE_DEFAULTS[n.type] || { w: 120, h: 48 };
+    if (typeof n.x !== 'number' || typeof n.y !== 'number') continue;
+    lines.push(`      <bpmndi:BPMNShape id="BPMNShape_${escAttr(displayIdOf(n))}" bpmnElement="${escAttr(displayIdOf(n))}">`);
+    lines.push(`        <dc:Bounds x="${n.x.toFixed(1)}" y="${n.y.toFixed(1)}" width="${def.w}" height="${def.h}"/>`);
+    lines.push(`      </bpmndi:BPMNShape>`);
   }
+  // Edges. Waypoints come from computeEdgeGeometry() — the SAME function renderEdges()
+  // calls for a settled edge — so the emitted polyline is the one the canvas draws
+  // rather than a second approximation of it. A standard viewer therefore reproduces
+  // our routing, corners included, instead of a straight line between two anchors.
+  //
+  // An edge whose endpoints are missing from the model is SKIPPED, not emitted with a
+  // degenerate polyline: DI requires at least two waypoints, and a zero-length edge
+  // renders as an invisible artefact that no reader reports.
+  for (const e of s.edges) {
+    const srcNode = findNode(e.source);
+    const tgtNode = findNode(e.target);
+    if (!srcNode || !tgtNode) continue;
+    const poly = computeEdgeGeometry(e, srcNode, tgtNode).polyline;
+    if (poly.length < 2) continue;
+    const edgeId = escAttr(displayIdOf(e));
+    lines.push(`      <bpmndi:BPMNEdge id="BPMNEdge_${edgeId}" bpmnElement="${edgeId}">`);
+    for (const p of poly) {
+      lines.push(`        <di:waypoint x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}"/>`);
+    }
+    lines.push(`      </bpmndi:BPMNEdge>`);
+  }
+  // NO bpmndi:BPMNLabel IS EMITTED, and this is a positive finding rather than an
+  // omission. The AC reads "label bounds WHERE A LABEL POSITION IS PERSISTED"; nothing
+  // in this editor persists one. Edge label placement is computed at render time by
+  // edgeLabelPos() from the routed polyline and the label's own measured width, and node
+  // labels are drawn from the node box. There is no labelX/labelY on any model object,
+  // so there is no authored position for DI to carry — emitting computed placement would
+  // publish a value the model does not hold and cannot round-trip. Stated here because
+  // "we emitted no labels" and "this model has no label positions" look identical in the
+  // output, and only the second one is a fact about the document.
+  lines.push(`    </bpmndi:BPMNPlane>`);
+  lines.push(`  </bpmndi:BPMNDiagram>`);
   lines.push(`</bpmn:definitions>`);
   return lines.join('\n');
 }
@@ -10076,7 +10708,33 @@ function parseBpmnXml(text) {
 
   const processes = byBpmn(doc, 'process');
   if (!processes.length) return null;
-  const proc = processes[0];
+  // T-603: this used to be processes[0] unconditionally, and that silently discarded
+  // every later <bpmn:process>. tests/fixtures/third-party/bizagi-nested-ns.bpmn declares
+  // two — the first holds an empty laneSet, the second holds the whole diagram — so the
+  // editor imported nothing, drew nothing, and wrote the empty process back on save.
+  // Measured: nodesInState 0, outProcesses 1. Nothing counted DOWN from any baseline the
+  // corpus holds, so no instrument reported it for as long as the fixture has existed.
+  //
+  // Choosing the process with the most flow content is a heuristic, and it is deliberately
+  // paired with a REPORT rather than presented as correct: a document with real content in
+  // two processes still loses one, and the operator has to be told which. Silence was the
+  // defect; picking better without saying so would only make it rarer, not visible.
+  // Merging processes (or modelling them as pools) is a semantic change and stays out —
+  // see the task for why that is a separate decision.
+  const PROC_NON_CONTENT = new Set(['documentation', 'extensionElements', 'laneSet',
+    'auditing', 'monitoring', 'property', 'ioSpecification', 'resourceRole', 'performer',
+    'correlationSubscription', 'supports']);
+  const contentCount = pr => Array.from(pr.children || []).filter(
+    c => c.namespaceURI === BPMN_NS && !PROC_NON_CONTENT.has(c.localName)).length;
+  const procCounts = processes.map(pr => ({ pr, n: contentCount(pr) }));
+  // Ties keep the earliest, so a single-process document and every document whose first
+  // process is the richest behave exactly as before — the corpus moves no bytes.
+  let best = procCounts[0];
+  for (const c of procCounts) if (c.n > best.n) best = c;
+  const proc = best.pr;
+  _processSkipReport = procCounts
+    .filter(c => c.pr !== proc)
+    .map(c => ({ id: c.pr.getAttribute('id') || '(no id)', name: c.pr.getAttribute('name') || '', n: c.n }));
 
   // ---- uid derivation (T-364) ----
   // A node or edge that arrives without <aef:uid> still needs an identity, and that
@@ -10119,7 +10777,35 @@ function parseBpmnXml(text) {
   const procName = proc.getAttribute('name') || procId.replace(/^Pool_/, '');
   const aefMetaEl = byAef(proc, 'workflowMeta')[0];
   const workflowMeta = {
-    id: aefMetaEl?.getAttribute('id') || procName || 'imported',
+    // T-563 (T-501 §Decision item 1). The chain was `authored id || procName || 'imported'`,
+    // and procName is a DISPLAY LABEL — `proc.getAttribute('name')`, or procId minus a
+    // `Pool_` prefix. Measured over the corpus before this change: all 14 documents that
+    // carry no <aef:workflowMeta> imported with an id the designer's OWN save guard
+    // rejects — `Process_1`, `Hauptprozess`, `EU Bank`, `No lane set`. Not an edge case;
+    // it was the entire fallback population.
+    //
+    // Two things here are load-bearing:
+    //
+    // The authored id is NOT sanitized. It is already machine identity, it already
+    // round-trips, and putting it through the sanitizer would move bytes on the 44
+    // documents that carry the element — the surface _t308 and _t358 watch. Only the
+    // two fallback legs are sanitized. _t563 leg 4 goes red on an over-eager sanitize.
+    //
+    // procId comes BEFORE procName. It is the machine identifier the document actually
+    // declares; the name is prose. And `deriveSlug` must never appear in this slot — it
+    // is a summariser (first word longer than one character, truncated to 16) and over
+    // this same population it collapses 10 distinct ids onto 7, ALL of which pass the
+    // validator. That converts a loud save-time rejection into a silent cross-document
+    // collision. _t563 leg 3 is the floor that keeps that substitution from landing.
+    //
+    // What this does NOT fix, stated so it is not read as fixed: five third-party
+    // fixtures each declare `<bpmn:process id="Process_1">`, so they still import onto
+    // one shared id. 10 distinct over 14, before and after. That is the documents
+    // genuinely sharing an identifier, not the chain losing information.
+    id: aefMetaEl?.getAttribute('id')
+        || sanitizeWorkflowId(procId, '')
+        || sanitizeWorkflowId(procName, '')
+        || 'imported',
     uuid: aefMetaEl?.getAttribute('uuid') || null,   // S1 (T-224): connector-referenceable identity; null → legacy, backfilled on adopt
     version: aefMetaEl?.getAttribute('version') || '1',
     schemaVersion: parseInt(aefMetaEl?.getAttribute('schemaVersion') || '2', 10),
@@ -10429,6 +11115,22 @@ function parseBpmnXml(text) {
         }
       }
 
+      // T-602: <bpmn:documentation> children of a flow node. Field-reported by
+      // 001-CashWeb: eight of them, each carrying a vendor API binding, auth shape and
+      // policy, vanished in one save. They were never READ — parseBpmnXml reaches into
+      // an accepted element for ~10 NAMED children and export writes only from state,
+      // so a child not on that list cannot survive. This adds documentation to the list.
+      // Order matters on the way out: the BPMN XSD puts documentation BEFORE
+      // extensionElements on tBaseElement, so the emitter writes it above the aef block.
+      const documentation = byBpmn(el, 'documentation')
+        .filter(d => d.parentNode === el)   // direct children only — never a nested element's
+        .map(d => {
+          const entry = { text: d.textContent || '' };
+          if (d.hasAttribute('id')) entry.id = d.getAttribute('id');
+          if (d.hasAttribute('textFormat')) entry.textFormat = d.getAttribute('textFormat');
+          return entry;
+        });
+
       // Derive slug from name if not encoded
       const slug = deriveSlug(name);
 
@@ -10447,6 +11149,7 @@ function parseBpmnXml(text) {
         uid, id: uid, slug, type, name, lane: laneId,
         x, y,
         aef, io,
+        ...(documentation.length ? { documentation } : {}),
         ...(foreignTag ? { foreignTag } : {}),
       });
       displayIdToUid.set(displayId, uid);
@@ -10606,7 +11309,7 @@ let _suppressDeepLink = false;         // B1: set when a same-map restore should
 // original deep-link} and the next entry via the same ?load silently rendered the
 // wrong map (AEF T-2596). null = this session's document didn't come from ?load.
 let _loadSrcKey = null;
-try { _autosaveRestore = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || 'null'); } catch (_) {}
+try { _autosaveRestore = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || 'null'); } catch (e) { aefRecordFault('autosave-restore', e); }
 
 // The ?load deep-link src this session was opened with (stable — we never rewrite
 // the URL). Recorded in the autosave so a reload of the SAME deep-link restores the
@@ -10642,7 +11345,7 @@ function autosaveNow() {
       ts: Date.now(),
       xml: buildBpmnXml(state),
     }));
-  } catch (_) { /* quota / serialization — best-effort, never throw into render */ }
+  } catch (e) { aefRecordFault('autosave-persist', e); }   // T-821: quota/serialization — still best-effort, no longer silent
 }
 function scheduleAutosave() {
   if (!_appReady) return;              // don't clobber a prior autosave while seeding
@@ -10663,7 +11366,7 @@ function autoLoadStored() {
   // Same context: adopt the autosave silently, replacing the seed (no _v2). If a ?load
   // fetch for this same src is in flight, suppress it so it can't overwrite the restore.
   if (load && (s.src || null) === load) _suppressDeepLink = true;
-  try { adoptImportedXml(s.xml, { userImport: false, replace: true }); } catch (_) { return; }
+  try { adoptImportedXml(s.xml, { userImport: false, replace: true }); } catch (e) { aefRecordFault('autosave-adopt', e); return; }
   // T-234: a same-src restore means the restored document IS the deep-link's map —
   // track its identity so autosaveNow keeps stamping src for it (and stops after a jump).
   if (load && (s.src || null) === load) _loadSrcKey = activeKey;
@@ -10764,7 +11467,6 @@ function showRestoredToast(s) {
 // ============================================================================
 refreshDisplayIds();
 renderAll();
-refreshLibraryUI();
 setMode('select');
 // T-141: capture the pristine seed's PROCESSED BPMN now — refreshDisplayIds()+renderAll()
 // above have populated node refs, `state` is still the untouched seed (autoLoadStored below
@@ -10779,6 +11481,23 @@ const _seedBpmn = buildBpmnXml(state);
 _appReady = true;            // from here on, edits autosave to localStorage
 autoLoadStored();            // B1: if a prior session left unsaved work, bring it back automatically
 detectSaveApi();             // B3: reveal "Save to project" when the write-capable server is present
+
+// T-808 (F-10): state which build is on screen. The ONLY write of APP_VERSION into the
+// DOM — one constant, one render site, so there is nothing that can drift from anything.
+{
+  const _v = document.getElementById('brand-appversion');
+  if (_v) _v.textContent = 'v' + APP_VERSION;
+  // T-821 (F-05): carry forward what the previous session recorded, and wire the surface.
+  // Faults survive a reload precisely because the conditions worth reading (quota, a seam
+  // that stopped answering) are the ones an operator hits and then reloads to escape.
+  try {
+    const _stored = JSON.parse(localStorage.getItem(FAULT_KEY) || '[]');
+    if (Array.isArray(_stored)) _faults = _stored.slice(-FAULT_MAX);
+  } catch (_) { _faults = []; }
+  const _fb = document.getElementById('brand-fault');
+  if (_fb) _fb.onclick = showFaultPanel;
+  renderFaultIndicator();
+}
 </script>
 </body>
 </html>

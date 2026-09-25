@@ -4515,3 +4515,10 @@ decisions:
     date: 2026-09-25
     task: T-3461
     rationale: "Operator ruling 2026-09-25. The shipped implementation is hub-broadcast pub-sub polled by a 5-minute cron, which is the exact architecture T-3397:81 says the sidecar is NOT. Rather than ratify the divergence, we build toward the captured design. Blob leg: termlink file receive only processes events arriving after the receiver starts and targets a SESSION id, not a durable circuit address, so a blob sent session-to-session inherits the delivered-equals-hub-accepted failure this whole design exists to remove. Blobs therefore go through the receiver's sidecar API and are stored locally alongside the message, referenced by content hash."
+
+  - id: D-646
+    decision: "Designer distribution: AEF bundles the designer and pins its version to the AEF release; consumers never pull it independently. The dev branch tracks latest, releases pin."
+    scope: project
+    date: 2026-09-25
+    task: T-3464
+    rationale: "Operator ruling 2026-09-25 answering 832 seam Q2. Reasoning as given: if a consumer could pull a newer workflow engine than the AEF integration supports, they get a designer AEF does not yet drive. Bundling makes the pair versioned together. Note this maps exactly onto the existing release-train model (T-3185): bleeding-edge tracks the newest designer release so the AEF agent always has the latest, and master pins whatever was current at the release, so consumers inherit a tested pair rather than a moving target. Two consequences the ruling accepts: AEF release cadence becomes the gate on designer updates reaching consumers, and the bundled artifact adds ~966KB to the AEF release payload."

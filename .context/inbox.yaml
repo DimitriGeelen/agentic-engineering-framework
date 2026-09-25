@@ -5492,3 +5492,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-533
+  text: "The designer currency watchdog was firing for two releases and nobody read it. fw designer check-currency (T-3158) exists, is wired into fw doctor at bin/fw:2624-2648, and had been printing 'WARN designer pin is behind its origin — pinned 0.11.0, newest released 0.13.0' in every doctor run and every audit. The lag was ultimately surfaced not by that rail but by a PEER asking us a value-review question about what we consume from them. Fourth instance of the reader-failure class this week, and the one where the alarm was loudest: OBS-482 (832 rail with no consumer), OBS-529 (our sweep blind to the rail replies arrive on), the sidecar operator-escalation terminus (fw note into a 319-deep unrendered inbox.yaml), and now this. The common shape is that detection exists and routing does not. A WARN sitting among nineteen other WARNs in a command that takes 170 seconds to complete is not a notification, it is an archive entry. Filing it as one finding rather than four because the fix is the same in every case and it is not 'add another detector': pick the surfaces an operator actually reads, and route the small number of things that genuinely need a human onto them. Not decided by the agent - which surfaces those are, and what earns a place on them, is an operator call about their own attention."
+  captured: 2026-09-25T11:07:12Z
+  context_task: T-3464
+  tags: []
+  status: pending
+  promoted_to: null

@@ -1,5 +1,5 @@
-# Audit Results - 2026-09-25-1216
-timestamp: 2026-09-25T10:16:59Z
+# Audit Results - 2026-09-25-1241
+timestamp: 2026-09-25T10:41:23Z
 sections: "structure"
 summary:
   pass: 36
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3449 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3450 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 31 project YAML file(s)"
   - level: PASS
@@ -106,7 +106,7 @@ findings:
   - level: INFO
     check: "Stale draft(s), 30d+ untouched: draft-arc-lifecycle draft-exception-handling draft-inception-readiness draft-knowledge-leveling draft-t2584-scratch draft-task-creation draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"
   - level: PASS
-    check: "Sidecar ledger: 45 consult(s), 45 delivered, 0 in flight, 0 UNKNOWN, 0 dead-lettered, 0 expired-unswept"
+    check: "Sidecar ledger: 46 consult(s), 46 delivered, 0 in flight, 0 UNKNOWN, 0 dead-lettered, 0 expired-unswept"
   - level: WARN
     check: "BVP driver identity-fidelity has neither a handler nor a scoring spec"
     mitigation: "Give it a mechanism: draft a scoring: spec, check it with 'bin/fw bvp driver --validate-scoring <file>', try it with 'bin/fw bvp driver --explain identity-fidelity T-XXXX --scoring-file <file>'; schema in policy/value-drivers.yaml header (T-3428)"

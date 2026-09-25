@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.11.0"
-sha256: "4f20b146def45626436e3b3ccc1b049a335254845eeafa755f4760a357dc5a39"
-bytes: 966087
+version: "0.13.0"
+sha256: "c031cdef9bf287f411872d054d3ee7845ef83182d66b99dc66f1e08c321d3115"
+bytes: 1013393
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.11.0.html"
-source_tag: "designer-v0.11.0"
+source_artifact: "dist/aef-workflow-designer-0.13.0.html"
+source_tag: "designer-v0.13.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -141,7 +141,7 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   derived from lane authority (sovereignty→human, initiative/authority→agent);
 #   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
 #   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
-vendored_path: "vendor/designer/aef-workflow-designer-0.11.0.html"
+vendored_path: "vendor/designer/aef-workflow-designer-0.13.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for

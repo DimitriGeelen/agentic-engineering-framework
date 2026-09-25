@@ -84,10 +84,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 4
-  commits: 1
-  files_changed: 16
-  lines_added: 546
-  lines_removed: 68
+  commits: 2
+  files_changed: 22
+  lines_added: 728
+  lines_removed: 132
+  footprint_refreshed_at: '2026-09-25T10:41:16Z'
+  footprint_refreshed_by_commit: 8dbea4c81
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3463-answer-832s-four-seam-questions-from-the.md
