@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3454: two gates offer mutually exclusive bypass contracts — focus-drift requires an FW_SWITCH_FOCUS=1 env prefix that the partial-complete gate then refuses because an assignment prefix is not on the read-only allowlist
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T06:41:19Z
+# ============================================================================
+
+task_id: T-3454
+task_name: "two gates offer mutually exclusive bypass contracts — focus-drift requires an FW_SWITCH_FOCUS=1 env prefix that the partial-complete gate then refuses because an assignment prefix is not on the read-only allowlist"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-24T23:09:20Z
+completed: 2026-09-25T06:38:59Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-09-25T01:10:24+02:00
+last_commit: 2026-09-25T08:38:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the gate-contract collision, and carry T-3452/T-3453 close artefacts. two gates prescribed remedies no single command could satisfy
+
+# Key outcomes
+outcomes:
+  - '**The collision is reproduced from a fixture, not just narrated.** A test drives'
+  - '**The read-only classifier tolerates a leading `VAR=value` / `VAR=$(…)` assignment'
+  - '**No gate is weakened.** Stripping a leading assignment must not let a write through:'
+  - '**Tests distinguish fires-correctly from never-fires,** demonstrated against the'
+  - '**Related to T-3299, and the relationship is stated.** T-3299 is the same class one'
+  - 'Vendored copies synced for every touched file; `bin/fw vendor self --check` clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/episodic/T-3448.yaml'
+  - '.context/episodic/T-3452.yaml'
+  - '.context/episodic/T-3453.yaml'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-3454-two-gates-offer-mutually-exclusive-bypas.md'
+  - '.tasks/completed/T-3452-fw-doctor-cannot-finish-inside-a-usable-.md'
+  - '.tasks/completed/T-3453-fw-doctors-watchtower-smoke-test-is-an-i.md'
+  - 'tests/unit/t3454_gate_contract_collision.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-25T01:10:24'
+    action: 'T-3454: file the gate-contract collision, and carry T-3452/T-3453 close artefacts'
+  - time: '2026-09-25T08:38:40'
+    action: 'T-3454: two gates prescribed remedies no single command could satisfy'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 449 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 449
+  commits: 2
+  files_changed: 10
+  lines_added: 988
+  lines_removed: 35
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3454-two-gates-offer-mutually-exclusive-bypas.md
+generated_by: context-agent-hybrid

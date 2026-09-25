@@ -5359,3 +5359,80 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-514
+  text: "sidecar consult to e2e-f12fa93d-responder unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation e2e-f12fa93d, client_msg_id 0c3b30af-62cc-4139-940d-fdb44f99b835). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T03:03:01Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-515
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/e2e-f12fa93d-sender unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation e2e-f12fa93d, client_msg_id 6ad47880-d12f-4ce4-8e1e-fde1ba9ba1a5). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T03:03:02Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-516
+  text: "sidecar consult to e2e-60867b67-responder unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation e2e-60867b67, client_msg_id d6336d2f-523e-4fe8-a790-a04fe1326477). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T03:03:02Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-517
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/t3433-circuit-addr unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation t3433-t3434-vendor, client_msg_id 0d7cf3a7-a9bf-4ca9-84ac-fadf2899531d). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T03:13:01Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-518
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/e2e-60867b67-sender unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation e2e-60867b67, client_msg_id 7faa72e5-fbd5-48f0-8000-9b1796db63fa). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T03:13:02Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-519
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/t3434-retry-ladder-r2 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation t3433-t3434-vendor, client_msg_id 8ef41fcf-c8be-408f-896f-0ab00a17335d). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T03:13:02Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-520
+  text: "sidecar consult to 010-termlink unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation e2e-8dbad116, client_msg_id c91c5585-329a-462e-9d5e-e23c17baef55). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T03:13:02Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-521
+  text: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/t3434-retry-ladder-r2 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation t3433-t3434-vendor, client_msg_id f05b4a16-3ff5-4f38-96da-9d38ca19791e). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T03:23:02Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-522
+  text: "sidecar consult to cacc73ea32b121dd/010-termlink unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-010-termlink, client_msg_id a8717ecc-a77d-4de5-b86f-b596582f6a8a). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T03:48:01Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-523
+  text: "sidecar consult to 010-termlink unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation e2e-2c98349e, client_msg_id b557900e-9c6b-41f9-adfd-708244210c40). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T03:48:01Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-524
+  text: "sidecar consult to cacc73ea32b121dd/832-Workflow-designer unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation 832-T833-CTL029-AND-REVIEWER-CLOSURE, client_msg_id 7b0c01ef-f62f-40e2-834b-013aac1f3f0d). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T04:18:02Z
+  context_task: T-3454
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
