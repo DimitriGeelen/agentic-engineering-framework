@@ -10,11 +10,12 @@ status: started-work
 workflow_type: inception
 owner: human
 horizon: now
-tags: []
+tags: [arc:parallel-execution-aef]
 components: []
 related_tasks: []
+arc_id: parallel-execution-aef
 created: 2026-09-25T15:34:34Z
-last_update: 2026-09-25T15:35:45Z
+last_update: '2026-09-25T15:45:10Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,6 +41,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-25T15:45:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=146,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -74,6 +85,21 @@ bvp_scores_proposed:
   confidence: 3
   disposition: dissolved
   rationale: Not a transport question. §4 of the target architecture owns it and it stays open there; recorded so it is not silently absorbed into the transport decision.
+
+- **IW-5: Which address grammar does the sidecar speak — T-3433's `inbox:<hub>/<project>` or arc-020's V9 `aef::host=…::@agent::`?**
+  confidence: 3
+  disposition: deferred
+  rationale: SOVEREIGN — two operator rulings are in tension. D3/T-3287 ratified V9 (host-first, 5 tokens) on 2026-09-07; D-599/T-3433 shipped a hub-anchored grammar on 2026-09-22 whose Decisions explicitly record "Rejected: host-first 5-segment addresses". Both are built. Slice 1 is blocked on this, not on transport. Surfaced, not resolved.
+
+- **IW-6: Is the transport a free choice at all, or is it the ladder's `probe` seam?**
+  confidence: 3
+  disposition: answered
+  rationale: The latter — and this corrects the framing of IW-1. `lib/aef_resolve.py:resolve(target, probe)` takes `Callable[[AEFAddress], bool]` and "calls probe and nothing else". The transport implements the probe. HTTP still wins, but because V9 carries `host=<fqdn>` (the fact T-3433 withholds and HTTP needs), not because of the discovery hand-wave in the original recommendation.
+
+- **IW-7: Should slice 1 keep the proposed HTTP→topics transport fallback?**
+  confidence: 3
+  disposition: answered
+  rationale: No — drop it. The ladder already degrades by address specificity, which is the better axis. Two fallback mechanisms beside each other can disagree about why a message did not land, which is how the `INJECTED_NOW` ambiguity was born. Slice 1 must also bind to `resolve()` and never `provision()`: the design names the hazard ("a typo'd address could provision a whole hub"), so a refusal test belongs in its ACs.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -185,3 +211,6 @@ Measured: TermLink addresses sessions (ephemeral) or topics (durable but broadca
 
 ### 2026-09-25T15:35:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-25T15:37:24Z — status-update [task-update-agent]
+- **Change:** tags: +arc:parallel-execution-aef

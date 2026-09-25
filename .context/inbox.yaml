@@ -5520,3 +5520,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-537
+  text: "arc-020 built a complete identity+circuit+ladder stack and NOTHING CALLS IT. All seven slices T-3307..T-3313 are work-completed: V9 address library (lib/aef_address.py with climb()/ladder()), circuit registry + three-state lifecycle (lib/aef_circuit.py), regressive resolution and provisioning ladder (lib/aef_resolve.py, resolve() climbing 5->1 with tri-state FOUND/NOT_FOUND/INDETERMINATE, ungated; provision() Tier-3 that refuses to create a host). Measured: grep for aef_address|aef_resolve|aef_circuit across lib/sidecar/, agents/ and bin/fw returns only one hit, aef_provision_log.py wired to bin/fw:8806. aef_resolve is imported only by sibling aef_* modules - an internally consistent island with no consumers. Worse: the sidecar invented a SECOND address grammar two weeks later. T-3433/D-599 (ruled 2026-09-22) implements inbox:<hub>/<project>[/<session>]/<agent> in lib/sidecar/circuit.py, and its Decisions record 'Rejected: host-first 5-segment addresses' - rejecting the exact V9 grammar arc-020 ratified on 2026-09-07 under D3. Two ruled address grammars for one 5-level taxonomy, in one codebase, fifteen days apart, neither aware of the other. This is a NEW variant of the week's pattern: not detection-exists-routing-does-not but CAPABILITY EXISTS, ADOPTION DOES NOT. Note the governance actually held - arc-020 is still status in-progress with all 7 slices completed, because G-062 requires the headline mechanic (G3: a dropped connection recovers itself) to be demonstrated, and with no caller it has never fired. The arc could not close, and did not. What failed was not the gate but the wiring. Directly material to sidecar slice 1: the ladder's resolve(target, probe) takes an injectable endpoint probe and calls it and nothing else, which is exactly the transport seam slice 1 needs, and the V9 address carries host=<fqdn> which is the one fact T-3433's hub-anchored grammar deliberately withholds and HTTP requires."
+  captured: 2026-09-25T16:05:51Z
+  context_task: T-3475
+  tags: []
+  status: pending
+  promoted_to: null
