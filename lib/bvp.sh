@@ -262,10 +262,47 @@ def compute_cost(cost_estimate):
     return None, None, None, None, 'absent'
 
 
-def quadrant(bvp_norm, cost, bvp_median, cost_median):
-    """Return one of hv-lc / hv-hc / lv-lc / lv-hc or '-' if either missing."""
+# T-3485: value-axis equality defect. `bvp_norm >= bvp_median` is true AT
+# equality, which is harmless while the median sits mid-distribution but
+# manufactures a verdict when it doesn't: if the median itself has collapsed
+# onto the corpus floor (median == min(bvp_vals)), then by definition at
+# least half the corpus is tied at that floor value, and `>=` promotes every
+# one of those tied, floor-scoring tasks into `hv`. Measured live: 13/25
+# zero-scored tasks, median 0.00, all 13 in hv-lc. Swapping to `>` does not
+# repair this — it just moves the same tied mass to `lv`, which is equally
+# manufactured (nothing in the corpus becomes newly distinguishable; the
+# verdict for the tied mass is still invented, just on the other side).
+#
+# The repair withholds a verdict for the tied-at-floor mass instead of
+# guessing which side it belongs on — same shape as `quadrant()` already
+# returning '-' for missing cost/value: absence of a real signal renders "I
+# cannot judge this", not a spelled-out bucket. `QUAD_VALUE_WITHHELD` is
+# scoped narrowly: it only fires when a task's own value score equals a
+# degenerate median (median == corpus floor), so a task genuinely above that
+# median is untouched and still classifies normally. On any corpus where the
+# median does NOT sit on the floor (the common case), `value_axis_degenerate`
+# is False and this function's behaviour is byte-identical to before.
+QUAD_VALUE_WITHHELD = 'v-thin'
+
+
+def value_axis_degenerate(bvp_vals):
+    """True when the value-axis median cannot separate the corpus — it sits
+    at the distribution's floor, which forces >=50% of the corpus to be tied
+    there (T-3485). Median-of-n floor-equality implies at least ceil(n/2)
+    values equal that floor: the smallest values determining the median can
+    be no smaller than the true minimum, so if they equal it, they ARE it."""
+    if not bvp_vals:
+        return False
+    return statistics.median(bvp_vals) == min(bvp_vals)
+
+
+def quadrant(bvp_norm, cost, bvp_median, cost_median, degenerate=False):
+    """Return one of hv-lc / hv-hc / lv-lc / lv-hc, QUAD_VALUE_WITHHELD for a
+    degenerate-median tie, or '-' if either axis is missing."""
     if bvp_norm is None or cost is None:
         return '-'
+    if degenerate and bvp_norm == bvp_median:
+        return QUAD_VALUE_WITHHELD
     hv = bvp_norm >= bvp_median
     lc = cost <= cost_median
     return ('hv' if hv else 'lv') + '-' + ('lc' if lc else 'hc')
@@ -347,8 +384,12 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
     cost_vals = [r['cost'] for r in rows if r['cost'] is not None]
     bvp_median = statistics.median(bvp_vals) if bvp_vals else 0.5
     cost_median = statistics.median(cost_vals) if cost_vals else 4.0
+    # T-3485: degeneracy is a property of the whole distribution, computed once
+    # per rank rather than per-row — see value_axis_degenerate() docstring.
+    _value_degenerate = value_axis_degenerate(bvp_vals)
     for r in rows:
-        r['quadrant'] = quadrant(r['bvp_norm'], r['cost'], bvp_median, cost_median)
+        r['quadrant'] = quadrant(r['bvp_norm'], r['cost'], bvp_median, cost_median,
+                                  degenerate=_value_degenerate)
 
     # T-3068: say what the ranking could not place, and say it before the table
     # rather than after — a quadrant filter that silently drops most of the corpus
@@ -367,6 +408,17 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
         print(f"      Quadrant thresholds are computed over the {_n_total - _n_unknown} "
               f"task(s) that do have one.")
         print("      Cost becomes measurable once `components:` is resolved; see T-3068.")
+        print()
+
+    # T-3485: same disclosure discipline as the cost-unknown NOTE above — a
+    # quadrant that silently reclassifies a large tied mass as unplaceable
+    # must say so, or the count shift reads as missing tasks rather than a
+    # withheld verdict.
+    _n_withheld = sum(1 for r in rows if r['quadrant'] == QUAD_VALUE_WITHHELD)
+    if _n_withheld:
+        print(f"NOTE: {_n_withheld}/{_n_total} task(s) have a value score tied at a "
+              f"degenerate median (median sits at the corpus floor, bvp_norm={bvp_median:.2f}) "
+              f"— quadrant withheld ('{QUAD_VALUE_WITHHELD}') rather than guessed. See T-3485.")
         print()
 
     if filter_quadrant:
