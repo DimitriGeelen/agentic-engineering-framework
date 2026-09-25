@@ -5506,3 +5506,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-535
+  text: "The GO-scope-not-propagated WARN reads as 185 abandoned decisions; measured, it is ~30 at the outer bound and the WARN line is what causes the misread. Structural split of the 186 flagged: 101 have build followers that all completed (built, never linked), 55 have followers still in active/ (propagation started, unfinished), 30 have no build follower at all. A 12-task sample of those 30 found at least 5 shipped anyway by other routes (T-122 P-011 gate, T-599 termlink mcp, T-1110 lib/enums.sh, T-835 stale-task blueprints, T-3018 bpmn fixtures). The report file at .context/audits/go-scope-unpropagated/LATEST.md says plainly 'candidates for triage, not confirmed abandoned decisions' - but nobody reads the report file, they read the one-line WARN in the push gate, which names only the count and the word not-propagated. Detection exists, routing does not: the qualifier lives in the artifact nobody opens. Also found: T-3072 is a GO that half-landed - the blast-radius cost axis exists but lib/bvp.sh:356 derives it only once components: resolves, which happens at work-completed, the one state fw bvp excludes, so the axis is unknown for exactly the open tasks the inception asked it to score."
+  captured: 2026-09-25T14:10:48Z
+  context_task: T-3426
+  tags: []
+  status: pending
+  promoted_to: null

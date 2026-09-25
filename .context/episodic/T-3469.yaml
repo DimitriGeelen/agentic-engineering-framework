@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3469: GO-scope WARN reports one undifferentiated count and reads as abandonment: classify findings into linked-late / in-flight / candidate and put the split in the line people actually see
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T14:50:52Z
+# ============================================================================
+
+task_id: T-3469
+task_name: "GO-scope WARN reports one undifferentiated count and reads as abandonment: classify findings into linked-late / in-flight / candidate and put the split in the line people actually see"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T14:31:31Z
+completed: 2026-09-25T14:50:32Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  GO-scope WARN reports one undifferentiated count and reads as abandonment: classify findings into linked-late / in-flight / candidate and put the split in the line people actually see
+
+# Key outcomes
+outcomes:
+  - 'The python pre-scan classifies every finding into exactly one of `linked-late` / `in-flight` / `candidate`, by whether a build/refactor/test/decommission task created at-or-after the inception references it in its body, and whether any such follower is still in `active/`'
+  - 'The candidate set is unchanged by this task: the count of findings before and after the edit is identical for the same corpus (classification adds tiers, it never silences a finding)'
+  - 'The WARN line leads with the `candidate` count and carries all three tiers, so the number read in the push gate is the number that means "nobody built this"'
+  - 'The report file gains a per-tier section, and each finding line names its tier'
+  - '`warn_unenumerable` still fires when the pre-scan produces no summary — a scan that did not evaluate must not read as a scan that found nothing (the T-3099 defect must not regress)'
+  - 'A bats suite pins all of the above against committed fixtures, including a control leg proving the classifier distinguishes the tiers rather than assigning one label to everything'
+  - '`bin/fw vendor self --check` is clean before close (CLAUDE.md §Vendored-path-touching tasks — the ordering T-3468 had to repair)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 19
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3469-go-scope-warn-reports-one-undifferentiat.md
+generated_by: context-agent-hybrid
