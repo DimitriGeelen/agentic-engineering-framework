@@ -1,9 +1,9 @@
-# Audit Results - 2026-09-25-1041
-timestamp: 2026-09-25T08:41:41Z
+# Audit Results - 2026-09-25-1129
+timestamp: 2026-09-25T09:29:24Z
 sections: "structure"
 summary:
-  pass: 35
-  warn: 21
+  pass: 36
+  warn: 19
   fail: 0
 findings:
   - level: PASS
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3447 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3448 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 31 project YAML file(s)"
   - level: PASS
@@ -64,7 +64,7 @@ findings:
     check: "Fabric: 91/1254 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
-    check: "Fabric drift: 1 source file(s) have no fabric card"
+    check: "Fabric drift: 2 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: WARN
     check: "Fabric: 803 card(s) point at files no watch pattern covers"
@@ -105,9 +105,8 @@ findings:
     check: "Map conformance: aef-tier0-escalation matches its enforced machine"
   - level: INFO
     check: "Stale draft(s), 30d+ untouched: draft-arc-lifecycle draft-exception-handling draft-inception-readiness draft-knowledge-leveling draft-t2584-scratch draft-task-creation draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"
-  - level: WARN
-    check: "Sidecar: 1 row(s) past their retry rung and unswept — the sweep cron is not running"
-    mitigation: "Run: bin/fw cron status sidecar-sweep-5m && bin/fw sidecar sweep — if the sweep advances them, the cron slot is dead, not the ledger (T-3418, T-3434)"
+  - level: PASS
+    check: "Sidecar ledger: 45 consult(s), 45 delivered, 0 in flight, 0 UNKNOWN, 0 dead-lettered, 0 expired-unswept"
   - level: WARN
     check: "BVP driver identity-fidelity has neither a handler nor a scoring spec"
     mitigation: "Give it a mechanism: draft a scoring: spec, check it with 'bin/fw bvp driver --validate-scoring <file>', try it with 'bin/fw bvp driver --explain identity-fidelity T-XXXX --scoring-file <file>'; schema in policy/value-drivers.yaml header (T-3428)"
@@ -129,13 +128,10 @@ findings:
   - level: PASS
     check: "Arc driver reviewer records: 7 scoped driver(s) on in-progress arcs, every reviewer-approved one carries its verdict"
   - level: PASS
-    check: "Delegation surface: reviewer-closeable 13, agent-self 1, operator-only 335 across 319 active task(s) with open Human criteria"
+    check: "Delegation surface: reviewer-closeable 13, agent-self 1, operator-only 336 across 320 active task(s) with open Human criteria"
   - level: WARN
     check: "Continuous-run wrapper last recorded ARMED but the turn driver is not"
     mitigation: "fw continuous arm --hours N --iterations N --directive '...' (T-3225). Same drift class as the 74-day and 8-day prior incidents (G-099)."
-  - level: WARN
-    check: "Continuous-run Stop hook is cycling on a stale terminate reason"
-    mitigation: "bin/fw continuous disarm --reason \"<why it's stale now>\" (or fw continuous arm to re-arm cleanly)"
   - level: WARN
     check: "Fabric: 145 under-populated card(s)"
     mitigation: "Run: bin/fw fabric enrich --describe-only (fills purpose/subsystem from each file's own header; names what it refuses). Zero-edge cards want a look, not a re-run: bin/fw fabric drift"

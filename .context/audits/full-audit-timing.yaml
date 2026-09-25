@@ -82,26 +82,6 @@ section_runs:
     timestamp: "2026-09-25T10:30:03+02:00"
     timed_out: false
     excludes_lock_wait: true
-  - name: "compliance"
-    seconds: 0
-    timestamp: "2026-09-25T10:40:16+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "quality"
-    seconds: 2
-    timestamp: "2026-09-25T10:40:18+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "discovery"
-    seconds: 33
-    timestamp: "2026-09-25T10:40:51+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "structure"
-    seconds: 296
-    timestamp: "2026-09-25T10:46:38+02:00"
-    timed_out: false
-    excludes_lock_wait: true
   - name: "traceability"
     seconds: 191
     timestamp: "2026-09-25T11:03:16+02:00"
@@ -125,5 +105,25 @@ section_runs:
   - name: "oe-fast"
     seconds: 0
     timestamp: "2026-09-25T11:15:07+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "structure"
+    seconds: 294
+    timestamp: "2026-09-25T11:39:58+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "compliance"
+    seconds: 0
+    timestamp: "2026-09-25T11:39:58+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "quality"
+    seconds: 2
+    timestamp: "2026-09-25T11:40:00+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "discovery"
+    seconds: 33
+    timestamp: "2026-09-25T11:40:33+02:00"
     timed_out: false
     excludes_lock_wait: true

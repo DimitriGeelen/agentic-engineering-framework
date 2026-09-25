@@ -5471,3 +5471,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-530
+  text: "The sidecar design and the sidecar implementation are different architectures, and nothing records the divergence. DESIGNED, and it IS captured — T-3397 lines 81-128, 949 lines of joint analysis: 'is NOT a hub-broadcast subscriber. It exposes an API a sending agent calls directly: write a message file, which atomically sets a companion flag file (dirty-bit). This is push, not pull.' Plus a write-time readiness check for the busy case, store-then-maybe-inject ordering, and a symmetric API where the reply is the same call with sender/target swapped. BUILT: the exact thing the design says it is not. delivery.py calls termlink channel post to a hub topic (broadcast pub/sub); inbox.pending() polls topics with cursors (pull); a 5-minute cron drives the retry ladder. The flag that WAS built is sender-side — outbox.py:12, a durability dirty-bit on the sender's own outbox, consumed on delivery, 45 .json files on disk and zero .flag files. The receiver-side half the design turns on is marked in outbox.py:7 as 'Stop/UserPromptSubmit hook wiring for the ready-flag are separate follow-on' and was never built. Consequences: there is no receiver API, no receiver-side flag, no busy/readiness check, no injection trigger, and neither of the two confirmations the design specifies (received, then handed-to-agent). Injection is pull — the agent runs fw sidecar inbox at a yield point or because the dispatch preamble told it to. A VOCABULARY COLLISION makes this hard to see: the ledger state INJECTED_NOW means the HUB accepted the message, not that it was injected into an agent's prompt, so 45 delivered reads as end-to-end success when it describes one hop. NOT captured anywhere at all: binary blob transport — zero occurrences of blob or garage across every sidecar doc and both design task files. The capture failure is not that the design was lost; it is that the design lives in a 949-line task file with no architecture document, so the divergence is invisible to anyone who reads docs/ and the code. My own T-3461 review missed it for exactly that reason and the operator caught it from memory."
+  captured: 2026-09-25T09:42:45Z
+  context_task: T-3461
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-531
+  text: "sidecar consult to cacc73ea32b121dd/832-Workflow-designer unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation 832-T833-CTL029-AND-REVIEWER-CLOSURE, client_msg_id 92601532-97c1-48d4-b7fe-435380cfd54a). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-25T09:43:01Z
+  context_task: T-3461
+  tags: [sidecar]
+  status: pending
+  promoted_to: null

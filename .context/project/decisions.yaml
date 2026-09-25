@@ -4508,3 +4508,10 @@ decisions:
     date: 2026-09-24
     task: T-3451
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-645
+    decision: "Sidecar: build toward the T-3397 design (receiver-side API, flag, readiness gate, two confirmations); binary blobs ride TermLink file transfer via the sidecar API, not session-to-session"
+    scope: project
+    date: 2026-09-25
+    task: T-3461
+    rationale: "Operator ruling 2026-09-25. The shipped implementation is hub-broadcast pub-sub polled by a 5-minute cron, which is the exact architecture T-3397:81 says the sidecar is NOT. Rather than ratify the divergence, we build toward the captured design. Blob leg: termlink file receive only processes events arriving after the receiver starts and targets a SESSION id, not a durable circuit address, so a blob sent session-to-session inherits the delivered-equals-hub-accepted failure this whole design exists to remove. Blobs therefore go through the receiver's sidecar API and are stored locally alongside the message, referenced by content hash."
