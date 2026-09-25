@@ -1151,6 +1151,85 @@ def resolve_edges(raw_edges, loc_to_id, source_id, unresolved=None,
 
 
 # ---------------------------------------------------------------------------
+# Detection dispatch — the single definition of "what counts as an import"
+# ---------------------------------------------------------------------------
+
+def read_source(location, framework_root):
+    """Read a card's source file, or return None if it cannot be read.
+
+    Extracted alongside detect_raw_edges so every caller reads the *same
+    number of bytes*. A reader with a smaller cap would silently disagree with
+    the enricher about the edges of exactly the files the cap was raised for.
+
+    T-2511: was 100_000 — bin/fw (349 KB, the central dispatcher that exec's
+    nearly every lib/agent script) had all its dispatch routing past byte 100K
+    truncated away, hiding 65+ real edges and leaving lib/pause.sh,
+    lib/worktree.sh, orchestrator-graph.py edgeless. 2 MB covers every
+    realistic source file (largest is ~350 KB) with headroom.
+    """
+    source_path = os.path.join(framework_root, location)
+    if not os.path.exists(source_path):
+        return None
+    try:
+        with open(source_path, "r", errors="replace") as f:
+            return f.read(2_000_000)
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def detect_raw_edges(location, content, framework_root):
+    """Dispatch to the right detector(s) for one source file. Returns [(loc, type)].
+
+    Extracted from compute_forward_edges so the WRITE path (enrichment) and the
+    READ path (`fw fabric drift`'s card-vs-source divergence section) share one
+    definition of "what counts as an import". Two copies of this dispatch would
+    be free to disagree, and a drift report that disagrees with the enricher is
+    worse than no drift report — it sends readers to fix edges the enricher then
+    declines to write, or stays silent on edges the enricher would add. Single
+    source of truth, deliberately: any detector added below is picked up by both
+    paths with no second edit.
+    """
+    raw_edges = []
+
+    # Determine file type — check extension, fall back to shebang
+    is_bash = location.endswith(".sh")
+    is_bats = location.endswith(".bats")
+    is_python = location.endswith(".py")
+    is_html = location.endswith(".html")
+    is_ts_js = any(location.endswith(ext) for ext in ('.ts', '.tsx', '.js', '.jsx'))
+    is_rust = location.endswith(".rs")
+    if not (is_bash or is_bats or is_python or is_html or is_ts_js or is_rust):
+        first_line = content.split("\n", 1)[0] if content else ""
+        if "bash" in first_line or "sh" in first_line:
+            is_bash = True
+        elif "python" in first_line:
+            is_python = True
+
+    if is_bats:
+        raw_edges.extend(detect_bats_deps(content, location, framework_root))
+    elif is_bash:
+        raw_edges.extend(detect_bash_sources(content, location, framework_root))
+    elif is_python:
+        raw_edges.extend(detect_python_imports(content, location, framework_root))
+        raw_edges.extend(detect_python_path_refs(content, location, framework_root))  # T-1758
+        raw_edges.extend(detect_blueprint_registration(content, location, framework_root))
+        raw_edges.extend(detect_generic_python_imports(content, location, framework_root))  # L-CONSUMER-001 prototype
+    elif is_html:
+        raw_edges.extend(detect_template_deps(content, location, framework_root))
+    elif is_ts_js:
+        raw_edges.extend(detect_ts_js_imports(content, location, framework_root))
+    elif is_rust:
+        raw_edges.extend(detect_rust_deps(content, location, framework_root))
+
+    # T-2511: fw-hook dispatcher edges (`fw hook <name>` → agents/context/<name>.sh)
+    # run on EVERY card regardless of type — the primary source is
+    # .claude/settings.json (a .json file that no type-detector above scans).
+    raw_edges.extend(detect_fw_hook_dispatch(content, location, framework_root))
+
+    return raw_edges
+
+
+# ---------------------------------------------------------------------------
 # Forward pass — detect depends_on for each card
 # ---------------------------------------------------------------------------
 
@@ -1171,56 +1250,11 @@ def compute_forward_edges(cards, loc_to_id, framework_root, unresolved=None):
         if not location:
             continue
 
-        source_path = os.path.join(framework_root, location)
-        if not os.path.exists(source_path):
+        content = read_source(location, framework_root)
+        if content is None:
             continue
 
-        try:
-            with open(source_path, "r", errors="replace") as f:
-                # T-2511: was 100_000 — bin/fw (349 KB, the central dispatcher that
-                # exec's nearly every lib/agent script) had all its dispatch routing
-                # past byte 100K truncated away, hiding 65+ real edges and leaving
-                # lib/pause.sh, lib/worktree.sh, orchestrator-graph.py edgeless. 2 MB
-                # covers every realistic source file (largest is ~350 KB) with headroom.
-                content = f.read(2_000_000)
-        except (OSError, UnicodeDecodeError):
-            continue
-
-        # Determine file type — check extension, fall back to shebang
-        raw_edges = []
-        is_bash = location.endswith(".sh")
-        is_bats = location.endswith(".bats")
-        is_python = location.endswith(".py")
-        is_html = location.endswith(".html")
-        is_ts_js = any(location.endswith(ext) for ext in ('.ts', '.tsx', '.js', '.jsx'))
-        is_rust = location.endswith(".rs")
-        if not (is_bash or is_bats or is_python or is_html or is_ts_js or is_rust):
-            first_line = content.split("\n", 1)[0] if content else ""
-            if "bash" in first_line or "sh" in first_line:
-                is_bash = True
-            elif "python" in first_line:
-                is_python = True
-
-        if is_bats:
-            raw_edges.extend(detect_bats_deps(content, location, framework_root))
-        elif is_bash:
-            raw_edges.extend(detect_bash_sources(content, location, framework_root))
-        elif is_python:
-            raw_edges.extend(detect_python_imports(content, location, framework_root))
-            raw_edges.extend(detect_python_path_refs(content, location, framework_root))  # T-1758
-            raw_edges.extend(detect_blueprint_registration(content, location, framework_root))
-            raw_edges.extend(detect_generic_python_imports(content, location, framework_root))  # L-CONSUMER-001 prototype
-        elif is_html:
-            raw_edges.extend(detect_template_deps(content, location, framework_root))
-        elif is_ts_js:
-            raw_edges.extend(detect_ts_js_imports(content, location, framework_root))
-        elif is_rust:
-            raw_edges.extend(detect_rust_deps(content, location, framework_root))
-
-        # T-2511: fw-hook dispatcher edges (`fw hook <name>` → agents/context/<name>.sh)
-        # run on EVERY card regardless of type — the primary source is
-        # .claude/settings.json (a .json file that no type-detector above scans).
-        raw_edges.extend(detect_fw_hook_dispatch(content, location, framework_root))
+        raw_edges = detect_raw_edges(location, content, framework_root)
 
         if not raw_edges:
             continue
@@ -1249,6 +1283,99 @@ def compute_forward_edges(cards, loc_to_id, framework_root, unresolved=None):
             forward[card_path] = to_add
 
     return forward
+
+
+# ---------------------------------------------------------------------------
+# Divergence report — READ-ONLY (card vs source)
+# ---------------------------------------------------------------------------
+
+# Edge types the detectors above are capable of emitting. A card edge outside
+# this set (`writes`/`writes_data`/`reads` of a runtime artifact, a hand-authored
+# structural edge) is not something detection could ever have found, so its
+# absence from the detected set is not a finding about the card.
+DETECTABLE_EDGE_TYPES = {"uses", "calls", "tests", "renders", "extends",
+                         "includes", "registers", "imports", "sources"}
+
+
+def report_divergence(cards, loc_to_id, project_root):
+    """Compare what each card DECLARES against what its source actually IMPORTS.
+
+    This is the question `fw fabric drift` does not currently ask. Its stale-edge
+    section (3) takes each edge a card declares and asks whether the target still
+    resolves. Nothing asks the converse: whether the *source* imports something
+    the card never mentions. So a card can name one edge out of ten and drift
+    reports clean — the map is arbitrarily incomplete and every existing check
+    agrees it is fine, because each one only ever audits what the map already
+    says. Under-populated (section 4) catches the degenerate case of *zero*
+    edges; it has nothing to say about a card with three edges and seven
+    imports.
+
+    Detection is delegated to detect_raw_edges() — the enricher's own dispatch —
+    on purpose. A second detector written for this report would be free to
+    disagree with the one that writes the cards, and a drift report that
+    disagrees with the enricher is worse than no drift report: it sends readers
+    to add edges the enricher then declines to write.
+
+    Returns a dict:
+      divergent  -> [(location, [missing_target_id, ...]), ...] in card order.
+                    The DANGEROUS direction: the source imports something the
+                    card does not declare, so the map understates reality.
+      extra      -> count only. A card declares a detectable-type edge the
+                    detector did not find. Lower severity (often a legitimate
+                    hand-authored edge), reported so it is not invisible, NOT
+                    folded into the headline count.
+      unresolved -> the dict resolve_edges()/classify_unresolved() already
+                    populate: {"actionable"|"ignorable"|"absent": {loc: count}}.
+                    Neither divergence nor drift — a registration gap. Reported
+                    with the same triage the enrichment summary uses, so the two
+                    cannot tell different stories about the same corpus.
+
+    Writes nothing: no card is opened for writing and no last_verified is
+    touched. See the guard comment at the call site in main().
+    """
+    divergent = []
+    extra_count = 0
+    unresolved = {}
+
+    for _card_path, card_data in sorted(cards.items()):
+        location = card_data.get("location", "")
+        card_id = card_data.get("id", "")
+        if not location:
+            continue
+
+        content = read_source(location, project_root)
+        if content is None:
+            continue  # missing / unreadable source is section 2's business, not ours
+
+        raw_edges = detect_raw_edges(location, content, project_root)
+        if not raw_edges:
+            continue
+
+        detected = resolve_edges(raw_edges, loc_to_id, card_id,
+                                 unresolved=unresolved,
+                                 project_root=project_root)
+        detected_targets = {e["target"] for e in detected}
+
+        declared_targets = set()
+        declared_detectable = set()
+        declared = card_data.get("depends_on", []) or []
+        if isinstance(declared, list):
+            for e in declared:
+                if isinstance(e, dict) and e.get("target"):
+                    declared_targets.add(e["target"])
+                    if e.get("type", "") in DETECTABLE_EDGE_TYPES:
+                        declared_detectable.add(e["target"])
+
+        missing = sorted(detected_targets - declared_targets)
+        if missing:
+            divergent.append((location, missing))
+        extra_count += len(declared_detectable - detected_targets)
+
+    return {
+        "divergent": divergent,
+        "extra": extra_count,
+        "unresolved": unresolved,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1467,6 +1594,11 @@ def main():
     # enrich` call — the nightly cron only ever runs --describe-only too.
     parser.add_argument("--quiet", action="store_true",
                         help="One summary line only; implies --describe-only")
+    # Read-only. Consumed by `fw fabric drift`'s divergence section, which parses
+    # the ##DIVERGENT_*## sentinels below. Not a pass — nothing is written.
+    parser.add_argument("--report-divergence", action="store_true",
+                        help="Read-only: report cards whose declared edges no "
+                             "longer match what their source imports")
     parser.add_argument("cards", nargs="*",
                         help="Specific card paths to enrich (default: all)")
     args = parser.parse_args()
@@ -1505,6 +1637,32 @@ def main():
             sys.exit(1)
     else:
         targets = cards
+
+    # Read-only divergence report. This returns BEFORE the describe pass, which
+    # is ON by default (T-3430) and does write cards — so the mode is read-only
+    # because no write path is *reachable* from here, not because it politely
+    # declines to take one. A reader of this file can check that property by
+    # looking at the returns, without tracing flags through two phases.
+    if args.report_divergence:
+        rep = report_divergence(targets, loc_to_id, project_root)
+        for location, missing in rep["divergent"]:
+            print(f"DIVERGENT\t{location}\t{','.join(missing)}")
+        u = rep["unresolved"]
+        n_actionable = sum(u.get("actionable", {}).values())
+        n_ignorable = sum(u.get("ignorable", {}).values())
+        n_absent = sum(u.get("absent", {}).values())
+        # Sentinels, not prose: drift.sh greps these and must be able to tell a
+        # detector that found nothing from a detector that did not run. Every
+        # count is printed even at zero — an absence has to be representable, or
+        # a clean corpus and a broken reader look identical (L-525).
+        print(f"##DIVERGENT_CARDS={len(rep['divergent'])}##")
+        print(f"##DIVERGENT_EDGES={sum(len(m) for _l, m in rep['divergent'])}##")
+        print(f"##DIVERGENT_EXTRA={rep['extra']}##")
+        print(f"##DIVERGENT_UNRESOLVED={n_actionable + n_ignorable + n_absent}##")
+        print(f"##DIVERGENT_UNRESOLVED_ACTIONABLE={n_actionable}##")
+        print(f"##DIVERGENT_UNRESOLVED_IGNORABLE={n_ignorable}##")
+        print(f"##DIVERGENT_UNRESOLVED_ABSENT={n_absent}##")
+        return 0
 
     mode = "DRY RUN" if args.dry_run else "ENRICHING"
     if not args.quiet:
