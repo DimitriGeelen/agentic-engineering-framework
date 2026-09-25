@@ -52,33 +52,78 @@ last_run:
     - name: "arc-completion"
       seconds: 14
 section_runs:
+  - name: "corpus-health"
+    seconds: 5
+    timestamp: "2026-09-25T06:10:07+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "observations"
+    seconds: 3
+    timestamp: "2026-09-25T06:10:10+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "gaps"
+    seconds: 1
+    timestamp: "2026-09-25T06:10:11+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "oe-daily"
+    seconds: 598
+    timestamp: "2026-09-25T07:22:01+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "arc-completion"
+    seconds: 0
+    timestamp: "2026-09-25T07:22:01+02:00"
+    timed_out: true
+    excludes_lock_wait: true
   - name: "traceability"
-    seconds: 227
-    timestamp: "2026-09-25T00:03:52+02:00"
+    seconds: 277
+    timestamp: "2026-09-25T09:04:45+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "episodic"
-    seconds: 100
-    timestamp: "2026-09-25T00:05:32+02:00"
+    seconds: 122
+    timestamp: "2026-09-25T09:06:47+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "discovery-trends"
-    seconds: 46
-    timestamp: "2026-09-25T00:06:18+02:00"
+    seconds: 47
+    timestamp: "2026-09-25T09:07:34+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "oe-hourly"
+    seconds: 0
+    timestamp: "2026-09-25T09:30:02+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "structure"
-    seconds: 330
-    timestamp: "2026-09-25T00:11:54+02:00"
+    seconds: 336
+    timestamp: "2026-09-25T09:40:41+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "compliance"
+    seconds: 0
+    timestamp: "2026-09-25T09:40:42+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "quality"
+    seconds: 1
+    timestamp: "2026-09-25T09:40:43+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "discovery"
+    seconds: 38
+    timestamp: "2026-09-25T09:41:21+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "oe-research"
-    seconds: 5
-    timestamp: "2026-09-25T00:15:08+02:00"
+    seconds: 6
+    timestamp: "2026-09-25T09:45:09+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "oe-fast"
     seconds: 0
-    timestamp: "2026-09-25T00:15:08+02:00"
+    timestamp: "2026-09-25T09:45:09+02:00"
     timed_out: false
     excludes_lock_wait: true

@@ -1,0 +1,2 @@
+  WARNING: Push to origin was KILLED at 402s (derived from /opt/999-Agentic-Engineering-Framework/.context/audits/full-audit-timing.yaml) — the pre-push gate did not finish, so NO verdict was produced (T-3063).
+           This is not 'the gate refused you'. Measure it: time bin/fw audit --section structure

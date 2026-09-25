@@ -26,7 +26,7 @@ alone (CLAUDE.md Human Task Completion Rule).
 Rows with an empty `## Verification` block need that scrutiny most —
 nothing mechanical would gate their close.
 
-## Qualifying tasks (22)
+## Qualifying tasks (24)
 
 | Task | Status | Workflow | Name | Agent ACs | Verification cmds? |
 |------|--------|----------|------|----------:|--------------------|
@@ -36,6 +36,7 @@ nothing mechanical would gate their close.
 | T-2200 | started-work | build | dispatch AEF setup worker on /opt/fan-dashboard | 4 | **no** |
 | T-2202 | started-work | build | dispatch AEF setup worker on /opt/832-Workflow-designer | 4 | **no** |
 | T-2410 | started-work | build | check-active-task hook: false positives block legiti... | 4 | yes |
+| T-2770 | started-work | inception | should a read-only fw query auto-init and vendor int... | 3 | **no** |
 | T-2801 | started-work | build | fw init is not atomic and its debris is not fw-recov... | 5 | yes |
 | T-2802 | started-work | build | fw watchtower url returns http://localhost:3000 from... | 6 | yes |
 | T-3297 | started-work | build | PRE-PUSH AUDIT GATE CAN DEADLOCK AGAINST CRON AUDIT ... | 4 | yes |
@@ -49,6 +50,7 @@ nothing mechanical would gate their close.
 | T-3317 | started-work | build | A worker's rewrite of agents/audit/audit.sh dropped ... | 4 | yes |
 | T-3324 | started-work | build | fw doctor spends ~79s of every run on 'bats --count ... | 4 | yes |
 | T-3326 | started-work | build | Stale-verification class: P-011 lines and unit tests... | 4 | yes |
+| T-3450 | started-work | build | handover push timeout is a static 300s while the pre... | 5 | **no** |
 | T-801 | started-work | build | fw costs CLI — token usage tracking from JSONL trans... | 9 | yes |
 | T-802 | started-work | build | Watchtower token dashboard — /costs page with sessio... | 7 | yes |
 | T-803 | started-work | build | Landing page token widget — show current session tok... | 5 | yes |

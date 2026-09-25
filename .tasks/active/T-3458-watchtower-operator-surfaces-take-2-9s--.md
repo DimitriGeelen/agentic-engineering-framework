@@ -8,12 +8,12 @@ description: >
   the smoke probe's 5s bar, and the review pages are the ones handed to the operator
   by URL
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T07:26:52Z
-last_update: '2026-09-25T07:30:37Z'
-date_finished:
+last_update: 2026-09-25T07:48:12Z
+date_finished: 2026-09-25T07:48:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -478,3 +478,20 @@ folded into this result.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3458-watchtower-operator-surfaces-take-2-9s--.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-15bf47ee
+- **Timestamp:** 2026-09-25T07:48:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] The dashboard still shows what it showed before, and now arrives quickly
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='show a' in Expected: the same panels with the same numbers you would have seen yesterday, and   the page arrives in well under a second instead of the several se`
+
+### 2026-09-25T07:48:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -8607,3 +8607,63 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.c'
   caller: 'check-active-task focus-drift'
   target: 'T-3432'
   command: 'git add .tasks/active/T-3432-close-commit-deadlock-under-session-scop.md && FW_SWITCH_FOCUS=1 git commit -q -m "T-3432: context — close clears the shared focus.yaml while the gate reads the scoped f'
+- timestamp: '2026-09-24T23:08:23Z'
+  task: 'T-3451'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3452'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m T-3452: close — doctor cost observability landed, T-3453 split out and closed
+
+Both tasks fully closed, no Human ACs on either. Episodics captured.
+
+Two observati'
+- timestamp: '2026-09-24T23:08:37Z'
+  task: 'T-3451'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3452'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m T-3452: close — doctor cost observability landed, T-3453 split out and closed
+
+Both tasks fully closed, no Human ACs on either. Episodics captured.
+
+Two observati'
+- timestamp: '2026-09-24T23:08:55Z'
+  task: 'T-3451'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3452'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m T-3452: close artefacts -- .tasks/ .context/episodic/T-3452.yaml'
+- timestamp: '2026-09-25T05:46:15Z'
+  task: 'T-3454'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3455'
+  command: 'git add .tasks/ .context/episodic/T-3455.yaml && FW_SWITCH_FOCUS=1 git commit -q -m T-3455: close — 1M context cap persisted and live
+
+Agent ACs 3/3, verification 2/2 (resolution and persistence as'
+- timestamp: '2026-09-25T06:37:30Z'
+  task: 'T-3451'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3452'
+  command: 'FW_SWITCH_FOCUS=1 git commit --dry-run -m T-3452: live probe of the T-3454 fix — dry run, creates nothing 2>&1 | head -6; echo "=== hook verdict: the command above was NOT blocked ==="'
+- timestamp: '2026-09-25T06:38:12Z'
+  task: 'T-3454'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3452'
+  command: 'python3 - <<PY
+import glob
+p=glob.glob(.tasks/active/T-3454-*.md)[0]
+s=open(p).read()
+
+for a in ["- [ ] **The collision is reproduced from a fixture, not just narrated.**",
+          "- [ ] **The '
+- timestamp: '2026-09-25T06:41:37Z'
+  task: 'T-3451'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3454'
+  command: 'git add .tasks/ .context/episodic/T-3454.yaml .context/inbox.yaml && FW_SWITCH_FOCUS=1 git commit -q -m T-3454: close — the deadlock is gone, and this commit is the proof
+
+This very commit is the s'

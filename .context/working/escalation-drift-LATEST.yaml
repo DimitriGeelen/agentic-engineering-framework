@@ -1,21 +1,19 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-24T03:23:03.071731+00:00
-corpus_total: 2961
+generated: 2026-09-25T03:23:03.400043+00:00
+corpus_total: 2965
 bug_class_total: 517
 bug_class_pct: 17
 h1_flagged: 367
 h1_pct_of_bug_class: 70
-h2_repeat_patterns: 169
+h2_repeat_patterns: 170
 h3_flagged: 265
 h3_pct_of_bug_class: 51
-recent_30d_flagged: 8
+recent_30d_flagged: 7
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-2488-rca--fix-bare-dispatch-worker-hits-promp"
     name: "RCA + fix: bare dispatch worker hits 'Prompt is too long' on trivial task (T-248"
-  - tid: "T-3138-106-bats-assertions-cannot-fail-bash-exe"
-    name: "106 bats assertions cannot fail: bash exempts !-inverted commands from errexit"
   - tid: "T-3193-a-release-can-advance-master-and-then-fa"
     name: "A release can advance master and then fail to publish its tag, and the GitHub"
   - tid: "T-3226-fw-doctor-reports-a-spurious-fail-on-any"
@@ -30,15 +28,15 @@ recent_sample:
     name: "liveness-check.sh false negative: probe /api/_identity and match project_root, n"
 h2_top:
   - learning: "P-011"
-    task_count: 2829
+    task_count: 2838
   - learning: "L-387"
-    task_count: 2560
+    task_count: 2569
   - learning: "L-291"
-    task_count: 1246
+    task_count: 1249
   - learning: "L-398"
-    task_count: 984
+    task_count: 987
   - learning: "P-010"
-    task_count: 588
+    task_count: 590
   - learning: "L-399"
     task_count: 108
   - learning: "L-006"

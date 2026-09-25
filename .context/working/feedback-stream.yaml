@@ -43052,3 +43052,147 @@ scan_id: R-e842c030
 task_id: T-3389
 payload:
   task_file: .tasks/active/T-3389-ewcr-arc-0-cand-3-consolidated-refusalth.md
+---
+kind: scan_emitted
+timestamp: '2026-09-24T22:16:53Z'
+scan_id: R-f3098821
+task_id: T-3451
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-24T22:16:53Z'
+scan_id: R-f3098821
+task_id: T-3451
+payload:
+  task_file: .tasks/active/T-3451-the-audit-timing-ledger-two-derivations-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-24T22:56:09Z'
+scan_id: R-b28df08e
+task_id: T-3453
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-24T22:56:09Z'
+scan_id: R-b28df08e
+task_id: T-3453
+payload:
+  task_file: .tasks/active/T-3453-fw-doctors-watchtower-smoke-test-is-an-i.md
+---
+kind: scan_emitted
+timestamp: '2026-09-24T23:07:01Z'
+scan_id: R-5f142c66
+task_id: T-3452
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-24T23:07:01Z'
+scan_id: R-5f142c66
+task_id: T-3452
+payload:
+  task_file: .tasks/active/T-3452-fw-doctor-cannot-finish-inside-a-usable-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T05:45:37Z'
+scan_id: R-c8514e2e
+task_id: T-3455
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T05:45:37Z'
+scan_id: R-c8514e2e
+task_id: T-3455
+payload:
+  task_file: .tasks/active/T-3455-raise-contextwindow-to-1000000--the-budg.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T06:40:51Z'
+scan_id: R-6400530e
+task_id: T-3454
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T06:40:51Z'
+scan_id: R-6400530e
+task_id: T-3454
+payload:
+  task_file: .tasks/active/T-3454-two-gates-offer-mutually-exclusive-bypas.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T07:17:05Z'
+scan_id: R-02844d62
+task_id: T-3457
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T07:17:05Z'
+scan_id: R-02844d62
+task_id: T-3457
+payload:
+  task_file: .tasks/active/T-3457-delegation-classifier-misses-install-and.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T07:20:16Z'
+scan_id: R-b7d4602f
+task_id: T-3456
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T07:20:16Z'
+scan_id: R-b7d4602f
+task_id: T-3456
+payload:
+  task_file: .tasks/active/T-3456-measure-the-delegation-surface-and-conve.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T07:48:18Z'
+scan_id: R-15bf47ee
+task_id: T-3458
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T07:48:18Z'
+scan_id: R-15bf47ee
+task_id: T-3458
+payload:
+  task_file: .tasks/active/T-3458-watchtower-operator-surfaces-take-2-9s--.md
