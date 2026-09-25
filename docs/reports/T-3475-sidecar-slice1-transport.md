@@ -173,7 +173,37 @@ typo'd address could provision a whole hub."* **Slice 1 must bind to `resolve()`
 A send that cannot reach a peer must fail, escalate, or dead-letter — never
 materialise the peer. That belongs in slice 1's ACs as a refusal test, not as a note.
 
-### What is now the first question, and it is not mine to answer
+### RULED — converge on V9 (operator, 2026-09-25)
+
+Three options were put: converge the sidecar onto V9, keep both behind a translation
+layer, or supersede V9. **The operator chose to converge**, against the stated cost
+that the messaging code needs rewriting.
+
+This supersedes T-3433's `"Rejected: host-first 5-segment addresses"` **for the
+sidecar's addressing only** — T-3433's other rulings (the `inbox:` prefix because the
+hub treats `inbox:*` as mail; the durable-role-address concept; the read-only
+transition alias) survive intact and are what makes the migration cheap.
+
+**Measured blast radius**, so the scope is real rather than estimated:
+
+| surface | size |
+|---|---|
+| files in `lib/sidecar/` importing `circuit` | 4 — `inbox.py`, `status.py`, `dm.py`, `termlink_transport.py` |
+| call sites of `circuit.*` across `lib/`, `agents/`, `bin/fw` | 11 |
+| V9 library API to adopt | `parse` / `parse_v9` / `serialize` / `AEFAddress.climb()` / `.ladder()` |
+
+**Topic-safety verified, not assumed.** A V9 wire form was created as a live topic on
+the hub and accepted:
+`inbox:aef::host=h.lan::hub=H-1::project=/opt/x::@probe::`. The `::` and `=` tokens do
+not collide with topic-name parsing. The probe topic was deleted afterwards (0 records).
+
+**The real cost is not the code, it is the wire.** Topic names derive from the address,
+so changing the grammar changes every peer-facing topic — 832, 010-termlink,
+1409-sprind. T-3433 has already done exactly this migration once
+(`sidecar:` → `inbox:`) using dual-read / single-write plus a read-only alias for one
+release. That pattern is proven here and should be reused rather than redesigned.
+
+### The question this replaced, for the record
 
 **Which grammar does the sidecar speak?** `inbox:<hub>/<project>` and
 `aef::host=…::@agent::` cannot both be "the address". Three ways out — converge the

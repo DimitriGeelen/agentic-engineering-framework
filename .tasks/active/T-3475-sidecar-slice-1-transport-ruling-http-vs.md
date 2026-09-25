@@ -88,8 +88,8 @@ cost_estimate_proposed:
 
 - **IW-5: Which address grammar does the sidecar speak — T-3433's `inbox:<hub>/<project>` or arc-020's V9 `aef::host=…::@agent::`?**
   confidence: 3
-  disposition: deferred
-  rationale: SOVEREIGN — two operator rulings are in tension. D3/T-3287 ratified V9 (host-first, 5 tokens) on 2026-09-07; D-599/T-3433 shipped a hub-anchored grammar on 2026-09-22 whose Decisions explicitly record "Rejected: host-first 5-segment addresses". Both are built. Slice 1 is blocked on this, not on transport. Surfaced, not resolved.
+  disposition: answered
+  rationale: OPERATOR RULING 2026-09-25 — **converge on V9**. Option 1 of three offered (converge / adapt-with-translation / supersede V9). Chosen against the stated cost that the messaging code needs rewriting. This supersedes T-3433's "Rejected: host-first 5-segment addresses" for the sidecar's addressing, and makes arc-020's headline mechanic reachable for the first time. Recorded verbatim in the Dialogue Log; the formal inception decision is still the operator's to record.
 
 - **IW-6: Is the transport a free choice at all, or is it the ladder's `probe` seam?**
   confidence: 3
