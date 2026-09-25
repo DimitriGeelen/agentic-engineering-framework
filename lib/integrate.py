@@ -9,8 +9,17 @@ structural-remediation inception). It answers, without mutating anything:
 
 It encodes the un-partitionable-file taxonomy from T-2397 §3.2 as code (previously
 tribal knowledge applied by hand during every reconciliation). The mutating verb
-(`fw integrate run`, a later slice) will reuse `classify_path()` to apply the
-per-class strategy at the join.
+`fw integrate run` IS IMPLEMENTED — `cmd_run()` below — and reuses
+`classify_path()` to apply the per-class strategy at the join. It runs `cmd_check`
+as its own preflight and refuses on a needs-human verdict.
+
+(T-3477: this paragraph used to describe the verb in the future tense as unbuilt,
+left over from when that was true. On 2026-09-25 a peer agent read it, concluded
+the verb had never been built, and reported it to us as a defect — while a
+BLOCKING worktree-commit gate cites that same verb as its only remediation. A
+stale not-built-yet in a docstring is worse than no docstring: it reads as
+current. The phrasing is deliberately not quoted here, so a grep for the old
+wording stays clean.)
 
 Conflict signal: a file changed on BOTH sides of the merge-base (master-side AND
 branch-side). The taxonomy's whole point is that governance/generated files must

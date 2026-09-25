@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3426: arc-011 sidecar slice 10: fw sidecar e2e --peer <agent-id> — two-party live check against a real peer agent (TermLink), hub-verified both ways
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T19:48:06Z
+# ============================================================================
+
+task_id: T-3426
+task_name: "arc-011 sidecar slice 10: fw sidecar e2e --peer <agent-id> — two-party live check against a real peer agent (TermLink), hub-verified both ways"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-22T10:11:39Z
+completed: 2026-09-25T19:47:45Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-09-22T12:14:35+02:00
+last_commit: 2026-09-25T13:39:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar e2e --peer <agent-id> — two-party live check against a real peer agent. every consult carries metadata.cv_key=<client_msg_id> — TermLink's O(1) topic-holds-my-id index. record the open joint run ab947312 and the resume instructions for the live two-party criterion. joint run ab947312 — first window closed FAIL on the peer's hops only (H1/H2 PASS, no answer in 1802s); record kept, re-run on their signal. parked on the peer — 8dbad116 on the new address (H4/H5 open), the 16:47Z re-run killed by the harness memory guard, two asks outstanding to TermLink. file OBS-534 — a foreign-project worker switched this checkout branch under us
+
+# Key outcomes
+outcomes:
+  - '`lib/sidecar/e2e.py`: `Config.peer`; `responder` = peer; `mode` = peer; `consult_body()` is the readable request (run id, ACK token, sender id, conversation id, both reply forms); in `run()` the dispatch block is skipped, H3/H6 recorded `not applicable: <peer> owns …`, `blocking_hops()` = H1,H2,H4,H5; `render()` prints `n/a` for those rows. Also (TermLink @1640 meet-point 2) every consult now carries `metadata.cv_key=<client_msg_id>` so `channel cv-keys` is an O(1) H2 path — transport test pins it'
+  - '`fw sidecar e2e --peer <id> [--timeout] [--poll]`: defaults 1800 s / 15 s with `--peer`, 300 s / 5 s otherwise; `--ambient --peer` → exit 2 before any send; report carries `mode: peer`, `peer: <id>`'
+  - '`tests/unit/test_sidecar_e2e.py` +3: peer full pass (no dispatch, H3/H6 n/a, PASS on H1/H2/H4/H5, `n/a` in render); peer never answers (H4/H5 FAIL only, verdict FAIL, nothing dispatched); CLI refuses `--ambient --peer`. **12/12; sidecar suites 47/47**'
+  - '**Live, two-party — ANSWERED, 73 hours after the window closed. Round trip PROVEN; the FAIL was the instrument, not the rail:** run `ab947312` (`.context/sidecar/e2e/ab947312.json`, committed): H1 PASS, H2 PASS (our consult on `sidecar:010-termlink` @1), H4/H5 FAIL — no answer from 010-termlink within 1802 s (their session had not read the topic in the window; not a transport fault: H2 proves the hub holds it). Re-run on their signal per the resume note below. Originally: sent 10:20Z — H1 our ledger INJECTED_NOW; H2 the consult is on `sidecar:010-termlink` @1 (client_msg_id in RPC param + metadata + cv_key, conversation `e2e-ab947312`, from `e2e-ab947312-sender`); the request with the one-line reply command posted to TermLink on agent-chat-arc @1651 and on their DM thread @8. Harness window closes ~10:50Z. **Outcome to record on resume:** read `.context/sidecar/e2e/ab947312.json` — if H4/H5 PASS, tick with their offsets; if FAIL (no answer in the window), keep the record, and when TermLink signals they read it re-run `bin/fw sidecar e2e --peer 010-termlink --task T-3426` and record that run. Their mirror (a consult to `sidecar:999-Agentic-Engineering-Framework`) answers itself through the T-3407 hook. **RESOLVED 2026-09-25 (no re-run needed — the original run was answered):** `sidecar:e2e-ab947312-sender` @0 carries `SIDECAR-E2E-ACK ab947312 — from 010-termlink`, token and peer name both validated against the run record. Sent `2026-09-22T10:14:32Z`, run closed `10:44:32Z` after 120 polls, **ACK arrived `2026-09-25T11:19:35Z` — 73h 05m end to end.** So H4/H5 PASS on the evidence and the two-party round trip is proven in both directions on a real peer we do not control. What the recorded FAIL actually measured was the 1800 s window, not the rail. Two things came back with it: (a) `fw sidecar` **does not exist in their vendored build** (AEF v1.6.29 — `Unknown command: sidecar`); they answered via the raw-channel fallback our own message supplied, which worked first try, so the prescribed verb was the gap and the fallback is what saved the run; (b) they name two sibling instances of the same shape — `fw integrate run` and `checkpoint.sh budget`. Verified in our v1.7.110: all three verbs exist, so their report is **version skew from vendoring lag, not absence** — except `lib/integrate.py:12`, whose docstring still calls the mutating verb "a later slice" though `cmd_run` has been implemented for some time, and that stale line is what led them to conclude it was never built'
+  - 'Vendored `lib/sidecar/e2e.py`, `lib/sidecar_cli.py`, `lib/sidecar/termlink_transport.py` synced (VERSION 1.6.783); `bin/fw vendor self --check` → "in sync with source"; all seven sidecar suites **47/47**'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/e2e.py'
+  - '.agentic-framework/lib/sidecar/termlink_transport.py'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'agents/git/lib/commit.sh'
+  - '.context/inbox.yaml'
+  - '.context/sidecar/e2e/ab947312.json'
+  - 'docs/reports/T-3466-dispatch-f15-f17-safe-commands-and-git-commit-fix.md'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/e2e.py'
+  - 'lib/sidecar/termlink_transport.py'
+  - '.tasks/active/T-3426-arc-011-sidecar-slice-10-fw-sidecar-e2e-.md'
+  - '.tasks/completed/T-3466-fix-read-only-allowlist-gaps-f-15-and-gi.md'
+  - 'tests/unit/test_sidecar_e2e.py'
+  - 'tests/unit/test_sidecar_termlink_transport.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-22T12:14:35'
+    action: 'T-3426: fw sidecar e2e --peer <agent-id> — two-party live check against a real peer agent'
+  - time: '2026-09-22T12:16:29'
+    action: 'T-3426: every consult carries metadata.cv_key=<client_msg_id> — TermLink''s O(1) topic-holds-my-id index'
+  - time: '2026-09-22T12:35:12'
+    action: 'T-3426: record the open joint run ab947312 and the resume instructions for the live two-party criterion'
+  - time: '2026-09-22T12:45:13'
+    action: 'T-3426: joint run ab947312 — first window closed FAIL on the peer''s hops only (H1/H2 PASS, no answer in 1802s); record kept, re-run on their signal'
+  - time: '2026-09-22T22:51:29'
+    action: 'T-3426: parked on the peer — 8dbad116 on the new address (H4/H5 open), the 16:47Z re-run killed by the harness memory guard, two asks outstanding to TermLink'
+  - time: '2026-09-25T13:39:55'
+    action: 'T-3426: file OBS-534 — a foreign-project worker switched this checkout branch under us'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 4896 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4896
+  commits: 6
+  files_changed: 17
+  lines_added: 1002
+  lines_removed: 82
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3426-arc-011-sidecar-slice-10-fw-sidecar-e2e-.md
+generated_by: context-agent-hybrid
