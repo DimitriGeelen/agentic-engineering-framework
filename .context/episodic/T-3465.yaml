@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3465: propose a joint integration fixture set to 832 — they author, we execute, both sides check the same declared outcome
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T11:21:11Z
+# ============================================================================
+
+task_id: T-3465
+task_name: "propose a joint integration fixture set to 832 — they author, we execute, both sides check the same declared outcome"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T11:18:51Z
+completed: 2026-09-25T11:20:54Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-25T13:20:37+02:00
+last_commit: 2026-09-25T13:20:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  propose a joint fixture set to 832 — they author, we execute, both check a declared outcome
+
+# Key outcomes
+outcomes:
+  - '**The proposal asks for the right shape, not just "some files".** Each fixture must'
+  - '**At least one fixture is a map that SHOULD be refused.** A set with only a happy'
+  - '**It starts from what already exists rather than inventing a ceremony.** The'
+  - '**Nothing is committed on our operator''s behalf.** A standing joint test corpus is a'
+  - '**Sent, and delivery verified on their topic** — not inferred from `INJECTED_NOW`,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'propose a joint fixture set to 832 — they author, we execute, both check a declared outcome'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-09-25.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/full-audit-timing.yaml'
+  - '.context/episodic/T-3464.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3465-propose-a-joint-integration-fixture-set-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-25T13:20:37'
+    action: 'T-3465: propose a joint fixture set to 832 — they author, we execute, both check a declared outcome'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:parallel-execution-aef]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 16
+  lines_added: 491
+  lines_removed: 75
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3465-propose-a-joint-integration-fixture-set-.md
+generated_by: context-agent-hybrid

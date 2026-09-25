@@ -11,10 +11,10 @@ description: >
   about the seam. Starts from the rail-1635 fw bpmn compile offer we accepted and
   never ran.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:parallel-execution-aef]
 components: []
 related_tasks: []
@@ -30,8 +30,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T11:18:51Z
-last_update: 2026-09-25T11:19:17Z
-date_finished:
+last_update: 2026-09-25T11:20:54Z
+date_finished: 2026-09-25T11:20:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -324,6 +324,25 @@ bash -c 'set -eo pipefail; grep -q "4ea91975" .context/sidecar/awaiting-ack.json
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+**What this changed about arc-011:** it turns the peer rail from something we *operate*
+into something we *test through*. Every prior use was a consult — a question and an
+answer, where success meant a human on the far end understood. This proposes traffic with
+a machine-checkable outcome on both ends, which is the first thing the rail has carried
+that could go objectively red.
+
+**Why that matters for the slices ahead:** the target architecture (D-645) adds two
+confirmations and a readiness gate, and every one of them needs a way to tell "the
+mechanism worked" from "the person on the other end was agreeable". A fixture with a
+declared expected outcome is that instrument. If the joint set lands, slice 4's
+CONFIRM-2 has something real to assert against rather than a timestamp.
+
+**The debt it surfaced is the arc's own:** we accepted a `fw bpmn compile` offer at rail
+1635 and never executed it. That is not a sidecar defect — the message arrived, was read,
+and was agreed to. It was dropped on our side, silently, with no ledger row saying so.
+The retry ladder tracks messages nobody answered; nothing tracks commitments nobody kept.
+Worth remembering when slice 6's telemetry is designed: delivery and follow-through are
+different measurements, and only one of them currently has a rail.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -386,3 +405,15 @@ bash -c 'set -eo pipefail; grep -q "4ea91975" .context/sidecar/awaiting-ack.json
 
 ### 2026-09-25T11:19:17Z — status-update [task-update-agent]
 - **Change:** tags: +arc:parallel-execution-aef
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-aee6b91d
+- **Timestamp:** 2026-09-25T11:20:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-25T11:20:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
