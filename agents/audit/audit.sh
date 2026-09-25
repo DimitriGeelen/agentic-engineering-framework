@@ -2242,8 +2242,10 @@ def tier_of(t_id):
     # mean the work propagated and the LINK was never recorded -- a bookkeeping
     # gap, not an abandoned decision.
     # NOTE: comments, not a docstring. This whole scan lives inside a
-    # double-quoted `python3 -c "..."`, so a \"\"\"docstring\"\"\" closes the
-    # shell string and the rest of the function is handed to bash as commands.
+    # double-quoted 'python3 -c' string, so a triple-quoted docstring closes
+    # the shell string and the rest of the function is handed to bash as
+    # commands. Single quotes here on purpose: a backtick inside this block
+    # would be command-substituted by bash at evaluation time (T-3086).
     fol = followers.get(t_id)
     if not fol:
         return 'candidate'
