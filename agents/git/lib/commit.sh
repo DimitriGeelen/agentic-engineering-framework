@@ -102,6 +102,48 @@ do_commit() {
         exit 1
     fi
 
+    # F-17 (T-3466): stage the task-file `last_update:` bump BEFORE the commit is
+    # created, not after. The old order (commit, then update_task_timestamp) meant
+    # the bump was NEVER in the commit it described — it sat as a trailing dirty
+    # diff that only the NEXT commit would pick up, by which point that commit's
+    # own post-commit bump had already re-dirtied the tree. "Is the working tree
+    # clean?" could never be true immediately after `fw git commit`, which is
+    # exactly the signal the consuming project's audit (uncommitted-changes /
+    # G-004) fires on — a framework-manufactured false positive, not real drift.
+    #
+    # Scoped to the NON-bypass, NO-PATHSPEC path only:
+    #
+    #   * `--bypass` never touched the task timestamp before this fix (it is the
+    #     escape hatch for commits with no task reference at all, or none yet
+    #     created) and still doesn't.
+    #
+    #   * A pathspec-scoped commit (T-3090) is a caller EXPLICITLY asking for
+    #     "exactly these paths, no more, no fewer" — that guarantee is what
+    #     T-3090 exists to protect (a concurrent writer's staged-but-uncommitted
+    #     file must never ride along), and it is pinned by
+    #     tests/unit/handover_commit_scope.bats with exact-file-count assertions.
+    #     Auto-adding the task file to a scoped pathspec would silently violate
+    #     that contract — measured: it broke 2 of that suite's tests when tried.
+    #     Pathspec-scoped commits keep the ORIGINAL post-commit-timestamp
+    #     behaviour further down (still dirties the tree afterwards), which is a
+    #     narrower, already-accepted cost for a narrower, already-deliberate
+    #     caller — not the "everyday `git add -A && git commit` flow" this
+    #     finding's symptom and CLAUDE.md's documented post-completion form
+    #     describe. Widening the fix into every pathspec-scoped call was not the
+    #     described symptom and is out of this finding's scope.
+    #
+    # `git add` first is what makes an as-yet-untracked task file (a brand new
+    # task, first commit) committable at all.
+    local commit_task_id commit_task_file=""
+    commit_task_id=$(extract_task_id "$message")
+    if [ "$bypass" != true ] && [ ${#pathspec[@]} -eq 0 ] && [ -n "$commit_task_id" ]; then
+        commit_task_file=$(find "$TASKS_DIR/active" -name "${commit_task_id}-*.md" -type f 2>/dev/null | head -1)
+        if [ -n "$commit_task_file" ]; then
+            update_task_timestamp "$commit_task_id"
+            git -C "$PROJECT_ROOT" add -- "$commit_task_file"
+        fi
+    fi
+
     # T-3090: assemble the final argv once, for BOTH the bypass and the normal
     # call site below — two call sites drifting apart is how the missing
     # pathspec survived in the first place. The `--` is emitted ONLY when a
@@ -143,9 +185,10 @@ do_commit() {
         return
     fi
 
-    # Extract task reference from message
-    local found_task
-    found_task=$(extract_task_id "$message")
+    # Extract task reference from message. Already computed above (as
+    # commit_task_id) for the timestamp bump; re-derive found_task from it
+    # rather than a second extract_task_id call so the two cannot drift.
+    local found_task="$commit_task_id"
 
     if [ -z "$found_task" ]; then
         echo ""
@@ -168,13 +211,23 @@ do_commit() {
         echo ""
     fi
 
-    # Do the commit
+    # Do the commit.
+    #
+    # F-17 (T-3466): for the common no-pathspec flow, commit_task_file is
+    # already set and the timestamp bump already happened and was staged above,
+    # BEFORE this commit — reused here rather than re-run so "did we bump it"
+    # and "did we report it" can't disagree.
+    #
+    # For a pathspec-scoped commit, commit_task_file is still empty at this
+    # point by construction (the block above skips it when pathspec is
+    # non-empty) — fall back to the pre-fix ORDER (bump after, per the T-3090
+    # scope note above) so a scoped caller's exact path set is never widened.
     if git -C "$PROJECT_ROOT" commit "${commit_argv[@]}"; then
-        # Update task timestamp (only for active tasks)
-        local task_file_active
-        task_file_active=$(find "$TASKS_DIR/active" -name "${found_task}-*.md" -type f 2>/dev/null | head -1)
-        if [ -n "$task_file_active" ]; then
-            update_task_timestamp "$found_task"
+        if [ ${#pathspec[@]} -gt 0 ] && [ -n "$found_task" ]; then
+            commit_task_file=$(find "$TASKS_DIR/active" -name "${found_task}-*.md" -type f 2>/dev/null | head -1)
+            [ -n "$commit_task_file" ] && update_task_timestamp "$found_task"
+        fi
+        if [ -n "$commit_task_file" ]; then
             local task_name
             task_name=$(get_task_name "$found_task")
             echo ""
