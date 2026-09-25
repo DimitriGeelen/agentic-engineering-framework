@@ -212,3 +212,89 @@ run_other_hook() {
     run_bash_hook "fw termlink dispatch --name worker --prompt 'cd /opt/other && build'"
     [ "$status" -eq 0 ]
 }
+
+# ── Sibling git worktree admission (F-25) ──
+#
+# A worktree of PROJECT_ROOT's own repo is the same repository, not another
+# project — the hook must admit it. A negative control (a genuinely foreign,
+# unrelated repo) must still block, or the change is indistinguishable from
+# disabling the boundary. See CLAUDE.md T-559 / F-25 dispatch report.
+#
+# Fixtures deliberately live under /opt, NOT under $TEST_TEMP_DIR (/tmp): both
+# gates already admit /tmp/* unconditionally regardless of worktree status, so
+# a /tmp-rooted fixture would pass identically with or without this fix and
+# prove nothing. /opt is exactly the zone F-25 was measured against.
+
+f25_cleanup() {
+    git -C "$PROJECT_ROOT" worktree remove --force "$1" >/dev/null 2>&1 || true
+    rm -rf "$1" || true
+}
+
+@test "Write into sibling git worktree of PROJECT_ROOT: allowed" {
+    git -C "$PROJECT_ROOT" init -q
+    git -C "$PROJECT_ROOT" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    local wt="/opt/.f25-bats-wt1"
+    f25_cleanup "$wt"
+    git -C "$PROJECT_ROOT" worktree add -q -b f25-bats-wt1 "$wt"
+    run_write_hook "$wt/scratch.txt"
+    f25_cleanup "$wt"
+    [ "$status" -eq 0 ]
+}
+
+@test "Bash cat inside sibling git worktree of PROJECT_ROOT: allowed" {
+    git -C "$PROJECT_ROOT" init -q
+    git -C "$PROJECT_ROOT" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    local wt="/opt/.f25-bats-wt2"
+    f25_cleanup "$wt"
+    git -C "$PROJECT_ROOT" worktree add -q -b f25-bats-wt2 "$wt"
+    echo "hello" > "$wt/README.md"
+    run_bash_hook "cat $wt/README.md"
+    f25_cleanup "$wt"
+    [ "$status" -eq 0 ]
+}
+
+@test "Bash cd into sibling git worktree of PROJECT_ROOT: allowed" {
+    git -C "$PROJECT_ROOT" init -q
+    git -C "$PROJECT_ROOT" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    local wt="/opt/.f25-bats-wt3"
+    f25_cleanup "$wt"
+    git -C "$PROJECT_ROOT" worktree add -q -b f25-bats-wt3 "$wt"
+    run_bash_hook "cd $wt && ls"
+    f25_cleanup "$wt"
+    [ "$status" -eq 0 ]
+}
+
+@test "F-25 negative control: write into a genuinely foreign repo still blocked" {
+    git -C "$PROJECT_ROOT" init -q
+    local foreign="/opt/.f25-bats-foreign1"
+    rm -rf "$foreign"
+    mkdir -p "$foreign"
+    git -C "$foreign" init -q
+    run_write_hook "$foreign/scratch.txt"
+    local saved_status="$status" saved_output="$output"
+    rm -rf "$foreign"
+    [ "$saved_status" -eq 2 ]
+    [[ "$saved_output" == *"PROJECT BOUNDARY BLOCK"* ]]
+}
+
+@test "F-25 negative control: bash cat of a genuinely foreign repo still blocked" {
+    git -C "$PROJECT_ROOT" init -q
+    local foreign="/opt/.f25-bats-foreign2"
+    rm -rf "$foreign"
+    mkdir -p "$foreign"
+    git -C "$foreign" init -q
+    echo "hello" > "$foreign/README.md"
+    run_bash_hook "cat $foreign/README.md"
+    local saved_status="$status" saved_output="$output"
+    rm -rf "$foreign"
+    [ "$saved_status" -eq 2 ]
+    [[ "$saved_output" == *"PROJECT BOUNDARY BLOCK"* ]]
+}
+
+@test "F-25: PROJECT_ROOT not a git repo still behaves as before (no crash, still blocks)" {
+    # setup() never runs `git init` in $PROJECT_ROOT for the pre-existing suite
+    # above — this test pins that the F-25 worktree lookup fails closed (empty
+    # list, git exits non-zero) rather than erroring or widening admission.
+    run_write_hook "/opt/some-other-project/file.py"
+    [ "$status" -eq 2 ]
+}
