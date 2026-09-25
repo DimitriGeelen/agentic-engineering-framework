@@ -5436,3 +5436,10 @@ observations:
   tags: [sidecar]
   status: pending
   promoted_to: null
+- id: OBS-525
+  text: "The Mandate's own selection instrument cannot complete. 'fw bvp arcs' was killed at both 240s and 500s on this corpus (3442 task files), exit 143 both times, producing no ranking at all. The Mandate requires selecting work by BVP quadrant within an arc, so the one command that answers 'which arc has eligible Q1/Q2 work' is unavailable and selection has to fall back to 'fw bvp --include-proposed' plus per-task greps, which answers a different and coarser question. This is the same class as T-3452 (fw doctor 155-212s) and L-621: a command that cannot finish inside the window bounding it does not fail, it goes unmeasured, and unmeasured reads identically to absent. Worth noting the compounding: the ranking itself reports that 163 of 191 tasks have no cost at all because blast_radius is unmeasured until components resolve at close (T-3068), so quadrant thresholds are computed over 28 tasks out of 191. A selection procedure resting on quadrants is resting on a measurement that exists for 15 percent of the corpus and a command that times out."
+  captured: 2026-09-25T07:07:07Z
+  context_task: T-3456
+  tags: []
+  status: pending
+  promoted_to: null
