@@ -219,8 +219,64 @@ PYEOF
         echo "  Fix: bin/fw fabric enrich --describe-only"
     fi
 
+    # Section 5 — watch-set coverage (cards vs watch set).
+    #
+    # Section 1 computes: unregistered = expand_patterns(watch-patterns.yaml) - card_locations,
+    # i.e. "is there a watched file with no card". Every term on the right is bounded by the
+    # watch set, so the check can only ever produce a finding about a file the watch set already
+    # reaches. Nothing asked the converse — whether the watch set still reaches everywhere the
+    # fabric ALREADY HOLDS CARDS. When it does not, `unregistered: 0` is not evidence of a
+    # registered tree; it is evidence of a narrow glob, and the two are indistinguishable.
+    #
+    # Measured in a consumer project on 2026-09-25: 76 of 724 on-disk card locations (10.5%) lay
+    # outside the watch set across 39 directories. Worked example — a `src/config/` holding three
+    # files, two carded (so the project already decided the directory is in-fabric) and the third,
+    # with 38 importers, uncarded. No pattern covered that directory, so section 1 could never
+    # flag it and reported 0.
+    #
+    # Deliberately NOT a policy check: it does not decide which files deserve cards. It reports
+    # only where the fabric's own cards prove a directory is in scope while the watch set
+    # disagrees. Severity is informational on purpose — exit status is untouched.
     echo ""
-    echo -e "${BOLD}Summary:${NC} unregistered: $unregistered, orphaned: $orphaned, stale: $stale, under-populated: $under_populated"
+    echo -e "${CYAN}Watch-set coverage (cards vs watch set):${NC}"
+    local unwatched=0 _wc_raw _wc_rc=0 _wc_dirs=0
+    # `|| _wc_rc=$?` because under `set -e` a failing command substitution aborts the function,
+    # and a detector that cannot run must never be indistinguishable from one that found nothing.
+    _wc_raw=$(python3 "$LIB_DIR/watchset_coverage.py" "$watch_file" "$PROJECT_ROOT" \
+        "$COMPONENTS_DIR" 2>/dev/null) || _wc_rc=$?
+    if [ "$_wc_rc" -ne 0 ] || ! grep -q '^##UNWATCHED_LOCATIONS=' <<< "$_wc_raw"; then
+        echo "  ? UNKNOWN — the coverage reader did not run (watchset_coverage.py exited" \
+             "$_wc_rc). This is NOT 'fully covered'."
+        unwatched="UNKNOWN"
+    else
+        unwatched=$(sed -n 's/^##UNWATCHED_LOCATIONS=\([0-9]*\)##$/\1/p' <<< "$_wc_raw")
+        _wc_dirs=$(sed -n 's/^##UNWATCHED_DIRS=\([0-9]*\)##$/\1/p' <<< "$_wc_raw")
+        : "${unwatched:=0}" "${_wc_dirs:=0}"
+        local _wc_shown=0
+        while IFS= read -r _wc_line; do
+            case "$_wc_line" in
+                '  ! '*) ;;
+                *) continue ;;
+            esac
+            if [ "$_wc_shown" -lt 25 ]; then
+                echo "$_wc_line"
+                _wc_shown=$((_wc_shown + 1))
+            fi
+        done <<< "$_wc_raw"
+        if [ "$_wc_dirs" -gt "$_wc_shown" ]; then
+            echo "  … $((_wc_dirs - _wc_shown)) more director(ies) (full list:" \
+                 "python3 $LIB_DIR/watchset_coverage.py $watch_file $PROJECT_ROOT $COMPONENTS_DIR)"
+        fi
+        if [ "$unwatched" -eq 0 ]; then
+            echo "  (none)"
+        else
+            echo "  → $unwatched card location(s) in $_wc_dirs director(ies) the watch set" \
+                 "never scans; section 1 cannot report on anything there."
+        fi
+    fi
+
+    echo ""
+    echo -e "${BOLD}Summary:${NC} unregistered: $unregistered, orphaned: $orphaned, stale: $stale, under-populated: $under_populated, unwatched: $unwatched"
 
     if [ "$summary_flag" = "--summary" ]; then
         echo "unregistered: $unregistered"
@@ -230,6 +286,8 @@ PYEOF
         echo "under-populated-todo-purpose: $up_todo"
         echo "under-populated-unknown-subsystem: $up_unknown"
         echo "under-populated-no-edges: $up_noedges"
+        echo "unwatched: $unwatched"
+        echo "unwatched_dirs: $_wc_dirs"
     fi
 
     return 0
