@@ -189,7 +189,41 @@ _ACT_IN_THE_WORLD_RE = re.compile(
         \bdelete\s+(the\s+)?remote\b         |
         \bdrop\s+table\b                     |
         \bexternal\s+service\b               |
-        \bcustomer(s|-facing)?\b
+        \bcustomer(s|-facing)?\b             |
+        # ── T-3457: acts the AGENT CANNOT PERFORM and a STATIC SCAN CANNOT SEE ──
+        #
+        # The test for this class is not irreversibility alone. Everything above
+        # is outbound-irreversible — publish, deploy, pay — and that framing
+        # silently excluded a second family that is just as undelegable: things
+        # requiring the operator's own machine or their own credentials.
+        #
+        # Measured, not hypothesised (T-3456): `[RUBBER-STAMP] pi /login
+        # (Anthropic Pro)` classified `deterministic -> REVIEWER` purely on the
+        # author's prefix. Converted, the T-1985 auto-tick rail could tick it
+        # satisfied when nobody had logged in — a false green on the operator's
+        # own account, produced by a scanner that cannot observe a login at all.
+        # 3 of the 16 convertible criteria corpus-wide were this shape.
+        #
+        # Scoped to the ACT, not the noun: `\btoken\b` alone would swallow every
+        # criterion mentioning token budgets, and `\binstall\b` alone matches
+        # "the installer writes X". Each alternative below needs a verb or a
+        # command shape, so `fw doctor reports the hook is installed` stays
+        # deterministic while `install pi` does not.
+        \b(re)?install(s|ed|ing)?\s+\S                              |
+        \b(brew|apt|apt-get|yum|dnf|pacman|snap)\s+install\b        |
+        \bnpm\s+(i|install)\s+-g\b                                  |
+        \bpip\s+install\b                                           |
+        \bcargo\s+install\b                                         |
+        \blog\s?in(s|ged|ging)?\b                                   |
+        \bsign\s?in\b                                               |
+        \bsign\s+in\s+to\b                                          |
+        /login\b                                                    |
+        \bauth(enticate|orise|orize)(s|d|ing)?\b                    |
+        \b\w+\s+auth\s+login\b                                      |
+        \benter\s+(your\s+)?(password|passphrase|api[- ]?key|token|credential) |
+        \bpaste\s+(your\s+)?(api[- ]?key|token|secret)              |
+        \b2fa\b | \bmfa\b | \bone-time\s+code\b                     |
+        \bssh\s+key\b | \bgpg\s+key\b
     )
     """
 )
@@ -484,8 +518,13 @@ def classify(
 
     hit = _m(_ACT_IN_THE_WORLD_RE, body)
     if hit:
+        # T-3457: the reason names the actual test, because this class now holds
+        # two families and "irreversible external action" was true of only one.
+        # An operator reading `Install pi -> irreversible external action` has
+        # been told something false about their own criterion.
         return Classification("act-in-the-world", OPERATOR_ONLY,
-                              f"irreversible external action ({hit!r})")
+                              f"the agent cannot perform it and no scan can verify it "
+                              f"happened ({hit!r})")
 
     # Taste before deterministic, per T-1947: prose vocabulary in the criterion
     # wins over incidental mechanical vocabulary in its Expected clause. This is
