@@ -67,6 +67,19 @@ def legacy_topics(agent: str | None = None) -> list[str]:
     return [circuit.legacy_topic_for(agent or agent_id())]
 
 
+def v9_topics(agent: str | None = None) -> list[str]:
+    """The V9 spelling of this agent's inbox topic (T-3479).
+
+    READ-SIDE ONLY. Senders still write the T-3433 form; this exists so that a
+    peer which has already switched to V9 is heard before we change anything
+    they can observe. The write-side cut is a later slice and is gated on
+    telling 832, 010-termlink and 1409-sprind first.
+    """
+    cid = circuit.circuit_id("agent") if agent is None \
+        else circuit.resolve_address(agent)
+    return [circuit.v9_topic_for_circuit(cid)]
+
+
 def read_topics(agent: str | None = None) -> list[str]:
     """Every topic a reader for `agent` must consult. THE one definition.
 
@@ -86,8 +99,14 @@ def read_topics(agent: str | None = None) -> list[str]:
 
     So: one function, called by both. A future address change widens this and
     every reader follows. Adding a topic at a call site is the bug.
+
+    T-3479 is that future address change, and this is the whole of its read
+    half: the V9 topic joins the list here, and `pending()` plus
+    `retry.answered_conversations()` both follow without being touched. That
+    the widening is a one-line change in one place is the property T-3462 built
+    this function to have, now collected.
     """
-    return [inbox_topic(agent)] + legacy_topics(agent)
+    return [inbox_topic(agent)] + v9_topics(agent) + legacy_topics(agent)
 
 
 def _state_path():

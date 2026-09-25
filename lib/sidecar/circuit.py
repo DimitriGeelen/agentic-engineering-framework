@@ -236,6 +236,48 @@ def parse_circuit(cid: str) -> dict:
     return out
 
 
+def v9_address(cid: str) -> str:
+    """The SAME identity this module already derives, written in arc-020's V9
+    grammar (T-3479, operator ruling T-3475).
+
+    `aef::hub=<h>::project=<p>[::session=<s>]::@<agent>::`
+
+    **Sparse by construction — the `host=` token is never emitted here.** That
+    is what reconciles this module with arc-020 rather than replacing it.
+    T-3433's Decisions record "Rejected: host-first 5-segment addresses", which
+    reads as a rejection of V9; measured, it is a rejection of one SERIALIZATION
+    (host-first, always five tokens). `AEFAddress` documents every field as
+    optional — "sparse addresses are legal" — so a hub-anchored V9 address
+    carries exactly what `topic_for_circuit` carries and asserts no host we do
+    not have. The two grammars were never semantically in conflict; fifteen days
+    apart, neither task noticed.
+
+    Derived from the circuit id rather than from the environment, so there is
+    ONE identity with two serializations and no second source of truth to drift.
+    A host-qualified id (`//host/...`) drops its host here for the same reason
+    `topic_for_circuit` does: a topic lives on a hub.
+    """
+    parts = parse_circuit(cid)
+    out = ["aef::"]
+    for level in ("hub", "project", "session"):
+        value = parts.get(level)
+        if value:
+            out.append(f"{level}={value}::")
+    if parts.get("agent"):
+        out.append(f"@{parts['agent']}::")
+    return "".join(out)
+
+
+def v9_topic_for_circuit(cid: str) -> str:
+    """`inbox:<v9-address>` — the V9 spelling of `topic_for_circuit`.
+
+    Verified live under T-3475: the hub accepts `::` and `=` in a topic name,
+    so this needs no escaping. READ-SIDE ONLY in T-3479 — nothing writes here
+    until the peers have been told (832, 010-termlink, 1409-sprind).
+    """
+    return f"{TOPIC_PREFIX}{v9_address(cid)}"
+
+
 def topic_for_circuit(cid: str) -> str:
     """`inbox:<cid>` — the address IS the topic. Host-qualified ids are not
     addresses (a topic lives on a hub), so their host is dropped here."""

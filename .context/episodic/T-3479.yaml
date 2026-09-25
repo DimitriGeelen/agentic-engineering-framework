@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3479: arc-011/arc-020 convergence slice A: dual-read the V9 address alongside the current one, so the sidecar receives on both before anything changes on the write side
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T20:20:28Z
+# ============================================================================
+
+task_id: T-3479
+task_name: "arc-011/arc-020 convergence slice A: dual-read the V9 address alongside the current one, so the sidecar receives on both before anything changes on the write side"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T20:15:17Z
+completed: 2026-09-25T20:20:08Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-011/arc-020 convergence slice A: dual-read the V9 address alongside the current one, so the sidecar receives on both before anything changes on the write side
+
+# Key outcomes
+outcomes:
+  - '`read_topics()` returns the V9 topic in addition to the circuit and legacy topics — widened in the one shared definition, not at any call site'
+  - 'The V9 topic is built from the **sparse** form (hub + project, no host), so nothing asserts a fact about a peer''s host that we do not have'
+  - 'Both readers follow automatically: `pending()` and `retry.answered_conversations()` see the new topic without either being edited, which is the property T-3462 built `read_topics()` to have'
+  - 'Send path is untouched — no write goes to a V9 topic in this slice, verified by a test that asserts the outbound address is unchanged'
+  - 'Tests pin the widening against fixtures, including a **control leg** proving a message on the V9 topic is actually drained (not merely that the topic name appears in a list)'
+  - '`bin/fw sidecar status` shows all three inbox topics, so the operator can see the dual-read state'
+  - '`bin/fw vendor self --check` clean before close'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:parallel-execution-aef]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3479-arc-011arc-020-convergence-slice-a-dual-.md
+generated_by: context-agent-hybrid

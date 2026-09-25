@@ -113,13 +113,38 @@ HUB = "cacc73ea32b121dd"
 PROJ = "999-Agentic-Engineering-Framework"
 
 
-def test_snapshot_reports_the_circuit_and_both_topics(sc):
-    status, _, _, _ = sc
+def test_snapshot_reports_the_circuit_and_every_drained_topic(sc):
+    """T-3479 widened this from two topics to three (V9 dual-read).
+
+    The assertion is deliberately NOT "three topics": it is that the observer
+    reports exactly what the readers drain. Pinning a count would have to be
+    edited again at the next address change, and an observer that needs editing
+    to stay truthful is the defect this test exists to catch.
+    """
+    status, _, _, inbox = sc
     snap = status.snapshot()
     assert snap["circuit_id"] == f"{HUB}/{PROJ}/agent-under-test"
-    assert snap["inbox_topics"] == [f"inbox:{HUB}/{PROJ}/agent-under-test",
-                                    "sidecar:agent-under-test"]
+    assert snap["inbox_topics"] == inbox.read_topics()
     assert snap["inbox_topic"] == snap["inbox_topics"][0]
+    # The specific addresses still matter — identity, not just agreement.
+    assert f"inbox:{HUB}/{PROJ}/agent-under-test" in snap["inbox_topics"]
+    assert "sidecar:agent-under-test" in snap["inbox_topics"]
+    assert any(t.startswith("inbox:aef::") for t in snap["inbox_topics"])
+
+
+def test_status_topics_do_not_assert_a_host(sc):
+    """The V9 topic is SPARSE — hub and project only.
+
+    This is the property that reconciles T-3433 with arc-020: V9 without a
+    `host=` token carries the same information as the circuit form and claims
+    nothing about where a peer runs. If a `host=` ever appears here, the
+    convergence has quietly re-adopted the serialization T-3433 rejected.
+    """
+    status, _, _, _ = sc
+    v9 = [t for t in status.snapshot()["inbox_topics"] if t.startswith("inbox:aef::")]
+    assert v9, "no V9 topic present — dual-read is not wired"
+    for topic in v9:
+        assert "host=" not in topic
 
 
 def test_render_lists_a_cursor_for_every_drained_topic_even_unread(sc):
