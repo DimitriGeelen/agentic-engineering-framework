@@ -12,12 +12,12 @@ description: >
   rather than final. Changing a verdict's meaning is a design change, which is why
   it was not patched inside T-3426.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [arc:parallel-execution-aef]
+components: [lib/integrate.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -30,8 +30,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T19:48:19Z
-last_update: 2026-09-25T20:09:10Z
-date_finished:
+last_update: 2026-09-25T20:50:37Z
+date_finished: 2026-09-25T20:50:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -106,12 +106,12 @@ question is not yet settled.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Peer-mode timeout produces a third terminal state (e.g. `PENDING`/`UNANSWERED`), distinct from both `PASS` and `FAIL`, and the exit code distinguishes it so a caller can tell "not yet" from "broken"
-- [ ] A stored run record can be **re-read and settled later** without re-sending: an ACK arriving after the window updates H4/H5 and the verdict, keyed on the run's own `client_msg_id` and conversation
-- [ ] `FAIL` in peer mode is reserved for evidence of actual failure (H1 or H2 failing — we could not post, or the hub does not hold it); absence of an answer alone never yields `FAIL`
-- [ ] Tests pin all three outcomes against fixtures, including a **control leg** proving the states are distinguished rather than one label applied to everything, and a late-ACK settle that turns a `PENDING` record into `PASS`
-- [ ] The T-3426 record `ab947312` re-reads as settled-PASS under the new logic, since its ACK is on the topic — a regression fixture taken from a real 73-hour round trip
-- [ ] `bin/fw vendor self --check` clean before close
+- [x] Peer-mode timeout produces a third terminal state (e.g. `PENDING`/`UNANSWERED`), distinct from both `PASS` and `FAIL`, and the exit code distinguishes it so a caller can tell "not yet" from "broken"
+- [x] A stored run record can be **re-read and settled later** without re-sending: an ACK arriving after the window updates H4/H5 and the verdict, keyed on the run's own `client_msg_id` and conversation
+- [x] `FAIL` in peer mode is reserved for evidence of actual failure (H1 or H2 failing — we could not post, or the hub does not hold it); absence of an answer alone never yields `FAIL`
+- [x] Tests pin all three outcomes against fixtures, including a **control leg** proving the states are distinguished rather than one label applied to everything, and a late-ACK settle that turns a `PENDING` record into `PASS`
+- [x] The T-3426 record `ab947312` re-reads as settled-PASS under the new logic, since its ACK is on the topic — a regression fixture taken from a real 73-hour round trip
+- [x] `bin/fw vendor self --check` clean before close
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -145,6 +145,9 @@ question is not yet settled.
 -->
 
 ## Verification
+
+out=$(python3 -m pytest tests/unit/test_sidecar_e2e.py -q 2>&1); echo "$out" | grep -q " passed" && ! echo "$out" | grep -q " failed"
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -288,6 +291,41 @@ question is not yet settled.
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `fw sidecar e2e --peer <agent>` run `ab947312` (T-3426) recorded
+`verdict: FAIL` after its 1800s window closed with no ACK. The peer answered
+73h05m later, on the same conversation, with H1/H2 (send + hub held it) both
+green the entire time — the round trip was fine, the verdict was wrong.
+
+**Root cause:** `_finish()` computed the verdict as a single binary —
+`PASS` if every blocking hop was `ok` at the moment the polling loop's
+deadline passed, else `FAIL` — collapsing two different facts into one
+label: "the peer will not answer" (real failure) and "the peer has not
+answered yet" (a slow but healthy peer). The record was also *final*: once
+written, nothing re-checked it, so a later ACK had nowhere to land.
+
+**Why structurally allowed:** peer mode (T-3426) was added on top of a
+harness (T-3423) whose original two modes (`explicit`, `ambient`) each own
+a dispatched worker that has already exited by the time `run()` returns —
+for those, "no answer within the window" and "will never answer" really
+are the same fact, so the binary verdict was correct there. Peer mode
+changed that precondition (a real peer's read cadence is outside our
+control) without the verdict model changing with it — the ack-state side of
+this system had already hit the identical shape once (Amendment 1 / T-3396
+adding `UNKNOWN`), but that precedent wasn't carried across to the
+run-verdict side until this task.
+
+**Prevention:** `_verdict()` now takes a third value, `PENDING`, reserved
+for peer-mode runs where H1/H2 (send + hub-held evidence) are ok but H4/H5
+(the ACK) are not — `FAIL` is reserved for H1/H2 actually failing. A stored
+run record can be re-read via `fw sidecar settle <run_id>` /
+`lib/sidecar/e2e.py:settle()`, which re-checks H2/H4/H5 against current hub
+state keyed on the record's own `client_msg_id` and `conversation_id`
+(no re-send) and updates the verdict in place with a `settle_history`
+audit trail. `tests/unit/test_sidecar_e2e.py` pins a control leg (H1/H2
+failure still yields `FAIL`, never `PENDING`) and a regression fixture
+built directly from the real `ab947312.json` record, proving the 73-hour
+round trip now settles to `PASS`.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -311,6 +349,23 @@ question is not yet settled.
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-25 — third verdict state, not a timeout retune
+
+- **What changed:** the task was filed noting the scope fence up front
+  ("this is about the verdict vocabulary … not about tuning the timeout"),
+  and the build confirmed that framing rather than drifting from it —
+  `PENDING` only ever applies to peer mode (`Config.peer` set), because
+  `explicit`/`ambient` modes own a dispatched worker whose process has
+  already exited by the time `run()` returns, so there is nothing left to
+  settle for them. That asymmetry wasn't explicit in the original AC text
+  but falls directly out of who owns the process being observed.
+- **Plan impact:** none — the five agent ACs as filed were sufficient; no
+  scope cut or addition.
+- **Triggered:** none. `fw sidecar settle <run_id>` is a new CLI surface
+  (`lib/sidecar_cli.py:cmd_settle`) but stays inside this task's scope since
+  it's the mechanism AC2 ("re-read and settled later") names directly,
+  not a new deliverable.
 
 ## Recommendation
 
@@ -380,3 +435,15 @@ question is not yet settled.
 ### 2026-09-25T20:09:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3cc40842
+- **Timestamp:** 2026-09-25T20:50:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-25T20:50:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

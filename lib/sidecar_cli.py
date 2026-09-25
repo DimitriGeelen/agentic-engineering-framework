@@ -207,7 +207,10 @@ def cmd_e2e(args) -> int:
 
     T-3423. Preflight first so a missing hub never costs a worker; then
     lib/sidecar/e2e.py:run with the real collaborators; JSON record under
-    .context/sidecar/e2e/<run>.json; exit 0 only when the blocking hops pass.
+    .context/sidecar/e2e/<run>.json; exit 0 on PASS, 1 on FAIL, 3 on PENDING
+    (T-3476: peer mode only — "no answer yet" is not "broken", and `fw
+    sidecar settle <run_id>` re-checks a PENDING record later without
+    re-sending).
     """
     ok, why = e2e.preflight()
     if not ok:
@@ -247,7 +250,49 @@ def cmd_e2e(args) -> int:
     else:
         print(e2e.render(report))
         print(f"  report: {path}")
-    return 0 if report["verdict"] == "PASS" else 1
+    return _exit_for_verdict(report["verdict"])
+
+
+def _exit_for_verdict(verdict: str) -> int:
+    """0 PASS, 1 FAIL, 3 PENDING — distinct so a caller can tell "not yet"
+    from "broken" (T-3476) instead of collapsing both into a bare failure."""
+    if verdict == e2e.PASS:
+        return 0
+    if verdict == e2e.PENDING:
+        return 3
+    return 1
+
+
+def cmd_settle(args) -> int:
+    """Re-check a stored peer-mode e2e run against current hub state and
+    update its verdict in place, without re-sending (T-3476).
+
+    Reads .context/sidecar/e2e/<run_id>.json, re-derives H2/H4/H5 from
+    current hub messages keyed on the record's own client_msg_id and
+    conversation_id, and writes the settled record back to the same path —
+    a PENDING run turns PASS the moment the peer's ACK lands on the hub, or
+    stays PENDING (still no answer) or moves to FAIL (H1/H2 evidence turned
+    up broken, which settle() also re-checks).
+    """
+    path = e2e.report_dir() / f"{args.run_id}.json"
+    try:
+        report = json.loads(path.read_text(encoding="utf-8"))
+    except OSError:
+        print(f"settle: no run record for {args.run_id!r} at {path}", file=sys.stderr)
+        return 2
+    try:
+        report = e2e.settle(report)
+    except ValueError as exc:
+        print(f"settle: {exc}", file=sys.stderr)
+        return 2
+    e2e.write_report(report)
+    if args.json:
+        print(json.dumps(report, indent=2, sort_keys=True))
+    else:
+        print(e2e.render(report))
+        print(f"  settled: {report['settle_history'][-1]['from_verdict']} -> {report['verdict']}")
+        print(f"  report: {path}")
+    return _exit_for_verdict(report["verdict"])
 
 
 def cmd_dm_stale(args) -> int:
@@ -327,6 +372,14 @@ def build_parser() -> argparse.ArgumentParser:
                     help="keep the throwaway inbox cursors after the run")
     ee.add_argument("--json", action="store_true")
     ee.set_defaults(func=cmd_e2e)
+
+    se = sub.add_parser("settle", help="re-check a stored peer-mode e2e run against "
+                        "current hub state; a late ACK turns PENDING into PASS "
+                        "without re-sending (T-3476)")
+    se.add_argument("run_id", help="the run id from a prior `fw sidecar e2e --peer` "
+                    "(the .context/sidecar/e2e/<run_id>.json filename stem)")
+    se.add_argument("--json", action="store_true")
+    se.set_defaults(func=cmd_settle)
 
     ds = sub.add_parser("dm-stale", help="dm:* rails addressed to us with an unread "
                         "content post older than --threshold-hours (T-3442, "

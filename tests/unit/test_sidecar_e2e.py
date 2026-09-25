@@ -9,6 +9,7 @@ hop is recorded, never raised.
 import base64
 import importlib
 import json
+from pathlib import Path
 
 import pytest
 
@@ -228,14 +229,125 @@ def test_peer_mode_consults_a_real_agent_and_never_dispatches(mods, tmp_path):
     assert "n/a " in e2e.render(r)
 
 
-def test_peer_that_never_answers_fails_on_h4_h5_only(mods, tmp_path):
+def test_peer_that_has_not_answered_yet_is_pending_not_fail(mods, tmp_path):
+    """T-3476: a peer-mode timeout on H4/H5 alone is "no answer yet", not
+    "broken" — live: run ab947312 recorded FAIL at 1800s, then the peer
+    answered 73h05m later. H1/H2 passing is what tells them apart."""
     e2e, outbox, inbox = mods
     f = Fakes(e2e, outbox, inbox, _cfg(e2e, peer="010-termlink"), hub_has_ack=False)
     r = f.run(prompt_dir=tmp_path / "p")
     assert r["hops"]["H1"]["ok"] and r["hops"]["H2"]["ok"]
     assert not r["hops"]["H4"]["ok"] and not r["hops"]["H5"]["ok"]
-    assert r["verdict"] == "FAIL"
+    assert r["verdict"] == "PENDING"
     assert f.dispatched is None
+
+
+def test_peer_mode_h1_or_h2_failure_is_still_fail_not_pending(mods, tmp_path):
+    """Control leg: PENDING is reserved for "no answer yet". Real breakage
+    (we could not post, or the hub never held it) stays FAIL even in peer
+    mode — the two must not collapse into one label."""
+    e2e, outbox, inbox = mods
+    f = Fakes(e2e, outbox, inbox, _cfg(e2e, peer="010-termlink"), hub_has_consult=False)
+    r = f.run(prompt_dir=tmp_path / "p")
+    assert not r["hops"]["H2"]["ok"]
+    assert r["verdict"] == "FAIL"
+
+    g = Fakes(e2e, outbox, inbox, e2e.Config(task="T-0001", timeout=60, poll_interval=5,
+                                              run_id="raises1", peer="010-termlink"),
+              send_raises=True)
+    r2 = g.run(prompt_dir=tmp_path / "q")
+    assert not r2["hops"]["H1"]["ok"]
+    assert r2["verdict"] == "FAIL"
+
+
+def test_non_peer_mode_never_produces_pending(mods, tmp_path):
+    """PENDING only makes sense in peer mode: a dispatched worker's process
+    has already exited by the time run() returns, so there is nothing left
+    to settle later. A non-peer timeout stays FAIL."""
+    e2e, outbox, inbox = mods
+    f = Fakes(e2e, outbox, inbox, _cfg(e2e), hub_has_ack=False)
+    r = f.run(prompt_dir=tmp_path / "p")
+    assert r["verdict"] == "FAIL"
+
+
+def test_settle_turns_pending_into_pass_when_the_late_ack_lands(mods, tmp_path):
+    """AC2: a stored PENDING record re-reads and settles WITHOUT re-sending —
+    keyed on its own client_msg_id and conversation_id, not a fresh send."""
+    e2e, outbox, inbox = mods
+    cfg = _cfg(e2e, peer="010-termlink")
+    f = Fakes(e2e, outbox, inbox, cfg, hub_has_ack=False)
+    r = f.run(prompt_dir=tmp_path / "p")
+    assert r["verdict"] == "PENDING"
+    sent_cmid = f.cmid
+
+    def hub_with_late_ack(topic, cursor=0, limit=200):
+        real = f.hub_messages(topic, cursor, limit)
+        if topic == inbox.inbox_topic(cfg.sender):
+            return [f._env(1, cfg.responder, cfg.conversation_id, cfg.ack, "late-ack-1")]
+        return real
+
+    settled = e2e.settle(r, hub_messages=hub_with_late_ack)
+    assert settled is r  # updated in place
+    assert settled["verdict"] == "PASS"
+    assert settled["hops"]["H4"]["ok"] and settled["hops"]["H5"]["ok"]
+    assert "settled from hub evidence" in settled["hops"]["H5"]["detail"]
+    assert settled["client_msg_id"] == sent_cmid  # never re-sent
+    assert settled["settle_history"][-1]["from_verdict"] == "PENDING"
+    assert settled["settle_history"][-1]["to_verdict"] == "PASS"
+    assert "settled_at" in settled
+
+
+def test_settle_stays_pending_when_still_no_ack(mods, tmp_path):
+    e2e, outbox, inbox = mods
+    cfg = _cfg(e2e, peer="010-termlink")
+    f = Fakes(e2e, outbox, inbox, cfg, hub_has_ack=False)
+    r = f.run(prompt_dir=tmp_path / "p")
+    assert r["verdict"] == "PENDING"
+    settled = e2e.settle(r, hub_messages=f.hub_messages)  # hub still has no ACK
+    assert settled["verdict"] == "PENDING"
+    assert settled["settle_history"][-1] == {
+        "at": settled["settled_at"], "from_verdict": "PENDING", "to_verdict": "PENDING"}
+
+
+def test_settle_refuses_non_peer_records(mods, tmp_path):
+    e2e, outbox, inbox = mods
+    f = Fakes(e2e, outbox, inbox, _cfg(e2e))
+    r = f.run(prompt_dir=tmp_path / "p")
+    with pytest.raises(ValueError, match="not peer"):
+        e2e.settle(r)
+
+
+def test_ab947312_regression_settles_to_pass_from_the_real_73h_round_trip(mods):
+    """T-3476 origin fixture: T-3426's live run `ab947312` recorded FAIL at
+    the 1800s window; the peer's real answer landed on the legacy
+    `sidecar:` alias 73h05m later. The stored (pre-T-3433 `topics` field)
+    record must still settle correctly via the legacy-topic fallback."""
+    e2e, outbox, inbox = mods
+    fixture = (Path(__file__).resolve().parents[2] / ".context" / "sidecar" / "e2e"
+               / "ab947312.json")
+    report = json.loads(fixture.read_text(encoding="utf-8"))
+    assert report["verdict"] == "FAIL"
+    assert "topics" not in report  # the shape this regression must survive
+
+    def hub_with_late_ack(topic, cursor=0, limit=200):
+        if topic == "sidecar:010-termlink":
+            return [{"offset": 1,
+                     "metadata": {"client_msg_id": report["client_msg_id"],
+                                  "conversation_id": report["conversation_id"],
+                                  "from_agent": None},
+                     "payload_b64": base64.b64encode(b"SIDECAR-E2E ab947312").decode()}]
+        if topic == "sidecar:e2e-ab947312-sender":
+            return [{"offset": 7,
+                     "metadata": {"from_agent": "010-termlink",
+                                  "conversation_id": report["conversation_id"]},
+                     "payload_b64": base64.b64encode(b"SIDECAR-E2E-ACK ab947312").decode()}]
+        return []
+
+    settled = e2e.settle(report, hub_messages=hub_with_late_ack)
+    assert settled["verdict"] == "PASS"
+    assert settled["hops"]["H4"]["ok"] and settled["hops"]["H5"]["ok"]
+    assert settled["settle_history"][-1]["from_verdict"] == "FAIL"
+    assert settled["settle_history"][-1]["to_verdict"] == "PASS"
 
 
 def test_cli_refuses_ambient_with_peer(mods, capsys):

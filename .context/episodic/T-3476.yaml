@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3476: sidecar e2e peer mode reports FAIL for a peer that has not answered YET: a timeout needs a third terminal state, not a failure
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T20:50:55Z
+# ============================================================================
+
+task_id: T-3476
+task_name: "sidecar e2e peer mode reports FAIL for a peer that has not answered YET: a timeout needs a third terminal state, not a failure"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T19:48:19Z
+completed: 2026-09-25T20:50:37Z
+duration_days: 0
+updates_count: 4
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-3426 evidence: run ab947312 recorded FAIL after 1800s; the peer answered 73h05m later and the round trip was fine. FAIL conflates 'the peer will not answer' with 'the peer has not answered yet'. Amendment 1 (T-3396) already solved this class for ack states by inventing UNKNOWN as a valid non-error terminal state, and INJECTED_NOW makes the same conflation at the other end of the system. Peer-mode timeout should be a settleable third state that a later read resolves, with the run record re-readable rather than final. Changing a verdict's meaning is a design change, which is why it was not patched inside T-3426.
+
+# Key outcomes
+outcomes:
+  - 'Peer-mode timeout produces a third terminal state (e.g. `PENDING`/`UNANSWERED`), distinct from both `PASS` and `FAIL`, and the exit code distinguishes it so a caller can tell "not yet" from "broken"'
+  - 'A stored run record can be **re-read and settled later** without re-sending: an ACK arriving after the window updates H4/H5 and the verdict, keyed on the run''s own `client_msg_id` and conversation'
+  - '`FAIL` in peer mode is reserved for evidence of actual failure (H1 or H2 failing — we could not post, or the hub does not hold it); absence of an answer alone never yields `FAIL`'
+  - 'Tests pin all three outcomes against fixtures, including a **control leg** proving the states are distinguished rather than one label applied to everything, and a late-ACK settle that turns a `PENDING` record into `PASS`'
+  - 'The T-3426 record `ab947312` re-reads as settled-PASS under the new logic, since its ACK is on the topic — a regression fixture taken from a real 73-hour round trip'
+  - '`bin/fw vendor self --check` clean before close'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 62 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:parallel-execution-aef]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 62
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3476-sidecar-e2e-peer-mode-reports-fail-for-a.md
+generated_by: context-agent-hybrid

@@ -40,6 +40,23 @@ NONCE_PREFIX = "SIDECAR-E2E"
 ACK_PREFIX = "SIDECAR-E2E-ACK"
 DONE_MARKER = "DONE"
 
+# T-3476: peer-mode timeout is not evidence of failure — the peer may simply
+# not have read its inbox yet (live: run ab947312 recorded FAIL at 1800s,
+# then answered 73h05m later). PENDING is a third terminal state, distinct
+# from PASS and FAIL, reserved for exactly that shape: H1/H2 (send + hub
+# holds it) are ok, H4/H5 (the ACK) are not yet. It is settleable — see
+# settle() below — a later re-read can turn it into PASS without re-sending.
+# It applies to peer mode only: non-peer runs own a dispatched worker whose
+# process has already exited by the time run() returns, so there is nothing
+# left to observe later.
+PENDING = "PENDING"
+PASS = "PASS"
+FAIL = "FAIL"
+# Hops whose failure is real evidence of breakage in peer mode — we could
+# not post (H1) or the hub does not hold what we posted (H2). Everything
+# else blocking (H4, H5) is just "no answer yet" until proven otherwise.
+PEER_HARD_HOPS = ("H1", "H2")
+
 HOPS = ("H1", "H2", "H3", "H4", "H5", "H6")
 HOP_TITLES = {
     "H1": "ledger: consult row INJECTED_* (our side)",
@@ -394,15 +411,87 @@ def _check_h2(report, hub_messages, responder_topics, cmid) -> None:
          + (f" hub_error={errs[0]}" if errs else ""))
 
 
+def _verdict(report: dict, blocking, *, peer: bool) -> str:
+    """PASS if every blocking hop is ok. Otherwise FAIL, unless this is a
+    peer-mode run and the only hops still down are the soft ones (not H1/H2)
+    — that shape is "no answer yet", not "broken", so it settles as PENDING
+    instead (T-3476)."""
+    if all(report["hops"][h]["ok"] for h in blocking):
+        return PASS
+    if peer and all(report["hops"][h]["ok"] for h in PEER_HARD_HOPS if h in report["hops"]):
+        return PENDING
+    return FAIL
+
+
 def _finish(report: dict, cfg: Config, t0: float, now) -> dict:
     for h in HOPS:
         if h not in report["hops"]:
             _hop(report, h, False, "not attempted")
     blocking = cfg.blocking_hops()
     report["blocking_hops"] = list(blocking)
-    report["verdict"] = "PASS" if all(report["hops"][h]["ok"] for h in blocking) else "FAIL"
+    report["verdict"] = _verdict(report, blocking, peer=bool(cfg.peer))
     report["timings"]["total"] = round(now() - t0, 2)
     report["finished_at"] = datetime.now(timezone.utc).isoformat()
+    return report
+
+
+def settle(report: dict, *, hub_messages=real_hub_messages) -> dict:
+    """Re-check a stored peer-mode run against CURRENT hub state and update
+    H2/H4/H5 + the verdict in place — without re-sending (T-3476).
+
+    Keyed on the record's own `client_msg_id` and `conversation_id`, which is
+    what makes this a re-read rather than a new consult. Only PENDING/FAIL
+    peer-mode records are meaningfully settleable: non-peer records had a
+    dispatched worker whose process already exited, so nothing new can
+    appear for them, and re-running settle() on one raises rather than
+    silently reporting a verdict this function did not actually check.
+
+    A record from before topics: was recorded (T-3433) falls back to the
+    same legacy + inbox-topic derivation run() itself uses, so an old FAIL
+    like T-3426's ab947312 is still re-readable years later.
+    """
+    if report.get("mode") != "peer":
+        raise ValueError(
+            f"settle: run {report.get('run_id')!r} is mode={report.get('mode')!r}, "
+            "not peer — its worker has already exited, so there is nothing left "
+            "to re-check. Only peer-mode records settle.")
+    cfg = Config(task=report["task"], peer=report["peer"], run_id=report["run_id"])
+    topics = report.get("topics") or {}
+    responder_topics = topics.get("responder") or (
+        [inbox.inbox_topic(cfg.responder)] + inbox.legacy_topics(cfg.responder))
+    sender_topics = topics.get("sender") or (
+        [inbox.inbox_topic(cfg.sender)] + inbox.legacy_topics(cfg.sender))
+
+    prior_verdict = report.get("verdict")
+    _check_h2(report, hub_messages, responder_topics, report.get("client_msg_id"))
+    sender_msgs = [m for topic in sender_topics for m in hub_messages(topic, 0, 200)]
+    acks = [m for m in sender_msgs
+            if is_ack(cfg, sender=(m.get("metadata") or {}).get("from_agent"),
+                      conversation_id=(m.get("metadata") or {}).get("conversation_id"),
+                      body=_decoded_body(m))]
+    errs = [m["_error"] for m in sender_msgs if "_error" in m]
+    _hop(report, "H4", bool(acks),
+         f"{len(acks)} ACK envelope(s) on {' or '.join(sender_topics)}"
+         + (f" from_agent={(acks[0].get('metadata') or {}).get('from_agent')}" if acks else "")
+         + (f" hub_error={errs[0]}" if errs else ""))
+    if acks:
+        # The hub holding the ACK is the evidence H5 exists to require; a
+        # live inbox.pending() drain would find the same envelope. Recording
+        # that plainly (rather than silently promoting H5) keeps the
+        # provenance honest — settled from hub evidence, not from a drain.
+        _hop(report, "H5", True,
+             f"settled from hub evidence: ACK present on {' or '.join(sender_topics)} "
+             "at re-read time (not drained via inbox.pending)")
+
+    blocking = tuple(report.get("blocking_hops") or cfg.blocking_hops())
+    report["verdict"] = _verdict(report, blocking, peer=True)
+    settled_at = datetime.now(timezone.utc).isoformat()
+    report.setdefault("settle_history", []).append({
+        "at": settled_at,
+        "from_verdict": prior_verdict,
+        "to_verdict": report["verdict"],
+    })
+    report["settled_at"] = settled_at
     return report
 
 
