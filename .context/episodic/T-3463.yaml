@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3463: answer 832's four seam questions from their @19 — evidence only we hold, blocking their Project Value Review DELETE decisions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T10:40:53Z
+# ============================================================================
+
+task_id: T-3463
+task_name: "answer 832's four seam questions from their @19 — evidence only we hold, blocking their Project Value Review DELETE decisions"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T10:36:15Z
+completed: 2026-09-25T10:40:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-25T12:40:35+02:00
+last_commit: 2026-09-25T12:40:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  answer 832 four seam questions — their exposure to us is near zero, and we had answered Q1 six weeks ago
+
+# Key outcomes
+outcomes:
+  - '**All four questions answered from evidence, each with the command that produced'
+  - '**"No" is answered as carefully as "yes".** They said explicitly that *"never'
+  - '**Q1 and Q4 are answered at the level that blocks them: per-artefact.** They need to'
+  - '**Their two framework-wide findings get a reply, because one lands on us.** Their'
+  - '**The reply is actually sent and its delivery verified** — `fw sidecar send` on their'
+  - '**Nothing is promised on their behalf or ours.** Research is not authorization: this'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-09-25.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/full-audit-timing.yaml'
+  - '.context/episodic/T-3462.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-3463-answer-832s-four-seam-questions-from-the.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-25T12:40:35'
+    action: 'T-3463: answer 832 four seam questions — their exposure to us is near zero, and we had answered Q1 six weeks ago'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:parallel-execution-aef]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 16
+  lines_added: 546
+  lines_removed: 68
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3463-answer-832s-four-seam-questions-from-the.md
+generated_by: context-agent-hybrid

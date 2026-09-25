@@ -77,11 +77,6 @@ section_runs:
     timestamp: "2026-09-25T07:22:01+02:00"
     timed_out: true
     excludes_lock_wait: true
-  - name: "discovery"
-    seconds: 33
-    timestamp: "2026-09-25T11:40:33+02:00"
-    timed_out: false
-    excludes_lock_wait: true
   - name: "traceability"
     seconds: 183
     timestamp: "2026-09-25T12:03:07+02:00"
@@ -125,5 +120,10 @@ section_runs:
   - name: "quality"
     seconds: 1
     timestamp: "2026-09-25T12:40:02+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "discovery"
+    seconds: 34
+    timestamp: "2026-09-25T12:40:36+02:00"
     timed_out: false
     excludes_lock_wait: true
