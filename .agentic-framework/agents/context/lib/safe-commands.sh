@@ -263,6 +263,44 @@ _fw_single_command_is_safe() {
     cmd="${cmd#"${cmd%%[![:space:]]*}"}"
     cmd="${cmd%"${cmd##*[![:space:]]}"}"
 
+    # F-15 (T-3466): a TERMINAL `VAR=$(cmd)` assignment — the whole remaining
+    # segment is one assignment whose value is a command substitution, nothing
+    # after it. This is a different shape from the T-1908 env-prefix stripper
+    # below: that one strips a `KEY=VALUE` PREFIX in front of a command that
+    # follows it (`KEY=VALUE cmd args`); here the assignment IS the entire
+    # statement and the command to judge sits INSIDE `$( )`. The file's own
+    # header comment (T-2834 block, "Deliberately NOT handled: command
+    # substitution") scoped that exclusion to the general case — an argument
+    # elsewhere on the line containing `$(...)`, e.g. `curl "$(fw watchtower
+    # url)/page"`, where widening would risk admitting the OUTER command on the
+    # strength of an inner one it doesn't share safety with. A terminal
+    # assignment has no outer command to conflate with; the substitution's
+    # result is the entire effect of the line.
+    #
+    # Delegates to the top-level, chain-aware entry point (not a second call
+    # into this function) so `X=$(cmd1 && cmd2)` requires EVERY clause inside
+    # the substitution to be independently safe, same as top-level chains
+    # (T-2834's compound-command rule). Recursion terminates because the
+    # matched string is strictly shorter than $cmd each time (the `VAR=$(` and
+    # trailing `)` are stripped), and the outer redirect/rm/tee/heredoc scan
+    # (has_bash_write_pattern) still runs against the ORIGINAL, un-recursed
+    # line at every call site — this cannot admit a write no matter what the
+    # inner command resolves to.
+    #
+    # Extraction is a plain prefix/suffix strip, not a balanced-paren parser:
+    # for a well-formed `VAR=$( ... )` matching this anchored pattern, stripping
+    # `VAR=$(` off the front and the LAST `)` off the back is exactly correct
+    # for arbitrary nesting (each inner `$(...)` still closes inside what's
+    # captured) — verified against `X=$(echo $(hostname))` in the Decisions
+    # section. It only goes wrong if the line contains a literal unbalanced `)`
+    # as DATA, which is not a shape this dispatch's two reproduction cases hit,
+    # and the failure direction there is a garbled inner string that will not
+    # match any allowlist arm — i.e. still toward blocking, not toward opening.
+    if [[ "$cmd" =~ ^[A-Za-z_][A-Za-z0-9_]*=\$\((.*)\)[[:space:]]*$ ]]; then
+        is_bash_safe_command "${BASH_REMATCH[1]}" && return 0
+        return 1
+    fi
+
     # T-2988: strip shell grouping punctuation from the segment's edges.
     #
     # Both readers below take a token positionally — `awk '{print $1}'` for the
