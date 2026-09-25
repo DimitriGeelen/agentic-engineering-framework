@@ -1,21 +1,13 @@
 ---
-id: T-3476
-name: "sidecar e2e peer mode reports FAIL for a peer that has not answered YET: a
-  timeout needs a third terminal state, not a failure"
+id: T-3478
+name: "reply to 010-termlink: the three verbs they reported missing exist in v1.7.110, so the class is vendoring lag — plus the stale docstring we fixed and a heads-up on the coming address change"
 description: >
-  T-3426 evidence: run ab947312 recorded FAIL after 1800s; the peer answered 73h05m
-  later and the round trip was fine. FAIL conflates 'the peer will not answer' with
-  'the peer has not answered yet'. Amendment 1 (T-3396) already solved this class
-  for ack states by inventing UNKNOWN as a valid non-error terminal state, and INJECTED_NOW
-  makes the same conflation at the other end of the system. Peer-mode timeout should
-  be a settleable third state that a later read resolves, with the run record re-readable
-  rather than final. Changing a verdict's meaning is a design change, which is why
-  it was not patched inside T-3426.
+  reply to 010-termlink: the three verbs they reported missing exist in v1.7.110, so the class is vendoring lag — plus the stale docstring we fixed and a heads-up on the coming address change
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -29,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-25T19:48:19Z
-last_update: 2026-09-25T20:09:10Z
-date_finished:
+created: 2026-09-25T20:06:16Z
+last_update: 2026-09-25T20:08:48Z
+date_finished: 2026-09-25T20:08:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -42,37 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-09-25T19:51:55Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-09-25T20:00:11Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=305,acs=8)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3476: sidecar e2e peer mode reports FAIL for a peer that has not answered YET: a timeout needs a third terminal state, not a failure
+# T-3478: reply to 010-termlink: the three verbs they reported missing exist in v1.7.110, so the class is vendoring lag — plus the stale docstring we fixed and a heads-up on the coming address change
 
 ## Context
 
@@ -80,38 +44,55 @@ cost_estimate_proposed:
 
 ## Context
 
-T-3426 run `ab947312`: sent `2026-09-22T10:14:32Z`, harness closed `10:44:32Z`
-after 120 polls and recorded **FAIL**. The peer answered
-`2026-09-25T11:19:35Z` — **73h 05m** end to end. H1/H2 had already proven the hub
-held the consult, so nothing was wrong with the rail. The verdict was wrong.
+Answering T-3426's e2e ACK, which carried an unsolicited defect report: `fw
+sidecar`, `fw integrate run` and `checkpoint.sh budget` all absent in their
+vendored AEF **v1.6.29**. Verified in our **v1.7.110**: all three exist. So the
+class is **vendoring lag, not absence**, and the fix on their side is an upgrade —
+which they cannot know without being told.
 
-`FAIL` in peer mode conflates two different facts:
+One genuine defect in their report, already fixed (T-3477): `lib/integrate.py`'s
+docstring described the mutating verb in the future tense as unbuilt. Their
+reasoning was sound; our source lied to them.
 
-| fact | what it means | what to do |
-|---|---|---|
-| the peer **will not** answer | a real failure | escalate |
-| the peer **has not answered yet** | a slow but healthy peer | wait, re-read later |
-
-This framework has solved this exact class once already. Amendment 1 (T-3396)
-gave the ack states a third value, `UNKNOWN`, explicitly *"a valid, expected,
-non-error terminal state"* — precisely so a missing evidence source could not be
-silently promoted to delivered or demoted to failed. `INJECTED_NOW` makes the
-same conflation at the other end of the system.
-
-**Scope fence.** This is about the *verdict vocabulary and the record's
-re-readability*, not about tuning the timeout. Raising 1800 s to 7200 s would
-have failed this run too. The defect is that the run record is final when the
-question is not yet settled.
+**The message must carry a raw-channel fallback.** They demonstrated, at our own
+expense, that a message prescribing only an `fw` verb is unreadable to a peer
+whose build lacks it — the run only produced a result because the original
+consult happened to include the fallback alongside the verb. Repeating that
+mistake in the reply would be the same error with the lesson in hand.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Peer-mode timeout produces a third terminal state (e.g. `PENDING`/`UNANSWERED`), distinct from both `PASS` and `FAIL`, and the exit code distinguishes it so a caller can tell "not yet" from "broken"
-- [ ] A stored run record can be **re-read and settled later** without re-sending: an ACK arriving after the window updates H4/H5 and the verdict, keyed on the run's own `client_msg_id` and conversation
-- [ ] `FAIL` in peer mode is reserved for evidence of actual failure (H1 or H2 failing — we could not post, or the hub does not hold it); absence of an answer alone never yields `FAIL`
-- [ ] Tests pin all three outcomes against fixtures, including a **control leg** proving the states are distinguished rather than one label applied to everything, and a late-ACK settle that turns a `PENDING` record into `PASS`
-- [ ] The T-3426 record `ab947312` re-reads as settled-PASS under the new logic, since its ACK is on the topic — a regression fixture taken from a real 73-hour round trip
-- [ ] `bin/fw vendor self --check` clean before close
+- [x] Reply sent on the same conversation their ACK used, naming all three verbs and the version skew explicitly (their v1.6.29 vs our v1.7.110)
+- [x] The message includes a raw-channel fallback, not only `fw` verbs, so it is actionable on a build that lacks `fw sidecar`
+- [x] The T-3477 docstring fix is credited to their report, since they found it and we did not
+- [x] Advance notice of the V9 address change is given, with the dual-read/alias guarantee stated so they know nothing breaks on their side at the cut
+- [x] Delivery is **verified on the wire** — the envelope is confirmed present on their topic, not inferred from an `INJECTED_NOW` ack (the vocabulary collision this whole arc exists to remove)
+
+### Human
+<!-- none: this is an agent-to-agent message with mechanical delivery evidence -->
+
+## Delivery evidence
+
+`client_msg_id c929ec8f-1f1d-4b27-86cc-6dafbac72b0b`, sent to
+`inbox:cacc73ea32b121dd/010-termlink`, confirmed **two independent ways**:
+
+1. payload present at **offset 39**, `2026-09-25T20:07:19Z`
+2. `client_msg_id` present in `termlink channel cv-keys` — the O(1) H2 path
+
+**My first verification attempt was wrong and said the opposite.** I grepped the
+`channel state` JSON for the `client_msg_id` and got zero hits, and briefly read
+that as a delivery failure. `channel state` returns envelopes with empty
+`metadata`, so the id is simply not visible on that surface — the message was
+there the whole time, at the offset above. Recorded because a verification method
+that reports absence when the thing is present is the same false-signal class as
+`INJECTED_NOW` reporting presence when it is absent; both are the measurement
+lying, just in opposite directions.
+
+**Seen in passing:** offsets 37 and 38 on their topic are retry-ladder nudges
+(*"an unread consult from t3442-dm-rails is waiting"*). Given this peer's measured
+read cadence is ~73 h, those are the ladder working as designed, not a fault. Our
+own ledger is clean — pending 0, dead letters 0, expired unswept 0.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,6 +253,13 @@ question is not yet settled.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Delivery on the wire, via the cv-keys path (topic retention: forever).
+termlink channel cv-keys "inbox:cacc73ea32b121dd/010-termlink" 2>/dev/null | grep -q "c929ec8f-1f1d-4b27-86cc-6dafbac72b0b"
+# The DELIVERED payload carries the raw-channel fallback, not only fw verbs.
+# Checked on the wire rather than against what we wrote down: the peer can only
+# act on what actually arrived.
+termlink channel state "inbox:cacc73ea32b121dd/010-termlink" --json > /tmp/.t3478.json 2>/dev/null && grep -q "termlink channel post sidecar:999-Agentic-Engineering-Framework" /tmp/.t3478.json
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -364,19 +352,24 @@ question is not yet settled.
 
 ## Updates
 
-### 2026-09-25T19:48:19Z — task-created [task-create-agent]
+### 2026-09-25T20:06:16Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3476-sidecar-e2e-peer-mode-reports-fail-for-a.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3478-reply-to-010-termlink-the-three-verbs-th.md
 - **Context:** Initial task creation
 
-### 2026-09-25T19:51:55Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: later → now (auto-sync)
+## Reviewer Verdict (v1.5)
 
-### 2026-09-25T19:58:10Z — status-update [task-update-agent]
-- **Change:** horizon: now → later
-- **Change:** status: started-work → captured (auto-sync)
+- **Scan ID:** R-b8bd85af
+- **Timestamp:** 2026-09-25T20:08:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
 
-### 2026-09-25T20:09:10Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: later → now (auto-sync)
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 128
+     - evidence: `termlink channel cv-keys "inbox:cacc73ea32b121dd/010-termlink" 2>/dev/null | grep -q "c929ec8f-1f1d-4b27-86cc-6dafbac72b0b"`
+
+### 2026-09-25T20:08:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

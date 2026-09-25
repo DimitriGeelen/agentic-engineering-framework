@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3478: reply to 010-termlink: the three verbs they reported missing exist in v1.7.110, so the class is vendoring lag — plus the stale docstring we fixed and a heads-up on the coming address change
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T20:09:04Z
+# ============================================================================
+
+task_id: T-3478
+task_name: "reply to 010-termlink: the three verbs they reported missing exist in v1.7.110, so the class is vendoring lag — plus the stale docstring we fixed and a heads-up on the coming address change"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T20:06:16Z
+completed: 2026-09-25T20:08:48Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reply to 010-termlink: the three verbs they reported missing exist in v1.7.110, so the class is vendoring lag — plus the stale docstring we fixed and a heads-up on the coming address change
+
+# Key outcomes
+outcomes:
+  - 'Reply sent on the same conversation their ACK used, naming all three verbs and the version skew explicitly (their v1.6.29 vs our v1.7.110)'
+  - 'The message includes a raw-channel fallback, not only `fw` verbs, so it is actionable on a build that lacks `fw sidecar`'
+  - 'The T-3477 docstring fix is credited to their report, since they found it and we did not'
+  - 'Advance notice of the V9 address change is given, with the dual-read/alias guarantee stated so they know nothing breaks on their side at the cut'
+  - 'Delivery is **verified on the wire** — the envelope is confirmed present on their topic, not inferred from an `INJECTED_NOW` ack (the vocabulary collision this whole arc exists to remove)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3478-reply-to-010-termlink-the-three-verbs-th.md
+generated_by: context-agent-hybrid
