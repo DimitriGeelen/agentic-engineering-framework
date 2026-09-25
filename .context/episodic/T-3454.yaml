@@ -80,10 +80,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 449
-  commits: 2
-  files_changed: 10
-  lines_added: 988
-  lines_removed: 35
+  commits: 3
+  files_changed: 12
+  lines_added: 1172
+  lines_removed: 40
+  footprint_refreshed_at: '2026-09-25T06:41:39Z'
+  footprint_refreshed_by_commit: 66fe10b76
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3454-two-gates-offer-mutually-exclusive-bypas.md
