@@ -153,6 +153,31 @@ poll it), or a genuinely cold page cache. Named rather than folded into the win.
       (G-104 — a fix on disk that the running process is not serving is not a fix).
 
 ### Human
+
+- [ ] [REVIEW] The dashboard still shows what it showed before, and now arrives quickly
+
+  This changed how YAML is parsed, not what is parsed, and I checked that mechanically —
+  the rendered page was byte-identical under both loaders (same sha256), and all 5339
+  corpus YAML files parse equal both ways. What a machine cannot settle is whether the
+  page you actually look at still reads right to you, which is why P-013 asked.
+
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` — open the URL
+     it prints (currently http://192.168.10.107:3002/).
+  2. Look at the dashboard as you normally would: the panels you use, their counts, the
+     recent-activity list.
+  3. Note roughly how long it took to appear.
+
+  **Expected:** the same panels with the same numbers you would have seen yesterday, and
+  the page arrives in well under a second instead of the several seconds it used to take.
+  Nothing blank, no panel showing 0 where it used to show a figure.
+
+  **If not:** a panel that is blank or reads 0 is the signal that matters — that would
+  mean a YAML file is now failing to parse where it previously succeeded, which the
+  byte-identity check says should be impossible, so it would be genuinely new
+  information. Say which panel, and it gets reverted rather than patched: the change is
+  one line of loader selection and is not worth a wrong number on your dashboard.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -389,6 +414,42 @@ bin/fw vendor self --check
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+
+**Rationale:** A one-line loader selection took the dashboard from ~3-6 s to ~0.7 s, and
+the correctness claim is checked rather than argued: identical page bytes, 5339 corpus
+YAML files equal under both parsers, and an identical web-suite result on the same
+selection before and after. The risk is small and the failure mode is loud — a parse that
+broke would show as a blank or zeroed panel, which is exactly what the Human AC asks you
+to look for. The fallback keeps a consumer host without libyaml working unchanged.
+
+I would rather you knew the two things this task got wrong before it got them right, since
+both are the kind of error that ships quietly: I first reported a 5× win that was the OS
+page cache warming between two runs, and the profile that pointed me at YAML in the first
+place had overstated its share roughly fivefold, because cProfile's overhead lands hardest
+on exactly the function-call-heavy pure-Python code the parser is. Neither the profile nor
+a naive before/after could have caught the other; what settled it was measuring the parser
+with I/O excluded and running the live comparison with the same restart on both sides.
+
+**Evidence:**
+- Parser in isolation, I/O excluded, 800 files / 6.7 MB: pure-Python 16.95 s vs libyaml
+  1.39 s — **12.2×**.
+- Live A/B on `/`, same restart procedure: pre-fix 3.58 / 6.56 / 2.87 s, post-fix 0.67 /
+  0.72 / 0.73 s. The variance collapses along with the mean.
+- Byte-identical output: same sha256 for the rendered page under both loaders; 5339
+  corpus YAML files parsed both ways, 0 differing.
+- Web suite: identical 6-failed / 8-passed on the same selection pre- and post-fix. The
+  full-suite count of 8 is the known T-2748 cross-test pollution, reproduced without this
+  change.
+- 8/8 in `tests/unit/t3458_yaml_c_loader.bats`, including the leg that caught my own
+  incomplete first pass — two `safe_load` sites left behind, one of them the episodic
+  loop that is the single biggest YAML cost on a cold request.
+
+**What I did not fix, stated plainly:** the original live readings were 9.45 s and
+18.45 s, and the pre-fix A/B only reproduced 2.87-6.56 s. That residual is unexplained.
+`/metrics` is also still 4.68 s with a different hotspot. Both are separate work, not
+folded into this result.
 
 ## Decisions
 
