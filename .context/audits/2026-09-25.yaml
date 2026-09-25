@@ -1,5 +1,5 @@
-# Audit Results - 2026-09-25-0948
-timestamp: 2026-09-25T07:48:50Z
+# Audit Results - 2026-09-25-1005
+timestamp: 2026-09-25T08:05:29Z
 sections: "structure"
 summary:
   pass: 36
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3445 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 3446 task file(s) across 1 corpus view(s)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 31 project YAML file(s)"
   - level: PASS
@@ -72,7 +72,7 @@ findings:
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
   - level: PASS
-    check: "Watchtower currency: running pid 1756819 is newer than every file under web/"
+    check: "Watchtower currency: running pid 2576510 is newer than every file under web/"
   - level: PASS
     check: "Exec-bit parity: every 100755-indexed script is executable on disk — examined 61 indexed-100755 script(s) (*.sh + bin/fw)"
   - level: PASS
@@ -87,7 +87,7 @@ findings:
   - level: PASS
     check: "Invariant suite (tests/lint) green — examined 110 structural invariant(s) (tests/lint/)"
   - level: PASS
-    check: "Dead-negation lint (tests/) clean — examined 781 bats file(s) scanned for dead negations (tests/, T-3138/T-3191)"
+    check: "Dead-negation lint (tests/) clean — examined 782 bats file(s) scanned for dead negations (tests/, T-3138/T-3191)"
   - level: WARN
     check: "Unit suite (tests/unit) COULD NOT DETERMINE — nightly run hit its 7200s ceiling (T-3302, OBS-392)"
     mitigation: "Make a run COMPLETE before trusting any count: raise FW_UNIT_SUITE_TIMEOUT, or split/shard the corpus (OBS-388 covers the nested tests/lint suite). Re-running unit-suite.sh unchanged just re-times-out. Until one completes, treat tests/unit as UNKNOWN"

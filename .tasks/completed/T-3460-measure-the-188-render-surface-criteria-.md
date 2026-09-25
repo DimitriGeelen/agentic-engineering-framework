@@ -4,10 +4,10 @@ name: "measure the 188 render-surface criteria — how many touch an actual rend
 description: >
   measure the 188 render-surface criteria — how many touch an actual render surface versus a Python helper under web/, because P-013 triggers on the directory not the file
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T08:14:57Z
-last_update: 2026-09-25T08:14:57Z
-date_finished: null
+last_update: 2026-09-25T08:22:31Z
+date_finished: 2026-09-25T08:22:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -414,3 +414,15 @@ grep -q 'Primary signal: git history (T-2061, L-435 fix)' lib/render_surface.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3460-measure-the-188-render-surface-criteria-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ac477c80
+- **Timestamp:** 2026-09-25T08:22:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-25T08:22:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
