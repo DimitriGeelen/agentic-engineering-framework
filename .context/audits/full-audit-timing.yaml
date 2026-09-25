@@ -107,11 +107,6 @@ section_runs:
     timestamp: "2026-09-25T11:15:07+02:00"
     timed_out: false
     excludes_lock_wait: true
-  - name: "structure"
-    seconds: 294
-    timestamp: "2026-09-25T11:39:58+02:00"
-    timed_out: false
-    excludes_lock_wait: true
   - name: "compliance"
     seconds: 0
     timestamp: "2026-09-25T11:39:58+02:00"
@@ -125,5 +120,10 @@ section_runs:
   - name: "discovery"
     seconds: 33
     timestamp: "2026-09-25T11:40:33+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "structure"
+    seconds: 298
+    timestamp: "2026-09-25T11:49:58+02:00"
     timed_out: false
     excludes_lock_wait: true
