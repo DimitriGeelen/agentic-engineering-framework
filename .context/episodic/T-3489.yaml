@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3489: BVP loop S2: the degenerate-scorer alarm — WARN when a scorer's output has near-zero variance across a task family, the control that replaces the removed confirmation gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T23:12:21Z
+# ============================================================================
+
+task_id: T-3489
+task_name: "BVP loop S2: the degenerate-scorer alarm — WARN when a scorer's output has near-zero variance across a task family, the control that replaces the removed confirmation gate"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T22:57:55Z
+completed: 2026-09-25T23:12:03Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP loop S2: the degenerate-scorer alarm — WARN when a scorer's output has near-zero variance across a task family, the control that replaces the removed confirmation gate
+
+# Key outcomes
+outcomes:
+  - '`lib/bvp_degenerate.py` computes per-driver variance over proposed scores grouped into families, as a standalone reader importing nothing from `lib/bvp.sh`'
+  - '**It fires on the known-bad case:** run against the live corpus it reports the collapse round 3 found by hand, naming the family and the collapsed pattern — a detector that cannot reproduce the incident that motivated it is unverified'
+  - '**Control leg:** a synthetic well-spread family does NOT trip the alarm, so the check is proven to discriminate rather than to always fire'
+  - 'Output names the pattern and its share, not just a verdict — "flat" with no pattern is unactionable; the operator needs to see *which* constant'
+  - 'A family below the minimum size is reported as **insufficient data, not as healthy** — too few tasks to judge must never read as a pass (the T-3099 false-green class)'
+  - 'The threshold and minimum family size are parameters with their chosen values justified from the measured corpus, not guessed'
+  - 'Tests pin fire, not-fire, and insufficient-data against committed fixtures'
+  - '`lib/bvp.sh` and `policy/value-drivers.yaml` untouched, verified by `git diff --name-only`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3489-bvp-loop-s2-the-degenerate-scorer-alarm-.md
+generated_by: context-agent-hybrid
