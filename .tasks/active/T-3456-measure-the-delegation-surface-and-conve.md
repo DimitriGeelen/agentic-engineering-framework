@@ -1,8 +1,12 @@
 ---
 id: T-3456
-name: "measure the delegation surface and convert only what is provably safe — 330 operator-only criteria against 16 reviewer-closeable is the binding constraint on the whole Q1 band"
+name: "measure the delegation surface and convert only what is provably safe — 330
+  operator-only criteria against 16 reviewer-closeable is the binding constraint on
+  the whole Q1 band"
 description: >
-  measure the delegation surface and convert only what is provably safe — 330 operator-only criteria against 16 reviewer-closeable is the binding constraint on the whole Q1 band
+  measure the delegation surface and convert only what is provably safe — 330 operator-only
+  criteria against 16 reviewer-closeable is the binding constraint on the whole Q1
+  band
 
 status: started-work
 workflow_type: build
@@ -22,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T07:06:17Z
-last_update: 2026-09-25T07:06:17Z
-date_finished: null
+last_update: 2026-09-25T07:17:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +38,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-25T07:15:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=369,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-25T07:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3456: measure the delegation surface and convert only what is provably safe — 330 operator-only criteria against 16 reviewer-closeable is the binding constraint on the whole Q1 band
@@ -135,13 +167,13 @@ one-bug-one-task; this task parks on it rather than converting around it.
       judgment or whether they are deterministic criteria written `[REVIEW]` out of habit —
       T-1878 measured a 412:7 adoption gap and a 13% mis-classification rate, so the prior
       is that a real fraction is mis-routed.
-- [ ] **Conversion is bounded and evidence-led.** Any criterion actually converted is
+- [x] **Conversion is bounded and evidence-led.** Any criterion actually converted is
       converted individually, with its before/after recorded here and the
       `.context/working/delegations.jsonl` line cited. **No bulk conversion.** If the safe
       set is larger than a handful, that volume is a Sovereign question (below), not a
       thing to execute for momentum — the operator authorised the mechanism (D-626), not a
       mass re-routing of their own review queue.
-- [ ] **Nothing converted is something I then close.** Producer-not-judge: a criterion I
+- [x] **Nothing converted is something I then close.** Producer-not-judge: a criterion I
       convert is closed by the reviewer's own verdict through the existing auto-tick rail
       (T-1985), or it stays open. Verified by showing the reviewer verdict for any task
       whose ownership moved, not by my assertion that the work is adequate.
@@ -307,6 +339,14 @@ one-bug-one-task; this task parks on it rather than converting around it.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# This task converted nothing, so there is no code to test. What it must not
+# lose is the evidence: the surface verb still runs, and no delegation was
+# written. No live counts pinned (T-3326) — the numbers live in ## Context as
+# dated evidence, because they move as tasks close.
+
+test ! -s .context/working/delegations.jsonl || grep -qv T-3456 .context/working/delegations.jsonl
+bin/fw reviewer surface > /tmp/.t3456-v1.out 2>&1 && grep -q "Delegation surface" /tmp/.t3456-v1.out
 
 ## RCA
 
@@ -404,3 +444,76 @@ one-bug-one-task; this task parks on it rather than converting around it.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3456-measure-the-delegation-surface-and-conve.md
 - **Context:** Initial task creation
+
+
+## Outcome — zero conversions, and why that is the finding (AC 4, AC 5)
+
+**Nothing was converted.** AC 4 said conversion must be evidence-led; the evidence says
+the convertible set cannot be trusted, on two independent axes.
+
+**Axis 1 — fixed (T-3457).** The act-in-the-world vocabulary covered only
+outbound-irreversible acts, so `[RUBBER-STAMP] pi /login (Anthropic Pro)` classified
+`deterministic → REVIEWER`. 3 of 16. Fixed and closed; the set is now 13.
+
+**Axis 2 — surfaced, not fixed.** Auditing the *reason* behind each of the remaining 13:
+
+| matched token | n | what it actually is |
+|---|---:|---|
+| `shows …` | 7 | prose: "the page **shows** the link is clickable" |
+| `name …` / `Names m` | 3 | prose: "**name** the reason this work is worth carrying" |
+| `exit 0` | 1 | genuinely mechanical |
+| `file missing` | 1 | genuinely mechanical |
+| author `[RUBBER-STAMP]` | 1 | T-464, "Test /capture skill in a live session" |
+
+**10 of 13 rest on the English words "shows" or "name" appearing in an Expected clause.**
+Two worked examples, verbatim from `--dry-run`:
+
+```
+T-3091    [REVIEW] The SALVAGE verdicts are the right call …
+          deterministic → REVIEWER   ('name the r')      owner: human → agent
+T-100201  [REVIEW] Ratify that T-3185 dissolves this task …
+          deterministic → REVIEWER   ('name a')          owner: human → agent
+```
+
+"…are the right call" is taste. "Ratify…" is sovereignty. Both would have moved to
+`owner: agent` and auto-ticked on a reviewer PASS.
+
+So the headline **"reviewer-closeable 16" is largely an artefact**, and the honest
+convertible set on this corpus is roughly 2. That is much closer to 832's measured 0 of
+342 (CLAUDE.md §Delegation) than to anything this repo's number implied.
+
+**Why this was surfaced instead of fixed.** `names?` and `shows?` are not a naive bug.
+`lib/reviewer/static_scan.py:944` shows they were added **deliberately by T-1897** as a
+"conformance-checking dialect", for criteria like *"block message names the bypass
+mechanism"* — which genuinely is statically checkable. The regex is shared with the
+reviewer, so narrowing it changes reviewer behaviour corpus-wide, and it would drop
+reviewer-closeable to ~2, tripping the `FW_DELEGATION_SURFACE_WARN` audit rail
+permanently. Re-deciding a prior deliberate widening, with that blast radius, on my own
+judgement is the thing the Mandate forbids. Recorded as the Sovereign question below.
+
+**AC 5 is satisfied vacuously and deliberately:** nothing was converted, so there is
+nothing I converted and then certified. That is the correct outcome of producer-not-judge
+here, not an evasion of it.
+
+## Sovereign question
+
+**Is the conformance dialect (`names?` / `shows?`) worth its false-positive rate, given
+that removing it leaves the delegation mechanism reaching almost nothing?**
+
+The trade, measured on this corpus:
+
+- **Keep as-is:** reviewer-closeable reads 16; ~10 are prose matches that would misroute
+  taste and sovereignty criteria to an agent and auto-tick them. The number flatters the
+  delegation surface and is unsafe to act on.
+- **Narrow it:** reviewer-closeable falls to ~2-3. The audit's delegation-surface WARN
+  fires more or less permanently — which would be *telling the truth*, and is arguably
+  the point of the rail. But it also says plainly that D-626's mechanism does not reach
+  this corpus, which is a conclusion about a shipped feature, not a tuning change.
+
+A third option exists and is not mine to pick: keep the dialect for the reviewer's own
+findings (where a false positive costs a spurious CONCERN) while excluding it from the
+*delegation* classifier (where a false positive costs an ownership transfer and an
+auto-tick). The two consumers have very different blast radii for the same match, and
+they currently share one regex.
+
+Not decided here. The measurement above is the input.

@@ -5443,3 +5443,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-526
+  text: "SOVEREIGN QUESTION - is the reviewer conformance dialect worth its false-positive rate in the DELEGATION classifier. Measured on this corpus 2026-09-25 under T-3456. fw reviewer surface reports reviewer-closeable 16, but auditing the reason behind each verdict shows 10 of 13 rest on the English words shows or name appearing in an Expected clause, matched by the names?/shows? alternatives that T-1897 deliberately added to _HUMAN_AC_MECHANICAL_RE as a conformance-checking dialect (lib/reviewer/static_scan.py:944). Two verbatim examples: T-3091 'The SALVAGE verdicts are the right call' classified deterministic on the match 'name the r', and T-100201 'Ratify that T-3185 dissolves this task' on 'name a'. The first is taste, the second is sovereignty, and both would move owner human to agent and auto-tick on a reviewer PASS. So the 16 is largely an artefact and the honest convertible set here is about 2, much closer to 832's measured 0 of 342. The trade: keeping the dialect flatters the delegation surface and is unsafe to act on; narrowing it drops reviewer-closeable to 2-3 and fires the FW_DELEGATION_SURFACE_WARN rail more or less permanently, which would be telling the truth but also amounts to concluding that D-626's mechanism does not reach this corpus. A third option nobody has ruled on: keep the dialect for the reviewer's own findings, where a false positive costs a spurious CONCERN, and exclude it from the delegation classifier, where the same false positive costs an ownership transfer plus an auto-tick. The two consumers share one regex and have very different blast radii. Not decided by the agent - T-1897 settled this once deliberately and re-deciding it with that blast radius is not delegated initiative."
+  captured: 2026-09-25T07:19:48Z
+  context_task: T-3456
+  tags: []
+  status: pending
+  promoted_to: null
