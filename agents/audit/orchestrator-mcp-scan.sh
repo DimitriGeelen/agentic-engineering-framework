@@ -137,12 +137,43 @@ probe_sessions_json() {
   fi
   timeout 4 termlink list --json 2>/dev/null || echo ""
 }
-SESSIONS_JSON=$(probe_sessions_json)
+# SESSIONS_JSON must NOT travel in the environment. Linux caps each individual
+# argv/envp string at MAX_ARG_STRLEN = 32 * PAGE_SIZE = 131072 bytes, independently of
+# the much larger total-size limit. `termlink list --json` was measured at 186,907 bytes
+# on a consumer host (2026-09-25) — 1.43x over the cap — so the execve of python3 below
+# failed with E2BIG and the shell reported exit 126 before a single line of Python ran.
+# The orchestrator-arc drift defence was not degraded, it was dead, and getting deader:
+# the payload grows monotonically with fleet size, so once it crossed the cap it could
+# never recover on its own. Worse, the audit surfaced the opaque 126 as "cannot reach
+# the termlink project", blaming an unrelated component.
+#
+# The payload now travels by file; only the (short) path is exported. Note the python3
+# invocation below is `python3 - <<'PYEOF'`, which already consumes stdin for the script
+# itself — so a temp file is the fix, not a naive stdin swap.
+SESSIONS_JSON_FILE=$(mktemp -t orch-sessions-XXXXXX.json)
+trap 'rm -f "$SESSIONS_JSON_FILE"' EXIT
+probe_sessions_json > "$SESSIONS_JSON_FILE"
 
 # Run classification in Python (yaml + set ops are easier than bash)
 # T-2260: extended with framework-mcp leg env vars.
-export CURRENT_TOOLS CURRENT_GATED BASELINE LATEST SESSIONS_JSON APPLY_MODE \
+export CURRENT_TOOLS CURRENT_GATED BASELINE LATEST SESSIONS_JSON_FILE APPLY_MODE \
        CURRENT_FRAMEWORK_TOOLS CURRENT_FRAMEWORK_GATED FRAMEWORK_BASELINE
+
+# Anti-recurrence: the remaining exported values are unbounded in principle too
+# (CURRENT_TOOLS grows with the tool inventory). If any of them ever crosses the cap,
+# fail with a message that NAMES the cause instead of surfacing an opaque exit 126 that
+# the audit then mislabels as an unreachable peer project.
+ORCH_MAX_ARG_STRLEN=131072
+for _v in CURRENT_TOOLS CURRENT_GATED BASELINE LATEST SESSIONS_JSON_FILE APPLY_MODE \
+          CURRENT_FRAMEWORK_TOOLS CURRENT_FRAMEWORK_GATED FRAMEWORK_BASELINE; do
+  eval "_len=\${#$_v}"
+  if [ "$_len" -ge "$ORCH_MAX_ARG_STRLEN" ]; then
+    echo "ERROR: \$$_v is $_len bytes, at or over MAX_ARG_STRLEN ($ORCH_MAX_ARG_STRLEN)." >&2
+    echo "       execve would fail with E2BIG (shell reports exit 126). Pass this value" >&2
+    echo "       by file like SESSIONS_JSON_FILE instead of exporting it." >&2
+    exit 2
+  fi
+done
 python3 - <<'PYEOF'
 import yaml, sys, datetime, os, json, shutil
 
@@ -150,7 +181,13 @@ baseline_path = os.environ['BASELINE']
 latest_path = os.environ['LATEST']
 current_tools = {t for t in os.environ['CURRENT_TOOLS'].splitlines() if t}
 current_gated = {t for t in os.environ['CURRENT_GATED'].splitlines() if t}
-sessions_json = os.environ.get('SESSIONS_JSON', '') or ''
+# Read by file, not from the environment — see the MAX_ARG_STRLEN note above.
+_sessions_path = os.environ.get('SESSIONS_JSON_FILE', '')
+try:
+    with open(_sessions_path, encoding='utf-8') as _sf:
+        sessions_json = _sf.read()
+except (OSError, TypeError):
+    sessions_json = ''
 apply_mode = os.environ.get('APPLY_MODE', '0') == '1'
 
 # T-2260 / arc-010 Slice 1B (OR-2): framework-mcp leg env.
