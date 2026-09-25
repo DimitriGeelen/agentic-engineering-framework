@@ -198,8 +198,12 @@ file for the exact failure and the fix that resolved it.)
 ## Branch and push state
 
 - Branch: `t-dispatch-f15-f17-safe-commands-fix`, based on `bleeding-edge`.
-- Commits so far: the ACs-write commit (`629438236`), plus this report and
-  the two source fixes will follow in a further commit.
+- The two source fixes (`agents/context/lib/safe-commands.sh`,
+  `agents/git/lib/commit.sh`) landed in commit `61e9256b2` — see anomaly #3
+  below for why that commit's message is about something else entirely; the
+  content is exactly what this report describes, diffstat-verified. The task
+  close (`.tasks/completed/T-3466-...md`, `.context/episodic/T-3466.yaml`)
+  landed in `2ba93f0fb`, on top of it, same branch.
 - **Not pushed.** `git log`/`git status` confirm no `git push` was run this
   session.
 
@@ -214,13 +218,34 @@ file for the exact failure and the fix that resolved it.)
    (`T-3090-handover-auto-commit-sweeps-the-whole-in.md`, `date_finished:
    2026-08-19`) with no commit message from me referencing it. Not caused by
    this dispatch's commits (neither commit message mentions T-3090).
-3. **A concurrent automated handover commit landed on this feature branch**
-   mid-session (`bdf9d9b86 "T-3090: Session handover S-2026-0925-1326"`,
-   author `Dimitri Geelen`, touching only `.context/handovers/*`) — evidence
-   that some other process on this host is committing to whatever branch is
-   currently checked out in this shared working tree, not scoped to a
-   worktree of its own. Worth the operator's attention independent of this
-   dispatch; not reverted or altered here.
+3. **This checkout was shared with a live human/persistent-session worktree,
+   and my `git checkout -b` mid-session switched THEIR HEAD out from under
+   them.** Commit `61e9256b2` ("T-3426: file OBS-534 — a foreign-project
+   worker switched this checkout branch under us") is that other session's
+   own incident report about exactly this — it names this dispatch
+   explicitly ("a worker dispatched from /opt/055-agentic-fleet-cockpit fw
+   created that branch in OUR checkout and switched HEAD to it. Worker still
+   live (PID 2477697, their task T-262)"). Their commit ALSO absorbed my
+   staged-but-not-yet-committed work (both source fixes, the report, and the
+   task-file rename to `completed/`) into their commit, whole-index, because
+   everything was sitting staged in the one shared index at the moment they
+   ran their own `git commit` — the same class of hazard `tests/unit/
+   handover_commit_scope.bats` (T-3090) exists to prevent, experienced here
+   from the other side, in the repo whose own commit path this dispatch was
+   asked to harden against exactly that class of accident. No content was
+   lost or altered — diffstat-verified identical to what this report
+   describes — but the provenance (which commit message describes which
+   change) is now split across two commits authored by two different actors.
+   **Root-cause implication for the operator, not acted on here:** a
+   worker dispatched into a project's live, persistent-session checkout
+   (rather than an isolated worktree) can switch that session's branch and
+   absorb its uncommitted staged work. This dispatch's own worker contract
+   said nothing about checking for a foreign HEAD before branching, and
+   nothing in this repo's gates would have caught it before the fact (their
+   commit message notes `fw doctor`'s T-3187 branch-identity guard would have
+   named it, but only in output nobody was polling).
 
 None of the three affected the correctness of the two fixes above — verified
-by re-running every check after each anomaly was observed.
+by re-running every check after each anomaly was observed, and by diffing
+`61e9256b2`'s content for the two source files against what this report
+documents.
