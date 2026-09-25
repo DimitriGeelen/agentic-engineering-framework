@@ -97,11 +97,6 @@ section_runs:
     timestamp: "2026-09-25T09:30:02+02:00"
     timed_out: false
     excludes_lock_wait: true
-  - name: "structure"
-    seconds: 336
-    timestamp: "2026-09-25T09:40:41+02:00"
-    timed_out: false
-    excludes_lock_wait: true
   - name: "compliance"
     seconds: 0
     timestamp: "2026-09-25T09:40:42+02:00"
@@ -125,5 +120,10 @@ section_runs:
   - name: "oe-fast"
     seconds: 0
     timestamp: "2026-09-25T09:45:09+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "structure"
+    seconds: 315
+    timestamp: "2026-09-25T09:54:05+02:00"
     timed_out: false
     excludes_lock_wait: true
