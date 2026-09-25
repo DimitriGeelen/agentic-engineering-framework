@@ -26,3 +26,4 @@ project_name: 999-Agentic-Engineering-Framework
 INCEPTION_COMMIT_LIMIT: 15
 NTFY_URL: https://ntfy-ring20.docker.ring20.geelenandcompany.com
 RAIL_IDENTITY_FILE: .context/rail-identity.key
+CONTEXT_WINDOW: 1000000
