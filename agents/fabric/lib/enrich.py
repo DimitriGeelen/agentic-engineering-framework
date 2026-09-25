@@ -1078,7 +1078,15 @@ def detect_ts_js_imports(content, source_location, project_root):
                       '/index.ts', '/index.tsx', '/index.js', '/index.jsx']
         for ext in extensions:
             candidate = resolved + ext
-            if os.path.exists(os.path.join(project_root, candidate)):
+            # isfile, NOT exists (#71). os.path.exists is True for a DIRECTORY, so for a
+            # Node directory import like require('./models') the FIRST candidate — the
+            # empty extension — matched the directory itself and `break` fired before any
+            # of the '/index.*' candidates below could be tried. The emitted target was
+            # then a bare directory path, which matches no card location, so the edge was
+            # discarded downstream. Node's directory->index resolution was listed here all
+            # along and was unreachable. isfile rejects the directory, so the loop falls
+            # through to '/index.js' as the extension list always intended.
+            if os.path.isfile(os.path.join(project_root, candidate)):
                 if candidate != source_location:
                     edges.append((candidate, "uses"))
                 break
