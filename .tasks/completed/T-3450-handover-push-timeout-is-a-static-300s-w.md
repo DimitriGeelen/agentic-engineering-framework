@@ -8,12 +8,12 @@ description: >
   grown to 268s — derive it from the measured structure seconds the way T-3421 derives
   the audit lock wait
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/handover/handover.sh, bin/fw, lib/config.sh, lib/prepush-lock-wait.sh, tests/unit/t3450_push_timeout_derivation.bats, web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-24T20:09:16Z
-last_update: 2026-09-24T22:14:12Z
-date_finished:
+last_update: 2026-09-25T21:06:12Z
+date_finished: 2026-09-25T21:06:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -207,6 +207,10 @@ the push timeout instead of adding a second, differently-shaped rule.
 -->
 
 ## Verification
+
+out=$(timeout 60 bats tests/unit/t3450_push_timeout_derivation.bats 2>&1); echo "$out" | grep -q '^ok 15 ' && ! echo "$out" | grep -q '^not ok'
+out=$(timeout 60 bats tests/unit/t3421_prepush_lock_wait.bats 2>&1); echo "$out" | grep -q '^ok 7 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bin/fw vendor self --check 2>&1); echo "$out" | grep -q "in sync with source"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -607,3 +611,15 @@ AC here is now ticked and the close is a single command for whoever picks it up.
 
 ### 2026-09-24T22:14:12Z — status-update [task-update-agent]
 - **Change:** status: issues → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-24eb2c69
+- **Timestamp:** 2026-09-25T21:06:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-25T21:06:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

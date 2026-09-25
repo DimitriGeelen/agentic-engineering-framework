@@ -4522,3 +4522,52 @@ decisions:
     date: 2026-09-25
     task: T-3464
     rationale: "Operator ruling 2026-09-25 answering 832 seam Q2. Reasoning as given: if a consumer could pull a newer workflow engine than the AEF integration supports, they get a designer AEF does not yet drive. Bundling makes the pair versioned together. Note this maps exactly onto the existing release-train model (T-3185): bleeding-edge tracks the newest designer release so the AEF agent always has the latest, and master pins whatever was current at the release, so consumers inherit a tested pair rather than a moving target. Two consequences the ruling accepts: AEF release cadence becomes the gate on designer updates reaching consumers, and the bundled artifact adds ~966KB to the AEF release payload."
+
+  - id: D-647
+    decision: "do NOT add `python3 -m pytest` (or any pytest/test-runner shape) to"
+    scope: project
+    date: 2026-09-25
+    task: T-3466
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-648
+    decision: "recognize and delegate ONLY when the entire (post-trim) segment"
+    scope: project
+    date: 2026-09-25
+    task: T-3466
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-649
+    decision: "the pre-commit timestamp-bump-and-stage fix applies only when"
+    scope: project
+    date: 2026-09-25
+    task: T-3466
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-650
+    decision: "extracted the ledger-parsing awk block out of `fw_prepush_lock_wait_default`"
+    scope: project
+    date: 2026-09-25
+    task: T-3450
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-651
+    decision: "push-timeout knobs are each strictly larger than lock-wait's: multiplier 1.5"
+    scope: project
+    date: 2026-09-25
+    task: T-3450
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-652
+    decision: "treated `tests/unit/t3062_push_timeout_budget.bats` (named in both this task's"
+    scope: project
+    date: 2026-09-25
+    task: T-3450
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-653
+    decision: "did not raise the multiplier/floor/cap after a real `fw handover --commit`"
+    scope: project
+    date: 2026-09-25
+    task: T-3450
+    rationale: "Auto-captured from task file on completion"

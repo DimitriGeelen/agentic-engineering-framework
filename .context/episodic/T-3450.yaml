@@ -1,0 +1,115 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3450: handover push timeout is a static 300s while the pre-push gate it must cover has grown to 268s — derive it from the measured structure seconds the way T-3421 derives the audit lock wait
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T21:06:33Z
+# ============================================================================
+
+task_id: T-3450
+task_name: "handover push timeout is a static 300s while the pre-push gate it must cover has grown to 268s — derive it from the measured structure seconds the way T-3421 derives the audit lock wait"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-24T20:09:16Z
+completed: 2026-09-25T21:06:12Z
+duration_days: 1
+updates_count: 5
+first_commit: 2026-09-24T22:11:08+02:00
+last_commit: 2026-09-24T22:57:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the push-timeout regression — gate grew to 268s under a static 300s ceiling. derive handover push timeout from measured gate cost. pin the push-timeout derivation with a sibling bats file. register the new test's fabric component card. sync vendored copies (lib/prepush-lock-wait.sh, agents/handover/handover.sh). fix prepush-gate-budget.bats — the T-3062 invariant grepped a literal that no longer exists. record the heading-anchor edit hazard — two instances in one hour. status=issues — AC4 live proof surfaced a stale-ledger regression one layer down
+
+# Key outcomes
+outcomes:
+  - '`FW_HANDOVER_PUSH_TIMEOUT` unset derives from the measured structure seconds rather'
+  - 'The value actually used is printed or logged when a push starts, so a future killed'
+  - '`tests/unit/t3062_push_timeout_budget.bats` (which pins the gate-cost relationship)'
+  - 'Live, recorded here: the derived value on this host with the current timing file, the'
+  - 'Vendored `agents/handover/handover.sh` and any touched `lib/` file synced;'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'status=issues — AC4 live proof surfaced a stale-ledger regression one layer down'
+    source: git-mined
+  - description: 'fix prepush-gate-budget.bats — the T-3062 invariant grepped a literal that no longer exists'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-24 — extraction vs. wrapping fw_prepush_lock_wait_default'
+    chose: 'extracted the ledger-parsing awk block out of `fw_prepush_lock_wait_default` into a new shared function `fw_audit_timing_read_structure_seconds` (plus a sibling `fw_audit_timing_last_run_timed_out`), and rewrote `fw_prepush_lock_wait_default` to call it. `fw_handover_push_timeout_default` calls the same reader independently, with its own multiplier/floor/cap/fallback.'
+    rationale: 'the AC required reusing "the reader" without writing a second YAML parser. A simpler alternative (call `fw_prepush_lock_wait_default` directly and add a fixed buffer) was tried first and rejected — see below. - **Rejected — `push_timeout = fw_prepush_lock_wait_default(root) + buffer`:** this guarantees dominance trivially (buffer > 0) in the *normal* path, but breaks the AC''s explicit "a timed-out run is ignored rather than trusted" requirement, because `fw_prepush_lock_wait_default`''s own pinned tests (t3421) assert it *does* trust a timed-out ledger''s measured value. Proxying through it would make the push-timeout inherit that same trust, which this task''s AC explicitly asks it not to. Extracting the raw reader let each derivation apply its own trust policy over the same parsed value.'
+  - decision: '2026-09-24 — dominance by construction, not by runtime comparison'
+    chose: 'push-timeout knobs are each strictly larger than lock-wait''s: multiplier 1.5 (vs 1.25), floor 180 (vs 90), cap 900 (vs 600), fallback 650 (vs 360). Verified by exhaustive check across 8 measured values (10, 100, 150, 268, 480, 600, 700, 1000) plus the timed-out edge — `push > lock` holds in every case, pinned in `tests/unit/t3450_push_timeout_derivation.bats`.'
+    rationale: 'the fallback value (650) is deliberately *not* a naive scale-up of lock-wait''s 360 fallback (which would give ~468 following the 1.3x pattern of the other knobs). 650 was chosen specifically to exceed `FW_PREPUSH_LOCK_WAIT_CAP` (600) — the worst case `fw_prepush_lock_wait_default` can ever return — because push''s fallback fires on a timed-out ledger while lock-wait, on that exact same ledger, does NOT fall back (it trusts the measured value regardless, per its own pinned behaviour). Without this, a timed-out ledger with a large measured value would have push fall back to a *smaller* number than the lock wait it must exceed — reproducing the exact ordering bug this task exists to prevent, one level down.'
+  - decision: '2026-09-24 — the AC''s own test-filename reference is stale'
+    chose: 'treated `tests/unit/t3062_push_timeout_budget.bats` (named in both this task''s AC text and in a pre-existing handover.sh comment) as a stale reference rather than a blocking discrepancy, added the coverage as a new sibling file (`tests/unit/t3450_push_timeout_derivation.bats`) instead.'
+    rationale: 'the filename does not exist anywhere in this repo''s history (`git log --all` on the path returns nothing) — it appears to be a copy-paste of a filename that was never actually created when the comment in handover.sh:106 was written. The real pinning file is `tests/unit/handover_push_timeout.bats`, which independently already carried 3 pre-existing failures (stale literal-value assertions from T-1277/T-1341, predating T-3062''s bump of the default to 300) that are unrelated to this task''s change and were left untouched, per scope discipline ("Do not widen it").'
+  - decision: '2026-09-24 — stopped at AC4 rather than widening constants'
+    chose: 'did not raise the multiplier/floor/cap after a real `fw handover --commit` was killed at the newly-derived 402s.'
+    rationale: 'AC4 explicitly instructs this: a kill after the fix means the gate grew again, and the fix for that is trimming the gate (or the measurement pipeline that feeds the derivation), not widening the budget further. A freshly-measured, uncontended `bin/fw audit --section structure` took 325s — the ledger the derivation reads still said 268s (2 days stale, only updated by full unscoped audits). Recorded in ## RCA; candidate follow-ups named there but not implemented, per task scope.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/lib/prepush-lock-wait.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/handover/handover.sh'
+  - '.context/inbox.yaml'
+  - '.fabric/components/tests-unit-t3450_push_timeout_derivation.yaml'
+  - 'lib/prepush-lock-wait.sh'
+  - '.tasks/active/T-3450-handover-push-timeout-is-a-static-300s-w.md'
+  - 'tests/lint/prepush-gate-budget.bats'
+  - 'tests/unit/t3450_push_timeout_derivation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-24T22:11:08'
+    action: 'T-3450: file the push-timeout regression — gate grew to 268s under a static 300s ceiling'
+  - time: '2026-09-24T22:16:15'
+    action: 'T-3450: derive handover push timeout from measured gate cost'
+  - time: '2026-09-24T22:17:28'
+    action: 'T-3450: pin the push-timeout derivation with a sibling bats file'
+  - time: '2026-09-24T22:17:48'
+    action: 'T-3450: register the new test''s fabric component card'
+  - time: '2026-09-24T22:19:38'
+    action: 'T-3450: sync vendored copies (lib/prepush-lock-wait.sh, agents/handover/handover.sh)'
+  - time: '2026-09-24T22:31:27'
+    action: 'T-3450: fix prepush-gate-budget.bats — the T-3062 invariant grepped a literal that no longer exists'
+  - time: '2026-09-24T22:40:46'
+    action: 'T-3450: record the heading-anchor edit hazard — two instances in one hour'
+  - time: '2026-09-24T22:57:18'
+    action: 'T-3450: status=issues — AC4 live proof surfaced a stale-ledger regression one layer down'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 1496 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1496
+  commits: 8
+  files_changed: 10
+  lines_added: 1043
+  lines_removed: 52
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3450-handover-push-timeout-is-a-static-300s-w.md
+generated_by: context-agent-hybrid
