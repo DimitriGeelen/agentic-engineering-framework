@@ -8675,3 +8675,11 @@ This very commit is the s'
   command: 'git add .tasks/ .context/ && FW_SWITCH_FOCUS=1 git commit -q -m T-3460: close artefacts — render-surface queue measured, no fix warranted
 
 Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthro'
+- timestamp: '2026-09-25T08:41:32Z'
+  task: 'T-3451'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3459'
+  command: 'git add .tasks/ .context/ && FW_SWITCH_FOCUS=1 git commit -q -m T-3459: close (partial-complete) — /metrics under the bar, one [REVIEW] open
+
+Co-Authored-By: Claude Opus 5 (1M context) <noreply@ant'

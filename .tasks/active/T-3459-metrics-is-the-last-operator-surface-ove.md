@@ -6,12 +6,12 @@ description: >
   /metrics is the last operator surface over the smoke probe 5s bar at 4.68s — the
   YAML loader fix moved it from 6.25s but its hotspot is elsewhere
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/metrics.py, web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T07:54:50Z
-last_update: 2026-09-25T08:32:24Z
-date_finished:
+last_update: 2026-09-25T08:40:19Z
+date_finished: 2026-09-25T08:40:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -568,3 +568,15 @@ hours earlier was a cache that stored its value and never wrote its timestamp, s
 populated and still never read as valid. A "does it cache?" test passes against that bug.
 Also pinned: the `total == 0` path stores and stamps like every other exit (the original
 had a bare early `return 0, 0`), and the TTL still matches `shared.py`'s.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f2895d1f
+- **Timestamp:** 2026-09-25T08:41:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-25T08:40:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

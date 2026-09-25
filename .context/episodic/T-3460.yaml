@@ -69,10 +69,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 7
-  commits: 1
-  files_changed: 1
-  lines_added: 416
-  lines_removed: 0
+  commits: 2
+  files_changed: 22
+  lines_added: 714
+  lines_removed: 113
+  footprint_refreshed_at: '2026-09-25T08:23:12Z'
+  footprint_refreshed_by_commit: 7c91c93fc
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3460-measure-the-188-render-surface-criteria-.md
