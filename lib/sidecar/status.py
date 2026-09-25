@@ -119,8 +119,14 @@ def snapshot(now: datetime | None = None) -> dict:
     # Same reason as _circuit_or_none: an unreachable hub is the state this
     # observer exists to report, so it degrades to the legacy alias rather
     # than raising and hiding every other number.
+    # T-3479: call `read_topics()`, do not rebuild the list. This line used to
+    # be its own copy of `[inbox_topic()] + legacy_topics()`, so when the V9
+    # topic was added to the shared definition the observer kept reporting two
+    # topics while the readers drained three — an observer that cannot see the
+    # thing it observes. Exactly the drift T-3462 wrote `read_topics()` to end,
+    # reappearing at the one call site that had not adopted it.
     try:
-        topics = [inbox.inbox_topic()] + inbox.legacy_topics()
+        topics = inbox.read_topics()
     except circuit.CircuitError:
         topics = inbox.legacy_topics()
     return {

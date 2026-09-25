@@ -2123,6 +2123,14 @@ INLINE_RT_LINE_RE = re.compile(r'^related_tasks:.*\bT-\d+\b.*\$', re.M)
 # Inline list form plus the indented block form both occur in the corpus.
 UNLOCKS_RE = re.compile(r'^unlocks_inception_decision:.*(?:\n[ \t]+-.*)*', re.M)
 TID_RE = re.compile(r'\bT-\d+\b')
+# T-3469 classification inputs. A body-level mention is WEAKER evidence than a
+# declared link, so it never removes a finding — it only labels one. The
+# predicate above decides what is flagged; these decide how a flagged item is
+# described. Origin OBS-535: the WARN's single count read as 185 abandoned
+# decisions when the measured candidate set was 30.
+ANY_WF_RE = re.compile(r'^workflow_type:\s*(\S+)\s*\$', re.M)
+CREATED_RE = re.compile(r'^created:\s*(\S{10})', re.M)
+FOLLOWER_TYPES = set(['build', 'refactor', 'test', 'decommission'])
 
 
 def task_files(d):
@@ -2160,6 +2168,7 @@ def no_related_tasks(content):
 total_inceptions = 0
 go_inceptions = 0
 candidates = []   # (t_id, path)
+cand_created = {}  # T-3469: candidate id -> created date, for the at-or-after test
 completed_cache = []
 for path, fn, t_id, content in task_files(completed_dir):
     completed_cache.append((t_id, content))
@@ -2171,6 +2180,9 @@ for path, fn, t_id, content in task_files(completed_dir):
     go_inceptions += 1
     if no_related_tasks(content):
         candidates.append((t_id, path))
+        cm = CREATED_RE.search(content)
+        if cm:
+            cand_created[t_id] = cm.group(1)
 
 # Pass 2: walk active/ once and reuse the completed/ read from pass 1. Collect
 # every task id referenced by a related_tasks: line or an
@@ -2190,12 +2202,62 @@ def harvest(owner_id, content):
                 referenced.add(tm.group(0))
 
 
+# T-3469: the same two walks also collect body-level followers, so classifying
+# costs no extra IO. cand_ids is known from pass 1, so this can fold in here.
+cand_ids = set(t_id for t_id, _ in candidates)
+followers = {}   # inception id -> list of (follower_id, 'active'|'completed')
+
+
+def collect_followers(owner_id, content, where):
+    wm = ANY_WF_RE.search(content)
+    if not wm or wm.group(1) not in FOLLOWER_TYPES:
+        return
+    cm = CREATED_RE.search(content)
+    if not cm:
+        return
+    created = cm.group(1)
+    for tm in set(TID_RE.findall(content)):
+        if tm == owner_id or tm not in cand_ids:
+            continue
+        ic = cand_created.get(tm)
+        # At-or-after only: a task filed BEFORE the inception cannot be the work
+        # its GO approved, however much it mentions it.
+        if ic and created >= ic:
+            followers.setdefault(tm, []).append((owner_id, where))
+
+
 for t_id, content in completed_cache:
     harvest(t_id, content)
+    collect_followers(t_id, content, 'completed')
 for path, fn, t_id, content in task_files(active_dir):
     harvest(t_id, content)
+    collect_followers(t_id, content, 'active')
 
 findings = [(t_id, path) for t_id, path in candidates if t_id not in referenced]
+
+
+def tier_of(t_id):
+    # linked-late | in-flight | candidate.
+    # 'candidate' is the only tier that means nobody built this. The other two
+    # mean the work propagated and the LINK was never recorded -- a bookkeeping
+    # gap, not an abandoned decision.
+    # NOTE: comments, not a docstring. This whole scan lives inside a
+    # double-quoted 'python3 -c' string, so a triple-quoted docstring closes
+    # the shell string and the rest of the function is handed to bash as
+    # commands. Single quotes here on purpose: a backtick inside this block
+    # would be command-substituted by bash at evaluation time (T-3086).
+    fol = followers.get(t_id)
+    if not fol:
+        return 'candidate'
+    if any(where == 'active' for _, where in fol):
+        return 'in-flight'
+    return 'linked-late'
+
+
+tiers = dict((t_id, tier_of(t_id)) for t_id, _ in findings)
+n_cand = sum(1 for v in tiers.values() if v == 'candidate')
+n_flight = sum(1 for v in tiers.values() if v == 'in-flight')
+n_linked = sum(1 for v in tiers.values() if v == 'linked-late')
 
 
 def id_key(pair):
@@ -2230,13 +2292,42 @@ lines.append('These are candidates for triage, not confirmed abandoned decisions
 lines.append('some may have shipped work that was simply never linked back. Deciding')
 lines.append('which is which is the judgement this check exists to force.')
 lines.append('')
-lines.append('## Findings (most recent first)')
+lines.append('## Tiers (T-3469)')
 lines.append('')
-if findings:
-    for t_id, path in findings:
-        lines.append('- ' + t_id + ' — ' + os.path.relpath(path, project_root))
-else:
-    lines.append('_None._')
+lines.append('The predicate above decides WHAT is flagged and is unchanged. These')
+lines.append('tiers describe a flagged item using one weaker signal the predicate')
+lines.append('does not consult: whether a build/refactor/test/decommission task')
+lines.append('created at-or-after the inception mentions it anywhere in its body.')
+lines.append('A body mention is weaker than a declared link, so it never removes a')
+lines.append('finding — it only labels one.')
+lines.append('')
+lines.append('- candidate   (' + str(n_cand) + ') — no build-class follower at all. '
+             'This is the tier that means NOBODY BUILT THIS.')
+lines.append('- in-flight   (' + str(n_flight) + ') — followers exist, at least one still '
+             'in active/. Propagation started, work unfinished.')
+lines.append('- linked-late (' + str(n_linked) + ') — followers exist and all completed. '
+             'Built and shipped; only the link was never recorded.')
+lines.append('')
+lines.append('Origin OBS-535: this scan used to report one undifferentiated count,')
+lines.append('which read as abandonment for every tier at once.')
+lines.append('')
+for tier_name in ('candidate', 'in-flight', 'linked-late'):
+    sel = [(t, p) for t, p in findings if tiers[t] == tier_name]
+    lines.append('## ' + tier_name + ' (' + str(len(sel)) + ', most recent first)')
+    lines.append('')
+    if sel:
+        for t_id, path in sel:
+            row = '- ' + t_id + ' — ' + os.path.relpath(path, project_root)
+            fol = followers.get(t_id)
+            if fol:
+                row += ' [followers: ' + ', '.join(
+                    f_id + ('*' if where == 'active' else '')
+                    for f_id, where in sorted(fol)[:6]) + ']'
+            lines.append(row)
+    else:
+        lines.append('_None._')
+    lines.append('')
+lines.append('(* = follower still in active/)')
 
 try:
     with open(report_path, 'w') as f:
@@ -2244,11 +2335,22 @@ try:
 except Exception:
     pass
 
-sample = ', '.join(t_id for t_id, _ in findings[:5])
-overflow = len(findings) - min(5, len(findings))
+# T-3469: the WARN leads with the candidate count, so the examples printed
+# beside it must be examples OF that tier — not of whichever finding happens to
+# have the highest id. Counts go before the sample so a sample containing an
+# unexpected character cannot swallow a field on the shell read.
+cand_list = [t for t, _ in findings if tiers[t] == 'candidate']
+# Sample the tier the headline counts, and let the overflow count THAT tier
+# too. An overflow measured against all 186 findings would re-inflate the very
+# number this change exists to deflate -- '(+181 more)' beside a headline of 25.
+sample_src = cand_list if cand_list else [t for t, _ in findings]
+sample_of = 'candidate' if cand_list else 'unlinked'
+sample = ', '.join(sample_src[:5])
+overflow = len(sample_src) - min(5, len(sample_src))
 if overflow > 0:
-    sample += ' (+' + str(overflow) + ' more)'
-print('|'.join([str(total_inceptions), str(go_inceptions), str(len(findings)), sample]))
+    sample += ' (+' + str(overflow) + ' more ' + sample_of + ')'
+print('|'.join([str(total_inceptions), str(go_inceptions), str(len(findings)),
+                str(n_cand), str(n_flight), str(n_linked), sample]))
 " 2>/dev/null)
 
 if [ -z "$go_scope_summary" ]; then
@@ -2261,16 +2363,16 @@ if [ -z "$go_scope_summary" ]; then
          "the pre-scan produced no summary line" \
          "Re-run the pre-scan without 2>/dev/null to see the error; the check asserts nothing until it does"
 else
-    IFS='|' read -r _gs_inceptions _gs_go _gs_count _gs_sample <<< "$go_scope_summary"
+    IFS='|' read -r _gs_inceptions _gs_go _gs_count _gs_cand _gs_flight _gs_linked _gs_sample <<< "$go_scope_summary"
     if [ "${_gs_count:-0}" -eq 0 ]; then
         pass_over "${_gs_go:-0}" "GO-recorded completed inception(s) of ${_gs_inceptions:-0} completed inception(s)" \
              "No GO-scope-not-propagated inception(s) (sibling to L-417)" \
              "the workflow_type:inception filter matched ${_gs_inceptions:-0} completed task(s), of which 0 recorded a GO" \
              "Check the GO predicate against .tasks/completed/ by hand — an empty GO set is what T-3099 found and repaired, and it can regress"
     else
-        warn "Found $_gs_count GO-scope-not-propagated inception(s) of ${_gs_go:-0} GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision" \
+        warn "${_gs_cand:-0} GO'd inception(s) with NO build follower — nobody built these (plus ${_gs_flight:-0} in-flight, ${_gs_linked:-0} built-but-unlinked; $_gs_count unlinked in total, of ${_gs_go:-0} GO-recorded completed inception(s) examined)" \
              "$_gs_sample" \
-             "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat $GO_SCOPE_REPORT_PATH (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
+             "Only the first number means abandoned work. in-flight = followers exist, some still in active/; built-but-unlinked = followers exist and all completed, so the work shipped and only related_tasks: / unlocks_inception_decision: was never recorded. Triage per tier: cat $GO_SCOPE_REPORT_PATH (origin: T-2078, T-2091, T-3099; tiers T-3469/OBS-535; sibling to L-417/T-1975)"
     fi
 fi
 # end GO-scope-not-propagated scan (T-3099)

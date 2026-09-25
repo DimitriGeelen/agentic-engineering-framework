@@ -5506,3 +5506,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-535
+  text: "The GO-scope-not-propagated WARN reads as 185 abandoned decisions; measured, it is ~30 at the outer bound and the WARN line is what causes the misread. Structural split of the 186 flagged: 101 have build followers that all completed (built, never linked), 55 have followers still in active/ (propagation started, unfinished), 30 have no build follower at all. A 12-task sample of those 30 found at least 5 shipped anyway by other routes (T-122 P-011 gate, T-599 termlink mcp, T-1110 lib/enums.sh, T-835 stale-task blueprints, T-3018 bpmn fixtures). The report file at .context/audits/go-scope-unpropagated/LATEST.md says plainly 'candidates for triage, not confirmed abandoned decisions' - but nobody reads the report file, they read the one-line WARN in the push gate, which names only the count and the word not-propagated. Detection exists, routing does not: the qualifier lives in the artifact nobody opens. Also found: T-3072 is a GO that half-landed - the blast-radius cost axis exists but lib/bvp.sh:356 derives it only once components: resolves, which happens at work-completed, the one state fw bvp excludes, so the axis is unknown for exactly the open tasks the inception asked it to score."
+  captured: 2026-09-25T14:10:48Z
+  context_task: T-3426
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-536
+  text: "T-3469's tier classifier counts a prose mention as propagation, so a task that merely DISCUSSES a finding relabels it. Found by using it: filing 4 build tasks moved the candidate count 25->18 when only 5 inceptions were genuinely linked (expected 20). The extra 2 moved because T-3469's own task file quotes the audit Evidence line 'T-3114, T-3108, T-3100, T-3084, T-3081' in its Result block, and T-3469 is a build task created after those inceptions. T-3100 and T-3081 have no implementing work; they were reclassified purely by being named in prose. The direction of the error is the bad one: a body mention cannot remove a finding (only a declared related_tasks link does that, and that part is sound) but it CAN move one out of the candidate tier, so the tier under-reports abandoned decisions. That is the same shape as the defect T-3469 fixed, one level down. Scale is 2 of 25 and the tier is advisory, never a gate. Candidate fix: require the mentioning task to declare a component overlap or name the inception in a structured field rather than prose. Not done inside a triage task. See docs/reports/T-3470-go-scope-candidate-triage.md."
+  captured: 2026-09-25T15:03:04Z
+  context_task: T-3470
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-537
+  text: "arc-020 built a complete identity+circuit+ladder stack and NOTHING CALLS IT. All seven slices T-3307..T-3313 are work-completed: V9 address library (lib/aef_address.py with climb()/ladder()), circuit registry + three-state lifecycle (lib/aef_circuit.py), regressive resolution and provisioning ladder (lib/aef_resolve.py, resolve() climbing 5->1 with tri-state FOUND/NOT_FOUND/INDETERMINATE, ungated; provision() Tier-3 that refuses to create a host). Measured: grep for aef_address|aef_resolve|aef_circuit across lib/sidecar/, agents/ and bin/fw returns only one hit, aef_provision_log.py wired to bin/fw:8806. aef_resolve is imported only by sibling aef_* modules - an internally consistent island with no consumers. Worse: the sidecar invented a SECOND address grammar two weeks later. T-3433/D-599 (ruled 2026-09-22) implements inbox:<hub>/<project>[/<session>]/<agent> in lib/sidecar/circuit.py, and its Decisions record 'Rejected: host-first 5-segment addresses' - rejecting the exact V9 grammar arc-020 ratified on 2026-09-07 under D3. Two ruled address grammars for one 5-level taxonomy, in one codebase, fifteen days apart, neither aware of the other. This is a NEW variant of the week's pattern: not detection-exists-routing-does-not but CAPABILITY EXISTS, ADOPTION DOES NOT. Note the governance actually held - arc-020 is still status in-progress with all 7 slices completed, because G-062 requires the headline mechanic (G3: a dropped connection recovers itself) to be demonstrated, and with no caller it has never fired. The arc could not close, and did not. What failed was not the gate but the wiring. Directly material to sidecar slice 1: the ladder's resolve(target, probe) takes an injectable endpoint probe and calls it and nothing else, which is exactly the transport seam slice 1 needs, and the V9 address carries host=<fqdn> which is the one fact T-3433's hub-anchored grammar deliberately withholds and HTTP requires."
+  captured: 2026-09-25T16:05:51Z
+  context_task: T-3475
+  tags: []
+  status: pending
+  promoted_to: null
