@@ -6,7 +6,7 @@ description: >
   /metrics is the last operator surface over the smoke probe 5s bar at 4.68s — the
   YAML loader fix moved it from 6.25s but its hotspot is elsewhere
 
-status: issues
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T07:54:50Z
-last_update: 2026-09-25T08:01:59Z
+last_update: 2026-09-25T08:32:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -70,7 +70,9 @@ bvp_scores_proposed:
 
 ## Context
 
-**PARKED on its stated goal, with a real fix banked on the way.** `/metrics` is not
+**UNPARKED and fixed.** The parking note below is kept verbatim as the record of where this stood; the resolution is in `## Resolution` at the end.
+
+~~PARKED on its stated goal, with a real fix banked on the way.~~ `/metrics` is not
 under the 5 s bar. AC 2 said park rather than sprawl if the cost was not one fixable
 call, and that is what happened — so this is the AC firing as designed, not a shortfall
 slipped past it.
@@ -154,7 +156,7 @@ steady-state sampling; the unexplained variance noted in T-3458 is still unexpla
 - [x] **Hard time-box, honoured.** If the cost is not localised to one fixable call within
       this investigation, record the measurement, name what it would take, and **park**.
       This is the last endpoint over the 5 s bar, not a mandate to optimise Watchtower.
-- [ ] **If fixed, measured by live A/B with the same restart on both sides** — the only
+- [x] **If fixed, measured by live A/B with the same restart on both sides** — the only
       method that survived contact with reality in T-3458. In-process warm timings and
       naive before/after both lied there; page-cache state and profiler overhead each
       produced a confident wrong answer.
@@ -166,6 +168,36 @@ steady-state sampling; the unexplained variance noted in T-3458 is still unexpla
       `bin/fw watchtower restart` and `bin/fw watchtower current` (G-104).
 
 ### Human
+
+- [ ] [REVIEW] The metrics page still shows the same numbers, and now arrives quickly
+
+  This cached an existing computation rather than changing it, and I checked that
+  mechanically: the rendered page before and after differs by **exactly one line**, the
+  per-request CSRF token. Every metric, count, commit row and stale-task entry is
+  byte-identical. What a diff cannot tell you is whether the numbers were right in the
+  first place, or whether a page that can now be up to 30 seconds stale bothers you.
+
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` — open the URL
+     it prints, then `/metrics` (currently http://192.168.10.107:3002/metrics).
+  2. Look at the four headline figures — task counts, traceability %, description
+     quality %, AC coverage % — and the stale-task list.
+  3. Reload once and note how long the second load takes.
+
+  **Expected:** the same figures you would have seen before, and the second load arriving
+  in well under a second. The *first* load after a Watchtower restart still takes ~3.8 s
+  — the cache starts empty — so a slow first hit is expected, not a failure.
+
+  **If not:** a figure that reads 0 or is obviously wrong is the signal that matters. Say
+  which one. The change is a cache around an untouched function, so a wrong number would
+  mean the caching is serving something it should not, and it gets reverted rather than
+  tuned.
+
+  **The one judgement I cannot make for you:** the page can now lag reality by up to 30 s
+  (the same window `shared.py` already applies to task metadata). For a dashboard that
+  seemed clearly right. If you use `/metrics` to confirm something you just did landed,
+  say so and the TTL should come down or gain an explicit refresh.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -323,6 +355,16 @@ steady-state sampling; the unexplained variance noted in T-3458 is still unexpla
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# No durations pinned (T-3326): 2.883s and 4.5x are this host's numbers and
+# would rot. Both suites guard the PROPERTY — that each cache stamps its own
+# timestamp and that the cached value equals a freshly computed one. web/
+# changed, so `watchtower current` is here per G-104.
+
+timeout 600 bats tests/unit/t3459_episodic_tag_cache.bats > /tmp/.t3459-v1.out 2>&1 && grep -q "^ok 1 " /tmp/.t3459-v1.out
+timeout 900 bats tests/unit/t3459_metrics_quality_cache.bats > /tmp/.t3459-v2.out 2>&1 && grep -q "^ok 1 " /tmp/.t3459-v2.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 
@@ -393,6 +435,38 @@ steady-state sampling; the unexplained variance noted in T-3458 is still unexpla
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** `/metrics` goes from ~4 s to ~0.8 s on warm requests, closing the last of
+the six endpoints T-3453 surfaced as over the smoke probe's 5 s bar. The correctness
+argument is unusually strong for a performance change because nothing was recomputed a
+different way — the function is byte-for-byte unchanged and only its repetition was
+removed, so "do the numbers still match" is true by construction rather than by
+comparison. The live diff confirms it anyway: one line, the CSRF token.
+
+I deliberately did **not** do what this task's own parking note proposed. That plan was
+to read `shared.get_all_task_metadata()`, and it was the wrong plan: one of the two
+aggregates is a body regex with no equivalent in that metadata, so following it would
+have meant reimplementing an aggregate against a different data source and then arguing
+the numbers matched. Smaller and safer won.
+
+**Evidence:**
+- Per-helper timing: `_quality_scores` 2.883 s of a ~3.1 s route; the other four helpers
+  total 0.211 s. One helper was 93% of the page.
+- Live A/B, same restart both sides: pre-fix 4.01 / 4.87 / 3.52 / 3.48 s; post-fix 3.78
+  (cold) / 0.79 / 0.79 / 0.93 s.
+- Rendered page before vs after: both 228124 bytes, line diff returns **only** the
+  per-request CSRF token.
+- 8/8 in `tests/unit/t3459_metrics_quality_cache.bats`, plus the 7 in
+  `t3459_episodic_tag_cache.bats` from this task's earlier half.
+- Web suite: identical 6-failed / 8-passed on the same control selection as before the
+  change (that 6 is pre-existing; reproduced without this change earlier today).
+
+**What this does not fix, stated plainly:** the first request after a restart still costs
+the full ~3.8 s. And the unexplained variance noted in T-3458 — live `/` readings of
+9.45 s and 18.45 s that a controlled A/B could only reproduce at 2.87-6.56 s — is still
+unexplained and still unowned.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -423,3 +497,74 @@ steady-state sampling; the unexplained variance noted in T-3458 is still unexpla
 
 ### 2026-09-25T08:01:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → issues
+
+### 2026-09-25T08:32:24Z — status-update [task-update-agent]
+- **Change:** status: issues → started-work
+
+
+## Resolution — /metrics is under the bar
+
+Resumed from `issues`. The parking note said the fix was to read
+`shared.get_all_task_metadata()` and prove per-aggregate equality. **I did something
+smaller and safer instead**, and the reason is worth recording: that plan was a
+*behaviour* change. `_quality_scores()` computes its own aggregates, and one of them — a
+body regex for an acceptance-criteria heading — has **no equivalent in that metadata at
+all**. Re-pointing it would have meant reimplementing the aggregate against a different
+data source and arguing the numbers still matched.
+
+Caching the existing computation achieves the same result with no such argument: same
+function, same inputs, same output, only not repeated within the TTL. AC 4 is then
+satisfied by construction rather than by comparison.
+
+### Where the time was (AC 1, sharpened)
+
+Per-helper timing on the route, rather than inferring from the request profile:
+
+| helper | cost |
+|---|---|
+| **`_quality_scores`** | **2.883 s** |
+| `_knowledge_counts` | 0.173 s |
+| `_task_counts` | 0.016 s |
+| `_traceability` | 0.015 s |
+| `_recent_commits` | 0.007 s |
+
+One helper is 93% of the route. It reads and frontmatter-parses every task file in the
+corpus, active **and** completed — the ~3929 documents the earlier profile counted.
+
+### Live A/B, same restart on both sides (AC 3)
+
+| | run 1 | run 2 | run 3 | run 4 |
+|---|---|---|---|---|
+| pre-fix | 4.01 s | 4.87 s | 3.52 s | 3.48 s |
+| **post-fix** | 3.78 s | **0.79 s** | **0.79 s** | **0.93 s** |
+
+~4.5× on warm requests. **The first request after a restart still pays the full ~3.8 s** —
+the cache starts empty, and that is honest to state rather than average away. Every
+subsequent request inside the TTL is free.
+
+`/metrics` is now under the smoke probe's 5 s bar on every measurement including the cold
+one, which closes the last of the six endpoints T-3453 surfaced.
+
+### Nothing the page reports changed (AC 4)
+
+The rendered page was captured before and after, from the live server, same corpus. Both
+228124 bytes. A line-level diff of the two returns **exactly one difference**:
+
+```
+<     <meta name="csrf-token" content="aa3118c4...">
+>     <meta name="csrf-token" content="eefbf3e2...">
+```
+
+Per-request by design. Every metric, count, quality score, commit row and stale-task entry
+is byte-identical. The sha256 of the two files differs *because of that token* — which is
+why the check is a diff and not a hash comparison; a hash would have said "different" and
+been useless.
+
+### Guard (AC 5)
+
+`tests/unit/t3459_metrics_quality_cache.bats`, 8 tests. The one that matters most pins
+**stamping**, not caching — because the sibling bug this same task fixed in `shared.py`
+hours earlier was a cache that stored its value and never wrote its timestamp, so it was
+populated and still never read as valid. A "does it cache?" test passes against that bug.
+Also pinned: the `total == 0` path stores and stamps like every other exit (the original
+had a bare early `return 0, 0`), and the TTL still matches `shared.py`'s.

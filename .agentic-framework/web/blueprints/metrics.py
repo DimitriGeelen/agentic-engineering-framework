@@ -2,6 +2,7 @@
 
 import re as re_mod
 import subprocess
+import time as _time
 from datetime import datetime, timezone
 
 import yaml
@@ -36,8 +37,38 @@ def _traceability():
     return int(round(traced / total * 100))
 
 
+# T-3459: `_quality_scores` reads and frontmatter-parses EVERY task file in the
+# corpus, active and completed. Measured on this host: 2.883s of a ~3.1s
+# /metrics request — the other four helpers together cost 0.21s. The parse is
+# ~3929 YAML documents per hit, and the time lands in yaml's `constructor.py`,
+# which is Python even under CSafeLoader (T-3458's C-parser change accelerates
+# the scanner, not the constructor). So no parser choice fixes this; only not
+# doing it 3929 times per request does.
+#
+# CACHED RATHER THAN REPOINTED, deliberately. The obvious alternative was to
+# read `shared.get_all_task_metadata()`, which already maintains a 30s cache of
+# task frontmatter. That would have been a behaviour change: this function
+# computes its own aggregates (a >=50-char description test, and a body regex
+# for an acceptance-criteria heading) and the body regex has no equivalent in
+# that metadata at all. A metrics page reporting different metrics is a worse
+# outcome than a slow one, so the computation is left byte-for-byte alone and
+# only its repetition is removed. Identical inputs, identical output.
+#
+# Staleness: up to _QUALITY_CACHE_TTL seconds, matching the TTL `shared.py`
+# already applies to task metadata. This is a dashboard, not a gate.
+_quality_cache = {"value": None, "ts": 0.0}
+_QUALITY_CACHE_TTL = 30  # seconds — same window as shared.py's _TASK_CACHE_TTL
+
+
 def _quality_scores():
-    """Compute description quality % and acceptance criteria coverage %."""
+    """Compute description quality % and acceptance criteria coverage %.
+
+    Cached for _QUALITY_CACHE_TTL seconds; see the note above.
+    """
+    now = _time.monotonic()
+    if _quality_cache["value"] is not None and (now - _quality_cache["ts"]) < _QUALITY_CACHE_TTL:
+        return _quality_cache["value"]
+
     desc_ok = 0
     ac_ok = 0
     total = 0
@@ -57,8 +88,17 @@ def _quality_scores():
                 ac_ok += 1
 
     if total == 0:
-        return 0, 0
-    return int(round(desc_ok / total * 100)), int(round(ac_ok / total * 100))
+        result = (0, 0)
+    else:
+        result = (int(round(desc_ok / total * 100)), int(round(ac_ok / total * 100)))
+
+    # Store AND stamp. T-3459's sibling bug in shared.py was a cache that wrote
+    # its value and never wrote its timestamp, so it was populated and still
+    # never read as valid — every request recomputed. One return point here so
+    # the two cannot drift apart, including on the total == 0 path.
+    _quality_cache["value"] = result
+    _quality_cache["ts"] = now
+    return result
 
 
 def _knowledge_counts():
