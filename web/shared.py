@@ -1157,7 +1157,23 @@ def extract_recommendation_claims_verdict(body: str) -> dict:
 
 import time as _time
 
-_task_cache = {"data": None, "names": None, "tags": None, "ts": 0}
+# T-3459: `tags` carries its OWN timestamp. It used to share `ts`, which is
+# written only by get_all_task_metadata() (below), and that was wrong in both
+# directions at once:
+#
+#   * get_episodic_tags() stored its result but never stamped `ts`, so unless
+#     get_all_task_metadata() happened to have run in the last TTL the cache
+#     never read as valid and the 3929-document episodic scan ran AGAIN on the
+#     next request. Measured on /metrics: the whole corpus re-parsed per hit.
+#   * and when get_all_task_metadata() DID stamp `ts`, a `tags` computed
+#     arbitrarily long ago began reading as fresh — and nothing recomputed it,
+#     because the freshness check was now satisfied. Stale data served
+#     indefinitely, for exactly as long as the other function kept being called.
+#
+# One timestamp for two independently-populated entries cannot be right: either
+# it is stamped by both (and each makes the other look fresh) or by one (and the
+# other never caches). Both halves of that were live.
+_task_cache = {"data": None, "names": None, "tags": None, "ts": 0, "tags_ts": 0}
 _TASK_CACHE_TTL = 30  # seconds
 
 
@@ -1207,7 +1223,7 @@ def get_task_names():
 def get_episodic_tags():
     """Return {task_id: [tags]} from episodic files. Cached."""
     now = _time.monotonic()
-    if _task_cache["tags"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
+    if _task_cache["tags"] is not None and (now - _task_cache["tags_ts"]) < _TASK_CACHE_TTL:
         return _task_cache["tags"]
 
     tags = {}
@@ -1231,6 +1247,7 @@ def get_episodic_tags():
                 continue
 
     _task_cache["tags"] = tags
+    _task_cache["tags_ts"] = now   # T-3459: stamp what we just computed
     return tags
 
 
