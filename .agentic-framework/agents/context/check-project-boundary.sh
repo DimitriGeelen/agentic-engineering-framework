@@ -77,6 +77,22 @@ except:
             ;;
     esac
 
+    # F-25: a sibling git worktree of THIS repo is the same repository, not
+    # another project. `git worktree list` (run against PROJECT_ROOT) only
+    # enumerates worktrees that share PROJECT_ROOT's own .git — a genuinely
+    # foreign project at another /opt/* path never appears in this list, so
+    # this cannot be used to admit anything outside the current repo. Silent
+    # no-op (empty stdout) when PROJECT_ROOT is not a git repo, which keeps
+    # non-git installs and test fixtures behaving exactly as before.
+    while IFS= read -r _wt_root; do
+        [ -n "$_wt_root" ] || continue
+        case "$RESOLVED" in
+            "$_wt_root"|"$_wt_root"/*)
+                exit 0
+                ;;
+        esac
+    done < <(git -C "$PROJECT_ROOT" worktree list --porcelain 2>/dev/null | sed -n 's/^worktree //p')
+
     # Everything else: BLOCK
     echo "" >&2
     echo "══════════════════════════════════════════════════════════" >&2
@@ -144,7 +160,7 @@ except:
     # Detailed analysis: detect cd to another project + write operations
     export _BOUNDARY_CMD="$COMMAND"
     MATCH_RESULT=$(python3 << 'PYEOF'
-import re, sys, os
+import re, sys, os, subprocess
 
 command = os.environ.get('_BOUNDARY_CMD', '')
 project_root = os.environ.get('PROJECT_ROOT', '')
@@ -409,6 +425,44 @@ command = _strip_heredocs(command)   # T-2920: must precede _strip_quoted
 command = _drop_termlink_segments(command, project_root)   # T-3076
 command = _strip_quoted(command)
 
+# F-25: a sibling git worktree of THIS repo is the same repository, not
+# another project. `git worktree list` run against project_root only
+# enumerates worktrees sharing project_root's own .git — a genuinely foreign
+# project living at another /opt/* (or anywhere else) path is a DIFFERENT
+# repository and never appears in this list, so this cannot be abused to
+# admit an unrelated project. Fails closed: any error (not a git repo, git
+# missing, timeout) yields an empty list and every pattern below behaves
+# exactly as it did before this fix.
+def _worktree_roots(root):
+    try:
+        proc = subprocess.run(
+            ['git', '-C', root, 'worktree', 'list', '--porcelain'],
+            capture_output=True, text=True, timeout=5,
+        )
+    except Exception:
+        return []
+    if proc.returncode != 0:
+        return []
+    roots = []
+    for line in proc.stdout.splitlines():
+        if line.startswith('worktree '):
+            p = line[len('worktree '):].strip().rstrip('/')
+            if p:
+                roots.append(p)
+    return roots
+
+
+_WORKTREE_ROOTS = _worktree_roots(project_root)
+
+
+def _in_sibling_worktree(path):
+    p = path.rstrip('/')
+    for wt in _WORKTREE_ROOTS:
+        if p == wt or p.startswith(wt + '/'):
+            return True
+    return False
+
+
 # Pattern 1: cd to absolute path outside project root
 cd_pattern = re.compile(r'cd\s+(/[^\s;&|]+)')
 matches = cd_pattern.findall(command)
@@ -419,6 +473,8 @@ for target_dir in matches:
         # Allow cd to safe zones
         if target.startswith('/tmp') or target.startswith('/root/.claude'):
             continue
+        if _in_sibling_worktree(target):   # F-25
+            continue
         print(f'BLOCKED|cd to {target} (outside project root {project_root})')
         sys.exit(0)
 
@@ -427,6 +483,8 @@ fw_pattern = re.compile(r'(/[^\s]+/)\.agentic-framework/bin/fw\b')
 for fw_path in fw_pattern.findall(command):
     fw_dir = fw_path.rstrip('/')
     if not fw_dir.startswith(project_root + '/') and fw_dir != project_root:
+        if _in_sibling_worktree(fw_dir):   # F-25
+            continue
         print(f'BLOCKED|Direct fw invocation on {fw_dir} (outside project root)')
         sys.exit(0)
 
@@ -436,6 +494,8 @@ for target_file in write_ops.findall(command):
     if target_file.startswith(('/tmp/', '/root/.claude/', '/dev/', '/etc/cron.d/')):
         continue
     if not target_file.startswith(project_root + '/'):
+        if _in_sibling_worktree(target_file):   # F-25
+            continue
         print(f'BLOCKED|File write to {target_file} (outside project root)')
         sys.exit(0)
 
@@ -494,6 +554,8 @@ for tok in _tok_iter(command):
         continue
     # Strip glob characters off the end so /var/log/* is checked as /var/log/
     cand = tok
+    if _in_sibling_worktree(cand):   # F-25
+        continue
     # Allow paths with leading prefix in the explicit list.
     if any(cand == a.rstrip('/') or cand.startswith(a) for a in READ_ALLOWED_PREFIXES):
         # Special-case /opt/: only allow exactly /opt or /opt/<this-project>.
