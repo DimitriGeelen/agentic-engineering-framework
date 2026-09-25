@@ -5464,3 +5464,10 @@ observations:
   tags: [sidecar]
   status: pending
   promoted_to: null
+- id: OBS-529
+  text: "ROOT CAUSE of the sidecar escalation rate: answered_conversations() is blind to the legacy topic, so answered conversations never close and climb the full retry ladder. lib/sidecar/retry.py:136 answered_conversations() peeks ONLY inbox.inbox_topic(me), the circuit topic. lib/sidecar/inbox.py:137 pending() reads [inbox_topic(agent)] + legacy_topics(agent) — both. That asymmetry means a peer reply arriving on the legacy sidecar:<agent> rail is invisible to the sweep's answered-check, so the ack-ledger row is never closed, and every 5 minutes the sidecar-sweep-5m cron re-posts, nudges, and finally fires an operator notice for a conversation that was in fact answered days ago. Measured 2026-09-25 with the shipped reader: circuit topic inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework holds 6 envelopes and ZERO foreign conversations; legacy topic sidecar:999-Agentic-Engineering-Framework holds 21 envelopes and EIGHT foreign conversations, including exactly the three that escalated to rung 5 — 832-T829-THREE-ASKS, 832-T830-H3-RULED, 832-T833-CTL029-AND-REVIEWER-CLOSURE. retry.answered_conversations() returns the empty set. This accounts for the bulk of the 15-of-45 messages that reached rung 4-5 over 10-12 attempts. Two further points. First, it compounds with the terminus defect: the manufactured escalations land in .context/inbox.yaml which has 319 pending entries and no Watchtower renderer, so the false alarm is also silent. Second, there is a latent cliff — answered_conversations reads from cursor 0 with DEFAULT_LIMIT 100, so once a topic passes 100 messages the older conversations fall out of the peek window permanently. Fix is narrow: give answered_conversations the same topic list pending() uses. It should ship with a control proving a reply on the legacy rail closes the row, because the current tests evidently pass without that."
+  captured: 2026-09-25T09:27:53Z
+  context_task: T-3461
+  tags: []
+  status: pending
+  promoted_to: null
