@@ -8704,3 +8704,11 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anth'
   command: 'git add .tasks/ .context/ && FW_SWITCH_FOCUS=1 git commit -q -m T-3463: close artefacts — 832 four questions answered, delivery verified on their rail
 
 Co-Authored-By: Claude Opus 5 (1M context) <n'
+- timestamp: '2026-09-25T11:08:46Z'
+  task: 'T-3426'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-3464'
+  command: 'git add .tasks/ .context/ && FW_SWITCH_FOCUS=1 git commit -q -m T-3464: close artefacts — designer 0.13.0 pinned, bundled and current
+
+Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.'

@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3464: designer: bump to 0.13.0, add a new-release watchdog, and bundle-and-pin the designer to the AEF release version
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-25T11:08:28Z
+# ============================================================================
+
+task_id: T-3464
+task_name: "designer: bump to 0.13.0, add a new-release watchdog, and bundle-and-pin the designer to the AEF release version"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T10:53:55Z
+completed: 2026-09-25T11:08:08Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-25T13:07:41+02:00
+last_commit: 2026-09-25T13:07:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  designer 0.11.0 -> 0.13.0, and the watchdog we were asked to build already existed
+
+# Key outcomes
+outcomes:
+  - '**The pin moves to 0.13.0 through the sanctioned intake, not by hand.**'
+  - '**The upgrade is proven live, not assumed from a version string.** `/designer`'
+  - '**Currency is watched, and the watch is wired to something that reads it.**'
+  - '**The bundle-and-pin ruling (D-645 sibling, this task''s own decision) is recorded'
+  - 'Vendored copies synced for every touched file; `bin/fw vendor self --check` clean;'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.13.0.html'
+  - '.agentic-framework/VERSION'
+  - '.context/audits/2026-09-25.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/full-audit-timing.yaml'
+  - '.context/episodic/T-3463.yaml'
+  - '.context/inbox.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.obs-highwater'
+  - '.context/working/session.yaml'
+  - '.context/working/.stop-driver.log'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - 'policy/designer-pin.yaml'
+  - '.tasks/active/T-3464-designer-bump-to-0130-add-a-new-release-.md'
+  - 'vendor/designer/aef-workflow-designer-0.13.0.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-25T13:07:41'
+    action: 'T-3464: designer 0.11.0 -> 0.13.0, and the watchdog we were asked to build already existed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 1
+  files_changed: 26
+  lines_added: 13008
+  lines_removed: 442
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3464-designer-bump-to-0130-add-a-new-release-.md
+generated_by: context-agent-hybrid
