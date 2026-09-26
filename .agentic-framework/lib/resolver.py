@@ -1247,6 +1247,13 @@ _QUADRANT_RANK = {"hv-lc": 0, "hv-hc": 1, "lv-lc": 2, "lv-hc": 3}
 _NO_BVP_RANK = 4
 _COST_SENTINEL = 1e9
 
+#: T-3488: the verdict withheld when the value axis cannot separate a task from
+#: the corpus floor. Same literal as `lib/bvp.sh`'s `QUAD_VALUE_WITHHELD` on
+#: purpose — two surfaces implement one rule, so they must at least *report* it
+#: identically. The duplication itself is the standing fault (see T-3488
+#: `## Decisions`); matching strings is the floor, not the fix.
+QUAD_VALUE_WITHHELD = "v-thin"
+
 
 def _bvp_driver_weights() -> Dict[str, int]:
     """{driver_id: weight} from policy/value-drivers.yaml (protected + free).
@@ -1331,6 +1338,53 @@ def _bvp_value_cost(fm: Dict[str, Any], weights: Dict[str, int]) -> Tuple[Option
     return norm, cost
 
 
+def _value_axis_degenerate(norms: List[float]) -> bool:
+    """True when the value-axis median cannot separate the corpus (T-3488).
+
+    Fires exactly when `median == min`. That equality forces at least half the
+    corpus to be tied at the distribution's floor: the values determining the
+    median can be no smaller than the true minimum, so if they equal it, they
+    ARE it. `>=` then labels that entire floor-tied mass `hv` — the worst work
+    in the corpus takes top priority. Ported from `lib/bvp.sh`'s
+    `value_axis_degenerate()` (T-3485); see that function for the two-sided
+    negative control.
+
+    **Why `median == min` and not the apparently more general "a large mass ties
+    at the median".** Measured on this repo's live corpus, 2026-09-26: 24 of 29
+    costed tasks (83%) tie at `NORM 0.40`, which is simultaneously the median AND
+    the maximum. It is tempting to read that as the same defect and widen the
+    guard. It is not the same defect, and widening it would be a regression:
+
+      - Tied at the FLOOR — the mass is the lowest-value work and `>=` calls it
+        `hv`. The verdict contradicts the data. Harmful; this is what we guard.
+      - Tied at the CEILING — the mass is the highest-value work and `>=` calls
+        it `hv`. The verdict agrees with the data. Coarse (a 24-way tie carries
+        no ordering) but not wrong, so withholding it would discard a correct
+        verdict and push genuinely top-value work behind the corpus's five
+        lowest scorers.
+
+    The discriminator is *having nothing below you*: calling the floor of a
+    distribution "high value" is self-contradictory, whereas being at the maximum
+    is the strongest available case for it. A "tied mass below max" rule would
+    also break T-3485's pinned admission control, which asserts a non-degenerate
+    at-median tie (scores 1,2,2,4) legitimately stays `hv`.
+
+    A ceiling collapse is a **degenerate scorer**, not a classifier defect, and
+    it has its own detector — `lib/bvp_degenerate.py` (T-3489/T-3495). Routing it
+    here would put the alarm in the wrong subsystem.
+
+    Consequence worth stating plainly: on the current framework corpus
+    `median != min`, so this guard is **inert here**. T-3488 repairs a latent
+    defect on this repo and an active one downstream (13/25 tasks at zero,
+    median 0.00 — the shape T-3485 was dispatched against).
+    """
+    import statistics  # noqa: PLC0415
+
+    if not norms:
+        return False
+    return statistics.median(norms) == min(norms)
+
+
 def _annotate_bvp_rank(metas: List[Dict[str, Any]]) -> None:
     """T-2497: attach bvp_norm / bvp_cost / _quadrant / _quadrant_rank in place.
 
@@ -1363,10 +1417,24 @@ def _annotate_bvp_rank(metas: List[Dict[str, Any]]) -> None:
     costs = [m["bvp_cost"] for m in scored if m["bvp_cost"] is not None]
     bvp_median = statistics.median(norms) if norms else 0.5
     cost_median = statistics.median(costs) if costs else 4.0
+    # T-3488: computed once over the whole distribution, not per row — degeneracy
+    # is a property of the corpus. See _value_axis_degenerate().
+    degenerate = _value_axis_degenerate(norms)
     for m in scored:
         # A scored task with no cost signal can't claim to be cheap — place it on
         # the cost median (neutral) so it still lands in a defined quadrant.
         cost = m["bvp_cost"] if m["bvp_cost"] is not None else cost_median
+        if degenerate and m["bvp_norm"] == bvp_median:
+            # Withhold rather than guess a side. Ranked LAST, and that is
+            # provably right in every case this branch can fire: the guard only
+            # fires when median == min, so a task at the median is AT the floor
+            # and nothing in the corpus is below it. Reuses _NO_BVP_RANK because
+            # the ordering consequence is identical — fall back to FIFO — while
+            # `_quadrant` still reports `v-thin`, so the two states stay
+            # distinguishable in `fw resolver explain` and _bvp_summary().
+            m["_quadrant"] = QUAD_VALUE_WITHHELD
+            m["_quadrant_rank"] = _NO_BVP_RANK
+            continue
         quad = ("hv" if m["bvp_norm"] >= bvp_median else "lv") + "-" + (
             "lc" if cost <= cost_median else "hc"
         )
