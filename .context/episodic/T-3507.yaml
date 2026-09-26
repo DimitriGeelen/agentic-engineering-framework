@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3507: arc membership S5: audit's completion-ratio check reads a deprecated cache as a fallback instead of unioning it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-26T19:11:31Z
+# ============================================================================
+
+task_id: T-3507
+task_name: "arc membership S5: audit's completion-ratio check reads a deprecated cache as a fallback instead of unioning it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T18:04:56Z
+completed: 2026-09-26T19:11:13Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-26T21:10:59+02:00
+last_commit: 2026-09-26T21:10:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-completion ratio unions live membership instead of using it as a fallback
+
+# Key outcomes
+outcomes:
+  - 'The check computes membership as an unconditional **union**, not a fallback.'
+  - 'Membership is resolved via `lib/arc_membership.py`, removing the inline'
+  - 'The corpus is walked **once per run, not once per arc**, asserted by'
+  - 'The WARN/PASS message reports the union denominator.'
+  - 'Degrades loudly, never silently.'
+  - 'CONTROL LEG: an arc whose cache already matches its membership is unchanged.'
+  - 'A fixture proves the union on a NON-EMPTY short cache.'
+  - 'A fixture proves the empty-cache path (T-1813) still works.'
+  - 'Before/after verdicts recorded, including whether any flipped.'
+  - '`fw audit --section arc-completion` runs clean end-to-end on the live corpus.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-3507-arc-membership-s5-audits-completion-rati.md'
+  - 'tests/unit/t3507_arc_completion_union.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-26T21:10:59'
+    action: 'T-3507: arc-completion ratio unions live membership instead of using it as a fallback'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 66 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:arc-grooming]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 66
+  commits: 1
+  files_changed: 5
+  lines_added: 619
+  lines_removed: 264
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3507-arc-membership-s5-audits-completion-rati.md
+generated_by: context-agent-hybrid

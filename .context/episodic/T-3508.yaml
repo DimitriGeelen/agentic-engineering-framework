@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3508: restore the fw arc close gate to default-on; the waiver stays available but opt-out
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-26T19:19:57Z
+# ============================================================================
+
+task_id: T-3508
+task_name: "restore the fw arc close gate to default-on; the waiver stays available but opt-out"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T19:11:57Z
+completed: 2026-09-26T19:19:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-26T21:19:27+02:00
+last_commit: 2026-09-26T21:19:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  restore the fw arc close gate to default-on; the waiver stays, as opt-out
+
+# Key outcomes
+outcomes:
+  - '`fw arc close` refuses under `$CLAUDECODE=1` **by default** again.'
+  - 'The waiver still exists and is opt-**out**.'
+  - 'The two refusal tests **run by default** — the `skipif` is gone.'
+  - 'A test asserts the DEFAULT is refusal.'
+  - 'A test asserts the waiver works when explicitly set to `0`.'
+  - '`lib/bvp.sh`''s `fw bvp confirm` waiver is untouched — verified by diff.'
+  - '`--demo` and `--headline-mechanic` still fire for both caller classes.'
+  - 'T-3487 remains `captured` / `horizon: later`.'
+  - 'Existing arc suites green; zero skips.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/arc.sh'
+  - 'lib/arc.sh'
+  - '.tasks/active/T-3508-restore-the-fw-arc-close-gate-to-default.md'
+  - '.tasks/completed/T-3507-arc-membership-s5-audits-completion-rati.md'
+  - 'tests/unit/test_arc_close_agent_gate.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-26T21:19:27'
+    action: 'T-3508: restore the fw arc close gate to default-on; the waiver stays, as opt-out'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:arc-grooming]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 5
+  lines_added: 691
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3508-restore-the-fw-arc-close-gate-to-default.md
+generated_by: context-agent-hybrid

@@ -6,12 +6,12 @@ description: >
   arc membership S5: audit's completion-ratio check reads a deprecated cache as a
   fallback instead of unioning it
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:arc-grooming]
-components: []
+components: [agents/audit/audit.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-26T18:04:56Z
-last_update: 2026-09-26T18:20:09Z
-date_finished:
+last_update: 2026-09-26T19:11:13Z
+date_finished: 2026-09-26T19:11:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -511,3 +511,24 @@ non-empty cache had its ratio computed over a deprecated, append-only list.
 
 ### 2026-09-26T18:20:09Z — status-update [task-update-agent]
 - **Change:** tags: +arc:arc-grooming
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ed076f7e
+- **Timestamp:** 2026-09-26T19:11:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/unit/t3507_arc_completion_union.bats 2>&1); echo "$out" | grep -qE "^ok 10 " && ! echo "$out" | grep -qE "^not ok|# skip"`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -f`
+
+### 2026-09-26T19:11:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
