@@ -104,17 +104,42 @@ not exist.
 
 ### 4.2 QUALITY — derivable from the corpus
 
-| signal | source |
-|---|---|
-| rework commits | commits touching the task's `components:` after `date_finished`, inside a window |
-| follow-on defects | later tasks whose `related_tasks:` name it, of bug class |
-| reopened | task moved back out of `completed/` |
-| **operator corrections** | `.context/working/feedback-stream.yaml` — already 1,970 entries |
+| signal | source | status |
+|---|---|---|
+| **operator corrections** | `feedback-stream.yaml`, `kind: override_applied` | **built** (T-3497) |
+| auto-ticks | `feedback-stream.yaml`, `kind: auto_tick` | **built** (T-3497) |
+| follow-on defects | later **bug-class** tasks whose `related_tasks:` name it | **built** (T-3497) |
+| rework commits | commits touching the task's `components:` after `date_finished` | **not built** — one `git log` per task over ~3,400 tasks is not cheap, and `components:` resolves only at close |
 
-The last is the interesting one and it already exists. The T-1985 sovereignty
-rail records a digest-keyed entry on every reviewer auto-tick, and **a human
-un-ticking an auto-ticked AC is a recorded correction**. That file has been
-accumulating this signal for months with nothing reading it for value.
+**CORRECTION (T-3497): this section previously claimed 1,970 correction entries.
+That was wrong.** The figure came from a grep for `auto_tick|override|untick`
+across the whole file, which matched payload prose. Counted by event `kind:`:
+
+| kind | count |
+|---|---:|
+| `verdict_recorded` | 2326 |
+| `scan_emitted` | 2326 |
+| `recommendation_claims_verdict` | 130 |
+| **`override_applied`** | **125** |
+| **`auto_tick`** | **12** |
+
+There is also **no un-tick event kind at all**, so the T-1985 rail this section
+described — a human un-ticking an auto-tick — leaves nothing in the stream to
+count. `override_applied` is still a genuine correction (someone declared a
+reviewer finding wrong), but 125 across the corpus is a thin signal, not a rich
+one. A signal counted the wrong way is not a smaller signal; it is a different
+one.
+
+**Measured coverage, both axes, so the sparsity is visible up front:**
+
+| axis | tasks with any signal |
+|---|---|
+| COST (last 300 completed) | **7.67 %** |
+| QUALITY (last 400 completed) | **4.8 %** — 2 corrections, 21 follow-on defects |
+
+Neither axis is dense. Any calibration must report its coverage beside its
+result, or it is presenting an estimate from one task in twenty as a corpus-wide
+finding.
 
 ### 4.3 VALUE — constructed, because nothing measures it
 

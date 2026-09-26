@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3497: BVP loop S4: quality rows — derive operator-correction volume, reopens and follow-on defects from the corpus that already records them
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-26T00:20:36Z
+# ============================================================================
+
+task_id: T-3497
+task_name: "BVP loop S4: quality rows — derive operator-correction volume, reopens and follow-on defects from the corpus that already records them"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T00:13:29Z
+completed: 2026-09-26T00:20:18Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Slice 4 of docs/architecture/bvp-feedback-loop.md. The QUALITY axis, derivable today: feedback-stream.yaml already holds 1970 override/un-tick entries (a human un-ticking a reviewer auto-tick IS a recorded correction) and nothing reads it for value. Plus reopens and follow-on bug tasks naming the task in related_tasks. Extends lib/bvp_outcomes.py, disjoint from lib/bvp.sh which the bvp-equality worker still holds.
+
+# Key outcomes
+outcomes:
+  - '`quality_for_task()` in `lib/bvp_outcomes.py` returns override count, auto-tick count and follow-on-defect count for a task, reading the feedback stream and task corpus read-only'
+  - 'It counts **events by `kind:`**, not substring hits — the measurement that corrected this task''s own premise must be the one the code performs'
+  - 'A task with no recorded corrections returns **zeros that are real zeros**, distinguishable from an unreadable source: a missing or unparseable feedback stream returns `available: false`, never a clean zero'
+  - 'Follow-on defects count only **bug-class** tasks created at-or-after the subject and naming it in `related_tasks` — a task filed before it cannot be a defect it caused'
+  - '`record_realised()` populates the `quality` block from it, so the ledger row carries the axis rather than an empty dict'
+  - 'A backfill over the corpus reports how many tasks have any quality signal at all, so the thinness is visible in the output rather than discovered later'
+  - 'The design doc''s inflated 1,970 claim is corrected to the measured counts, with the reason recorded'
+  - 'Tests pin the by-kind counting, the real-zero vs unavailable distinction, and the at-or-after rule, against committed fixtures'
+  - '`lib/bvp.sh` untouched, and this task''s own vendored copy is in sync (scoped deliberately — see Result)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3497-bvp-loop-s4-quality-rows--derive-operato.md
+generated_by: context-agent-hybrid
