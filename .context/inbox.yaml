@@ -5618,3 +5618,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-551
+  text: "T-3511 ships the parked-branch merge gate with ONE measured hole: a FAST-FORWARD merge of a parked branch is not refused, because git fires no pre-merge-commit and no pre-commit when no commit object is created (measured on git 2.43.0: only post-merge and reference-transaction fire). Pinned deliberately as a known state by tests/unit/t3511_parked_merge_guard.bats 'KNOWN GAP: a fast-forward merge of a parked branch is NOT refused', so the hole stays visible and a future widening makes that test go red on purpose. Closing it needs the reference-transaction hook, which fires on EVERY ref update in the repo — commits, fetches, resets, branch creation — a far larger blast radius than this guard warrants, and a strong candidate for breaking unrelated flows. Second, smaller hole: 'git merge --squash' is DETECTED but not resolvable — the squash stages content and a SEPARATE 'git commit' process creates the commit, by which point neither MERGE_HEAD nor GITHEAD_* survives, and SQUASH_MSG lists commits rather than the source branch; the guard prints a NOTE and allows. Both are stated in the guard's own header rather than left implicit, because an unstated gap reads as coverage — the exact defect class OBS-547 and its five siblings came from. Not filed as a task: closing the FF leg is a judgement call about blast radius that belongs to the operator, not a chore."
+  captured: 2026-09-26T23:42:28Z
+  context_task: T-3511
+  tags: []
+  status: pending
+  promoted_to: null

@@ -1,0 +1,21 @@
+id: agents/git/lib/parked-merge-guard.sh
+name: parked-merge-guard
+type: script
+subsystem: git-traceability
+location: agents/git/lib/parked-merge-guard.sh
+tags: []
+
+purpose: "parked-merge-guard.sh — refuse a merge whose source branch's governing task is deliberately parked (T-3511, prevention leg of OBS-547)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-26
+created_by: unknown

@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.15"
+COMMIT_MSG_HOOK_VERSION="1.16"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -70,6 +70,7 @@ do_install_hooks() {
     local pre_commit_hook="$hooks_dir/pre-commit"
     local post_commit_hook="$hooks_dir/post-commit"
     local pre_push_hook="$hooks_dir/pre-push"
+    local pre_merge_commit_hook="$hooks_dir/pre-merge-commit"   # T-3511
 
     # Check if hooks exist
     if [ -f "$commit_msg_hook" ] && [ "$force" = false ]; then
@@ -102,7 +103,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.15
+# VERSION=1.16
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -341,7 +342,7 @@ HOOK_EOF
 #                   + Secret Scan (T-1844)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.3
+# VERSION=1.4
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -524,11 +525,79 @@ if [ -f "$LARGE_FILE_SCANNER" ]; then
     fi
 fi
 
+# FW-HOOK-BLOCK: t3511-parked-merge (conflicted-merge leg)
+# T-3511. A CONFLICTED merge fires no hook during `git merge`; the resolving
+# `git commit` then fires pre-commit, not pre-merge-commit — measured on git
+# 2.43.0. So the same guard runs from here too, otherwise a parked branch merged
+# with a conflict lands unguarded while the clean-merge case is refused, and the
+# gate's coverage would depend on whether the branches happened to collide.
+# The guard returns immediately unless MERGE_HEAD is present, so an ordinary
+# commit pays a single stat.
+PARKED_GUARD="$FRAMEWORK_ROOT/agents/git/lib/parked-merge-guard.sh"
+if [ -f "$PARKED_GUARD" ]; then
+    PROJECT_ROOT="$PROJECT_ROOT" bash "$PARKED_GUARD" check || exit 1
+fi
+
 exit 0
 HOOK_EOF
 
     chmod +x "$pre_commit_hook"
     _verify_hook_written "$pre_commit_hook" || { install_failed=true; failed_hooks+=("$pre_commit_hook"); }
+
+    # T-3511 (OBS-547 prevention leg): refuse a merge whose source branch's
+    # governing task is deliberately parked.
+    #
+    # A SEPARATE hook and not another block in pre-commit, because git fires
+    # `pre-merge-commit` INSTEAD OF `pre-commit` for a clean merge — measured on
+    # 2.43.0, not assumed. That is the shape the 2026-09-26 incident used, so a
+    # pre-commit-only guard would have been green, tested and unreachable (L-573).
+    # The conflicted-merge shape DOES route through pre-commit, which is why the
+    # same guard is invoked from both; it self-limits by checking MERGE_HEAD first,
+    # so an ordinary commit pays one stat.
+    cat > "$pre_merge_commit_hook" << 'HOOK_EOF'
+#!/bin/bash
+# pre-merge-commit hook - Parked-branch merge guard (T-3511)
+# Installed by: ./agents/git/git.sh install-hooks
+# Part of: Agentic Engineering Framework
+# VERSION=1.0
+
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+
+# Resolve FRAMEWORK_ROOT — framework / consumer / vendored layouts.
+FRAMEWORK_ROOT="$PROJECT_ROOT"
+if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+    _fw_path=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+    [ -n "$_fw_path" ] && [ -d "$_fw_path" ] && FRAMEWORK_ROOT="$_fw_path"
+fi
+[ ! -f "$FRAMEWORK_ROOT/agents/git/lib/parked-merge-guard.sh" ] \
+    && [ -f "$PROJECT_ROOT/.agentic-framework/agents/git/lib/parked-merge-guard.sh" ] \
+    && FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
+
+# T-2061 bash-invoke pattern: gate on -f and run via `bash`, so a vendored copy
+# that landed without the exec bit still runs.
+PARKED_GUARD="$FRAMEWORK_ROOT/agents/git/lib/parked-merge-guard.sh"
+if [ -f "$PARKED_GUARD" ]; then
+    PROJECT_ROOT="$PROJECT_ROOT" bash "$PARKED_GUARD" check || exit 1
+elif [ -f "$PROJECT_ROOT/.framework.yaml" ] || [ -d "$PROJECT_ROOT/.tasks" ]; then
+    # Degrade to ALLOW, but never silently (T-2647). The guard itself has a loud
+    # degradation path, and it is UNREACHABLE when the guard file is the thing
+    # missing — so the message has to exist here too. Found by the T-3511 suite's
+    # broken-framework_path test, which passed the merge and said nothing.
+    #
+    # Scoped to projects that declare a framework or carry a task corpus: a plain
+    # git repo with neither has nothing to guard, and warning there on every merge
+    # is the noise that trains people to stop reading hook output.
+    echo "WARNING: parked-branch merge guard is NOT running (T-3511) — not found at:" >&2
+    echo "  $PARKED_GUARD" >&2
+    echo "Merges of deliberately-parked branches are unguarded in this repo." >&2
+    echo "Fix: cd $PROJECT_ROOT && bin/fw upgrade   (framework repo: bin/fw vendor self)" >&2
+fi
+
+exit 0
+HOOK_EOF
+
+    chmod +x "$pre_merge_commit_hook"
+    _verify_hook_written "$pre_merge_commit_hook" || { install_failed=true; failed_hooks+=("$pre_merge_commit_hook"); }
 
     # Create post-commit hook for bypass detection + context checkpoint
     cat > "$post_commit_hook" << 'HOOK_EOF'
@@ -1351,7 +1420,7 @@ HOOK_EOF
     # it exists and is executable — a hook whose write failed is reported as
     # a failure, never silently folded into a success banner.
     if [ "$install_failed" = true ]; then
-        echo -e "${RED}ERROR: hook installation failed — ${#failed_hooks[@]} of 4 hook(s) were not written:${NC}" >&2
+        echo -e "${RED}ERROR: hook installation failed — ${#failed_hooks[@]} of 5 hook(s) were not written:${NC}" >&2
         echo "" >&2
         for _fh in "${failed_hooks[@]}"; do
             echo "  - $_fh" >&2
@@ -1399,7 +1468,12 @@ Options:
 
 Installs:
   - commit-msg hook: Validates task reference in commit message
+  - pre-commit hook: Master-merge-only guard, task-corpus guard, secret scan,
+                     and the parked-branch merge guard's conflicted-merge leg
   - post-commit hook: Detects bypasses and reminds to log them
+  - pre-merge-commit hook: Refuses a merge whose source branch's governing task
+                     is parked (T-3511). Does NOT fire on a fast-forward — git
+                     creates no commit there, so that shape is unguarded.
   - pre-push hook: Runs audit before push (blocks on FAIL, and on could-not-run)
 
 The hooks enforce task traceability (P-002: Structural Enforcement).

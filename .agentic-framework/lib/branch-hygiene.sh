@@ -114,32 +114,22 @@ _bh_days_since_commit() {
 # than be quietly exempted. Two of the four branches in that same merge —
 # `dispatch-f25` and `dispatch-f21-f24` — carry no task id at all, so a helper
 # that defaulted to "not parked" would read as coverage it does not have.
+# T-3511: DELEGATES to lib/task-parked.sh. The body of this function used to live
+# here (T-3510, one commit earlier); it moved the moment a second caller appeared —
+# the pre-merge gate — rather than after the two had drifted. Keep it a delegation:
+# parked-ness read in two places with two implementations is how arc membership
+# reached five readers that disagreed.
 _bh_governing_task() {
-    local repo="$1" br="${2#origin/}" id fm st hz f tf=""
-    # A leading task id in any shape the corpus uses: t3487-…, t-3487-…, T-3487-….
-    # The digit class is what keeps `test-foo` and `tooling-x` out.
-    case "$br" in
-        [Tt][0-9][0-9][0-9]*|[Tt]-[0-9][0-9][0-9]*) : ;;
-        *) return 0 ;;
-    esac
-    id=$(printf '%s\n' "$br" | sed -n 's/^[Tt]-\{0,1\}\([0-9]\{3,6\}\).*$/\1/p')
-    [ -z "$id" ] && return 0
-    for f in "$repo/.tasks/active/T-$id-"*.md "$repo/.tasks/completed/T-$id-"*.md; do
-        [ -f "$f" ] && { tf="$f"; break; }
-    done
-    [ -z "$tf" ] && return 0
-    # Frontmatter only. A body that discusses `status: captured` in prose must not
-    # be read as the task's own state — the same mention-vs-instance trap as L-583.
-    fm=$(awk 'NR==1 && $0!="---" {exit} NR>1 && $0=="---" {exit} NR>1 {print}' "$tf")
-    st=$(printf '%s\n' "$fm" | sed -n 's/^status:[[:space:]]*//p'  | head -1 | tr -d "\"' ")
-    hz=$(printf '%s\n' "$fm" | sed -n 's/^horizon:[[:space:]]*//p' | head -1 | tr -d "\"' ")
-    # `captured` OR `horizon: later` — the two states CLAUDE.md §Horizon defines as
-    # parked. A `work-completed` task whose branch never landed is a genuine strand
-    # and keeps its existing finding.
-    case "$st:$hz" in
-        captured:*|*:later) echo "T-$id parked" ;;
-        *)                  echo "T-$id live" ;;
-    esac
+    local repo="$1" br="$2"
+    local _tp="${BASH_SOURCE[0]%/*}/task-parked.sh"
+    # Degrade to "unresolvable" (empty) if the lib is absent, never to a verdict.
+    # Every caller already treats empty as "classify as before", so a missing lib
+    # reverts this rail to its pre-T-3510 behaviour instead of breaking the scan
+    # that audit and doctor both depend on.
+    [ -f "$_tp" ] || return 0
+    # shellcheck source=lib/task-parked.sh
+    . "$_tp"
+    fw_branch_governing_task "$repo" "$br"
 }
 
 fw_branch_hygiene() {

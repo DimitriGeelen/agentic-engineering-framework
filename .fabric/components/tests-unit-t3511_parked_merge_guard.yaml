@@ -1,0 +1,21 @@
+id: tests/unit/t3511_parked_merge_guard.bats
+name: t3511_parked_merge_guard
+type: script
+subsystem: tests
+location: tests/unit/t3511_parked_merge_guard.bats
+tags: []
+
+purpose: "T-3511 (OBS-547 prevention leg): a merge of a deliberately-parked branch is refused."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-26
+created_by: unknown
