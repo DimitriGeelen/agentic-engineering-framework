@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3499: BVP loop S6 — the usage axis: instrument verb invocation, because hook-telemetry counts hooks not verbs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-26T08:46:31Z
+# ============================================================================
+
+task_id: T-3499
+task_name: "BVP loop S6 — the usage axis: instrument verb invocation, because hook-telemetry counts hooks not verbs"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T08:25:31Z
+completed: 2026-09-26T08:46:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-26T10:45:34+02:00
+last_commit: 2026-09-26T10:45:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP loop S6 — the usage axis, built writer-first because the assumed feed counted the wrong thing
+
+# Key outcomes
+outcomes:
+  - '`bin/fw` increments a per-verb counter at its single dispatch point, before the'
+  - 'The `hook` verb is **excluded**, with the reason recorded: hook dispatch is'
+  - 'The increment reuses `_fw_telemetry_increment` from `lib/hook-telemetry.sh`'
+  - 'Instrumentation is fail-open: a broken or unwritable counter must never change'
+  - '`FW_VERB_TELEMETRY=0` disables the increment; proven by a test.'
+  - '`lib/bvp_usage.py` reads the counter and classifies every verb into exactly one'
+  - 'CONTROL LEG: a test proves a discoverable-but-unused verb is **not** reported as'
+  - 'An absent counter file reports `available: False`, not a corpus of zero-usage'
+  - 'Added per-invocation latency is **measured and reported in the task body**, not'
+  - '`docs/architecture/bvp-feedback-loop.md` §4.3(a) and §8 corrected with the'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/bvp_usage.py'
+  - 'bin/fw'
+  - '.context/working/.verb-counter'
+  - 'docs/architecture/bvp-feedback-loop.md'
+  - 'lib/bvp_usage.py'
+  - '.tasks/active/T-3499-bvp-loop-s6--the-usage-axis-instrument-v.md'
+  - 'tests/unit/test_bvp_usage_axis.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-26T10:45:34'
+    action: 'T-3499: BVP loop S6 — the usage axis, built writer-first because the assumed feed counted the wrong thing'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 20
+  commits: 1
+  files_changed: 8
+  lines_added: 1324
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3499-bvp-loop-s6--the-usage-axis-instrument-v.md
+generated_by: context-agent-hybrid
