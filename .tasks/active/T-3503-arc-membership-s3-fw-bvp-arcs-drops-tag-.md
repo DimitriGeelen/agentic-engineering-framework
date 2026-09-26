@@ -5,12 +5,12 @@ name: "arc membership S3: fw bvp arcs drops tag-only arcs instead of ranking the
 description: >
   arc membership S3: fw bvp arcs drops tag-only arcs instead of ranking them at zero
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:arc-grooming]
-components: []
+components: [lib/bvp.sh, web/blueprints/bvp.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-26T12:56:05Z
-last_update: 2026-09-26T13:13:50Z
-date_finished:
+last_update: 2026-09-26T13:15:51Z
+date_finished: 2026-09-26T13:15:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -433,6 +433,49 @@ duplication.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-26 — the arcs the ranking hid were the arcs the audit was flagging
+
+- **What changed:** The slice was filed on a reported *capability* gap ("tag-only
+  arcs are dropped"). What the measurement showed is sharper: the four hidden arcs
+  were `horizon-axis-hardening`, `onboarding-shape-detection`, `readme-first-run`
+  and `ladder-trigger-producer`, and **three of those four are among the five arcs
+  the audit WARNs as stale**. Two governance surfaces were disagreeing about the
+  same arcs — one flagging them as needing attention, the other omitting them from
+  the table used to choose work.
+- **Plan impact:** Raised the slice's priority in hindsight and changed what the
+  Recommendation has to say: this was not a completeness nicety, it was the
+  selection surface hiding its own backlog.
+- **Triggered:** Nothing new filed; it strengthens the case already recorded under
+  T-3501.
+
+### 2026-09-26 — the guard against this class could never have caught this instance
+
+- **What changed:** Before adding a fifth membership implementation I checked
+  whether the repo forbade it, and it does — audit's T-1881 rail, *"Any NEW
+  occurrence is silent-corpus #3 in waiting"*. But its pattern requires the literal
+  token `grep`, so it polices shell scans and is blind to Python. It reported PASS
+  over 461 files in the same audit run in which **both** Python copies were missing
+  the tag half of the union.
+- **Plan impact:** Settled the implementation choice — delegate to the canonical
+  helper rather than write a better regex, which is what the rail's own mitigation
+  text instructs. Verification now asserts the *import* exists in each copy, so
+  regrowing a local scan fails the gate rather than needing the rail to notice.
+- **Triggered:** **OBS-546**, with the candidate fix: invert the check to assert
+  membership sites *import* the helper. An allowlist of callers is finite; the set
+  of ways to write a regex is not.
+
+### 2026-09-26 — an O(arcs × tasks) blow-up surfaced by accident
+
+- **What changed:** Capturing the "before" baseline, `fw bvp arcs` **timed out at
+  300 s**. Membership was being re-derived per arc across the whole corpus — ~20 ×
+  3,484 frontmatter parses. Delegating to the single-pass helper plus two caches
+  brought it to **18.8 s**.
+- **Plan impact:** None to scope; the caches were required by the delegation
+  anyway. Recorded because the performance fix was a side effect and should not be
+  claimed as a goal, and because a verb that cannot finish inside a timeout is one
+  nobody runs.
+- **Triggered:** Nothing.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -461,6 +504,43 @@ duplication.
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+
+**Rationale:** The defect is measured, the fix is measured, and the only open
+question is a layout one. `fw bvp arcs` listed **16 of 20 arcs**; it now lists
+**20 of 20**, and three of the four it was hiding are among the five arcs the audit
+currently WARNs as stale — so the ranking was silently omitting precisely the arcs
+most in need of attention. Both surfaces (CLI and `/bvp`) were fixed together so
+they cannot disagree, and both now delegate to `lib/arc_membership.py` rather than
+carrying a fifth private copy of membership. Scoring arithmetic is untouched;
+`_arc_rolled_up_scores` was not modified. Per-arc scores DO move (e.g.
+`value-prioritisation` 64→71, `continuous-run` 76→63) because the mean is now taken
+over the correct member set — that is the intended effect, not a side effect.
+
+The one thing left for you is genuinely yours: whether a 20-row table still reads
+well on `/bvp`. That is a render-surface judgement (P-013), not something a scan can
+settle, and it does not gate the correctness of the membership fix — a layout
+adjustment can follow without reverting anything.
+
+**Evidence:**
+- Before/after on the live corpus: 16 → 20 arcs. Recovered: `horizon-axis-hardening`,
+  `onboarding-shape-detection`, `readme-first-run`, `ladder-trigger-producer`.
+- Watchtower restarted; all four confirmed present in the rendered `/bvp`, HTTP 200.
+- `tests/unit/test_bvp_arc_membership_union.py` — 11 tests, including the control leg
+  that a scored arc ranks unchanged, and that the two empty states
+  (`no-members` vs `members-unscored`) stay distinguishable.
+- 64 existing BVP tests green across seven suites; 9/9 verification lines.
+- Unplanned performance result: `fw bvp arcs` exceeded a 300 s timeout before this
+  change (membership was re-derived per arc over the whole corpus, ~20 × 3,484
+  frontmatter parses) and completes in **18.8 s** now.
+- Bounded divergence, deliberate and commented at the site: `web/blueprints/bvp.py`
+  still skips an arc with zero scorable members, because rendering one needs a
+  template change. No arc is in that state today.
+- Two findings filed rather than silently fixed: **OBS-546** (audit's T-1881 rail
+  cannot see Python reinventions of arc membership — it passed while both copies
+  were wrong) and **OBS-545** (audit's completion-ratio check reads the deprecated
+  `constituent_tasks:` cache as a fallback rather than a union).
 
 ## Decisions
 
@@ -492,3 +572,15 @@ duplication.
 
 ### 2026-09-26T13:13:50Z — status-update [task-update-agent]
 - **Change:** tags: +arc:arc-grooming
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2e019f79
+- **Timestamp:** 2026-09-26T13:16:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-26T13:15:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
