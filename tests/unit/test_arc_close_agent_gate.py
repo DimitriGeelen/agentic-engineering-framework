@@ -18,6 +18,14 @@ Note on --i-am-human: T-1259's existing inception-decide gate uses
 human types into an agent session (e.g. paired-programming with the
 shell prompt visible). T-1671 follows the same convention rather than
 making the gate stricter — consistency with precedent reduces surprise.
+
+T-3487: scenario 1's refusal is now opt-in behind FW_REQUIRE_ARC_CLOSE_APPROVAL=1
+(lib/arc.sh — sovereignty waiver, operator directive 2026-09-26). The two tests
+that pin the refusal (test_close_refused_when_claudecode_set_no_override,
+test_refusal_message_includes_anchor_redirect) only run when that switch is set,
+and set it themselves for the subprocess under test — so they exercise the real
+refusal path rather than being permanently skipped or silently green against a
+default that no longer refuses anything.
 """
 
 import os
@@ -34,12 +42,24 @@ VALID_HM = (
     "land on the chosen specialist"
 )
 
+REQUIRE_APPROVAL_ENV = "FW_REQUIRE_ARC_CLOSE_APPROVAL"
 
-def _run(cmd, cwd, claudecode=None):
+_require_approval_switch = pytest.mark.skipif(
+    os.environ.get(REQUIRE_APPROVAL_ENV) != "1",
+    reason=(
+        f"T-3487: the CLAUDECODE refusal on `fw arc close` is opt-in behind "
+        f"{REQUIRE_APPROVAL_ENV}=1; set it to exercise the refusal path"
+    ),
+)
+
+
+def _run(cmd, cwd, claudecode=None, extra_env=None):
     """Run cmd with explicit CLAUDECODE control.
 
     claudecode=None  → unset (mimics human running the binary directly)
     claudecode="1"   → set (mimics agent invocation inside Claude Code)
+    extra_env        → optional dict merged into the subprocess environment
+                        (e.g. FW_REQUIRE_ARC_CLOSE_APPROVAL=1, T-3487)
     """
     env = os.environ.copy()
     env["PROJECT_ROOT"] = str(cwd)
@@ -48,6 +68,8 @@ def _run(cmd, cwd, claudecode=None):
         env.pop("CLAUDECODE", None)
     else:
         env["CLAUDECODE"] = claudecode
+    if extra_env:
+        env.update(extra_env)
     return subprocess.run(cmd, cwd=str(cwd), env=env, capture_output=True, text=True)
 
 
@@ -83,6 +105,7 @@ def _seed_arc_and_demo(project, arc_id="alpha"):
 
 # ─── Refusal paths ──────────────────────────────────────────────────────────
 
+@_require_approval_switch
 def test_close_refused_when_claudecode_set_no_override(project):
     demo = _seed_arc_and_demo(project)
     r = _run(
@@ -90,6 +113,7 @@ def test_close_refused_when_claudecode_set_no_override(project):
          "--decision", "shipped"],
         cwd=project,
         claudecode="1",
+        extra_env={REQUIRE_APPROVAL_ENV: "1"},
     )
     assert r.returncode != 0
     # Refusal message names §ACD/G-062 + redirects:
@@ -180,6 +204,7 @@ def test_t1668_demo_gate_still_fires_under_human_invocation(project):
     assert "--demo is required" in r.stderr
 
 
+@_require_approval_switch
 def test_refusal_message_includes_anchor_redirect(project):
     """Refusal must point at fw task review on the arc anchor task."""
     # Create arc with explicit anchor:
@@ -201,6 +226,7 @@ def test_refusal_message_includes_anchor_redirect(project):
          "--decision", "shipped"],
         cwd=project,
         claudecode="1",
+        extra_env={REQUIRE_APPROVAL_ENV: "1"},
     )
     assert r.returncode != 0
     # Anchor should be named in the refusal:
