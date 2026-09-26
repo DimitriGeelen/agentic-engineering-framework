@@ -2881,6 +2881,20 @@ if [ -f "$_bh_lib" ] && git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>
             # tree into the newer one — remediation that undoes the finding.
             _bh_devname=$(_fw_bh_dev_name "$PROJECT_ROOT")
             _bh_fix="Cleanup: git branch -d <name> (merged); fw integrate run ${_bh_devname} (overdue merge-back). Full list: $_bh_full"
+            # T-3510 (OBS-547): this mitigation line is an INSTRUCTION, and on
+            # 2026-09-26 a batch-merge worker followed it into a deliberately parked
+            # branch — taking the `fw arc close` sovereignty gate off by default.
+            # Never recommend landing a branch the scan has just reported as
+            # unlanded ON PURPOSE.
+            _bh_ubd=$(printf '%s\n' "$_bh_out" | grep -c '^unlanded-by-design ')
+            if [ "${_bh_ubd:-0}" -gt 0 ] && [ "${_bh_ubd:-0}" -eq "${_bh_count:-0}" ]; then
+                _bh_fix="No landing is owed: every finding is unlanded-by-design — each branch is unlanded because its governing task is PARKED. Do NOT merge or batch-land them; resolve the task first. Full list: $_bh_full"
+            elif [ "${_bh_ubd:-0}" -gt 0 ]; then
+                _bh_fix="$_bh_fix — ${_bh_ubd} finding(s) are unlanded-by-design: their governing tasks are PARKED. EXCLUDE those branches from any merge or batch landing."
+            fi
+            if printf '%s\n' "$_bh_out" | grep -q '^parked-but-landed '; then
+                _bh_fix="$_bh_fix — PARKED-BUT-LANDED present: a parked task's code is already live in ${_bh_devname}. Reconcile the task record against the tree before anything else, and do not delete the branch to make the finding go away."
+            fi
             if printf '%s\n' "$_bh_out" | grep -q '^diverged-fork '; then
                 # T-100195 (RCA T-100194): a fork is BOTH ahead and behind, so a
                 # go-live `git merge` conflicts and a one-way `fw integrate`

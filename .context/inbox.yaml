@@ -5597,3 +5597,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-548
+  text: "sidecar consult to cacc73ea32b121dd/832-Workflow-designer unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation 832-T838-VALUE-REVIEW-SEAM, client_msg_id 34830410-2cee-4e8f-ab14-93ff1cfa8b8b). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-26T21:48:01Z
+  context_task: T-3501
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-549
+  text: "sidecar consult to cacc73ea32b121dd/832-Workflow-designer unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation 832-T838-VALUE-REVIEW-SEAM, client_msg_id 4ea91975-d8a4-4e1a-8961-00ef5043ba04). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-26T22:33:02Z
+  context_task: T-3501
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-550
+  text: "tests/unit/t3095_audit_branch_hygiene.bats test 8 ('not a git repository: block is silent, emits nothing') is RED and pre-dates T-3510 — verified by stashing agents/audit/audit.sh + lib/branch-hygiene.sh and re-running, which reproduced the same failure on unmodified code. Assertion at tests/unit/t3095_audit_branch_hygiene.bats:110 is '! echo \"$output\" | grep -q \"Branch hygiene\"', i.e. it requires the extracted audit block to emit NOTHING for a non-git directory; the block emits some Branch-hygiene line instead. Not fixed under T-3510 (one bug one task, and it is not this task's subject). This is a live instance of the already-open T-3302 (nothing runs tests/unit on a schedule, so reds there are invisible): the suite covering the very rail T-3510 modifies was red and no surface said so — I only found it because I ran the neighbouring suites by hand before committing."
+  captured: 2026-09-26T22:45:47Z
+  context_task: T-3510
+  tags: []
+  status: pending
+  promoted_to: null
