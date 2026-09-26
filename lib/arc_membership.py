@@ -13,7 +13,8 @@ Public API:
   scan_tasks_by_arc_membership(project_root)
       → (by_arc_id: dict[str, list[task_id]],
          by_tag:    dict[str, list[task_id]])
-      Frontmatter-only (reads first 1KB of each task file). Returns BOTH
+      Frontmatter-only, read to the closing `---` (T-3502; was a fixed
+      1KB budget that silently undercounted 17 of 29 arcs). Returns BOTH
       indices so callers that want a strict-canonical view (arc_id only)
       can use by_arc_id alone, while callers that want backward-
       compatibility can union both.
@@ -35,6 +36,7 @@ live in web/blueprints/arcs.py (`_arc_membership()`, `_arc_tasks_by_id()`).
 from __future__ import annotations
 
 import re
+import warnings
 from pathlib import Path
 
 # Frontmatter regexes — same patterns previously inline in arcs.py.
@@ -43,20 +45,88 @@ _ID_LINE_RE = re.compile(r"^id:\s*(T-\d+)\s*$", re.MULTILINE)
 _TAGS_LINE_RE = re.compile(r"^tags:\s*(.+?)\s*$", re.MULTILINE)
 _TAG_ARC_RE = re.compile(r"arc:([A-Za-z0-9\-_]+)")
 
-# Read budget: arc_id and tags live at the top of frontmatter. 1KB is
-# enough to capture them on every task file in the corpus (largest
-# frontmatter observed is ~700 bytes). Keeps scan fast: 1841 task files
-# × 1KB ≈ 1.8MB total I/O, ~50ms wall-clock.
-_HEAD_READ_BYTES = 1024
+# T-3502: hard cap only, NOT a read budget. Frontmatter is delimited, so it is
+# read to its terminator; this exists solely to stop a runaway or binary file
+# being slurped. Real frontmatter in this corpus is under 3 KB, so 64 KB is two
+# orders of margin: hitting it means the file is malformed, and that is reported
+# rather than silently truncated.
+#
+# WHAT THIS REPLACED, AND WHY IT WAS NOT A BUG WHEN WRITTEN. The previous
+# `_HEAD_READ_BYTES = 1024` was justified in its own comment as "enough to
+# capture them on every task file in the corpus (largest frontmatter observed is
+# ~700 bytes)… 1841 task files". Both figures were TRUE when measured and are now
+# false: the corpus is ~3,500 files, and the task template has since grown a
+# ~25-line arc_id/demo_target/BVP comment block plus `bvp_scores_proposed:` and
+# `cost_estimate_proposed:` blocks, which push real fields past byte 1024.
+#
+# Measured before the change, frontmatter-only, truncated vs full: 56 membership
+# markers lived beyond byte 1024, **17 of 29 arcs were undercounted**, 59 members
+# were invisible. Worse than a miss, truncation landed MID-TOKEN, so
+# T-1655 ("G-062 mechanism 1: codify arc completion") read as
+# `arc_id: orchestrator-reth` — dropping it from `orchestrator-rethink` AND
+# fabricating a phantom arc with one member. Reported by cashweb-integration-agent
+# (agent-chat-arc @1247); quantified under T-3501.
+#
+# This is the T-3326 mutable-corpus-anchor class living in a CONSTANT rather than
+# a test: a correctly-measured assumption that the corpus outgrew, with nothing
+# watching for the drift. The governing rule, now applied here: **a bounded read
+# of an unbounded field must report that it was bounded.** Same discipline as
+# `blast_radius` unknown-not-zero (T-3068) and the BVP ledger's
+# `attributable: false` with token fields absent — a reader that stops early
+# cannot distinguish "no value" from "a value I never reached".
+_MAX_FRONTMATTER_BYTES = 65536
+
+
+def read_frontmatter(path: Path) -> tuple[str, bool]:
+    """Return (frontmatter_text, complete).
+
+    `complete` is False ONLY when the hard cap was reached without finding the
+    closing `---`. It is True at a normal terminator and True at EOF, because
+    reaching EOF means everything there was to read WAS read. Callers must not
+    treat `complete=False` as "the field is absent" — the field's absence has not
+    been established.
+    """
+    lines: list[str] = []
+    total = 0
+    try:
+        with path.open("r", encoding="utf-8", errors="replace") as fh:
+            first = fh.readline()
+            if not first:
+                return "", True
+            lines.append(first)
+            total += len(first)
+            has_open = first.strip() == "---"
+            for line in fh:
+                total += len(line)
+                if total > _MAX_FRONTMATTER_BYTES:
+                    return "".join(lines), False
+                # Only a delimited block has a terminator to stop at; a file with
+                # no leading `---` is read to EOF (or the cap) instead of being
+                # cut at an arbitrary offset.
+                if has_open and line.strip() == "---":
+                    return "".join(lines), True
+                lines.append(line)
+    except OSError:
+        return "", True  # unreadable, not truncated — nothing was cut short
+    return "".join(lines), True
 
 
 def _read_head(path: Path) -> str:
-    """Read at most _HEAD_READ_BYTES from path; empty string on OSError."""
-    try:
-        with path.open("r", encoding="utf-8", errors="replace") as fh:
-            return fh.read(_HEAD_READ_BYTES)
-    except OSError:
-        return ""
+    """Frontmatter text for `path`, warning loudly if it had to be cut.
+
+    Name kept for the two internal callers. The warning is the "distinct state"
+    the cap owes its callers: this module's whole failure mode was a truncation
+    nobody could see, so a truncation must never again pass silently.
+    """
+    text, complete = read_frontmatter(path)
+    if not complete:
+        warnings.warn(
+            f"arc_membership: frontmatter of {path} exceeds "
+            f"{_MAX_FRONTMATTER_BYTES} bytes and was truncated — arc membership "
+            f"for this task is UNDETERMINED, not absent",
+            stacklevel=2,
+        )
+    return text
 
 
 def _iter_task_files(project_root: Path):
@@ -79,7 +149,7 @@ def scan_tasks_by_arc_membership(
       by_arc_id: arc_id value -> [task ids]   (canonical, T-1849)
       by_tag:    "arc:<slug>" -> [task ids]   (legacy, pre-T-1850)
 
-    Frontmatter-only; reads first 1KB per file. Avoids the 5×N
+    Frontmatter-only, read to the closing `---` (T-3502). Avoids the 5×N
     yaml.safe_load pattern that made /arcs render in 10s+ pre-T-1855.
     """
     root = Path(project_root)
@@ -109,7 +179,7 @@ def scan_tasks_by_arc_id(project_root: Path | str) -> dict[str, list[str]]:
     """arc_id value → [repo-relative task path, ...]. Path-valued variant.
 
     Used by audit's stale-arc check, which needs `git log -- <path>`
-    rather than task ids. Same frontmatter-only fast-scan strategy.
+    rather than task ids. Same frontmatter-to-terminator scan (T-3502).
     """
     root = Path(project_root)
     by_arc: dict[str, list[str]] = {}

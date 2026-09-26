@@ -5569,3 +5569,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-544
+  text: "Watchtower currency check is green while the server runs stale code, because its scope is narrower than the server's dependency surface. 'fw watchtower current' compares the process start time against files under web/ ONLY (T-3282/G-104). Measured 2026-09-26 under T-3502: I changed lib/arc_membership.py (which all three web/blueprints import), the check reported 'pid 1577238 is newer than every file under web/' and exited 0, and the live /arcs page was simultaneously rendering the phantom arc 'orchestrator-reth' 3 times from the pre-fix reader. After 'fw watchtower restart': phantom 0, real arc 3. So the check answers 'is the process newer than web/' while appearing to answer 'is the process current' — the same false-green family as the :3000 port literal and G-104 itself, with a new trigger. Candidate fix: widen the staleness comparison to every path the Flask app imports (lib/ at minimum), or rename the verb so it cannot be read as a general currency claim. Note the rule in CLAUDE.md is also web/-scoped, so an agent following it correctly will skip the restart after a lib/ change and ship a fix the operator cannot see."
+  captured: 2026-09-26T12:32:08Z
+  context_task: T-3502
+  tags: []
+  status: pending
+  promoted_to: null
