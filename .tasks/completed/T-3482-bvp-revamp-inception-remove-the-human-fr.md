@@ -12,11 +12,12 @@ status: work-completed
 workflow_type: inception
 owner: human
 horizon: null
-tags: []
+tags: [arc:value-prioritisation]
 components: []
 related_tasks: []
+arc_id: value-prioritisation
 created: 2026-09-25T21:30:13Z
-last_update: 2026-09-25T21:56:31Z
+last_update: 2026-09-25T23:45:59Z
 date_finished: 2026-09-25T21:56:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -232,3 +233,6 @@ Operator ruling 2026-09-25: take the human out of the loop for BVP scoring and f
 ### 2026-09-25T21:56:31Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+### 2026-09-25T23:45:59Z — status-update [task-update-agent]
+- **Change:** tags: +arc:value-prioritisation

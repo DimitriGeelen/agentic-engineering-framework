@@ -1,13 +1,19 @@
 ---
-id: T-3486
-name: "BVP loop S1: the outcomes ledger and cost rows — join dispatch token accounting to task ids, and record attributable:false rather than zero where attribution does not exist"
+id: T-3494
+name: "BVP estimator returns the no-signal default for 88.5% of inceptions: give the
+  value axis a real inception signal"
 description: >
-  BVP loop S1: the outcomes ledger and cost rows — join dispatch token accounting to task ids, and record attributable:false rather than zero where attribution does not exist
+  S2 (T-3489) measured it: inception scores are flat on all four drivers (variance
+  0.196-0.438 vs build 1.411-2.859) and 440 of 497 inceptions carry [2,2,2,2], the
+  estimator's literal no-signal fallback. Inceptions are where strategic go/no-go
+  work gets prioritised, so the axis that ranks them has been a constant. The estimator
+  lives at agents/termlink/bvp-estimator/estimator.py, disjoint from lib/bvp.sh which
+  a live worker holds. Prerequisite for S3 auto-apply being safe.
 
-status: work-completed
+status: captured
 workflow_type: build
 owner: agent
-horizon: null
+horizon: later
 tags: [arc:value-prioritisation]
 components: []
 related_tasks: []
@@ -22,9 +28,9 @@ arc_id: value-prioritisation
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-25T22:33:38Z
-last_update: 2026-09-25T23:46:00Z
-date_finished: 2026-09-25T22:44:58Z
+created: 2026-09-25T23:46:09Z
+last_update: 2026-09-25T23:54:13Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,95 +41,104 @@ date_finished: 2026-09-25T22:44:58Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-09-25T23:48:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      estimator-fidelity: 1
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: estimator-fidelity=1 
+      (body/components:estimator-fidelity-incidental); D1=4 
+      (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-25T23:48:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3486: BVP loop S1: the outcomes ledger and cost rows — join dispatch token accounting to task ids, and record attributable:false rather than zero where attribution does not exist
+# T-3494: BVP estimator returns the no-signal default for 88.5% of inceptions: give the value axis a real inception signal
 
-## Context
+## Context — PARKED: the premise is disproved
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Filed on S2's (T-3489) finding that inception D1-D4 scores are flat with
+`[2,2,2,2]` on 440 of 497. Research before execution overturned it, so this task
+is parked rather than forced through. Recorded in full because the trail is worth
+more than the task was.
 
-## Context
+### Hypothesis 1 — inception bodies are too thin to score. WRONG.
 
-Slice 1 of `docs/architecture/bvp-feedback-loop.md` (T-3484, GO recorded
-2026-09-26). The ledger and the cost axis, which need **no new
-instrumentation** — the data is already on disk.
+Measured: inception median body is **7,412 chars**, *larger* than build's 4,865.
+Only 11 of 497 (2%) are under 1,500 chars. C-001 moves inception research into
+`docs/reports/` (85% of inceptions have an artifact), but the bodies are rich
+anyway. Emptiness is not the cause.
 
-**Write-set fence, and the reason for it.** A live worker (`bvp-equality`,
-`task:T-274`, working T-3485 on the quadrant classifier's value axis) holds
-uncommitted edits in `lib/bvp.sh` and `policy/value-drivers.yaml`. This slice
-therefore touches **neither**. That is not only collision avoidance — it is the
-better design: the ledger that measures the scorer should not live inside the
-scorer. Earlier today I edited a file a live worker owned and it cost us a
-worker's commit (OBS-510); not repeating it.
+### Hypothesis 2 — the D1-D4 regexes are build-shaped. PARTLY, BUT NOT THE CAUSE.
 
-**The join.** `.context/dispatches.jsonl` carries `task_id` and four token
-fields (`input_tokens`, `output_tokens`, `cache_read_input_tokens`,
-`cache_creation_input_tokens`) on 1,107 of 2,565 rows. Joining on `task_id`
-yields real per-task cost for dispatched work.
+Three substantial inceptions (T-3475, T-3484, T-3461) score **exactly 2 on all
+nine drivers**. A regex miss produces 0 or a spread, not a uniform 2 across
+drivers with unrelated rubrics. That pattern is a default, not a measurement.
 
-**The rule that makes it honest.** Work done in a parent session has no per-task
-token cost. Recording `0` would be a lie that averages into the calibration, so
-the row records **`attributable: false`** — the same discipline T-3068 applies to
-`blast_radius` (*unknown, not zero*) and Amendment 1 applies to ack states
-(`UNKNOWN` is valid, never promoted or demoted).
+### Hypothesis 3 — it is a deliberate design decision. CONFIRMED.
+
+`agents/termlink/bvp-estimator/estimator.py:2668` —
+
+> *"driver handlers. The voi_score field (T-2188 schema) IS the composite. See
+> 050-Inceptions.md §Scoring Exception."*
+
+Inceptions are scored on `voi_score` + `target_blast_radius`, **not** on D1-D4,
+by ruling (T-2186/T-2188). 496 inceptions carry both fields. The cited doc exists
+at repo root `050-Inceptions.md`, so the citation is sound.
+
+**So the estimator is behaving correctly and there is nothing here to fix.**
+
+## What the research surfaced instead — two real defects, filed separately
+
+**(1) S2's alarm has a false positive, in code I shipped this session.**
+`lib/bvp_degenerate.py` flags the inception family for flat D1-D4 without knowing
+those drivers are deliberately unused there. An alarm that fires on a documented
+design decision trains its reader to ignore it — which is worse than no alarm,
+and is the same class as the inverted doctor smoke test (T-3453).
+
+**(2) The axis inceptions DO use is flatter still.** Measured across 496:
+
+| field | variance | distinct values | modal |
+|---|---:|---:|---|
+| `voi_score` | **0.0008** | 5 | **0.5 on 489 of 496 (98.6 %)** |
+| `target_blast_radius` | 0.05 | 4 | — |
+
+`voi_score` is required by `agents/context/check-inception-schema.py`, consumed by
+`lib/govd_envelope.py`'s `min_voi_score` breach check — and is the template
+default on 98.6 % of inceptions. It is a validated, load-bearing field that
+nobody ever sets, so the breach check it feeds cannot discriminate either.
+
+**S2's alarm never looked at it**, because it only reads D1-D4. So the alarm both
+fires where it should not and is silent where it should fire — on the same family,
+at the same time.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `lib/bvp_outcomes.py` exists as a standalone module: appends rows to `.context/bvp-outcomes.jsonl`, reads `dispatches.jsonl` read-only, and imports nothing from `lib/bvp.sh`
-- [x] A task with dispatch rows gets a row carrying summed token cost and `attributable: true`, naming its source
-- [x] A task with **no** dispatch rows gets `attributable: false` with token fields **absent or null — never 0**, so an unmeasured task can never be averaged as a cheap one
-- [x] Multiple dispatch rows for one task sum rather than overwrite (a task dispatched twice cost both)
-- [x] The ledger is append-only: a second record for the same task adds a row and never rewrites the first, so history stays immutable (producer-not-judge)
-- [x] `rubric_sha` is carried through from the task's proposed score when present, so a row is always traceable to the rubric that produced its prediction
-- [x] A backfill over the existing corpus runs and reports the **attributable fraction**, because a calibration computed over the dispatched subset alone is biased and the bias must be visible in the output
-- [x] Tests pin all of the above against committed fixtures, including a **control leg** proving `attributable: false` is distinguishable from a genuine zero-cost measurement
-- [x] `lib/bvp.sh` and `policy/value-drivers.yaml` are untouched by this task, verified with `git diff --name-only`
-
-### Human
-<!-- none: mechanical, new module, no rendering surface -->
-
-## Result — and the number that changes the design
-
-`tests/unit/test_bvp_outcomes_ledger.py` — **14/14**.
-
-**The backfill's real finding.** Over the last 300 completed tasks:
-
-| | |
-|---|---:|
-| rows | 300 |
-| **attributable** | **23** |
-| unattributable | 277 |
-| **fraction** | **7.67 %** |
-
-Measured output tokens across the attributable 23: **780,516**. Largest —
-T-100196 (92,322 out, 2 dispatches), T-3252 (92,277, 1), T-3265 (60,229, 5).
-
-**This is much starker than the dispatch-row count suggested.** "1,107 of 2,565
-rows carry tokens" reads as ~43 % coverage; per *task* it is **7.67 %**, because
-many rows belong to the same few dispatched tasks and most completed work was
-done in a parent session that cannot be attributed at all.
-
-**Consequence the design must absorb:** the cost axis can be calibrated on
-roughly one task in thirteen, and that thirteenth is not a random one — it is
-whatever we chose to dispatch. `attributable_fraction()` therefore returns with
-every calibration rather than being available on request. A calibration that
-does not print `7.67 %` beside its result is reporting a biased estimate as a
-plain one.
-
-Recorded now because the alternative is discovering it later as "why does the
-calibration look strange", which is how the flat-scorer defect survived months.
-
-**Write-set fence held.** My change set is exactly two new files. `lib/bvp.sh`
-shows modified, but that edit is the live `bvp-equality` worker's (T-3485) and
-predates this task — I did not open it. `policy/value-drivers.yaml` is no longer
-dirty, so the worker has moved on from it; also untouched here.
-
-**One typing fix worth naming:** the token sums and the provenance strings were
-briefly accumulating in one `dict[str, int]`, which Pyright caught. Split into a
-separate result dict — keeping ints and a source string in one loosely-typed
-accumulator is exactly how a source string ends up averaged as a number.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,14 +299,6 @@ accumulator is exactly how a source string ends up averaged as a number.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-timeout 300 python3 -m pytest tests/unit/test_bvp_outcomes_ledger.py -q > /tmp/.t3486.out 2>&1 && grep -q "14 passed" /tmp/.t3486.out
-# The module stays decoupled from the scorer (the write-set fence).
-! grep -qE "^(from|import).*bvp\b" lib/bvp_outcomes.py
-# Unmeasured cost is never rendered as zero.
-python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_outcomes as b; r=b.unattributable(); assert r['attributable'] is False; assert not any(k.startswith('tokens') or k.startswith('cache') for k in r), r"
-# An empty set has no fraction, rather than a fraction of zero.
-python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_outcomes as b; assert b.attributable_fraction([])['fraction'] is None"
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -384,29 +391,17 @@ python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_outcomes as 
 
 ## Updates
 
-### 2026-09-25T22:33:38Z — task-created [task-create-agent]
+### 2026-09-25T23:46:09Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3486-bvp-loop-s1-the-outcomes-ledger-and-cost.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3494-bvp-estimator-returns-the-no-signal-defa.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-b7f85429
-- **Timestamp:** 2026-09-25T22:45:02Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 2
-
-**Per-AC findings:**
-
-- **AC#1 (Agent)** — `lib/bvp_outcomes.py` exists as a standalone module: appends rows to `.context/bvp-outcomes.jsonl`, reads `dispatches.jsonl` read-only, and imports nothing from `lib/bvp.sh`
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/bvp-outcomes.jsonl in: `lib/bvp_outcomes.py` exists as a standalone module: appends rows to `.context/bvp-outcomes.jsonl`, reads `dispatches.jsonl` read-only, and imports no`
-- **AC#9 (Agent)** — `lib/bvp.sh` and `policy/value-drivers.yaml` are untouched by this task, verified with `git diff --name-only`
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: `lib/bvp.sh` and `policy/value-drivers.yaml` are untouched by this task, verified with `git diff --name-only``
-
-### 2026-09-25T22:44:58Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-
-### 2026-09-25T23:46:00Z — status-update [task-update-agent]
+### 2026-09-25T23:48:23Z — status-update [task-update-agent]
 - **Change:** tags: +arc:value-prioritisation
+
+### 2026-09-25T23:53:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-09-25T23:54:13Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

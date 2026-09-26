@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3495: degenerate-scorer alarm flags a documented scoring exception and misses the real flatness: teach it each family's actual axis
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-26T00:02:24Z
+# ============================================================================
+
+task_id: T-3495
+task_name: "degenerate-scorer alarm flags a documented scoring exception and misses the real flatness: teach it each family's actual axis"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-25T23:54:47Z
+completed: 2026-09-26T00:02:02Z
+duration_days: 1
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-539. lib/bvp_degenerate.py fires on inception for flat D1-D4, but inceptions are scored on voi_score + target_blast_radius by ruling T-2186/T-2188 (estimator.py:2668, 050-Inceptions.md Scoring Exception). So it flags a design decision (T-3453 inverted-alarm class, trains dismissal) while missing that voi_score variance is 0.0008 with 489 of 496 at the 0.5 template default. Two halves: respect the exception, and measure the axis each family actually uses.
+
+# Key outcomes
+outcomes:
+  - 'The detector knows per-family which axis applies, and no longer reports the inception family as flat on drivers that family is not scored on'
+  - 'It measures `voi_score` variance for inceptions and **fires** on the real flatness — 0.0008 variance with 98.6 % at the template default must surface, naming the modal value'
+  - '**Control leg retained:** a well-spread family on its own axis still does NOT fire, so the detector is proven to discriminate rather than to always fire'
+  - 'The exception is read from a declared mapping, not hardcoded per call site, so the next scoring exception is one table entry rather than a new branch'
+  - 'A family whose axis is unknown to the detector is reported as **unknown-axis, not as healthy** — an unrecognised family must never read as a pass (T-3099 class)'
+  - 'The live run distinguishes the two cases: inception no longer appears as flat-on-D1-D4, and DOES appear as flat-on-voi_score'
+  - 'Existing T-3489 tests still pass, or any that encoded the false positive are corrected with the reason recorded rather than deleted'
+  - '`lib/bvp.sh` and `policy/value-drivers.yaml` untouched, verified by `git diff --name-only`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3495-degenerate-scorer-alarm-flags-a-document.md
+generated_by: context-agent-hybrid

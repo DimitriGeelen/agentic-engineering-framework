@@ -58,9 +58,51 @@ from collections import Counter, defaultdict
 
 DRIVERS = ("D1", "D2", "D3", "D4")
 
-#: Below this per-driver variance a family is not being discriminated.
-#: Derived: inception's worst measured is 0.438, build's best is 1.411.
-VARIANCE_FLOOR = 0.5
+#: T-3495: **which axis a family is actually scored on.**
+#:
+#: The first version of this detector measured D1-D4 for every family and so
+#: reported `inception` as flat — which it is, and which is DELIBERATE.
+#: `estimator.py:2668` cites `050-Inceptions.md §Scoring Exception`: inceptions
+#: are scored on `voi_score` + `target_blast_radius` (ruling T-2186/T-2188), not
+#: on the four directives. Flagging that trained the reader to dismiss the alarm
+#: — the T-3453 inverted-alarm class, in a detector barely an hour old.
+#:
+#: Declared as a table rather than a branch so the next scoring exception is one
+#: entry, not another special case buried in the verdict function.
+AXES = {
+    "drivers": {
+        "fields": DRIVERS,
+        # Derived from the corpus: inception's worst D-variance was 0.438,
+        # build's best 1.411. Nothing tuned to make a number come out.
+        "floor": 0.5,
+        "scale": "four directives, integers 0-5",
+    },
+    "voi": {
+        "fields": ("voi_score",),
+        # voi_score is a float in 0..1, so the driver floor is meaningless here:
+        # 0.5 variance is impossible on that range. 0.01 is a standard deviation
+        # of 0.1 — a tenth of the available scale. Measured actual: 0.0008.
+        "floor": 0.01,
+        "scale": "value-of-information, float 0..1",
+    },
+}
+
+#: Family → axis name. A family ABSENT here is reported `unknown-axis`, never
+#: `ok`: a detector that silently applies the wrong axis to a new workflow type
+#: is how this defect happened in the first place (T-3099 discipline — a check
+#: that did not evaluate must not read as one that found nothing).
+FAMILY_AXIS = {
+    "build": "drivers",
+    "refactor": "drivers",
+    "test": "drivers",
+    "specification": "drivers",
+    "design": "drivers",
+    "decommission": "drivers",
+    "inception": "voi",
+}
+
+#: Kept for callers that referenced it before the axis table existed.
+VARIANCE_FLOOR = AXES["drivers"]["floor"]
 
 #: Fewer members than this and variance says nothing. Reported as
 #: `insufficient`, never as a pass.
@@ -76,22 +118,44 @@ _WF_RE = re.compile(r"^workflow_type:\s*(\S+)", re.M)
 FIRED = "fired"
 OK = "ok"
 INSUFFICIENT = "insufficient"
+UNKNOWN_AXIS = "unknown-axis"
+
+_VOI_RE = re.compile(r"^voi_score:\s*([0-9.]+)", re.M)
+_TBR_RE = re.compile(r"^target_blast_radius:\s*(\d+)", re.M)
 
 
 def parse_task(text: str) -> tuple[str, dict] | None:
-    """(family, {D1..D4}) for a task carrying a full proposed score, else None."""
+    """(family, measured fields) for a task, or None if it carries none.
+
+    T-3495: returns whatever the task actually carries — D1-D4 for
+    driver-scored families, `voi_score` for inceptions — rather than assuming
+    every family is scored the same way. The caller picks the axis via
+    `FAMILY_AXIS`; this function only reports what is present.
+    """
+    family_match = _WF_RE.search(text)
+    family = family_match.group(1) if family_match else "unknown"
+    values: dict[str, float] = {}
+
     block = _BLOCK_RE.search(text)
-    if not block:
-        return None
-    scores = {}
-    for driver in DRIVERS:
-        found = re.search(rf"^\s+{driver}:\s*(\d+)", block.group(1), re.M)
-        if found:
-            scores[driver] = int(found.group(1))
-    if len(scores) != len(DRIVERS):
-        return None
-    family = _WF_RE.search(text)
-    return (family.group(1) if family else "unknown"), scores
+    if block:
+        found_drivers = {}
+        for driver in DRIVERS:
+            hit = re.search(rf"^\s+{driver}:\s*(\d+)", block.group(1), re.M)
+            if hit:
+                found_drivers[driver] = int(hit.group(1))
+        # Partial driver sets are not scored: a task with two of four drivers
+        # tells us nothing about spread, and averaging it in would invent one.
+        if len(found_drivers) == len(DRIVERS):
+            values.update(found_drivers)
+
+    voi = _VOI_RE.search(text)
+    if voi:
+        values["voi_score"] = float(voi.group(1))
+    tbr = _TBR_RE.search(text)
+    if tbr:
+        values["target_blast_radius"] = int(tbr.group(1))
+
+    return (family, values) if values else None
 
 
 def collect(root: str | os.PathLike = ".") -> list[tuple[str, dict]]:
@@ -108,34 +172,63 @@ def collect(root: str | os.PathLike = ".") -> list[tuple[str, dict]]:
     return out
 
 
-def family_verdicts(rows, floor: float = VARIANCE_FLOOR,
+def family_verdicts(rows, floor: float | None = None,
                     min_family: int = MIN_FAMILY) -> list[dict]:
-    """Per-family variance verdict. Three states, never two."""
+    """Per-family variance verdict, **measured on that family's own axis**.
+
+    Four states, never two: `fired`, `ok`, `insufficient`, `unknown-axis`.
+
+    `floor` overrides the axis's own floor when given — used by tests to probe a
+    threshold. Left None in normal use so each axis keeps the floor derived for
+    its own scale; a single global floor is what made the pre-T-3495 version
+    compare a 0..1 float against a threshold built for 0-5 integers.
+    """
     grouped = defaultdict(list)
-    for family, scores in rows:
-        grouped[family].append(scores)
+    for family, values in rows:
+        grouped[family].append(values)
 
     verdicts = []
     for family, members in sorted(grouped.items(), key=lambda kv: -len(kv[1])):
-        if len(members) < min_family:
+        axis_name = FAMILY_AXIS.get(family)
+        if axis_name is None:
             verdicts.append({
-                "family": family, "n": len(members), "verdict": INSUFFICIENT,
-                "detail": f"fewer than {min_family} scored members — variance says nothing",
+                "family": family, "n": len(members), "verdict": UNKNOWN_AXIS,
+                "detail": ("no declared scoring axis — add it to FAMILY_AXIS "
+                           "rather than letting it default, or the wrong axis "
+                           "gets measured silently"),
             })
             continue
-        variance = {d: round(statistics.pvariance([m[d] for m in members]), 3)
-                    for d in DRIVERS}
-        flat = [d for d, v in variance.items() if v < floor]
+
+        axis = AXES[axis_name]
+        fields = axis["fields"]
+        active_floor = axis["floor"] if floor is None else floor
+
+        # Only members that actually carry every field of their axis can be
+        # compared. A member missing one is skipped, not zero-filled.
+        usable = [m for m in members if all(f in m for f in fields)]
+        if len(usable) < min_family:
+            verdicts.append({
+                "family": family, "n": len(members), "axis": axis_name,
+                "usable": len(usable), "verdict": INSUFFICIENT,
+                "detail": (f"fewer than {min_family} members carry the full "
+                           f"{axis_name} axis — variance says nothing"),
+            })
+            continue
+
+        variance = {f: round(statistics.pvariance([m[f] for m in usable]), 4)
+                    for f in fields}
+        flat = [f for f, v in variance.items() if v < active_floor]
+        modal = Counter(tuple(m[f] for f in fields) for m in usable).most_common(1)[0]
         verdicts.append({
-            "family": family, "n": len(members),
+            "family": family, "n": len(usable), "axis": axis_name,
+            "scale": axis["scale"], "floor": active_floor,
             "verdict": FIRED if flat else OK,
             "variance": variance,
             "flat_drivers": flat,
             # Name the constant, not just the verdict: "flat" with no value is
-            # unactionable — the operator needs to see WHICH constant.
-            "modal_pattern": Counter(
-                tuple(m[d] for d in DRIVERS) for m in members).most_common(1)[0]
-            if members else None,
+            # unactionable — the reader needs to see WHICH constant.
+            "modal_pattern": modal,
+            "modal_share": round(modal[1] / len(usable), 4),
         })
     return verdicts
 
@@ -146,10 +239,16 @@ def concentration(rows, ceiling: float = CONCENTRATION_CEILING, top: int = 2) ->
     Catches the shape variance misses: a corpus split between two constants has
     healthy variance and no discrimination at all.
     """
-    if not rows:
-        return {"verdict": INSUFFICIENT, "detail": "no scored tasks", "n": 0}
-    patterns = Counter(tuple(s[d] for d in DRIVERS) for _, s in rows)
+    # T-3495: only driver-scored rows belong here. Before the axis table an
+    # inception row would KeyError on D1 — or worse, be zero-filled and counted
+    # as a pattern it never had.
+    scored = [s for family, s in rows
+              if FAMILY_AXIS.get(family) == "drivers" and all(d in s for d in DRIVERS)]
+    if not scored:
+        return {"verdict": INSUFFICIENT, "detail": "no driver-scored tasks", "n": 0}
+    patterns = Counter(tuple(s[d] for d in DRIVERS) for s in scored)
     leaders = patterns.most_common(top)
+    rows = scored  # every share below is of the driver-scored population
     share = sum(c for _, c in leaders) / len(rows)
     return {
         "verdict": FIRED if share > ceiling else OK,
@@ -180,12 +279,18 @@ def render(rep: dict) -> str:
         if f["verdict"] == INSUFFICIENT:
             lines.append(f"  [INSUFFICIENT] {f['family']:<14} n={f['n']:<5} {f['detail']}")
             continue
+        if f["verdict"] == UNKNOWN_AXIS:
+            lines.append(f"  [UNKNOWN-AXIS] {f['family']:<14} n={f['n']:<5} {f['detail']}")
+            continue
         tag = "[FIRED]" if f["verdict"] == FIRED else "[ok]   "
-        lines.append(f"  {tag} {f['family']:<14} n={f['n']:<5} var={f['variance']}")
+        lines.append(f"  {tag} {f['family']:<14} n={f['n']:<5} "
+                     f"axis={f['axis']:<8} var={f['variance']}")
         if f["verdict"] == FIRED:
             pattern, count = f["modal_pattern"]
-            lines.append(f"          flat on {f['flat_drivers']}; "
-                         f"modal D1-D4={list(pattern)} on {count} of {f['n']}")
+            shown = list(pattern) if len(pattern) > 1 else pattern[0]
+            lines.append(f"          flat on {f['flat_drivers']} "
+                         f"(floor {f['floor']}); modal {shown} on {count} of "
+                         f"{f['n']} ({f['modal_share']:.1%}) — {f['scale']}")
     c = rep["concentration"]
     lines.append("")
     tag = "[FIRED]" if c["verdict"] == FIRED else "[ok]   "

@@ -5527,3 +5527,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-538
+  text: "Gate-contract collision: check-active-task's G-020 block message names '--horizon later' as escape option 3, then REFUSES that exact command when the line contains a pipe, because 'bin/fw task update T-XXXX --horizon later 2>&1' is not on the read-only allowlist. Hit live 2026-09-26 on T-3494: the suggested remedy failed, the bare form succeeded. Same class as T-3454 (gate contract collision, fixed earlier this session) and L-399/T-1890 producer-consumer parity: a gate that recommends a mechanism must ensure the mechanism works when invoked the obvious way. An agent following the block message verbatim but capturing output gets refused with a message that names the thing it just tried. Fix candidate: add the 'fw task update --horizon' form to the read-only allowlist, or have the block message say the command must be run bare."
+  captured: 2026-09-25T23:54:22Z
+  context_task: T-3494
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-539
+  text: "S2's degenerate-scorer alarm (lib/bvp_degenerate.py, shipped 2026-09-26 under T-3489) has a FALSE POSITIVE and a matching BLIND SPOT on the same family, at the same time. FALSE POSITIVE: it flags the inception family for flat D1-D4, but inceptions are deliberately NOT scored on D1-D4 -- estimator.py:2668 cites 050-Inceptions.md Scoring Exception, and voi_score + target_blast_radius are the inception axis by ruling T-2186/T-2188 (496 inceptions carry both fields). An alarm that fires on a documented design decision trains its reader to ignore it, which is worse than no alarm and is the T-3453 inverted-alarm class. BLIND SPOT: measured across 496 inceptions, voi_score variance is 0.0008 with 489 of 496 (98.6%) at exactly 0.5 -- the template default -- and only 5 distinct values ever used; target_blast_radius variance 0.05 with 4 distinct values. voi_score is REQUIRED by agents/context/check-inception-schema.py and CONSUMED by lib/govd_envelope.py min_voi_score breach check, so a validated load-bearing field is a constant and the breach check it feeds cannot discriminate either. The alarm never looked, because it only reads D1-D4. Fix has two halves: teach the alarm each family's ACTUAL scoring axis so it stops flagging the exception, and have it measure voi_score variance for inceptions so the real flatness surfaces. Disproved hypotheses recorded in parked T-3494: inception bodies are NOT thin (median 7412 chars vs build 4865, only 2% under 1500), and build-shaped regexes are not the cause (uniform 2 across nine unrelated rubrics is a default, not a miss)."
+  captured: 2026-09-25T23:54:34Z
+  context_task: T-3494
+  tags: []
+  status: pending
+  promoted_to: null

@@ -1,8 +1,14 @@
 ---
-id: T-3486
-name: "BVP loop S1: the outcomes ledger and cost rows — join dispatch token accounting to task ids, and record attributable:false rather than zero where attribution does not exist"
+id: T-3495
+name: "degenerate-scorer alarm flags a documented scoring exception and misses the
+  real flatness: teach it each family's actual axis"
 description: >
-  BVP loop S1: the outcomes ledger and cost rows — join dispatch token accounting to task ids, and record attributable:false rather than zero where attribution does not exist
+  OBS-539. lib/bvp_degenerate.py fires on inception for flat D1-D4, but inceptions
+  are scored on voi_score + target_blast_radius by ruling T-2186/T-2188 (estimator.py:2668,
+  050-Inceptions.md Scoring Exception). So it flags a design decision (T-3453 inverted-alarm
+  class, trains dismissal) while missing that voi_score variance is 0.0008 with 489
+  of 496 at the 0.5 template default. Two halves: respect the exception, and measure
+  the axis each family actually uses.
 
 status: work-completed
 workflow_type: build
@@ -22,9 +28,9 @@ arc_id: value-prioritisation
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-25T22:33:38Z
-last_update: 2026-09-25T23:46:00Z
-date_finished: 2026-09-25T22:44:58Z
+created: 2026-09-25T23:54:47Z
+last_update: 2026-09-26T00:02:02Z
+date_finished: 2026-09-26T00:02:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,9 +41,56 @@ date_finished: 2026-09-25T22:44:58Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-09-25T23:55:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-25T23:56:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      estimator-fidelity: 0
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: estimator-fidelity=0 (no-signal); D1=4 (body:structural-gate); 
+      D2=4 (body:fw-audit-or-doctor); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-25T23:56:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=313,acs=10)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3486: BVP loop S1: the outcomes ledger and cost rows — join dispatch token accounting to task ids, and record attributable:false rather than zero where attribution does not exist
+# T-3495: degenerate-scorer alarm flags a documented scoring exception and misses the real flatness: teach it each family's actual axis
 
 ## Context
 
@@ -45,85 +98,97 @@ date_finished: 2026-09-25T22:44:58Z
 
 ## Context
 
-Slice 1 of `docs/architecture/bvp-feedback-loop.md` (T-3484, GO recorded
-2026-09-26). The ledger and the cost axis, which need **no new
-instrumentation** — the data is already on disk.
+OBS-539. A defect in `lib/bvp_degenerate.py`, shipped under T-3489 earlier in
+this same session. It has a false positive and a matching blind spot **on the
+same family, at the same time.**
 
-**Write-set fence, and the reason for it.** A live worker (`bvp-equality`,
-`task:T-274`, working T-3485 on the quadrant classifier's value axis) holds
-uncommitted edits in `lib/bvp.sh` and `policy/value-drivers.yaml`. This slice
-therefore touches **neither**. That is not only collision avoidance — it is the
-better design: the ledger that measures the scorer should not live inside the
-scorer. Earlier today I edited a file a live worker owned and it cost us a
-worker's commit (OBS-510); not repeating it.
+**False positive.** It flags `inception` for flat D1-D4. But inceptions are
+deliberately not scored on D1-D4 — `estimator.py:2668` cites
+`050-Inceptions.md §Scoring Exception`, and `voi_score` + `target_blast_radius`
+are the inception axis by ruling T-2186/T-2188. 496 inceptions carry both fields.
+**An alarm that fires on a documented design decision trains its reader to ignore
+it**, which is worse than no alarm and is the T-3453 inverted-alarm class.
 
-**The join.** `.context/dispatches.jsonl` carries `task_id` and four token
-fields (`input_tokens`, `output_tokens`, `cache_read_input_tokens`,
-`cache_creation_input_tokens`) on 1,107 of 2,565 rows. Joining on `task_id`
-yields real per-task cost for dispatched work.
+**Blind spot.** Measured across 496 inceptions:
 
-**The rule that makes it honest.** Work done in a parent session has no per-task
-token cost. Recording `0` would be a lie that averages into the calibration, so
-the row records **`attributable: false`** — the same discipline T-3068 applies to
-`blast_radius` (*unknown, not zero*) and Amendment 1 applies to ack states
-(`UNKNOWN` is valid, never promoted or demoted).
+| field | variance | distinct | modal |
+|---|---:|---:|---|
+| `voi_score` | **0.0008** | 5 | **0.5 on 489 of 496 (98.6 %)** |
+| `target_blast_radius` | 0.05 | 4 | — |
+
+`voi_score` is required by `agents/context/check-inception-schema.py` and consumed
+by `lib/govd_envelope.py`'s `min_voi_score` breach check. **A validated,
+load-bearing field is a constant, so the breach check it feeds cannot
+discriminate either.** The alarm never looked, because it only reads D1-D4.
+
+So the fix is one change with two effects: teach the detector **which axis each
+family is actually scored on**. Inception flatness then stops being reported
+against the wrong drivers and starts being reported against the right ones.
+
+**Write-set fence.** `lib/bvp.sh` is still held uncommitted by the
+`bvp-equality` worker (T-3485). This task touches `lib/bvp_degenerate.py` and its
+test only.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `lib/bvp_outcomes.py` exists as a standalone module: appends rows to `.context/bvp-outcomes.jsonl`, reads `dispatches.jsonl` read-only, and imports nothing from `lib/bvp.sh`
-- [x] A task with dispatch rows gets a row carrying summed token cost and `attributable: true`, naming its source
-- [x] A task with **no** dispatch rows gets `attributable: false` with token fields **absent or null — never 0**, so an unmeasured task can never be averaged as a cheap one
-- [x] Multiple dispatch rows for one task sum rather than overwrite (a task dispatched twice cost both)
-- [x] The ledger is append-only: a second record for the same task adds a row and never rewrites the first, so history stays immutable (producer-not-judge)
-- [x] `rubric_sha` is carried through from the task's proposed score when present, so a row is always traceable to the rubric that produced its prediction
-- [x] A backfill over the existing corpus runs and reports the **attributable fraction**, because a calibration computed over the dispatched subset alone is biased and the bias must be visible in the output
-- [x] Tests pin all of the above against committed fixtures, including a **control leg** proving `attributable: false` is distinguishable from a genuine zero-cost measurement
-- [x] `lib/bvp.sh` and `policy/value-drivers.yaml` are untouched by this task, verified with `git diff --name-only`
+- [x] The detector knows per-family which axis applies, and no longer reports the inception family as flat on drivers that family is not scored on
+- [x] It measures `voi_score` variance for inceptions and **fires** on the real flatness — 0.0008 variance with 98.6 % at the template default must surface, naming the modal value
+- [x] **Control leg retained:** a well-spread family on its own axis still does NOT fire, so the detector is proven to discriminate rather than to always fire
+- [x] The exception is read from a declared mapping, not hardcoded per call site, so the next scoring exception is one table entry rather than a new branch
+- [x] A family whose axis is unknown to the detector is reported as **unknown-axis, not as healthy** — an unrecognised family must never read as a pass (T-3099 class)
+- [x] The live run distinguishes the two cases: inception no longer appears as flat-on-D1-D4, and DOES appear as flat-on-voi_score
+- [x] Existing T-3489 tests still pass, or any that encoded the false positive are corrected with the reason recorded rather than deleted
+- [x] `lib/bvp.sh` and `policy/value-drivers.yaml` untouched, verified by `git diff --name-only`
 
 ### Human
-<!-- none: mechanical, new module, no rendering surface -->
+<!-- none: mechanical detector, no rendering surface -->
 
-## Result — and the number that changes the design
+## Result
 
-`tests/unit/test_bvp_outcomes_ledger.py` — **14/14**.
+Live run, exit 1:
 
-**The backfill's real finding.** Over the last 300 completed tasks:
+```
+  [ok]    build          n=2558  axis=drivers  var={D1:2.86 D2:1.92 D3:1.83 D4:1.41}
+  [FIRED] inception      n=496   axis=voi      var={voi_score: 0.0008}
+          flat on ['voi_score'] (floor 0.01); modal 0.5 on 489 of 496 (98.6%)
+                                              — value-of-information, float 0..1
+  [FIRED] test           n=162   axis=drivers  flat on ['D2'] (floor 0.5)
+  [ok]    refactor / specification / design
+  [INSUFFICIENT] decommission n=3
+  [FIRED] concentration  top-2 share=34.6% (ceiling 25%), 155 distinct patterns
+```
 
-| | |
-|---|---:|
-| rows | 300 |
-| **attributable** | **23** |
-| unattributable | 277 |
-| **fraction** | **7.67 %** |
+**Both halves land in one change.** Inception stopped being judged on drivers it
+is not scored on, and started being judged on the axis it is — where the real
+flatness is far worse: `voi_score` variance **0.0008**, modal **0.5 on 489 of
+496 (98.6 %)**, the template default.
 
-Measured output tokens across the attributable 23: **780,516**. Largest —
-T-100196 (92,322 out, 2 dispatches), T-3252 (92,277, 1), T-3265 (60,229, 5).
+**A second defect the fix exposed.** The old detector applied one global floor of
+`0.5` to every family. Maximum possible variance on a 0..1 float is 0.25, so had
+it ever looked at `voi_score` it would have reported flat **unconditionally** — a
+check that can only ever fire. Each axis now carries a floor scaled to its own
+range (`drivers` 0.5 on 0-5 integers, `voi` 0.01 on 0..1), and a test asserts the
+relationship so the two cannot be collapsed back into one number.
 
-**This is much starker than the dispatch-row count suggested.** "1,107 of 2,565
-rows carry tokens" reads as ~43 % coverage; per *task* it is **7.67 %**, because
-many rows belong to the same few dispatched tasks and most completed work was
-done in a parent session that cannot be attributed at all.
+**Concentration got more accurate as a side effect:** 34.6 %, up from the 29.7 %
+reported before — inception rows had been diluting the driver-scored population.
+A test now asserts they are excluded, because before the axis table an inception
+row would either `KeyError` on `D1` or be zero-filled and counted as a pattern it
+never had.
 
-**Consequence the design must absorb:** the cost axis can be calibrated on
-roughly one task in thirteen, and that thirteenth is not a random one — it is
-whatever we chose to dispatch. `attributable_fraction()` therefore returns with
-every calibration rather than being available on request. A calibration that
-does not print `7.67 %` beside its result is reporting a biased estimate as a
-plain one.
+**Four fixtures had to move, and that is the new behaviour working.** Tests using
+`"hygiene"`, `"mixed"` and `"rare"` now correctly report `unknown-axis` —
+undeclared families are no longer silently measured on the directives, which is
+precisely how the inception false positive arose. Moved to a declared family with
+the reason recorded in the file rather than deleted.
 
-Recorded now because the alternative is discovering it later as "why does the
-calibration look strange", which is how the flat-scorer defect survived months.
+Suites: `test_bvp_degenerate_alarm.py` (19) + `test_bvp_outcomes_ledger.py` (14)
+= **33/33, 0 skips**.
 
-**Write-set fence held.** My change set is exactly two new files. `lib/bvp.sh`
-shows modified, but that edit is the live `bvp-equality` worker's (T-3485) and
-predates this task — I did not open it. `policy/value-drivers.yaml` is no longer
-dirty, so the worker has moved on from it; also untouched here.
-
-**One typing fix worth naming:** the token sums and the provenance strings were
-briefly accumulating in one `dict[str, int]`, which Pyright caught. Split into a
-separate result dict — keeping ints and a source string in one loosely-typed
-accumulator is exactly how a source string ends up averaged as a number.
+**Write-set fence held.** Change set is `lib/bvp_degenerate.py` and its test.
+`lib/bvp.sh` and `tests/unit/test_bvp_quadrant_value_axis.py` are the
+`bvp-equality` worker's (T-3485), untouched.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,13 +349,16 @@ accumulator is exactly how a source string ends up averaged as a number.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-timeout 300 python3 -m pytest tests/unit/test_bvp_outcomes_ledger.py -q > /tmp/.t3486.out 2>&1 && grep -q "14 passed" /tmp/.t3486.out
-# The module stays decoupled from the scorer (the write-set fence).
-! grep -qE "^(from|import).*bvp\b" lib/bvp_outcomes.py
-# Unmeasured cost is never rendered as zero.
-python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_outcomes as b; r=b.unattributable(); assert r['attributable'] is False; assert not any(k.startswith('tokens') or k.startswith('cache') for k in r), r"
-# An empty set has no fraction, rather than a fraction of zero.
-python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_outcomes as b; assert b.attributable_fraction([])['fraction'] is None"
+timeout 300 python3 -m pytest tests/unit/test_bvp_degenerate_alarm.py tests/unit/test_bvp_outcomes_ledger.py -q > /tmp/.t3495v.out 2>&1 && grep -q "33 passed" /tmp/.t3495v.out
+test "$(grep -c '# skip' /tmp/.t3495v.out)" -eq 0
+# Inception is measured on voi, never on the directives it is exempt from.
+python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_degenerate as d; v=[f for f in d.report('.')['families'] if f['family']=='inception'][0]; assert v['axis']=='voi', v; assert 'D1' not in v.get('variance',{}), v"
+# The detector still discriminates: at least one family passes.
+python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_degenerate as d; vs={f['verdict'] for f in d.report('.')['families']}; assert 'ok' in vs, 'fires on every family'; assert 'fired' in vs, 'fires on nothing'"
+# Each axis floor is scaled to its own range — one global floor could only ever fire on a 0..1 field.
+python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_degenerate as d; assert d.AXES['voi']['floor'] < d.AXES['drivers']['floor']; assert d.AXES['voi']['floor'] <= 0.25"
+# An undeclared family is never reported healthy.
+python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_degenerate as d; v=d.family_verdicts([('made-up',{k:4 for k in d.DRIVERS})]*9)[0]; assert v['verdict']=='unknown-axis', v"
 
 ## RCA
 
@@ -309,6 +377,32 @@ python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_outcomes as 
 -->
 
 ## Evolution
+
+### 2026-09-26 — the detector I shipped an hour earlier was wrong, and its own finding led me to the wrong fix first
+
+- **What changed:** S2 (T-3489) reported the inception family as flat on D1-D4 and
+  I believed it. Acting on that, I filed T-3494 to fix the estimator. Three
+  hypotheses in, the premise collapsed: inceptions are scored on `voi_score` by
+  ruling T-2186/T-2188, so the estimator was correct and **my detector was
+  reporting a documented design decision as a defect.**
+- **Plan impact:** the disproof was worth more than the task. T-3494 is parked
+  with all three hypotheses recorded — including the two I got wrong (inception
+  bodies are *not* thin, median 7,412 chars; build-shaped regexes are *not* the
+  cause, since a uniform 2 across nine unrelated rubrics is a default, not a
+  miss). The real defect was one level up, in my own week-old code, and fixing it
+  surfaced the flatness that actually matters: `voi_score` at 0.0008 variance
+  with 98.6 % on the template default. **A field that is validated by a schema
+  check and consumed by a breach check, and is a constant.**
+- **Triggered:** OBS-539 (this defect), OBS-538 (a gate whose block message names
+  `--horizon later` as the escape and then refuses that exact command when piped
+  — the T-3454 contract-collision class, hit live while parking T-3494), and a
+  second defect found only by fixing the first: one global variance floor of 0.5
+  applied to a 0..1 field could only ever report flat, so the voi axis would have
+  been a permanently-firing check had it ever been wired.
+- **The lesson worth keeping:** a detector shipped without knowing what its
+  subject is *supposed* to look like will flag the design as the bug. S2's control
+  leg proved it discriminated between spread and flat; nothing proved it was
+  measuring the right thing. **Discrimination is not correctness.**
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -384,29 +478,30 @@ python3 -c "import sys; sys.path.insert(0,'.'); from lib import bvp_outcomes as 
 
 ## Updates
 
-### 2026-09-25T22:33:38Z — task-created [task-create-agent]
+### 2026-09-25T23:54:47Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3486-bvp-loop-s1-the-outcomes-ledger-and-cost.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3495-degenerate-scorer-alarm-flags-a-document.md
 - **Context:** Initial task creation
+
+### 2026-09-25T23:55:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-09-25T23:56:24Z — status-update [task-update-agent]
+- **Change:** tags: +arc:value-prioritisation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b7f85429
-- **Timestamp:** 2026-09-25T22:45:02Z
+- **Scan ID:** R-15a982cd
+- **Timestamp:** 2026-09-26T00:02:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 1
 
 **Per-AC findings:**
 
-- **AC#1 (Agent)** — `lib/bvp_outcomes.py` exists as a standalone module: appends rows to `.context/bvp-outcomes.jsonl`, reads `dispatches.jsonl` read-only, and imports nothing from `lib/bvp.sh`
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/bvp-outcomes.jsonl in: `lib/bvp_outcomes.py` exists as a standalone module: appends rows to `.context/bvp-outcomes.jsonl`, reads `dispatches.jsonl` read-only, and imports no`
-- **AC#9 (Agent)** — `lib/bvp.sh` and `policy/value-drivers.yaml` are untouched by this task, verified with `git diff --name-only`
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: `lib/bvp.sh` and `policy/value-drivers.yaml` are untouched by this task, verified with `git diff --name-only``
+- **AC#8 (Agent)** — `lib/bvp.sh` and `policy/value-drivers.yaml` untouched, verified by `git diff --name-only`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: `lib/bvp.sh` and `policy/value-drivers.yaml` untouched, verified by `git diff --name-only``
 
-### 2026-09-25T22:44:58Z — status-update [task-update-agent]
+### 2026-09-26T00:02:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
-
-### 2026-09-25T23:46:00Z — status-update [task-update-agent]
-- **Change:** tags: +arc:value-prioritisation

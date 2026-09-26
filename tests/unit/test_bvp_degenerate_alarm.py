@@ -29,14 +29,14 @@ def rows(family, scores):
 
 def test_fires_on_a_constant_family():
     """The shape procAsFit round 3 found by hand: one pattern, repeated."""
-    v = bd.family_verdicts(rows("hygiene", [(4, 0, 2, 2)] * 12))
+    v = bd.family_verdicts(rows("build", [(4, 0, 2, 2)] * 12))
     assert len(v) == 1 and v[0]["verdict"] == bd.FIRED
     assert v[0]["flat_drivers"] == list(bd.DRIVERS)
 
 
 def test_names_the_constant_not_just_the_verdict():
     """'flat' with no pattern is unactionable — the operator needs the value."""
-    v = bd.family_verdicts(rows("hygiene", [(4, 0, 2, 2)] * 10))[0]
+    v = bd.family_verdicts(rows("build", [(4, 0, 2, 2)] * 10))[0]
     pattern, count = v["modal_pattern"]
     assert list(pattern) == [4, 0, 2, 2]
     assert count == 10
@@ -44,7 +44,7 @@ def test_names_the_constant_not_just_the_verdict():
 
 def test_fires_on_a_single_flat_driver():
     """Partial flatness is still flatness: D2 constant, the rest spread."""
-    v = bd.family_verdicts(rows("mixed", [
+    v = bd.family_verdicts(rows("build", [
         (0, 3, 0, 5), (5, 3, 4, 0), (2, 3, 1, 3),
         (4, 3, 5, 1), (1, 3, 2, 4), (3, 3, 3, 2),
     ]))[0]
@@ -82,7 +82,7 @@ def test_a_one_step_spread_is_not_flat_at_the_chosen_floor():
 
 def test_a_small_family_is_insufficient_not_healthy():
     """T-3099 class: a check that did not evaluate must not read as a pass."""
-    v = bd.family_verdicts(rows("rare", [(4, 0, 2, 2)] * 3))[0]
+    v = bd.family_verdicts(rows("build", [(4, 0, 2, 2)] * 3))[0]
     assert v["verdict"] == bd.INSUFFICIENT
     assert v["verdict"] != bd.OK
     assert "variance" not in v, "no variance should be reported for an unjudgeable family"
@@ -145,25 +145,95 @@ def test_parse_reads_family_and_scores():
     assert scores == {"D1": 2, "D2": 2, "D3": 2, "D4": 2}
 
 
-def test_render_marks_fired_insufficient_and_ok_distinctly():
+def _fam(family, verdict, **kw):
+    base = {"family": family, "n": 10, "verdict": verdict, "axis": "drivers",
+            "scale": "four directives, integers 0-5", "floor": 0.5,
+            "variance": {d: 0.0 for d in bd.DRIVERS},
+            "flat_drivers": [], "modal_pattern": ((1, 2, 3, 4), 1),
+            "modal_share": 0.1}
+    base.update(kw)
+    return base
+
+
+def test_render_marks_every_state_distinctly():
     rep = {
         "scored_tasks": 20,
         "families": [
-            {"family": "flat", "n": 10, "verdict": bd.FIRED,
-             "variance": {d: 0.0 for d in bd.DRIVERS},
-             "flat_drivers": list(bd.DRIVERS), "modal_pattern": ((4, 0, 2, 2), 10)},
-            {"family": "fine", "n": 10, "verdict": bd.OK,
-             "variance": {d: 2.0 for d in bd.DRIVERS},
-             "flat_drivers": [], "modal_pattern": ((1, 2, 3, 4), 1)},
+            _fam("flat", bd.FIRED, flat_drivers=list(bd.DRIVERS),
+                 modal_pattern=((4, 0, 2, 2), 10), modal_share=1.0),
+            _fam("fine", bd.OK, variance={d: 2.0 for d in bd.DRIVERS}),
             {"family": "tiny", "n": 2, "verdict": bd.INSUFFICIENT, "detail": "too few"},
+            {"family": "novel", "n": 9, "verdict": bd.UNKNOWN_AXIS,
+             "detail": "no declared scoring axis"},
         ],
         "concentration": {"verdict": bd.OK, "n": 20, "share": 0.1,
                           "ceiling": 0.25, "top": [], "distinct": 15},
         "fired": True,
     }
     out = bd.render(rep)
-    assert "[FIRED]" in out and "[ok]" in out and "[INSUFFICIENT]" in out
+    for marker in ("[FIRED]", "[ok]", "[INSUFFICIENT]", "[UNKNOWN-AXIS]"):
+        assert marker in out, f"{marker} missing from render:\n{out}"
     assert "[4, 0, 2, 2]" in out, "the modal constant must appear, not just a verdict"
+
+
+# ── T-3495: each family is measured on ITS OWN axis ─────────────────────────
+
+def test_inception_is_measured_on_voi_not_on_the_directives():
+    """The false positive this task removed.
+
+    Inceptions are scored on voi_score by ruling T-2186/T-2188
+    (estimator.py:2668, 050-Inceptions.md §Scoring Exception). Reporting them as
+    flat on D1-D4 flagged a documented design decision, which trains the reader
+    to dismiss the alarm — the T-3453 inverted-alarm class.
+    """
+    incs = [("inception", {"voi_score": 0.5}) for _ in range(10)]
+    v = bd.family_verdicts(incs)[0]
+    assert v["axis"] == "voi"
+    assert v["verdict"] == bd.FIRED
+    assert v["flat_drivers"] == ["voi_score"]
+    assert "D1" not in v["variance"], "inception must not be judged on the directives"
+    assert v["modal_pattern"][0] == (0.5,)
+
+
+def test_a_spread_of_voi_scores_does_NOT_fire():
+    """Control leg on the new axis — otherwise the voi check means nothing."""
+    incs = [("inception", {"voi_score": x})
+            for x in (0.1, 0.3, 0.5, 0.7, 0.9, 0.2, 0.8, 0.4)]
+    v = bd.family_verdicts(incs)[0]
+    assert v["verdict"] == bd.OK, v
+
+
+def test_the_voi_floor_is_scaled_to_its_own_range():
+    """A 0..1 float cannot be judged by a threshold built for 0-5 integers.
+
+    The pre-T-3495 detector applied one global floor of 0.5 to everything; no
+    distribution on 0..1 can exceed that variance, so every voi axis would have
+    read as flat forever — a check that can only ever fire.
+    """
+    assert bd.AXES["voi"]["floor"] < bd.AXES["drivers"]["floor"]
+    assert bd.AXES["voi"]["floor"] <= 0.25, "max variance on 0..1 is 0.25"
+
+
+def test_an_undeclared_family_is_unknown_axis_not_healthy():
+    """T-3099 class, and the reason 4 fixtures in this file had to move.
+
+    Before the axis table, an unrecognised workflow_type was silently measured
+    on the directives. Now it reports unknown-axis, because applying the wrong
+    axis is exactly how the inception false positive happened.
+    """
+    v = bd.family_verdicts(rows("some-new-workflow", [(4, 0, 2, 2)] * 10))[0]
+    assert v["verdict"] == bd.UNKNOWN_AXIS
+    assert v["verdict"] != bd.OK
+    assert "variance" not in v
+
+
+def test_concentration_excludes_non_driver_families():
+    """An inception row has no D1 — before the fix it would KeyError, or worse
+    be zero-filled and counted as a pattern it never had."""
+    mixed = rows("build", [(1, 2, 3, 4)] * 6) + \
+        [("inception", {"voi_score": 0.5}) for _ in range(40)]
+    c = bd.concentration(mixed)
+    assert c["n"] == 6, f"inception rows leaked into the driver population: {c}"
 
 
 # ── the fence ───────────────────────────────────────────────────────────────
