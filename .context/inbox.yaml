@@ -5541,3 +5541,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-540
+  text: "S5 of the BVP feedback loop (post-implementation revisit) cannot start with its reader: exactly ONE task in the corpus has revisit_at set, against 1196 carrying only the commented template line. T-1451 added the field and G-053 scans it, so the machinery exists on both sides and has one input in ~3400 tasks. Building the revisit queue first would be shipping a reader for an empty queue -- the same capability-exists-adoption-does-not failure as arc-020, whose complete identity+ladder stack has no callers (OBS-537). So S5 must begin with the WRITE half: setting revisit_at at close for tasks above a value threshold. That touches agents/task-create/update-task.sh, the close path, which is shared and heavily gated -- a deliberate sequencing constraint rather than a preference. Also worth noting the shape: revisit_at was added for DEFER decisions (T-1451), G-053 was built to scan it, and the field was then set once. A field whose writer was never wired is indistinguishable from a field nobody needs, until you count."
+  captured: 2026-09-26T00:27:40Z
+  context_task: T-3481
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-541
+  text: "sidecar consult to cacc73ea32b121dd/010-termlink unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation consult-010-termlink, client_msg_id d2360e35-1b28-491e-86d3-8a82547a8669). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-26T03:03:02Z
+  context_task: T-3481
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-542
+  text: "Close prompt names a command the close itself makes impossible: fw task update --status work-completed clears focus.yaml as its last act, then prints 'Consider: bin/fw fix-learned T-XXX'. With focus null the Tier-1 gate refuses fix-learned (not on the read-only allowlist). Same contract-collision shape as OBS-538 (G-020 names --horizon later then refuses it). Hit 3x in one procAsFit run: the git-commit heredoc for close artifacts, fw fix-learned, and an inline python measurement. Sibling to OBS-250 but distinct: OBS-250 is 'no route back to trailing work', this is 'the framework instructs the impossible route'. Candidate fixes: emit the learning prompt BEFORE clearing focus, or add fix-learned to the allowlist, or have update-task.sh capture the learning inline."
+  captured: 2026-09-26T08:02:22Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null

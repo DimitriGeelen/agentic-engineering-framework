@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3488: Fix duplicate BVP quadrant defect in lib/resolver.py (T-3485 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-26T08:01:53Z
+# ============================================================================
+
+task_id: T-3488
+task_name: "Fix duplicate BVP quadrant defect in lib/resolver.py (T-3485 follow-up)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-25T22:52:52Z
+completed: 2026-09-26T08:01:29Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-26T09:56:28+02:00
+last_commit: 2026-09-26T09:56:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the same quadrant defect in the path that actually steers autonomous selection
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduced against a committed degenerate-corpus fixture: a floor-tied'
+  - '`lib/resolver.py:_annotate_bvp_rank()` applies the same degenerate-median'
+  - 'Negative control (exclusion): on the degenerate fixture, a floor-tied/zero'
+  - 'Negative control (admission): on the same degenerate fixture, a genuinely'
+  - 'Regression control: on a committed healthy/well-spread fixture, resolver'
+  - 'Behaviour of a withheld task under `fw resolver dispatch` (skip / defer /'
+  - 'T-3485''s fix in `lib/bvp.sh` on branch `t3485-bvp-quadrant-value-axis` is'
+  - '**AMENDED — see Decision D3.** Original text: *"Work is committed on top of'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: 'D1 — 2026-09-26 — port `median == min` faithfully; reject the "large tie at the median" generalisation'
+    chose: 'The identical predicate to `lib/bvp.sh`: withhold when `median(norms) == min(norms)` and the task sits at the median. No divergence, despite AC #2 explicitly permitting one.'
+    rationale: 'The harmful condition is **having nothing below you**, not "being tied with many others". A task at the distribution''s floor labelled *high value* is self-contradictory; a task at the maximum labelled *high value* is the strongest case there is. `median == min` captures exactly the first and excludes exactly the second. - **Rejected — "withhold whenever a large mass ties at the median":** this was the first design, and measurement killed it. This repo''s live corpus has 24 of 29 costed tasks (83%) tied at `NORM 0.40` = median = **max**. Under the wider rule all 24 would be withheld and ranked behind the corpus''s five *lowest* scorers — it would invert the ordering it was meant to protect. It would also break T-3485''s own pinned admission control, which asserts a non-degenerate at-median tie (scores 1,2,2,4) legitimately stays `hv`. - **Rejected — `>=` → `>`:** already rejected under T-3485 with a pinned test; it moves the tied mass from `hv` to `lv` without making anything distinguishable. - **Consequence stated plainly:** the guard is **inert on this repo today** (`median 0.40 != min 0.04`). This task repairs a latent defect here and an active one downstream. That is not a reason to skip it — the resolver is the autonomous selection path, and a latent inversion there is exactly the thing you fix before it fires.'
+  - decision: 'D2 — 2026-09-26 — a withheld task ranks LAST; it is never skipped and never errors'
+    chose: '`_quadrant = "v-thin"`, `_quadrant_rank = _NO_BVP_RANK` — the same ordering bucket as a task carrying no BVP signal at all, i.e. fall back to FIFO. The task stays fully eligible for dispatch and keeps its measured `bvp_norm` / `bvp_cost` for observability.'
+    rationale: 'Ranking it last is *provably* correct in every case this branch can fire, not merely a reasonable default: the guard only fires when `median == min`, so a task at the median is at the floor and nothing in the corpus is below it. And withholding a **verdict** must not erase a **measurement** — `fw resolver explain` has to be able to show the score that produced the withholding. - **Rejected — skip or error:** a selection path that refuses to return a task because its value is unclear turns a ranking problem into an availability problem. The corpus would go empty rather than un-ordered. - **Rejected — a fifth ranked quadrant between `lv-hc` and no-data:** that invents a new ordering claim out of the same absence of signal. Pinned against by `test_withheld_tasks_report_v_thin_and_rank_as_no_bvp`.'
+  - decision: 'D3 — 2026-09-26 — AC #8 amended, in the open, rather than passed or silently dropped'
+    chose: 'Rewrite AC #8''s branch/push constraint in the AC text itself, with the original quoted verbatim and the reason attached, and commit this work on `bleeding-edge`.'
+    rationale: 'The AC named commit `e67d7e95b`''s branch, which was cut from `0aefa83a3` and now lacks ~5,500 lines of landed work; committing there would revert unrelated slices. T-3485''s mechanism is now *on* `bleeding-edge` (`b23ee1a65`), so the AC''s intent — build on top of T-3485 — is satisfied. The `NOT pushed` clause was a sandbox rule for a dispatched worker, and `master` is untouched regardless. - **Rejected — ticking it as-written:** it would have been false. A ticked box asserting something untrue is worse than an open one. - **Rejected — deleting the AC:** deleting an inconvenient criterion is indistinguishable from never having had it.'
+  - decision: 'D4 — 2026-09-26 — do NOT de-duplicate the two implementations under this task'
+    chose: 'Fix the second copy, pin a weak cross-surface parity test, and file the de-duplication as separate work rather than attempting it here.'
+    rationale: 'One rule living in two languages (shell-embedded Python in `lib/bvp.sh`, native Python in `lib/resolver.py`) is the root fault, and it will drift again — this task exists *because* it drifted. But unifying them changes the BVP ranking surface and the autonomous dispatch surface in one move, which is a second structural change opened while the first is still ungated. Out of scope by the task-sizing rule (one deliverable) and by the standing one-lock-at-a-time constraint. - **Rejected — extracting a shared module now:** correct destination, wrong moment; it needs its own task, its own blast-radius read, and its own controls.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/resolver.py'
+  - 'lib/resolver.py'
+  - '.tasks/active/T-3488-fix-duplicate-bvp-quadrant-defect-in-lib.md'
+  - 'tests/unit/test_bvp_quadrant_resolver_selection.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-26T09:56:28'
+    action: 'T-3488: the same quadrant defect in the path that actually steers autonomous selection'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 548 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 548
+  commits: 1
+  files_changed: 4
+  lines_added: 943
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3488-fix-duplicate-bvp-quadrant-defect-in-lib.md
+generated_by: context-agent-hybrid

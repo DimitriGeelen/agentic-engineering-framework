@@ -4585,3 +4585,31 @@ decisions:
     date: 2026-09-26
     task: T-3485
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-656
+    decision: "The identical predicate to `lib/bvp.sh`: withhold when"
+    scope: project
+    date: 2026-09-26
+    task: T-3488
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-657
+    decision: "`_quadrant = \"v-thin\"`, `_quadrant_rank = _NO_BVP_RANK` — the same"
+    scope: project
+    date: 2026-09-26
+    task: T-3488
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-658
+    decision: "Rewrite AC #8's branch/push constraint in the AC text itself, with"
+    scope: project
+    date: 2026-09-26
+    task: T-3488
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-659
+    decision: "Fix the second copy, pin a weak cross-surface parity test, and file"
+    scope: project
+    date: 2026-09-26
+    task: T-3488
+    rationale: "Auto-captured from task file on completion"
