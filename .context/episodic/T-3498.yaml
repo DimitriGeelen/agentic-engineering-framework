@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3498: procAsFit autonomous run 2026-09-26 — arc-006 quadrant repair, gate findings, handback
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-26T09:02:59Z
+# ============================================================================
+
+task_id: T-3498
+task_name: "procAsFit autonomous run 2026-09-26 — arc-006 quadrant repair, gate findings, handback"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T08:13:44Z
+completed: 2026-09-26T09:02:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-26T10:18:46+02:00
+last_commit: 2026-09-26T11:02:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  park T-3487 — arc-close gate removal is outside the authorisation; Sovereign question recorded. T-3499 close artifacts — S6 usage axis landed, 10/10 ACs, 7/7 verification. park S5 as T-3500 — the revisit trigger is a calibration decision, and the doc's stated trigger cannot work. arc-tag the run task and T-3500 to value-prioritisation. the procAsFit handback — three units closed, two parked on Sovereign questions, one pattern named. scope the push AC to work commits, and record the exit-143 timeout
+
+# Key outcomes
+outcomes:
+  - 'Each unit of work states its selection (objective → arc → task → quadrant) with'
+  - 'Every task closed this run passed P-010 and P-011 with **no** `--force`,'
+  - '`lib/resolver.py`''s quadrant value-axis defect is repaired and proven on the'
+  - 'Every gate that refused this run is recorded as an observation rather than'
+  - 'No other worker''s uncommitted file is vendored or committed by this run.'
+  - 'Work parked rather than decided where authorisation is unclear, with the'
+  - 'Every **work** commit of this run is pushed to `origin/bleeding-edge`,'
+  - 'Handback written covering the six sections the mandate requires, with every'
+  - 'Level-2 re-entry performed when the active arc ran out of Q1/Q2, rather than'
+  - 'Zero Tier-2 bypasses added by this run, verified per-commit rather than'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-3499.yaml'
+  - '.context/inbox.yaml'
+  - 'docs/architecture/bvp-feedback-loop.md'
+  - 'docs/reports/T-3498-procasfit-handback.md'
+  - '.tasks/active/T-3487-remove-human-approval-gate-on-fw-bvp-con.md'
+  - '.tasks/active/T-3498-procasfit-autonomous-run-2026-09-26--arc.md'
+  - '.tasks/active/T-3500-bvp-loop-s5--revisit-mechanism-sovereign.md'
+  - '.tasks/completed/T-3499-bvp-loop-s6--the-usage-axis-instrument-v.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-26T10:18:46'
+    action: 'T-3498: park T-3487 — arc-close gate removal is outside the authorisation; Sovereign question recorded'
+  - time: '2026-09-26T10:46:45'
+    action: 'T-3498: T-3499 close artifacts — S6 usage axis landed, 10/10 ACs, 7/7 verification'
+  - time: '2026-09-26T10:50:25'
+    action: 'T-3498: park S5 as T-3500 — the revisit trigger is a calibration decision, and the doc''s stated trigger cannot work'
+  - time: '2026-09-26T10:53:29'
+    action: 'T-3498: arc-tag the run task and T-3500 to value-prioritisation'
+  - time: '2026-09-26T10:56:55'
+    action: 'T-3498: the procAsFit handback — three units closed, two parked on Sovereign questions, one pattern named'
+  - time: '2026-09-26T11:02:30'
+    action: 'T-3498: scope the push AC to work commits, and record the exit-143 timeout'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 48 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 48
+  commits: 6
+  files_changed: 8
+  lines_added: 1323
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3498-procasfit-autonomous-run-2026-09-26--arc.md
+generated_by: context-agent-hybrid
