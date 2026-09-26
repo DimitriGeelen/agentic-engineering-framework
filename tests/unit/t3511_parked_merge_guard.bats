@@ -21,6 +21,18 @@
 load ../test_helper
 
 setup() {
+    # HERMETICITY: git's own env vars leak a DIFFERENT repo into every git call in
+    # this suite. With GIT_DIR/GIT_WORK_TREE inherited, `fw git install-hooks`
+    # resolves the hooks dir to the caller's repo, sees the current version already
+    # installed, short-circuits, and writes nothing to the fixture — so the tests
+    # assert against hooks that were never installed.
+    #
+    # Found the hard way: this suite passed 13/13 interactively and failed inside
+    # the P-011 close gate, which runs verification from a context that has those
+    # vars set. L-606/L-645 extended — hermeticity is not only about the subject's
+    # write-set, it is also about the env the harness inherits.
+    unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY \
+          GIT_COMMON_DIR GIT_PREFIX GIT_REFLOG_ACTION
     TEST_TEMP_DIR="$(mktemp -d)"
     REPO="$TEST_TEMP_DIR/consumer"
     mkdir -p "$REPO/.tasks/active"
