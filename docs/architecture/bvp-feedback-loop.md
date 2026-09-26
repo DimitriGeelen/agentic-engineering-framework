@@ -143,14 +143,55 @@ finding.
 
 ### 4.3 VALUE — constructed, because nothing measures it
 
-**(a) Usage.** Verb-invocation counts, from `lib/hook-telemetry.sh` and the
-existing counters.
+**(a) Usage.** Verb-invocation counts. **built** (T-3499).
+
+**CORRECTION (T-3499): this section previously said usage came "from
+`lib/hook-telemetry.sh` and the existing counters", as though it were already
+available. It was not.** That module counts **hooks, not verbs**:
+`.context/working/.hook-counter` holds `check-active-task=793`,
+`budget-gate=8970`, and no fw verb appears in it anywhere. A repo-wide grep for
+any verb-level counter returned nothing, and `bin/fw` had no invocation telemetry
+at all. Coverage was **zero, not thin** — so S6 had to start with a *writer*, not
+a reader.
+
+`bin/fw` now increments `.context/working/.verb-counter` at its single dispatch
+point, before the `case` (most branches `exec`, so a counter placed after them
+would never run). `hook` is excluded — already counted per-hook, and the hottest
+path. Read by `lib/bvp_usage.py`. Measured cost: **+6.8 ms on a ~630 ms
+invocation, ~1.1%**; `FW_VERB_TELEMETRY=0` disables it.
 
 *Limit that must be designed around:* a verb nobody calls may be **unused** or
 merely **unknown**, and the correct response differs (retire versus surface).
 Usage is therefore recorded **paired with discoverability** — is the verb in
 `fw help`, is it named in CLAUDE.md — so the two cases stay distinguishable.
-Unpaired usage counts would retire discoverable-but-unknown features.
+Unpaired usage counts would retire discoverable-but-unknown features. Shipped as
+three classes (`used` / `discoverable-but-unused` / `undiscoverable-and-unused`),
+and only the third is ever reported as retirable.
+
+*Second limit, inherent:* counts accumulate from first instrumentation only, so a
+low count may mean a short observation window rather than low value. The reader
+returns that caveat with every report. Clean baseline starts
+**2026-09-26T08:41:19Z**.
+
+### 4.3(a-bis) The pattern this correction belongs to
+
+Four signals were specified in this document as resting on existing
+infrastructure. Measured, one at a time:
+
+| signal | infrastructure | actually fed |
+|---|---|---:|
+| COST — `dispatches.jsonl` | exists | yes — **7.67 %** |
+| QUALITY — `feedback-stream.yaml` | exists | yes — **4.8 %** |
+| VALUE/revisit — `revisit_at` + G-053 | exists | **1 of 1,196** (OBS-540) |
+| VALUE/usage — `hook-telemetry.sh` | exists | **wrong subject — 0** |
+
+Two of four were not fed. **Infrastructure existing is not the same as
+infrastructure being fed**, and this document read all four as available because
+it checked for the former. That is the arc's own recurring defect — *detection
+exists, routing does not* — appearing inside the plan rather than inside the code.
+The operative consequence is in §8: **any slice whose feed is unfed must build
+the write half first**, or it ships a reader over an empty queue, which is the
+arc-020 failure (capability complete, tested, never called).
 
 **(b) Cross-agent adoption — the strongest signal available.** 832,
 010-termlink and 1409-sprind vendor this framework and choose independently what
@@ -245,13 +286,27 @@ would industrialise the defect this loop exists to remove.
 | **S2** | **Degenerate-scorer alarm** | The control that replaces the human. **Ships before auto-apply** | S1 |
 | **S3** | Auto-apply scores + auto-approve drivers | The T-3482 ruling, landed once a net exists | S2 |
 | **S4** | Quality rows: rework, follow-on defects, operator corrections | All derivable from the corpus today | S1 |
-| **S5** | Revisit mechanism on `revisit_at` + G-053 | Reuses an existing field and scan | S1 |
-| **S6** | Usage counters, paired with discoverability | Needs the pairing or it misreads unknown as unused | S1 |
+| **S5** | Revisit mechanism on `revisit_at` + G-053 | Reuses an existing field and scan — **but see the write-half rule below: the field is set on 1 task of 1,196, so the reader must NOT come first** (OBS-540) | S1 |
+| **S6** | Usage counters, paired with discoverability | Needs the pairing or it misreads unknown as unused. **Built (T-3499) — writer first, because the assumed feed counted hooks not verbs** | S1 |
 | **S7** | Cross-agent adoption consults over the sidecar | Strongest signal, slowest to return | S5 |
 | **S8** | Calibration: propose rubric vN+1 from deltas | Needs enough realised rows to be meaningful | S1, S4, S5 |
 
 **S2 before S3 is the one ordering that is not negotiable.** Everything else can
 move.
+
+**The write-half rule (added T-3499, after S5 and S6 both hit it).** Before
+building any slice's reader, measure whether its feed carries data. Twice now this
+document named existing infrastructure and the infrastructure was not fed — S5's
+`revisit_at` (1 of 1,196 tasks) and S6's verb counts (the wrong subject entirely).
+In both cases the reader would have served an empty queue and looked finished.
+**If the feed is unfed, the slice starts with the write half**, and the cost of
+the slice is the cost of that write half — which is usually in shared, gated
+infrastructure (`bin/fw` for S6, the close path for S5) and therefore much higher
+than the doc's original ordering implied.
+
+Consequence for S5, stated so it is not rediscovered a third time: S5 is **not**
+"reuses an existing field and scan". It is "instrument the close path, then read".
+Price it accordingly.
 
 ## 9. What this design does not solve
 

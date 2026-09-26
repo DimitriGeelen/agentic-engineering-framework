@@ -5652,6 +5652,57 @@ PYREID
 cmd="${1:-}"
 shift || true
 
+# T-3499 (BVP loop S6, arc-006): per-verb invocation counter — the usage leg of
+# the VALUE axis in docs/architecture/bvp-feedback-loop.md.
+#
+# WHY HERE, and not anywhere tidier: most branches of the case below call `exec`,
+# which replaces this process. A counter placed after the dispatch would never
+# run for the majority of verbs. This point — after $cmd is known, before the
+# case — is the only place that sees every invocation exactly once.
+#
+# `hook` is EXCLUDED on purpose. Hook dispatch is already counted per-hook in
+# .hook-counter by lib/hook-telemetry.sh, and it is by far the hottest path
+# (budget-gate alone has fired 8970 times), so counting it here would pay the
+# telemetry cost twice on the most frequent invocation and add no new signal.
+#
+# The key is pattern-guarded because the counter is a flat `key=count` file:
+# `fw 'foo=bar'` would otherwise write a line that reads back as a different key
+# with a corrupt count. Anything not verb-shaped is simply not counted.
+#
+# The guard is a NEGATED class (`*[!a-z0-9-]*` → reject), not an allow-pattern.
+# The obvious-looking `[a-z][a-z0-9-]*` does NOT work here and was measured
+# failing: in a shell `case` glob, `*` matches any characters, it is not a repeat
+# of the preceding bracket class the way a regex `*` would be. So
+# `[a-z][a-z0-9-]*` matched `evil=injected` — the `*` absorbed `=injected` — and
+# wrote a corrupt line straight into the live counter. Glob is not regex.
+#
+# Reuses _fw_telemetry_increment rather than a second hand-rolled
+# read-modify-write. That is not politeness about duplication — a naive RMW loses
+# increments catastrophically under concurrency (T-3371/OBS-417 measured 1600
+# expected vs 17 recorded, 98.9% lost, with keys vanishing entirely). This file
+# is invoked concurrently by dispatched workers as a matter of routine.
+#
+# Fail-open on every path: `|| true` plus silenced output, so telemetry can never
+# change fw's exit code or print anything. lib/hook-telemetry.sh states the same
+# rule for hooks — a lossy counter is bad, a wedged gate is worse. Here the stakes
+# are higher: this is the entry point for every framework command.
+if [ "${FW_VERB_TELEMETRY:-1}" != "0" ] \
+    && [ "$cmd" != "hook" ] \
+    && [ -n "${PROJECT_ROOT:-}" ] \
+    && [ -d "$PROJECT_ROOT/.context/working" ] \
+    && [ -f "$FW_LIB_DIR/hook-telemetry.sh" ]; then
+    case "$cmd" in
+        *[!a-z0-9-]*) : ;;   # contains a char no verb has — do not count
+        ?*)
+            # shellcheck source=../lib/hook-telemetry.sh
+            { source "$FW_LIB_DIR/hook-telemetry.sh" \
+                && _fw_telemetry_increment \
+                    "$PROJECT_ROOT/.context/working/.verb-counter" "$cmd"; } \
+                >/dev/null 2>&1 || true
+            ;;
+    esac
+fi
+
 case "$cmd" in
     ask)
         exec "$FW_LIB_DIR/ask.sh" "$@"
