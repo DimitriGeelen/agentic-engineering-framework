@@ -939,11 +939,13 @@ def _driver_init(args):
 
 # ---------------------------------------------------------- confirm (T-1924)
 def cmd_confirm(args):
-    """Move bvp_scores_proposed: → bvp_scores: with confirmed_by/at; clear proposed.
+    """Move bvp_scores_proposed: → bvp_scores: with confirmed_by/at/via; clear proposed.
 
-    Sovereignty boundary (F7, D8): only the human confirms. After confirm, the
+    Sovereignty boundary (F7, D8) — WAIVED for the identity check by T-3487
+    (operator directive, 2026-09-26): the §ACD gate below is opt-in via
+    FW_REQUIRE_BVP_CONFIRM_APPROVAL=1, not a hard refusal. After confirm, the
     estimator's M3 v2-delta logic must skip this task (T-1922 reads bvp_scores
-    presence as the "sticky" signal). --override D=N lets the human alter
+    presence as the "sticky" signal). --override D=N lets the caller alter
     individual driver scores at confirm time.
 
     Form validation precedes §ACD (consistent with T-1920/T-1926).
@@ -952,7 +954,8 @@ def cmd_confirm(args):
         print("""Usage: fw bvp confirm T-<id> [--override Dn=N]... [--i-am-human|--from-watchtower]
 
   Moves bvp_scores_proposed: → bvp_scores: on the named task.
-  Records confirmed_by (=$USER) and confirmed_at (UTC ISO-8601).
+  Records confirmed_by (=$USER), confirmed_at (UTC ISO-8601), and
+  confirmed_via (agent|human|watchtower — T-3487 provenance).
   Clears bvp_scores_proposed: so the estimator's next sweep can re-populate
   per M3 v2-delta semantics.
 
@@ -962,7 +965,11 @@ def cmd_confirm(args):
     --i-am-human       sovereignty override for §ACD gate (T-1671 shape)
     --from-watchtower  Flask backend POST
 
-  Refuses under $CLAUDECODE=1 unless --i-am-human or --from-watchtower.
+  T-3487 (2026-09-26, operator-authorised sovereignty waiver): the §ACD
+  human-approval gate on this verb is now OPT-IN. By default confirm proceeds
+  under $CLAUDECODE=1 with no --i-am-human/--from-watchtower (confirmed_via
+  records 'agent'). Set FW_REQUIRE_BVP_CONFIRM_APPROVAL=1 to restore the
+  original hard refusal.
 
   Note: confirm has NO effect if the task has no bvp_scores_proposed: AND no
   --override flags — there's nothing to write. In that case, propose first
@@ -1008,9 +1015,17 @@ def cmd_confirm(args):
     # the §ACD refusal). Different ordering from cmd_weight (where rationale
     # validation precedes §ACD) — confirm has no comparable "form" check that
     # benefits from running first.
-    if not acd_gate('confirm', args,
-                    refusal_hint="Correct flow: human reviews proposed scores in Watchtower or runs `fw bvp confirm T-<id> --i-am-human`"):
-        return 1
+    #
+    # T-3487: sovereignty waiver (operator directive, 2026-09-26) — the human-
+    # approval gate on THIS verb only is now opt-in via FW_REQUIRE_BVP_CONFIRM_APPROVAL=1
+    # (restores the exact acd_gate() refusal below). Default (unset) skips the
+    # gate — confirm proceeds under $CLAUDECODE=1 with no --i-am-human/--from-watchtower.
+    # acd_gate() itself is untouched; its other 4 call sites (weight, driver --add,
+    # driver --remove, auto-promote --enable) are unaffected by this switch.
+    if os.environ.get('FW_REQUIRE_BVP_CONFIRM_APPROVAL') == '1':
+        if not acd_gate('confirm', args,
+                        refusal_hint="Correct flow: human reviews proposed scores in Watchtower or runs `fw bvp confirm T-<id> --i-am-human`"):
+            return 1
 
     # Locate task file.
     matches = []
@@ -1063,10 +1078,25 @@ def cmd_confirm(args):
         print(f"Error: no scores to write — proposed was non-empty but didn't contain a score map.", file=sys.stderr)
         return 1
 
+    # T-3487: WHO/BY-WHAT-AUTHORITY provenance. confirmed_by/at alone no longer
+    # distinguish "a human ran this" from "an agent ran this" now that the §ACD
+    # gate is opt-in (FW_REQUIRE_BVP_CONFIRM_APPROVAL) rather than a hard refusal
+    # — $USER is the OS user either way. confirmed_via records which of the three
+    # legal paths this confirm took.
+    if '--from-watchtower' in args:
+        confirmed_via = 'watchtower'
+    elif '--i-am-human' in args:
+        confirmed_via = 'human'
+    elif os.environ.get('CLAUDECODE') == '1':
+        confirmed_via = 'agent'
+    else:
+        confirmed_via = 'human'
+
     fm['bvp_scores'] = confirmed
     fm['bvp_scores_proposed'] = []  # M3 — cleared; estimator may re-populate next sweep.
     fm['confirmed_by'] = os.environ.get('USER', 'unknown')
     fm['confirmed_at'] = _utc_now()
+    fm['confirmed_via'] = confirmed_via
 
     # Re-serialise frontmatter + write back.
     if _HAS_RUAMEL:
@@ -1083,7 +1113,7 @@ def cmd_confirm(args):
     print(f"  Scores: {confirmed}")
     if overrides:
         print(f"  Overrides applied: {overrides}")
-    print(f"  Confirmed by: {fm['confirmed_by']}  at: {fm['confirmed_at']}")
+    print(f"  Confirmed by: {fm['confirmed_by']}  at: {fm['confirmed_at']}  via: {fm['confirmed_via']}")
     print(f"  bvp_scores_proposed: cleared (M3 — estimator may re-propose if next pass diverges by ≥2)")
     return 0
 
