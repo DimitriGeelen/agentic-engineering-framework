@@ -5562,3 +5562,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-543
+  text: "Parking a task makes committing the park impossible. 'fw task update T-XXX --horizon later' auto-demotes status to captured (T-1068 invariant), and check-active-task then refuses any write/commit because the focused task is not started-work. So recording a park requires un-parking it first, which undoes the park — circular. Third distinct instance of this family in one procAsFit run (see OBS-542): the framework's state transitions clear the very precondition its write gate requires. Workaround used: created a task for the run itself (T-3498) and committed the park record under it. Candidate fix: treat a task-file write whose ONLY change is the park/status transition as Tier-3, or let the park verb commit its own record."
+  captured: 2026-09-26T08:15:24Z
+  context_task: T-3498
+  tags: []
+  status: pending
+  promoted_to: null

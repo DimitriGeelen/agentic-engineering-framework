@@ -6,11 +6,11 @@ description: >
   Remove human-approval gate on fw bvp confirm and fw arc close (operator-authorised
   sovereignty waiver)
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
+horizon: later
+tags: [arc:value-prioritisation]
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T22:46:23Z
-last_update: 2026-09-25T23:59:28Z
+last_update: 2026-09-26T08:12:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -372,6 +372,91 @@ this is a forensic record, not a replacement control.
 - Curated 65-file CLAUDECODE-relevant test subset: before 819 pass/32 fail, after 817 pass/34 fail — the only delta is the 2 tests in `test_arc_close_agent_gate.py` that assert the now-intentionally-removed default refusal; not the full corpus (named as a gap, AC left unticked)
 - Diff stat: `lib/arc.sh | 37 ++-`, `lib/bvp.sh | 48 ++-`, 2 files changed
 
+---
+
+## SOVEREIGN QUESTION — parked by the parent session, 2026-09-26, NOT merged
+
+The builder's recommendation above is left intact: it is their advisory, the
+engineering is thorough, and the reversibility work is real. **The question is
+scope of authorisation, not quality of implementation.** This task is parked at
+`horizon: later` pending one operator ruling.
+
+### The question
+
+**Was removing the `fw arc close` sovereignty gate authorised?**
+
+The authorisation this task cites, verbatim from its own commit message:
+
+> "We're going to cut out any human need for approval. **BVP and ARC drivers.**
+> That's in the design. So you can implement it. Will be overwritten later…
+> **ask AEF agent.**"
+
+And the operator's sitting instruction in the same thread: *"Take the human in
+the loop out for scoring. Also take the human in the loop out for BVP arc value
+drivers."*
+
+Both name **BVP scoring** and **arc value DRIVERS**. What the branch removes is
+the gate on **`fw arc close`** — arc *closure*, a different verb with a different
+decision class. The branch's own commit message states that
+`arc_approve_driver --none` and `arc_abandon` were deliberately **not** touched —
+so the one verb the operator actually named, `approve-driver`, is untouched,
+while a verb they did not name is opened.
+
+Worth stating plainly: the drivers half was **already delivered** by T-3429/D-586
+(*"per default just create them and add them"* — `fw arc approve-driver
+--all-reviewed` is already the agent default, reviewer-gated). Only the negative
+ruling `--none` remains human-only. So the operator's driver instruction was
+already satisfied before this task began.
+
+### Why this is not mine to decide
+
+1. `fw arc close`'s refusal is the documented outcome of a **fourth** repeat
+   incident — an agent auto-closing an arc (T-1670, T-1671,
+   `docs/reports/T-1670-default-to-open-gate-gap.md`). CLAUDE.md §Arc Completion
+   Discipline records it as *"closure belongs to the human"*, with
+   **Default-to-OPEN** as an explicit standing rule.
+2. CLAUDE.md §Autonomous Mode Boundaries: *"a broad directive does not override
+   structural enforcement."* "Cut out any human need for approval" is exactly
+   such a broad directive, and its own next sentence scopes it to BVP and drivers.
+3. The authorisation quote **itself ends in "ask AEF agent"** — the operator
+   flagged uncertainty in the same breath. The builder recorded that and
+   proceeded past it.
+4. The standing governance binding for this run lists `fw arc close` and
+   `fw inception decide` as **agent-refused by design**.
+
+### Independent reason it could not have closed anyway
+
+AC #8 is **unticked** by the builder's own honest reporting: *"Full test suite run
+before and after — NOT fully done."* And the curated subset moved **819 pass/32
+fail → 817 pass/34 fail** — the two new failures are in
+`tests/unit/test_arc_close_agent_gate.py`, which assert the refusal this change
+removes. So merging as-is ships two red tests whose subject is the very gate in
+question. P-010 would refuse the close independently of the scope question.
+
+### The three options, for the operator
+
+1. **Split it.** Land the `lib/bvp.sh` half (`fw bvp confirm`) — squarely within
+   the authorisation — and drop the `lib/arc.sh` half. Requires reworking the
+   single commit into two.
+2. **Confirm the wider waiver** and land both, after updating/removing the two
+   `test_arc_close_agent_gate.py` tests so the suite states the new intent rather
+   than failing against it.
+3. **Drop the arc-close half permanently**, leaving §ACD intact, and keep the
+   provenance fields (`confirmed_via`/`closed_via`) which are useful either way.
+
+Recommendation from the parent session, offered as advisory only: **option 1.**
+It delivers everything the operator asked for and nothing they did not, and it
+does not require re-litigating a gate that took four incidents to earn. Note
+also the builder's own §8 caveat — `fw bvp confirm` had **zero test coverage
+before this change and still has none after** — so even the authorised half
+lands untested unless coverage is added.
+
+### Not done, deliberately
+
+The branch `t3487-remove-bvp-arc-approval-gate` @ `6adf45442` is **left intact
+and unmerged**. It was not rebased, not split, not partially cherry-picked — any
+of those would be deciding the question above by action.
+
 ## Decisions
 
 ### 2026-09-26 — Reversibility mechanism
@@ -458,3 +543,10 @@ this is a forensic record, not a replacement control.
 - **Branch:** `t3487-remove-bvp-arc-approval-gate` on top of `t3485-bvp-quadrant-value-axis` (`e67d7e95b1b1e3f12b5735d7268c616046c8ee84`). Tip commit `6adf45442c831c2e6fd7ac32ea2ffb02ca79b6be`. Built via git plumbing; two throwaway verification worktrees created and removed. Not pushed.
 - **Output:** `docs/reports/T-3487-bvp-arc-approval-gate-removal.md` (full detail, including §8 concerns about the instruction).
 - **Context:** Sovereignty waiver per operator instruction 2026-09-26. Task left at `started-work`; Human AC (operator diff review) intentionally unticked.
+
+### 2026-09-26T08:12:54Z — status-update [task-update-agent]
+- **Change:** tags: +arc:value-prioritisation
+
+### 2026-09-26T08:12:55Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
