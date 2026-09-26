@@ -96,6 +96,16 @@ bypasses:
 EOF
     fi
 
+    # F-21: the file can also exist ALREADY with the pre-fix flow-style
+    # `bypasses: []` header (written by an older `fw init`, or by a project
+    # created before this fix). Appending block-sequence items under a flow
+    # scalar is invalid YAML — normalize the header to the bare-key form this
+    # function assumes before appending, so already-affected projects heal on
+    # their next logged bypass instead of corrupting further.
+    if grep -qx 'bypasses: \[\]' "$BYPASS_LOG" 2>/dev/null; then
+        sed -i 's/^bypasses: \[\]$/bypasses:/' "$BYPASS_LOG"
+    fi
+
     # Append the entry
     cat >> "$BYPASS_LOG" << EOF
   - timestamp: $timestamp
@@ -105,6 +115,19 @@ EOF
     reason: "$reason"
     retroactive_task: $retroactive_task
 EOF
+
+    # F-21: a writer that can produce an unparseable audit trail without
+    # noticing is worse than the corruption itself — validate what was just
+    # written and surface it loudly rather than silently. Best-effort: skip
+    # if python3/PyYAML aren't available rather than blocking the commit flow
+    # the bypass log exists to audit.
+    if command -v python3 >/dev/null 2>&1; then
+        if ! python3 -c "import yaml; yaml.safe_load(open('$BYPASS_LOG'))" 2>/dev/null; then
+            echo -e "${RED}WARNING: $BYPASS_LOG is not valid YAML after this write.${NC}" >&2
+            echo "  The bypass entry was appended but the file no longer parses." >&2
+            echo "  Inspect and repair it manually — this is the audit trail for Tier-2 bypasses." >&2
+        fi
+    fi
 
     echo -e "${GREEN}Bypass logged${NC}"
     echo "  File: $BYPASS_LOG"
