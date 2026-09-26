@@ -1,13 +1,15 @@
 ---
 id: T-3509
-name: "vendored-tree catch-up after the T-3506 batch merge (unblocks the pre-push self-vendor gate)"
+name: "vendored-tree catch-up after the T-3506 batch merge (unblocks the pre-push
+  self-vendor gate)"
 description: >
-  vendored-tree catch-up after the T-3506 batch merge (unblocks the pre-push self-vendor gate)
+  vendored-tree catch-up after the T-3506 batch merge (unblocks the pre-push self-vendor
+  gate)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-26T19:39:11Z
-last_update: 2026-09-26T19:39:11Z
-date_finished: null
+last_update: 2026-09-26T19:48:08Z
+date_finished: 2026-09-26T19:48:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-26T19:45:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=305,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-26T19:45:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3509: vendored-tree catch-up after the T-3506 batch merge (unblocks the pre-push self-vendor gate)
@@ -66,24 +96,35 @@ rather than silently absorbed.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The three stale vendored files are synced, each byte-identical to its source.
+- [x] The three stale vendored files are synced, each byte-identical to its source.
+      → `cmp -s` on each: `agents/git/lib/bypass.sh`, `lib/init.sh`, `lib/bvp.sh`
+      all IDENTICAL.
       **NOT** `bin/fw vendor self --check` reports clean — that criterion was written
       first and is unsatisfiable: it can never pass while another worker holds
       `policy/value-drivers.yaml` dirty, so it asserts a whole-tree property this
       task does not control. Same error recorded earlier today on T-3495, and made
-      again here. The check below is scoped to this task's own files.
-- [ ] The only remaining self-vendor drift is the withheld foreign file, and it is
-      **worktree-only** — the tree being pushed (HEAD) is in sync, which is the
-      condition T-3125 allows a push under.
-- [ ] `policy/value-drivers.yaml` is **not** vendored — the rail's withholding of
-      another worker's dirty file is respected, and `FW_VENDOR_ALL=1` is not used.
-- [ ] No source file is modified by this task: the only changes are under
-      `.agentic-framework/`. A vendor sync that edited source would mean it had
-      copied in the wrong direction.
-- [ ] The vendored copy of each synced file is byte-identical to its source.
-- [ ] `bleeding-edge` is pushed and confirmed at **zero unpushed** by an explicit
-      `git log origin/bleeding-edge..bleeding-edge` check, not by a command's exit
-      code — a push has reported exit 0 while landing nothing twice in this session.
+      again here.
+- [x] The only remaining drift is the withheld foreign file, and it is
+      **worktree-only**.
+      → Verified by comparing `git show HEAD:policy/value-drivers.yaml` against the
+      vendored copy: identical, so the drift exists only in uncommitted edits. That
+      is the condition T-3125 allows a push under, and the push duly went through.
+- [x] `policy/value-drivers.yaml` is **not** vendored.
+      → The rail withheld it on its own and named it; `FW_VENDOR_ALL=1` was not used.
+      Zero Tier-2 bypass entries from this task.
+- [x] No source file is modified by this task.
+      → `git status --short lib/ agents/ bin/ web/ policy/` shows only
+      `policy/value-drivers.yaml`, which was already dirty before this task and is
+      not mine. Every change is under `.agentic-framework/`.
+- [x] The vendored copy of each synced file is byte-identical to its source.
+      → Same `cmp -s` evidence as the first criterion (duplicate criterion as
+      written; both satisfied by the one check).
+- [x] `bleeding-edge` pushed and confirmed at **zero unpushed** by an explicit check.
+      → `git log origin/bleeding-edge..bleeding-edge` returns **0**;
+      `origin/bleeding-edge` is at `8aba5732c`; remote reported the ref update
+      `5ac08b251..8aba5732c`. The explicit check mattered: an earlier push in this
+      session reported **exit 0 while landing nothing** (the self-vendor FAIL this
+      task removed), so the exit code was not evidence.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -244,6 +285,14 @@ rather than silently absorbed.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Scoped to THIS task's three files, deliberately — not `vendor self --check`,
+# which asserts a whole-tree property another worker's dirty file can veto.
+cmp -s agents/git/lib/bypass.sh .agentic-framework/agents/git/lib/bypass.sh
+cmp -s lib/init.sh .agentic-framework/lib/init.sh
+cmp -s lib/bvp.sh .agentic-framework/lib/bvp.sh
+# Nothing pushed can be left behind, and the exit code is not the evidence.
+test -z "$(git log origin/bleeding-edge..bleeding-edge --oneline)"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -340,3 +389,20 @@ rather than silently absorbed.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3509-vendored-tree-catch-up-after-the-t-3506-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c5236492
+- **Timestamp:** 2026-09-26T19:48:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `policy/value-drivers.yaml` is **not** vendored.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: `policy/value-drivers.yaml` is **not** vendored.`
+
+### 2026-09-26T19:48:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
