@@ -95,8 +95,27 @@ bvp_scores_proposed:
       → T-3487 parked; branch `6adf45442` intact, not merged/split/cherry-picked.
 - [ ] All commits from this run are pushed to `origin/bleeding-edge`, confirmed by
       an explicit check rather than assumed from a backgrounded command.
-- [ ] Handback written covering the six sections the mandate requires, with every
+- [x] Handback written covering the six sections the mandate requires, with every
       claim traceable to a recorded check or a verb-gated state change.
+      → `docs/reports/T-3498-procasfit-handback.md`. Sections: objectives advanced
+      against run-start state; arc state by status and quadrant; remaining Q1/Q2 per
+      task with reasons; Sovereign questions in priority order; gates that refused
+      and what was done instead; cost-vs-estimate deltas for calibration. Plus the
+      run's transferable finding and the three mistakes it made.
+- [x] Level-2 re-entry performed when the active arc ran out of Q1/Q2, rather than
+      descending into low-value work to stay busy.
+      → Surveyed in-flight tasks across all 18 in-progress arcs: exactly one
+      `owner: agent` in-flight task exists corpus-wide (T-1820, arc-003), and it
+      reads `HOLD pending operator deploy` with its investigation cross-repo behind
+      the T-559 boundary; its follow-up T-1821 is `work-completed`/`owner: human`.
+      The other 41 in-flight tasks are all `owner: human`. Stop condition 3.
+- [x] Zero Tier-2 bypasses added by this run, verified per-commit rather than
+      assumed.
+      → Every commit of this run checked individually against
+      `.context/working/.gate-bypass-log.yaml`: 0 touched it. No `--force`,
+      `--skip-*`, `FW_ALLOW_*`, `FW_VENDOR_ALL` or `FW_SWITCH_FOCUS` was used;
+      where the focus-drift gate offered `FW_SWITCH_FOCUS=1`, focus was switched
+      properly instead.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +276,24 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# The handback exists and carries all six mandate sections.
+test -f docs/reports/T-3498-procasfit-handback.md
+out=$(cat docs/reports/T-3498-procasfit-handback.md); for s in "Objectives advanced" "Arc state" "remains in Q1/Q2" "Sovereign questions" "Gates that refused" "Cost vs estimate"; do echo "$out" | grep -q "$s" || exit 1; done
+# Zero Tier-2 bypasses from this run: the log must be untouched by every commit
+# of this run. Anchored to the run's FIRST commit (b23ee1a65, the T-3485 landing)
+# rather than to HEAD~N — a relative range shifts every time this task commits
+# again, so it would silently stop spanning the run it claims to check.
+test -z "$(git diff b23ee1a65~1..HEAD --name-only -- .context/working/.gate-bypass-log.yaml)"
+# The two units this run closed are in completed/, and the two it parked are not.
+test -f .tasks/completed/T-3488-fix-duplicate-bvp-quadrant-defect-in-lib.md
+test -f .tasks/completed/T-3499-bvp-loop-s6--the-usage-axis-instrument-v.md
+test -f .tasks/active/T-3487-remove-human-approval-gate-on-fw-bvp-con.md
+test -f .tasks/active/T-3500-bvp-loop-s5--revisit-mechanism-sovereign.md
+# T-3487's branch was left intact — parked, not merged or rewritten.
+git rev-parse --verify 6adf45442 >/dev/null 2>&1
+# Both repairs this run landed still hold.
+out=$(python3 -m pytest tests/unit/test_bvp_quadrant_value_axis.py tests/unit/test_bvp_quadrant_resolver_selection.py tests/unit/test_bvp_usage_axis.py -q 2>&1); echo "$out" | grep -q "29 passed" && ! echo "$out" | grep -q "failed"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -296,6 +333,53 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-26 — the run's own selection mechanism turned out to be the defect
+
+- **What changed:** The mandate says select by BVP quadrant, Q1 first. Within the
+  first few minutes it emerged that `quadrant()` promoted every floor-tied task to
+  `hv-lc` — so on a degenerate corpus the selection rule would have steered this
+  run into the *lowest*-value work while reporting it as highest. The fix existed,
+  written and tested, stranded 7h on an unpushed branch by a worker that had
+  exited 0. The run therefore opened by repairing its own instrument rather than by
+  using it.
+- **Plan impact:** Unit order was set by that discovery instead of by the ranking:
+  T-3485 (land the stranded repair) → T-3488 (the resolver duplicate, which is the
+  copy that actually steers dispatch) → then signal work. Had the ranking been
+  trusted, T-3488 would not have surfaced at all.
+- **Triggered:** T-3488 closed; OBS-542 and OBS-543 filed; T-3487 and T-3500
+  parked with Sovereign questions.
+
+### 2026-09-26 — this run's own tasks are indistinguishable to the scorer
+
+- **What changed:** Four of the five tasks scored this run returned identical
+  `D1=4 D2=4 D3=3 D4=2`, `tier 2`, `effort 8`, `blast_radius: None`. The jobs were
+  landing another worker's branch, repairing a selection path, a sovereignty
+  waiver, a run wrapper, and instrumenting the dispatcher. **No quadrant was
+  computed for any of them** — every placement in this handback is a T-shirt read.
+- **Plan impact:** The mandate's quadrant-based selection rule has no computed
+  input for 85% of the corpus, which promotes T-3471 (derive `blast_radius` before
+  close) above further signal-building. Also surfaced a rubric note worth keeping:
+  quadrant should be scored on **remaining** cost, not total — the estimator prices
+  effort from task-body size, which over-prices any task whose work already exists.
+- **Triggered:** Nothing built. T-3471 surfaced as needing a design ruling rather
+  than attempted blind, because how to derive `blast_radius` pre-close has several
+  viable answers.
+
+### 2026-09-26 — three of my own claims were overturned by running a check
+
+- **What changed:** (1) I read the live corpus's 83% ceiling tie as the same defect
+  as T-3485's floor collapse and nearly widened the guard — which would have
+  inverted the ranking and broken T-3485's own admission control. (2) My key guard
+  `[a-z][a-z0-9-]*` read as a regex and behaved as a glob, matching
+  `evil=injected` and corrupting the live counter. (3) My end-to-end test wrote to
+  the counter it was measuring, pushing `decisions` from 2 to 14.
+- **Plan impact:** Each produced a pinned control-leg test rather than just a fix,
+  so the next reader cannot repeat the reasoning error silently.
+- **Triggered:** Nothing filed. Recorded because the pattern is the run's most
+  transferable finding: on this arc, measurement has overturned reasoning more
+  often than it has confirmed it — and all three were caught by running something,
+  not by thinking harder about it.
 
 ## Recommendation
 
