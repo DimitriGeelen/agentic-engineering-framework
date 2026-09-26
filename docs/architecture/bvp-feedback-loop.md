@@ -221,6 +221,31 @@ tested, and **unused for weeks** because nothing asked "is this being called?";
 scans it. Extend rather than invent: set `revisit_at` at close for tasks above a
 value threshold, and let the existing scan surface them.
 
+**CORRECTION (T-3500): the sentence above is wrong in two ways, and this section
+contradicted itself.** Both were found by reading the consumer instead of trusting
+the plan.
+
+1. **"Set `revisit_at` at close" cannot work.**
+   `agents/context/revisit-due-scan.sh:4` scans **`.tasks/active/*.md` only**. A
+   post-implementation revisit concerns a task that has just moved to
+   `.tasks/completed/`, where the scan never looks. The field and its reader were
+   built for DEFER'd *inceptions*, which stay active — a different lifecycle.
+   The correct shape is the one this section states two paragraphs later: file a
+   **revisit task** that lives in `active/` and carries `revisit_at`. The closed
+   task stays closed; the reader needs no change.
+2. **The "value threshold" is unchoosable on current data.** 24 of the 29 costed
+   tasks (**83%**) tie at `NORM 0.40`, which is both the median and the maximum.
+   Any threshold at or below it selects the whole corpus; anything above selects
+   nothing. Picking one would invent a calibration parameter rather than apply one
+   — so S5's trigger basis is a **Sovereign question**, filed as **T-3500** with
+   three options and a recommendation (a capability-shipped trigger, which needs
+   no threshold and aims directly at the arc-020 failure this signal exists to
+   catch).
+
+The reader half of S5 is **not** the gap: the scan, the `fw task revisit-due`
+verb, the handover surfacing and three test files all exist. S5 is purely a
+write-half problem, which is what §8's write-half rule predicts.
+
 *What the revisit asks, in order:*
 1. **mechanical** — has it been used since close (usage, peer adoption, commits)?
 2. **operator** — did it do what it was supposed to?
