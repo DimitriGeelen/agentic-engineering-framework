@@ -805,7 +805,35 @@ arc_close() {
     # do_inception_decide (T-1259/T-1260): closure decisions belong to the
     # human, recorded via Watchtower. Origin: 4th-instance auto-close incident
     # 2026-05-02 on this very arc — see T-1670, docs/reports/T-1670-default-to-open-gate-gap.md.
-    if [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ] && [ "$from_watchtower" = false ]; then
+    #
+    # T-3487 introduced FW_REQUIRE_ARC_CLOSE_APPROVAL as an OPT-IN switch, so the
+    # refusal was off unless the var was set to 1.
+    #
+    # T-3508 restores the default to ON and makes the waiver opt-OUT. The switch
+    # and its name are kept; only the default moved. Set
+    # FW_REQUIRE_ARC_CLOSE_APPROVAL=0 to waive the identity check.
+    #
+    # WHY, and this is the part not to quietly re-flip: T-3487's authorisation
+    # named "BVP and ARC drivers" and this verb is arc CLOSE, a different
+    # decision class — the authorising quote itself ended "ask AEF agent". That
+    # question was raised and PARKED (T-3487 is still captured/horizon:later),
+    # and while it was open a batch-merge worker landed the branch under T-3506 on
+    # the premise that it was one of "four independently-reviewed branches"
+    # (OBS-547). Branch topology cannot express "deliberately unlanded", so the
+    # sweeper could not have known. This default is the conservative position
+    # until the operator rules; flipping it back is one line.
+    #
+    # The refusal this guards was earned over four repeat incidents (T-1670,
+    # T-1671), one of them an agent auto-closing arc-003 and needing a revert.
+    #
+    # Independent of this switch, and unchanged: --demo and
+    # --headline-mechanic fire for agent and human callers alike (see
+    # arc_create's _arc_validate_headline_mechanic and the --demo validation
+    # below — neither reads CLAUDECODE/i_am_human/from_watchtower), so waiving
+    # the IDENTITY check never waives the EVIDENCE checks. arc_abandon and
+    # arc_approve_driver --none carry the same gate shape at their own call
+    # sites and are not touched here.
+    if [ "${FW_REQUIRE_ARC_CLOSE_APPROVAL:-1}" != "0" ] && [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ] && [ "$from_watchtower" = false ]; then
         local anchor="" wt_url=""
         anchor=$(awk -F': ' '/^anchor_task:/ {print $2; exit}' "$(_arc_path "$id")" 2>/dev/null | tr -d ' "' || true)
         if command -v fw_config >/dev/null 2>&1; then
@@ -843,6 +871,21 @@ arc_close() {
     f="$(_arc_path "$id")"
     now="$(_arc_now)"
 
+    # T-3487: WHO/BY-WHAT-AUTHORITY provenance. Arc frontmatter previously
+    # recorded no who/how field at all for closure (only status/closed_at/
+    # decision/demo_evidence) — with the identity gate now opt-in, this is the
+    # only remaining record of which of the three legal paths a close took.
+    local closed_via
+    if [ "$from_watchtower" = true ]; then
+        closed_via="watchtower"
+    elif [ "$i_am_human" = true ]; then
+        closed_via="human"
+    elif [ "${CLAUDECODE:-}" = "1" ]; then
+        closed_via="agent"
+    else
+        closed_via="human"
+    fi
+
     # T-1668 §ACD Layer B: refuse without --demo.
     if [ -z "$demo" ]; then
         echo "Error: --demo is required to close an arc (§ACD/G-062)." >&2
@@ -871,9 +914,9 @@ arc_close() {
         esac
     fi
 
-    python3 - "$f" "$now" "$decision" "$demo" <<'PY'
+    python3 - "$f" "$now" "$decision" "$demo" "$closed_via" <<'PY'
 import re, sys
-fn, now, decision, demo = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+fn, now, decision, demo, closed_via = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
 text = open(fn).read()
 text = re.sub(r'^status:.*$', 'status: closed', text, count=1, flags=re.MULTILINE)
 text = re.sub(r'^closed_at:.*$', f'closed_at: {now}', text, count=1, flags=re.MULTILINE)
@@ -885,10 +928,15 @@ if re.search(r'^demo_evidence:', text, re.MULTILINE):
     text = re.sub(r'^demo_evidence:.*$', f'demo_evidence: "{safe_demo}"', text, count=1, flags=re.MULTILINE)
 else:
     text = text.rstrip("\n") + f'\ndemo_evidence: "{safe_demo}"\n'
+if re.search(r'^closed_via:', text, re.MULTILINE):
+    text = re.sub(r'^closed_via:.*$', f'closed_via: {closed_via}', text, count=1, flags=re.MULTILINE)
+else:
+    text = text.rstrip("\n") + f'\nclosed_via: {closed_via}\n'
 open(fn, "w").write(text)
 PY
     echo "Closed arc '${id}' at ${now}${decision:+ — ${decision}}"
     echo "  demo_evidence: ${demo}"
+    echo "  closed_via: ${closed_via}"
 
     local current
     current="$(_arc_current_focus)"

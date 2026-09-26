@@ -44,13 +44,16 @@ VALID_HM = (
 
 REQUIRE_APPROVAL_ENV = "FW_REQUIRE_ARC_CLOSE_APPROVAL"
 
-_require_approval_switch = pytest.mark.skipif(
-    os.environ.get(REQUIRE_APPROVAL_ENV) != "1",
-    reason=(
-        f"T-3487: the CLAUDECODE refusal on `fw arc close` is opt-in behind "
-        f"{REQUIRE_APPROVAL_ENV}=1; set it to exercise the refusal path"
-    ),
-)
+# T-3508: the `_require_approval_switch` skipif marker that lived here is REMOVED,
+# not merely unused. It skipped the two refusal tests unless
+# FW_REQUIRE_ARC_CLOSE_APPROVAL=1 was in the environment, so in every normal run
+# they reported as passes while executing nothing (T-3217: a skipped test reads as
+# ok). Its reason string also asserted "the refusal on `fw arc close` is opt-in",
+# which is no longer true — leaving it would be the same stale-contradiction shape
+# T-3504 removed from `fw arc help`.
+#
+# The variable is kept above because the WAIVER still exists; only its default
+# moved from opt-in to opt-out.
 
 
 def _run(cmd, cwd, claudecode=None, extra_env=None):
@@ -105,15 +108,18 @@ def _seed_arc_and_demo(project, arc_id="alpha"):
 
 # ─── Refusal paths ──────────────────────────────────────────────────────────
 
-@_require_approval_switch
 def test_close_refused_when_claudecode_set_no_override(project):
+    # T-3508: runs by DEFAULT again. T-3487 had made this opt-in behind
+    # FW_REQUIRE_ARC_CLOSE_APPROVAL=1, applied here as pytest.mark.skipif — so the
+    # two tests guarding the gate were SKIPPED in every normal run, and a skipped
+    # test reports as a pass (T-3217). No env var is set below on purpose: the
+    # refusal must hold with nothing configured, which is the whole point.
     demo = _seed_arc_and_demo(project)
     r = _run(
         [str(FW), "arc", "close", "alpha", "--demo", str(demo),
          "--decision", "shipped"],
         cwd=project,
         claudecode="1",
-        extra_env={REQUIRE_APPROVAL_ENV: "1"},
     )
     assert r.returncode != 0
     # Refusal message names §ACD/G-062 + redirects:
@@ -204,9 +210,12 @@ def test_t1668_demo_gate_still_fires_under_human_invocation(project):
     assert "--demo is required" in r.stderr
 
 
-@_require_approval_switch
 def test_refusal_message_includes_anchor_redirect(project):
-    """Refusal must point at fw task review on the arc anchor task."""
+    """Refusal must point at fw task review on the arc anchor task.
+
+    T-3508: runs by default again — see the note on
+    test_close_refused_when_claudecode_set_no_override.
+    """
     # Create arc with explicit anchor:
     _run(
         [str(FW), "arc", "create", "alpha", "--name", "A",
@@ -226,8 +235,86 @@ def test_refusal_message_includes_anchor_redirect(project):
          "--decision", "shipped"],
         cwd=project,
         claudecode="1",
-        extra_env={REQUIRE_APPROVAL_ENV: "1"},
     )
     assert r.returncode != 0
     # Anchor should be named in the refusal:
     assert "T-9999" in r.stderr
+
+
+# ─── T-3508: the DEFAULT is the thing under guard ───────────────────────────
+
+
+def test_the_refusal_is_the_DEFAULT_not_an_opt_in(project):
+    """THE LEG THAT PROTECTS THE GATE.
+
+    Every other refusal test here can be satisfied by a gate that only fires when
+    an env var is set — which is exactly the state T-3487 shipped and T-3506 merged
+    while the authorising question was still parked (OBS-547). This test fails if
+    the default is ever flipped back to opt-in, because it passes NOTHING: no env
+    var, no identity flag.
+
+    Asserted on the shipped source as well as on behaviour, because the behaviour
+    assertion alone would also pass if the whole block were deleted.
+    """
+    demo = _seed_arc_and_demo(project)
+    r = _run(
+        [str(FW), "arc", "close", "alpha", "--demo", str(demo),
+         "--decision", "shipped"],
+        cwd=project,
+        claudecode="1",
+    )
+    assert r.returncode != 0, (
+        "fw arc close did NOT refuse with nothing configured — the identity gate "
+        "is opt-in again")
+    assert "G-062" in r.stderr
+
+    src = (REPO_ROOT / "lib" / "arc.sh").read_text(encoding="utf-8")
+    assert f'"${{{REQUIRE_APPROVAL_ENV}:-1}}" != "0"' in src, (
+        "the switch is no longer default-on; an opt-in default means the gate is "
+        "off for every caller who sets nothing")
+    assert f'"${{{REQUIRE_APPROVAL_ENV}:-}}" = "1"' not in src, (
+        "the opt-in form is back")
+
+
+def test_the_waiver_still_works_when_explicitly_set_to_zero(project):
+    """The escape hatch must be proven present, not assumed.
+
+    T-3508 keeps T-3487's variable and mechanism and moves only the default, so the
+    operator can still waive the identity check — and can re-enable the waiver as
+    the default with a one-line change if they rule the wider authorisation correct.
+    """
+    demo = _seed_arc_and_demo(project)
+    r = _run(
+        [str(FW), "arc", "close", "alpha", "--demo", str(demo),
+         "--decision", "shipped"],
+        cwd=project,
+        claudecode="1",
+        extra_env={REQUIRE_APPROVAL_ENV: "0"},
+    )
+    assert r.returncode == 0, (
+        f"waiver did not take effect: rc={r.returncode} stderr={r.stderr[:400]}")
+    arc_text = (project / ".context" / "arcs" / "alpha.yaml").read_text()
+    assert "status: closed" in arc_text
+
+
+def test_waiving_the_identity_check_does_NOT_waive_the_demo_requirement(project):
+    """Identity and evidence are independent gates, and only identity is waivable.
+
+    Without this, 'the waiver works' could mean 'the waiver lets an agent close an
+    arc with no evidence at all', which is a materially different and much worse
+    permission than the one T-3487 asked for.
+    """
+    _run(
+        [str(FW), "arc", "create", "alpha", "--name", "A",
+         "--headline-mechanic", VALID_HM, "--start"],
+        cwd=project,
+        claudecode=None,
+    )
+    r = _run(
+        [str(FW), "arc", "close", "alpha", "--decision", "shipped"],
+        cwd=project,
+        claudecode="1",
+        extra_env={REQUIRE_APPROVAL_ENV: "0"},
+    )
+    assert r.returncode != 0
+    assert "--demo is required" in r.stderr

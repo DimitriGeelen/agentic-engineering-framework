@@ -806,17 +806,34 @@ arc_close() {
     # human, recorded via Watchtower. Origin: 4th-instance auto-close incident
     # 2026-05-02 on this very arc — see T-1670, docs/reports/T-1670-default-to-open-gate-gap.md.
     #
-    # T-3487: sovereignty waiver (operator directive, 2026-09-26) — this block
-    # is now opt-in via FW_REQUIRE_ARC_CLOSE_APPROVAL=1 (restores the exact
-    # refusal below). Default (unset) skips the block entirely — close proceeds
-    # under $CLAUDECODE=1 with no --i-am-human/--from-watchtower, and falls
-    # through to the --demo/--headline-mechanic checks further down, which are
-    # independent evidence-quality requirements and fire unconditionally either
-    # way (see arc_create's _arc_validate_headline_mechanic and the --demo
-    # validation below — neither reads CLAUDECODE/i_am_human/from_watchtower).
-    # arc_abandon and arc_approve_driver --none carry the identical gate shape
-    # at their own call sites and are NOT touched by this switch.
-    if [ "${FW_REQUIRE_ARC_CLOSE_APPROVAL:-}" = "1" ] && [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ] && [ "$from_watchtower" = false ]; then
+    # T-3487 introduced FW_REQUIRE_ARC_CLOSE_APPROVAL as an OPT-IN switch, so the
+    # refusal was off unless the var was set to 1.
+    #
+    # T-3508 restores the default to ON and makes the waiver opt-OUT. The switch
+    # and its name are kept; only the default moved. Set
+    # FW_REQUIRE_ARC_CLOSE_APPROVAL=0 to waive the identity check.
+    #
+    # WHY, and this is the part not to quietly re-flip: T-3487's authorisation
+    # named "BVP and ARC drivers" and this verb is arc CLOSE, a different
+    # decision class — the authorising quote itself ended "ask AEF agent". That
+    # question was raised and PARKED (T-3487 is still captured/horizon:later),
+    # and while it was open a batch-merge worker landed the branch under T-3506 on
+    # the premise that it was one of "four independently-reviewed branches"
+    # (OBS-547). Branch topology cannot express "deliberately unlanded", so the
+    # sweeper could not have known. This default is the conservative position
+    # until the operator rules; flipping it back is one line.
+    #
+    # The refusal this guards was earned over four repeat incidents (T-1670,
+    # T-1671), one of them an agent auto-closing arc-003 and needing a revert.
+    #
+    # Independent of this switch, and unchanged: --demo and
+    # --headline-mechanic fire for agent and human callers alike (see
+    # arc_create's _arc_validate_headline_mechanic and the --demo validation
+    # below — neither reads CLAUDECODE/i_am_human/from_watchtower), so waiving
+    # the IDENTITY check never waives the EVIDENCE checks. arc_abandon and
+    # arc_approve_driver --none carry the same gate shape at their own call
+    # sites and are not touched here.
+    if [ "${FW_REQUIRE_ARC_CLOSE_APPROVAL:-1}" != "0" ] && [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ] && [ "$from_watchtower" = false ]; then
         local anchor="" wt_url=""
         anchor=$(awk -F': ' '/^anchor_task:/ {print $2; exit}' "$(_arc_path "$id")" 2>/dev/null | tr -d ' "' || true)
         if command -v fw_config >/dev/null 2>&1; then
