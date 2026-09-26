@@ -31,9 +31,18 @@
 # Arcs surface via:
 #   - `.context/arcs/<slug>.yaml` registry (filename stem = slug)
 #   - `.context/working/arc-focus.yaml` (single-arc focus)
-#   - `arc:<slug>` tag namespace (canonical during transition; T-NEW-3
-#                                  introduces `arc_id:` task-frontmatter
-#                                  field as the post-migration target)
+#   - `arc_id:` task-frontmatter field — CANONICAL source of truth (T-1849),
+#                                  written by `fw arc tag` since T-2955
+#   - `arc:<slug>` tag namespace — LEGACY (pre-T-1850, which migrated 162
+#                                  tasks off it). Still READ, so the union in
+#                                  lib/arc_membership.* stays correct for
+#                                  un-migrated tasks; no longer written.
+#     (T-3504: this block previously called the TAG namespace "canonical
+#      during transition", contradicting two other lines in this same file
+#      and the `fw arc help` output 50 lines apart. Reported by a peer agent
+#      at agent-chat-arc @1090, whose point was that it makes the defect
+#      self-justifying: an author who checks the help before writing is told
+#      the deprecated form is the right one.)
 #   - handover.sh `## Current Arc` section
 #   - Watchtower landing-page section + `/tasks?arc=<slug>` filter chip
 #   - Watchtower `/arcs/<slug>` AND `/arcs/<arc-NNN>` both resolve to the
@@ -1127,7 +1136,8 @@ Examples:
 Storage:
   .context/arcs/<id>.yaml          — registry
   .context/working/arc-focus.yaml  — focused arc (single)
-  Task tags: arc:<id> (canonical); from-T-XXXX as legacy alias
+  Task membership: arc_id: <id> in frontmatter (canonical, T-1849)
+                   arc:<id> tag (legacy, pre-T-1850 — still read, not written)
 
 Surfaces:
   - Handover: ## Current Arc section (if focus set)
