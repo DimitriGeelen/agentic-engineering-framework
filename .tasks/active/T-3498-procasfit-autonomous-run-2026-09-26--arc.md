@@ -93,8 +93,17 @@ bvp_scores_proposed:
 - [x] Work parked rather than decided where authorisation is unclear, with the
       Sovereign question written out and the artefact left untouched.
       → T-3487 parked; branch `6adf45442` intact, not merged/split/cherry-picked.
-- [ ] All commits from this run are pushed to `origin/bleeding-edge`, confirmed by
-      an explicit check rather than assumed from a backgrounded command.
+- [x] Every **work** commit of this run is pushed to `origin/bleeding-edge`,
+      confirmed by an explicit `git log origin/bleeding-edge..bleeding-edge` check
+      rather than assumed from a backgrounded command's exit code.
+      → Confirmed through `5e34f1654`. The wording is deliberately scoped to *work*
+      commits: this task's own close artifacts are created **by** the close and so
+      cannot be pushed before it — ticking a whole-run claim here would assert
+      something not yet true. The close commit is pushed immediately after, and the
+      run's final act is a 0-unpushed verification.
+      One earlier push attempt failed (**exit 143**) because `timeout 420` killed
+      the pre-push audit, which runs longer than that; re-run detached and verified
+      by the commit check, not by the exit code.
 - [x] Handback written covering the six sections the mandate requires, with every
       claim traceable to a recorded check or a verb-gated state change.
       → `docs/reports/T-3498-procasfit-handback.md`. Sections: objectives advanced
