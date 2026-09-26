@@ -2465,7 +2465,13 @@ print(f'{unenriched} {total}')
                  "Graph coverage below target" \
                  "Run: fw fabric enrich"
         else
-            pass "Fabric edges: $fabric_enriched/$fabric_total cards enriched ($fabric_unenriched without edges)"
+            # F-24: this line only ever measured depends_on/depended_by edges — it
+            # never read purpose/subsystem. "cards enriched" claimed a broader
+            # property (usable content) than the check tests, so a card with a
+            # placeholder purpose and subsystem: unknown still counted as
+            # "enriched" as long as it had an edge. Wording now matches what is
+            # actually measured; it does not claim content quality.
+            pass "Fabric edges: $fabric_enriched/$fabric_total cards have edges ($fabric_unenriched without edges)"
         fi
     fi
 fi
@@ -7556,13 +7562,54 @@ if [ ! -d "$ARC_DIR" ] || ! ls "$ARC_DIR"/*.yaml >/dev/null 2>&1; then
     info "Arc registry empty — no arcs to evaluate"
 else
     threshold="${FW_ARC_COMPLETION_THRESHOLD:-0.80}"
+
+    # T-3507: membership index, built ONCE for the whole section.
+    #
+    # The loop below spawns a fresh python3 per arc, so nothing can cache across
+    # iterations. Before this, the live scan ran only `if not items` — as a
+    # FALLBACK when constituent_tasks: was empty — so whenever that deprecated
+    # cache was non-empty the check computed completed/total over it alone.
+    # Measured: orchestrator-rethink 31 of 124 members, watchtower-redesign 1 of
+    # 70, project-shape-resilience 6 of 18. 174 task-arc relationships invisible.
+    #
+    # Simply deleting the `if not items` guard would fire the per-arc scan for all
+    # ~20 arcs — 20 walks of 3,484 task files. That is the O(arcs x tasks) trap
+    # T-3503 just removed from `fw bvp arcs`, which had exceeded a 300s timeout
+    # because of it. So the corpus is walked once, here, and looked up per arc.
+    #
+    # Delegates to lib/arc_membership.py rather than keeping the inline tag/arc_id
+    # regexes this block used to carry — the fourth reinvention of arc membership,
+    # and one audit's own T-1881 rail cannot see because its pattern requires a
+    # literal `grep` (OBS-546).
+    ARC_MEMBERSHIP_MAP="$(mktemp)"
+    ARC_MEMBERSHIP_DEGRADED=""
+    if ! python3 - "$PROJECT_ROOT" "$FRAMEWORK_ROOT" > "$ARC_MEMBERSHIP_MAP" 2>/dev/null <<'PY'
+import sys
+sys.path.insert(0, sys.argv[2] + '/lib')
+from arc_membership import scan_tasks_by_arc_membership
+by_arc_id, by_tag = scan_tasks_by_arc_membership(sys.argv[1])
+# One line per key: "<key>\t<space-separated task ids>". Both the arc_id keys
+# (slug and arc-NNN forms) and the "arc:<slug>" tag keys are emitted verbatim;
+# the per-arc lookup below unions whichever of them apply to that arc.
+for key, tids in list(by_arc_id.items()) + list(by_tag.items()):
+    print(key + "\t" + " ".join(sorted(set(tids))))
+PY
+    then
+        ARC_MEMBERSHIP_DEGRADED="canonical membership helper unavailable"
+        : > "$ARC_MEMBERSHIP_MAP"
+        warn "Arc-completion membership DEGRADED to constituent_tasks: only" \
+             "lib/arc_membership.py could not be loaded — completion ratios below are computed over the deprecated cache and may under-count" \
+             "Check FRAMEWORK_ROOT resolution; the ratios are still printed but their denominators are not trustworthy"
+    fi
+
     for arc_yaml in "$ARC_DIR"/*.yaml; do
         # Parse arc fields (id, status, constituent_tasks).
         # Use python to avoid yaml-library coupling — simple line scan suffices.
-        eval "$(python3 - "$arc_yaml" "$PROJECT_ROOT" <<'PY'
+        eval "$(python3 - "$arc_yaml" "$PROJECT_ROOT" "$ARC_MEMBERSHIP_MAP" <<'PY'
 import re, sys, os, glob
 text = open(sys.argv[1]).read()
 project_root = sys.argv[2]
+membership_map_path = sys.argv[3] if len(sys.argv) > 3 else ""
 def grab(field, default=""):
     m = re.search(rf'^{field}:\s*(.*?)$', text, re.MULTILINE)
     return m.group(1).strip() if m else default
@@ -7577,37 +7624,37 @@ m = re.match(r'\[(.*?)\]', ct_line)
 items = []
 if m and m.group(1).strip():
     items = [s.strip().strip('"').strip("'") for s in m.group(1).split(",") if s.strip()]
-# Tag-based fallback (T-1813): when constituent_tasks is empty, scan .tasks/ for
-# tasks tagged arc:<slug>. Mirrors lib/arc.sh:_arc_tasks_with_tag.
-# T-1875 (T-NEW-11): extended to union with arc_id: frontmatter scan — the
-# canonical source-of-truth field introduced in T-1849 and populated by the
-# T-1850 migration. Without this union, audit was blind to 163 task-arc
-# relationships across 5 arcs after migration. Mirrors lib/arc.sh:_arc_tasks_for.
-if not items and arc_slug:
-    tag_pattern = f"arc:{arc_slug}"
-    # arc_id may be either slug form (`arc-grooming`) or arc-NNN form (`arc-005`).
-    arc_id_re = re.compile(
-        rf'^\s*arc_id:\s*["\']?({re.escape(arc_slug)}|{re.escape(arc_id)})["\']?\s*$',
-        re.MULTILINE,
-    )
-    seen = set()
-    for d in ("active", "completed"):
-        for f in glob.glob(os.path.join(project_root, ".tasks", d, "T-*.md")):
-            try:
-                tt = open(f).read()
-            except OSError:
-                continue
-            matched = False
-            tags_m = re.search(r'^tags:\s*(.*?)$', tt, re.MULTILINE)
-            if tags_m and tag_pattern in tags_m.group(1):
-                matched = True
-            if not matched and arc_id_re.search(tt):
-                matched = True
-            if matched:
-                id_m = re.search(r'^id:\s*(T-\d+)', tt, re.MULTILINE)
-                if id_m:
-                    seen.add(id_m.group(1))
-    items = sorted(seen)
+# T-3507: UNION, not a fallback.
+#
+# This used to read `if not items and arc_slug:` — the live scan ran only when
+# constituent_tasks: was EMPTY. The comment here claimed a union with the arc_id:
+# scan (T-1875), and that union was real, but it lived inside the fallback branch,
+# so it unioned only with itself. Any arc with a non-empty constituent_tasks: had
+# its ratio computed over that deprecated append-only cache alone.
+#
+# Measured before the change: orchestrator-rethink saw 31 of 124 members,
+# watchtower-redesign 1 of 70, project-shape-resilience 6 of 18 — 174 task-arc
+# relationships invisible to the check. No verdict flipped (all three cross 0.80
+# either way), so the defect was latent; its live cost was telling the operator
+# "31/31 tasks completed" about an arc with 124 members, inside a WARN they act on.
+#
+# Membership now comes from the pre-loop index (built once, see the section
+# header), so the union costs one corpus walk per RUN rather than one per arc.
+# `constituent_tasks:` is still unioned in rather than discarded: it is deprecated
+# but it is also the only record of authored order, and a task deleted from disk
+# should not silently shrink an arc's historical denominator.
+scan_ids = set()
+if membership_map_path and os.path.isfile(membership_map_path):
+    wanted = {k for k in (arc_slug, arc_id, f"arc:{arc_slug}") if k}
+    try:
+        with open(membership_map_path) as mh:
+            for line in mh:
+                key, _, rest = line.rstrip("\n").partition("\t")
+                if key in wanted:
+                    scan_ids.update(t for t in rest.split() if t)
+    except OSError:
+        pass
+items = sorted(set(items) | scan_ids)
 print(f'ARC_ID={arc_id!r}')
 print(f'ARC_STATUS={status!r}')
 print(f'ARC_TASKS=({" ".join(items)})')
@@ -7640,6 +7687,8 @@ PY
             pass "Arc '${ARC_ID}': ${completed}/${total} (${ratio}) — below threshold ${threshold}, no closure pressure"
         fi
     done
+    # T-3507: the pre-loop membership index is scratch state for this section only.
+    rm -f "$ARC_MEMBERSHIP_MAP"
 fi
 
 echo ""

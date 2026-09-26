@@ -1,14 +1,16 @@
 ---
-id: T-3485
-name: "Repair BVP value-axis equality defect in quadrant classifier"
+id: T-3507
+name: "arc membership S5: audit's completion-ratio check reads a deprecated cache
+  as a fallback instead of unioning it"
 description: >
-  Repair BVP value-axis equality defect in quadrant classifier
+  arc membership S5: audit's completion-ratio check reads a deprecated cache as a
+  fallback instead of unioning it
 
 status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [arc:arc-grooming]
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -21,9 +23,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-25T22:29:35Z
-last_update: 2026-09-25T22:29:35Z
-date_finished: null
+created: 2026-09-26T18:04:56Z
+last_update: 2026-09-26T18:20:09Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,36 +36,143 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-26T18:15:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=341,acs=12)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-26T18:15:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3485: Repair BVP value-axis equality defect in quadrant classifier
+# T-3507: arc membership S5: audit's completion-ratio check reads a deprecated cache as a fallback instead of unioning it
 
 ## Context
 
-Downstream operator authorised a narrow repair: `lib/bvp.sh`'s `quadrant()` uses
-`bvp_norm >= bvp_median` for the value axis, which is true at equality. In a live
-project 13/25 costed tasks score `bvp_norm == 0.0`, the median is also `0.00`
-(zero-value work is over half the corpus), and every one of those 13 lands in
-`hv-lc` — the top-priority quadrant. Scope is the value-axis equality defect
-only: no weight/driver retuning, no cost-axis fix (only a report on the
-symmetric `cost <= cost_median` defect). Naive `>` swap is explicitly
-disallowed without a two-sided negative control, since it just moves the
-degeneracy from "everything hv" to "nothing hv" on a zero-median corpus.
-Dispatch prompt (verbatim constraints): branch only, no push, no `--force`,
-no worktree by default, re-derive the defect before editing.
+Closes **OBS-545**, filed during T-3501 rather than built, because the slice the
+operator had approved was a different (and wrong) idea. Operator GO to proceed
+2026-09-26.
+
+`agents/audit/audit.sh:7586` — the arc-completion-ratio check (G-062 closure
+pressure) reads the arc's `constituent_tasks:` list and runs the live membership
+scan **only `if not items`**, i.e. as a *fallback* when the list is empty. The
+comment immediately above it claims a union:
+
+> *"T-1875 (T-NEW-11): extended to union with `arc_id:` frontmatter scan… Without
+> this union, audit was blind to 163 task-arc relationships across 5 arcs after
+> migration."*
+
+The union is real but lives **inside** the fallback branch, so it unions only with
+itself. Whenever `constituent_tasks:` is non-empty, the live scan never runs and the
+check computes `completed/total` over a deprecated, append-only cache.
+
+**Measured 2026-09-26:**
+
+| arc | audit sees | actual union | hidden |
+|---|---:|---:|---:|
+| orchestrator-rethink | 31 | 124 | 93 |
+| watchtower-redesign | 1 | 70 | 69 |
+| project-shape-resilience | 6 | 18 | 12 |
+
+**174 task-arc relationships invisible to the check.**
+
+**Consequence, stated honestly: no verdict changes today.** All three cross the 0.80
+threshold either way (31/31 = 1.00 vs 122/124 = 0.98; 1/1 vs 70/70; 5/6 = 0.83 vs
+17/18 = 0.94). So this is a **latent** correctness defect whose live cost is
+**reporting**: the operator is told *"31/31 tasks completed"* for an arc with 124
+members, inside a WARN they are expected to act on. A ratio computed over 25% of the
+population is not the ratio it claims to be, and the next arc it misreports may
+straddle the threshold.
+
+**Why the fix is a pre-loop pass, not an unconditional per-arc scan.** The check is
+a shell `for` loop that spawns a fresh `python3` per arc, so nothing caches across
+iterations. Simply deleting `if not items` would fire the existing inline scan for
+all ~20 arcs — 20 full walks of 3,484 task files. The same O(arcs × tasks) trap
+T-3503 just removed from `fw bvp arcs`, which had exceeded a 300 s timeout because
+of it. So membership is computed **once** before the loop and looked up per arc.
+
+**This also removes the fourth inline reinvention of arc membership.** The scan at
+`:7586-7610` has its own tag and `arc_id` regexes, mirroring
+`lib/arc.sh:_arc_tasks_for` by its own admission. Delegating to
+`lib/arc_membership.py` is what audit's own T-1881 rail asks for — and note that
+rail cannot see this site either, since its pattern requires a literal `grep`
+(OBS-546, the next slice).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Defect reproduced via a committed pytest fixture (not live project state) that shows a zero-value/zero-median corpus landing entirely in `hv-lc` under current `>=` semantics
-- [x] Mechanism chosen and implemented in `lib/bvp.sh` quadrant()/cmd_rank(), with rationale recorded in `## Decisions` for why the naive `>=`→`>` swap was rejected
-- [x] Negative control: fixture proves a task scoring exactly at a degenerate median (zero-value, zero-median) no longer classifies as `hv`
-- [x] Positive control: fixture proves a genuinely high-value task (clearly above median) still classifies as `hv` under the new mechanism
-- [x] Fixture proves behaviour on a healthy, well-spread (non-degenerate) corpus is unchanged (or the change there is explicitly justified)
-- [x] Cost-axis equality (`cost <= cost_median`) investigated and documented as a finding (NOT fixed) in this task's Updates/Recommendation
-- [x] New tests committed under `tests/unit/`, passing via `python3 -m pytest`
-- [x] Change committed to a dedicated branch, NOT pushed, NOT on bleeding-edge
+- [x] The check computes membership as an unconditional **union**, not a fallback.
+      → `if not items and arc_slug:` is gone; `items = sorted(set(items) | scan_ids)`.
+      Pinned by `t3507: the scan is no longer gated on an empty cache`.
+- [x] Membership is resolved via `lib/arc_membership.py`, removing the inline
+      tag/`arc_id` regexes.
+      → The fourth inline reinvention of arc membership deleted. Pinned by
+      `t3507: membership is delegated, not re-derived inline`.
+- [x] The corpus is walked **once per run, not once per arc**, asserted by
+      measurement.
+      → Pre-loop index into a temp file, looked up per arc, removed after the loop.
+      **`fw audit --section arc-completion` runs in 10.9 s** on the live corpus
+      (3,484 tasks, 20 arcs). Had the guard simply been deleted, the existing
+      per-arc scan would have fired ~20 times — the O(arcs × tasks) trap T-3503 had
+      just removed from `fw bvp arcs`, which exceeded a 300 s timeout because of it.
+- [x] The WARN/PASS message reports the union denominator.
+      → Live, before → after: `arc-003` **31/31 → 122/124**, `arc-007`
+      **1/1 → 70/70**, `arc-004` **5/6 → 17/18**.
+- [x] Degrades loudly, never silently.
+      → Import failure emits `Arc-completion membership DEGRADED to
+      constituent_tasks: only` naming the consequence ("may under-count"), and the
+      ratios still print. Two legs: absence of the banner on a healthy tree proves
+      the delegation actually works, and a source assertion proves the banner is
+      wired — an unreachable warning is indistinguishable from a missing one.
+- [x] CONTROL LEG: an arc whose cache already matches its membership is unchanged.
+      → `arc-303` reports `1/1` both before and after — **verified by running the
+      suite against the pre-fix `audit.sh`**, not by inspection.
+- [x] A fixture proves the union on a NON-EMPTY short cache.
+      → `arc-301`: cache `["T-9001"]` plus an `arc_id:` member and a tag-only
+      member → reports **3/3**. A second leg proves the union **keeps** the cache
+      rather than replacing it: `T-9001` carries no membership field at all, so a
+      replace-instead-of-union fix would have reported 2/2 and silently shrunk the
+      arc's historical denominator.
+- [x] A fixture proves the empty-cache path (T-1813) still works.
+      → `arc-302` reports `2/2`. Green both before and after — correctly, since the
+      fallback fired there and the answer was accidentally right.
+- [x] Before/after verdicts recorded, including whether any flipped.
+      → **No verdict flipped.** All three measured arcs cross the 0.80 threshold
+      either way (1.00→0.98, 1.00→1.00, 0.83→0.94), so the WARN set is identical
+      and only the denominators corrected. Stated plainly rather than dressed up: a
+      fix that changes no verdict is still correct, and the live cost was
+      misreporting a ratio the operator acts on, not a wrong decision.
+- [x] `fw audit --section arc-completion` runs clean end-to-end on the live corpus.
+      → 17 arc WARNs emitted, no DEGRADED banner, exit 1 (audit's normal code when
+      WARNs are present).
+- [x] COUNTERFACTUAL measured, not assumed: the suite was run against the pre-fix
+      `audit.sh` (restored byte-identical afterwards, verified with `cmp`).
+      → Legs 2, 3, 7, 8, 9, 10 **FAIL** pre-fix; legs 4 (T-1813 regression guard)
+      and 5 (the control) **PASS** both ways. That is the shape a discriminating
+      suite should have — if the control leg had failed pre-fix it would have been
+      measuring the change rather than fencing it.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -224,44 +333,69 @@ no worktree by default, re-derive the defect before editing.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-out=$(python3 -m pytest tests/unit/test_bvp_quadrant_value_axis.py -q 2>&1); echo "$out" | grep -q "5 passed" && ! echo "$out" | grep -q "failed"
-out=$(python3 -m pytest tests/unit/test_bvp_status_filter.py tests/unit/test_bvp_cli_rank_proposed.py tests/unit/test_bvp_cli_arcs_rollup.py tests/unit/test_bvp_blueprint_cost.py tests/unit/test_bvp_scatter_arc_mode.py tests/unit/test_bvp_signals_rollup.py -q 2>&1); echo "$out" | grep -q "59 passed" && ! echo "$out" | grep -q "failed"
+out=$(bats tests/unit/t3507_arc_completion_union.bats 2>&1); echo "$out" | grep -qE "^ok 10 " && ! echo "$out" | grep -qE "^not ok|# skip"
+bash -n agents/audit/audit.sh
+# The fallback guard must not return, and the delegation must stay.
+! grep -qE '^if not items and arc_slug:' agents/audit/audit.sh
+grep -q "from arc_membership import scan_tasks_by_arc_membership" agents/audit/audit.sh
+# The pre-loop index must be created AND removed — a leaked mktemp per audit run
+# would be a slow filesystem leak nobody notices.
+grep -qF 'ARC_MEMBERSHIP_MAP="$(mktemp)"' agents/audit/audit.sh
+grep -qF 'rm -f "$ARC_MEMBERSHIP_MAP"' agents/audit/audit.sh
+cmp -s agents/audit/audit.sh .agentic-framework/agents/audit/audit.sh
 
 ## RCA
 
-**Symptom:** `fw bvp rank --quadrant hv-lc` (downstream project) returned 25 costed
-tasks, BVP median 0.00, 13/25 scoring exactly 0.00, all 13 classified `hv-lc` —
-the top-priority quadrant. Reproduced locally with a 25-task fixture (13 zero,
-12 spread 1-5): before the fix, all 25 landed `hv-lc`; the defect is exact and
-general, not project-specific.
+**Symptom:** the arc-completion-ratio check (G-062 closure pressure) reported
+`31/31 tasks completed` for an arc with **124** members, `1/1` for one with 70, and
+`5/6` for one with 18 — 174 task-arc relationships invisible to it.
 
-**Root cause:** `lib/bvp.sh:quadrant()` used `bvp_norm >= bvp_median` (inclusive
-at equality). This is correct while the median sits mid-distribution — ties AT
-a genuine median legitimately belong to whichever side inclusive comparison
-puts them. It becomes a defect specifically when the median itself has
-collapsed onto the corpus floor: `median == min(bvp_vals)` is only possible
-when >=50% of the corpus is tied at the theoretical minimum (unscored/all-zero
-tasks read as raw BVP 0). In that shape, `>=` isn't resolving a real tie — it
-is manufacturing a verdict for a majority-degenerate axis and calling it
-"high value."
+**Root cause:** `if not items and arc_slug:` ran the live membership scan only when
+`constituent_tasks:` was **empty**. The comment directly above claimed a union with
+the `arc_id:` scan (T-1875), and that union was genuine — but it was written
+*inside* the fallback branch, so it unioned only with itself. Any arc with a
+non-empty cache had its ratio computed over a deprecated, append-only list.
 
-**Why structurally allowed:** `quadrant()` had no way to express "the axis
-cannot support a verdict here" — only four positive quadrant labels plus `-`
-for genuinely missing data. A degenerate-but-present median (0.00 is a valid
-float, not None) passed every existing check. No test in the corpus pinned
-median/tie behaviour at all — `tests/unit/test_bvp_*` covered filtering,
-proposed-score fallback, and cost composite math, never the quadrant boundary
-itself (confirmed via search prior to this fix: zero hits for `quadrant(` in
-tests/).
+**Why structurally allowed — two reinforcing reasons:**
 
-**Prevention:** `tests/unit/test_bvp_quadrant_value_axis.py` (5 tests) pins:
-degenerate-median exclusion, degenerate-median admission of a real high
-scorer, a live demonstration that the naive `>=`→`>` swap would wrongly
-exclude a genuine (non-degenerate) at-median tie, and inertness on a healthy
-well-spread corpus. This is a repair of `lib/bvp.sh` only — see Recommendation
-for two related findings (cost-axis symmetry; a second, independent copy of
-this exact defect in `lib/resolver.py`) that are reported, not fixed, because
-they are outside this task's authorized scope.
+1. **The comment described the intent, and the code implemented a narrower thing.**
+   T-1875 added the `arc_id:` half *into an existing fallback* rather than promoting
+   the whole thing to a union. Nothing compared the comment to the control flow, and
+   a reader checking whether the union existed would have found it and stopped.
+2. **Every fixture had an empty `constituent_tasks:`.** The fallback therefore fired
+   in every test, so the tests exercised the correct path and the defective one was
+   unreachable from the suite. The population that triggers it — a non-empty *short*
+   cache — existed only in the live corpus. Same shape as T-3502's 1 KB budget,
+   where every hand-written fixture was short enough to pass.
+
+**Prevention:**
+1. `t3507_arc_completion_union.bats` carries the missing population: a non-empty
+   short cache plus members it omits. **Measured against the pre-fix tree**, that leg
+   fails and the T-1813/control legs pass — so the suite discriminates rather than
+   merely being green.
+2. A leg asserts the union **keeps** the cache: a stored task carrying no membership
+   field must still count, or a future "just use the scan" simplification would
+   silently shrink historical denominators.
+3. Verification asserts the fallback guard's *absence* and the delegation's
+   *presence*, so regrowing either fails the close gate rather than needing a
+   reviewer to notice.
+4. **Not fixed here, filed:** OBS-546 — audit's own T-1881 rail was supposed to stop
+   inline membership reinventions like the one deleted here, and cannot see it,
+   because its pattern requires a literal `grep` token. That is the next slice.
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -286,6 +420,37 @@ they are outside this task's authorized scope.
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-09-26 — deleting the guard was the wrong fix, and the reason is performance
+
+- **What changed:** The obvious one-line fix is to delete `if not items and
+  arc_slug:` so the existing inline scan always runs. That would have been correct
+  and slow: the check is a shell loop spawning a fresh `python3` per arc, so nothing
+  caches, and the scan walks 3,484 task files — roughly 20 walks per audit run. This
+  is the same O(arcs × tasks) shape T-3503 had just removed from `fw bvp arcs`, where
+  it caused a 300 s timeout. Having hit it hours earlier is the only reason I checked
+  the loop structure before editing.
+- **Plan impact:** The fix became a pre-loop single pass writing an index to a temp
+  file, plus per-arc lookup — more code than a one-line guard removal, and it
+  required adding cleanup (`rm -f`) that the one-liner would not have needed.
+- **Triggered:** Nothing filed. Recorded because the cheap fix and the correct fix
+  differed here, and only a measurement taken on a *different* task revealed it.
+
+### 2026-09-26 — the suite was green against the broken code until I built the missing population
+
+- **What changed:** Every pre-existing arc-completion fixture has an empty
+  `constituent_tasks:`, so the fallback fired in all of them and the tests exercised
+  the *correct* path. The defective branch was unreachable from the suite. Verified
+  by running this new suite against the pre-fix `audit.sh`: the union legs fail, and
+  the T-1813 and control legs pass both ways.
+- **Plan impact:** Added the population that distinguishes them — a non-empty *short*
+  cache — and kept the counterfactual measurement in the file header rather than as a
+  claim in a commit message.
+- **Triggered:** Nothing filed; it is the same class as T-3502's short-fixture
+  blindness, now twice in one session on the same subsystem. Worth stating as the
+  transferable form: **a fixture set assembled from the convenient shape cannot see
+  the inconvenient one**, and for membership the convenient shape is "empty" while
+  the live corpus is full of "partial".
 
 ## Recommendation
 
@@ -316,127 +481,16 @@ they are outside this task's authorized scope.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO (for `lib/bvp.sh`, this task's authorized scope) — with
-two findings for separate operator decisions.
-
-**Rationale:** The defect reproduced exactly as described (fixture: 25 tasks,
-13 zero-value, median 0.00, all 13 pre-fix in `hv-lc`). The chosen mechanism
-(withhold on degenerate-median tie, `QUAD_VALUE_WITHHELD='v-thin'`) passes
-both required negative controls — exclusion of the degenerate tie mass,
-admission of a genuinely high-value task in the same corpus — and is proven
-inert on a healthy well-spread corpus (byte-identical quadrant assignments,
-hand-verified against a live run of the fixture). The naive `>=`→`>` swap was
-tested and shown to fail the admission side on a non-degenerate at-median tie.
-5 new tests pass; the full pre-existing BVP suite (bvp_status_filter,
-bvp_cli_rank_proposed, bvp_cli_arcs_rollup, bvp_blueprint_cost,
-bvp_scatter_arc_mode, bvp_signals_rollup — 59 tests — plus
-bvp_auto_promote{,_enable}, t2477_bvp_yaml_timestamp_fallback,
-t2332_bvp_propose_queue, t2497_resolver_bvp_rank bats suites) is unaffected.
-
-**Evidence:**
-- Fixture reproduction: `tests/unit/test_bvp_quadrant_value_axis.py` (5/5 pass)
-- Full BVP pytest suite: 59/59 pass (unchanged by this fix)
-- BVP-adjacent bats suites: `bvp_auto_promote.bats` (7/7), `bvp_auto_promote_enable.bats`
-  (7/7), `t2477_bvp_yaml_timestamp_fallback.bats` (3/3), `t2332_bvp_propose_queue.bats`
-  (6/6), `t2497_resolver_bvp_rank.bats` (5/5) — all pass
-- `fw bvp --help` output unaffected (checked manually)
-
-**Finding 1 — cost-axis equality (reported, not fixed, per explicit scope
-boundary):** `lib/bvp.sh:quadrant()`'s `lc = cost <= cost_median` has the
-identical equality-at-median shape as the value axis this task repairs. A
-corpus where cost is constant (or where a large tied mass sits at the cost
-median) reads every one of those tasks as `lc` for the same structural
-reason the value axis over-read `hv`. This task's own reproduction fixture
-demonstrates it incidentally: all 25 fixture tasks share `cost=2.0`, so
-`cost_median=2.0` and every task reads `lc` regardless of value — visible in
-the pre-fix repro output (`docs/reports/T-3485-bvp-quadrant-value-axis-repair.md`).
-The requesting operator's own downstream project has a named prior instance
-of this (their PL-025: constant cost → median → every task reads "low cost").
-The same `degenerate-median` mechanism used here for the value axis would
-generalise to the cost axis (`cost_median == min(cost_vals)`), but that is an
-operator decision, not this task's authorization.
-
-**Finding 2 — `lib/resolver.py` carries an independent, undocumented-as-such
-duplicate of the exact same defect, and it is the part that actually drives
-autonomous task selection.** `lib/resolver.py:_annotate_bvp_rank()` (line
-~1370) reimplements the identical `("hv" if m["bvp_norm"] >= bvp_median else
-"lv") + "-" + ("lc" if cost <= cost_median else "hc")` logic — its own
-docstring says "mirroring bvp.sh cmd_rank." This function feeds
-`fw resolver dispatch`'s task auto-selection (`_QUADRANT_RANK`, HV-LC ranked
-first) — i.e. it is precisely the mechanism the dispatch prompt's symptom
-paragraph describes ("An autonomous run told to 'select by BVP quadrant, Q1
-first to exhaustion' is steered directly into it"). **Patching only
-`lib/bvp.sh` (this task) repairs the CLI ranking/display surface but leaves
-the actual autonomous-dispatch selector carrying the unrepaired defect.** Not
-fixed here — `lib/resolver.py` was never named in this task's authorization,
-and duplicating the fix there without being asked would be exactly the scope
-creep the prompt warns against — but this is very likely the operator's next
-priority if the goal is to stop autonomous runs from being steered into
-zero-value work, not just to fix what `fw bvp rank` prints.
-
 ## Decisions
 
-### 2026-09-26 — value-axis equality mechanism
-
-- **Chose:** withhold a verdict (`QUAD_VALUE_WITHHELD = 'v-thin'`) for tasks
-  whose `bvp_norm` equals a *degenerate* median, where degenerate is defined
-  as `median(bvp_vals) == min(bvp_vals)`. Mathematically this can only be true
-  when at least `ceil(n/2)` values are tied at the floor, so the guard fires
-  exactly on the shape the reported symptom describes and is provably inert
-  otherwise. Implemented as an added `degenerate=False` kwarg on `quadrant()`
-  (backward compatible — every existing call site not touched by this task
-  keeps prior behaviour byte-for-byte) plus a one-line `value_axis_degenerate()`
-  helper and an observability NOTE mirroring the existing cost-unknown
-  disclosure block (T-3068's pattern), so a shrinking hv-lc count reads as
-  "withheld", not "vanished".
-- **Why:** the prompt's own framing is correct — the real question is not
-  which side of the boundary ties fall on, it is whether a median sitting on
-  a mass of ties can support a verdict at all. Withholding answers that
-  question honestly. It also composes cleanly with the two required negative
-  controls: a task AT the degenerate median is excluded from hv (Direction 1);
-  a task clearly ABOVE the degenerate median is untouched by the guard and
-  still reads hv normally (Direction 2, since the guard only fires on
-  `bvp_norm == bvp_median`, not on the whole `<=`/`>=` split).
-- **Rejected — naive `bvp_norm >= bvp_median` → `bvp_norm > bvp_median`:** on
-  the exact measured shape (median 0.00, 13/25 at 0.00) this only moves the
-  same tied mass from `hv` to `lv` — nothing becomes newly distinguishable,
-  the verdict for the tied mass is still invented, just on the other side.
-  `tests/unit/test_bvp_quadrant_value_axis.py::test_naive_flip_to_strict_greater_would_fail_admission`
-  demonstrates directly that `>` would ALSO wrongly exclude a genuine,
-  non-degenerate at-median tie (D1 scores 1,2,2,4 — the two 2s legitimately
-  belong in hv under inclusive comparison; only a *degenerate* median
-  disqualifies a tie, not every tie).
-- **Rejected — extending an existing `basis_ok`/`QUAD_WITHHELD` guard, as the
-  dispatch prompt suggested:** verified by grep across `lib/bvp.sh`,
-  `web/blueprints/bvp.py`, and `.context/concerns.yaml` — no `basis_ok`,
-  `QUAD_WITHHELD`, or `G-002` symbol exists anywhere in this repository. The
-  prompt's code sample ("this same function already knows how to say 'I
-  cannot judge this'") does not match `quadrant()` as it actually reads
-  (confirmed both by direct read and by the fact the described line number,
-  "around line 303", is ~40 lines off from the real function at line 265).
-  The *concept* (a withheld-verdict return distinct from '-') was worth
-  keeping; the claim that it already existed was not — this is filed fresh as
-  `QUAD_VALUE_WITHHELD`, not an extension.
-- **Rejected — a hard "zero value is never hv" floor rule (the prompt's
-  alternative suggestion):** narrower than the actual defect. The measured
-  degeneracy is about the MEDIAN collapsing onto the floor, not about the
-  literal value 0. A corpus where 60% of tasks tie at a nonzero floor (e.g.
-  every task scored exactly 1) manufactures the identical problem and a
-  zero-only floor rule would miss it entirely. The chosen mechanism (compare
-  median to floor, not value to zero) generalises correctly; the floor-only
-  rule does not.
-
-### 2026-09-26 — cost-axis and `lib/resolver.py` scope boundary
-
-- **Chose:** do not touch `cost <= cost_median` (same equality shape, `lib/bvp.sh`)
-  or `lib/resolver.py`'s independent duplicate of the value-axis defect.
-  Both reported below (## Recommendation), neither fixed here.
-- **Why:** explicit dispatch-prompt scope boundary — "Report, do not fix: the
-  cost axis" — and `lib/resolver.py` was never named in the authorization at
-  all. Widening scope on a narrowly-authorized repair is the exact failure
-  mode the prompt is structured to prevent (the requesting agent declined to
-  make this change itself specifically because it decides how agents' own
-  work is ranked).
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
 
 ## Decision
 
@@ -450,24 +504,10 @@ zero-value work, not just to fix what `fw bvp rank` prints.
 
 ## Updates
 
-### 2026-09-25T22:29:35Z — task-created [task-create-agent]
+### 2026-09-26T18:04:56Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3485-repair-bvp-value-axis-equality-defect-in.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3507-arc-membership-s5-audits-completion-rati.md
 - **Context:** Initial task creation
 
-### 2026-09-26 — repair implemented + verified [agent]
-- **Action:** Reproduced the value-axis equality defect with a committed fixture
-  (`tests/unit/test_bvp_quadrant_value_axis.py`), implemented a degenerate-median
-  withhold mechanism in `lib/bvp.sh` (`QUAD_VALUE_WITHHELD`/`value_axis_degenerate()`),
-  and pinned both required negative controls plus a healthy-corpus control.
-- **Output:** `lib/bvp.sh` (quadrant()/cmd_rank()), `tests/unit/test_bvp_quadrant_value_axis.py`
-  (5 new tests), `docs/reports/T-3485-bvp-quadrant-value-axis-repair.md` (repro evidence).
-- **Context:** Full pre-existing BVP pytest suite (59 tests) + 4 related bats suites
-  re-run and unaffected. Two findings reported, not fixed, per explicit scope
-  boundary: cost-axis equality symmetry (`lib/bvp.sh`) and an independent
-  duplicate of this same defect in `lib/resolver.py:_annotate_bvp_rank()`,
-  which is the function that actually drives `fw resolver dispatch` autonomous
-  task selection. See `## Recommendation` for detail. Committed to branch
-  `t3485-bvp-quadrant-value-axis` via git plumbing (no `git checkout`, to avoid
-  touching the shared checkout's HEAD/index while other activity was landing on
-  `bleeding-edge` concurrently) — not pushed.
+### 2026-09-26T18:20:09Z — status-update [task-update-agent]
+- **Change:** tags: +arc:arc-grooming

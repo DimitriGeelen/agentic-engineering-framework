@@ -5590,3 +5590,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-547
+  text: "URGENT: the arc-close sovereignty gate is OFF by default on bleeding-edge, merged by a batch worker while the task parking it is still captured/later. A TermLink dispatch worker (fw worker (termlink-dispatch) <dispatch+merge-fo@aef.local>) batch-merged four unlanded branches into bleeding-edge at 2026-09-26T19:06-19:07: dispatch-f25, dispatch-f21-f24, t3485-bvp-quadrant-value-axis (redundant — already landed as b23ee1a65) and t3487-remove-bvp-arc-approval-gate (d9c40f054). T-3487 is the operator-parked Sovereign question from T-3501: its authorisation named 'BVP and ARC drivers' while the branch removes the gate on fw arc CLOSE, a different verb, and the quote itself ended 'ask AEF agent'. lib/arc.sh now reads 'if [ ${FW_REQUIRE_ARC_CLOSE_APPROVAL:-} = 1 ] && [ ${CLAUDECODE:-} = 1 ] && ...' so with the env var UNSET the refusal block is skipped and an agent can close an arc — the gate that took four repeat incidents to earn (T-1670/T-1671) is default-off. T-3505 additionally gated two arc-close refusal tests behind the same var, so the two red tests that blocked T-3487's own AC #8 are now green by accommodation rather than by fix. THE STRUCTURAL GAP: parking is recorded in the TASK (status captured, horizon later, Sovereign question in the body) and not in the BRANCH, so a branch-sweeping worker cannot distinguish 'unmerged because it is not ready' from 'unmerged because nobody got to it' — it merged on branch state alone. Task and tree now disagree: T-3487 says captured/later while its code is live. Candidate fixes: mark deliberately-unlanded branches in a way a sweeper reads (a refs/notes marker, a naming convention, or a do-not-merge list), and have any batch-merge worker refuse a branch whose governing task is captured/parked. NOT pushed as of this note — the merge is local to bleeding-edge."
+  captured: 2026-09-26T18:22:45Z
+  context_task: T-3507
+  tags: []
+  status: pending
+  promoted_to: null
