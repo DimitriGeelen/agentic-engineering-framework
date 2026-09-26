@@ -4571,3 +4571,17 @@ decisions:
     date: 2026-09-25
     task: T-3450
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-654
+    decision: "withhold a verdict (`QUAD_VALUE_WITHHELD = 'v-thin'`) for tasks"
+    scope: project
+    date: 2026-09-26
+    task: T-3485
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-655
+    decision: "do not touch `cost <= cost_median` (same equality shape, `lib/bvp.sh`)"
+    scope: project
+    date: 2026-09-26
+    task: T-3485
+    rationale: "Auto-captured from task file on completion"

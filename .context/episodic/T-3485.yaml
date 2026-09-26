@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3485: Repair BVP value-axis equality defect in quadrant classifier
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-26T07:38:20Z
+# ============================================================================
+
+task_id: T-3485
+task_name: "Repair BVP value-axis equality defect in quadrant classifier"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-25T22:29:35Z
+completed: 2026-09-26T07:37:57Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-09-26T00:43:09+02:00
+last_commit: 2026-09-26T09:36:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  repair BVP value-axis equality defect in quadrant classifier. land the quadrant value-axis repair — a >= against a collapsed median promoted every floor-tied task to top priority
+
+# Key outcomes
+outcomes:
+  - 'Defect reproduced via a committed pytest fixture (not live project state) that shows a zero-value/zero-median corpus landing entirely in `hv-lc` under current `>=` semantics'
+  - 'Mechanism chosen and implemented in `lib/bvp.sh` quadrant()/cmd_rank(), with rationale recorded in `## Decisions` for why the naive `>=`→`>` swap was rejected'
+  - 'Negative control: fixture proves a task scoring exactly at a degenerate median (zero-value, zero-median) no longer classifies as `hv`'
+  - 'Positive control: fixture proves a genuinely high-value task (clearly above median) still classifies as `hv` under the new mechanism'
+  - 'Fixture proves behaviour on a healthy, well-spread (non-degenerate) corpus is unchanged (or the change there is explicitly justified)'
+  - 'Cost-axis equality (`cost <= cost_median`) investigated and documented as a finding (NOT fixed) in this task''s Updates/Recommendation'
+  - 'New tests committed under `tests/unit/`, passing via `python3 -m pytest`'
+  - 'Change committed to a dedicated branch, NOT pushed, NOT on bleeding-edge'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-26 — value-axis equality mechanism'
+    chose: 'withhold a verdict (`QUAD_VALUE_WITHHELD = ''v-thin''`) for tasks whose `bvp_norm` equals a *degenerate* median, where degenerate is defined as `median(bvp_vals) == min(bvp_vals)`. Mathematically this can only be true when at least `ceil(n/2)` values are tied at the floor, so the guard fires exactly on the shape the reported symptom describes and is provably inert otherwise. Implemented as an added `degenerate=False` kwarg on `quadrant()` (backward compatible — every existing call site not touched by this task keeps prior behaviour byte-for-byte) plus a one-line `value_axis_degenerate()` helper and an observability NOTE mirroring the existing cost-unknown disclosure block (T-3068''s pattern), so a shrinking hv-lc count reads as "withheld", not "vanished".'
+    rationale: 'the prompt''s own framing is correct — the real question is not which side of the boundary ties fall on, it is whether a median sitting on a mass of ties can support a verdict at all. Withholding answers that question honestly. It also composes cleanly with the two required negative controls: a task AT the degenerate median is excluded from hv (Direction 1); a task clearly ABOVE the degenerate median is untouched by the guard and still reads hv normally (Direction 2, since the guard only fires on `bvp_norm == bvp_median`, not on the whole `<=`/`>=` split). - **Rejected — naive `bvp_norm >= bvp_median` → `bvp_norm > bvp_median`:** on the exact measured shape (median 0.00, 13/25 at 0.00) this only moves the same tied mass from `hv` to `lv` — nothing becomes newly distinguishable, the verdict for the tied mass is still invented, just on the other side. `tests/unit/test_bvp_quadrant_value_axis.py::test_naive_flip_to_strict_greater_would_fail_admission` demonstrates directly that `>` would ALSO wrongly exclude a genuine, non-degenerate at-median tie (D1 scores 1,2,2,4 — the two 2s legitimately belong in hv under inclusive comparison; only a *degenerate* median disqualifies a tie, not every tie). - **Rejected — extending an existing `basis_ok`/`QUAD_WITHHELD` guard, as the dispatch prompt suggested:** verified by grep across `lib/bvp.sh`, `web/blueprints/bvp.py`, and `.context/concerns.yaml` — no `basis_ok`, `QUAD_WITHHELD`, or `G-002` symbol exists anywhere in this repository. The prompt''s code sample ("this same function already knows how to say ''I cannot judge this''") does not match `quadrant()` as it actually reads (confirmed both by direct read and by the fact the described line number, "around line 303", is ~40 lines off from the real function at line 265). The *concept* (a withheld-verdict return distinct from ''-'') was worth keeping; the claim that it already existed was not — this is filed fresh as `QUAD_VALUE_WITHHELD`, not an extension. - **Rejected — a hard "zero value is never hv" floor rule (the prompt''s alternative suggestion):** narrower than the actual defect. The measured degeneracy is about the MEDIAN collapsing onto the floor, not about the literal value 0. A corpus where 60% of tasks tie at a nonzero floor (e.g. every task scored exactly 1) manufactures the identical problem and a zero-only floor rule would miss it entirely. The chosen mechanism (compare median to floor, not value to zero) generalises correctly; the floor-only rule does not.'
+  - decision: '2026-09-26 — cost-axis and `lib/resolver.py` scope boundary'
+    chose: 'do not touch `cost <= cost_median` (same equality shape, `lib/bvp.sh`) or `lib/resolver.py`''s independent duplicate of the value-axis defect. Both reported below (## Recommendation), neither fixed here.'
+    rationale: 'explicit dispatch-prompt scope boundary — "Report, do not fix: the cost axis" — and `lib/resolver.py` was never named in the authorization at all. Widening scope on a narrowly-authorized repair is the exact failure mode the prompt is structured to prevent (the requesting agent declined to make this change itself specifically because it decides how agents'' own work is ranked).'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/bvp.sh'
+  - 'docs/reports/T-3485-bvp-quadrant-value-axis-repair.md'
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-3485-repair-bvp-value-axis-equality-defect-in.md'
+  - 'tests/unit/test_bvp_quadrant_value_axis.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-26T00:43:09'
+    action: 'T-3485: repair BVP value-axis equality defect in quadrant classifier'
+  - time: '2026-09-26T09:36:16'
+    action: 'T-3485: land the quadrant value-axis repair — a `>=` against a collapsed median promoted every floor-tied task to top priority'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 548 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 548
+  commits: 2
+  files_changed: 5
+  lines_added: 1771
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3485-repair-bvp-value-axis-equality-defect-in.md
+generated_by: context-agent-hybrid

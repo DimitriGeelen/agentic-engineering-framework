@@ -4,12 +4,12 @@ name: "Repair BVP value-axis equality defect in quadrant classifier"
 description: >
   Repair BVP value-axis equality defect in quadrant classifier
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [arc:value-prioritisation]
+components: [lib/bvp.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T22:29:35Z
-last_update: '2026-09-25T22:45:27Z'
-date_finished:
+last_update: 2026-09-26T07:37:57Z
+date_finished: 2026-09-26T07:37:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -315,6 +315,39 @@ they are outside this task's authorized scope.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-09-25 — the authorised scope was the CLI surface; the steering defect is elsewhere
+
+- **What changed:** The task was scoped to `lib/bvp.sh`'s `quadrant()`, on the
+  premise that repairing it repairs quadrant selection. It does not. The builder
+  grepped before editing and found `lib/resolver.py:_annotate_bvp_rank()` (~line
+  1370) to be an independent, docstring-acknowledged duplicate ("mirroring
+  bvp.sh cmd_rank") of the same equality defect — and *that* is the function
+  driving `fw resolver dispatch`'s autonomous task selection. So the symptom the
+  dispatch prompt described (an autonomous run told to select by BVP quadrant is
+  steered into zero-value work) is produced by a file this task was never
+  authorised to touch. `lib/bvp.sh` governs what `fw bvp rank` *prints*.
+- **Plan impact:** This task's fix is necessary but not sufficient. It must not
+  be read as closing the steering defect. Two surfaces implement one rule, which
+  is the underlying fault — the duplication, not either copy.
+- **Triggered:** T-3488 filed for the resolver duplicate. Also recorded, not
+  fixed: `lc = cost <= cost_median` carries the identical equality shape on the
+  cost axis (§6 of the builder's report), out of authorised scope.
+
+### 2026-09-26 — three premises in the dispatch prompt were false
+
+- **What changed:** The prompt asserted an existing `basis_ok` / `QUAD_WITHHELD`
+  / G-002 mechanism in `quadrant()`. None of those symbols exist anywhere in the
+  repo. The prompt also proposed a zero-only floor rule ("a task scoring zero is
+  never hv"), which catches literal zero but not a median collapsed onto a
+  *nonzero* floor. The builder reported both as contradictions instead of
+  building to them.
+- **Plan impact:** The withhold *concept* survived; the claim that it was already
+  present did not. The implemented guard keys on `median == min`, which
+  generalises to any floor, not just zero.
+- **Triggered:** Nothing filed. Recorded here because a dispatch prompt that
+  describes code which does not exist is a recurring hazard, and the builder
+  refusing to build to it is the behaviour worth keeping.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -483,6 +516,33 @@ zero-value work, not just to fix what `fw bvp rank` prints.
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3485-repair-bvp-value-axis-equality-defect-in.md
 - **Context:** Initial task creation
 
+### 2026-09-26T07:40Z — landed on bleeding-edge; AC #8's scope stated explicitly [parent session, procAsFit]
+- **Action:** Landed the builder's work on `bleeding-edge` as `b23ee1a65`. Not a
+  cherry-pick: the working tree already held byte-identical content for all four
+  files (verified file-by-file against `e67d7e95b` before staging). Vendor sync
+  scoped `FW_VENDOR_ONLY="lib/bvp.sh"`; the rail withheld
+  `policy/value-drivers.yaml`, another worker's uncommitted file, which is correct.
+- **AC #8 reads "NOT on bleeding-edge" and is ticked. Both are true, at different
+  times, and this note exists so the box does not silently assert otherwise.**
+  That AC encoded the *dispatch sandbox constraint* on the builder — branch only,
+  no push, do not mutate shared state unsupervised — and the builder honoured it
+  exactly (it even used git plumbing rather than `git checkout` to avoid touching
+  the shared HEAD/index while `bleeding-edge` advanced under it). It was a
+  property of the delivery, not a permanent prohibition on the work. Landing
+  completed work on `bleeding-edge` is the sanctioned flow (CLAUDE.md
+  §Release-Train Branch Model); `master` was not touched and nothing was pushed
+  to a remote by this action.
+- **Why it was landed rather than left:** the builder exited 0 roughly seven hours
+  earlier and its working-tree copy was failing the self-vendor check on every
+  subsequent push in this checkout — so the stranded state was actively blocking
+  unrelated work. There was no live producer left to ask.
+- **Independently re-verified before close** rather than taken on the builder's
+  report: `test_bvp_quadrant_value_axis.py` 5/5, the six pinned pre-existing BVP
+  suites 59/59, both `## Verification` lines green.
+- **Not done, deliberately:** no fabric card registered for the new test file
+  (`fw fabric register`) — it closes no acceptance criterion here. Carried as a
+  fabric-drift item, not silently absorbed.
+
 ### 2026-09-26 — repair implemented + verified [agent]
 - **Action:** Reproduced the value-axis equality defect with a committed fixture
   (`tests/unit/test_bvp_quadrant_value_axis.py`), implemented a degenerate-median
@@ -499,3 +559,18 @@ zero-value work, not just to fix what `fw bvp rank` prints.
   `t3485-bvp-quadrant-value-axis` via git plumbing (no `git checkout`, to avoid
   touching the shared checkout's HEAD/index while other activity was landing on
   `bleeding-edge` concurrently) — not pushed.
+
+### 2026-09-26T07:37:18Z — status-update [task-update-agent]
+- **Change:** tags: +arc:value-prioritisation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-24169d74
+- **Timestamp:** 2026-09-26T07:38:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-26T07:37:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
