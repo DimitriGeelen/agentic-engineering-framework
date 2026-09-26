@@ -1,0 +1,21 @@
+id: tests/unit/t3510_parked_branch_classification.bats
+name: t3510_parked_branch_classification
+type: script
+subsystem: tests
+location: tests/unit/t3510_parked_branch_classification.bats
+tags: []
+
+purpose: "T-3510 (OBS-547): a branch is unlanded for two very different reasons, and the scan could not tell them apart."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-26
+created_by: unknown

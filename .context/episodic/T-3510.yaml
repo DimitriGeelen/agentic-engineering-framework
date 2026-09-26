@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3510: branch-hygiene stops recommending a merge for a branch whose governing task is parked
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-26T23:10:53Z
+# ============================================================================
+
+task_id: T-3510
+task_name: "branch-hygiene stops recommending a merge for a branch whose governing task is parked"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T22:31:23Z
+completed: 2026-09-26T23:10:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-27T01:09:54+02:00
+last_commit: 2026-09-27T01:09:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  branch-hygiene tells a parked branch apart from a strand
+
+# Key outcomes
+outcomes:
+  - 'A helper resolves a branch name to its governing task id and that task''s'
+  - 'A branch whose governing task is parked (`status: captured` OR `horizon: later`)'
+  - 'The audit''s mitigation text (`agents/audit/audit.sh`) no longer recommends'
+  - 'A branch whose governing task CANNOT be resolved (`dispatch-f25`,'
+  - 'Per L-642, each new finding line names its consequence, not just its state:'
+  - 'SCOPE EXTENSION, declared not smuggled: a parked task whose branch is ALREADY'
+  - 'Regression tests cover: parked+unlanded, parked+merged, unparked+behind'
+  - 'AMENDED, and the amendment is the finding. The original wording was'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - '.context/inbox.yaml'
+  - 'lib/branch-hygiene.sh'
+  - '.tasks/active/T-3510-branch-hygiene-stops-recommending-a-merg.md'
+  - 'tests/unit/t3510_parked_branch_classification.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-27T01:09:54'
+    action: 'T-3510: branch-hygiene tells a parked branch apart from a strand'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 38 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc, governance, branch-hygiene]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 38
+  commits: 1
+  files_changed: 8
+  lines_added: 942
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3510-branch-hygiene-stops-recommending-a-merg.md
+generated_by: context-agent-hybrid
