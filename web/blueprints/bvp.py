@@ -419,25 +419,49 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
 
 
 def _arc_member_tasks(arc_slug: str, arc_id_str: str) -> list[dict]:
-    """T-1936: return frontmatter dicts of tasks whose `arc_id:` matches
-    the arc slug or canonical arc-NNN id.
+    """T-1936: frontmatter dicts of every task in the arc, by the CANONICAL union.
 
-    Both `arc_id: value-prioritisation` and `arc_id: arc-006` are accepted
-    bindings to the same arc (per T-1849 dual-form rule).
+    Both `arc_id: value-prioritisation` and `arc_id: arc-006` bind to the same arc
+    (T-1849 dual-form), UNION the legacy `arc:<slug>` tag form.
+
+    T-3503: this matched `arc_id:` ONLY, so an arc whose members bind via the legacy
+    tag rolled up zero members and was dropped from /bvp entirely by the caller's
+    `if not scores: continue`. Reported by cashweb-integration-agent
+    (agent-chat-arc @1247). Measured on the CLI twin (lib/bvp.sh, same function,
+    same defect): **16 of 20 arcs were listed; the 4 missing included three of the
+    five arcs the audit flags as stale** — the arcs most needing attention were the
+    ones the value ranking could not see.
+
+    Delegates to lib/arc_membership.py rather than re-deriving membership for the
+    fifth time, which is what audit's T-1881 rail asks for ("Migrate to
+    lib/arc_membership.{sh,py}"). That rail could not have caught this site: its
+    pattern requires the literal token `grep`, so a Python reinvention is invisible
+    to it (OBS-546). Same import style as the sibling blueprint arcs.py:34.
     """
+    from lib.arc_membership import scan_tasks_by_arc_membership
+
+    targets = {x for x in (arc_slug, arc_id_str) if x}
+    if not targets:
+        return []
+    by_arc_id, by_tag = scan_tasks_by_arc_membership(PROJECT_ROOT)
+    ids: set[str] = set()
+    for key in (arc_slug, arc_id_str):
+        if key:
+            ids.update(by_arc_id.get(key, []))
+    if arc_slug:
+        ids.update(by_tag.get(f"arc:{arc_slug}", []))
+    if not ids:
+        return []
+
     members: list[dict] = []
     patterns = [
         str(PROJECT_ROOT / ".tasks" / "active" / "T-*.md"),
         str(PROJECT_ROOT / ".tasks" / "completed" / "T-*.md"),
     ]
-    targets = {x for x in (arc_slug, arc_id_str) if x}
     for pattern in patterns:
         for p in sorted(glob.glob(pattern)):
             fm = _parse_frontmatter(Path(p))
-            if not fm:
-                continue
-            arc_id = fm.get("arc_id")
-            if arc_id and str(arc_id) in targets:
+            if fm and str(fm.get("id") or "").strip() in ids:
                 members.append(fm)
     return members
 
@@ -550,6 +574,17 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
             members = _arc_member_tasks(arc_slug, arc_id_str)
             scores, bvp_mode = _arc_rolled_up_scores(members)
             if not scores:
+                # T-3503, DELIBERATE AND BOUNDED DIVERGENCE from the CLI twin.
+                # lib/bvp.sh now emits an explicit `no-members` / `members-unscored`
+                # row here instead of dropping the arc. This surface still drops it,
+                # because rendering a scoreless arc needs a template change on a
+                # render surface (P-013) and that is a reviewed change, not a
+                # side-effect of a membership fix.
+                #
+                # The divergence is bounded to arcs with ZERO scorable members —
+                # currently none on this corpus, since the membership fix above gave
+                # every arc members. The membership half, which is what was hiding
+                # 4 of 20 arcs, is fixed identically on both surfaces.
                 continue
             rolled_cost, cost_mode = _arc_rolled_up_cost(members)
 

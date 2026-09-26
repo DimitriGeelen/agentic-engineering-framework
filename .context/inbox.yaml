@@ -5576,3 +5576,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-545
+  text: "S2 as scoped in T-3501 is DISPROVED; the surviving defect is smaller and differently located. Original S2 was 'reconcile constituent_tasks: in the arc YAMLs, because the stored counts were written from the truncated reads'. Both halves are wrong. (a) Nothing writes constituent_tasks from a scan — lib/arc.sh:743 appends one task at a time on 'fw arc tag', so the stored list is an append log, not a cached scan result. (b) constituent_tasks is ALREADY deprecated (lib/arc.sh:436, T-1851) and web/blueprints/arcs.py:424 already calls it 'a denormalised cache that misses tag-only' and UNIONS it with both live signals, so repopulating it would grow a redundant third representation — the exact disease arc membership already has. WHAT IS REAL: agents/audit/audit.sh:7586 runs the live membership scan only 'if not items', i.e. as a FALLBACK when constituent_tasks is empty, while the comment two lines above claims a union. So the arc-completion-ratio check (G-062 closure pressure) computes completed/total over the stale cache whenever it is non-empty: orchestrator-rethink 31/31 instead of 122/124, watchtower-redesign 1/1 instead of 70/70, project-shape-resilience 5/6 instead of 17/18. MEASURED CONSEQUENCE: none today — all three cross the 0.80 threshold either way, so no verdict changes. The defect is therefore latent, and its live cost is REPORTING: the operator is told '31/31 tasks completed' for an arc with 124 members, in a WARN they are expected to act on. Fix is a two-line change from fallback to union. Filed rather than built under T-3501's GO because the slice the operator approved was the reconciliation, and this is not that."
+  captured: 2026-09-26T12:55:22Z
+  context_task: T-3501
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-546
+  text: "The T-1881 arc-membership rail cannot see Python reinventions, only shell greps. Its detector pattern is 'grep[^|]*\"\\^?tags:.*arc:|grep[^|]*arc:[A-Za-z0-9_-]' (agents/audit/audit.sh:1924) — every alternative requires the literal token 'grep', so it matches shell scans and is blind to a re.search/re.compile in Python. Measured 2026-09-26 under T-3503: the check reported PASS over 461 source files in the same audit run in which TWO Python copies of arc membership (lib/bvp.sh:563 _arc_member_tasks and web/blueprints/bvp.py:421, the second documented as mirroring the first) both matched arc_id: only and omitted the legacy arc:<slug> tag half of the union — precisely the 'silent-corpus #3 in waiting' the check's own comment says it exists to prevent. The rail did not fail; its predicate cannot express this class. Consequence: arc membership is now implemented in at least five places and the guard against that only polices one language. Candidate fix: extend the pattern to Python regex sites (re.search/re.compile/re.match containing 'arc:'), or invert the check to assert that every membership site IMPORTS the canonical helper rather than trying to enumerate reinventions — an allowlist of callers is finite, the set of ways to write a regex is not."
+  captured: 2026-09-26T12:59:42Z
+  context_task: T-3503
+  tags: []
+  status: pending
+  promoted_to: null

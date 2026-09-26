@@ -560,25 +560,95 @@ def _latest_proposed_scores(fm):
     return scores
 
 
+# T-3503: membership is resolved by the CANONICAL helper, not re-derived here.
+#
+# This function matched `arc_id:` only, so an arc whose members bind via the legacy
+# `arc:<slug>` tag yielded zero members — and cmd_arcs() then `continue`d, dropping
+# the arc from the ranking entirely. Reported by cashweb-integration-agent
+# (agent-chat-arc @1247). The identical copy in web/blueprints/bvp.py carries the
+# same fix, so `fw bvp arcs` and Watchtower /bvp cannot disagree.
+#
+# Delegating rather than adding a fifth regex is the framework's own instruction:
+# audit's T-1881 check exists to stop inline membership scans ("Any NEW occurrence
+# is silent-corpus #3 in waiting") and its mitigation reads "Migrate to
+# lib/arc_membership.{sh,py}". That rail could not have caught THIS site — its
+# pattern requires the literal token `grep`, so a Python reinvention is invisible
+# to it, which is why it passed while both copies were wrong (OBS-546).
+#
+# The caches also remove an O(arcs x tasks) blow-up: membership was re-derived per
+# arc over the whole corpus, so `fw bvp arcs` did ~20 x 3,484 frontmatter parses
+# and exceeded a 300s timeout on this repo. Both indices are now built once.
+_ARC_MEMBERSHIP_INDEX = None
+_ARC_FM_INDEX = None
+
+
+def _arc_membership_index():
+    """(by_arc_id, by_tag, degraded_reason) from lib/arc_membership.py, cached.
+
+    `degraded_reason` is None on success, else a string: the canonical helper could
+    not be loaded and membership has fallen back to `arc_id:`-only. The caller MUST
+    surface it. `fw bvp` is a core verb and must not crash, but silently falling
+    back to the exact defect being fixed would be worse than crashing.
+    """
+    global _ARC_MEMBERSHIP_INDEX
+    if _ARC_MEMBERSHIP_INDEX is None:
+        try:
+            lib_dir = str(FRAMEWORK_ROOT / 'lib')
+            if lib_dir not in sys.path:
+                sys.path.insert(0, lib_dir)
+            from arc_membership import scan_tasks_by_arc_membership
+            by_id, by_tag = scan_tasks_by_arc_membership(PROJECT_ROOT)
+            _ARC_MEMBERSHIP_INDEX = (by_id, by_tag, None)
+        except Exception as exc:  # noqa: BLE001 - never break a core verb
+            _ARC_MEMBERSHIP_INDEX = ({}, {}, f'{type(exc).__name__}: {exc}')
+    return _ARC_MEMBERSHIP_INDEX
+
+
+def _task_frontmatter_index():
+    """{task_id: frontmatter} over the corpus, built once."""
+    global _ARC_FM_INDEX
+    if _ARC_FM_INDEX is None:
+        idx = {}
+        for sub in ('active', 'completed'):
+            for p in sorted(glob.glob(str(PROJECT_ROOT / '.tasks' / sub / 'T-*.md'))):
+                fm = parse_frontmatter(Path(p))
+                if fm and fm.get('id'):
+                    idx[str(fm['id']).strip()] = fm
+        _ARC_FM_INDEX = idx
+    return _ARC_FM_INDEX
+
+
+def arc_membership_degraded():
+    """Reason string when membership could not use the canonical union, else None."""
+    return _arc_membership_index()[2]
+
+
 def _arc_member_tasks(arc_slug, arc_id_str):
-    """T-1849 dual-form: tasks bind via arc_id: <slug> OR arc_id: arc-NNN."""
-    members = []
-    patterns = [
-        str(PROJECT_ROOT / '.tasks' / 'active' / 'T-*.md'),
-        str(PROJECT_ROOT / '.tasks' / 'completed' / 'T-*.md'),
-    ]
+    """Frontmatter of every task in the arc, by the canonical union.
+
+    T-1849 dual-form (`arc_id: <slug>` or `arc_id: arc-NNN`) UNION the legacy
+    `arc:<slug>` tag form (T-3503). Returns [] for an arc that genuinely has no
+    members — which the caller renders as zero, never drops.
+    """
     targets = {x for x in (arc_slug, arc_id_str) if x}
     if not targets:
-        return members
-    for pattern in patterns:
-        for p in sorted(glob.glob(pattern)):
-            fm = parse_frontmatter(Path(p))
-            if not fm:
-                continue
-            arc_id = fm.get('arc_id')
-            if arc_id and str(arc_id) in targets:
-                members.append(fm)
-    return members
+        return []
+    by_id, by_tag, degraded = _arc_membership_index()
+    fm_index = _task_frontmatter_index()
+
+    if degraded:
+        # Canonical helper unavailable: arc_id:-only, the pre-T-3503 behaviour,
+        # surfaced by the caller via arc_membership_degraded() and never silent.
+        return [fm for fm in fm_index.values()
+                if fm.get('arc_id') and str(fm['arc_id']).strip() in targets]
+
+    ids = set()
+    for key in (arc_slug, arc_id_str):
+        if key:
+            ids.update(by_id.get(key, []))
+    if arc_slug:
+        ids.update(by_tag.get(f'arc:{arc_slug}', []))
+    return [fm_index[t] for t in sorted(ids) if t in fm_index]
 
 
 def _arc_rolled_up_scores(members):
@@ -627,6 +697,21 @@ def cmd_arcs():
                 members = _arc_member_tasks(arc_slug, arc_id_str)
                 scores, source = _arc_rolled_up_scores(members)
                 if not scores:
+                    # T-3503: was `continue`, which DELETED the arc from the table.
+                    # That collapsed two different states into one invisible one —
+                    # "no members found" and "members found but none scored" — so an
+                    # arc missing from the ranking was indistinguishable from an arc
+                    # that does not exist, in the table used to choose arcs. Report
+                    # which of the two it is; never omit the row.
+                    rows.append({
+                        'slug': data.get('slug', path.stem),
+                        'arc_id': data.get('id', '-'),
+                        'name': (data.get('name') or '')[:40],
+                        'bvp_raw': None,
+                        'bvp_norm': None,
+                        'status': data.get('status', '-'),
+                        'source': 'no-members' if not members else 'members-unscored',
+                    })
                     continue
         raw, norm, _ = compute_bvp(scores, global_weights)
         rows.append({
@@ -642,11 +727,19 @@ def cmd_arcs():
         print("No arcs have `bvp_scores:` set yet (and no constituent-task rollup available).")
         print("Per D2: arcs compared across arcs use only global drivers (D1-D4 + free).")
         return 0
-    rows.sort(key=lambda r: r['bvp_norm'], reverse=True)
+    # T-3503: unscorable arcs sort LAST and render '-', rather than being dropped or
+    # claiming a score of zero. An arc we cannot score is not an arc worth nothing.
+    rows.sort(key=lambda r: (r['bvp_norm'] is None, -(r['bvp_norm'] or 0.0)))
+    degraded = arc_membership_degraded()
+    if degraded:
+        print(f"WARNING: arc membership DEGRADED to arc_id:-only — {degraded}")
+        print("         Tag-only arcs are under-counted in this table (T-3503).")
     print(f"{'ARC':<8} {'SLUG':<24} {'STATUS':<12} {'BVP':>5} {'NORM':>6}  {'SOURCE':<18} NAME")
     print('-' * 96)
     for r in rows:
-        print(f"{r['arc_id']:<8} {r['slug']:<24} {r['status']:<12} {r['bvp_raw']:>5} {r['bvp_norm']:>6.2f}  {r['source']:<18} {r['name']}")
+        raw = '-' if r['bvp_raw'] is None else f"{r['bvp_raw']:>5}"
+        norm = '     -' if r['bvp_norm'] is None else f"{r['bvp_norm']:>6.2f}"
+        print(f"{r['arc_id']:<8} {r['slug']:<24} {r['status']:<12} {raw:>5} {norm}  {r['source']:<18} {r['name']}")
     return 0
 
 
