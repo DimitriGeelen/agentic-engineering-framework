@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3511: pre-merge-commit gate refuses a branch whose governing task is captured or parked
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T00:02:24Z
+# ============================================================================
+
+task_id: T-3511
+task_name: "pre-merge-commit gate refuses a branch whose governing task is captured or parked"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T22:32:17Z
+completed: 2026-09-27T00:01:42Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-27T01:45:14+02:00
+last_commit: 2026-09-27T02:01:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refuse a merge whose governing task is parked. make the merge-guard suite hermetic against inherited git env. unset PROJECT_ROOT in the fixture — the actual cause of the gate failure
+
+# Key outcomes
+outcomes:
+  - '**Hook semantics established empirically, not from memory.** Measured on git'
+  - '**ONE implementation of parked-ness.** The predicate lives in a single shared'
+  - '`T-3510`''s 16 tests still pass unchanged after that refactor, proving the'
+  - 'A merge whose source branch''s governing task is `captured` / `horizon: later`'
+  - 'The refusal is reachable from raw `git merge` — the command the 2026-09-26'
+  - 'A merge of a branch whose governing task is live, or which carries no'
+  - 'Bypass is an **env var**, not a flag — `git` rejects unknown flags, so a flag'
+  - '**Deployed, not merely written.** `COMMIT_MSG_HOOK_VERSION` is bumped together'
+  - '**The uncovered shape is named, not implied.** Any merge shape this gate'
+  - 'Guard degrades to ALLOW when its own dependency is missing, but says so on'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'unset PROJECT_ROOT in the fixture — the actual cause of the gate failure'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/agents/git/lib/parked-merge-guard.sh'
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - '.agentic-framework/lib/task-parked.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/git/lib/hooks.sh'
+  - 'agents/git/lib/parked-merge-guard.sh'
+  - '.context/inbox.yaml'
+  - '.fabric/components/agents-git-lib-parked-merge-guard.yaml'
+  - '.fabric/components/lib-task-parked.yaml'
+  - '.fabric/components/tests-unit-t3511_parked_merge_guard.yaml'
+  - 'lib/branch-hygiene.sh'
+  - 'lib/task-parked.sh'
+  - '.tasks/active/T-3511-pre-merge-commit-gate-refuses-a-branch-w.md'
+  - 'tests/unit/t3511_parked_merge_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-27T01:45:14'
+    action: 'T-3511: refuse a merge whose governing task is parked'
+  - time: '2026-09-27T01:57:54'
+    action: 'T-3511: make the merge-guard suite hermetic against inherited git env'
+  - time: '2026-09-27T02:01:39'
+    action: 'T-3511: unset PROJECT_ROOT in the fixture — the actual cause of the gate failure'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 89 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc, governance, git-hooks]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 89
+  commits: 3
+  files_changed: 15
+  lines_added: 1547
+  lines_removed: 62
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3511-pre-merge-commit-gate-refuses-a-branch-w.md
+generated_by: context-agent-hybrid
