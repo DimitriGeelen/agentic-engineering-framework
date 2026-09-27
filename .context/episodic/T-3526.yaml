@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3526: BVP score judge agent: judges a proposed task score against criteria presence, sufficiency, and the goal hierarchy
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T21:30:35Z
+# ============================================================================
+
+task_id: T-3526
+task_name: "BVP score judge agent: judges a proposed task score against criteria presence, sufficiency, and the goal hierarchy"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-27T20:28:52Z
+completed: 2026-09-27T21:30:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-27T23:13:01+02:00
+last_commit: 2026-09-27T23:30:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  acceptance criteria and dispatch prompt for the BVP score judge. the BVP score judge agent — presence, sufficiency, goal hierarchy. register new bvp-judge components in the component fabric
+
+# Key outcomes
+outcomes:
+  - '**Imports `lib/judge_verdict.py`; defines no second verdict vocabulary.** A grep'
+  - 'Judges a **proposed** score — reads `bvp_scores_proposed:` — and never writes'
+  - 'Judges against all three of D-662''s criteria, each independently demonstrable:'
+  - '**Population: open tasks only**, via `judge_verdict.reviewable()`. A'
+  - '**UNKNOWN, never green, when it cannot judge.** No readable objective at any'
+  - '**Reachable on the path an agent actually takes.** Verified by running the real'
+  - 'Runs as an isolated worker reusing T-1951''s `--dispatch` shape; results reach the'
+  - 'Tests exist and a mutant that makes the judge always return green is killed by'
+  - '**Out of scope, and confirmed untouched by diff:** the estimator''s detectors'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/bvp_judge_cli.py'
+  - '.agentic-framework/lib/bvp_judge_dispatch_cli.py'
+  - '.agentic-framework/lib/bvp_judge.py'
+  - '.agentic-framework/lib/bvp.sh'
+  - 'docs/prompts/t3526-bvp-score-judge.md'
+  - 'docs/reports/T-3526-bvp-score-judge.md'
+  - '.fabric/components/lib-bvp_judge_cli.yaml'
+  - '.fabric/components/lib-bvp_judge_dispatch_cli.yaml'
+  - '.fabric/components/lib-bvp_judge.yaml'
+  - '.fabric/components/tests-unit-t3526_bvp_judge_entrypoint.yaml'
+  - '.fabric/components/tests-unit-test_bvp_judge_dispatch.yaml'
+  - '.fabric/components/tests-unit-test_bvp_judge.yaml'
+  - 'lib/bvp_judge_cli.py'
+  - 'lib/bvp_judge_dispatch_cli.py'
+  - 'lib/bvp_judge.py'
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-3526-bvp-score-judge-agent-judges-a-proposed-.md'
+  - 'tests/unit/t3526_bvp_judge_entrypoint.bats'
+  - 'tests/unit/test_bvp_judge_dispatch.py'
+  - 'tests/unit/test_bvp_judge.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-27T23:13:01'
+    action: 'T-3526: acceptance criteria and dispatch prompt for the BVP score judge'
+  - time: '2026-09-27T23:28:47'
+    action: 'T-3526: the BVP score judge agent — presence, sufficiency, goal hierarchy'
+  - time: '2026-09-27T23:30:03'
+    action: 'T-3526: register new bvp-judge components in the component fabric'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 61 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, judge, agents]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 61
+  commits: 3
+  files_changed: 20
+  lines_added: 2540
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3526-bvp-score-judge-agent-judges-a-proposed-.md
+generated_by: context-agent-hybrid

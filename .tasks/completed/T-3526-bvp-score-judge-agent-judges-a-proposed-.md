@@ -18,12 +18,12 @@ description: >
   pattern rather than inventing a second one. Same model as the producer is permitted
   for now; the multi-model panel is OUT of scope (deferred, not rejected).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, judge, agents]
-components: []
+components: [lib/bvp_judge_cli.py, lib/bvp_judge_dispatch_cli.py, lib/bvp_judge.py, lib/bvp.sh, tests/unit/t3526_bvp_judge_entrypoint.bats, tests/unit/test_bvp_judge_dispatch.py, tests/unit/test_bvp_judge.py]
 related_tasks: [T-3524, T-3523, T-1951, T-3408]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -52,8 +52,8 @@ related_tasks: [T-3524, T-3523, T-1951, T-3408]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T20:28:52Z
-last_update: 2026-09-27T21:09:08Z
-date_finished:
+last_update: 2026-09-27T21:30:09Z
+date_finished: 2026-09-27T21:30:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -432,3 +432,15 @@ grep -q "from lib.judge_verdict import" lib/bvp_judge.py && ! grep -qE "^(GREEN|
 ### 2026-09-27T21:09:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1dd6dc92
+- **Timestamp:** 2026-09-27T21:30:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-27T21:30:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
