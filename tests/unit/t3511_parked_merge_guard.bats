@@ -53,12 +53,35 @@ teardown() {
 # that runs against the live repo rewrote focus.yaml to T-001 within seconds and
 # blocked the parent session's every edit until it finished.
 _fw() {
-    ( cd "$REPO" && env -u CLAUDE_PROJECT_DIR -u TASKS_DIR -u CONTEXT_DIR \
-        -u _FW_PATHS_DERIVED_BY -u FW_SWITCH_FOCUS \
+    # PROJECT_ROOT is the one that actually mattered, and it took two wrong
+    # diagnoses to find. The P-011 close gate exports it, so `fw git install-hooks`
+    # resolved the hooks dir to the LIVE repo, found the version it had just
+    # installed there, printed "Hooks already installed (version 1.16)" and wrote
+    # NOTHING to the fixture — rc=0, so nothing looked wrong. Tests 1 and 2 then
+    # asserted against hooks that were never installed.
+    #
+    # Same class as the T-3499 verb-counter incident the day before: an inherited
+    # path variable silently re-points a test at the live repo, and `bin/fw` prefers
+    # the env over the cwd. Unset every path variable, not the ones you remember.
+    ( cd "$REPO" && env -u CLAUDE_PROJECT_DIR -u PROJECT_ROOT -u TASKS_DIR \
+        -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u _FW_PATHS_LOADED \
+        -u FW_SWITCH_FOCUS \
         "$FRAMEWORK_ROOT/bin/fw" "$@" )
 }
 
-_install_hooks() { _fw git install-hooks >/dev/null 2>&1; }
+_install_hooks() {
+    # Assert the install actually wrote, rather than trusting rc=0. The
+    # short-circuit path ("Hooks already installed") also exits 0, so the return
+    # code cannot distinguish "installed" from "decided not to" — T-2813's lesson,
+    # one layer out: verify from disk state, not from the writer's exit status.
+    local out
+    out=$(_fw git install-hooks 2>&1)
+    if [ ! -f "$REPO/.git/hooks/pre-merge-commit" ]; then
+        echo "FIXTURE: install-hooks wrote nothing to $REPO:" >&2
+        printf '%s\n' "$out" >&2
+        return 1
+    fi
+}
 
 _commit_all() {
     git -C "$REPO" add -A >/dev/null 2>&1
