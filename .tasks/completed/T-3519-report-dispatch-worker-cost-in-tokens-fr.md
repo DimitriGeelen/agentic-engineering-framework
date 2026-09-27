@@ -15,12 +15,12 @@ description: >
   Also: a worker with no result line yet must report UNAVAILABLE, never zero — same
   unknown-is-not-zero rule as T-3068's blast_radius.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [termlink, dispatch, observability]
-components: []
+components: [agents/termlink/termlink.sh, lib/dispatch_tokens.py, tests/unit/test_t3519_dispatch_tokens.py]
 related_tasks: [T-3517, T-3068]
 # Declared at capture per T-3512, which shipped this field hours earlier.
 write_set:
@@ -54,8 +54,8 @@ write_set:
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T14:19:54Z
-last_update: 2026-09-27T14:24:21Z
-date_finished:
+last_update: 2026-09-27T14:29:43Z
+date_finished: 2026-09-27T14:29:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -178,11 +178,16 @@ than described in a comment.
 
 timeout 300 python3 -m pytest tests/unit/test_t3519_dispatch_tokens.py -q
 python3 lib/dispatch_tokens.py --stream /dev/null | grep -q UNAVAILABLE
-bin/fw termlink result pf0927-r1 2>/dev/null | grep -q 'tokens (source: modelUsage)'
-! python3 lib/dispatch_tokens.py pf0927-r1 | grep -q '\$'
+out=$(bin/fw termlink result pf0927-r1 2>/dev/null); echo "$out" | grep -q 'tokens (source: modelUsage)'
+tok=$(python3 lib/dispatch_tokens.py pf0927-r1); ! echo "$tok" | grep -q '[$]'
 cmp -s lib/dispatch_tokens.py .agentic-framework/lib/dispatch_tokens.py
 cmp -s agents/termlink/termlink.sh .agentic-framework/agents/termlink/termlink.sh
 
+# Both real-stream lines CAPTURE first and grep the variable. Piping a command
+# straight into `grep -q` exits 141 (SIGPIPE) under pipefail because grep closes
+# the pipe as soon as it matches — L-387, already a recorded learning here, and
+# the close gate caught me writing it anyway. The gate refusing this was correct.
+#
 # The /dev/null line is the unknown-is-not-zero leg: an unreadable stream must print
 # UNAVAILABLE, never a zeroed rollup.
 #
@@ -418,3 +423,22 @@ cmp -s agents/termlink/termlink.sh .agentic-framework/agents/termlink/termlink.s
 
 ### 2026-09-27T14:24:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-86adf5ae
+- **Timestamp:** 2026-09-27T14:29:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `python3 lib/dispatch_tokens.py --stream /dev/null | grep -q UNAVAILABLE`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `tok=$(python3 lib/dispatch_tokens.py pf0927-r1); ! echo "$tok" | grep -q '[$]'`
+
+### 2026-09-27T14:29:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
