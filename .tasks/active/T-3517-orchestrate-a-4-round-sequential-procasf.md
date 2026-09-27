@@ -95,38 +95,56 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Run record with all evidence: `docs/reports/T-3517-procasfit-4-round-run-record.md`.
+
+Four rounds dispatched (`pf0927-r1..r4`), all `subtype: success`. Handbacks at
+`docs/reports/procasfit-2026-09-27-round-{1,2,3,4}.md`. Total 1,125,391 new tokens
+and 71,182,629 cache-read tokens, from each stream's `modelUsage`.
+
+**This task does not close.** Its sequencing AC failed — see below — and the
+mandate's own auditability clause is explicit that an unmet criterion leaves a task
+open rather than closed.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **Four rounds dispatched, none executed by this session.** Each round runs as a
+- [x] **Four rounds dispatched, none executed by this session.** Each round runs as a
       TermLink worker. Evidence: four dispatch records in `.context/dispatches.jsonl`
       (or the dispatch ledger the verb writes), each naming this task. A round whose
       work appears in this session's own transcript instead of a worker's voids the
       run — the operator's instruction was explicit.
-- [ ] **Strictly sequential.** Round N+1 is not dispatched until round N has
-      terminated. Verified by comparing each round's start timestamp against the
-      previous round's end, not by assuming the wait worked.
-- [ ] Each round writes a handback to a repo path
+- [ ] **NOT MET — recorded, not waived.** Strictly sequential: round N+1 is not
+      dispatched until round N has terminated, verified by comparing each round's
+      start timestamp against the previous round's end.
+      **The check found a violation.** r3 started 14:14:22Z while r2 was still
+      working until 14:15:12Z — ~50s of concurrent work on one checkout. r1→r2 and
+      r3→r4 are clean.
+      Root cause (OBS-557): a `{"type":"result"}` line is NOT a completion signal.
+      pf0927-r1 emitted ELEVEN of them, all `subtype: success`; a worker that starts
+      background tasks yields one each time it is re-invoked. My waiter fired on the
+      first. The alternative signal — process exit — is wrong the other way: run.sh
+      outlives the work because its watchdog is `(sleep $TIMEOUT && kill …)`.
+      This AC stays UNTICKED. The wording asked for the check to be run rather than
+      assumed; it was run, it failed, and the task does not close on it.
+- [x] Each round writes a handback to a repo path
       `docs/reports/procasfit-2026-09-27-round-<N>.md` (T-818 — a `/tmp` result is
       lost if the orchestrator's context ends first). Four files exist and are
       non-empty.
-- [ ] **Round N+1's prompt carries round N's handback**, by path and by the
+- [x] **Round N+1's prompt carries round N's handback**, by path and by the
       instruction to read it first. Checkable: each round's prompt text is recorded,
       and rounds 2-4 name their predecessor's file.
-- [ ] The full procAsFit mandate is passed **verbatim** to every round — not
+- [x] The full procAsFit mandate is passed **verbatim** to every round — not
       paraphrased, not summarised. The mandate's own bindings (verb gates, producer-
       not-judge, Sovereign questions surfaced, scored-before-started) are what make
       the run auditable, so a lossy copy changes the experiment.
-- [ ] **A round that fails or produces no handback is recorded as such, not retried
+- [x] **A round that fails or produces no handback is recorded as such, not retried
       silently or papered over.** State it in the run record with the worker's exit
       status. Per the mandate's own rule, two failures at the same wall stop that
       line of work.
-- [ ] A run record on this task (or a report) logs per round: dispatch id, session
+- [x] A run record on this task (or a report) logs per round: dispatch id, session
       name, start/end, exit status, handback path, and one line on what it advanced.
-- [ ] **This session's own contribution is orchestration only**, stated plainly in
+- [x] **This session's own contribution is orchestration only**, stated plainly in
       the run record, including anything the orchestrator had to do directly and why
       (TermLink unavailable, audit-trail clarity — the mandate permits it *with a
       recorded reason*, and the reason must be recorded).

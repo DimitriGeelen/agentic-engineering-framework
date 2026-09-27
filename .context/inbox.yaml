@@ -5660,3 +5660,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-557
+  text: "CORRECTION to OBS-556, and the real root cause. OBS-556 said worker pf0927-r2 'wrote its handback but did NOT commit it, though its prompt said to' and blamed per-round variance in instruction-following. THAT PREMISE IS WRONG. The worker had not finished. Measured: pf0927-r2's result.jsonl contains TWO {type:result} lines (indices 554 and 646); my waiter polled for the FIRST occurrence of the string, fired at 14:12:34Z, and I declared the round complete. The worker then continued doing real work — assistant/user turns, tool calls, vcs_state_changed — until 14:15:12Z, and itself committed 56c05d450 (a handback addendum) at 14:14:55Z, AFTER my 'harvest' commit c070da76c at 14:13:29Z. So the handback was untracked because it was still being written, not because the worker ignored its prompt. THE GENERAL FINDING: a result line is NOT a completion signal. pf0927-r1 emitted ELEVEN result lines, all subtype=success. A worker that starts background tasks yields a result each time it is re-invoked (the stream shows background_tasks_changed / task_updated / task_notification / init immediately before each continuation). 'First result line' therefore means 'first yield', not 'finished'. CONSEQUENCE ON THIS RUN: T-3517's strict-sequencing AC is VIOLATED for r2->r3 — r3 started 14:14:22Z while r2 worked until 14:15:12Z, ~50s of concurrent work on one checkout. r1->r2 and r3->r4 are clean. Collateral: round 2 committed a live reproduction of T-3297 (pre-push audit contention) during exactly that window, caused by my concurrent activity. WHAT WOULD ACTUALLY WORK: neither process-exit (run.sh lives until its watchdog sleep expires, so it always waits the full timeout) nor result-line presence. Candidates: the LAST result line plus a quiet period, the dispatch verb's own close_state file, or an explicit worker-written done sentinel. None verified yet — naming the options rather than asserting a fix."
+  captured: 2026-09-27T15:06:52Z
+  context_task: T-3517
+  tags: []
+  status: pending
+  promoted_to: null
