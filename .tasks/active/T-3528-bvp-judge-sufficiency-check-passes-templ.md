@@ -1,28 +1,16 @@
 ---
-id: T-3527
-name: "arc-scoped-driver judge agent: judges a driver against the arc goal, wrapping
-  the existing static checks"
+id: T-3528
+name: "BVP judge sufficiency check passes template placeholder ACs: reuse the G-020 detector instead of a length threshold"
 description: >
-  T-3524 GO (D-662), slice 3 of 3. The second of the two judges the operator ruled
-  for: a driver is the YARDSTICK and a task score is the MEASUREMENT, so one agent
-  holding both would judge with a yardstick it made — producer-not-judge one level
-  up. This one judges a scoped driver against the arc's goal and objective. WRAPS,
-  does not replace, lib/arc-driver-review.sh's static checks (scorable / distinct
-  / distinguishes, T-3429) — those answer structural questions correctly and stay;
-  this adds the quality judgement they cannot make. Becomes load-bearing immediately
-  because T-3523 opened fw arc set-scoped-weight to agents behind the reviewer, so
-  an agent tuning a weight is now judged rather than refused. Emits the shared green/amber/red
-  verdict with guidance. Also the natural home for OBS-559: the static reviewer currently
-  reports a TOOLING failure (scorer unimportable) as a DRIVER-QUALITY failure, which
-  misdirects any consumer without the estimator.
+  OBS-560. 'fw bvp judge T-3471' returns GREEN because lib/bvp_judge.py:140 _is_substantive() is a pure length threshold (MIN_SUBSTANTIVE_CHARS=15) and '[First criterion]' is 17 characters. T-3471's ACs are the literal template placeholders, so the judge's SUFFICIENCY criterion — 'are they good enough to justify the score claimed' — approves template text. FIX: reuse the placeholder detection the framework already has rather than adding a third variant. agents/context/check-active-task.sh:1053 (the G-020 scope gate) already detects '[First criterion]' template ACs, and T-3428 already established the stronger general rule — strip template text BEFORE matching, measured there as 'template-only prose scored 4 unstripped, 0 stripped'. Prefer extracting the existing predicate to a shared helper over copying it, since copying is how arc membership reached five readers. TEST THAT MUST EXIST: a fixture task whose ACs are the actual template placeholders must NOT come back green — none of T-3526's 34 tests used one, which is exactly why a fully green suite shipped a false green. The verdict for a placeholder-AC task should be RED with guidance naming what to write, or AMBER at the softest; never green.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
-tags: [arc, judge, agents]
+tags: [bvp, judge, false-green]
 components: []
-related_tasks: [T-3524, T-3429, T-3523]
+related_tasks: [T-3526, T-3428, T-3525]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -49,9 +37,9 @@ related_tasks: [T-3524, T-3429, T-3523]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-27T20:29:32Z
-last_update: 2026-09-27T21:33:16Z
-date_finished:
+created: 2026-09-27T21:36:54Z
+last_update: 2026-09-27T21:36:54Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-27T20:45:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-27T20:45:26Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3527: arc-scoped-driver judge agent: judges a driver against the arc goal, wrapping the existing static checks
+# T-3528: BVP judge sufficiency check passes template placeholder ACs: reuse the G-020 detector instead of a length threshold
 
 ## Context
 
@@ -102,32 +62,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **Imports `lib/judge_verdict.py`; defines no second verdict vocabulary.** Same
-      rule T-3526 followed. Two judges each carrying their own idea of what amber means
-      is the five-readers-of-one-predicate defect pre-ordered.
-- [ ] **WRAPS `lib/arc-driver-review.sh`, does not replace it.** The static checks
-      (scorable / distinct / distinguishes, T-3429) answer structural questions
-      correctly and stay. A diff shows they are untouched; this agent adds the quality
-      judgement they cannot make.
-- [ ] Judges a scoped driver against **the arc's goal and objective** — the D-662
-      yardstick, applied at arc level rather than task level. A driver that
-      distinguishes nothing the arc actually pursues is the case to catch.
-- [ ] **Reachable on the live agent path**, verified by invoking with NO override flags.
-      T-3523 opened `fw arc set-scoped-weight` to agents behind the reviewer, so this
-      is now load-bearing. A pass obtained with `--i-am-human` is not evidence — that
-      exact mistake was made on this verb hours earlier and produced a guard no path
-      could reach.
-- [ ] **Fixes OBS-559 as part of its own correctness**: the static reviewer currently
-      reports a TOOLING failure (estimator unimportable) as a DRIVER-QUALITY failure.
-      This agent must emit `UNKNOWN` with guidance in that case, never a fail — a check
-      that could not run must not answer as a check that ran and judged. Pinned by a
-      test that makes the scorer unavailable.
-- [ ] A non-green verdict carries actionable guidance naming what to change about the
-      driver — enforced by the contract, so a bare rejection is unshippable.
-- [ ] Tests exist, and a mutant that makes the judge always return green is killed.
-- [ ] **Out of scope, confirmed by diff:** the estimator's detectors (T-3410), the
-      multi-model panel (D-662 IW-5), and `fw arc close` / `fw arc abandon`, which are
-      closure decisions and remain human-gated (T-1671, earned over four incidents).
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -380,11 +316,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-09-27T20:29:32Z — task-created [task-create-agent]
+### 2026-09-27T21:36:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3527-arc-scoped-driver-judge-agent-judges-a-d.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3528-bvp-judge-sufficiency-check-passes-templ.md
 - **Context:** Initial task creation
-
-### 2026-09-27T21:33:16Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)

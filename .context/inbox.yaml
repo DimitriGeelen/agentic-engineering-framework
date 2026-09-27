@@ -5681,3 +5681,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-560
+  text: "FALSE GREEN in the brand-new BVP score judge (T-3526), found on the FIRST real task it was pointed at. 'fw bvp judge T-3471' returns GREEN with evidence '2/2 AC item(s) substantive (>= 15 chars after stripping prefix markers)'. T-3471's acceptance criteria are literally the template placeholders '- [ ] [First criterion]' and '- [ ] [Second criterion]'. '[First criterion]' is 17 characters, so a pure length threshold passes it. ROOT CAUSE: lib/bvp_judge.py:140 _is_substantive() is length-only (MIN_SUBSTANTIVE_CHARS = 15) with no template/placeholder detection. A judge whose stated second criterion is SUFFICIENCY ('are they good enough to justify the score claimed') therefore approves template text as sufficient. WHAT MAKES THIS WORSE THAN A MISSING FEATURE: the framework ALREADY has a placeholder detector — agents/context/check-active-task.sh:1053, the G-020 scope gate, whose comment reads 'Placeholder ACs ([First criterion]) indicate the task was created from template'. The judge reinvented a weaker check beside an existing stronger one, and the weaker version passes exactly the input the stronger one exists to catch. It is also the same lesson T-3428 already paid for and wrote down: scoring specs strip template text BEFORE matching, measured as 'template-only prose scored 4 unstripped, 0 stripped'. Two prior defences existed and neither was reused. NOTE ON PROCESS, which is the reason this was caught: T-3526 closed with 9/9 ACs ticked and 34 passing tests across three suites, all green. None of its tests used a real placeholder-AC task as a fixture, so the suite could not see it. It took pointing the judge at one live open task. This is the producer-not-judge principle earning its keep on the very feature built to implement it."
+  captured: 2026-09-27T21:36:42Z
+  context_task: T-3527
+  tags: []
+  status: pending
+  promoted_to: null
