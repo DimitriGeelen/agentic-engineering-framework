@@ -5653,3 +5653,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-556
+  text: "T-3517 round 2 (pf0927-r2) WROTE its handback but did NOT commit it, though its prompt said 'Write it to <path> ... Commit it.' Found untracked ('??' in git status) at harvest time, 19316 bytes, after the worker had already exited with subtype=success/is_error=false. Round 1 (pf0927-r1) DID commit its own handback (c42f31987), so this is per-round variance in instruction-following, not a missing instruction. Consequence if unnoticed: the artifact the NEXT round is told to read first sits untracked, and any process that cleans or resets the tree loses it — exactly the T-818 failure mode the repo-path rule exists to prevent, reached by a different route (right path, no commit). The orchestrator committed it as harvest with explicit attribution rather than leaving it at risk. Worth noting for the run record: a worker's 'success' verdict covers its own turn completing, NOT its compliance with the prompt's deliverable clause — those are different claims and only the second one matters to the caller. Check the artifact's git state, not just the exit status."
+  captured: 2026-09-27T14:13:29Z
+  context_task: T-3517
+  tags: []
+  status: pending
+  promoted_to: null
