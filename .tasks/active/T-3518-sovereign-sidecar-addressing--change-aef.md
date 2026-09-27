@@ -1,8 +1,21 @@
 ---
 id: T-3518
-name: "SOVEREIGN: sidecar addressing — change AEF to dm:/inbox: prefixes, or have TermLink generalise ack matching"
+name: "SOVEREIGN: sidecar addressing — change AEF to dm:/inbox: prefixes, or have
+  TermLink generalise ack matching"
 description: >
-  010-termlink answered AEF's T-3397 scoping ask on 2026-09-22 (their T-3062, DM offset 5). Two findings. (1) PREMISE DISPROVED: the T-967 persistence contract AEF's design assumed never became code — they verified no crate carries persistent/receptionist/cleanup-exemption logic, termlink clean only removes dead-pid registrations, and session.needs_restart exists nowhere. Their words: do not depend on cleanup exemption or needs_restart. T-3397 closed before this arrived, so the finding has no home on it (OBS-250 class). (2) OPEN SOVEREIGN QUESTION: they ask AEF to address on dm:<fp>:<fp> or inbox:<agent-id> rather than sidecar:<agent-id>, because the ears, receipts, auto-confirm and wake events all key on those two prefixes — and they offer the alternative explicitly: 'If you keep the addressing you have, say so and I file the --await-ack-from generalisation.' That is a cross-project interface commitment, not an implementation detail, so it is not agent-delegable. Options and directive scoring are in the body. Parked pending the operator's ruling; no reply sent to 010-termlink.
+  010-termlink answered AEF's T-3397 scoping ask on 2026-09-22 (their T-3062, DM offset
+  5). Two findings. (1) PREMISE DISPROVED: the T-967 persistence contract AEF's design
+  assumed never became code — they verified no crate carries persistent/receptionist/cleanup-exemption
+  logic, termlink clean only removes dead-pid registrations, and session.needs_restart
+  exists nowhere. Their words: do not depend on cleanup exemption or needs_restart.
+  T-3397 closed before this arrived, so the finding has no home on it (OBS-250 class).
+  (2) OPEN SOVEREIGN QUESTION: they ask AEF to address on dm:<fp>:<fp> or inbox:<agent-id>
+  rather than sidecar:<agent-id>, because the ears, receipts, auto-confirm and wake
+  events all key on those two prefixes — and they offer the alternative explicitly:
+  'If you keep the addressing you have, say so and I file the --await-ack-from generalisation.'
+  That is a cross-project interface commitment, not an implementation detail, so it
+  is not agent-delegable. Options and directive scoring are in the body. Parked pending
+  the operator's ruling; no reply sent to 010-termlink.
 
 status: captured
 workflow_type: build
@@ -38,8 +51,8 @@ related_tasks: [T-3397, T-3396, T-1135]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T12:32:35Z
-last_update: 2026-09-27T12:35:11Z
-date_finished: null
+last_update: '2026-09-27T12:45:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,13 +63,54 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-27T12:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=359,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-27T12:45:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 4
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=4 (body:cross-machine); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3518: SOVEREIGN: sidecar addressing — change AEF to dm:/inbox: prefixes, or have TermLink generalise ack matching
 
 ## Context
 
-**Status: PARKED on a Sovereign question. No reply has been sent to 010-termlink.**
+**RULED 2026-09-27 by the operator: OPTION 1 — AEF adopts `dm:<fp>:<fp>` /
+`inbox:<agent-id>`.** Recorded as **D-660**. The question below is answered; it is
+kept in full because the four options and their scoring are the record of *why*.
+
+Consequence for the peer: 010-termlink does **not** need to file the
+`--await-ack-from` generalisation they offered — AEF changes its side. They were told
+so on the DM thread (see `## Updates`).
+
+Implementation — migrating AEF's sidecar strings and any docs naming
+`sidecar:<agent-id>` — is **separate work and was not started under this ruling**;
+T-3517's procAsFit run held the active lock at the time.
+
+Remaining open here: **Finding 2** below (nothing consumes AEF's ready-for-input flag
+at a yield point — their T-3061's "WAKE = NOT-WIRED"). The ruling did not touch it.
 
 Source: DM `dm:8e6fd77ec6f74b37:d1993c2c3ec44c94` offset 5, from 010-termlink under
 their task T-3062, answering AEF's T-3397. Found unread on 2026-09-27 while checking
@@ -410,3 +464,28 @@ they answered a direct ask in detail and have had no response since 2026-09-22.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3518-sovereign-sidecar-addressing--change-aef.md
 - **Context:** Initial task creation
+
+### 2026-09-27T12:59:22Z — Sovereign question ruled, and the peer told
+
+- **Ruling:** operator chose **option 1** — AEF adopts `dm:<fp>:<fp>` /
+  `inbox:<agent-id>`, drops `sidecar:<agent-id>`. Recorded as **D-660**.
+- **Reply sent** to 010-termlink on `dm:8e6fd77ec6f74b37:d1993c2c3ec44c94`,
+  **offset 10**, ts `1790513962143`. Four points: (1) we adopt their prefixes and
+  they should NOT file the `--await-ack-from` generalisation; (2) the T-967 disproof
+  is recorded as OBS-555 and we will design onto supervision not exemption; (3)
+  "WAKE = NOT-WIRED" is ours, recorded, and explicitly NOT scheduled — stated so it
+  cannot read as in-flight; (4) their E2E ack request is stale (our harness window
+  closed ~10:54Z) and nothing of theirs is blocked on it.
+- **Gate that refused, and what was done:** the first post attempt was BLOCKED by
+  `check-rail-mcp-label` — the MCP surface is a second producer to the same rail
+  and skips the `from_project` label that `fw rail post` auto-attaches (T-2905,
+  measured T-2908). Took the gate's **option 1** (retry with
+  `metadata.from_project=999-agentic-engineering-framework`), not its option 2
+  (`fw rail allow-unlabeled-mcp`, logged Tier-2). No bypass used.
+  - Worth carrying forward: the hook's own note says it enforces the **label only**,
+    and that the MCP surface's signing identity is not re-verified per call. So the
+    attribution on this reply is label-true and key-unverified. `fw rail identity`
+    is the check if that ever matters.
+- **Also surfaced:** `fw write-set check` would have called this task's paths
+  undecidable — T-3518 declares no `write_set:` because the ruling's implementation
+  is deliberately unscheduled. Left undeclared on purpose rather than guessed.

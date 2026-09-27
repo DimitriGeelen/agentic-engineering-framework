@@ -4613,3 +4613,10 @@ decisions:
     date: 2026-09-26
     task: T-3488
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-660
+    decision: "T-3518 SOVEREIGN RULED by operator 2026-09-27: AEF adopts 010-termlink's addressing — dm:<fp>:<fp> / inbox:<agent-id> — and does NOT keep sidecar:<agent-id>. Option 1 of four, ratifying the agent advisory. Rationale as scored: option 1 wins Antifragility (converges two projects on one address space, so the next integration inherits it) and Reliability (the ears, receipts, auto-confirm and wake rails already exist and are exercised on those prefixes), which outrank the Usability cost of migrating AEF's own strings. Option 3 (support both) was explicitly refused: two live representations of one address space is the defect class removed from arc membership on 2026-09-26, where five readers produced three verdicts and the guard against divergence was narrower than the divergence. Consequence: 010-termlink does NOT need to file the --await-ack-from generalisation they offered; AEF changes its side. Implementation is separate work, not started under this ruling."
+    scope: project
+    date: 2026-09-27
+    task: T-3518
+    rationale: "Not specified"
