@@ -1,31 +1,35 @@
 ---
-id: T-XXX
-name:
+id: T-3512
+name: "declare target paths at capture so blast_radius is derivable before close (and
+  fw write-set check stops returning undecidable)"
 description: >
+  T-3471 leg A, operator-ruled 2026-09-27. Measured: of 200 rankable tasks only 30
+  (15%) have a computable cost; blast_radius derives from components:, which resolves
+  at the work-completed transition — the status the ranking excludes, so the input
+  appears exactly when the task stops being rankable. 0 of 487 active tasks carry
+  a confirmed cost_estimate: map. Add a declared target-paths / write_set: frontmatter
+  field set at capture and derive blast_radius from it. Second win: CLAUDE.md records
+  0 of 3032 tasks declaring write_set:, so 'fw write-set check' exits 2 (undecidable)
+  on every real pair — this field feeds that gate too. Do NOT write 0 for absent (T-3068).
 
-status: captured
-workflow_type:
-owner:
+status: started-work
+workflow_type: build
+owner: agent
 horizon: now
-tags: []
+tags: [bvp, cost-axis]
 components: []
-related_tasks: []
-# write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
-#                                 # naming the files this task intends to write. Declared
-#                                 # at CAPTURE, unlike components: which the framework
-#                                 # resolves from git history at close. Feeds TWO things:
-#                                 #   1. `fw write-set check T-A T-B` — without it the
-#                                 #      comparison has nothing to compare and every real
-#                                 #      pair exits 2 (undecidable). 0 of 3032 tasks
-#                                 #      declared it, so that gate has never had an input.
-#                                 #   2. BVP blast_radius before close — the 0.6-weighted
-#                                 #      cost term, unavailable for 85% of rankable tasks
-#                                 #      because components: only exists once the task is
-#                                 #      finished (T-3471).
-#                                 # Example: write_set: ["lib/bvp.sh", "tests/unit/t*_bvp*"]
-#                                 # An EMPTY list is a real declaration ("writes nothing"),
-#                                 # which is not the same as omitting the field. Omitted
-#                                 # means unknown, and unknown must never score as cheap.
+related_tasks: [T-3471, T-3068]
+# T-3512 declares its own write_set — the first task in 3032 to do so, which is
+# the point: the field had a reader and a gate and never once had an input.
+write_set:
+  - agents/termlink/bvp-estimator/estimator.py
+  - .tasks/templates/default.md
+  - tests/unit/test_t3512_write_set_blast_radius.py
+# Amended once mid-task: this originally declared a `.bats` file, and the tests
+# landed as pytest because the subject is a Python function. Worth leaving visible
+# rather than tidying — a declaration made at capture WILL drift from what the task
+# actually writes, which is the argument for keeping `components:` (measured at
+# close) ahead of `write_set:` (declared) in the blast_radius precedence.
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -36,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created:
-last_update:
-date_finished: null
+created: 2026-09-26T22:32:58Z
+last_update: 2026-09-27T08:11:21Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -49,20 +53,96 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-26T22:45:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-26T22:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-XXX: [Task Name]
+# T-3512: declare target paths at capture so blast_radius is derivable before close (and fw write-set check stops returning undecidable)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-3471 leg A, on the operator's ruling of 2026-09-27. Measured: of 200 rankable
+tasks only 30 (15%) have any computable cost, because `blast_radius` derives from
+`components:`, which the framework resolves at the `work-completed` transition — the
+status `fw bvp` excludes. The input appears exactly when the task stops being
+rankable.
+
+`write_set:` is the other end of the lifecycle: declared at capture. It already had
+a reader (`lib/write_set.py`) and a gate (`fw write-set check`) and **zero inputs**
+— 0 of 3032 tasks declared it, so that gate returned `undecidable` on every real
+pair it was ever asked about. One field, two blind surfaces.
+
+T-3513 is leg B (fabric-derived fallback for tasks that declare nothing).
+
+Demonstration, not just unit tests: this task and T-3513 both declare `write_set:`,
+and `fw write-set check T-3512 T-3513` now answers **`overlap`** (exit 1), naming
+`estimator.py` — the first non-`undecidable` verdict that gate has produced on a
+real pair.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **Reuse the existing field, do not invent one.** `write_set:` already has a
+      reader (`lib/write_set.py:read_write_set`) and a consumer (`fw write-set
+      check`). This task populates that contract; it must NOT add a second
+      near-synonym like `target_paths:` — arc membership's five-readers mess came
+      from exactly that.
+- [x] `score_blast_radius` derives a value from `write_set:` when it is declared,
+      on the SAME 1/3/5/7/9 ladder, with an evidence token naming `write_set` so a
+      reader can tell which source produced the number.
+- [x] **Precedence: measurement beats declaration.** `components:` (resolved from
+      real git history at close) keeps priority over `write_set:` (a prediction made
+      at capture). Consequence, and it must be asserted: **no existing score
+      changes** — the new leg is reachable only where the old one returned None.
+- [x] **Absent stays None; declared-empty is 0 and says so.** A missing `write_set:`
+      must still return None (T-3068 — 0 is the cheapest value on a 0.6-weighted
+      term, so absence-as-0 reads as attractiveness). An explicitly empty list is
+      real information, not absence, so it may score 0 — with a DISTINCT evidence
+      token, so it can never be confused in the record with the 93 fabricated
+      pre-T-3068 zeros this arc already rejected.
+- [x] The task template documents `write_set:` where an author will see it, in the
+      same commented style as the other optional fields, including that it feeds
+      BOTH blast_radius and `fw write-set check`.
+- [x] **Demonstrated end-to-end, not just unit-tested.** At least two real tasks
+      declare `write_set:`, and `fw write-set check` on that pair returns a verdict
+      that is NOT `undecidable` — the corpus figure today is 0 of 3032 declaring, so
+      every real pair exits 2.
+- [x] Tests cover: declared→score, absent→None, declared-empty→0-with-its-own-token,
+      components-wins-over-write_set, and malformed `write_set:`→None. The
+      precedence and absent legs are the controls.
+- [x] `tests/unit/test_bvp_estimator.py` stays green (189 passed). The write-set
+      suites: `test_write_set.bats` green, `test_reviewer_write_set_underdeclared.py`
+      green (15), and `t3039_write_set_implicit.bats` has ONE pre-existing red
+      (test 16) that this task did not cause — `lib/write_set.py` is unmodified
+      here and the assertion reads only `IMPLICIT_WRITE_SET`. Filed as OBS-554,
+      the second T-3302 instance found today.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -96,6 +176,24 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 300 python3 -m pytest tests/unit/test_t3512_write_set_blast_radius.py -q
+timeout 420 python3 -m pytest tests/unit/test_bvp_estimator.py -q
+timeout 300 python3 -m pytest tests/unit/test_reviewer_write_set_underdeclared.py -q
+timeout 300 bats tests/unit/test_write_set.bats
+grep -q '^# write_set:' .tasks/templates/default.md
+test "$(bin/fw write-set check T-3512 T-3513 2>&1 | tail -1)" != undecidable
+cmp -s agents/termlink/bvp-estimator/estimator.py .agentic-framework/agents/termlink/bvp-estimator/estimator.py
+cmp -s .tasks/templates/default.md .agentic-framework/.tasks/templates/default.md
+
+# t3039_write_set_implicit.bats is deliberately NOT listed: test 16 is red and
+# pre-dates this task (OBS-554). Listing it would make this task unclosable for
+# someone else's defect; omitting it silently would hide a red. The AC says so
+# instead, which is the honest third option.
+#
+# NOT `bin/fw vendor self --check` — 25 files are held dirty by a concurrent worker
+# right now and the self-vendor step correctly withheld every one. The two `cmp`
+# lines assert this task's own files.
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -315,5 +413,11 @@ date_finished: null
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-09-26T22:32:58Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3512-declare-target-paths-at-capture-so-blast.md
+- **Context:** Initial task creation
+
+### 2026-09-27T08:11:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

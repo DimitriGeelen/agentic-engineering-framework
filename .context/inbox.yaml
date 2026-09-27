@@ -5625,3 +5625,24 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-552
+  text: "sidecar consult to cacc73ea32b121dd/010-termlink unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-010-termlink, client_msg_id d2360e35-1b28-491e-86d3-8a82547a8669). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-27T03:08:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-553
+  text: "sidecar consult to cacc73ea32b121dd/010-termlink unanswered after 11 attempt(s) on the retry ladder (rung 5, conversation e2e-ab947312, client_msg_id c929ec8f-1f1d-4b27-86cc-6dafbac72b0b). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-27T07:18:02Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-554
+  text: "tests/unit/t3039_write_set_implicit.bats test 16 ('every implicit entry carries provenance and a known hazard class') is RED and pre-dates T-3512 — lib/write_set.py is unmodified by this task (git status clean on that path) and the test reads only write_set.IMPLICIT_WRITE_SET. Failing entry: '.context/triage-dispositions.jsonl', whose rationale is 'T-3046 — one disposition row per archived message; ...' and does not contain the literal word 'inventory' that the assertion requires ('assert \"inventory\" in why'). 1 of 11 entries fails; the other 10 pass. Someone added the 11th entry under T-3046 without the provenance phrase the T-3039 test mandates, and nothing surfaced it. SECOND instance today of the T-3302 class (nothing runs tests/unit on a schedule, so reds there are invisible) — the first was OBS-550 in t3095. Two independent pre-existing reds found in one session purely because I ran neighbouring suites by hand before committing. Fix is one of: add 'inventory' provenance to the T-3046 entry's rationale, or relax the assertion to accept an explicit task-id citation as provenance. Not fixed under T-3512: one bug one task, and it is not this task's subject."
+  captured: 2026-09-27T08:17:28Z
+  context_task: T-3512
+  tags: []
+  status: pending
+  promoted_to: null

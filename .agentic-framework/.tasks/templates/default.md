@@ -10,6 +10,22 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+# write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
+#                                 # naming the files this task intends to write. Declared
+#                                 # at CAPTURE, unlike components: which the framework
+#                                 # resolves from git history at close. Feeds TWO things:
+#                                 #   1. `fw write-set check T-A T-B` — without it the
+#                                 #      comparison has nothing to compare and every real
+#                                 #      pair exits 2 (undecidable). 0 of 3032 tasks
+#                                 #      declared it, so that gate has never had an input.
+#                                 #   2. BVP blast_radius before close — the 0.6-weighted
+#                                 #      cost term, unavailable for 85% of rankable tasks
+#                                 #      because components: only exists once the task is
+#                                 #      finished (T-3471).
+#                                 # Example: write_set: ["lib/bvp.sh", "tests/unit/t*_bvp*"]
+#                                 # An EMPTY list is a real declaration ("writes nothing"),
+#                                 # which is not the same as omitting the field. Omitted
+#                                 # means unknown, and unknown must never score as cheap.
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.

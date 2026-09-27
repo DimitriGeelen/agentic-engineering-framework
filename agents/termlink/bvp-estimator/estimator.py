@@ -2852,6 +2852,39 @@ COST_WORKFLOW_TIER = {
 }
 
 
+def _expand_write_set(patterns: list[str]) -> set[str] | None:
+    """Expand declared `write_set:` globs to real paths, or None if unresolvable.
+
+    T-3512. DELEGATES to lib/write_set.py rather than re-implementing glob
+    expansion, because `fw write-set check` must agree with the estimator about what
+    a declared pattern covers. Two readers of one field that disagree is the defect
+    class this repo spent 2026-09-26 removing from arc membership (five readers,
+    three verdicts), and the fix costs one import.
+
+    The lib is resolved from THIS FILE, not from PROJECT_ROOT. `write_set.py` is a
+    framework-owned asset, and a consumer project has no `lib/` of its own — so a
+    PROJECT_ROOT lookup would fail in every consumer and degrade this scorer to a
+    pattern count without anyone noticing. That is the exact anti-pattern the audit
+    rail from T-2648 / OBS-097 exists to catch ("No PROJECT_ROOT resolution of
+    framework-owned assets"), and I wrote it before the tests caught me: the first
+    version used PROJECT_ROOT and silently degraded inside a temp-tree fixture,
+    which is what a consumer install looks like from here.
+
+    Note the two roots are NOT interchangeable: PROJECT_ROOT below is correct, because
+    the declared globs are relative to the project whose task this is.
+    """
+    framework_root = Path(os.environ.get("FRAMEWORK_ROOT") or
+                          Path(__file__).resolve().parents[3])
+    try:
+        lib_dir = str(framework_root / "lib")
+        if lib_dir not in sys.path:
+            sys.path.insert(0, lib_dir)
+        from write_set import expand_globs  # type: ignore[import-not-found]
+    except Exception:  # noqa: BLE001 - estimator must never die on an import
+        return None
+    return expand_globs(patterns, str(PROJECT_ROOT))
+
+
 def score_blast_radius(fm: dict, body: str, tags: list[str]) -> tuple[int | None, list[str]]:
     """Heuristic: count `components:` entries → 1/3/5/7/9 scale, or None if unknown.
 
@@ -2903,12 +2936,81 @@ def score_blast_radius(fm: dict, body: str, tags: list[str]) -> tuple[int | None
     if not isinstance(components, list):
         return None, ["→? (components-malformed)"]
     n = len([c for c in components if c])
-    if n == 0: return None, ["→? (no-components-UNMEASURED-not-zero)"]
-    if n == 1: return 1, ["→1 (single-component)"]
-    if n <= 3: return 3, [f"→3 ({n}-components)"]
-    if n <= 6: return 5, [f"→5 ({n}-components-medium-blast)"]
-    if n <= 9: return 7, [f"→7 ({n}-components-large-blast)"]
-    return 9, [f"→9 ({n}-components-cross-cutting)"]
+    if n:
+        if n == 1: return 1, ["→1 (single-component)"]
+        if n <= 3: return 3, [f"→3 ({n}-components)"]
+        if n <= 6: return 5, [f"→5 ({n}-components-medium-blast)"]
+        if n <= 9: return 7, [f"→7 ({n}-components-large-blast)"]
+        return 9, [f"→9 ({n}-components-cross-cutting)"]
+
+    # ── T-3512: fall back to the DECLARED write set ──────────────────────────
+    #
+    # `components:` is resolved from real git history at the `work-completed`
+    # transition, and `fw bvp` excludes work-completed by default — so the branch
+    # above is unavailable for exactly the open tasks the ranking exists to order.
+    # Measured 2026-09-27: of 200 rankable tasks, 30 (15%) had any cost at all.
+    # `write_set:` is declared at CAPTURE, which is the other end of the lifecycle,
+    # so it covers the population components cannot.
+    #
+    # ORDERED AFTER components DELIBERATELY: components is a measurement of what the
+    # task DID touch, write_set a prediction of what it WILL. Measurement outranks
+    # declaration, and putting this leg second means no task that already scores can
+    # change its score — the new code is reachable only where the old returned None.
+    #
+    # Unit honesty: components counts component CARDS, this counts FILES matched by
+    # the declared globs. They are not the same unit. The 1/3/5/7/9 ladder is coarse
+    # enough to absorb that (its own docstring says 7-vs-8 is rarely meaningful,
+    # 1-vs-5 is), and the evidence token names which source produced the number so a
+    # reader is never guessing.
+    ws = fm.get("write_set")
+    if ws is not None:
+        if not isinstance(ws, list):
+            return None, ["→? (write_set-malformed)"]
+        patterns = [p for p in ws if isinstance(p, str) and p.strip()]
+        if not patterns:
+            # An explicitly empty list is a DECLARATION, not an absence — see
+            # lib/write_set.py: "An empty list is still declared." So 0 is the
+            # honest answer here, and T-3068's rule is untouched: it forbids
+            # scoring *missing* information as the cheapest value, not scoring a
+            # genuine zero as zero.
+            #
+            # Its own token, never reused, because this arc has already had to
+            # reject 93 tasks' worth of pre-T-3068 fabricated zeros whose evidence
+            # read "blast_radius=0 (no-signal)". A stored 0 must stay traceable to
+            # which of those two things it means.
+            return 0, ["→0 (empty-write-set-DECLARED-not-unmeasured)"]
+        try:
+            matched = _expand_write_set(patterns)
+        except Exception:  # noqa: BLE001 - never break an estimator over a glob
+            matched = None
+        if matched is None:
+            # Could not expand (no project root, unreadable tree). Fall back to the
+            # pattern count, and say that is what happened — a pattern count is a
+            # weaker signal than a file count and the record should not imply
+            # otherwise.
+            k = len(patterns)
+            src = f"{k}-write-set-patterns-unexpanded"
+        else:
+            k = len(matched)
+            src = f"{k}-write-set-paths"
+            # NO "matched nothing → unknown" branch, and its absence is deliberate.
+            # `expand_globs` keeps a non-matching pattern as-is (lib/write_set.py:
+            # "Pattern doesn't match anything yet — keep the normalized form so two
+            # tasks declaring the same unborn path overlap correctly"), so for any
+            # non-empty pattern list the result is never empty and such a branch
+            # could not fire. I wrote one first and removed it after measuring:
+            # a guard that cannot fire reads as coverage it does not provide.
+            #
+            # It would also have been wrong on the merits. A task declaring three
+            # files it is about to CREATE has a blast radius of three; "does not
+            # exist yet" is a fact about the clock, not missing information.
+        if k == 1: return 1, [f"→1 ({src})"]
+        if k <= 3: return 3, [f"→3 ({src})"]
+        if k <= 6: return 5, [f"→5 ({src})"]
+        if k <= 9: return 7, [f"→7 ({src})"]
+        return 9, [f"→9 ({src}-cross-cutting)"]
+
+    return None, ["→? (no-components-UNMEASURED-not-zero)"]
 
 
 def score_tier(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:

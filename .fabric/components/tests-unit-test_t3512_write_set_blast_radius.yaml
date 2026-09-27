@@ -1,0 +1,21 @@
+id: tests/unit/test_t3512_write_set_blast_radius.py
+name: test_t3512_write_set_blast_radius
+type: script
+subsystem: tests
+location: tests/unit/test_t3512_write_set_blast_radius.py
+tags: []
+
+purpose: "T-3512: blast_radius falls back to the DECLARED write_set before close."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-27
+created_by: unknown

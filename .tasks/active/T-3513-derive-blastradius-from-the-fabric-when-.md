@@ -1,31 +1,31 @@
 ---
-id: T-XXX
-name:
+id: T-3513
+name: "derive blast_radius from the fabric when nothing is declared — unknown never
+  zero"
 description: >
+  T-3471 leg B, operator-ruled 2026-09-27. Fallback for tasks that declare no target
+  paths (T-3512 is leg A). Parse paths named in the task body/ACs/Verification, resolve
+  to .fabric/components cards (1337 registered), count transitive depended_by. HARD
+  RULE: when no path resolves, write unknown — never 0. Measured trap on record: 93
+  not-yet-completed tasks carry a blast_radius in an OLDER cost_estimate_proposed
+  entry that the newest-wins fallback discards, and those older values are pre-T-3068
+  fabricated zeros ('blast_radius=0 (no-signal)'). Recovering them would inject 93
+  invented zeros at the cheapest end of the cost axis, i.e. the most attractive quadrant.
+  Rejected on measurement, recorded here so it is not re-proposed.
 
 status: captured
-workflow_type:
-owner:
-horizon: now
-tags: []
+workflow_type: build
+owner: agent
+horizon: next
+tags: [bvp, cost-axis, fabric]
 components: []
-related_tasks: []
-# write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
-#                                 # naming the files this task intends to write. Declared
-#                                 # at CAPTURE, unlike components: which the framework
-#                                 # resolves from git history at close. Feeds TWO things:
-#                                 #   1. `fw write-set check T-A T-B` — without it the
-#                                 #      comparison has nothing to compare and every real
-#                                 #      pair exits 2 (undecidable). 0 of 3032 tasks
-#                                 #      declared it, so that gate has never had an input.
-#                                 #   2. BVP blast_radius before close — the 0.6-weighted
-#                                 #      cost term, unavailable for 85% of rankable tasks
-#                                 #      because components: only exists once the task is
-#                                 #      finished (T-3471).
-#                                 # Example: write_set: ["lib/bvp.sh", "tests/unit/t*_bvp*"]
-#                                 # An EMPTY list is a real declaration ("writes nothing"),
-#                                 # which is not the same as omitting the field. Omitted
-#                                 # means unknown, and unknown must never score as cheap.
+related_tasks: [T-3471, T-3512, T-3068]
+# Declared at capture (T-3512). Deliberately overlaps T-3512 on estimator.py —
+# these two legs edit the same function, so `fw write-set check T-3512 T-3513`
+# SHOULD say overlap. That is the gate working, not a mistake in the declaration.
+write_set:
+  - agents/termlink/bvp-estimator/estimator.py
+  - tests/unit/t3513_fabric_blast_radius.bats
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -36,9 +36,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created:
-last_update:
-date_finished: null
+created: 2026-09-26T22:33:50Z
+last_update: '2026-09-26T22:45:28Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -49,9 +49,37 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-26T22:45:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-26T22:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-XXX: [Task Name]
+# T-3513: derive blast_radius from the fabric when nothing is declared — unknown never zero
 
 ## Context
 
@@ -315,5 +343,7 @@ date_finished: null
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-09-26T22:33:50Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3513-derive-blastradius-from-the-fabric-when-.md
+- **Context:** Initial task creation
