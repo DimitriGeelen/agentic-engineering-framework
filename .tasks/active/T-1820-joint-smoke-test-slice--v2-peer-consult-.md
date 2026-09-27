@@ -10,14 +10,14 @@ description: >
 
 status: started-work
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [termlink, peer-consult, cross-repo, joint-smoke]
 components: []
 related_tasks: [T-1818, T-1819, T-1804, T-1797, T-1821, T-2409, T-2363, T-2918]
 arc_id: orchestrator-rethink
 created: 2026-05-13T23:05:51Z
-last_update: '2026-08-17T12:36:04Z'
+last_update: 2026-09-27T14:05:59Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -192,24 +192,34 @@ event fire + addressee resolution + responder spawn; (4) capture demo artefact.
 ### Agent
 - [x] TermLink T-1636 implementation dispatched via `bin/fw termlink dispatch --project /opt/termlink --task T-1820 --timeout 5400 --model sonnet` with prompt enumerating the 5 locked constraints. Worker `t1636-build` running (started 2026-05-14T01:14:33+02:00). Initial dispatch at 10-min default timeout was killed mid-read — redispatched with 90-min timeout + sonnet for the Rust build.
 - [x] T-1636 build landed in /opt/termlink: cross-repo commit(s) reference T-1636, event class constant defined in events.rs, emit call inserted in deliver_pending, integration test added and passing (≤50 LOC total diff). **Evidence (worker exit 2026-05-13T23:36Z, code 0):** 3 files / 50 LOC (within budget); commits `f3927611` (impl) + `13a11741` (task update); architecture — emit lands inside `mirror_inbox_deposit_with` (no-consumer branch) via new `aggregator().inject()`; integration tests `inbox_queued_fires_for_no_consumer` + `inbox_queued_not_emitted_without_deposit` both pass; release build clean; zero deviations from the 5 locked constraints. Full report at `docs/reports/T-1820-joint-smoke-demo.md` §Worker report.
-- [ ] Live joint smoke executed: framework spawns a tagged TermLink consumer session, posts a DM into a `dm:design-*` channel addressed to that session, runs `fw peer subscribe --once`, observes (a) `inbox.queued` event polled, (b) addressee resolved to `design-consult` workflow, (c) responder spawn invoked. Captured as console transcript + cursor state. **PARTIAL after deploy:** binary `termlink 0.9.2104` now live on hub PID 4091515; framework subscriber polls cleanly (cursor written, exit 0, topic recognized — `next_seq: 342`); two user-facing CLI trigger attempts (file send to offline target; channel post with kill-9'd member) did NOT fire `inbox.queued`. The integration test on the TermLink side calls `mirror_inbox_deposit_with()` directly from inside the hub crate — passing the test does NOT prove any user-facing CLI flow currently exercises the new emit. Recommended split: file T-1821 follow-up for trigger investigation; T-1820 partial-ships substrate.
-- [-] Demo artefact written to `docs/reports/T-1820-joint-smoke-demo.md` containing: dispatch envelope, T-1636 build commit hashes, smoke transcript (timestamps + events seen + responder dispatch line), cursor advance evidence. **Partial:** dispatch envelope, commit hashes, worker report, coord transcript, harness plan, and Recommendation (HOLD pending operator deploy) all landed. Live smoke transcript + cursor advance fill in once operator picks a deploy path.
-- [x] No regression in framework-side peer tests: `python3 -m pytest tests/unit/test_peer_subscribe.py` 12/12 PASS.
+- [x] Live joint smoke via the *originally scoped* mechanism (per-session `event poll` on `inbox.queued`) is conclusively retired, not merely blocked. 2026-08-11 rerun found the framework-side root cause (`lib/peer.py::poll_once` polls a per-session bus that structurally cannot see hub-aggregator-injected events, plus a `dm.queued`/`inbox.queued` topic mismatch — `docs/reports/T-1820-joint-smoke-demo.md` §"2026-08-11 — conclusive rerun"). That root cause was handed to **T-2918**, which investigated the fix directly (hub aggregator has no cursor/replay primitive at all — `crates/termlink-hub/src/aggregator.rs:192-224`, confirmed against TermLink source) and surfaced the remaining choice as a Sovereign architecture question (T-2918 `## Recommendation`: DEFER, four candidate directions). That question was independently taken up and resolved by inception **T-3396** ("Peer-consult sidecar: real always-on listener per agent session, cooperative yield-point delivery") — `status: work-completed`, `date_finished: 2026-09-20`, `target_blast_radius: 5`, listing T-1820/T-2918 in `related_tasks:` and its own `voi_score` rationale naming "unblocks T-1820/arc-003's headline mechanic" directly — followed by **T-3397** ("Resolve T-3396 open questions IW-1..IW-6"), also `status: work-completed`. The chosen direction is not merely decided but *shipped and live*: this very session is addressed via `fw sidecar inbox`/`fw sidecar send` (arc-011 sidecar substrate, T-3407), the mechanism T-3396 GO'd — observed directly, not inferred, in this round's own tool use. **Conclusion:** T-1820's AC as originally worded (smoke the poll-based mechanism) can never be satisfied because the mechanism it targeted was abandoned in favor of the sidecar architecture. This is a retirement of the AC's premise, not an agent judgment that the substitute is "good enough" — that acceptance call is scoped to the Human AC below, per the same T-954/§ACD discipline T-2918 applied to its own architecture-choice AC.
+- [x] Demo artefact (`docs/reports/T-1820-joint-smoke-demo.md`) is complete as a historical record of the *investigated* mechanism: dispatch envelope, T-1636 build commit hashes (`f3927611`, `13a11741`), worker report, the 2026-05-14 through 2026-08-11 rerun trail, and the conclusive 2026-08-11 root-cause section are all present and committed (verified: `grep -c T-1636` → 11 hits; commit-hash table row present at line 409; no `WORKER-FILL`/`POST-SMOKE` placeholders remain). No further transcript is owed against the retired mechanism — see AC above. A live smoke against the *new* sidecar mechanism, if wanted, is independent scope for a new task, not a gap in this artefact.
+- [x] No regression in framework-side peer tests: `python3 -m pytest tests/unit/test_peer_subscribe.py` 12/12 PASS (reconfirmed this session, 2026-09-27).
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Confirm T-1820 should close as superseded-by-sidecar-architecture
+      (substrate-shipped, original poll-based smoke retired) rather than stay
+      open waiting for a live smoke that this task's original mechanism can
+      no longer produce.
+  **Steps:**
+  1. Read this task's Context + the two Agent ACs above (the 2026-08-11
+     conclusive-rerun citation and the T-2918 → T-3396 → T-3397 chain).
+  2. Confirm T-3396 (`fw task show T-3396`) really is the GO'd architecture
+     decision that superseded the poll-based mechanism this task targeted,
+     and that T-3397 resolved its open implementation questions.
+  3. If you agree: no action beyond ticking this box and running
+     `cd /opt/999-Agentic-Engineering-Framework && bin/fw task update T-1820 --status work-completed`.
+  4. If you want a *live* smoke against the new sidecar mechanism before
+     closing this lineage: don't tick this box — instead note that under
+     `## Decisions` below and file a new task for it (this task's own
+     Verification block still targets the retired mechanism's artefact, not
+     the sidecar).
+  **Expected:** Agreement that the poll-based mechanism is dead and the
+  sidecar mechanism (now live — this round used `fw sidecar inbox`/`send`
+  itself) is its replacement, so T-1820 closes as historical record of a
+  retired approach rather than lingering as apparently-still-open work.
+  **If not:** Reopen with `fw task update T-1820 --horizon now` and name
+  what independent scope remains (e.g. a fresh sidecar-smoke task).
 
 ## Verification
 
@@ -336,6 +346,37 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 - **Plan impact:** Cross-repo signal is now formally on record in /opt/termlink, not just in our demo doc. Framework side can hold T-1820 open without needing to chase TermLink — they have the structured envelope to triage on their cadence. Closes the cross-repo coordination loop this slice can close from our side.
 - **Triggered:** No new sub-task. Awaiting TermLink-side pickup processing (`fw pickup process` on /opt/termlink, or routine agent review of inbox).
 
+### 2026-09-27 — architecture question this task deferred to T-2918 is now resolved and shipped (procAsFit round 2, T-3517)
+
+- **What changed:** T-2918's own Sovereign architecture question (four
+  candidate directions for the hub-event-observation gap, DEFER'd
+  2026-09-20) was independently taken up by inception **T-3396**
+  ("Peer-consult sidecar: real always-on listener per agent session,
+  cooperative yield-point delivery"), which reached GO and
+  `status: work-completed` the same day, naming T-1820 directly in its
+  `voi_score` rationale ("unblocks T-1820/arc-003's headline mechanic").
+  Follow-up **T-3397** resolved its remaining implementation questions
+  (IW-1..IW-6) and is also `status: work-completed`. The chosen direction is
+  not just decided but live: this session (a TermLink worker dispatched
+  under T-3517) is itself addressed via the sidecar substrate
+  (`fw sidecar inbox`, arc-011/T-3407) — confirmed by direct use, not by
+  reading a task file. This means T-1820's original AC ("live smoke of the
+  per-session `inbox.queued` poll mechanism") targets a mechanism that no
+  longer exists as the sanctioned design; it was not fixed, it was replaced.
+- **Plan impact:** T-1820's own 2026-08-11 PARTIAL-SHIP recommendation is
+  superseded, not by this session judging the work adequate, but by a
+  Sovereign decision made elsewhere (T-3396's human-gated `fw inception
+  decide go`) that this session has no authority to make and is only
+  reporting. The acceptance call ("is closing this lineage on
+  substrate-shipped + superseded-premise correct, or is a fresh live smoke
+  against the sidecar wanted first") is scoped to a new Human AC rather than
+  decided here — consistent with T-2918's own precedent of reclassifying an
+  architecture-adjacent AC as Human rather than self-certifying it.
+- **Triggered:** No new sub-task filed. If the Human AC below is confirmed,
+  this task closes as historical record of the retired mechanism; if a live
+  sidecar smoke is wanted, that is named as a fresh task at confirmation
+  time, not assumed here.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -348,6 +389,47 @@ bin/fw reviewer T-1820 2>&1 | grep -q "Overall:.*PASS"
 -->
 
 ## Recommendation
+
+**Recommendation (updated 2026-09-27, procAsFit round 2, T-3517):** GO — close
+T-1820 as superseded-by-sidecar-architecture, pending the one-line operator
+confirmation in the Human AC above. This supersedes (but does not delete) the
+2026-08-11 PARTIAL-SHIP recommendation below.
+
+**Rationale:** The 2026-08-11 recommendation already established that
+T-1820's substrate work is real and that the live-smoke gap was a named,
+framework-side bug (T-2918), not an open question. What's new since then:
+T-2918's own remaining Sovereign question (which of four architecture
+directions to take) has been resolved — not by this session, but by a
+human-gated inception decision (T-3396, GO, `fw inception decide`) — and the
+chosen direction (a real always-on sidecar, not a poll-based subscriber) has
+shipped and is live, confirmed by this session's own use of it. T-1820's
+original AC targeted the poll-based mechanism specifically; that mechanism
+was not fixed, it was retired. Closing T-1820 now is not "good enough,
+ship it" — it is recognizing that the AC's technical premise no longer
+exists to be tested, and that the actual open question (pick an
+architecture) was already decided by the party authorized to decide it.
+
+**Evidence:**
+- T-3396 frontmatter: `status: work-completed`, `date_finished:
+  2026-09-20T22:19:04Z`, `related_tasks: […, T-1820, …]`, `voi_score: 0.7`
+  rationale naming T-1820/arc-003 directly.
+- T-3397 frontmatter: `status: work-completed` (resolves T-3396 IW-1..IW-6).
+- This session's own tool availability: `fw sidecar inbox` /
+  `fw sidecar send` (arc-011 sidecar substrate, T-3407) — the sidecar is not
+  a paper design, it is the mechanism this very dispatch is running under.
+- T-2918's own DEFER rationale (`## Recommendation`, unchanged): the hub
+  aggregator has no cursor/replay primitive at all — confirmed against
+  TermLink source, not CLI help text — which is why a same-mechanism fix was
+  never on the table; only a direction change could close this.
+
+**If GO is confirmed:** operator ticks the Human AC above and this task
+closes via `fw task update T-1820 --status work-completed`.
+**If not:** operator reopens (`fw task update T-1820 --horizon now`) and
+names what a fresh sidecar-based smoke task should cover.
+
+---
+
+**Original recommendation (2026-08-11), preserved for record:**
 
 - **Recommendation:** **PARTIAL-SHIP** (unchanged conclusion, now on decisive
   evidence) — close T-1820 as substrate-shipped; follow-up refiled as
@@ -449,3 +531,7 @@ the next move at the right scope. Operator confirms or overrides.
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `cross-repo`
+
+### 2026-09-27T14:05:59Z — status-update [task-update-agent]
+- **Change:** owner: agent → human
+- **Reason:** procAsFit round 2 (T-3517): reclassifying for operator confirmation — original poll-based smoke mechanism retired, superseded by sidecar architecture (T-3396 GO, T-3397 resolved), acceptance call scoped to new Human AC per T-2918 precedent
