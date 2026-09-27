@@ -23,16 +23,16 @@ description: >
   to maintain and shares the rubric. Scope is >3 new files and a new subsystem, so
   G-020 requires inception.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, arc, agents, producer-not-judge]
 components: []
 related_tasks: [T-3523, T-3429, T-1951, T-3410]
 created: 2026-09-27T19:20:38Z
-last_update: '2026-09-27T19:30:11Z'
-date_finished:
+last_update: 2026-09-27T19:53:05Z
+date_finished: 2026-09-27T19:53:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -231,15 +231,15 @@ multi-provider judge panel from IW-5, and any change to the estimator's detector
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -288,7 +288,11 @@ multi-provider judge panel from IW-5, and any change to the estimator's detector
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: GO on the exploration, with a stated leaning: TWO agents, because a single agent that both defines the yardstick (arc-scoped drivers) and applies it (task scores) reproduces producer-not-judge one level up, which is precisely the defect the operator is trying to close. Evidence this is tractable rather than speculative: three of the four parties already exist — the estimator proposes (agents/termlink/bvp-estimator/), the static driver reviewer checks driver quality (lib/arc-driver-review.sh, T-3429), and T-1951 already runs a reviewer as an isolated TermLink worker with results on the fw bus. What is missing is the judging half and the handoff. Not a build task: >3 new files and a new subsystem, so G-020 requires scoping first, and the one-agent-or-two question changes the file layout materially.
+
+**Date**: 2026-09-27T19:53:04Z
 
 ## Updates
 
@@ -297,3 +301,42 @@ multi-provider judge panel from IW-5, and any change to the estimator's detector
 
 ### 2026-09-27T19:22:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-27T19:53:04Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** GO on the exploration, with a stated leaning: TWO agents, because a single agent that both defines the yardstick (arc-scoped drivers) and applies it (task scores) reproduces producer-not-judge one level up, which is precisely the defect the operator is trying to close. Evidence this is tractable rather than speculative: three of the four parties already exist — the estimator proposes (agents/termlink/bvp-estimator/), the static driver reviewer checks driver quality (lib/arc-driver-review.sh, T-3429), and T-1951 already runs a reviewer as an isolated TermLink worker with results on the fw bus. What is missing is the judging half and the handoff. Not a build task: >3 new files and a new subsystem, so G-020 requires scoping first, and the one-agent-or-two question changes the file layout materially.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1386f9ef
+- **Timestamp:** 2026-09-27T19:53:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-9f346a6a
+- **Timestamp:** 2026-09-27T19:53:07Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-3429` | task | ✓ pass |
+| `T-1951` | task | ✓ pass |
+
+### 2026-09-27T19:53:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

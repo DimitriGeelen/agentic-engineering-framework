@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3524: separate the judge from the producer: a BVP scoring reviewer agent and an arc-driver reviewer agent
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T19:53:19Z
+# ============================================================================
+
+task_id: T-3524
+task_name: "separate the judge from the producer: a BVP scoring reviewer agent and an arc-driver reviewer agent"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-27T19:20:38Z
+completed: 2026-09-27T19:53:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-27T21:23:47+02:00
+last_commit: 2026-09-27T21:49:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — separate the judge from the producer with reviewer agent(s) for BVP scores and arc drivers. Three of four parties already exist (estimator proposes, static driver reviewer checks driver quality, T-1951 runs a reviewer as an isolated worker); the missing one is a JUDGE. Leaning two agents: a driver is the yardstick, a score is the measurement, and one agent holding both judges with a yardstick it made. Five open questions filed, all deferred to operator scoping. Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>. all five open questions answered by the operator (D-662); five build slices scoped
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/decisions.yaml'
+  - '.tasks/active/T-3524-separate-the-judge-from-the-producer-a-b.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-27T21:23:47'
+    action: 'T-3524: inception — separate the judge from the producer with reviewer agent(s) for BVP scores and arc drivers. Three of four parties already exist (estimator proposes, static driver reviewer checks driver quality, T-1951 runs a reviewer as an isolated worker); the missing one is a JUDGE. Leaning two agents: a driver is the yardstick, a score is the measurement, and one agent holding both judges with a yardstick it made. Five open questions filed, all deferred to operator scoping. Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>'
+  - time: '2026-09-27T21:49:07'
+    action: 'T-3524: all five open questions answered by the operator (D-662); five build slices scoped'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 32 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, arc, agents, producer-not-judge]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 32
+  commits: 2
+  files_changed: 2
+  lines_added: 337
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3524-separate-the-judge-from-the-producer-a-b.md
+generated_by: context-agent-hybrid
