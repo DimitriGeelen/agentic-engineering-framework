@@ -293,5 +293,26 @@ status -sb` (commit `b61e32282`, push outcome below), `fw sidecar inbox`
 each time except the one non-actionable D-660 DM at session start, which
 named itself as needing no reply).
 
-**Push outcome:** `git push origin bleeding-edge` for commit `b61e32282`
-[FILL AT PUSH COMPLETION — see monitor `bfwpacp1l`].
+**Push outcome (addendum, written after the fact once the real state was
+known — the line above shipped with a live placeholder because the
+orchestrating session harvested this file from disk before this addendum
+was written; left the original line intact above rather than rewriting
+history):** `git push origin bleeding-edge` for commit `b61e32282` did not
+resolve quickly. While it was in flight, the orchestrating session (T-3517)
+read this handback off disk, committed it itself (`c070da76c`, "harvest
+round 2's handback"), and **also** started its own `git push origin
+bleeding-edge`. `ps aux` at that point showed **two concurrent `git push
+origin bleeding-edge` processes** (PID 507606, started ~16:06; PID 672309,
+started ~16:13), both with 0:00 CPU time after 7+ minutes — blocked, not
+crashed. This is a live, dated reproduction of the exact hazard T-3297
+already names (pre-push audit gate lock contention: "5 commits could not be
+pushed for 15+ min... the ONLY documented escape is Tier 0 `git push
+--no-verify`"). I did not kill either process (round 1's own lesson: a slow
+gate is evidence to investigate, not a hang to route around) and did not
+reach for `--no-verify`. Both commits (`b61e32282`, `c070da76c`) are safe
+locally regardless of push timing (P-009). Concrete evidence worth adding
+to T-3297's own record: this is now a **directly observed concurrent-push
+occurrence** of the contention it describes, not just a single-session one
+— two sessions sharing one checkout (this worker + its own orchestrator)
+each independently hit the same lock at the same time, which T-3297's
+existing text doesn't explicitly name as a possible trigger shape.
