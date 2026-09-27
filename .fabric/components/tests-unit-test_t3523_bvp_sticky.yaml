@@ -1,0 +1,21 @@
+id: tests/unit/test_t3523_bvp_sticky.py
+name: test_t3523_bvp_sticky
+type: script
+subsystem: tests
+location: tests/unit/test_t3523_bvp_sticky.py
+tags: []
+
+purpose: "T-3523: an operator's adjustment survives the next scoring run."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-27
+created_by: unknown

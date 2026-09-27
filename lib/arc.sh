@@ -1753,8 +1753,98 @@ else:
         return 1
     fi
 
-    if ! _arc_approve_driver_acd_gate "set-scoped-weight" "$i_am_human" "$from_watchtower"; then
-        return 1
+    # ── T-3523 (D-661 leg 2, operator ruling 2026-09-27): the reviewer, not the
+    # operator, gates a weight change — mirroring what T-3429/D-586 did for
+    # `approve-driver`. Asked whether "agent-approved drivers" reaches the weight or
+    # stops at adding one, the operator ruled it reaches the weight: a driver whose
+    # weight nobody can tune is inert.
+    #
+    # The §ACD refusal that stood here becomes the OVERRIDE path, exactly as in
+    # approve-driver: --i-am-human / --from-watchtower still change the weight
+    # directly, and an unflagged agent call runs the static reviewer instead of being
+    # refused. Reviewed BY NAME against the existing scoped_drivers[] entry — the
+    # reviewer already handles an already-approved driver (it skips self-collision in
+    # check_b and falls back to scoped_drivers), which is how the unscorable drivers
+    # the T-3428 audit names get a verdict at all.
+    #
+    # WHAT THIS WAIVES, recorded because it is not small: a scoped-driver weight is a
+    # BVP calibration parameter, and an agent tuning it is an agent adjusting the
+    # instrument that ranks its own work. CLAUDE.md's producer-not-judge binding says
+    # not to, and 832-Workflow-designer held the same line with us on their own RCA.
+    # The operator has the authority to waive it and did. The counterweights are the
+    # two immediately below and after: the reviewer must pass, the sticky guard stops
+    # an agent overwriting the operator's own weights, and every change already lands
+    # in .context/audits/arc-scoped-weight-changes.jsonl.
+    local weight_set_by="human"
+    if [ "$i_am_human" = "false" ] && [ "$from_watchtower" = "false" ]; then
+        local _wrev_json="" _wrev_rc=0
+        # `var=$(cmd)` is a simple command whose status IS the substitution's, so
+        # under `set -e` a failing reviewer aborts the function before the branch
+        # below can report it — the refusal became a silent exit 1. Caught by running
+        # the agent path and getting no output at all.
+        _wrev_json=$(_arc_driver_review_run "$f" "$PROJECT_ROOT" "$name" "false" "json") || _wrev_rc=$?
+        if [ "$_wrev_rc" -ne 0 ]; then
+            echo "Error: scoped driver '$name' did not pass review — weight unchanged." >&2
+            echo "  A weight change is a calibration change; the reviewer gates it (D-586 pattern)." >&2
+            echo "  Preview the verdict: fw arc review-driver $id \"$name\" --dry-run" >&2
+            echo "  Override as yourself: --i-am-human / --from-watchtower" >&2
+            return 1
+        fi
+        weight_set_by="reviewer"
+    fi
+
+    # ── T-3523 (D-661 leg 3): operator-adjusted weights are STICKY ────────────
+    # Operator ruling 2026-09-27, on scope: "it also covers ArcScope drivers,
+    # absolutely." Same two routes as the task-score guard — provenance (the weights
+    # were last set through the operator's own door) and digest (they no longer match
+    # the stamp written with them, i.e. someone edited the arc YAML directly).
+    # An agent yields to either; a human/watchtower caller is the operator speaking.
+    #
+    # NOW REACHABLE. When this guard was first written the §ACD gate above refused
+    # agents outright, so it could not execute on any path — the L-573 class, caught
+    # by testing the agent path rather than the --i-am-human one. That gap in D-661
+    # leg 2 was filed as OBS-558 and the operator ruled to close it, so the reviewer
+    # branch above now admits agents and this is the guard that stops a
+    # newly-admitted agent from overwriting the operator's own weights.
+    local _sticky_actor="agent"
+    [ "$i_am_human" = true ] && _sticky_actor="human"
+    [ "$from_watchtower" = true ] && _sticky_actor="watchtower"
+    if [ "$_sticky_actor" = "agent" ]; then
+        local _sticky_out _sticky_rc
+        _sticky_out=$(python3 - "$f" "${FRAMEWORK_ROOT:-.}" <<'PY'
+import sys, yaml
+sys.path.insert(0, sys.argv[2] + '/lib')
+try:
+    import bvp_sticky as st
+except Exception as exc:  # noqa: BLE001
+    # Fail CLOSED, as the task-score guard does: declining costs one re-run,
+    # overwriting costs an operator judgement nobody can see was discarded.
+    print(f"REFUSING: sticky-check unavailable ({type(exc).__name__}: {exc})")
+    sys.exit(4)
+d = yaml.safe_load(open(sys.argv[1])) or {}
+state = st.sticky_state(
+    d.get('scoped_drivers'),
+    confirmed_via=d.get('scoped_drivers_via'),
+    stamped_digest=(d.get('scoped_drivers_stamp') or {}).get('digest'),
+)
+if state['sticky']:
+    print(st.format_skip(str(d.get('id', 'arc')), 'scoped_drivers', state))
+    sys.exit(3)
+sys.exit(0)
+PY
+)
+        _sticky_rc=$?
+        if [ "$_sticky_rc" = "3" ]; then
+            echo "$_sticky_out"
+            echo "  Weights kept unchanged."
+            echo "  To change them deliberately, run as yourself: fw arc set-scoped-weight $id \"$name\" --weight $weight --rationale \"...\" --i-am-human"
+            echo "bvp sticky: 0 value(s) written, 1 skipped as operator-adjusted"
+            return 0
+        elif [ "$_sticky_rc" = "4" ]; then
+            echo "$_sticky_out" >&2
+            echo "  Not changing scoped-driver weights while the operator-adjustment guard cannot run." >&2
+            return 1
+        fi
     fi
 
     # Capture old weight for audit log, then mutate via ruamel (preserve comments).
@@ -1801,6 +1891,30 @@ if HAS_RUAMEL:
 else:
     with open(tmp_fn, 'w') as fh: yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
 os.replace(tmp_fn, fn)
+PY
+
+    # T-3523: stamp what we just wrote, so the NEXT caller can tell whether these
+    # weights are still the ones this verb put there, and record which door the
+    # change came through. A human/watchtower change is stamped too — the provenance
+    # route already protects it, and a uniform record is easier to reason about.
+    python3 - "$f" "${FRAMEWORK_ROOT:-.}" "$_sticky_actor" <<'PY' || true
+import sys, yaml
+sys.path.insert(0, sys.argv[2] + '/lib')
+try:
+    import bvp_sticky as st
+    from ruamel.yaml import YAML
+    y = YAML(); y.preserve_quotes = True; y.indent(mapping=2, sequence=4, offset=2)
+    with open(sys.argv[1]) as fh:
+        data = y.load(fh)
+    data['scoped_drivers_stamp'] = st.stamp(
+        [dict(sd) for sd in (data.get('scoped_drivers') or [])])
+    data['scoped_drivers_via'] = sys.argv[3]
+    with open(sys.argv[1], 'w') as fh:
+        y.dump(data, fh)
+except Exception:
+    # An unstamped write is UNPROTECTED, not wrong — the next caller reads a
+    # missing stamp as "overwritable", which is the pre-T-3523 behaviour.
+    pass
 PY
 
     # Audit row to dedicated weight-change history.

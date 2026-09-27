@@ -1094,11 +1094,63 @@ def cmd_confirm(args):
     else:
         confirmed_via = 'human'
 
+    # ── T-3523 (D-661 leg 3): an operator's adjustment is STICKY ──────────────
+    #
+    # Operator ruling 2026-09-27: legs 1 and 2 waived human approval for BVP scoring
+    # and arc drivers, so an agent can now score the value of its own work. This is
+    # the counterweight that keeps that waiver reversible: "when we get new scoring
+    # that it doesn't overwrite the adjusted values", and "means skip and report".
+    #
+    # Two routes, neither needing the operator to tick anything: provenance
+    # (confirmed_via is one of the operator's own doors) and digest (the stored
+    # values no longer match the stamp written with them — a hand-edit). An AGENT
+    # confirm yields to either; a human/watchtower confirm is the operator speaking
+    # and always proceeds.
+    if confirmed_via == 'agent':
+        try:
+            _lib = str(FRAMEWORK_ROOT / 'lib')
+            if _lib not in sys.path:
+                sys.path.insert(0, _lib)
+            import bvp_sticky as _sticky
+            _state = _sticky.sticky_state(
+                fm.get('bvp_scores'),
+                confirmed_via=fm.get('confirmed_via'),
+                stamped_digest=(fm.get('bvp_scores_stamp') or {}).get('digest'),
+            )
+        except Exception as _exc:  # noqa: BLE001 — a missing guard must not corrupt
+            # Fail CLOSED here, unlike most degradations in this codebase: if the
+            # protection cannot run we decline to overwrite rather than overwrite
+            # unprotected. The cost of a false skip is one operator re-run; the cost
+            # of a false overwrite is a silently discarded operator judgement.
+            print(f"REFUSING: sticky-check unavailable ({type(_exc).__name__}: {_exc})",
+                  file=sys.stderr)
+            print("  Not overwriting bvp_scores while the operator-adjustment guard "
+                  "cannot run. Re-run once lib/bvp_sticky.py is importable.", file=sys.stderr)
+            return 1
+        if _state['sticky']:
+            print(_sticky.format_skip(task_id, 'bvp_scores', _state))
+            print(f"  Existing scores kept: {fm.get('bvp_scores')}")
+            print(f"  To override deliberately, confirm as yourself: "
+                  f"fw bvp confirm {task_id} --i-am-human")
+            print(_sticky.format_summary(skipped=1, written=0))
+            return 0
+
     fm['bvp_scores'] = confirmed
     fm['bvp_scores_proposed'] = []  # M3 — cleared; estimator may re-populate next sweep.
     fm['confirmed_by'] = os.environ.get('USER', 'unknown')
     fm['confirmed_at'] = _utc_now()
     fm['confirmed_via'] = confirmed_via
+    # Stamp what we wrote, so the NEXT write can tell whether these values are still
+    # the ones an agent put there. A human/watchtower confirm is stamped too — the
+    # provenance route already protects it, and a stamp keeps the record uniform.
+    try:
+        _lib = str(FRAMEWORK_ROOT / 'lib')
+        if _lib not in sys.path:
+            sys.path.insert(0, _lib)
+        import bvp_sticky as _sticky_w
+        fm['bvp_scores_stamp'] = _sticky_w.stamp(confirmed)
+    except Exception:  # noqa: BLE001 — an unstamped write is unprotected, not wrong
+        pass
 
     # Re-serialise frontmatter + write back.
     if _HAS_RUAMEL:

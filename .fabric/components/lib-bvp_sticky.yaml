@@ -1,0 +1,21 @@
+id: lib/bvp_sticky.py
+name: bvp_sticky
+type: script
+subsystem: framework-core
+location: lib/bvp_sticky.py
+tags: []
+
+purpose: "bvp_sticky.py — an operator's adjustment survives the next scoring run (T-3523)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-27
+created_by: unknown

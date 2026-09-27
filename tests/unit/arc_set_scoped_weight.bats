@@ -45,7 +45,11 @@ YAML
 # --- Happy path ---
 
 @test "T-1977: arc_set_scoped_weight mutates the named driver weight and exits 0" {
-    run arc_set_scoped_weight "sample-arc" "alpha-driver" --weight 6 --rationale "tighten estimator-fidelity weight to reflect new arc priorities"
+    # --from-watchtower added by T-3523: this test pins MUTATION MECHANICS, not policy.
+    # D-661 leg 2 made the unflagged path reviewer-gated (mirroring T-3429/D-586 on
+    # approve-driver), and this fixture's driver carries no scoring spec, so an
+    # unflagged call now fails review for a reason unrelated to what this test checks.
+    run arc_set_scoped_weight "sample-arc" "alpha-driver" --weight 6 --rationale "tighten estimator-fidelity weight to reflect new arc priorities" --from-watchtower
     [ "$status" -eq 0 ]
     [[ "$output" == *"4 → 6"* ]]
     # alpha now 6, beta unchanged
@@ -56,7 +60,8 @@ YAML
 }
 
 @test "T-1977: arc_set_scoped_weight writes audit row to arc-scoped-weight-changes.jsonl" {
-    run arc_set_scoped_weight "sample-arc" "alpha-driver" --weight 5 --rationale "evidence from recent incident motivates raising this weight"
+    # --from-watchtower per T-3523, same reason as the mutation test above.
+    run arc_set_scoped_weight "sample-arc" "alpha-driver" --weight 5 --rationale "evidence from recent incident motivates raising this weight" --from-watchtower
     [ "$status" -eq 0 ]
     [ -f "$PROJECT_ROOT/.context/audits/arc-scoped-weight-changes.jsonl" ]
     run cat "$PROJECT_ROOT/.context/audits/arc-scoped-weight-changes.jsonl"
@@ -92,10 +97,23 @@ YAML
     [[ "$output" == *"≥30"* ]]
 }
 
-@test "T-1977: arc_set_scoped_weight refuses under \$CLAUDECODE=1 without override (§ACD)" {
-    CLAUDECODE=1 run arc_set_scoped_weight "sample-arc" "alpha-driver" --weight 5 --rationale "agents must not invoke this directly under claudecode gate"
+@test "T-3523: an agent is REVIEWER-gated on set-scoped-weight, not §ACD-refused" {
+    # POLICY CHANGED, and this test changed with it rather than being deleted.
+    # It used to assert "refuses under $CLAUDECODE=1 without override (§ACD)".
+    # Operator ruling 2026-09-27 (D-661 leg 2, answering OBS-558): "ARC drivers also
+    # don't need human approval anymore, they can just be agent approved", and when
+    # asked whether that reaches the WEIGHT or stops at adding a driver, the operator
+    # ruled it reaches the weight — a driver whose weight nobody can tune is inert.
+    #
+    # So the §ACD refusal became the override path, mirroring what T-3429/D-586 did
+    # for approve-driver. An unflagged agent call now runs the static reviewer. This
+    # fixture's driver carries no scoring spec, so the reviewer fails it on check (a)
+    # — which is the point: the agent is JUDGED, not refused for being an agent.
+    CLAUDECODE=1 run arc_set_scoped_weight "sample-arc" "alpha-driver" --weight 5 --rationale "agent call now reaches the reviewer instead of the identity gate"
     [ "$status" -ne 0 ]
-    [[ "$output" == *"§ACD"* ]] || [[ "$output" == *"agents must not invoke"* ]]
+    # The refusal must come from the REVIEWER, not from the identity gate.
+    [[ "$output" == *"did not pass review"* ]]
+    [[ "$output" != *"agents must not invoke"* ]]
 }
 
 @test "T-1977: arc_set_scoped_weight accepts --from-watchtower under \$CLAUDECODE=1" {
@@ -105,7 +123,11 @@ YAML
 }
 
 @test "T-1977: arc_dispatch routes 'set-scoped-weight' to arc_set_scoped_weight" {
-    run arc_dispatch set-scoped-weight "sample-arc" "alpha-driver" --weight 6 --rationale "dispatcher routing pin keeps the verb table aligned with help"
+    # Routing pin only. Runs with --from-watchtower so it exercises the DISPATCH
+    # table rather than the reviewer gate T-3523 added on the unflagged agent path;
+    # without it this test would fail for a reason that has nothing to do with
+    # routing, which is what it went red for when the gate landed.
+    run arc_dispatch set-scoped-weight "sample-arc" "alpha-driver" --weight 6 --rationale "dispatcher routing pin keeps the verb table aligned with help" --from-watchtower
     [ "$status" -eq 0 ]
 }
 

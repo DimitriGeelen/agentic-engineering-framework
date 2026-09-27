@@ -4620,3 +4620,10 @@ decisions:
     date: 2026-09-27
     task: T-3518
     rationale: "Not specified"
+
+  - id: D-661
+    decision: "OPERATOR RULING 2026-09-27 (verbatim intent, three legs): (1) remove the mechanism requiring human approval of BVP scoring — agents may confirm scores; (2) the same for ARC DRIVERS — agent-approved, no human approval needed; (3) add an override the operator can adjust, and new scoring must NOT overwrite the adjusted values. This supersedes the agent advisory of the same morning, which had recommended the operator hand-score a seed set — that treated a symptom two peer projects had already root-caused. STATE AT RULING, verified in code before recording: leg 1 is ALREADY LIVE (lib/bvp.sh:1027, FW_REQUIRE_BVP_CONFIRM_APPROVAL opt-in, shipped as T-3487's authorised half); leg 2 is ALREADY LIVE (lib/arc.sh:1429, T-3429/D-586 — reviewer is the default gate, §ACD human refusal now applies only to the negative --none ruling); leg 3 does NOT exist. So both waivers are in place without their counterweight. SCOPE BOUNDARY, unchanged by this ruling: 'ARC drivers' does not mean 'fw arc close'. Arc closure and arc abandonment are closure decisions, remain human-gated (T-1671, earned over four repeat incidents), and T-3487's arc.sh half stays unauthorised — the operator has now twice said 'drivers'. CONSEQUENCE ACCEPTED: with legs 1+2 live an agent can score the value of its own work and let that score select its own next work, which is a deliberate waiver of producer-not-judge on the scoring axis. Leg 3 (T-3523) is what keeps it reversible: an operator correction that survives the next estimator run."
+    scope: project
+    date: 2026-09-27
+    task: T-3523
+    rationale: "Not specified"

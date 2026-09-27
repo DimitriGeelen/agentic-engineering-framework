@@ -5667,3 +5667,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-558
+  text: "D-661 LEG 2 IS INCOMPLETE, and it surfaced by writing code that cannot run. Operator ruling 2026-09-27: 'ARC drivers also don't need human approval anymore, they can just be agent approved.' T-3429/D-586 opened 'fw arc approve-driver' to agents via the external value-driver reviewer. But 'fw arc set-scoped-weight' was NOT opened with it: _arc_approve_driver_acd_gate still refuses an agent outright (§ACD, M6 — 'driver approval is policy-edit authority (D8) and belongs to the human'). Measured: agent invocation with no override flags prints 'Error: agents must not invoke fw arc set-scoped-weight directly' and changes nothing. So under the current tree an agent may ADD a scoped driver but may not CHANGE ITS WEIGHT — and weight is the parameter that actually moves scoring. CONSEQUENCE FOR T-3523: the sticky guard I wired into set-scoped-weight is ARMED BUT UNREACHABLE on every live path — agents are refused before it, and human/watchtower callers skip it by design (correctly, they are the operator). That is the L-573 class, and the second time in one session I produced it: this morning's pre-merge-commit guard keyed on MERGE_HEAD was inert for the clean-merge shape for the same reason. The guard is KEPT rather than deleted because its unreachability is conditional on a gate the operator may open, unlike the genuinely dead branch removed from the estimator under T-3512 the same day; the distinction is written into the code comment so the next reader does not have to rediscover it. THE QUESTION, not decided here because opening a policy-edit authority gate is not an agent's call: does leg 2 extend to set-scoped-weight, or is 'agent-approved drivers' deliberately limited to ADDING a driver while its weight stays the operator's?"
+  captured: 2026-09-27T16:09:46Z
+  context_task: T-3523
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-559
+  text: "The arc driver reviewer reports a TOOLING failure as a DRIVER-QUALITY failure. Measured 2026-09-27 under T-3523: with PROJECT_ROOT pointed at a fixture lacking the estimator, check (a) 'scorable' returned FAIL with reason 'handler table unreadable (AttributeError: module bvp_estimator_review has no attribute _handler_table)'. Against the real repo the same check fails legibly and correctly ('no handler, no inline scoring: block, no scoring_file: (T-3428)'), so this is not a live defect here — it is a portability one. CONSEQUENCE: in any consumer project where the estimator is not importable, EVERY agent driver approval and (after T-3523) every agent weight change is refused, and the refusal reads as 'your driver is not scorable' rather than 'I could not load my own scorer'. That inverts the diagnosis for the reader and points them at their driver definition instead of at their install. It is the same unknown-versus-negative confusion this session hit three times elsewhere (blast_radius absence scoring cheapest, a result line read as completion, a missing digest read as protection): a check that cannot run must not answer as a check that ran and judged. Cheapest fix: make check (a) distinguish 'unscorable' from 'scorer unavailable', and have the latter degrade loudly rather than counting as a fail. Not fixed under T-3523 — one bug one task, and this one is the reviewer's, not the sticky guard's."
+  captured: 2026-09-27T19:10:43Z
+  context_task: T-3523
+  tags: []
+  status: pending
+  promoted_to: null
