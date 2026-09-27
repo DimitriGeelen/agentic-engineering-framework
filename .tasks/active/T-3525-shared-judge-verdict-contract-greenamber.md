@@ -28,6 +28,7 @@ related_tasks: [T-3524, T-1878, T-3068]
 write_set:
   - lib/judge_verdict.py
   - tests/unit/test_t3525_judge_verdict.py
+  - tests/check_t3525_contract.py
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -212,13 +213,16 @@ result line read as completion (OBS-557), a missing digest read as protection
 timeout 300 python3 -m pytest tests/unit/test_t3525_judge_verdict.py -q
 grep -q '^def verdict' lib/judge_verdict.py
 grep -q '^def may_proceed' lib/judge_verdict.py
-python3 -c "import sys; sys.path.insert(0,'lib'); import judge_verdict as j; \
-  exec('try:\n j.verdict(\'red\')\n raise SystemExit(1)\nexcept j.VerdictError:\n pass')"
+python3 tests/check_t3525_contract.py
 cmp -s lib/judge_verdict.py .agentic-framework/lib/judge_verdict.py
 
-# The python line is the contract's whole point asserted from OUTSIDE the test suite:
-# a red verdict with no guidance must be unconstructible. If that line ever passes by
-# NOT raising, the suite could still be green while the property is gone.
+# check_t3525_contract.py asserts the contract's whole point from OUTSIDE pytest: a
+# non-green verdict with no guidance must be unconstructible. A suite can be skipped,
+# renamed or deselected while staying green; this file cannot.
+#
+# It is a FILE and not a `python3 -c` one-liner because the P-011 gate refused the
+# multi-line form — a python body spanning lines executes as bash, where `import` is a
+# screenshot tool (T-2990). The gate was right; this is its suggested route.
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
