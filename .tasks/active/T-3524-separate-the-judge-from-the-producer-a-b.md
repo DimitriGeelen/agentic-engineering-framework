@@ -31,7 +31,7 @@ tags: [bvp, arc, agents, producer-not-judge]
 components: []
 related_tasks: [T-3523, T-3429, T-1951, T-3410]
 created: 2026-09-27T19:20:38Z
-last_update: 2026-09-27T19:22:35Z
+last_update: '2026-09-27T19:30:11Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,6 +57,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-27T19:30:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=177,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -110,47 +120,98 @@ knowledge. Cost of one: the separation this is being built for.
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
 
+All five answered by the operator on 2026-09-27; recorded as **D-662**.
+
 - **IW-1: One agent or two?**
-  confidence: 2
-  disposition: deferred
-  rationale: Leaning two. A scoped driver is the yardstick, a task score is the
-  measurement, and one agent holding both judges with a yardstick it made. Deferred to
-  the operator: it changes the file layout materially, and two prompts is a real
-  maintenance cost he is entitled to weigh against the separation it buys.
+  confidence: 3
+  disposition: answered
+  rationale: **TWO.** Operator: *"On one, two agents."* Confirms the leaning — a
+  scoped driver is the yardstick and a task score is the measurement, so one agent
+  holding both would judge with a yardstick it made.
 
 - **IW-2: Does the judge get to REFUSE a score, or only flag it?**
-  confidence: 1
-  disposition: deferred
-  rationale: A refusal makes the reviewer a gate and puts a second agent in the
-  critical path of every close — the T-3297 contention class, hit live twice today. A
-  flag makes it advisory and therefore ignorable, which is how `[REVIEWER]` adoption
-  reached 7 against 412 for `[REVIEW]` (T-1878). Neither is obviously right.
+  confidence: 3
+  disposition: answered
+  rationale: **It can refuse, and the verdict is THREE-STATE, not binary.** Operator:
+  *"Yes, a judge can refuse. If it's not green, then it's amber or red. The [producer]
+  needs to adjust, but the reviewer also needs to give guidance on what to do."*
+  So: green / amber / red, and **a non-green verdict must carry actionable guidance**,
+  not just a rejection. That second half is the part that matters — it is the
+  difference between this and the `[REVIEWER]` adoption failure (7 against 412), where
+  a verdict with nothing to act on got routed around.
+  Wording note, not silently resolved: the operator said *"the dictator needs to
+  adjust"*. Read as **the producer**, since nothing else in the design dictates a
+  score. Worth confirming if amber/red routing turns out to depend on who adjusts.
 
 - **IW-3: What does the judge judge AGAINST?**
-  confidence: 1
-  disposition: deferred
-  rationale: The static driver reviewer answers scorable / distinct / distinguishes —
-  structural questions. "Is D2=4 right for this task" is not structural, and the
-  measured D2 no-signal rate of 83% over 3,350 tasks (T-3408) says the rubric's own
-  detectors cannot answer it either. A judge with no readable yardstick is a judge in
-  name only. This question may dissolve T-3410 into it, or be blocked by it.
+  confidence: 3
+  disposition: answered
+  rationale: **Two things, and the second is the one that dissolves my objection.**
+  Operator: *"the acceptance criteria we have defined in the create inception task or
+  complete inception task. I think we already have quality criteria, right? So we look
+  at is it there, and we also do a quality assessment whether we find it's good enough
+  or not. And we should map that either against the task goal and objective, or the arc
+  goal or objective, or the project goal and objective."*
+  So the judge assesses (a) **presence** — are the acceptance/quality criteria there —
+  and (b) **sufficiency** — are they good enough; then maps the work to the **goal
+  hierarchy at the right level**: task → arc → project objective.
+  **This answers the objection I raised.** I had argued a judge needs a readable
+  yardstick and the rubric's detectors cannot supply one (D2 no-signal 83% over 3,350
+  tasks, T-3408). The operator's answer is that the yardstick is not the detector table
+  — it is the goal hierarchy the work is supposed to serve, which is written down and
+  readable. That makes the judge buildable WITHOUT waiting on T-3410, and reframes
+  T-3410 as an improvement to the proposer rather than a prerequisite for the judge.
 
 - **IW-4: New scores only, or the 3,350 already scored?**
-  confidence: 2
-  disposition: deferred
-  rationale: Reviewing at confirm time and retro-reviewing the corpus are
-  different-sized projects. Scoping must say which, because "it applies to everything"
-  is how a reviewer becomes a 3,350-item backlog nobody runs.
+  confidence: 3
+  disposition: answered
+  rationale: **Open tasks only; closed work is never rescored.** Operator: *"we don't
+  need to rescore anything that's already done, that's closed. We can rescore things
+  that are still outstanding, of course. That are still open, that are still on the
+  horizon."*
+  This kills the 3,350-item backlog risk outright — the reviewable population is open
+  tasks, which is ~492 active and in practice the subset with a horizon. It also
+  protects history: a closed task's score stays as the record of what was decided at
+  the time, which is the same reasoning T-3068 used for not reinterpreting the
+  fabricated zeros already in frontmatter.
 
 - **IW-5: May the judge be the same MODEL as the producer?**
-  confidence: 1
-  disposition: deferred
-  rationale: Independence of PARTY is not independence of JUDGEMENT. Two instances of
-  one model sharing a rubric can agree for the same wrong reason — and T-3408 measured
-  exactly that shape across two independent corpora (D2 83% vs 84%, different authors
-  and domains, same blind spot). Worth deciding deliberately rather than by default.
+  confidence: 3
+  disposition: answered
+  rationale: **Yes for now; a multi-model panel is a named future option, explicitly
+  not built.** Operator: *"Yes, the judge may be the same model as the producer.
+  Although, we could also consider for high impact, high value, high cost things to use
+  two or three judges with different models or even different providers. But we're not
+  there yet, I think. Let's keep it simple for now."*
+  Recorded so it is not lost: **a 2-3 judge panel across different models or providers,
+  triggered by high impact / high value / high cost**, is deliberately deferred, not
+  rejected. My caveat stands unresolved rather than dismissed — independence of party
+  is not independence of judgement, and T-3408 measured two independent corpora landing
+  within one point on the same blind spot. The panel is the mitigation for that; the
+  operator's call is that it is not worth its cost yet, which is a scoping judgement,
+  not a disagreement with the caveat.
 
 ## Exploration Plan
+
+Settled by D-662; these are the build slices this inception would authorise on GO.
+
+1. **S1 — the arc-driver judge agent.** Judges a scoped driver against the arc's goal
+   and objective. Wraps, does not replace, the existing static
+   `lib/arc-driver-review.sh` checks (scorable / distinct / distinguishes).
+2. **S2 — the BVP score judge agent.** Judges a proposed task score against (a) the
+   presence of acceptance/quality criteria and (b) their sufficiency, mapped to the
+   goal hierarchy at the right level: task → arc → project.
+3. **S3 — the three-state verdict and its guidance.** green / amber / red, where a
+   non-green verdict MUST carry actionable guidance. The guidance is the deliverable,
+   not the colour — a verdict with nothing to act on is what produced the 7-against-412
+   `[REVIEWER]` adoption gap.
+4. **S4 — population scoping.** Open tasks only; closed work is never rescored.
+5. **S5 — dispatch wiring.** Reuse T-1951's isolated-reviewer-as-TermLink-worker
+   pattern rather than inventing a second one.
+
+**Explicitly OUT of scope** (named so it is not quietly built): the multi-model /
+multi-provider judge panel from IW-5, and any change to the estimator's detectors
+(that is T-3410, and IW-3's answer means the judge no longer waits on it).
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
 

@@ -4627,3 +4627,10 @@ decisions:
     date: 2026-09-27
     task: T-3523
     rationale: "Not specified"
+
+  - id: D-662
+    decision: "D-662: T-3524 design settled by operator 2026-09-27. FIVE ANSWERS. (1) TWO agents, not one — an arc-driver judge and a BVP score judge, because a driver is the yardstick and a score is the measurement, and one agent holding both judges with a yardstick it made. (2) The judge CAN REFUSE, and the verdict is THREE-STATE: green/amber/red. A non-green verdict MUST carry actionable guidance on what to do — the guidance is the deliverable, not the colour; a verdict with nothing to act on is what produced the 7-against-412 [REVIEWER] adoption gap (T-1878). (3) The judge judges against the acceptance/quality criteria — presence AND sufficiency ('is it there' and 'is it good enough') — mapped to the GOAL HIERARCHY at the right level: task goal/objective, or arc, or project. THIS DISSOLVES THE AGENT'S OBJECTION that a judge needs a readable yardstick the rubric cannot supply (D2 no-signal 83% over 3,350 tasks, T-3408): the yardstick is the goal hierarchy, which is written down. Consequence: the judge is buildable WITHOUT T-3410, and T-3410 is reframed as an improvement to the PROPOSER rather than a prerequisite for the JUDGE. (4) Open tasks only — closed work is never rescored. Kills the 3,350-item backlog risk and protects history, same reasoning as T-3068 declining to reinterpret stored zeros. (5) Same model as the producer is allowed for now; a 2-3 judge panel across different models or providers, triggered by high impact/value/cost, is DEFERRED NOT REJECTED. The agent's caveat stands unresolved rather than dismissed: independence of party is not independence of judgement, and T-3408 measured two independent corpora agreeing within one point on the same blind spot; the panel is the mitigation and the operator's ruling is that it does not yet earn its cost. Five build slices recorded on the task; the multi-model panel and any estimator-detector change are explicitly OUT of scope."
+    scope: project
+    date: 2026-09-27
+    task: T-3524
+    rationale: "Not specified"
