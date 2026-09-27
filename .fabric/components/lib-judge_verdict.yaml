@@ -1,0 +1,21 @@
+id: lib/judge_verdict.py
+name: judge_verdict
+type: script
+subsystem: framework-core
+location: lib/judge_verdict.py
+tags: []
+
+purpose: "judge_verdict.py — the shared contract both judge agents obey (T-3525)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-27
+created_by: unknown

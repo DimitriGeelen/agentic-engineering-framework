@@ -1,0 +1,21 @@
+id: tests/unit/test_t3525_judge_verdict.py
+name: test_t3525_judge_verdict
+type: script
+subsystem: tests
+location: tests/unit/test_t3525_judge_verdict.py
+tags: []
+
+purpose: "T-3525: the shared judge verdict contract (D-662)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-27
+created_by: unknown

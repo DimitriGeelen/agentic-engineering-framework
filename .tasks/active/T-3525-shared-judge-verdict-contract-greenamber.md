@@ -18,13 +18,16 @@ description: >
   which also protects history the way T-3068 declined to reinterpret stored zeros.
   Consumers: the arc-driver judge and the BVP score judge.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bvp, arc, judge, contract]
 components: []
 related_tasks: [T-3524, T-1878, T-3068]
+write_set:
+  - lib/judge_verdict.py
+  - tests/unit/test_t3525_judge_verdict.py
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -52,7 +55,7 @@ related_tasks: [T-3524, T-1878, T-3068]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T20:28:11Z
-last_update: '2026-09-27T20:30:31Z'
+last_update: 2026-09-27T20:36:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +95,86 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-09-27T20:36:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 5
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4-5 (body:new-class); D2=4 (body:fw-audit-or-doctor); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3525: shared judge verdict contract: green/amber/red with mandatory actionable guidance, open-tasks-only
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice 1 of 3 from the T-3524 GO (**D-662**), and a prerequisite for both judge agents
+(T-3526 BVP score judge, T-3527 arc-driver judge).
+
+`lib/judge_verdict.py` is the one place the verdict semantics live. It exists as its
+own task, ahead of its consumers, because arc membership in this repo reached **five
+implementations of one predicate disagreeing three ways** and a full day went into
+consolidating them. Two judges each carrying their own idea of what amber means is
+that defect pre-ordered.
+
+**The load-bearing property:** `verdict()` RAISES when a non-green state carries no
+guidance. Not a warning — it cannot be constructed. Operator ruling: *"the reviewer
+also needs to give guidance on what to do."* Measured reason for the strength:
+`[REVIEWER]` criteria produce a verdict with nothing to act on and reached 7 uses
+against 412 for `[REVIEW]` (T-1878). A colour with no instruction gets routed around,
+and the routing looks like compliance.
+
+**A fourth state, UNKNOWN**, was added beyond the operator's three — a judge that
+cannot reach a conclusion must not emit green. It does not permit proceeding and it
+also requires guidance, because "I could not judge this" is actionable only if it says
+what would make judgement possible. That is the recurring defect of this whole
+session, hit four separate times: absent `blast_radius` scoring cheapest (T-3068), a
+result line read as completion (OBS-557), a missing digest read as protection
+(T-3523), and a tooling failure read as a quality verdict (OBS-559).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A non-green verdict without guidance is STRUCTURALLY IMPOSSIBLE**, not
+      discouraged. Constructing amber or red with empty/whitespace guidance raises.
+      Operator: *"the reviewer also needs to give guidance on what to do."* If
+      guidance is optional it becomes absent, and then the verdict is a colour to
+      route around — which is how `[REVIEWER]` reached 7 uses against 412 for
+      `[REVIEW]` (T-1878). The test that matters is the one asserting the raise.
+- [x] **Three states, never a boolean.** green / amber / red. A caller cannot coerce
+      the verdict to a pass/fail without discarding amber, and the type makes that
+      visible rather than letting `if verdict:` silently treat amber as pass.
+- [x] **Amber and red are distinguishable in behaviour, not just in name.** If nothing
+      downstream can act differently on them, the third state is decoration — so the
+      contract defines what each means for the caller (amber: proceed with the
+      guidance recorded; red: do not proceed).
+- [x] **Closed work is never reviewable.** `reviewable()` returns False for a
+      `work-completed` task and True for an open one. Operator: *"we don't need to
+      rescore anything that's already done... we can rescore things that are still
+      outstanding."* Protects history the way T-3068 declined to reinterpret stored
+      zeros.
+- [x] **Both directions pinned, and the suite verified RED against a mutant** that
+      permits guidance-free non-green verdicts (L-576 — a regression test never run
+      against the regression is a tautology).
+- [x] A verdict serialises to a stable record both judge agents can write to a task
+      file, an arc YAML, or the fw bus — one shape, so T-3526 and T-3527 cannot
+      diverge. This is the whole reason the contract is its own task.
+- [x] **Unknown is not green.** A judge that cannot reach a conclusion emits a
+      distinct state, never green-by-default — the one recurring defect of this
+      session, hit four separate times (absent blast_radius scoring cheapest, a result
+      line read as completion, a missing digest read as protection, a tooling failure
+      read as a quality verdict).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -139,6 +208,17 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 300 python3 -m pytest tests/unit/test_t3525_judge_verdict.py -q
+grep -q '^def verdict' lib/judge_verdict.py
+grep -q '^def may_proceed' lib/judge_verdict.py
+python3 -c "import sys; sys.path.insert(0,'lib'); import judge_verdict as j; \
+  exec('try:\n j.verdict(\'red\')\n raise SystemExit(1)\nexcept j.VerdictError:\n pass')"
+cmp -s lib/judge_verdict.py .agentic-framework/lib/judge_verdict.py
+
+# The python line is the contract's whole point asserted from OUTSIDE the test suite:
+# a red verdict with no guidance must be unconstructible. If that line ever passes by
+# NOT raising, the suite could still be green while the property is gone.
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -362,3 +442,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3525-shared-judge-verdict-contract-greenamber.md
 - **Context:** Initial task creation
+
+### 2026-09-27T20:36:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
