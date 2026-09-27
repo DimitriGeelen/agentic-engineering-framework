@@ -18,12 +18,12 @@ description: >
   which also protects history the way T-3068 declined to reinterpret stored zeros.
   Consumers: the arc-driver judge and the BVP score judge.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, arc, judge, contract]
-components: []
+components: [lib/judge_verdict.py, tests/unit/test_t3525_judge_verdict.py]
 related_tasks: [T-3524, T-1878, T-3068]
 write_set:
   - lib/judge_verdict.py
@@ -56,8 +56,8 @@ write_set:
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T20:28:11Z
-last_update: 2026-09-27T20:36:42Z
-date_finished:
+last_update: 2026-09-27T20:49:24Z
+date_finished: 2026-09-27T20:49:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -449,3 +449,15 @@ cmp -s lib/judge_verdict.py .agentic-framework/lib/judge_verdict.py
 
 ### 2026-09-27T20:36:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4256b445
+- **Timestamp:** 2026-09-27T20:49:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-27T20:49:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

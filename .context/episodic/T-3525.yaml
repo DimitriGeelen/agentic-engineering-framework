@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3525: shared judge verdict contract: green/amber/red with mandatory actionable guidance, open-tasks-only
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T20:49:42Z
+# ============================================================================
+
+task_id: T-3525
+task_name: "shared judge verdict contract: green/amber/red with mandatory actionable guidance, open-tasks-only"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-27T20:28:11Z
+completed: 2026-09-27T20:49:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-27T22:47:48+02:00
+last_commit: 2026-09-27T22:49:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the shared judge verdict contract — green/amber/red, guidance mandatory. move the contract assertion into a file; the P-011 gate refused the multi-line python form
+
+# Key outcomes
+outcomes:
+  - '**A non-green verdict without guidance is STRUCTURALLY IMPOSSIBLE**, not'
+  - '**Three states, never a boolean.** green / amber / red. A caller cannot coerce'
+  - '**Amber and red are distinguishable in behaviour, not just in name.** If nothing'
+  - '**Closed work is never reviewable.** `reviewable()` returns False for a'
+  - '**Both directions pinned, and the suite verified RED against a mutant** that'
+  - 'A verdict serialises to a stable record both judge agents can write to a task'
+  - '**Unknown is not green.** A judge that cannot reach a conclusion emits a'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/judge_verdict.py'
+  - '.agentic-framework/VERSION'
+  - '.fabric/components/lib-judge_verdict.yaml'
+  - '.fabric/components/tests-unit-test_t3525_judge_verdict.yaml'
+  - 'lib/judge_verdict.py'
+  - '.tasks/active/T-3525-shared-judge-verdict-contract-greenamber.md'
+  - 'tests/check_t3525_contract.py'
+  - 'tests/unit/test_t3525_judge_verdict.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-27T22:47:48'
+    action: 'T-3525: the shared judge verdict contract — green/amber/red, guidance mandatory'
+  - time: '2026-09-27T22:49:18'
+    action: 'T-3525: move the contract assertion into a file; the P-011 gate refused the multi-line python form'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, arc, judge, contract]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 21
+  commits: 2
+  files_changed: 8
+  lines_added: 732
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3525-shared-judge-verdict-contract-greenamber.md
+generated_by: context-agent-hybrid
