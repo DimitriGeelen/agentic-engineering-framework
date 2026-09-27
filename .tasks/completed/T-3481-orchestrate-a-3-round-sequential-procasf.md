@@ -6,10 +6,10 @@ description: >
   orchestrate a 3-round sequential procAsFit autonomous run via TermLink, feeding
   each round's handback into the next
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-25T20:40:35Z
-last_update: 2026-09-26T00:20:43Z
-date_finished:
+last_update: 2026-09-27T15:02:20Z
+date_finished: 2026-09-27T15:02:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -97,12 +97,12 @@ ends first.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Three rounds dispatched **sequentially** via `fw termlink dispatch`, each started only after the previous one's result has been harvested
-- [ ] Rounds 2 and 3 carry the previous round's handback in their prompt, so each acts on the last result rather than restarting cold
-- [ ] No round is executed by this session — every round's work is done by a dispatched worker, verifiable from the dispatch records
-- [ ] Each round's handback exists at `docs/reports/procasfit-round-<N>.md` in the repo, committed, not in `/tmp` (T-818)
-- [ ] Worker liveness and outcome are checked per round (`fw termlink wait` / `result`), and a timeout or crash is recorded as a finding rather than silently retried
-- [ ] A consolidated cross-round summary is written, naming what each round advanced, the Sovereign questions raised, and the gates that refused the workers
+- [x] Three rounds dispatched **sequentially** via `fw termlink dispatch`, each started only after the previous one's result has been harvested
+- [x] Rounds 2 and 3 carry the previous round's handback in their prompt, so each acts on the last result rather than restarting cold
+- [x] No round is executed by this session — every round's work is done by a dispatched worker, verifiable from the dispatch records
+- [x] Each round's handback exists at `docs/reports/procasfit-round-<N>.md` in the repo, committed, not in `/tmp` (T-818)
+- [x] Worker liveness and outcome are checked per round (`fw termlink wait` / `result`), and a timeout or crash is recorded as a finding rather than silently retried
+- [x] A consolidated cross-round summary is written, naming what each round advanced, the Sovereign questions raised, and the gates that refused the workers
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -136,6 +136,11 @@ ends first.
 -->
 
 ## Verification
+
+test -f docs/reports/procasfit-round-1.md && test -f docs/reports/procasfit-round-2.md && test -f docs/reports/procasfit-round-3.md
+git log --oneline -- docs/reports/procasfit-round-1.md docs/reports/procasfit-round-2.md docs/reports/procasfit-round-3.md | wc -l | grep -q "^3$"
+grep -q "termlink-dispatch" <(git log -1 --format='%an' 3573d4542 -- docs/reports/procasfit-round-3.md)
+grep -q "Cross-round summary" docs/reports/procasfit-round-3.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -359,3 +364,56 @@ ends first.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3481-orchestrate-a-3-round-sequential-procasf.md
 - **Context:** Initial task creation
+
+### 2026-09-27T15:03:00Z — closure sweep [dispatched worker tl-3afc07f4]
+- **Action:** Task file was stale: all three rounds had already run to completion
+  in the 2026-09-25 session (commits `a7bb2103c`, `4258351e6`, `3573d4542`, each
+  authored by `fw worker (termlink-dispatch) <dispatch+pf0925-r@aef.local>` — i.e.
+  genuinely dispatched via `fw termlink dispatch`, not run by the orchestrating
+  session), but the task itself was never moved past `started-work`. It surfaced
+  again via the `systemd:resolver-loop.service` autonomous dispatch
+  (`.context/dispatches.jsonl` dispatch_id `11364b9e-2a41-47ea-9015-85bb5e162db7`)
+  because an active task with unticked ACs looks like unfinished work to that
+  loop. Note: a successor task, T-3517 (a 4-round run, `related_tasks: [T-3481]`),
+  is concurrently live and owns current session focus — this closure sweep only
+  touched this task's own file, not `focus.yaml` or any other shared state, to
+  avoid colliding with that live orchestration.
+- **Evidence per AC:**
+  1. Sequential dispatch via `fw termlink dispatch`: round 1/2/3 commit authors
+     are all `fw worker (termlink-dispatch)`.
+  2. Feed-forward: round 2's handback ends "For round 3 — focus is set to
+     T-3481 ... arc-011 has no ready Q1/Q2 task"; round 3's own Selection section
+     opens by working through exactly the three candidates round 2 named.
+  3. No round executed by the orchestrating session: all three handbacks are
+     signed with distinct worker agent ids (`pf0925-r1`, `pf0925-r2`, `pf0925-r3`).
+  4. Handbacks committed at repo paths: `docs/reports/procasfit-round-{1,2,3}.md`,
+     one commit each, no `/tmp` involved.
+  5. Liveness/outcome per round: each handback's own "Gates that refused me"
+     section documents focus-drift and Tier-1 gate encounters and how they were
+     resolved (re-focus, not bypass) rather than a silent retry; no crash or
+     timeout occurred in any of the three rounds.
+  6. Consolidated cross-round summary: present verbatim as the final
+     `## Cross-round summary (rounds 1–3)` section of
+     `docs/reports/procasfit-round-3.md`, naming what each round advanced, the
+     three Sovereign questions (merge `dispatch-f25`, T-2918's Human AC, and
+     whether the standalone hygiene backlog needs an arc), and the gates
+     encountered.
+- **Output:** Agent ACs ticked, `## Verification` populated with four checks
+  (all rehearsed and passing), status moved to `work-completed`.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c75b492d
+- **Timestamp:** 2026-09-27T15:02:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `git log --oneline -- docs/reports/procasfit-round-1.md docs/reports/procasfit-round-2.md docs/reports/procasfit-round-3.md | wc -l | grep -q "^3$"`
+
+### 2026-09-27T15:02:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
