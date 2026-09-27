@@ -18,10 +18,10 @@ description: >
   pattern rather than inventing a second one. Same model as the producer is permitted
   for now; the multi-model panel is OUT of scope (deferred, not rejected).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bvp, judge, agents]
 components: []
 related_tasks: [T-3524, T-3523, T-1951, T-3408]
@@ -52,7 +52,7 @@ related_tasks: [T-3524, T-3523, T-1951, T-3408]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T20:28:52Z
-last_update: '2026-09-27T20:30:31Z'
+last_update: 2026-09-27T21:09:08Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -104,8 +104,34 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] **Imports `lib/judge_verdict.py`; defines no second verdict vocabulary.** A grep
+      shows no local definition of green/amber/red, no local `reviewable()`, no local
+      guidance rule. Arc membership reached five implementations of one predicate
+      disagreeing three ways; the contract is one file on purpose (T-3525).
+- [ ] Judges a **proposed** score — reads `bvp_scores_proposed:` — and never writes
+      `bvp_scores:` itself. Writing stays with `fw bvp confirm`, which already honours
+      the T-3523 sticky guard. A test pins that the judge leaves `bvp_scores:` untouched.
+- [ ] Judges against all three of D-662's criteria, each independently demonstrable:
+      **presence** (are acceptance/quality criteria there at all), **sufficiency** (are
+      they good enough for the score claimed), and **the goal hierarchy** (task → arc →
+      project objective). A score claiming high value for work serving no stated
+      objective is the case that must be caught.
+- [ ] **Population: open tasks only**, via `judge_verdict.reviewable()`. A
+      `work-completed` task is never judged, and the skip carries its reason.
+- [ ] **UNKNOWN, never green, when it cannot judge.** No readable objective at any
+      level yields UNKNOWN with guidance naming what would make judgement possible.
+      Pinned in both directions — the control is that a judgeable task does NOT come
+      back UNKNOWN, or the agent has failed safe into uselessness.
+- [ ] **Reachable on the path an agent actually takes.** Verified by running the real
+      entry point with no override flags, not with `--i-am-human`. Twice today a guard
+      was written that no live path reached, and in one case an `--i-am-human` pass had
+      been mistaken for evidence.
+- [ ] Runs as an isolated worker reusing T-1951's `--dispatch` shape; results reach the
+      caller by the same route (fw bus), with no second mechanism invented.
+- [ ] Tests exist and a mutant that makes the judge always return green is killed by
+      them (L-576 — a regression test never run against the regression is a tautology).
+- [ ] **Out of scope, and confirmed untouched by diff:** the estimator's detectors
+      (T-3410), and any multi-model judge panel (D-662 IW-5, deferred not rejected).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -362,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3526-bvp-score-judge-agent-judges-a-proposed-.md
 - **Context:** Initial task creation
+
+### 2026-09-27T21:09:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
