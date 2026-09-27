@@ -5646,3 +5646,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-555
+  text: "The T-967/T-1135 persistence contract that AEF's T-3397 sidecar design depends on NEVER BECAME CODE, verified by 010-termlink against their own tree on 2026-09-22 (their T-3062, DM offset 5, found unread 2026-09-27): no crate carries persistent/receptionist/cleanup-exemption logic, 'termlink clean' only removes dead-pid registrations and never kills a live session, and session.needs_restart exists nowhere. T-967 was an inception that reached GO 2026-04-12 with NO build follower on either side — AEF's T-1135 pickup (their T-968) closed as 'DEFER: subsumed by T-967', so both sides deferred to the other and nobody built it. Five months of AEF design referenced a contract that was a GO record and nothing else. THE STRUCTURAL POINT, which is why this is filed rather than just fixed: this is the audit's own 'GO-d inception with no build follower' class (19 such in the last full audit) seen from the CONSUMING side, and across a project boundary. The risk is not that work is missing — it is that a GO record READS as a shipped contract to a downstream consumer who cannot inspect the other project's tree to find out. Our own audit surfaces that class inward only; nothing warns a peer who is about to build on one of our GO records. T-3397 closed before the answer arrived so the finding had no home there (OBS-250 again); homed on T-3518. Replacement offered by TermLink is supervision not exemption: T-3050 cron-restarts a notify sidecar per declared agent, T-3051 canaries stale heartbeats."
+  captured: 2026-09-27T12:35:24Z
+  context_task: T-3518
+  tags: []
+  status: pending
+  promoted_to: null
