@@ -1086,3 +1086,56 @@
   - T-1881
   - T-3516
   follow_up_task: null
+- id: OBS-557
+  type: bug
+  severity: high
+  surface: T-3517's orchestrator-side wait logic for sequential TermLink dispatch
+    (the ad-hoc waiter used to gate round N+1 on round N's completion; same
+    class applies to any caller that treats a stream's first `{"type":"result"}`
+    line as "the worker is done")
+  detected_in: T-3517 (4-round sequential procAsFit run, 2026-09-27) — corrects
+    an inbox note (OBS-556, captured 2026-09-27T14:13:29Z) that misdiagnosed the
+    same incident as per-round variance in instruction-following. OBS-556's
+    premise was wrong and is retracted; OBS-557 is the corrected finding, not an
+    independent one — filing both here as OBS-557 alone, since a debunked
+    diagnosis is not a live concern in its own right (see run record §4).
+  symptom: 'Round 3 (`pf0927-r3`) was dispatched at 14:14:22Z while round 2
+    (`pf0927-r2`) was still doing real work until 14:15:12Z — a ~50s window of
+    two autonomous workers mutating the same checkout concurrently, violating
+    T-3517''s strict-sequencing AC. Collateral, measured: round 2''s commit made
+    during that window (`56c05d450`) was a live, unplanned reproduction of the
+    known T-3297 concurrent-push contention defect. r1→r2 and r3→r4 boundaries
+    were clean (118 min and 186 s gaps respectively) — this is not a universal
+    failure of the wait, it is specific to how round 2 behaved.'
+  root_cause: 'A `{"type":"result"}` line in a TermLink/Claude stream is not a
+    completion signal — it is a yield signal. `pf0927-r1` emitted eleven such
+    lines, all `subtype: success`; a worker that starts background tasks yields
+    one result each time it is re-invoked (the stream shows
+    `background_tasks_changed` / `task_updated` / `task_notification` / `init`
+    immediately before each continuation). The orchestrator''s waiter polled for
+    the first occurrence of the string and declared round 2 complete at
+    14:12:34Z; the worker had in fact not finished, continued for another ~2.5
+    minutes, and committed its own handback addendum at 14:14:55Z — after the
+    orchestrator had already harvested and dispatched the next round.'
+  prevention: 'NOT YET FIXED — no verified replacement signal exists. Both
+    obvious alternatives are wrong in the opposite direction: (a) waiting on the
+    `run.sh` process to exit is wrong because its watchdog is
+    `(sleep $TIMEOUT && kill …)`, so it always waits the full timeout even after
+    the worker is long done (cost ~1h31m of dead waiting on round 1 of this
+    run); (b) waiting on the first result line is wrong because it fires on the
+    first yield, not on completion (this incident). Named candidates, none
+    verified: the LAST result line plus a quiet/idle period with no new stream
+    events; the dispatch verb''s own `close_state` file if one exists; an
+    explicit worker-written done sentinel distinct from any result line. Filing
+    this as open rather than proposing a specific fix, per register-first
+    discipline — the fix is a separate task once a candidate is verified.'
+  blast_radius: cross-project (any orchestrator — human or agent — that
+    sequences TermLink/`claude -p` dispatches and gates the next one on "first
+    result line seen" inherits this exact race; not specific to procAsFit)
+  observed: '2026-09-27'
+  status: open
+  related:
+  - T-3517
+  - T-3481
+  - T-3297
+  follow_up_task: null
