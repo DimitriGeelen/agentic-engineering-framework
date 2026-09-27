@@ -102,32 +102,72 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **Imports `lib/judge_verdict.py`; defines no second verdict vocabulary.** Same
+- [x] **Imports `lib/judge_verdict.py`; defines no second verdict vocabulary.** Same
       rule T-3526 followed. Two judges each carrying their own idea of what amber means
       is the five-readers-of-one-predicate defect pre-ordered.
-- [ ] **WRAPS `lib/arc-driver-review.sh`, does not replace it.** The static checks
+      Evidence: `lib/arc_driver_judge.py` imports `AMBER, GREEN, RED, UNKNOWN, verdict`
+      from `lib.judge_verdict`; pinned by `test_no_local_verdict_state_constants`,
+      `test_no_local_reviewable_or_verdict_function`,
+      `test_module_imports_from_judge_verdict` in `tests/unit/test_arc_driver_judge.py`.
+- [x] **WRAPS `lib/arc-driver-review.sh`, does not replace it.** The static checks
       (scorable / distinct / distinguishes, T-3429) answer structural questions
       correctly and stay. A diff shows they are untouched; this agent adds the quality
       judgement they cannot make.
-- [ ] Judges a scoped driver against **the arc's goal and objective** — the D-662
+      Evidence: `git diff --stat lib/arc-driver-review.sh` shows zero changes;
+      `run_static_review()` sources and calls the real `_arc_driver_review_run` via
+      subprocess, always `--dry-run`; pinned by
+      `test_arc_driver_review_sh_is_not_reimplemented` (no local check_a/b/c, no
+      estimator import) and `test_run_static_review_control_real_handler_passes` (a
+      real subprocess call against the real repo's estimator).
+- [x] Judges a scoped driver against **the arc's goal and objective** — the D-662
       yardstick, applied at arc level rather than task level. A driver that
       distinguishes nothing the arc actually pursues is the case to catch.
-- [ ] **Reachable on the live agent path**, verified by invoking with NO override flags.
+      Evidence: `resolve_arc_goal()` (arc-level description:/headline_mechanic:, else
+      project D1-D4 fallback) + `check_self_admission()` (calibrated against every
+      live `proposed_scoped_drivers[]`/`scoped_drivers[]` entry in `.context/arcs/` —
+      exactly 2 hits, both genuine, zero false positives) + the high-weight/
+      project-fallback-only level-match check. `docs/reports/T-3527-arc-driver-judge.md`
+      records why lexical rationale/goal overlap was tried and rejected (37.5% false
+      positives on real approved drivers).
+- [x] **Reachable on the live agent path**, verified by invoking with NO override flags.
       T-3523 opened `fw arc set-scoped-weight` to agents behind the reviewer, so this
       is now load-bearing. A pass obtained with `--i-am-human` is not evidence — that
       exact mistake was made on this verb hours earlier and produced a guard no path
       could reach.
-- [ ] **Fixes OBS-559 as part of its own correctness**: the static reviewer currently
+      Evidence: `tests/unit/t3527_arc_driver_judge_entrypoint.bats` (6/6 pass) runs the
+      real `bin/fw arc judge-driver` subprocess with zero override flags; this verb
+      carries no §ACD gate (read-only). Also manually run in this same agent session
+      ($CLAUDECODE=1) against arc-020 and all 19 live in-progress arcs (see report).
+- [x] **Fixes OBS-559 as part of its own correctness**: the static reviewer currently
       reports a TOOLING failure (estimator unimportable) as a DRIVER-QUALITY failure.
       This agent must emit `UNKNOWN` with guidance in that case, never a fail — a check
       that could not run must not answer as a check that ran and judged. Pinned by a
       test that makes the scorer unavailable.
-- [ ] A non-green verdict carries actionable guidance naming what to change about the
+      Evidence: the real reachable signature is `"handler table unreadable
+      (AttributeError: ...)"` — not the literal `"estimator unimportable"` string named
+      above — verified empirically by genuinely breaking the import (`FRAMEWORK_ROOT`
+      pointed at a directory with no `agents/termlink/bvp-estimator/` at all), not
+      mocked; see the report's "OBS-559 does not manifest the way its name suggests"
+      section for why. `_is_tooling_failure()` recognises both signatures.
+      `test_run_static_review_genuinely_unimportable_estimator_is_detected` and
+      `test_judge_driver_end_to_end_tooling_failure_is_unknown_not_red` pin it against
+      the real broken state; `test_genuine_scorability_absence_is_still_red_not_swallowed`
+      is the control proving a genuine "no spec" finding still reaches RED.
+- [x] A non-green verdict carries actionable guidance naming what to change about the
       driver — enforced by the contract, so a bare rejection is unshippable.
-- [ ] Tests exist, and a mutant that makes the judge always return green is killed.
-- [ ] **Out of scope, confirmed by diff:** the estimator's detectors (T-3410), the
+      Evidence: every non-green branch in `judge_driver()` calls `judge_verdict.verdict()`,
+      which raises on empty guidance; RED/AMBER/UNKNOWN guidance strings above all name
+      the concrete next action (fix the named static check, resolve the self-admission,
+      add arc goal text, fix the estimator import).
+- [x] Tests exist, and a mutant that makes the judge always return green is killed.
+      Evidence: `test_always_green_mutant_is_killed_by_static_failure_test` (28 tests
+      total in `tests/unit/test_arc_driver_judge.py`, all passing).
+- [x] **Out of scope, confirmed by diff:** the estimator's detectors (T-3410), the
       multi-model panel (D-662 IW-5), and `fw arc close` / `fw arc abandon`, which are
       closure decisions and remain human-gated (T-1671, earned over four incidents).
+      Evidence: `git diff --stat` shows no changes to
+      `agents/termlink/bvp-estimator/estimator.py` or any `arc_close`/`arc_abandon`
+      function in `lib/arc.sh`; no multi-model/panel code added anywhere in this diff.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +327,13 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+bash -n lib/arc.sh
+python3 -m pytest tests/unit/test_arc_driver_judge.py -q > /tmp/.t3527_pytest.out 2>&1 && grep -q "passed" /tmp/.t3527_pytest.out && ! grep -q "failed" /tmp/.t3527_pytest.out
+timeout 300 bats tests/unit/t3527_arc_driver_judge_entrypoint.bats > /tmp/.t3527_bats.out 2>&1 && grep -q "^ok 6" /tmp/.t3527_bats.out && ! grep -q "^not ok" /tmp/.t3527_bats.out
+bin/fw vendor self --check
+grep -q "from lib.judge_verdict import" lib/arc_driver_judge.py && ! grep -qE "^(GREEN|AMBER|RED|UNKNOWN) *=" lib/arc_driver_judge.py
+git diff --stat lib/arc-driver-review.sh agents/termlink/bvp-estimator/estimator.py lib/judge_verdict.py > /tmp/.t3527_diffstat.out 2>&1; test ! -s /tmp/.t3527_diffstat.out
 
 ## RCA
 

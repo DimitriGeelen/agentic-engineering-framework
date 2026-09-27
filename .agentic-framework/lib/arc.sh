@@ -1154,6 +1154,11 @@ Verbs:
   approve-driver <id> --none --justification "<≥30 chars>"
                             T-1926: append a scoped driver (cap 3, weight ≤6) or
                             declare none. Refused under \$CLAUDECODE=1 (§ACD, M6).
+  judge-driver <id> "<name>"|--all [--json]
+                            T-3527: judge a proposed/approved scoped driver
+                            against the arc's own goal, wrapping (not
+                            replacing) review-driver's static checks.
+                            Read-only, no §ACD gate.
   remove-driver <id> "<name>" --rationale "<≥30 chars>" [--i-am-human|--from-watchtower]
   set-scoped-weight <id> "<name>" --weight N --rationale "<≥30 chars>" [--i-am-human|--from-watchtower]
                             T-1977: mutate scoped_drivers[].weight in place.
@@ -1278,6 +1283,7 @@ arc_dispatch() {
         migrate) arc_migrate "$@";;
         approve-driver)   arc_approve_driver   "$@";;   # T-1926 (arc-006)
         review-driver)    arc_review_driver    "$@";;   # T-3429 (arc-006, D-586)
+        judge-driver)     arc_judge_driver     "$@";;   # T-3527 (D-662 slice 3 of 3)
         remove-driver)    arc_remove_driver    "$@";;   # T-1976 (arc-006)
         set-scoped-weight) arc_set_scoped_weight "$@";; # T-1977 (arc-006)
         show-suggestions) arc_show_suggestions "$@";;   # T-1926 (arc-006)
@@ -1952,6 +1958,72 @@ _arc_remove_driver_help() {
     echo "  .context/audits/arc-scoped-driver-removals.jsonl."
     echo ""
     echo "  Refuses under \$CLAUDECODE=1 unless --i-am-human or --from-watchtower (M6, §ACD)."
+}
+
+# T-3527 (D-662 slice 3 of 3): arc judge-driver — WRAPS review-driver's static
+# scorable/distinct/distinguishes checks (T-3429) with the quality judgement they
+# cannot make: whether the driver actually connects to THIS arc's own goal
+# (description:/headline_mechanic:), not just to D1-D4 in the abstract. Also fixes
+# OBS-559: a tooling failure in the wrapped scorability check (the estimator
+# failing to import/execute) now comes back UNKNOWN with guidance, never a
+# driver-quality fail — a check that could not run must not answer as one that did.
+#
+# Read-only. Unlike approve-driver/set-scoped-weight, this verb never mutates the
+# arc YAML and carries no §ACD gate — there is nothing here for a human to approve
+# or an agent to be refused; it only reports a verdict (lib/judge_verdict.py).
+arc_judge_driver() {
+    local id="" name="" emit="human" want_all=false
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --all) want_all=true; shift;;
+            --json) emit="json"; shift;;
+            --help|-h) _arc_judge_driver_help; return 0;;
+            *)
+                if [ -z "$id" ]; then id="$1"
+                elif [ -z "$name" ]; then name="$1"
+                else echo "Unexpected arg: $1" >&2; return 2; fi
+                shift;;
+        esac
+    done
+
+    if [ -z "$id" ]; then _arc_judge_driver_help; return 2; fi
+    id="$(_arc_normalize_input "$id")"
+    _arc_validate_id "$id" || return 2
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+
+    if [ "$want_all" = "false" ] && [ -z "$name" ]; then
+        echo "Error: driver name is required (or pass --all)." >&2
+        _arc_judge_driver_help
+        return 2
+    fi
+
+    local -a _jd_extra=()
+    [ "$emit" = "json" ] && _jd_extra+=(--json)
+    if [ "$want_all" = "true" ]; then
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            PYTHONPATH="$FRAMEWORK_ROOT" \
+            python3 -m lib.arc_driver_judge_cli "$id" --all "${_jd_extra[@]}"
+    else
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            PYTHONPATH="$FRAMEWORK_ROOT" \
+            python3 -m lib.arc_driver_judge_cli "$id" "$name" "${_jd_extra[@]}"
+    fi
+}
+
+_arc_judge_driver_help() {
+    echo "Usage:"
+    echo "  fw arc judge-driver <arc-id> \"<name>\" [--json]"
+    echo "  fw arc judge-driver <arc-id> --all [--json]"
+    echo ""
+    echo "  Judges a proposed or approved scoped driver against the arc's own goal"
+    echo "  (description:/headline_mechanic:), WRAPPING (not replacing) the static"
+    echo "  scorable/distinct/distinguishes checks from 'fw arc review-driver' (T-3429)."
+    echo "  Verdict is green/amber/red/unknown (T-3525, lib/judge_verdict.py);"
+    echo "  non-green always carries actionable guidance. Read-only — never writes"
+    echo "  reviewer: or scoped_drivers:, and carries no §ACD gate."
+    echo ""
+    echo "  A tooling failure in the wrapped scorability check comes back UNKNOWN,"
+    echo "  never a fail (OBS-559, T-3527)."
 }
 
 arc_show_suggestions() {
