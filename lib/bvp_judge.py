@@ -64,6 +64,7 @@ from pathlib import Path
 
 import yaml
 
+from lib.ac_placeholder import all_placeholder, is_placeholder_item, placeholder_items
 from lib.judge_verdict import AMBER, GREEN, RED, UNKNOWN, reviewable, verdict
 
 JUDGE_ID = "bvp-score-judge-v1"
@@ -74,9 +75,18 @@ POLICY_PATH = PROJECT_ROOT / "policy" / "value-drivers.yaml"
 ARCS_DIR = PROJECT_ROOT / ".context" / "arcs"
 
 #: Sufficiency floor: an AC item shorter than this (after stripping prefix
-#: markers like [REVIEW]/[REVIEWER]/bold markers) reads as placeholder rather
-#: than substantive. Chosen from the template's own shortest real examples
+#: markers like [REVIEW]/[REVIEWER]/bold markers) reads as too thin to justify
+#: any score. Chosen from the template's own shortest real examples
 #: ("Tests pass", "Docs updated") sitting just above this floor.
+#:
+#: **This is the WEAKER of the two sufficiency legs, and on its own it shipped a
+#: false green (OBS-560, T-3528).** A length floor asks "is there enough text?",
+#: which is a proxy for "is anything actually stated?" and diverges from it
+#: exactly where the template stubs live: the first ordinal stub is 17 chars, so
+#: an untouched template cleared a 15-char floor and the judge reported
+#: "2/2 substantive" as its evidence. The template-stub predicate in
+#: `lib/ac_placeholder.py` is now the primary leg and runs first; this floor only
+#: catches short authored text the stub list does not know about.
 MIN_SUBSTANTIVE_CHARS = 15
 
 #: A driver claimed at or above this level ("framework-level, cross-cutting" per
@@ -138,6 +148,15 @@ def _extract_ac_items(ac_section: str) -> list[str]:
 
 
 def _is_substantive(item: str) -> bool:
+    """Two legs, template-stub first (T-3528 / OBS-560).
+
+    The stub check runs on the RAW item, before prefix-marker stripping, because
+    `[REVIEW]`/`[REVIEWER]` are real routing markers and the shared predicate is
+    built to keep them out of the match. Length is the fallback leg only — see
+    MIN_SUBSTANTIVE_CHARS for why it cannot be the primary one.
+    """
+    if is_placeholder_item(item):
+        return False
     stripped = _PREFIX_MARKER_RE.sub("", item).strip("*_ \t")
     return len(stripped) >= MIN_SUBSTANTIVE_CHARS
 
@@ -278,11 +297,20 @@ def check_sufficiency(items: list[str], scores: dict) -> tuple[bool, list[str]]:
     keyword detector — it counts what is actually written, not what it says.
     """
     substantive = [i for i in items if _is_substantive(i)]
+    stubs = placeholder_items(items)
     max_score = _max_claimed_score(scores)
     evidence = [f"{len(substantive)}/{len(items)} AC item(s) substantive "
-                f"(>= {MIN_SUBSTANTIVE_CHARS} chars after stripping prefix markers)"]
+                f"(not a template stub, and >= {MIN_SUBSTANTIVE_CHARS} chars after "
+                f"stripping prefix markers)"]
+    if stubs:
+        # Name them. The OBS-560 false green was legible only because the
+        # evidence line was read against the task file by hand; an evidence line
+        # that counts without naming leaves the next reader doing that again.
+        evidence.append(f"{len(stubs)}/{len(items)} AC item(s) are UNFILLED TEMPLATE STUBS: "
+                        + "; ".join(repr(s) for s in stubs[:5])
+                        + (" …" if len(stubs) > 5 else ""))
     if not substantive:
-        return False, evidence + ["every AC item is placeholder-length; none can justify any score"]
+        return False, evidence + ["no AC item is substantive; none can justify any score"]
     required = 2 if max_score >= HIGH_CLAIM_FLOOR else 1
     if len(substantive) < required:
         return False, evidence + [
@@ -382,6 +410,26 @@ def judge_task(task_path: Path, *, judge_id: str = JUDGE_ID) -> tuple[dict | Non
             judged=task_id, judge=judge_id, evidence=[presence_reason],
         )
         return v, "presence check failed"
+
+    # An Acceptance Criteria section containing NOTHING but unfilled template
+    # stubs is textually present and substantively absent. It gets the same RED
+    # as absence rather than the softer AMBER "too thin": there is no author
+    # judgement to be thin, the section was never filled in. Keeping it AMBER
+    # would let a score be proposed against an untouched template and only
+    # advise about it (T-3528; `may_proceed()` is True for amber).
+    if all_placeholder(items):
+        v = verdict(
+            RED,
+            guidance=(f"{task_id}'s Acceptance Criteria section is still the unfilled "
+                      f"template — every item is a stub, so a proposed score of {scores} "
+                      "rests on nothing that was ever written down. Replace the stubs "
+                      "with real criteria (each naming what must be true and how it is "
+                      "checked), then re-judge. Until then the only defensible score is "
+                      "0 on every driver."),
+            judged=task_id, judge=judge_id,
+            evidence=[presence_reason] + check_sufficiency(items, scores)[1],
+        )
+        return v, "acceptance criteria are unfilled template stubs"
 
     sufficient, suff_evidence = check_sufficiency(items, scores)
     if not sufficient:

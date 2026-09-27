@@ -43,6 +43,7 @@ import yaml
 
 import keylock
 import worker_identity
+from ac_placeholder import is_placeholder_item  # T-3528: one placeholder reader
 
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
 WORKFLOWS_DIR = PROJECT_ROOT / ".context" / "project" / "workflows"
@@ -1708,11 +1709,24 @@ def _focused_task_id() -> str:
 
 def _ac_is_placeholder(ac_block: str) -> bool:
     """True when the Acceptance Criteria block is template-only / unscoped —
-    mirrors the G-020 readiness gate's intent (don't dispatch unscoped work)."""
+    mirrors the G-020 readiness gate's intent (don't dispatch unscoped work).
+
+    Delegates to the shared predicate (T-3528). This function used to carry its
+    own two-literal check (`[First criterion]`/`[Second criterion]`), which was
+    the narrowest of the framework's then-three readers; the BVP judge added a
+    fourth, weaker one and shipped a false green (OBS-560). One reader now.
+
+    Only the TEMPLATE-STUB leg is delegated. The "at least one *unchecked* item"
+    requirement below stays local on purpose: it asks whether there is work left
+    to dispatch, not whether the criteria are template text. Folding it into the
+    shared predicate would have widened autonomous dispatch eligibility to tasks
+    whose every criterion is already ticked — a behaviour change smuggled in
+    under a bug fix.
+    """
     s = ac_block.strip()
     if not s:
         return True
-    if "[First criterion]" in s or "[Second criterion]" in s:
+    if is_placeholder_item(s):
         return True
     # Must have at least one real unchecked item to be worth dispatching.
     if not re.search(r"-\s*\[\s*\]\s+\S", s):

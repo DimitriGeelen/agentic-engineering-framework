@@ -1,0 +1,21 @@
+id: lib/ac_placeholder.py
+name: ac_placeholder
+type: script
+subsystem: framework-core
+location: lib/ac_placeholder.py
+tags: []
+
+purpose: "T-3528: the ONE Python decision point for \"is this acceptance-criterion text a template placeholder?\""
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-27
+created_by: unknown

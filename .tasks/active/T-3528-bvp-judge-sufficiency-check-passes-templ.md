@@ -1,10 +1,25 @@
 ---
 id: T-3528
-name: "BVP judge sufficiency check passes template placeholder ACs: reuse the G-020 detector instead of a length threshold"
+name: "BVP judge sufficiency check passes template placeholder ACs: reuse the G-020
+  detector instead of a length threshold"
 description: >
-  OBS-560. 'fw bvp judge T-3471' returns GREEN because lib/bvp_judge.py:140 _is_substantive() is a pure length threshold (MIN_SUBSTANTIVE_CHARS=15) and '[First criterion]' is 17 characters. T-3471's ACs are the literal template placeholders, so the judge's SUFFICIENCY criterion — 'are they good enough to justify the score claimed' — approves template text. FIX: reuse the placeholder detection the framework already has rather than adding a third variant. agents/context/check-active-task.sh:1053 (the G-020 scope gate) already detects '[First criterion]' template ACs, and T-3428 already established the stronger general rule — strip template text BEFORE matching, measured there as 'template-only prose scored 4 unstripped, 0 stripped'. Prefer extracting the existing predicate to a shared helper over copying it, since copying is how arc membership reached five readers. TEST THAT MUST EXIST: a fixture task whose ACs are the actual template placeholders must NOT come back green — none of T-3526's 34 tests used one, which is exactly why a fully green suite shipped a false green. The verdict for a placeholder-AC task should be RED with guidance naming what to write, or AMBER at the softest; never green.
+  OBS-560. 'fw bvp judge T-3471' returns GREEN because lib/bvp_judge.py:140 _is_substantive()
+  is a pure length threshold (MIN_SUBSTANTIVE_CHARS=15) and '[First criterion]' is
+  17 characters. T-3471's ACs are the literal template placeholders, so the judge's
+  SUFFICIENCY criterion — 'are they good enough to justify the score claimed' — approves
+  template text. FIX: reuse the placeholder detection the framework already has rather
+  than adding a third variant. agents/context/check-active-task.sh:1053 (the G-020
+  scope gate) already detects '[First criterion]' template ACs, and T-3428 already
+  established the stronger general rule — strip template text BEFORE matching, measured
+  there as 'template-only prose scored 4 unstripped, 0 stripped'. Prefer extracting
+  the existing predicate to a shared helper over copying it, since copying is how
+  arc membership reached five readers. TEST THAT MUST EXIST: a fixture task whose
+  ACs are the actual template placeholders must NOT come back green — none of T-3526's
+  34 tests used one, which is exactly why a fully green suite shipped a false green.
+  The verdict for a placeholder-AC task should be RED with guidance naming what to
+  write, or AMBER at the softest; never green.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +53,8 @@ related_tasks: [T-3526, T-3428, T-3525]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T21:36:54Z
-last_update: 2026-09-27T21:36:54Z
-date_finished: null
+last_update: 2026-09-27T22:08:59Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +65,56 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-27T21:45:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-27T21:45:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3528: BVP judge sufficiency check passes template placeholder ACs: reuse the G-020 detector instead of a length threshold
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The BVP score judge (T-3526) shipped with its SUFFICIENCY check implemented as a
+length threshold, which approved unfilled template criteria. Fixed by making the
+framework's existing template-stub predicate the primary leg and consolidating the
+two Python readers of it into `lib/ac_placeholder.py`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] One shared placeholder predicate exists (`lib/ac_placeholder.py`) and is the ONLY Python decision point for "is this AC template text": both `lib/bvp_judge.py` and `lib/resolver.py` import it, and neither carries its own copy of the ordinal-criterion stub literal any more.
+- [x] `_is_substantive()` no longer decides on length alone — a template stub of ANY length (the default template's first ordinal stub is 17 chars, above the 15-char floor) is non-substantive. The length floor survives only as a second, weaker leg.
+- [x] A task whose every AC is a template placeholder comes back RED, not GREEN and not AMBER: textually-present-but-template is equivalent to absence, and the guidance names what to write. Demonstrated live on T-3471 (the OBS-560 reproducer).
+- [x] Control leg: a task with real substantive ACs still reaches GREEN. The fix must not be "everything is red now" — verified against a committed fixture, not only by reasoning.
+- [x] Cross-language parity is pinned, not asserted: a test reads the placeholder patterns out of `lib/task-audit.sh` (the bash reader, which a PreToolUse hook cannot replace with python3) and asserts the Python predicate agrees on every one, so the two readers cannot drift silently.
+- [x] The test that was missing exists: a fixture task carrying the ACTUAL template placeholder ACs, asserted non-green. Demonstrated in both directions — red against the pre-fix predicate, green against the fixed one.
+- [x] `bin/fw vendor self --check` is clean BEFORE `--status work-completed` (OBS-250).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +148,26 @@ date_finished: null
 -->
 
 ## Verification
+
+# The OBS-560 reproducer, live: the task whose ACs are the template stubs must NOT be green.
+out=$(bin/fw bvp judge T-3471 2>&1); echo "$out" | grep -q '^RED' && ! echo "$out" | grep -q '^GREEN'
+# The stubs are NAMED in the evidence, not just counted (that is what made the original hard to spot).
+bin/fw bvp judge T-3471 > /tmp/.t3528-judge 2>&1; grep -q 'UNFILLED TEMPLATE STUBS' /tmp/.t3528-judge
+# Control leg: a real-AC open task still reaches a non-RED verdict — the fix is not "everything is red".
+out=$(bin/fw bvp judge T-3528 2>&1); ! echo "$out" | grep -q 'UNFILLED TEMPLATE STUBS'
+# Predicate + cross-language parity suite (includes its own control leg).
+python3 -m pytest tests/unit/test_ac_placeholder.py -q > /tmp/.t3528-ap 2>&1 && grep -q passed /tmp/.t3528-ap
+# Judge suite including the fixture that was missing and the length-only mutant kill.
+python3 -m pytest tests/unit/test_bvp_judge.py tests/unit/test_bvp_judge_dispatch.py -q > /tmp/.t3528-bj 2>&1 && grep -q passed /tmp/.t3528-bj
+# The T-3525 contract still holds (the judge's shared vocabulary is untouched).
+python3 tests/check_t3525_contract.py
+# Entrypoint bats — assert nothing failed AND nothing silently skipped (T-3217).
+timeout 300 bats tests/unit/t3526_bvp_judge_entrypoint.bats > /tmp/.t3528-bats 2>&1 && ! grep -q '^not ok' /tmp/.t3528-bats
+test "$(grep -c '# skip' /tmp/.t3528-bats)" -eq 0
+# resolver.py delegates the stub leg without widening dispatch eligibility (all-ticked stays ineligible).
+PYTHONPATH=lib python3 -c "import resolver as r; assert r._ac_is_placeholder('- [x] A real substantive criterion here') is True; assert r._ac_is_placeholder('- [ ] A real substantive criterion here') is False; print('resolver semantics preserved')"
+# Vendored paths in sync BEFORE close (OBS-250).
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -226,6 +297,52 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** `bin/fw bvp judge T-3471` returned `GREEN  T-3471 (proceed; nothing owed)`
+with the evidence line `2/2 AC item(s) substantive (>= 15 chars after stripping prefix
+markers)`. T-3471's entire Acceptance Criteria section is the two ordinal template stubs
+the default template ships. The judge's SUFFICIENCY criterion — D-662's "are the criteria
+good enough to justify the score claimed?" — approved an untouched template, and the
+verdict was indistinguishable from a real pass.
+
+**Root cause:** `lib/bvp_judge.py:_is_substantive()` decided substantiveness by
+`len(stripped) >= MIN_SUBSTANTIVE_CHARS` (15). The first ordinal stub is 17 characters.
+The check measured a *proxy* for "is anything actually stated" — text volume — and the
+proxy diverges from the thing it stands for exactly at the template stubs, because the
+template authors wrote descriptive placeholder names rather than short ones. Same class
+as T-1828: a gate measuring a proxy that diverged from reality.
+
+**Why structurally allowed:** three defences already existed and none was reused.
+`agents/context/check-active-task.sh` (G-020) detects these exact stubs; `lib/task-audit.sh:79`
+carries the widest pattern set; `lib/resolver.py:_ac_is_placeholder` carried a two-literal
+version. T-3526 wrote a fourth, weaker variant beside them. Nothing in the build made the
+existing predicate visible at the moment the new one was written, and the dispatch prompt's
+"do not write a second definition" warning was scoped to the *verdict vocabulary*
+(green/amber/red), which the worker honoured — it imported `lib/judge_verdict.py` correctly.
+The warning did not generalise to *predicates the judge needs*.
+
+Second leg: **the suite could not see it.** T-3526 closed with 9/9 ACs and 34 green tests.
+Its fixture named `PLACEHOLDER_ACS` contained `TBD` / `fix it` — short authored text, which
+exercises only the length leg. No fixture used the literal template stubs, so a suite that
+was green in every direction it looked was blind in the one direction that mattered. A
+fixture named after the class it does not contain is worse than a missing fixture, because
+the coverage gap reads as covered.
+
+**Prevention** (distinct from the fix):
+1. `tests/unit/test_bvp_judge.py:TEMPLATE_STUB_ACS` — the real stubs, with
+   `test_template_stub_acs_are_not_green` asserting RED.
+2. `test_length_only_substantiveness_is_the_mutant_this_fixture_kills` restores the pre-fix
+   predicate and asserts the SAME fixture goes GREEN — so the fixture is pinned as the thing
+   that distinguishes the two implementations, and it fails loudly if it ever stops
+   reproducing OBS-560.
+3. `tests/unit/test_ac_placeholder.py::test_bash_and_python_readers_agree` extracts the LIVE
+   regex from `lib/task-audit.sh` and runs it through real `grep -qE` against every canonical
+   sample, with a control leg proving the parity test can fail. The two bash readers stay
+   separate by design (one runs in a PreToolUse hook on every Write/Edit; making it shell out
+   to `python3` trades a false green for a latency and availability risk on the busiest gate
+   in the framework), so this test is the only thing holding the languages together.
+4. Consolidation itself: two Python readers became one, so the next judge that needs this
+   predicate has one obvious place to import from.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -320,3 +437,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3528-bvp-judge-sufficiency-check-passes-templ.md
 - **Context:** Initial task creation
+
+### 2026-09-27T22:08:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

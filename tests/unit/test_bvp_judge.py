@@ -46,6 +46,20 @@ PLACEHOLDER_ACS = textwrap.dedent("""\
     - [ ] fix it
     """)
 
+#: T-3528 / OBS-560 — the fixture this suite was missing. PLACEHOLDER_ACS above
+#: is *short text*, which only ever exercised the length leg; these are the
+#: literal stubs `.tasks/templates/default.md` ships, and the first one is 17
+#: chars — above the 15-char floor. 34 tests passed while `fw bvp judge T-3471`
+#: returned GREEN on exactly this input, because no fixture used it.
+TEMPLATE_STUB_ACS = textwrap.dedent("""\
+    ## Acceptance Criteria
+
+    ### Agent
+    <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+    - [ ] [First criterion]
+    - [ ] [Second criterion]
+    """)
+
 NO_ACS = "## Acceptance Criteria\n\n### Agent\n<!-- none yet -->\n"
 
 
@@ -348,3 +362,90 @@ def test_always_green_mutant_is_killed_by_presence_test(tmp_path, monkeypatch):
     monkeypatch.undo()
     v_real, _ = bj.judge_task(p)
     assert v_real["state"] == RED, "mutant would have been undetected if this held"
+
+
+# ───────── (T-3528 / OBS-560) unfilled template stubs are never green ────────
+
+
+def test_template_stub_acs_are_not_green(tmp_path):
+    """The reproducer, as a test. `fw bvp judge T-3471` returned GREEN on this
+    exact input with 34 tests passing, because none of them used it."""
+    p = _write_task(tmp_path, ac_body=TEMPLATE_STUB_ACS, scores={"D1": 4, "D2": 4})
+    v, reason = bj.judge_task(p)
+    assert v is not None
+    assert v["state"] != GREEN, "template stubs came back GREEN — OBS-560 has regressed"
+    assert v["state"] == RED, (
+        "textually-present-but-unfilled is equivalent to absence, so it gets RED; "
+        "AMBER would let may_proceed() wave it through")
+    assert not may_proceed(v)
+
+
+def test_template_stub_verdict_carries_actionable_guidance(tmp_path):
+    """A colour with nothing to act on gets routed around ([REVIEWER]: 7 uses vs
+    412). The guidance has to say what to write."""
+    p = _write_task(tmp_path, ac_body=TEMPLATE_STUB_ACS, scores={"D1": 4})
+    v, _ = bj.judge_task(p)
+    g = v["guidance"].lower()
+    assert "template" in g or "stub" in g
+    assert "replace" in g or "real criteria" in g
+
+
+def test_template_stub_evidence_names_the_offending_items(tmp_path):
+    """Counting without naming is what made the original false green take a
+    hand-comparison against the task file to spot."""
+    p = _write_task(tmp_path, ac_body=TEMPLATE_STUB_ACS, scores={"D1": 4})
+    v, _ = bj.judge_task(p)
+    blob = " ".join(v["evidence"])
+    assert "TEMPLATE STUBS" in blob
+    assert "First criterion" in blob
+
+
+def test_length_only_substantiveness_is_the_mutant_this_fixture_kills(tmp_path, monkeypatch):
+    """Both directions, in one test (T-3528 AC 6).
+
+    Restore the pre-fix predicate — length only — and the SAME fixture goes
+    GREEN. That is the measurement: the fixture is what distinguishes the two
+    implementations, and it is what the T-3526 suite lacked.
+    """
+    p = _write_task(tmp_path, ac_body=TEMPLATE_STUB_ACS, scores={"D1": 4, "D2": 4})
+
+    v_fixed, _ = bj.judge_task(p)
+    assert v_fixed["state"] == RED
+
+    def _length_only(item: str) -> bool:
+        stripped = bj._PREFIX_MARKER_RE.sub("", item).strip("*_ \t")
+        return len(stripped) >= bj.MIN_SUBSTANTIVE_CHARS
+
+    monkeypatch.setattr(bj, "_is_substantive", _length_only)
+    monkeypatch.setattr(bj, "all_placeholder", lambda items: False)
+    v_prefix, _ = bj.judge_task(p)
+    assert v_prefix["state"] == GREEN, (
+        "the pre-fix predicate no longer reproduces OBS-560 — if the false green "
+        "is unreachable for some other reason, this fixture has stopped measuring "
+        "what it was written to measure")
+
+
+def test_real_acs_still_reach_green_after_the_fix(tmp_path):
+    """Control leg: the fix must not be 'everything is red now'."""
+    p = _write_task(tmp_path, ac_body=GOOD_ACS, scores={"D1": 3, "D2": 2},
+                    rationale="D1=3 (body:structural-gate); D2=2 (body:audit-rail)")
+    v, reason = bj.judge_task(p)
+    assert v["state"] == GREEN, f"real ACs no longer pass: {reason} / {v.get('evidence')}"
+    assert may_proceed(v)
+
+
+def test_partially_stubbed_acs_are_judged_on_what_remains(tmp_path):
+    """One stub among real criteria is not the all-template case, so it must not
+    take the RED-for-absence path — it falls through to the sufficiency leg."""
+    mixed = textwrap.dedent("""\
+        ## Acceptance Criteria
+
+        ### Agent
+        - [ ] The endpoint returns HTTP 200 and the expected JSON payload shape.
+        - [ ] [Second criterion]
+        """)
+    p = _write_task(tmp_path, ac_body=mixed, scores={"D1": 2},
+                    rationale="D1=2 (body:structural-gate)")
+    v, reason = bj.judge_task(p)
+    assert v is not None
+    assert reason != "acceptance criteria are unfilled template stubs"

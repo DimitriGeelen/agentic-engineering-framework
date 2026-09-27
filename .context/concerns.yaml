@@ -1139,3 +1139,58 @@
   - T-3481
   - T-3297
   follow_up_task: null
+
+- id: OBS-561
+  type: structural
+  severity: low
+  surface: 'agents/context/check-active-task.sh (the G-020 build-readiness gate,
+    at the HAS_PLACEHOLDER grep) counts template-stub literals anywhere in the
+    Acceptance Criteria section after stripping HTML comments — but it does NOT
+    strip fenced code blocks or inline backtick spans. Its sibling reader
+    lib/task-audit.sh:79 does strip both, explicitly and with a comment
+    explaining why. So the two readers of the same predicate disagree on
+    mention-vs-instance, and the stricter-looking one is the weaker reading.'
+  detected_in: T-3528 (hit live while writing that task''s own acceptance
+    criteria — the fix for OBS-560)
+  symptom: 'Writing an acceptance criterion that NAMES a template stub in order
+    to describe the bug being fixed — even inside a backtick span, e.g. "a stub
+    of any length (including `[First criterion]`, 17 chars) is non-substantive"
+    — makes the G-020 gate refuse every subsequent source Write/Edit on that
+    task. The block message instructs replacing the placeholder ACs with real
+    ones, which had already been done: the ACs WERE real, and one of them
+    quoted the thing it was about. The remedy the gate prints does not describe
+    the state the author is actually in.'
+  root_cause: 'The predicate asks "does this text contain a stub literal?" as a
+    proxy for "was this section left unfilled?". The proxy diverges wherever
+    authored prose discusses the stubs — which is precisely the population of
+    tasks that FIX placeholder-handling bugs. task-audit.sh already recognised
+    this class and mitigated it (fence + inline-backtick stripping, added for
+    T-1298 which explains what audit_task_placeholders detects); that mitigation
+    was never ported to check-active-task.sh, which is the gate authors actually
+    trip.'
+  prevention: 'NOT FIXED. Worked around in T-3528 by rewording the criterion to
+    describe the stub without quoting it ("the default template''s first ordinal
+    stub is 17 chars"). Candidate fixes, each with a cost: (a) port
+    task-audit.sh''s fence/backtick stripping into the G-020 grep — narrow and
+    symmetrical with the sibling reader, but widens the gate''s blind spot to any
+    unfilled template that happens to sit inside a code fence; (b) require the
+    stub to be the WHOLE content of a checkbox item rather than a substring
+    anywhere in the section — sharper, since an unfilled template always has the
+    stub as the entire item, but a bigger behaviour change on the framework''s
+    busiest gate; (c) leave it and document the workaround in the block message,
+    which costs nothing but leaves the next author to rediscover it. Not chosen
+    here: this is a governance change to a Tier-1 gate and wants its own task.
+    Note the gate was RIGHT to fire in a useful sense — it caught real stub text
+    in the AC section; it was the diagnosis and the prescribed remedy that were
+    wrong.'
+  blast_radius: 'Any task whose subject IS template placeholders or the G-020
+    gate itself — small population, but exactly the tasks that improve this
+    machinery, and the block is total (no source write possible) while the
+    printed remedy is a no-op.'
+  observed: '2026-09-28'
+  status: open
+  related:
+  - T-3528
+  - T-3526
+  - T-3299
+  follow_up_task: null
