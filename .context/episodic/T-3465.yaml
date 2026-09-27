@@ -84,10 +84,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 2
-  commits: 1
-  files_changed: 16
-  lines_added: 491
-  lines_removed: 75
+  commits: 2
+  files_changed: 21
+  lines_added: 659
+  lines_removed: 90
+  footprint_refreshed_at: '2026-09-25T11:21:35Z'
+  footprint_refreshed_by_commit: 5e68bf782
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3465-propose-a-joint-integration-fixture-set-.md

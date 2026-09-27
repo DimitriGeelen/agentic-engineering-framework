@@ -1,8 +1,8 @@
 # audit_seed_corpus_refs
 
-> TODO: describe what this component does
+> T-2980 (arc-017, onboarding-curriculum): seed → corpus-map reference resolution.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_seed_corpus_refs.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_seed_corpus_refs.bats`
 
 ## What It Does
 

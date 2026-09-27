@@ -1,8 +1,8 @@
 # t3113_upgrade_worktree_advisory
 
-> TODO: describe what this component does
+> T-3113: `fw upgrade` names which linked worktrees are behind (R7 leg L4).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3113_upgrade_worktree_advisory.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3113_upgrade_worktree_advisory.bats`
 
 ## What It Does
 
@@ -22,13 +22,13 @@ counts definitions, so the next copy cannot hide in a file nobody thought to
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
-| [hook_parity](/docs/generated/lib-hook_parity) | tests | TODO: describe what this component does |
+| [hook_parity](/docs/generated/lib-hook_parity) | tests | Hook-set extraction and comparison — ONE definition, every caller (T-3112/T-3113). |
 | [colors](/docs/generated/lib-colors) | tests | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 | [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
 | [upgrade](/docs/generated/lib-upgrade) | calls | fw upgrade - Sync framework improvements to a consumer project |
-| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | calls | TODO: describe what this component does |
+| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | calls | T-3098 — Refuse governance writes from a linked git worktree. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3113_upgrade_worktree_advisory.yaml`*

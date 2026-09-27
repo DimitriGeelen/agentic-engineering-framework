@@ -1,8 +1,8 @@
 # drift_gate_not_shadowed_by_safelist
 
-> TODO: describe what this component does
+> T-2880 — the safe-list early return must not shadow the focus-drift gate.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/drift_gate_not_shadowed_by_safelist.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/drift_gate_not_shadowed_by_safelist.bats`
 
 ## What It Does
 

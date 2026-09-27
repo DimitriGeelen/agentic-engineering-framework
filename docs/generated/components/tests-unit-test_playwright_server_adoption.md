@@ -1,8 +1,8 @@
 # test_playwright_server_adoption
 
-> TODO: describe what this component does
+> Adoption decision for the shared Playwright test server (T-2782).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_playwright_server_adoption.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_playwright_server_adoption.py`
 
 ## What It Does
 

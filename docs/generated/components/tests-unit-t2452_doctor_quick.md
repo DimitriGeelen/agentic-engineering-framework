@@ -1,8 +1,8 @@
 # t2452_doctor_quick
 
-> TODO: describe what this component does
+> T-2452 / F6 (T-2441 dogfood) — `fw doctor --quick` project-only fast mode.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2452_doctor_quick.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2452_doctor_quick.bats`
 
 ## What It Does
 

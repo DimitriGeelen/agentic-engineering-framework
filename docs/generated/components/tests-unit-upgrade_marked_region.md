@@ -1,8 +1,8 @@
 # upgrade_marked_region
 
-> TODO: describe what this component does
+> T-3150 — `fw upgrade` step [1/10] rebuilt a consumer's CLAUDE.md as (everything above `## Core Principle`) + (framework governance).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/upgrade_marked_region.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/upgrade_marked_region.bats`
 
 ## What It Does
 

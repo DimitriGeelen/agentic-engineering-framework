@@ -1,8 +1,8 @@
 # arc_abandon
 
-> TODO: describe what this component does
+> T-1854 (T-NEW-6): fw arc abandon CLI verb.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_abandon.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_abandon.bats`
 
 ## What It Does
 
@@ -18,8 +18,8 @@ D-Immutability: arc YAML stays in .context/arcs/ (no move, no delete).
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
-| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | calls | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
+| [arc](/docs/generated/lib-arc) | tests | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_abandon.yaml`*

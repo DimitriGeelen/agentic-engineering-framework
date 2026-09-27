@@ -1,8 +1,8 @@
 # vendor_visibility
 
-> TODO: describe what this component does
+> T-3144 — `fw vendor` writes executable code into a consumer tree and never checked that the consumer's git could see it. Reported by 010-termlink for `tools/`; the measured set is wider.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/vendor_visibility.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/vendor_visibility.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ running it against real trees rather than by reading it:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [vendor-visibility](/docs/generated/lib-vendor-visibility) | tests | TODO: describe what this component does |
-| [corpus_explain](/docs/generated/tools-corpus_explain) | tests | TODO: describe what this component does |
+| [vendor-visibility](/docs/generated/lib-vendor-visibility) | tests | T-3144: after vendoring, assert the target's git can SEE what we just wrote. |
+| [corpus_explain](/docs/generated/tools-corpus_explain) | tests | T-2622: agent retrieval seam — corpus maps readable without a browser. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

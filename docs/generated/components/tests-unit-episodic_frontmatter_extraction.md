@@ -1,8 +1,8 @@
 # episodic_frontmatter_extraction
 
-> TODO: describe what this component does
+> T-2731 — frontmatter extraction must be scoped to the frontmatter and must not truncate multi-line scalars.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/episodic_frontmatter_extraction.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/episodic_frontmatter_extraction.bats`
 
 ## What It Does
 

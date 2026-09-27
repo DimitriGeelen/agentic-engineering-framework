@@ -1,8 +1,8 @@
 # test_cockpit_density_spacing
 
-> TODO: describe what this component does
+> T-2029: cockpit spacing scales with the density axis; exclusions are honoured.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_cockpit_density_spacing.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_cockpit_density_spacing.py`
 
 ## What It Does
 

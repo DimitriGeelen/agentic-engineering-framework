@@ -1,6 +1,6 @@
 # check-rail-mcp-label
 
-> TODO: describe what this component does
+> T-2908: PreToolUse label gate for the MCP rail-post producer surface.
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/check-rail-mcp-label.sh`
 
@@ -23,15 +23,15 @@ PreToolUse hook can inspect and block it, exactly like any other tool_input
 |-----------|--------------|-------------|
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
-| [rail-identity](/docs/generated/lib-rail-identity) | calls | TODO: describe what this component does |
+| [rail-identity](/docs/generated/lib-rail-identity) | calls | rail-identity.sh — project-scoped signing identity for outbound rail posts (T-2904) |
 
 ## Used By (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
-| [rail_mcp_label_guard](/docs/generated/tests-unit-rail_mcp_label_guard) | called_by | TODO: describe what this component does |
-| [rail_mcp_label_guard](/docs/generated/tests-unit-rail_mcp_label_guard) | tests_by | TODO: describe what this component does |
+| [rail_mcp_label_guard](/docs/generated/tests-unit-rail_mcp_label_guard) | called_by | T-2908: the MCP producer surface (mcp__termlink__termlink_channel_post) reaches the same rail topics as `fw rail post` with neither the T-2904 identity gate nor the T-2905 label gate in scope, because both live inside `do_rail post` in… |
+| [rail_mcp_label_guard](/docs/generated/tests-unit-rail_mcp_label_guard) | tests_by | T-2908: the MCP producer surface (mcp__termlink__termlink_channel_post) reaches the same rail topics as `fw rail post` with neither the T-2904 identity gate nor the T-2905 label gate in scope, because both live inside `do_rail post` in… |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-rail-mcp-label.yaml`*

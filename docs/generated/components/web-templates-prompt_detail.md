@@ -1,6 +1,6 @@
 # prompt_detail
 
-> TODO: describe what this component does
+> Single prompt-register entry detail view, rendered by web/blueprints/prompts.py:prompt_detail.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/prompt_detail.html`
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [prompts](/docs/generated/web-blueprints-prompts) | rendered_by | TODO: describe what this component does |
+| [prompts](/docs/generated/web-blueprints-prompts) | rendered_by | Prompts blueprint — reusable agent-prompt register UI (T-1283 B3). |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-prompt_detail.yaml`*

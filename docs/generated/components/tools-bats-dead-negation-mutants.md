@@ -1,8 +1,8 @@
 # bats-dead-negation-mutants
 
-> TODO: describe what this component does
+> T-3138 AC6: mutate the dead-negation lint, confirm its own suite goes red.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/bats-dead-negation-mutants.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/bats-dead-negation-mutants.py`
 
 ## What It Does
 
@@ -14,7 +14,7 @@ and silently-unmeasured is the exact shape this whole task is about.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [bats-dead-negation-lint](/docs/generated/tools-bats-dead-negation-lint) | calls | TODO: describe what this component does |
+| [bats-dead-negation-lint](/docs/generated/tools-bats-dead-negation-lint) | calls | T-3138: find bats assertions that cannot fail. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-bats-dead-negation-mutants.yaml`*

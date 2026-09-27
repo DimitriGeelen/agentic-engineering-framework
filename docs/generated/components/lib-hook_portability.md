@@ -1,6 +1,6 @@
 # hook_portability
 
-> TODO: describe what this component does
+> Single source of truth for "is this hook command host-portable?" (T-2709).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/hook_portability.py`
 
@@ -20,7 +20,7 @@ Framework hook = dispatches through `fw hook <name>`. Anything else is a
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [hook_parity](/docs/generated/lib-hook_parity) | called_by | TODO: describe what this component does |
+| [hook_parity](/docs/generated/lib-hook_parity) | called_by | Hook-set extraction and comparison — ONE definition, every caller (T-3112/T-3113). |
 | [upgrade](/docs/generated/lib-upgrade) | called_by | fw upgrade - Sync framework improvements to a consumer project |
 
 ---

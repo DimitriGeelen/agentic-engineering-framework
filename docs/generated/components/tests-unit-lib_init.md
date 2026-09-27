@@ -1,8 +1,8 @@
 # lib_init
 
-> TODO: describe what this component does
+> Unit tests for lib/init.sh
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/lib_init.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/lib_init.bats`
 
 ## What It Does
 

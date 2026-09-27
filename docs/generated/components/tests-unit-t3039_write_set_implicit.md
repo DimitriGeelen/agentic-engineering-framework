@@ -1,8 +1,8 @@
 # t3039_write_set_implicit
 
-> TODO: describe what this component does
+> T-3039 — the implicit framework write-set, and the false green it closes.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3039_write_set_implicit.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3039_write_set_implicit.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ tasks with genuinely disjoint declared sets still collide there, in the
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [write_set](/docs/generated/lib-write_set) | calls | TODO: describe what this component does |
-| [write_set](/docs/generated/lib-write_set) | tests | TODO: describe what this component does |
+| [write_set](/docs/generated/lib-write_set) | calls | Disjoint write-set policy validator (T-2337, arc-011 M1 §3). |
+| [write_set](/docs/generated/lib-write_set) | tests | Disjoint write-set policy validator (T-2337, arc-011 M1 §3). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3039_write_set_implicit.yaml`*

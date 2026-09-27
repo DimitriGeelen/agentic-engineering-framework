@@ -1,6 +1,6 @@
 # ask
 
-> TODO: describe what this component does
+> LLM-assisted Q&A for Watchtower search.
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/ask.py`
 
@@ -32,12 +32,12 @@ Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [config](/docs/generated/web-config) | calls | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | calls | Environment-based configuration for Watchtower. |
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
-| [config](/docs/generated/web-config) | uses | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | uses | Environment-based configuration for Watchtower. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
-## Used By (9)
+## Used By (10)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -45,11 +45,12 @@ Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
 | [learnings-route](/docs/generated/learnings-route) | uses_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
 | [ask-py](/docs/generated/lib-ask-py) | called_by | Python implementation of fw ask subcommand (sibling of lib/ask.sh) |
 | [ask-py](/docs/generated/lib-ask-py) | uses_by | Python implementation of fw ask subcommand (sibling of lib/ask.sh) |
-| [fabric_watch_pattern_fitness](/docs/generated/tests-unit-fabric_watch_pattern_fitness) | tests_by | TODO: describe what this component does |
+| [fabric_watch_pattern_fitness](/docs/generated/tests-unit-fabric_watch_pattern_fitness) | tests_by | T-2737 — the watch file is the denominator of every fabric coverage check, and nothing verified it fits the project `fw context init` stamped it into. |
 | [api](/docs/generated/web-blueprints-api) | called_by | Watchtower API blueprint: JSON endpoints for AJAX/htmx — task data, metrics, approval actions. |
 | [api](/docs/generated/web-blueprints-api) | uses_by | Watchtower API blueprint: JSON endpoints for AJAX/htmx — task data, metrics, approval actions. |
 | [discovery_blueprint](/docs/generated/web-blueprints-discovery) | called_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
 | [discovery_blueprint](/docs/generated/web-blueprints-discovery) | uses_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
+| [ollama_provider](/docs/generated/web-llm-ollama_provider) | called_by | Ollama LLM provider — wraps the ollama Python library behind the LLMProvider interface (T-377) |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-ask.yaml`*

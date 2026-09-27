@@ -1,6 +1,6 @@
 # qa_feedback
 
-> TODO: describe what this component does
+> Q&A feedback storage — SQLite-backed thumbs up/down tracking (T-267).
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/qa_feedback.py`
 

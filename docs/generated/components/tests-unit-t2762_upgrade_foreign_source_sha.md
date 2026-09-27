@@ -1,8 +1,8 @@
 # t2762_upgrade_foreign_source_sha
 
-> TODO: describe what this component does
+> T-2762: a source repo that cannot resolve the consumer's recorded commit is not a valid upgrade source.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2762_upgrade_foreign_source_sha.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2762_upgrade_foreign_source_sha.bats`
 
 ## What It Does
 
@@ -21,9 +21,9 @@ Measured before the fix, with the field numbers from the 2026-08-03 report:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [version-relation](/docs/generated/lib-version-relation) | tests | TODO: describe what this component does |
+| [version-relation](/docs/generated/lib-version-relation) | tests | T-2713 — one truthful answer to "is this consumer ahead or behind?". |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [version-relation](/docs/generated/lib-version-relation) | calls | TODO: describe what this component does |
+| [version-relation](/docs/generated/lib-version-relation) | calls | T-2713 — one truthful answer to "is this consumer ahead or behind?". |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2762_upgrade_foreign_source_sha.yaml`*

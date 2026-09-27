@@ -1,8 +1,8 @@
 # test_upgrade_downgrade_guard
 
-> TODO: describe what this component does
+> T-1839 — fw upgrade silent-downgrade guard.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_upgrade_downgrade_guard.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_upgrade_downgrade_guard.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_cron_registry_generated_drift
 
-> TODO: describe what this component does
+> T-1942 — Pin fw doctor registry → generated drift detection.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_cron_registry_generated_drift.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_cron_registry_generated_drift.bats`
 
 ## What It Does
 

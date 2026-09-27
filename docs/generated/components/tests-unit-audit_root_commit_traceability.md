@@ -1,8 +1,8 @@
 # audit_root_commit_traceability
 
-> TODO: describe what this component does
+> T-2851 — the audit's commit-traceability check must exempt ROOT commits.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_root_commit_traceability.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_root_commit_traceability.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ object). The negative control is the load-bearing half.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [traceability](/docs/generated/lib-traceability) | calls | TODO: describe what this component does |
-| [traceability](/docs/generated/lib-traceability) | tests | TODO: describe what this component does |
+| [traceability](/docs/generated/lib-traceability) | calls | lib/traceability.sh — commit-traceability predicates (T-2851) |
+| [traceability](/docs/generated/lib-traceability) | tests | lib/traceability.sh — commit-traceability predicates (T-2851) |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---

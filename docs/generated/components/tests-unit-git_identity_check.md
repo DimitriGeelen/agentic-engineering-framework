@@ -1,8 +1,8 @@
 # git_identity_check
 
-> TODO: describe what this component does
+> T-2883 — "can this machine commit?" must be answered the way git answers it.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/git_identity_check.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/git_identity_check.bats`
 
 ## What It Does
 
@@ -21,9 +21,9 @@ state that genuinely cannot commit.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [git-identity](/docs/generated/lib-git-identity) | calls | TODO: describe what this component does |
+| [git-identity](/docs/generated/lib-git-identity) | calls | lib/git-identity.sh — one answer to "can this machine commit?" (T-2883) |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [git-identity](/docs/generated/lib-git-identity) | tests | TODO: describe what this component does |
+| [git-identity](/docs/generated/lib-git-identity) | tests | lib/git-identity.sh — one answer to "can this machine commit?" (T-2883) |
 | [init](/docs/generated/lib-init) | tests | fw init - Bootstrap a new project with the Agentic Engineering Framework |
 | [setup](/docs/generated/lib-setup) | tests | fw setup - Guided onboarding wizard for new projects |
 | [preflight](/docs/generated/lib-preflight) | tests | fw preflight subcommand. Validates system prerequisites (bash version, git version, python3, PyYAML) before framework operations. |

@@ -1,6 +1,6 @@
 # doctor-hook-exercise
 
-> TODO: describe what this component does
+> T-1629 (B-3a of T-1626) & T-070 — `fw doctor` active hook probe.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/doctor-hook-exercise.py`
 

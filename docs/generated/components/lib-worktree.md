@@ -1,6 +1,6 @@
 # worktree
 
-> TODO: describe what this component does
+> lib/worktree.sh — fw worktree topology observability.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/worktree.sh`
 
@@ -39,8 +39,8 @@ rule below wins.
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [t3117_gc_landing_predicate](/docs/generated/tests-unit-t3117_gc_landing_predicate) | tests_by | TODO: describe what this component does |
-| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
+| [t3117_gc_landing_predicate](/docs/generated/tests-unit-t3117_gc_landing_predicate) | tests_by | T-3117: `fw worktree gc` decides "has this landed?" against the right trunk, and by the right test. |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | Fabric enrichment engine — auto-detect dependency edges from source analysis. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-worktree.yaml`*

@@ -21,10 +21,10 @@ Usage: source "$FRAMEWORK_ROOT/lib/yaml.sh"
 | [healing_suggest](/docs/generated/tests-unit-healing_suggest) | called_by | Unit tests for healing suggest (9 tests) |
 | [healing_suggest](/docs/generated/tests-unit-healing_suggest) | tests_by | Unit tests for healing suggest (9 tests) |
 | [lib_yaml](/docs/generated/tests-unit-lib_yaml) | tests_by | Unit tests for yaml (8 tests) |
-| [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | called_by | TODO: describe what this component does |
-| [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | tests_by | TODO: describe what this component does |
-| [episodic_frontmatter_extraction](/docs/generated/tests-unit-episodic_frontmatter_extraction) | called_by | TODO: describe what this component does |
-| [episodic_frontmatter_extraction](/docs/generated/tests-unit-episodic_frontmatter_extraction) | tests_by | TODO: describe what this component does |
+| [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | called_by | T-1557 / L-302 — Regression: foundation YAML/config helpers must not silent-kill the calling shell under set -e -o pipefail when the requested field/key is absent. |
+| [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | tests_by | T-1557 / L-302 — Regression: foundation YAML/config helpers must not silent-kill the calling shell under set -e -o pipefail when the requested field/key is absent. |
+| [episodic_frontmatter_extraction](/docs/generated/tests-unit-episodic_frontmatter_extraction) | called_by | T-2731 — frontmatter extraction must be scoped to the frontmatter and must not truncate multi-line scalars. |
+| [episodic_frontmatter_extraction](/docs/generated/tests-unit-episodic_frontmatter_extraction) | tests_by | T-2731 — frontmatter extraction must be scoped to the frontmatter and must not truncate multi-line scalars. |
 | [episodic](/docs/generated/agents-context-lib-episodic) | called_by | Context Agent - generate-episodic command |
 
 ---

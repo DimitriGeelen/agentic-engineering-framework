@@ -1,8 +1,8 @@
 # test_bvp_scatter
 
-> TODO: describe what this component does
+> T-1928: /bvp static quadrant scatter — visual + structural guards.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_bvp_scatter.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_bvp_scatter.py`
 
 ## What It Does
 

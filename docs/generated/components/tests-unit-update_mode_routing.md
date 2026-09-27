@@ -1,8 +1,8 @@
 # update_mode_routing
 
-> TODO: describe what this component does
+> T-2853 — `fw update` must route by what the framework copy IS, not by which branch happens to be tested first.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/update_mode_routing.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/update_mode_routing.bats`
 
 ## What It Does
 

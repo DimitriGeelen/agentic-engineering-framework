@@ -1,6 +1,6 @@
 # inception_recommendation
 
-> TODO: describe what this component does
+> Detection helper for the T-679 rule decay pattern (T-1715 meta-RCA, T-1716 implementation). Used by: - agents/audit/audit.sh — C-006 detective check - lib/inception.sh — Stream C sweep (do_inception_sweep --recommendation-fix)
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/inception_recommendation.sh`
 
@@ -23,8 +23,8 @@ find_inceptions_without_recommendation <active_dir>
 |-----------|--------------|-------------|
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [inception](/docs/generated/lib-inception) | called_by | fw inception - Inception phase workflow |
-| [t2318_retrofit_injector_append_missing](/docs/generated/tests-unit-t2318_retrofit_injector_append_missing) | called_by | TODO: describe what this component does |
-| [t2318_retrofit_injector_append_missing](/docs/generated/tests-unit-t2318_retrofit_injector_append_missing) | tests_by | TODO: describe what this component does |
+| [t2318_retrofit_injector_append_missing](/docs/generated/tests-unit-t2318_retrofit_injector_append_missing) | called_by | T-2318: retrofit injector must handle missing-Recommendation-section case (pre-T-1716 backlog inceptions). Pins detector↔corrector symmetry per RCA. |
+| [t2318_retrofit_injector_append_missing](/docs/generated/tests-unit-t2318_retrofit_injector_append_missing) | tests_by | T-2318: retrofit injector must handle missing-Recommendation-section case (pre-T-1716 backlog inceptions). Pins detector↔corrector symmetry per RCA. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---

@@ -1,8 +1,8 @@
 # test_task_create_description_yaml
 
-> TODO: describe what this component does
+> T-2778: `fw task create` must emit parseable frontmatter for multi-line descriptions.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_task_create_description_yaml.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_task_create_description_yaml.py`
 
 ## What It Does
 

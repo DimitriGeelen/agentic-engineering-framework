@@ -1,8 +1,8 @@
 # arc015_capture
 
-> TODO: describe what this component does
+> arc-015 (onboarding-shape-detection) — capture the headline mechanic firing.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/demo/arc015_capture.sh`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/demo/arc015_capture.sh`
 
 ## What It Does
 

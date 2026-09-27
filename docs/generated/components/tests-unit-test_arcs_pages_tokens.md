@@ -1,8 +1,8 @@
 # test_arcs_pages_tokens
 
-> TODO: describe what this component does
+> T-2027 (arc-007 S5a): Arcs section templates use semantic --wt-* tokens.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_arcs_pages_tokens.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_arcs_pages_tokens.py`
 
 ## What It Does
 

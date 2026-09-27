@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [fleet](/docs/generated/web-blueprints-fleet) | rendered_by | TODO: describe what this component does |
+| [fleet](/docs/generated/web-blueprints-fleet) | rendered_by | Fleet blueprint — operational dashboard for termlink fleet health (T-1103, T-1107). |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-fleet.yaml`*

@@ -1,8 +1,8 @@
 # note_exit_status
 
-> TODO: describe what this component does
+> T-2868 — `fw note` must exit 0 when it has written the note.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/note_exit_status.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/note_exit_status.bats`
 
 ## What It Does
 

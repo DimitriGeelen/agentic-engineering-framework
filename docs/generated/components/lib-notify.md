@@ -36,11 +36,11 @@ Design: Fire-and-forget, backgrounded, never blocks the calling script.
 | [lib_notify](/docs/generated/tests-unit-lib_notify) | called-by | Unit tests for notify (7 tests) |
 | [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
 | [lib_notify](/docs/generated/tests-unit-lib_notify) | called_by | Unit tests for notify (7 tests) |
-| [pending](/docs/generated/lib-pending) | called_by | TODO: describe what this component does |
+| [pending](/docs/generated/lib-pending) | called_by | fw pending - Pending-updates registry (T-1268 B1) Append-only ledger of cross-project / cross-machine actions an agent could not complete in-session. Resolved entries are flagged, not deleted. |
 | [lib_notify](/docs/generated/tests-unit-lib_notify) | tests_by | Unit tests for notify (7 tests) |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
-| [designer](/docs/generated/agents-designer-designer) | called_by | TODO: describe what this component does |
-| [bvp](/docs/generated/lib-bvp) | called_by | TODO: describe what this component does |
+| [designer](/docs/generated/agents-designer-designer) | called_by | fw designer: vendors and serves a pinned Workflow Designer release build via the Watchtower /designer blueprint (832-Workflow-designer is source of truth; T-2521). |
+| [bvp](/docs/generated/lib-bvp) | called_by | lib/bvp.sh — Business Value Points (BVP) read-only CLI |
 
 ## Related
 

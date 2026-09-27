@@ -1,8 +1,8 @@
 # test_framework_mcp_server
 
-> TODO: describe what this component does
+> T-2265 (arc-010 Slice 2): integration tests for framework MCP server.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/integration/test_framework_mcp_server.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/integration/test_framework_mcp_server.bats`
 
 ## What It Does
 
@@ -21,12 +21,12 @@ manifest contract (name+gated only)          — t2
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | calls | TODO: describe what this component does |
-| [manifest](/docs/generated/agents-mcp-manifest) | calls | TODO: describe what this component does |
-| [framework_mcp_server](/docs/generated/agents-mcp-framework_mcp_server) | calls | TODO: describe what this component does |
-| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | tests | TODO: describe what this component does |
-| [manifest](/docs/generated/agents-mcp-manifest) | tests | TODO: describe what this component does |
-| [framework_mcp_server](/docs/generated/agents-mcp-framework_mcp_server) | tests | TODO: describe what this component does |
+| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | calls | orchestrator-mcp-scan.sh — drift defense for MCP-tool task_id enforcement T-1646 (Arc C drift defense, parented under T-1644, originating in T-1641) |
+| [manifest](/docs/generated/agents-mcp-manifest) | calls | Manifest emission for the framework MCP server (T-2265): derives framework-mcp-manifest.json from policy/capability-overlay/tool-set.yaml, emitting the {name, gated} contract consumed by orchestrator-mcp-scan. |
+| [framework_mcp_server](/docs/generated/agents-mcp-framework_mcp_server) | calls | Framework MCP server (arc-010 Slice 2, T-2265): reads policy/capability-overlay/tool-set.yaml at startup, emits framework-mcp-manifest.json, and registers an MCP tool per read_only and agent_authority entry. |
+| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | tests | orchestrator-mcp-scan.sh — drift defense for MCP-tool task_id enforcement T-1646 (Arc C drift defense, parented under T-1644, originating in T-1641) |
+| [manifest](/docs/generated/agents-mcp-manifest) | tests | Manifest emission for the framework MCP server (T-2265): derives framework-mcp-manifest.json from policy/capability-overlay/tool-set.yaml, emitting the {name, gated} contract consumed by orchestrator-mcp-scan. |
+| [framework_mcp_server](/docs/generated/agents-mcp-framework_mcp_server) | tests | Framework MCP server (arc-010 Slice 2, T-2265): reads policy/capability-overlay/tool-set.yaml at startup, emits framework-mcp-manifest.json, and registers an MCP tool per read_only and agent_authority entry. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 

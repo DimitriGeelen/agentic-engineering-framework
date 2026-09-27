@@ -1,8 +1,8 @@
 # seed_self_gating_ac
 
-> TODO: describe what this component does
+> T-2862 — no seeded Agent AC may name the command that closes its own task.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/seed_self_gating_ac.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/seed_self_gating_ac.bats`
 
 ## What It Does
 

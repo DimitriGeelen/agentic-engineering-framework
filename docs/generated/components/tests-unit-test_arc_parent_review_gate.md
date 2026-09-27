@@ -1,8 +1,8 @@
 # test_arc_parent_review_gate
 
-> TODO: describe what this component does
+> T-1657 — Arc-parent review gate (G-062 mechanism #3).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_arc_parent_review_gate.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_arc_parent_review_gate.py`
 
 ## What It Does
 

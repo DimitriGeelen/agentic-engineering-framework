@@ -12,15 +12,15 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | calls | TODO: describe what this component does |
+| [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | calls | T-1706 — thin tool-execution loop for ollama-research workflow. |
 
 ## Used By (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [spawn](/docs/generated/lib-spawn) | calls | TODO: describe what this component does |
+| [spawn](/docs/generated/lib-spawn) | calls | spawn — dispatch driver: read resolver envelope, spawn worker, finalise outcome. |
 | `tests/unit/test_ollama_thin_loop.py` | reads | — |
-| [spawn](/docs/generated/lib-spawn) | uses_by | TODO: describe what this component does |
+| [spawn](/docs/generated/lib-spawn) | uses_by | spawn — dispatch driver: read resolver envelope, spawn worker, finalise outcome. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-ollama_thin_loop.yaml`*

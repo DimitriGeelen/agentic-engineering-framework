@@ -1,8 +1,8 @@
 # test_pi_worker
 
-> TODO: describe what this component does
+> T-1701: Unit tests for PiWorker (mocked subprocess).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_pi_worker.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_pi_worker.py`
 
 ## What It Does
 
@@ -12,7 +12,7 @@ Make lib/ importable without installing the package.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [pi_worker](/docs/generated/lib-pi_worker) | calls | TODO: describe what this component does |
+| [pi_worker](/docs/generated/lib-pi_worker) | calls | PiWorker — subprocess wrapper for pi (mariozechner/coding-agent) in RPC mode. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_pi_worker.yaml`*

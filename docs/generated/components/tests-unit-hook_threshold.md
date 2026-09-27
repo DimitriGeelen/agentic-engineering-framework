@@ -1,8 +1,8 @@
 # hook_threshold
 
-> TODO: describe what this component does
+> T-1631 (B-3b of T-1626) — hook-failure threshold rule.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/hook_threshold.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/hook_threshold.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ Pins the contract that:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [hook-threshold](/docs/generated/lib-hook-threshold) | calls | TODO: describe what this component does |
-| [hook-threshold](/docs/generated/lib-hook-threshold) | tests | TODO: describe what this component does |
+| [hook-threshold](/docs/generated/lib-hook-threshold) | calls | T-1631 (B-3b of T-1626) — hook-failure threshold rule. |
+| [hook-threshold](/docs/generated/lib-hook-threshold) | tests | T-1631 (B-3b of T-1626) — hook-failure threshold rule. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_threshold.yaml`*

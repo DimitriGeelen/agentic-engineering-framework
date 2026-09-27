@@ -1,8 +1,8 @@
 # rail_identity_guard
 
-> TODO: describe what this component does
+> T-2904: outbound rail posts must not be signed by the shared host key.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/rail_identity_guard.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/rail_identity_guard.bats`
 
 ## What It Does
 
@@ -21,10 +21,10 @@ resolution is broken — (f) proves the host fingerprint actually resolves, and
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [rail-identity](/docs/generated/lib-rail-identity) | tests | TODO: describe what this component does |
+| [rail-identity](/docs/generated/lib-rail-identity) | tests | rail-identity.sh — project-scoped signing identity for outbound rail posts (T-2904) |
 | [config](/docs/generated/lib-config) | tests | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [rail-identity](/docs/generated/lib-rail-identity) | calls | TODO: describe what this component does |
+| [rail-identity](/docs/generated/lib-rail-identity) | calls | rail-identity.sh — project-scoped signing identity for outbound rail posts (T-2904) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-rail_identity_guard.yaml`*

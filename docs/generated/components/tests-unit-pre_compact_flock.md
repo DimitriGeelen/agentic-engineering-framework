@@ -1,8 +1,8 @@
 # pre_compact_flock
 
-> TODO: describe what this component does
+> T-1476 — pre-compact.sh acquires a flock to prevent dual handover commits when both user-level and project-level PreCompact hooks fire (OBS-023).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/pre_compact_flock.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/pre_compact_flock.bats`
 
 ## What It Does
 

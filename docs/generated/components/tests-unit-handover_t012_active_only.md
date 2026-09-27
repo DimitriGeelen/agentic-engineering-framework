@@ -1,8 +1,8 @@
 # handover_t012_active_only
 
-> TODO: describe what this component does
+> T-1477 — handover.sh's COMMIT_TASK lookup must only match T-012 when it is in .tasks/active/. Matching completed/ caused recurring "task is closed" warnings on every session handover commit because T-012 was completed long
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/handover_t012_active_only.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/handover_t012_active_only.bats`
 
 ## What It Does
 

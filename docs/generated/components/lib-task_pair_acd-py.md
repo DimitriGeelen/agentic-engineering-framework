@@ -19,11 +19,11 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [task_pair_acd](/docs/generated/lib-task_pair_acd) | called_by | TODO: describe what this component does |
+| [task_pair_acd](/docs/generated/lib-task_pair_acd) | called_by | Task-pair §ACD gate (P-012). G-066 prong 2 — detect substrate-vs- deliverable conflation at work-completed time. Mirror of T-1668/T-1671's arc-level gate at the per-task level. |
 | [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
-| [test_file_route_extensions](/docs/generated/tests-unit-test_file_route_extensions) | called_by | TODO: describe what this component does |
-| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | called_by | TODO: describe what this component does |
-| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | tests_by | TODO: describe what this component does |
+| [test_file_route_extensions](/docs/generated/tests-unit-test_file_route_extensions) | called_by | T-1764: Regression tests for the /file/<path> route. |
+| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | called_by | T-1762: task-pair §ACD gate (P-012) — parser spike (T-1713 Spike 1) |
+| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | tests_by | T-1762: task-pair §ACD gate (P-012) — parser spike (T-1713 Spike 1) |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-task_pair_acd-py.yaml`*

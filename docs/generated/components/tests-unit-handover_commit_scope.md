@@ -1,8 +1,8 @@
 # handover_commit_scope
 
-> TODO: describe what this component does
+> T-3090 — a pathspec-scoped commit must not absorb a concurrent writer's index.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/handover_commit_scope.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/handover_commit_scope.bats`
 
 ## What It Does
 

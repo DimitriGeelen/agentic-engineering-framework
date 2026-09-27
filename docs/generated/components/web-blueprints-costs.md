@@ -12,7 +12,7 @@
 |-----------|--------------|-------------|
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [costs](/docs/generated/web-templates-costs) | renders | Jinja2 template for token usage dashboard — summary cards, breakdown bar, session table (T-802) |
-| [context_tokens](/docs/generated/lib-context_tokens) | calls | TODO: describe what this component does |
+| [context_tokens](/docs/generated/lib-context_tokens) | calls | Shared "how many tokens does THIS conversation currently hold" scan. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ## Used By (14)
@@ -28,7 +28,7 @@
 | [core](/docs/generated/web-blueprints-core) | registered_by | Flask blueprint: Core |
 | [test_costs](/docs/generated/web-test_costs) | registered_by | 24 pytest tests for costs blueprint — _fmt_tokens, _parse_session, _load_all_sessions, route (T-810) |
 | [test_costs](/docs/generated/web-test_costs) | called_by | 24 pytest tests for costs blueprint — _fmt_tokens, _parse_session, _load_all_sessions, route (T-810) |
-| [context_tokens](/docs/generated/lib-context_tokens) | called_by | TODO: describe what this component does |
+| [context_tokens](/docs/generated/lib-context_tokens) | called_by | Shared "how many tokens does THIS conversation currently hold" scan. |
 | [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
 | [core](/docs/generated/web-blueprints-core) | uses_by | Flask blueprint: Core |
 | [test_costs](/docs/generated/web-test_costs) | uses_by | 24 pytest tests for costs blueprint — _fmt_tokens, _parse_session, _load_all_sessions, route (T-810) |

@@ -1,8 +1,8 @@
 # test_heredoc_cmd_sub_guard
 
-> TODO: describe what this component does
+> T-1945 — PreToolUse heredoc-in-cmd-sub guard hook tests.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_heredoc_cmd_sub_guard.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_heredoc_cmd_sub_guard.bats`
 
 ## What It Does
 
@@ -15,8 +15,8 @@ task-create → edit-time prevention gap that bit T-1942 twice.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | calls | TODO: describe what this component does |
-| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | tests | TODO: describe what this component does |
+| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | calls | T-1945 — Heredoc-in-command-substitution edit-time guard. |
+| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | tests | T-1945 — Heredoc-in-command-substitution edit-time guard. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

@@ -1,8 +1,8 @@
 # handover_checkpoint_push
 
-> TODO: describe what this component does
+> T-2588 — `handover.sh --checkpoint` must push the checkpoint commit, not just commit it locally.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/handover_checkpoint_push.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/handover_checkpoint_push.bats`
 
 ## What It Does
 

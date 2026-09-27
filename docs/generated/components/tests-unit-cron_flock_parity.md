@@ -1,8 +1,8 @@
 # cron_flock_parity
 
-> TODO: describe what this component does
+> T-1558 — Regression: fw doctor must warn when the cron registry declares more flock-wrapped jobs than the deployed crontab carries (T-1556 prevention #5).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/cron_flock_parity.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/cron_flock_parity.bats`
 
 ## What It Does
 

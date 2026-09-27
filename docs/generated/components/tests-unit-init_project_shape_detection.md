@@ -1,8 +1,8 @@
 # init_project_shape_detection
 
-> TODO: describe what this component does
+> T-2723 (arc-015) — project-shape detection guard for F-10.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/init_project_shape_detection.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/init_project_shape_detection.bats`
 
 ## What It Does
 

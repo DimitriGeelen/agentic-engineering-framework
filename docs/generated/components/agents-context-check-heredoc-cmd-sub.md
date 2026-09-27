@@ -1,6 +1,6 @@
 # check-heredoc-cmd-sub
 
-> TODO: describe what this component does
+> T-1945 — Heredoc-in-command-substitution edit-time guard.
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/check-heredoc-cmd-sub.sh`
 
@@ -21,17 +21,17 @@ Exit codes:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [heredoc_guard](/docs/generated/lib-heredoc_guard) | calls | TODO: describe what this component does |
+| [heredoc_guard](/docs/generated/lib-heredoc_guard) | calls | T-1945 — Heredoc-in-cmd-substitution detector helper. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_heredoc_cmd_sub_guard](/docs/generated/tests-unit-test_heredoc_cmd_sub_guard) | called_by | TODO: describe what this component does |
-| [test_heredoc_cmd_sub_guard](/docs/generated/tests-unit-test_heredoc_cmd_sub_guard) | tests_by | TODO: describe what this component does |
+| [test_heredoc_cmd_sub_guard](/docs/generated/tests-unit-test_heredoc_cmd_sub_guard) | called_by | T-1945 — PreToolUse heredoc-in-cmd-sub guard hook tests. |
+| [test_heredoc_cmd_sub_guard](/docs/generated/tests-unit-test_heredoc_cmd_sub_guard) | tests_by | T-1945 — PreToolUse heredoc-in-cmd-sub guard hook tests. |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
-| [settings_regenerate_preserves_hooks](/docs/generated/tests-unit-settings_regenerate_preserves_hooks) | called_by | TODO: describe what this component does |
+| [settings_regenerate_preserves_hooks](/docs/generated/tests-unit-settings_regenerate_preserves_hooks) | called_by | T-2710: a forced .claude/settings.json regenerate must not silently delete hooks that `fw hook-enable` added after init. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-heredoc-cmd-sub.yaml`*

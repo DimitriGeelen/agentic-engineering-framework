@@ -1,8 +1,8 @@
 # test_nav_subsections
 
-> TODO: describe what this component does
+> T-2008 (arc-007 S2a): nav IA regroup + Govern sub-grouping guard.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_nav_subsections.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_nav_subsections.py`
 
 ## What It Does
 

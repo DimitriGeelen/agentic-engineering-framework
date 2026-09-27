@@ -1,8 +1,8 @@
 # episodic_yaml_timeline_escape
 
-> TODO: describe what this component does
+> T-2729 — the episodic generator's git-timeline rows must survive a commit subject containing YAML-hostile characters.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/episodic_yaml_timeline_escape.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/episodic_yaml_timeline_escape.bats`
 
 ## What It Does
 

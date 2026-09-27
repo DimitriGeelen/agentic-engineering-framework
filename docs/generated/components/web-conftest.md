@@ -1,6 +1,6 @@
 # conftest
 
-> TODO: describe what this component does
+> Pytest configuration for web/ test suite.
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/conftest.py`
 

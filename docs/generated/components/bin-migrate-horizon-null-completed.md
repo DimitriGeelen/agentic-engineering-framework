@@ -1,6 +1,6 @@
 # migrate-horizon-null-completed
 
-> TODO: describe what this component does
+> T-2161 (arc-009 horizon-axis-hardening, Slice 2): Null the stored `horizon:` field on every file under .tasks/completed/.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `bin/migrate-horizon-null-completed.sh`
 
@@ -21,9 +21,9 @@ frontmatter and the value is non-null/non-empty.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [update_task_horizon_null_on_close](/docs/generated/tests-unit-update_task_horizon_null_on_close) | called_by | TODO: describe what this component does |
-| [update_task_horizon_null_on_close](/docs/generated/tests-unit-update_task_horizon_null_on_close) | tests_by | TODO: describe what this component does |
-| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | TODO: describe what this component does |
+| [update_task_horizon_null_on_close](/docs/generated/tests-unit-update_task_horizon_null_on_close) | called_by | T-2163 / arc-009 Slice 4: write-side horizon-null at full close. |
+| [update_task_horizon_null_on_close](/docs/generated/tests-unit-update_task_horizon_null_on_close) | tests_by | T-2163 / arc-009 Slice 4: write-side horizon-null at full close. |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | T-2711: the self-vendor PRODUCER and the audit GATE must cover the same files. |
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-migrate-horizon-null-completed.yaml`*

@@ -1,6 +1,6 @@
 # task_pair_acd
 
-> TODO: describe what this component does
+> Task-pair §ACD gate (P-012). G-066 prong 2 — detect substrate-vs- deliverable conflation at work-completed time. Mirror of T-1668/T-1671's arc-level gate at the per-task level.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/task_pair_acd.sh`
 
@@ -22,12 +22,12 @@ Print one promised deliverable per line from the inception's
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
-| [test_review_code_inline](/docs/generated/tests-playwright-test_review_code_inline) | called_by | TODO: describe what this component does |
-| [test_file_route_extensions](/docs/generated/tests-unit-test_file_route_extensions) | called_by | TODO: describe what this component does |
-| [test_task_pair_acd_gate](/docs/generated/tests-unit-test_task_pair_acd_gate) | called_by | TODO: describe what this component does |
-| [test_task_pair_acd_gate](/docs/generated/tests-unit-test_task_pair_acd_gate) | tests_by | TODO: describe what this component does |
-| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | called_by | TODO: describe what this component does |
-| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | tests_by | TODO: describe what this component does |
+| [test_review_code_inline](/docs/generated/tests-playwright-test_review_code_inline) | called_by | T-1765: Pin the visual contract that prose-context `<code>` elements flow inline (not as atomic inline-blocks) so long backticked paths break gracefully with surrounding text rather than dropping wholesale to the next line. |
+| [test_file_route_extensions](/docs/generated/tests-unit-test_file_route_extensions) | called_by | T-1764: Regression tests for the /file/<path> route. |
+| [test_task_pair_acd_gate](/docs/generated/tests-unit-test_task_pair_acd_gate) | called_by | T-1762: task-pair §ACD gate (P-012) — gate behaviour (T-1713 Spike 3) |
+| [test_task_pair_acd_gate](/docs/generated/tests-unit-test_task_pair_acd_gate) | tests_by | T-1762: task-pair §ACD gate (P-012) — gate behaviour (T-1713 Spike 3) |
+| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | called_by | T-1762: task-pair §ACD gate (P-012) — parser spike (T-1713 Spike 1) |
+| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | tests_by | T-1762: task-pair §ACD gate (P-012) — parser spike (T-1713 Spike 1) |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-task_pair_acd.yaml`*

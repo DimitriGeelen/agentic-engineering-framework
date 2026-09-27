@@ -1,8 +1,8 @@
 # t3231_help_exemption_scope
 
-> TODO: describe what this component does
+> T-3231 — the `--help` exemption must not skip every gate.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3231_help_exemption_scope.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3231_help_exemption_scope.bats`
 
 ## What It Does
 

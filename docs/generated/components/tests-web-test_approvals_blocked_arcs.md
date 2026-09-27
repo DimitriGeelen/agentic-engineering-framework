@@ -1,8 +1,8 @@
 # test_approvals_blocked_arcs
 
-> TODO: describe what this component does
+> T-2986: an arc that meets the closure threshold but is not reviewable says so.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/web/test_approvals_blocked_arcs.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/web/test_approvals_blocked_arcs.py`
 
 ## What It Does
 

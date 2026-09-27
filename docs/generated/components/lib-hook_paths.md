@@ -1,6 +1,6 @@
 # hook_paths
 
-> TODO: describe what this component does
+> Python-side hook project-root resolver — parity with lib/paths.sh:fw_reanchor_from_cwd.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/hook_paths.py`
 
@@ -19,16 +19,16 @@
 |-----------|--------------|-------------|
 | [check-active-completed-dup](/docs/generated/agents-context-check-active-completed-dup) | called_by | PreToolUse Write\|Edit\|MultiEdit guard (T-2121 prong 1) that blocks creating .tasks/completed/T-N while .tasks/active/T-N already exists (or vice-versa) — the T-2091 active/completed divergence class. Fires only on genuine file creation; git-mv completion path never reaches it. Blocks under agent control; override FW_ALLOW_ACTIVE_COMPLETED_DUP=1 (Tier-2 logged). |
 | [check-active-completed-dup](/docs/generated/agents-context-check-active-completed-dup) | uses_by | PreToolUse Write\|Edit\|MultiEdit guard (T-2121 prong 1) that blocks creating .tasks/completed/T-N while .tasks/active/T-N already exists (or vice-versa) — the T-2091 active/completed divergence class. Fires only on genuine file creation; git-mv completion path never reaches it. Blocks under agent control; override FW_ALLOW_ACTIVE_COMPLETED_DUP=1 (Tier-2 logged). |
-| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | called_by | TODO: describe what this component does |
-| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | uses_by | TODO: describe what this component does |
-| [check-inception-decisions](/docs/generated/agents-context-check-inception-decisions-py) | called_by | TODO: describe what this component does |
-| [check-inception-decisions](/docs/generated/agents-context-check-inception-decisions-py) | uses_by | TODO: describe what this component does |
-| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation-py) | called_by | TODO: describe what this component does |
-| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation-py) | uses_by | TODO: describe what this component does |
-| [check-inception-schema](/docs/generated/agents-context-check-inception-schema-py) | called_by | TODO: describe what this component does |
-| [check-inception-schema](/docs/generated/agents-context-check-inception-schema-py) | uses_by | TODO: describe what this component does |
-| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate-py) | called_by | TODO: describe what this component does |
-| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate-py) | uses_by | TODO: describe what this component does |
+| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | called_by | T-1849: arc_id task-frontmatter validation hook (T-NEW-2). |
+| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | uses_by | T-1849: arc_id task-frontmatter validation hook (T-NEW-2). |
+| [check-inception-decisions](/docs/generated/agents-context-check-inception-decisions-py) | called_by | T-1984: inception_decisions task-frontmatter validation hook. |
+| [check-inception-decisions](/docs/generated/agents-context-check-inception-decisions-py) | uses_by | T-1984: inception_decisions task-frontmatter validation hook. |
+| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation-py) | called_by | T-2205 (T-2204 Slice B): PreToolUse Write/Edit hook — refuse save when an inception task has a template-only `## Recommendation` block under |
+| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation-py) | uses_by | T-2205 (T-2204 Slice B): PreToolUse Write/Edit hook — refuse save when an inception task has a template-only `## Recommendation` block under |
+| [check-inception-schema](/docs/generated/agents-context-check-inception-schema-py) | called_by | T-2188: PreToolUse hook validating inception frontmatter schema. |
+| [check-inception-schema](/docs/generated/agents-context-check-inception-schema-py) | uses_by | T-2188: PreToolUse hook validating inception frontmatter schema. |
+| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate-py) | called_by | T-2815: refuse Write/Edit that adds an agent-unresolvable task to the gated onboarding set (T-532's check-active-task.sh onboarding block). |
+| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate-py) | uses_by | T-2815: refuse Write/Edit that adds an agent-unresolvable task to the gated onboarding set (T-532's check-active-task.sh onboarding block). |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-hook_paths.yaml`*

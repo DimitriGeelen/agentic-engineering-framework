@@ -1,8 +1,8 @@
 # test_orchestrator_status_outcomes
 
-> TODO: describe what this component does
+> T-1749 — Regression tests for `fw orchestrator status --outcomes`.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_orchestrator_status_outcomes.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_orchestrator_status_outcomes.py`
 
 ## What It Does
 

@@ -1,6 +1,6 @@
 # escalation_drift
 
-> TODO: describe what this component does
+> G-019 Layer C escalation-drift scanner results (H1/H2/H3 findings), rendered by web/blueprints/escalation.py.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/escalation_drift.html`
 

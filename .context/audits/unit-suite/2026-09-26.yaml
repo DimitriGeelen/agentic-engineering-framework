@@ -1,0 +1,140 @@
+schema: unit-suite-report-v1
+task: T-3302
+started: '2026-09-26T01:03:01Z'
+finished: '2026-09-26T02:44:55Z'
+suite_dir: /opt/999-Agentic-Engineering-Framework/tests/unit
+timeout_seconds: 7200
+pytest_reserve_seconds: 1800
+timed_out: true
+runner_exit: 1
+legs:
+  bats:
+    files: 663
+    budget_seconds: 5400
+    tests: 2791
+    failed_count: 92
+    skipped: 15
+    exit: 124
+    failed:
+    - every lib/ and agents/ file that dumps YAML has an atomic-write signal
+    - 'T-2985: a lint-clean store emits a PASS line carrying the map count'
+    - "T-2980: seed referencing an existing map \u2192 PASS with the count"
+    - "T-2980: no seed references \u2192 no PASS line (nothing was checked)"
+    - 'shell-idiom ratchet (T-2649): PROJECT_ROOT framework-asset sites in shell stay
+      at the reviewed baseline'
+    - "T-1855: in-progress arc with recent task commit \u2192 pass line emitted"
+    - 'OFF default: no log writes occur'
+    - --dry-run with enabled=true lists candidates without promotion
+    - 'checkpoint: finds transcript in current project directory'
+    - 'checkpoint: reads correct project when multiple exist'
+    - 'checkpoint: T-1088 filters pre-session-start JSONL entries'
+    - 'checkpoint: T-1088 without session-start-ts uses all entries (backward compat)'
+    - 'add learning: creates first entry with L-001 ID in framework project'
+    - 'add learning: uses PL- prefix in consumer project'
+    - 't5: _costs_jsonl_dir delegates to fw_claude_project_dirs (newline-separated)'
+    - 'T-2714: ''Hook configuration valid'' reports COMMANDS, not matcher entries'
+    - 'T-2714: the message states all three denominators'
+    - 'T-2714: the two whole-file counters agree with each other'
+    - 'T-2735: the live coverage number equals the canonical expander''s'
+    - 'T-2735 severity: fully-carded project PASSes'
+    - 'T-2737 control: a fitting watch file raises neither new signal'
+    - 'T-2737: the drift PASS names the size of the set it measured'
+    - 'fw doctor: reports ''No vendored-source drift'' when in sync'
+    - fw gaps close CLI happy path
+    - fw gaps close with no args lists closure-eligible gaps
+    - handover.sh distinguishes timeout (exit 124) from other failures
+    - checkpoint.sh wraps auto-handover invocation in timeout (T-1277 belt-and-braces)
+    - default push timeout is 60s when env var unset
+    - 'hook-enable: emits absolute path for consumer-mode project'
+    - 'hook-enable: registered command resolves correctly under sh -c with arbitrary
+      cwd (the original bug)'
+    - 'hook-enable: framework-mode (FRAMEWORK.md + bin/fw) emits bin/fw not .agentic-framework/bin/fw'
+    - 'T-2911: template hook set has no unmirrored, unlisted divergence from this
+      repo''s own settings.json'
+    - 'T-2911: fresh ''fw init'' consumer''s hook set matches this repo''s, modulo
+      the allowlist'
+    - 'no identity: running the emitted command verbatim makes a governed commit work'
+    - 'fresh init: HEAD resolves'
+    - 'fresh init: git worktree add succeeds and checks out from the real HEAD, not
+      an orphan'
+    - 'fresh init: bootstrap commit uses the T-000 placeholder convention and has
+      a NON-EMPTY tree'
+    - "fresh init: exactly one commit \u2014 no double-bootstrap"
+    - 'fresh init: bootstrap commit passed the project''s own commit-msg hook (not
+      --no-verify)'
+    - 'fresh init: framework scaffolding IS tracked, and the tree is clean afterwards'
+    - 'application: NO generation site writes a placeholder value'
+    - fw_config_registry shows default source when no override
+    - CONTEXT_WINDOW default is 300000
+    - 'costs: _costs_jsonl_dir computes correct path from PROJECT_ROOT'
+    - 'costs: _costs_jsonl_dir strips leading dash from path'
+    - 'inception: CLAUDECODE=1 without --i-am-human is blocked (T-1259)'
+    - filesystem root carries no framework markers
+    - 'rail-identity: unconfigured project reports state=host'
+    - 'rail-identity: post is BLOCKED (exit 2) when it would be host-signed'
+    - 'rail-identity: FW_ALLOW_HOST_SIGNED_RAIL=1 bypasses, and says so on stderr'
+    - resume status produces structured output
+    - resume status shows git info
+    - resume status shows active tasks
+    - resume status shows recommendations
+    - fw vendor self --check does NOT flag VERSION (sync-only by design)
+    - "t1: no claude on PATH \u2192 exit 2"
+    - "t2: malformed JSON \u2192 exit 3"
+    - "t3: blocked \u2192 needs-input"
+    - "t4: done \u2192 completed"
+    - "t5: failed \u2192 completed + description=failed"
+    - "t6: interactive busy \u2192 working"
+    - "t7: interactive idle \u2192 completed"
+    - "t8: cwd in git repo \u2192 project = basename(toplevel)"
+    - "t9: cwd in $HOME \u2192 project = (loose)"
+    - "t10: empty session array \u2192 exit 0, zero JSONL lines"
+    - 'audit check body reads our own ledger only: no termlink token in check_sidecar_ledger'
+    - handover.sh wires divergence + nudge into the document
+    - "T-100202: outlier band is quarantined \u2014 new ID resumes at main cluster,\
+      \ not the band"
+    - 'T-100202: whole T-100xxx-style band is skipped even when it dominates the corpus'
+    - "T-100202: backward-compatible \u2014 no outlier band means plain global max\
+      \ + 1"
+    - 'T-100202: sub-threshold gap is NOT quarantined (both stay in the main cluster)'
+    - "T-100202: allocator parses the LEADING id only \u2014 embedded T-NNNN in a\
+      \ recursive slug is ignored"
+    - 'T-100202: empty corpus mints T-001'
+    - 'T-100202 AC3: non-git TASKS_DIR falls back to local-only scan (harness/back-compat)'
+    - 'T-100202 AC4: a single audit-warn mention is still a legal task name'
+    - 't1719-a3: a live ask writes a dispatch row with workflow_id=ask'
+    - 't1719-a3: a live ask writes an outcome row naming the route'
+    - 't1719: indexing a document makes it retrievable and stays under the 5s budget'
+    - 't1719: re-indexing the same path replaces its chunks rather than duplicating'
+    - 't2094 t7: F10 helper runs fw doctor with PROJECT_ROOT=target_dir'
+    - audit.sh arc-membership loop has _is_test_sentinel guard
+    - fw bvp driver --init creates policy/value-drivers.yaml in empty project
+    - created file is byte-identical to framework template
+    - "fw bvp driver --init is idempotent \u2014 refuses to overwrite without --force"
+    - fw bvp driver --init --force overwrites an existing file
+    - after --init, fw bvp no longer emits 'policy file not found'
+    - "--init is NOT \xA7ACD-gated (works under simulated CLAUDECODE=1)"
+    - 'T-2259: --init also creates policy/bvp-scoring-rubric.md'
+    - 'T-2259: created rubric is byte-identical to framework template'
+    - "T-2259: rubric.md is idempotent \u2014 refuses to overwrite without --force"
+    - 'T-2259: --force overwrites the rubric too'
+    - "T-2259: per-file idempotency \u2014 value-drivers.yaml exists but rubric.md\
+      \ missing \u2192 only rubric copied"
+    error: null
+  pytest:
+    files: 226
+    budget_seconds: 1800
+    tests: 3166
+    failed_count: 9
+    skipped: 3
+    exit: 1
+    failed:
+    - tests/unit/test_arcs_pages_tokens.py::test_only_neutral_fallback_hexes_remain
+    - tests/unit/test_bvp_estimator_v_alias.py::test_dispatch_unknown_driver_falls_back_to_score_free_driver
+    - tests/unit/test_corpus_lint.py::test_live_corpus_all_versions_census
+    - tests/unit/test_inception_decide_warning_widen.py::test_side_effect_warning_truncation_widened_to_1500
+    - tests/unit/test_inception_decide_warning_widen.py::test_side_effect_warning_html_escaped
+    - tests/unit/test_inception_decide_warning_widen.py::test_side_effect_warning_uses_pre_wrap_style
+    - tests/unit/test_t3066_approve_route.py::test_recycled_slot_is_refused_and_nothing_changes
+    - tests/unit/test_t3066_approve_route.py::test_unchanged_referent_still_applies
+    - tests/unit/test_t3066_approve_route.py::test_approve_route_reaches_the_cli_at_all
+    error: null

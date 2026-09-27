@@ -1,8 +1,8 @@
 # test_cockpit_traceability
 
-> TODO: describe what this component does
+> T-2021: Cockpit System Health renders traceability as a percentage, not a raw dict.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_cockpit_traceability.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_cockpit_traceability.py`
 
 ## What It Does
 

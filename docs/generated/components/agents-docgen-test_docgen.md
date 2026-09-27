@@ -1,8 +1,8 @@
 # test_docgen
 
-> TODO: describe what this component does
+> Unit tests for the component reference doc generator agents/docgen/generate_component.py (T-387).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/docgen/test_docgen.py`
+**Type:** test | **Subsystem:** testing | **Location:** `agents/docgen/test_docgen.py`
 
 ## What It Does
 

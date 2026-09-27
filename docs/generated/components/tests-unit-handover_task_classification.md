@@ -1,8 +1,8 @@
 # handover_task_classification
 
-> TODO: describe what this component does
+> T-3027 (OBS-276): `tasks_active:` must mean active.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/handover_task_classification.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/handover_task_classification.bats`
 
 ## What It Does
 

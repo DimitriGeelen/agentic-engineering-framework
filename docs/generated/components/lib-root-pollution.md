@@ -1,6 +1,6 @@
 # root-pollution
 
-> TODO: describe what this component does
+> T-2990 — root-level pollution detector.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/root-pollution.sh`
 
@@ -22,8 +22,8 @@ inline-python command trips it just as real code would.)
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [t2990_root_pollution](/docs/generated/tests-unit-t2990_root_pollution) | called_by | TODO: describe what this component does |
-| [t2990_root_pollution](/docs/generated/tests-unit-t2990_root_pollution) | tests_by | TODO: describe what this component does |
+| [t2990_root_pollution](/docs/generated/tests-unit-t2990_root_pollution) | called_by | T-2990: the root-pollution rail, proven in BOTH directions. |
+| [t2990_root_pollution](/docs/generated/tests-unit-t2990_root_pollution) | tests_by | T-2990: the root-pollution rail, proven in BOTH directions. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-root-pollution.yaml`*

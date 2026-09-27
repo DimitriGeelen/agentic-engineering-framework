@@ -1,8 +1,8 @@
 # test_self_vendor_libs_md_filter
 
-> TODO: describe what this component does
+> T-2307 (T-2304 follow-on): `_self_vendor_libs` extended to recursive + `*.md` filter.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_self_vendor_libs_md_filter.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_self_vendor_libs_md_filter.bats`
 
 ## What It Does
 

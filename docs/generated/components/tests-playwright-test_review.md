@@ -12,7 +12,7 @@ Find a task ID from the tasks page to test review
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ## Related
 

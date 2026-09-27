@@ -1,5 +1,5 @@
-# Audit Results - 2026-09-25-1308
-timestamp: 2026-09-25T11:08:55Z
+# Audit Results - 2026-09-25-2347
+timestamp: 2026-09-25T21:47:21Z
 sections: "structure"
 summary:
   pass: 36
@@ -17,7 +17,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "No duplicate task IDs — examined 3451 task file(s) across 1 corpus view(s)"
+    check: "No duplicate task IDs — examined 10390 task file(s) across 3 corpus view(s) (3458 ID(s) byte-identical in every view, 7 same-task at differing revisions)"
   - level: PASS
     check: "All project YAML files parse correctly — examined 31 project YAML file(s)"
   - level: PASS
@@ -56,8 +56,8 @@ findings:
   - level: PASS
     check: "No stale-slice-references (L-417) — examined 307 file(s) under web/templates web/blueprints lib"
   - level: WARN
-    check: "Found 186 GO-scope-not-propagated inception(s) of 368 GO-recorded completed inception(s) examined — GO recorded, related_tasks empty, nobody back-references, no unlocks_inception_decision"
-    mitigation: "Triage: per inception either backfill related_tasks: / unlocks_inception_decision:, or file the slices its GO approved. Full list: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; sibling to L-417/T-1975)"
+    check: "18 GO'd inception(s) with NO build follower — nobody built these (plus 56 in-flight, 108 built-but-unlinked; 182 unlinked in total, of 369 GO-recorded completed inception(s) examined)"
+    mitigation: "Only the first number means abandoned work. in-flight = followers exist, some still in active/; built-but-unlinked = followers exist and all completed, so the work shipped and only related_tasks: / unlocks_inception_decision: was never recorded. Triage per tier: cat /opt/999-Agentic-Engineering-Framework/.context/audits/go-scope-unpropagated/LATEST.md (origin: T-2078, T-2091, T-3099; tiers T-3469/OBS-535; sibling to L-417/T-1975)"
   - level: PASS
     check: "Fabric: 1337 registered card(s)"
   - level: WARN
@@ -78,7 +78,7 @@ findings:
   - level: PASS
     check: "Cron exec-bit: every script cron execs directly is executable — examined 3 directly-invoked script(s) in the deployed crontab"
   - level: WARN
-    check: "Branch hygiene: 18 finding(s) — stale branches, worktrees or remote refs"
+    check: "Branch hygiene: 22 finding(s) — stale branches, worktrees or remote refs"
     mitigation: "Cleanup: git branch -d <name> (merged); fw integrate run bleeding-edge (overdue merge-back). Full list: bash -c 'source \"/opt/999-Agentic-Engineering-Framework/lib/branch-hygiene.sh\"; fw_branch_hygiene \"/opt/999-Agentic-Engineering-Framework\"' — FORK present: reconcile while small (merge origin/bleeding-edge INTO the branch, or reset if its commits already landed). Do NOT use fw integrate on a fork."
   - level: PASS
     check: "Hook threshold: no hooks failing over threshold"
@@ -87,7 +87,7 @@ findings:
   - level: PASS
     check: "Invariant suite (tests/lint) green — examined 110 structural invariant(s) (tests/lint/)"
   - level: PASS
-    check: "Dead-negation lint (tests/) clean — examined 783 bats file(s) scanned for dead negations (tests/, T-3138/T-3191)"
+    check: "Dead-negation lint (tests/) clean — examined 784 bats file(s) scanned for dead negations (tests/, T-3138/T-3191)"
   - level: WARN
     check: "Unit suite (tests/unit) COULD NOT DETERMINE — nightly run hit its 7200s ceiling (T-3302, OBS-392)"
     mitigation: "Make a run COMPLETE before trusting any count: raise FW_UNIT_SUITE_TIMEOUT, or split/shard the corpus (OBS-388 covers the nested tests/lint suite). Re-running unit-suite.sh unchanged just re-times-out. Until one completes, treat tests/unit as UNKNOWN"
@@ -104,9 +104,9 @@ findings:
   - level: PASS
     check: "Map conformance: aef-tier0-escalation matches its enforced machine"
   - level: INFO
-    check: "Stale draft(s), 30d+ untouched: draft-arc-lifecycle draft-exception-handling draft-inception-readiness draft-knowledge-leveling draft-t2584-scratch draft-task-creation draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"
+    check: "Stale draft(s), 30d+ untouched: draft-arc-lifecycle draft-continuous-run-loop draft-exception-handling draft-inception-readiness draft-knowledge-leveling draft-t2584-scratch draft-task-creation draft-trigger-handling — promote via the ceremony or delete from the gallery (T-2623)"
   - level: PASS
-    check: "Sidecar ledger: 46 consult(s), 46 delivered, 0 in flight, 0 UNKNOWN, 0 dead-lettered, 0 expired-unswept"
+    check: "Sidecar ledger: 48 consult(s), 48 delivered, 0 in flight, 0 UNKNOWN, 0 dead-lettered, 0 expired-unswept"
   - level: WARN
     check: "BVP driver identity-fidelity has neither a handler nor a scoring spec"
     mitigation: "Give it a mechanism: draft a scoring: spec, check it with 'bin/fw bvp driver --validate-scoring <file>', try it with 'bin/fw bvp driver --explain identity-fidelity T-XXXX --scoring-file <file>'; schema in policy/value-drivers.yaml header (T-3428)"
@@ -128,7 +128,7 @@ findings:
   - level: PASS
     check: "Arc driver reviewer records: 7 scoped driver(s) on in-progress arcs, every reviewer-approved one carries its verdict"
   - level: PASS
-    check: "Delegation surface: reviewer-closeable 13, agent-self 1, operator-only 335 across 319 active task(s) with open Human criteria"
+    check: "Delegation surface: reviewer-closeable 13, agent-self 1, operator-only 336 across 320 active task(s) with open Human criteria"
   - level: WARN
     check: "Continuous-run wrapper last recorded ARMED but the turn driver is not"
     mitigation: "fw continuous arm --hours N --iterations N --directive '...' (T-3225). Same drift class as the 74-day and 8-day prior incidents (G-099)."

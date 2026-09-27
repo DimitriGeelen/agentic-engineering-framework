@@ -1,6 +1,6 @@
 # _stale_tasks_items
 
-> TODO: describe what this component does
+> Stale-task list items for the dashboard's stale-tasks widget.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_stale_tasks_items.html`
 

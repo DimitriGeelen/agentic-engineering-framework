@@ -79,10 +79,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 9
-  commits: 1
-  files_changed: 9
-  lines_added: 1065
-  lines_removed: 1
+  commits: 2
+  files_changed: 11
+  lines_added: 1185
+  lines_removed: 8
+  footprint_refreshed_at: '2026-09-27T14:30:52Z'
+  footprint_refreshed_by_commit: 81e475471
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3519-report-dispatch-worker-cost-in-tokens-fr.md

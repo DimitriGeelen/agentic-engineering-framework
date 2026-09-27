@@ -1,8 +1,8 @@
 # onboarding_gate_arc_tag_fp
 
-> TODO: describe what this component does
+> T-2881 — the onboarding gate must distinguish an arc tag from set membership.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/onboarding_gate_arc_tag_fp.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/onboarding_gate_arc_tag_fp.bats`
 
 ## What It Does
 
@@ -23,7 +23,7 @@ refused by arc-017's Half B invariant for carrying an unticked `### Human` AC.
 |-----------|--------------|-------------|
 | [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | tests | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
-| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate-py) | tests | TODO: describe what this component does |
+| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate-py) | tests | T-2815: refuse Write/Edit that adds an agent-unresolvable task to the gated onboarding set (T-532's check-active-task.sh onboarding block). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-onboarding_gate_arc_tag_fp.yaml`*

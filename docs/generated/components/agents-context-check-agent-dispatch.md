@@ -31,7 +31,7 @@ Enforcement:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | Invariant: gate scripts must not emit bare 'fw' COMMANDS — use bin/fw, or the _emit_user_command/_fw_cmd helpers that resolve the right path per project. Origin: T-1146 GO / T-1203 — bare commands are not copy-pasteable and violate PL-007. |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 
 ## Related

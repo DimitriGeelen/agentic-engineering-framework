@@ -1,21 +1,13 @@
 # ask
 
-> TODO: describe what this component does
+> Workflow config for `fw ask`: routes web/ask.py's synchronous RAG answer through ollama-local with a litellm cloud fallback on connection error.
 
-**Type:** data | **Subsystem:** unknown | **Location:** `.context/project/workflows/ask.yaml`
+**Type:** data | **Subsystem:** context-fabric | **Location:** `.context/project/workflows/ask.yaml`
 
 ## What It Does
 
-T-1719 A3: fw ask's provider-routing decision.
-Unlike every other workflow in this directory, `ask` never spawns a worker —
-lib/ask.py answers synchronously in the calling process. That is why
-worker_kind is `ollama-direct`, a kind registered specifically for this
-(lib/resolver.py + lib/workflow_lint.py; parity witness
-lib/worker_kinds_parity.py, surfaced by `fw doctor` per T-1734/T-1735).
-Reusing `ollama-thin-loop` would have made every dispatch row claim a tool
-loop ran when none did, and the entire point of routing ask through the
-Resolver is that the telemetry is true.
-The dispatch is captured through the same resolver.capture_dispatch() every
+Workflow config for `fw ask`: routes web/ask.py's synchronous RAG answer through
+ollama-local with a litellm cloud fallback on connection error.
 
 ### Framework Reference
 

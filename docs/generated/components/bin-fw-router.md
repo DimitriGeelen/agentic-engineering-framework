@@ -1,6 +1,6 @@
 # fw-router
 
-> TODO: describe what this component does
+> fw-router — the `fw` entry point on PATH (T-2793, operator decision D-377).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `bin/fw-router`
 

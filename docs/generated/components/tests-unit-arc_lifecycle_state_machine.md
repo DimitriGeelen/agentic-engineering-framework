@@ -1,8 +1,8 @@
 # arc_lifecycle_state_machine
 
-> TODO: describe what this component does
+> T-1852 (T-NEW-5a): arc lifecycle state machine.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_lifecycle_state_machine.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_lifecycle_state_machine.bats`
 
 ## What It Does
 
@@ -20,8 +20,8 @@ Refusals exit non-zero with actionable error citing the allowed transitions.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
-| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | calls | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
+| [arc](/docs/generated/lib-arc) | tests | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_lifecycle_state_machine.yaml`*

@@ -23,7 +23,7 @@
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [/capture Skill](/docs/generated/capture-skill) | called-by | Emergency ejector seat for untracked conversations. When invoked, reads the JSONL transcript, extracts the current topic's conversation, writes a structured research artifact to docs/reports/, and commits it. Closes the governance gap where pure conversation sessions bypass all framework enforcement. |
-| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | tests_by | TODO: describe what this component does |
+| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | tests_by | T-2380 — the three transcript-dir read-surfaces (fw costs, discard-manifest, read-transcript.py) must encode the ~/.claude/projects/<dir> name the way Claude Code does: EVERY non-alnum char → '-'. |
 
 ---
 *Auto-generated from Component Fabric. Card: `capture-reader.yaml`*

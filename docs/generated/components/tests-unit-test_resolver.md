@@ -1,8 +1,8 @@
 # test_resolver
 
-> TODO: describe what this component does
+> T-1696: Unit tests for lib/resolver.py.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_resolver.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_resolver.py`
 
 ## What It Does
 
@@ -12,7 +12,7 @@ Resolve framework root from this test file so PROJECT_ROOT works in CI.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [resolver](/docs/generated/lib-resolver) | calls | Resolver — workflow lookup, prompt assembly, variant selection, telemetry. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_resolver.yaml`*

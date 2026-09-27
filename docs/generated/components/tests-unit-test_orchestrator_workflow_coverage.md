@@ -1,8 +1,8 @@
 # test_orchestrator_workflow_coverage
 
-> TODO: describe what this component does
+> T-1799: /orchestrator surfaces Workflow coverage panel.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_orchestrator_workflow_coverage.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_orchestrator_workflow_coverage.py`
 
 ## What It Does
 
@@ -12,10 +12,10 @@ lib symlink so the web helper can import workflow_coverage from PROJECT_ROOT/lib
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [orchestrator](/docs/generated/web-blueprints-orchestrator) | calls | TODO: describe what this component does |
-| [orchestrator](/docs/generated/web-blueprints-orchestrator) | registers | TODO: describe what this component does |
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | calls | T-1647 (W10 #2 of T-1641 Arc C) — Watchtower /orchestrator page. |
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | registers | T-1647 (W10 #2 of T-1641 Arc C) — Watchtower /orchestrator page. |
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
-| [orchestrator](/docs/generated/web-blueprints-orchestrator) | uses | TODO: describe what this component does |
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | uses | T-1647 (W10 #2 of T-1641 Arc C) — Watchtower /orchestrator page. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [app](/docs/generated/web-app) | uses | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 

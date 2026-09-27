@@ -1,8 +1,8 @@
 # test_orchestrator_status_synthetic_filter
 
-> TODO: describe what this component does
+> T-1712 — fw orchestrator status: filter T-stress-* synthetic rows from enrichment metric, headline reports real dispatches only.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_orchestrator_status_synthetic_filter.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_orchestrator_status_synthetic_filter.bats`
 
 ## What It Does
 

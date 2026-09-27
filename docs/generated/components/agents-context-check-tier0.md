@@ -36,15 +36,15 @@ Flow:
 | [hook-config](/docs/generated/hook-config) | triggers_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 | [hook-config](/docs/generated/hook-config) | used-by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called-by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
-| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
-| [tier0_hash_normalization](/docs/generated/tests-unit-tier0_hash_normalization) | called_by | TODO: describe what this component does |
-| [tier0_hash_normalization](/docs/generated/tests-unit-tier0_hash_normalization) | tests_by | TODO: describe what this component does |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | Invariant: gate scripts must not emit bare 'fw' COMMANDS — use bin/fw, or the _emit_user_command/_fw_cmd helpers that resolve the right path per project. Origin: T-1146 GO / T-1203 — bare commands are not copy-pasteable and violate PL-007. |
+| [tier0_hash_normalization](/docs/generated/tests-unit-tier0_hash_normalization) | called_by | T-1500: Tier 0 hash drift on retry-after-approval. |
+| [tier0_hash_normalization](/docs/generated/tests-unit-tier0_hash_normalization) | tests_by | T-1500: Tier 0 hash drift on retry-after-approval. |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
-| [doctor_hook_exercise](/docs/generated/tests-unit-doctor_hook_exercise) | called_by | TODO: describe what this component does |
-| [session_start_hook_warning](/docs/generated/tests-unit-session_start_hook_warning) | called_by | TODO: describe what this component does |
-| [tier0_origin](/docs/generated/lib-tier0_origin) | called_by | TODO: describe what this component does |
-| [tier0_scope_boundary](/docs/generated/tests-unit-tier0_scope_boundary) | called_by | TODO: describe what this component does |
-| [tier0_scope_boundary](/docs/generated/tests-unit-tier0_scope_boundary) | tests_by | TODO: describe what this component does |
+| [doctor_hook_exercise](/docs/generated/tests-unit-doctor_hook_exercise) | called_by | T-1629 (B-3a of T-1626) — `fw doctor` actively exercises every configured Claude Code hook from /tmp (foreign CWD that mimics agent cd-drift) and reports any whose path doesn't resolve. |
+| [session_start_hook_warning](/docs/generated/tests-unit-session_start_hook_warning) | called_by | T-1630 (B-4 of T-1626) — SessionStart resume hook warns on broken hooks. |
+| [tier0_origin](/docs/generated/lib-tier0_origin) | called_by | Derive the provenance of a Tier 0 approval request (T-3078). |
+| [tier0_scope_boundary](/docs/generated/tests-unit-tier0_scope_boundary) | called_by | T-2742: Tier 0 inspects the command STRING only — characterization test. |
+| [tier0_scope_boundary](/docs/generated/tests-unit-tier0_scope_boundary) | tests_by | T-2742: Tier 0 inspects the command STRING only — characterization test. |
 | [approvals](/docs/generated/web-blueprints-approvals) | called_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
 | [config](/docs/generated/web-blueprints-config) | called_by | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |

@@ -1,8 +1,8 @@
 # doctor_hook_exercise
 
-> TODO: describe what this component does
+> T-1629 (B-3a of T-1626) — `fw doctor` actively exercises every configured Claude Code hook from /tmp (foreign CWD that mimics agent cd-drift) and reports any whose path doesn't resolve.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/doctor_hook_exercise.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/doctor_hook_exercise.bats`
 
 ## What It Does
 

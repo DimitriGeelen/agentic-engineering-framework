@@ -1,6 +1,6 @@
 # hooks
 
-> TODO: describe what this component does
+> T-1632 (B-3c of T-1626) — Watchtower /hooks page.
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/hooks.py`
 
@@ -11,8 +11,8 @@
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
-| [hooks](/docs/generated/web-templates-hooks) | renders | TODO: describe what this component does |
-| [hook-threshold](/docs/generated/lib-hook-threshold) | calls | TODO: describe what this component does |
+| [hooks](/docs/generated/web-templates-hooks) | renders | Git-hooks status dashboard, rendered by web/blueprints/hooks.py. |
+| [hook-threshold](/docs/generated/lib-hook-threshold) | calls | T-1631 (B-3b of T-1626) — hook-failure threshold rule. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ## Used By (3)

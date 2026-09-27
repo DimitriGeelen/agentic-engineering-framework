@@ -1,8 +1,8 @@
 # fw_pickup
 
-> TODO: describe what this component does
+> Integration tests for fw pickup subcommand
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/integration/fw_pickup.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/integration/fw_pickup.bats`
 
 ## What It Does
 

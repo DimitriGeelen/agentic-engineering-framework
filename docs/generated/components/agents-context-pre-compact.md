@@ -29,16 +29,16 @@ Updated: T-177 (manual-only cleanup, D-027 documentation)
 | [self-audit](/docs/generated/agents-audit-self-audit) | read_by | Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks. |
 | [hook-config](/docs/generated/hook-config) | triggers_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 | [hook-config](/docs/generated/hook-config) | used-by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
-| [pre_compact_flock](/docs/generated/tests-unit-pre_compact_flock) | called_by | TODO: describe what this component does |
-| [pre_compact_flock](/docs/generated/tests-unit-pre_compact_flock) | tests_by | TODO: describe what this component does |
-| [pre_compact_timewindow_dedup](/docs/generated/tests-unit-pre_compact_timewindow_dedup) | called_by | TODO: describe what this component does |
-| [pre_compact_timewindow_dedup](/docs/generated/tests-unit-pre_compact_timewindow_dedup) | tests_by | TODO: describe what this component does |
+| [pre_compact_flock](/docs/generated/tests-unit-pre_compact_flock) | called_by | T-1476 — pre-compact.sh acquires a flock to prevent dual handover commits when both user-level and project-level PreCompact hooks fire (OBS-023). |
+| [pre_compact_flock](/docs/generated/tests-unit-pre_compact_flock) | tests_by | T-1476 — pre-compact.sh acquires a flock to prevent dual handover commits when both user-level and project-level PreCompact hooks fire (OBS-023). |
+| [pre_compact_timewindow_dedup](/docs/generated/tests-unit-pre_compact_timewindow_dedup) | called_by | T-1478 — pre-compact.sh layers a time-window dedup on top of flock to catch SEQUENTIAL dual-fires that flock alone cannot stop. |
+| [pre_compact_timewindow_dedup](/docs/generated/tests-unit-pre_compact_timewindow_dedup) | tests_by | T-1478 — pre-compact.sh layers a time-window dedup on top of flock to catch SEQUENTIAL dual-fires that flock alone cannot stop. |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 | [context_safe_commands](/docs/generated/tests-unit-context_safe_commands) | called_by | Unit tests for context safe_commands (35 tests) |
-| [doctor_duplicate_hook_detection](/docs/generated/tests-unit-doctor_duplicate_hook_detection) | called_by | TODO: describe what this component does |
-| [upgrade_dedupe_user_hooks](/docs/generated/tests-unit-upgrade_dedupe_user_hooks) | called_by | TODO: describe what this component does |
-| [upgrade_duplicate_hook_detection](/docs/generated/tests-unit-upgrade_duplicate_hook_detection) | called_by | TODO: describe what this component does |
-| [validate_init_hook_path_expansion](/docs/generated/tests-unit-validate_init_hook_path_expansion) | called_by | TODO: describe what this component does |
+| [doctor_duplicate_hook_detection](/docs/generated/tests-unit-doctor_duplicate_hook_detection) | called_by | T-1480 — `fw doctor` surfaces the same duplicate-hook scan as T-1479's `fw upgrade` check. Read-only diagnostic so users see the overlap on every health check, not only when upgrading. |
+| [upgrade_dedupe_user_hooks](/docs/generated/tests-unit-upgrade_dedupe_user_hooks) | called_by | T-1481 — `fw upgrade --dedupe-user-hooks` opt-in remediation. Removes framework hooks from $HOME/.claude/settings.json that duplicate the project-level config; always backs up first. |
+| [upgrade_duplicate_hook_detection](/docs/generated/tests-unit-upgrade_duplicate_hook_detection) | called_by | T-1479 — fw upgrade detects when framework hooks are registered at both user-level (~/.claude/settings.json) and project-level (.claude/settings.json), warning the consumer (does NOT auto-remove user state). |
+| [validate_init_hook_path_expansion](/docs/generated/tests-unit-validate_init_hook_path_expansion) | called_by | T-2724 — lib/validate-init.sh must expand ${CLAUDE_PROJECT_DIR} before testing whether a hook script exists. |
 
 ## Related
 

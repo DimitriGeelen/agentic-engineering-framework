@@ -1,6 +1,6 @@
 # hook-parity
 
-> TODO: describe what this component does
+> lib/hook-parity.sh — the enforcement-baseline comparison predicate (T-3112, R7 leg 3)
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/hook-parity.sh`
 
@@ -22,9 +22,9 @@ Subject (2) is the R7 discovery: rules are enforced by code, code is tracked
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [hook_parity](/docs/generated/lib-hook_parity) | called_by | TODO: describe what this component does |
-| [t3111_worktree_reexec](/docs/generated/tests-unit-t3111_worktree_reexec) | tests_by | TODO: describe what this component does |
-| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | tests_by | TODO: describe what this component does |
+| [hook_parity](/docs/generated/lib-hook_parity) | called_by | Hook-set extraction and comparison — ONE definition, every caller (T-3112/T-3113). |
+| [t3111_worktree_reexec](/docs/generated/tests-unit-t3111_worktree_reexec) | tests_by | T-3111: fw re-execs the AUTHORITY's binary from a linked worktree (R7 leg L2). |
+| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | tests_by | T-3112: fw doctor audits linked worktrees for enforcement drift (R7 leg L3). |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-hook-parity.yaml`*

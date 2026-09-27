@@ -1,6 +1,6 @@
 # prompts_list
 
-> TODO: describe what this component does
+> Prompt-register listing page, rendered by web/blueprints/prompts.py:prompts_list.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/prompts_list.html`
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [prompts](/docs/generated/web-blueprints-prompts) | rendered_by | TODO: describe what this component does |
+| [prompts](/docs/generated/web-blueprints-prompts) | rendered_by | Prompts blueprint — reusable agent-prompt register UI (T-1283 B3). |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-prompts_list.yaml`*

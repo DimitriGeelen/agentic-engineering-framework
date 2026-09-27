@@ -1,8 +1,8 @@
 # test_appearance_validation
 
-> TODO: describe what this component does
+> T-1988 (arc-007 S1): pin the appearance security contract.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_appearance_validation.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_appearance_validation.py`
 
 ## What It Does
 

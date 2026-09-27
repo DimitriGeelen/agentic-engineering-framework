@@ -1,8 +1,8 @@
 # test_badge_contrast
 
-> TODO: describe what this component does
+> T-1970: Pin badge contrast on /arcs surfaces against WCAG AA (4.5:1).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_badge_contrast.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_badge_contrast.py`
 
 ## What It Does
 
@@ -14,7 +14,7 @@ below 4.5 will fail this test.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_badge_contrast.yaml`*

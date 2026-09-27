@@ -1,8 +1,8 @@
 # test_render_page_guard
 
-> TODO: describe what this component does
+> T-1899: render_page() runtime guard refuses templates that extend base.html.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_render_page_guard.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_render_page_guard.py`
 
 ## What It Does
 

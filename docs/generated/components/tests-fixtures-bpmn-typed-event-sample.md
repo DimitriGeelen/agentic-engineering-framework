@@ -2,7 +2,7 @@
 
 > TODO: describe what this component does
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/fixtures/bpmn/typed-event-sample.bpmn`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/fixtures/bpmn/typed-event-sample.bpmn`
 
 ## What It Does
 

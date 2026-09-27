@@ -1,8 +1,8 @@
 # test_approvals_content_tokens
 
-> TODO: describe what this component does
+> T-2026 (arc-007 S3c2): _approvals_content.html inline styles use semantic tokens.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_approvals_content_tokens.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_approvals_content_tokens.py`
 
 ## What It Does
 

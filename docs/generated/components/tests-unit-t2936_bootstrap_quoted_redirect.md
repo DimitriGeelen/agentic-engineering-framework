@@ -1,8 +1,8 @@
 # t2936_bootstrap_quoted_redirect
 
-> TODO: describe what this component does
+> T-2936 — the task gate refused both commands its own block message prescribes.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2936_bootstrap_quoted_redirect.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2936_bootstrap_quoted_redirect.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_doctor_litellm_ollama
 
-> TODO: describe what this component does
+> T-1700 — fw doctor: litellm-proxy + ollama reachability checks.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_doctor_litellm_ollama.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_doctor_litellm_ollama.bats`
 
 ## What It Does
 

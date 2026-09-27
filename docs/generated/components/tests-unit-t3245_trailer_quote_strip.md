@@ -1,8 +1,8 @@
 # t3245_trailer_quote_strip
 
-> TODO: describe what this component does
+> T-3245 — the mandated Co-Authored-By trailer voided the partial-complete bare-commit allowance.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3245_trailer_quote_strip.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3245_trailer_quote_strip.bats`
 
 ## What It Does
 

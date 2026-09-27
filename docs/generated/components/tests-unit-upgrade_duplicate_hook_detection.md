@@ -1,8 +1,8 @@
 # upgrade_duplicate_hook_detection
 
-> TODO: describe what this component does
+> T-1479 — fw upgrade detects when framework hooks are registered at both user-level (~/.claude/settings.json) and project-level (.claude/settings.json), warning the consumer (does NOT auto-remove user state).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/upgrade_duplicate_hook_detection.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/upgrade_duplicate_hook_detection.bats`
 
 ## What It Does
 

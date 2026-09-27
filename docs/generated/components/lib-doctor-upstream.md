@@ -1,6 +1,6 @@
 # doctor-upstream
 
-> TODO: describe what this component does
+> lib/doctor-upstream.sh — T-2843
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/doctor-upstream.sh`
 

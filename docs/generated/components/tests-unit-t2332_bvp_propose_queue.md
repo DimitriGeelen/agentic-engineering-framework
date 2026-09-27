@@ -1,8 +1,8 @@
 # t2332_bvp_propose_queue
 
-> TODO: describe what this component does
+> T-2332 (T-2330 S2): Flask helpers + template render for the driver propose-queue.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2332_bvp_propose_queue.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2332_bvp_propose_queue.bats`
 
 ## What It Does
 

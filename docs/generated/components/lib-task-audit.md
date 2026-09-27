@@ -23,11 +23,11 @@ source "$FW_LIB_DIR/task-audit.sh"
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [inception](/docs/generated/lib-inception) | called_by | fw inception - Inception phase workflow |
-| [lib_task_audit](/docs/generated/tests-unit-lib_task_audit) | called_by | TODO: describe what this component does |
-| [lib_task_audit](/docs/generated/tests-unit-lib_task_audit) | tests_by | TODO: describe what this component does |
+| [lib_task_audit](/docs/generated/tests-unit-lib_task_audit) | called_by | Unit tests for lib/task-audit.sh (T-1111/T-1113) |
+| [lib_task_audit](/docs/generated/tests-unit-lib_task_audit) | tests_by | Unit tests for lib/task-audit.sh (T-1111/T-1113) |
 | [active-task-scan](/docs/generated/agents-audit-active-task-scan) | called_by | Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review queue status in one efficient pass |
-| [t2945_default_template_recommendation](/docs/generated/tests-unit-t2945_default_template_recommendation) | called_by | TODO: describe what this component does |
-| [t2945_default_template_recommendation](/docs/generated/tests-unit-t2945_default_template_recommendation) | tests_by | TODO: describe what this component does |
+| [t2945_default_template_recommendation](/docs/generated/tests-unit-t2945_default_template_recommendation) | called_by | T-2945 — default.md shipped no `## Recommendation`, so the section the review gate demands existed in only one of the two templates that reach it. |
+| [t2945_default_template_recommendation](/docs/generated/tests-unit-t2945_default_template_recommendation) | tests_by | T-2945 — default.md shipped no `## Recommendation`, so the section the review gate demands existed in only one of the two templates that reach it. |
 | [review](/docs/generated/lib-review) | called_by | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
 
 ---

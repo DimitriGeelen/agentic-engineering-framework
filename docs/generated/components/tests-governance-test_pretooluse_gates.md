@@ -1,8 +1,8 @@
 # test_pretooluse_gates
 
-> TODO: describe what this component does
+> T-1606 (T-1601 GO follow-up): red-team harness covering all 7 PreToolUse gates.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/governance/test_pretooluse_gates.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/governance/test_pretooluse_gates.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # disposition_gate
 
-> TODO: describe what this component does
+> Unit tests for check_disposition_gate (T-2190).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/disposition_gate.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/disposition_gate.bats`
 
 ## What It Does
 

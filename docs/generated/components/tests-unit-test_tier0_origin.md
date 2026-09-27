@@ -1,8 +1,8 @@
 # test_tier0_origin
 
-> TODO: describe what this component does
+> T-3078 — the pure provenance logic behind Tier 0 approval cards.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_tier0_origin.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_tier0_origin.py`
 
 ## What It Does
 

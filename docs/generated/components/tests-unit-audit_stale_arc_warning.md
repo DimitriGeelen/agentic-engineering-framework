@@ -1,8 +1,8 @@
 # audit_stale_arc_warning
 
-> TODO: describe what this component does
+> T-1855 (T-NEW-7): stale-arc audit warning.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_stale_arc_warning.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_stale_arc_warning.bats`
 
 ## What It Does
 

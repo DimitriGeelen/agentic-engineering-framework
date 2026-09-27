@@ -24,7 +24,7 @@ check-active-completed-dup.py to keep the file-glob + YAML-adjacent parsing clea
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | triggers | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
-| [settings_regenerate_preserves_hooks](/docs/generated/tests-unit-settings_regenerate_preserves_hooks) | called_by | TODO: describe what this component does |
+| [settings_regenerate_preserves_hooks](/docs/generated/tests-unit-settings_regenerate_preserves_hooks) | called_by | T-2710: a forced .claude/settings.json regenerate must not silently delete hooks that `fw hook-enable` added after init. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-active-completed-dup-sh.yaml`*

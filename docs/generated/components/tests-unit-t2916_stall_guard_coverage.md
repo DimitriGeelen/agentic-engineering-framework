@@ -1,8 +1,8 @@
 # t2916_stall_guard_coverage
 
-> TODO: describe what this component does
+> T-2916 — the stall guard must JUDGE, not merely run.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2916_stall_guard_coverage.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2916_stall_guard_coverage.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ the suite cannot pass by reporting everything or nothing.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
-| [resolver](/docs/generated/lib-resolver) | tests | TODO: describe what this component does |
+| [resolver](/docs/generated/lib-resolver) | calls | Resolver — workflow lookup, prompt assembly, variant selection, telemetry. |
+| [resolver](/docs/generated/lib-resolver) | tests | Resolver — workflow lookup, prompt assembly, variant selection, telemetry. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2916_stall_guard_coverage.yaml`*

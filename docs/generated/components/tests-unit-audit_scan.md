@@ -1,8 +1,8 @@
 # audit_scan
 
-> TODO: describe what this component does
+> Unit tests for audit scan scripts (T-961)
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_scan.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_scan.bats`
 
 ## What It Does
 

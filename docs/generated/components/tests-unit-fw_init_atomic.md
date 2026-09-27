@@ -1,8 +1,8 @@
 # fw_init_atomic
 
-> TODO: describe what this component does
+> T-2801 — fw init must leave either nothing or a working project.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/fw_init_atomic.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/fw_init_atomic.bats`
 
 ## What It Does
 

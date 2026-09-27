@@ -1,8 +1,8 @@
 # test_shortcuts_overlay
 
-> TODO: describe what this component does
+> T-2013 (arc-007 S6b): keyboard-shortcuts overlay — server-side presence.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_shortcuts_overlay.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_shortcuts_overlay.py`
 
 ## What It Does
 

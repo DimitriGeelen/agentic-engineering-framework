@@ -1,8 +1,8 @@
 # test_cockpit_inline_tokens
 
-> TODO: describe what this component does
+> T-2024 (arc-007 S3a2): cockpit inline-style hexes use per-palette semantic tokens.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_cockpit_inline_tokens.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_cockpit_inline_tokens.py`
 
 ## What It Does
 

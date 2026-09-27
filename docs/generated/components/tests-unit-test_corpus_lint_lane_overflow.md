@@ -1,8 +1,8 @@
 # test_corpus_lint_lane_overflow
 
-> TODO: describe what this component does
+> T-2688/T-2689: lane-overflow pinned both ways (fires on spill, silent on contained).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_corpus_lint_lane_overflow.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_corpus_lint_lane_overflow.py`
 
 ## What It Does
 

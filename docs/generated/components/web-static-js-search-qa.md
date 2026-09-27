@@ -1,6 +1,6 @@
 # search-qa
 
-> TODO: describe what this component does
+> ── Search Q&A ─────────────────────────────────────────
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/static/js/search-qa.js`
 

@@ -1,6 +1,6 @@
 # gitignore-register
 
-> TODO: describe what this component does
+> T-2994 (build slice of T-2992) — .gitignore rules that defer without a register.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/gitignore-register.sh`
 
@@ -22,8 +22,8 @@ That is not a general worry, it is a measured incident. T-2990: two rules
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
-| [t2994_gitignore_register](/docs/generated/tests-unit-t2994_gitignore_register) | called_by | TODO: describe what this component does |
-| [t2994_gitignore_register](/docs/generated/tests-unit-t2994_gitignore_register) | tests_by | TODO: describe what this component does |
+| [t2994_gitignore_register](/docs/generated/tests-unit-t2994_gitignore_register) | called_by | T-2994: .gitignore rules that defer without naming a register entry. |
+| [t2994_gitignore_register](/docs/generated/tests-unit-t2994_gitignore_register) | tests_by | T-2994: .gitignore rules that defer without naming a register entry. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---

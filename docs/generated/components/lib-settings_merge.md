@@ -1,6 +1,6 @@
 # settings_merge
 
-> TODO: describe what this component does
+> T-2710 — carry non-template config forward across a settings.json regenerate.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/settings_merge.py`
 
@@ -19,7 +19,7 @@ matching a binary merely ENDING in fw (e.g. "myfw hook x").
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [settings_regenerate_preserves_hooks](/docs/generated/tests-unit-settings_regenerate_preserves_hooks) | tests_by | TODO: describe what this component does |
+| [settings_regenerate_preserves_hooks](/docs/generated/tests-unit-settings_regenerate_preserves_hooks) | tests_by | T-2710: a forced .claude/settings.json regenerate must not silently delete hooks that `fw hook-enable` added after init. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-settings_merge.yaml`*

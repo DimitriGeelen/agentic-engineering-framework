@@ -1,8 +1,8 @@
 # t2924_update_task_owner_gate
 
-> TODO: describe what this component does
+> T-2924 — `fw task update --owner` must validate against the owner enum.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2924_update_task_owner_gate.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2924_update_task_owner_gate.bats`
 
 ## What It Does
 

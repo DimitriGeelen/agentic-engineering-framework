@@ -1,6 +1,6 @@
 # bvp
 
-> TODO: describe what this component does
+> BVP quadrant scatter plot of tasks/arcs by value score vs composite cost, served by web/blueprints/bvp.py.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/bvp.html`
 

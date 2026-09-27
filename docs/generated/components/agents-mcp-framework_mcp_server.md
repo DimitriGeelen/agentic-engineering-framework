@@ -1,8 +1,8 @@
 # framework_mcp_server
 
-> TODO: describe what this component does
+> Framework MCP server (arc-010 Slice 2, T-2265): reads policy/capability-overlay/tool-set.yaml at startup, emits framework-mcp-manifest.json, and registers an MCP tool per read_only and agent_authority entry.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/mcp/framework_mcp_server.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `agents/mcp/framework_mcp_server.py`
 
 ## What It Does
 
@@ -19,14 +19,14 @@ Backend: shell out to `bin/fw <fw_command>` to preserve existing gates.
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [manifest](/docs/generated/agents-mcp-manifest) | uses | TODO: describe what this component does |
+| [manifest](/docs/generated/agents-mcp-manifest) | uses | Manifest emission for the framework MCP server (T-2265): derives framework-mcp-manifest.json from policy/capability-overlay/tool-set.yaml, emitting the {name, gated} contract consumed by orchestrator-mcp-scan. |
 
 ## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | called_by | TODO: describe what this component does |
-| [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | tests_by | TODO: describe what this component does |
+| [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | called_by | T-2265 (arc-010 Slice 2): integration tests for framework MCP server. |
+| [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | tests_by | T-2265 (arc-010 Slice 2): integration tests for framework MCP server. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-mcp-framework_mcp_server.yaml`*

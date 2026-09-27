@@ -1,8 +1,8 @@
 # test_gaps_close
 
-> TODO: describe what this component does
+> Playwright regression tests for /gaps Close action (T-2185).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_gaps_close.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_gaps_close.py`
 
 ## What It Does
 

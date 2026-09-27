@@ -1,8 +1,8 @@
 # test_embed_health
 
-> TODO: describe what this component does
+> T-3006: the embed-path liveness classifier and the bounded retry.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_embed_health.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_embed_health.py`
 
 ## What It Does
 
@@ -12,10 +12,10 @@ classify() — one class per failure shape
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [embed_health](/docs/generated/web-embed_health) | calls | TODO: describe what this component does |
+| [embed_health](/docs/generated/web-embed_health) | calls | Typed liveness classification for the embedding provider (T-3006, slice 1 of T-3005). |
 | [embeddings](/docs/generated/web-embeddings) | calls | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
-| [config](/docs/generated/web-config) | calls | TODO: describe what this component does |
-| [config](/docs/generated/web-config) | uses | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | calls | Environment-based configuration for Watchtower. |
+| [config](/docs/generated/web-config) | uses | Environment-based configuration for Watchtower. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_embed_health.yaml`*

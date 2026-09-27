@@ -1,8 +1,8 @@
 # t2974_greenfield_operator_prose
 
-> TODO: describe what this component does
+> T-2974: the greenfield onboarding map's operator prose must actually reach a reader.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2974_greenfield_operator_prose.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2974_greenfield_operator_prose.py`
 
 ## What It Does
 

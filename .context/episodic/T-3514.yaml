@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3514: fw bvp arcs auto-sizes the slug column instead of pinning it at 24
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T14:56:55Z
+# ============================================================================
+
+task_id: T-3514
+task_name: "fw bvp arcs auto-sizes the slug column instead of pinning it at 24"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T22:34:31Z
+completed: 2026-09-27T14:56:39Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lib/bvp.sh:737 formats the slug as {SLUG:<24}; Python pads but never truncates, so ewcr-arc0-contract-evidence (27 chars) and onboarding-shape-detection (26) push every later column right — 2 of 20 rows misaligned. Note which slugs overflow: onboarding-shape-detection was one of the four arcs INVISIBLE to this table until T-3503, so the width was calibrated against a corpus the reader could not fully see. Same mutable-corpus-anchor class as the 1 KB frontmatter constant (T-3326), living in a format string. Fix: width = max(len(slug)) with a floor, so it cannot recur. Anchor the verification on behaviour (the longest slug's row aligns), NOT on a literal 28 — that would be the same anchor bug one layer out.
+
+# Key outcomes
+outcomes:
+  - 'Column width is computed from max(len(slug)) in rows with a floor of 24, not hardcoded'
+  - 'Both header and all data rows use the same computed width'
+  - 'All arc slugs in `fw bvp arcs` output align at the left edge (no overflow/misalignment)'
+  - '`fw bvp arcs` command executes without error and renders at least one long slug'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 982 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, cli, render]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 982
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3514-fw-bvp-arcs-auto-sizes-the-slug-column-i.md
+generated_by: context-agent-hybrid

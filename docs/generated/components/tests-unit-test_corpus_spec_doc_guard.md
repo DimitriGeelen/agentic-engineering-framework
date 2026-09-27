@@ -1,8 +1,8 @@
 # test_corpus_spec_doc_guard
 
-> TODO: describe what this component does
+> T-2682: the map ``doc`` comes from a LEADING, non-boilerplate comment only.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_corpus_spec_doc_guard.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_corpus_spec_doc_guard.py`
 
 ## What It Does
 

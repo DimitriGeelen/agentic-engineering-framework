@@ -40,12 +40,12 @@ success MESSAGE           — Print success to stdout
 | [lib_errors](/docs/generated/tests-unit-lib_errors) | called_by | Unit tests for errors (11 tests) |
 | [inception_decide_ac_tick](/docs/generated/tests-unit-inception_decide_ac_tick) | called_by | Unit tests for T-1324 — tick_inception_decide_acs auto-ticks the templated [REVIEW]/[RUBBER-STAMP] Human AC after fw inception decide writes the Decision block, so the work-completed gate does not leave the task in partial-complete forever (G-008; P-039). |
 | [inception_decide_ac_tick](/docs/generated/tests-unit-inception_decide_ac_tick) | tests_by | Unit tests for T-1324 — tick_inception_decide_acs auto-ticks the templated [REVIEW]/[RUBBER-STAMP] Human AC after fw inception decide writes the Decision block, so the work-completed gate does not leave the task in partial-complete forever (G-008; P-039). |
-| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | called_by | TODO: describe what this component does |
-| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | tests_by | TODO: describe what this component does |
-| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | called_by | TODO: describe what this component does |
-| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | tests_by | TODO: describe what this component does |
-| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | called_by | TODO: describe what this component does |
-| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | tests_by | TODO: describe what this component does |
+| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | called_by | T-1503: do_inception_decide must be atomic — either fully succeeds (Decision section + Updates entry + status=work-completed) or leaves the task body untouched. |
+| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | tests_by | T-1503: do_inception_decide must be atomic — either fully succeeds (Decision section + Updates entry + status=work-completed) or leaves the task body untouched. |
+| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | called_by | Unit tests for T-1466 — tick_inception_decide_acs recognizes `[Inception decision recorded]` AC wording when ## Recommendation exists. |
+| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | tests_by | Unit tests for T-1466 — tick_inception_decide_acs recognizes `[Inception decision recorded]` AC wording when ## Recommendation exists. |
+| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | called_by | T-1472 (OBS-019 Level D): tick_inception_decide_acs detects ceremonial ACs via `<!-- @auto-tick-on-decide -->` markers — text-wording independent. |
+| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | tests_by | T-1472 (OBS-019 Level D): tick_inception_decide_acs detects ceremonial ACs via `<!-- @auto-tick-on-decide -->` markers — text-wording independent. |
 | [lib_assumption](/docs/generated/tests-unit-lib_assumption) | called_by | Unit tests for assumption (11 tests) |
 | [lib_assumption](/docs/generated/tests-unit-lib_assumption) | tests_by | Unit tests for assumption (11 tests) |
 | [lib_bus](/docs/generated/tests-unit-lib_bus) | called_by | Unit tests for bus (24 tests) |
@@ -55,8 +55,8 @@ success MESSAGE           — Print success to stdout
 | [lib_errors](/docs/generated/tests-unit-lib_errors) | tests_by | Unit tests for errors (11 tests) |
 | [lib_inception](/docs/generated/tests-unit-lib_inception) | called_by | Unit tests for inception (12 tests) |
 | [lib_inception](/docs/generated/tests-unit-lib_inception) | tests_by | Unit tests for inception (12 tests) |
-| [lib_init](/docs/generated/tests-unit-lib_init) | called_by | TODO: describe what this component does |
-| [lib_init](/docs/generated/tests-unit-lib_init) | tests_by | TODO: describe what this component does |
+| [lib_init](/docs/generated/tests-unit-lib_init) | called_by | Unit tests for lib/init.sh |
+| [lib_init](/docs/generated/tests-unit-lib_init) | tests_by | Unit tests for lib/init.sh |
 | [lib_setup](/docs/generated/tests-unit-lib_setup) | called_by | Unit tests for setup (2 tests) |
 | [lib_setup](/docs/generated/tests-unit-lib_setup) | tests_by | Unit tests for setup (2 tests) |
 | [lib_update](/docs/generated/tests-unit-lib_update) | called_by | Unit tests for update (3 tests) |

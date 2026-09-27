@@ -1,8 +1,8 @@
 # hook_version_marker_parity
 
-> TODO: describe what this component does
+> T-2852 — install-hooks must compare the installed commit-msg hook's `# VERSION=` marker against the TEMPLATE's version, not against the git agent's own version.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/hook_version_marker_parity.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/hook_version_marker_parity.bats`
 
 ## What It Does
 

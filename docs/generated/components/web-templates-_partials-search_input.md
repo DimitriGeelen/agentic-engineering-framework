@@ -1,6 +1,6 @@
 # search_input
 
-> TODO: describe what this component does
+> Search bar + mode-pill controls included by search.html; the form GETs discovery.search_view via htmx.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_partials/search_input.html`
 

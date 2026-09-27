@@ -2,7 +2,7 @@
 
 > TODO: describe what this component does
 
-**Type:** config | **Subsystem:** unknown | **Location:** `docs/reports/T-1922-a3-measurement-raw.json`
+**Type:** config | **Subsystem:** docs | **Location:** `docs/reports/T-1922-a3-measurement-raw.json`
 
 ## What It Does
 

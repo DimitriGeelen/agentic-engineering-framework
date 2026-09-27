@@ -11,9 +11,9 @@
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [core](/docs/generated/web-blueprints-core) | rendered_by | Flask blueprint: Core |
-| [test_cockpit_density_spacing](/docs/generated/tests-unit-test_cockpit_density_spacing) | called_by | TODO: describe what this component does |
-| [test_cockpit_inline_tokens](/docs/generated/tests-unit-test_cockpit_inline_tokens) | called_by | TODO: describe what this component does |
-| [test_cockpit_status_pills](/docs/generated/tests-unit-test_cockpit_status_pills) | called_by | TODO: describe what this component does |
+| [test_cockpit_density_spacing](/docs/generated/tests-unit-test_cockpit_density_spacing) | called_by | T-2029: cockpit spacing scales with the density axis; exclusions are honoured. |
+| [test_cockpit_inline_tokens](/docs/generated/tests-unit-test_cockpit_inline_tokens) | called_by | T-2024 (arc-007 S3a2): cockpit inline-style hexes use per-palette semantic tokens. |
+| [test_cockpit_status_pills](/docs/generated/tests-unit-test_cockpit_status_pills) | called_by | T-2023 (arc-007 S3a): cockpit status colours use per-palette semantic tokens. |
 
 ## Related
 

@@ -1,8 +1,8 @@
 # test_review_link_validator
 
-> TODO: describe what this component does
+> T-2050 — unit tests for lib/review_link_validator.py.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_review_link_validator.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_review_link_validator.py`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [review_link_validator](/docs/generated/lib-review_link_validator) | calls | TODO: describe what this component does |
+| [review_link_validator](/docs/generated/lib-review_link_validator) | calls | Validate Watchtower review/inception handoff links at the moment of handoff. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

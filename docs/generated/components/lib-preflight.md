@@ -23,7 +23,7 @@ Exit codes:
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | `?` | uses | — |
-| [git-identity](/docs/generated/lib-git-identity) | calls | TODO: describe what this component does |
+| [git-identity](/docs/generated/lib-git-identity) | calls | lib/git-identity.sh — one answer to "can this machine commit?" (T-2883) |
 
 ## Used By (6)
 
@@ -34,7 +34,7 @@ Exit codes:
 | [lib_preflight](/docs/generated/tests-unit-lib_preflight) | called-by | Unit tests for preflight (11 tests) |
 | [lib_preflight](/docs/generated/tests-unit-lib_preflight) | called_by | Unit tests for preflight (11 tests) |
 | [lib_preflight](/docs/generated/tests-unit-lib_preflight) | tests_by | Unit tests for preflight (11 tests) |
-| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | tests_by | TODO: describe what this component does |
+| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | tests_by | T-2883 — "can this machine commit?" must be answered the way git answers it. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-preflight.yaml`*

@@ -31,7 +31,7 @@ create a task to summarize this conversation so far? (y/n)"
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | invoked_via_fw_hook | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| `agents/context/tests/stop-guard-stub-test.sh` | called_by | — |
+| [stop-guard-stub-test](/docs/generated/agents-context-tests-stop-guard-stub-test) | called_by | Stub test for agents/context/stop-guard.sh nudge thresholds — 3 counter/focus scenarios (T-1211) |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-stop-guard.yaml`*

@@ -10,6 +10,12 @@
 
 Mandatory Dispatch Preamble
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [sidecar-inbox](/docs/generated/agents-context-sidecar-inbox) | calls | sidecar-inbox.sh — UserPromptSubmit hook: surface pending peer consults. |
+
 ## Used By (3)
 
 | Component | Relationship | Description |

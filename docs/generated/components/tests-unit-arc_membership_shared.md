@@ -1,8 +1,8 @@
 # arc_membership_shared
 
-> TODO: describe what this component does
+> T-1880 (T-NEW-15): pin shared shell API for arc-membership scans. Sibling to tests/unit/arc_membership_agent_surfaces.bats (which pins consumer-site behaviour). This file pins the SHARED LIBRARY itself.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_membership_shared.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_membership_shared.bats`
 
 ## What It Does
 

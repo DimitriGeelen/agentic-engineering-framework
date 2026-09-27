@@ -1,8 +1,8 @@
 # test_cross_surface_parity
 
-> TODO: describe what this component does
+> T-1586: Cross-surface parity invariant for Recommendation + Reviewer Verdict.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_cross_surface_parity.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_cross_surface_parity.py`
 
 ## What It Does
 

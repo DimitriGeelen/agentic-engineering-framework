@@ -1,8 +1,8 @@
 # evolution_log_gate
 
-> TODO: describe what this component does
+> T-1718 Slice 1: Evolution-log gate
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/evolution_log_gate.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/evolution_log_gate.bats`
 
 ## What It Does
 
@@ -17,8 +17,8 @@ with mocked NEW_STATUS / TASK_FILE / SKIP_EVOLUTION.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [evolution_log](/docs/generated/lib-evolution_log) | calls | TODO: describe what this component does |
-| [evolution_log](/docs/generated/lib-evolution_log) | tests | TODO: describe what this component does |
+| [evolution_log](/docs/generated/lib-evolution_log) | calls | Detection helper for the T-1717 Q4 rigidity-vs-evolution pattern (T-1718 implementation). Mirrors lib/inception_recommendation.sh (T-1716) shape exactly: detection helper extracted so it can be tested without spinning up update-task.sh. |
+| [evolution_log](/docs/generated/lib-evolution_log) | tests | Detection helper for the T-1717 Q4 rigidity-vs-evolution pattern (T-1718 implementation). Mirrors lib/inception_recommendation.sh (T-1716) shape exactly: detection helper extracted so it can be tested without spinning up update-task.sh. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-evolution_log_gate.yaml`*

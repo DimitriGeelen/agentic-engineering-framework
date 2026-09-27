@@ -1,8 +1,8 @@
 # api-usage
 
-> TODO: describe what this component does
+> fw metrics api-usage: tallies per-method TermLink RPC counts from rpc-audit.jsonl and reports the legacy-primitive share used as the T-1166 retirement entry gate (T-1304/T-1308).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/metrics/api-usage.sh`
+**Type:** script | **Subsystem:** termlink-integration | **Location:** `agents/metrics/api-usage.sh`
 
 ## What It Does
 

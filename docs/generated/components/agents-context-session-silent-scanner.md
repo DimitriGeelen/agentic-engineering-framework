@@ -32,7 +32,7 @@ Together with session-end.sh this closes the SessionEnd gap for:
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | `/etc/cron.d/agentic-framework` | scheduled_by | — |
-| `agents/context/tests/session-silent-scanner-stub-test.sh` | called_by | — |
+| [session-silent-scanner-stub-test](/docs/generated/agents-context-tests-session-silent-scanner-stub-test) | called_by | Stub test for agents/context/session-silent-scanner.sh (T-1212) |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-session-silent-scanner.yaml`*

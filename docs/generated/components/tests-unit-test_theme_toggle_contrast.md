@@ -1,8 +1,8 @@
 # test_theme_toggle_contrast
 
-> TODO: describe what this component does
+> T-2031: the dark-mode toggle uses --wt-text (palette text token), not --pico-color.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_theme_toggle_contrast.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_theme_toggle_contrast.py`
 
 ## What It Does
 

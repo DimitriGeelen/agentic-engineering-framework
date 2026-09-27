@@ -1,8 +1,8 @@
 # pickup_type_routing
 
-> TODO: describe what this component does
+> Unit tests for T-1465 — pickup envelope type → task workflow_type routing. Constrained Option A (T-1455 GO): bug-report → build feature-proposal → inception
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/pickup_type_routing.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/pickup_type_routing.bats`
 
 ## What It Does
 

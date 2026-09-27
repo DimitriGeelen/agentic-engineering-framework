@@ -1,8 +1,8 @@
 # check_inception_recommendation
 
-> TODO: describe what this component does
+> T-2205: PreToolUse Write/Edit hook tests for check-inception-recommendation.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/check_inception_recommendation.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/check_inception_recommendation.bats`
 
 ## What It Does
 
@@ -15,7 +15,7 @@ assert exit code + stderr.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation) | tests | TODO: describe what this component does |
+| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation) | tests | T-2205: PreToolUse Write/Edit hook — refuse save when inception task has template-only ## Recommendation block under $CLAUDECODE=1. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-check_inception_recommendation.yaml`*

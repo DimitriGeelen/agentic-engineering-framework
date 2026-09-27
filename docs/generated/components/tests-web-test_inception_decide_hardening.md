@@ -1,8 +1,8 @@
 # test_inception_decide_hardening
 
-> TODO: describe what this component does
+> T-1470: Watchtower /inception/decide hardens against side-effect failure.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/web/test_inception_decide_hardening.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/web/test_inception_decide_hardening.py`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_approvals_arc_review_navigation
 
-> TODO: describe what this component does
+> T-2112: /approvals 'Review' click must NOT bounce back into the polling div.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_approvals_arc_review_navigation.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_approvals_arc_review_navigation.py`
 
 ## What It Does
 

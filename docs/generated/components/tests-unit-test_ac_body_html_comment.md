@@ -1,8 +1,8 @@
 # test_ac_body_html_comment
 
-> TODO: describe what this component does
+> T-1763: Regression tests for HTML-comment leakage in AC body parser.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_ac_body_html_comment.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_ac_body_html_comment.py`
 
 ## What It Does
 

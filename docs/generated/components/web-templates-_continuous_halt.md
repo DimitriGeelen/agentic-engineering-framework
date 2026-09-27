@@ -1,6 +1,6 @@
 # _continuous_halt
 
-> TODO: describe what this component does
+> T-3200 — continuous-run brake.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_continuous_halt.html`
 

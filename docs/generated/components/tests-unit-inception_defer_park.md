@@ -1,8 +1,8 @@
 # inception_defer_park
 
-> TODO: describe what this component does
+> T-1865 — DEFER inception decisions park the task instead of leaving it stuck at status=started-work / horizon=now. Two surfaces: 1. do_inception_sweep recovers existing DEFER limbo tasks 2.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/inception_defer_park.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/inception_defer_park.bats`
 
 ## What It Does
 

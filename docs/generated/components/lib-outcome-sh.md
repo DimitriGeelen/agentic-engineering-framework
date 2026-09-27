@@ -15,7 +15,7 @@ Origin: T-1697 (production port of T-1690 inception spike, with append-only desi
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [outcome](/docs/generated/lib-outcome) | calls | TODO: describe what this component does |
+| [outcome](/docs/generated/lib-outcome) | calls | Outcome enrichment — default evaluator + back-prop + read-path join. |
 
 ## Used By (2)
 

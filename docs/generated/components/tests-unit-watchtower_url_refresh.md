@@ -1,8 +1,8 @@
 # watchtower_url_refresh
 
-> TODO: describe what this component does
+> T-1622 — `do_url` in `bin/watchtower.sh` MUST refresh the LAN URL from `detect_lan_ip` when Watchtower is running.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/watchtower_url_refresh.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/watchtower_url_refresh.bats`
 
 ## What It Does
 

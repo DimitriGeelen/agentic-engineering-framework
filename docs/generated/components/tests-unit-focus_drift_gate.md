@@ -1,8 +1,8 @@
 # focus_drift_gate
 
-> TODO: describe what this component does
+> T-1730: Focus-target drift gate — unit tests
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/focus_drift_gate.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/focus_drift_gate.bats`
 
 ## What It Does
 

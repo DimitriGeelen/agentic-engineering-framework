@@ -1,8 +1,8 @@
 # test_task_detail_bvp
 
-> TODO: describe what this component does
+> T-1980: /tasks/T-XXX BVP block — DOM-content assertions.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_task_detail_bvp.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_task_detail_bvp.py`
 
 ## What It Does
 

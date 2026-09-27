@@ -1,6 +1,6 @@
 # consumer-recover
 
-> TODO: describe what this component does
+> fw consumer-recover - one-command recovery for legacy vendored consumers
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/consumer-recover.sh`
 
@@ -21,17 +21,17 @@ Exit codes:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [url-credentials](/docs/generated/lib-url-credentials) | calls | TODO: describe what this component does |
+| [url-credentials](/docs/generated/lib-url-credentials) | calls | URL credential handling — one dialect, shared by every writer of an upstream URL. |
 
 ## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_consumer_recover](/docs/generated/tests-unit-test_consumer_recover) | called_by | TODO: describe what this component does |
-| [test_consumer_recover](/docs/generated/tests-unit-test_consumer_recover) | tests_by | TODO: describe what this component does |
+| [test_consumer_recover](/docs/generated/tests-unit-test_consumer_recover) | called_by | T-2235 — fw consumer-recover wrapper (authorised under T-2233 GO). |
+| [test_consumer_recover](/docs/generated/tests-unit-test_consumer_recover) | tests_by | T-2235 — fw consumer-recover wrapper (authorised under T-2233 GO). |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | called_by | TODO: describe what this component does |
-| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | tests_by | TODO: describe what this component does |
+| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | called_by | T-2693 — lib/url-credentials.sh, the single dialect for URL credential handling. |
+| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | tests_by | T-2693 — lib/url-credentials.sh, the single dialect for URL credential handling. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-consumer-recover.yaml`*

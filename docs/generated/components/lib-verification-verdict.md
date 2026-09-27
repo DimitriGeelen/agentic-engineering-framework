@@ -1,6 +1,6 @@
 # verification-verdict
 
-> TODO: describe what this component does
+> lib/verification-verdict.sh — unjudged-test-run detection (T-2738)
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/verification-verdict.sh`
 

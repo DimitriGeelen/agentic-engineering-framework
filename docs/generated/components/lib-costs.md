@@ -37,9 +37,9 @@ Follows T-799 (GO) and T-800 (GO) inception decisions.
 | [lib_costs tests](/docs/generated/tests-unit-lib_costs) | called_by | 26 bats unit tests for lib/costs.sh — path computation, routing, JSONL parsing, edge cases (T-807) |
 | [lib_costs tests](/docs/generated/tests-unit-lib_costs) | tests_by | 26 bats unit tests for lib/costs.sh — path computation, routing, JSONL parsing, edge cases (T-807) |
 | [claude_code](/docs/generated/web-terminal-adapters-claude_code) | called_by | Terminal adapter that spawns Claude Code agent sessions via PTY using claude -p (prompt) or claude -c (interactive) commands |
-| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | called_by | TODO: describe what this component does |
-| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | tests_by | TODO: describe what this component does |
-| [context_tokens](/docs/generated/lib-context_tokens) | called_by | TODO: describe what this component does |
+| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | called_by | T-2380 — the three transcript-dir read-surfaces (fw costs, discard-manifest, read-transcript.py) must encode the ~/.claude/projects/<dir> name the way Claude Code does: EVERY non-alnum char → '-'. |
+| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | tests_by | T-2380 — the three transcript-dir read-surfaces (fw costs, discard-manifest, read-transcript.py) must encode the ~/.claude/projects/<dir> name the way Claude Code does: EVERY non-alnum char → '-'. |
+| [context_tokens](/docs/generated/lib-context_tokens) | called_by | Shared "how many tokens does THIS conversation currently hold" scan. |
 
 ## Related
 

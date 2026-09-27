@@ -1,8 +1,8 @@
 # lib_harvest
 
-> TODO: describe what this component does
+> Unit tests for lib/harvest.sh
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/lib_harvest.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/lib_harvest.bats`
 
 ## What It Does
 

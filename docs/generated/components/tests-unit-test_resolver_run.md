@@ -1,8 +1,8 @@
 # test_resolver_run
 
-> TODO: describe what this component does
+> T-1774: Unit tests for `fw resolver run` CLI integration.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_resolver_run.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_resolver_run.py`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [resolver](/docs/generated/lib-resolver) | calls | Resolver — workflow lookup, prompt assembly, variant selection, telemetry. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_resolver_run.yaml`*

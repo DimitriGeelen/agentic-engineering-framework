@@ -1,8 +1,8 @@
 # t2996_seed_commit_assertion
 
-> TODO: describe what this component does
+> T-2996 (G-006): the onboarding seeds asserted a property of HEAD.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2996_seed_commit_assertion.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2996_seed_commit_assertion.bats`
 
 ## What It Does
 

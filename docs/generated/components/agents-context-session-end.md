@@ -32,7 +32,7 @@ S1: appends {ts, session_id, reason} JSON line to
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | invoked_via_fw_hook | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| `agents/context/tests/session-end-stub-test.sh` | called_by | — |
+| [session-end-stub-test](/docs/generated/agents-context-tests-session-end-stub-test) | called_by | Stub test for agents/context/session-end.sh hook behaviour (T-1212) |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-session-end.yaml`*

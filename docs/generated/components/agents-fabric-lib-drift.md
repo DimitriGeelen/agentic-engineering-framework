@@ -14,9 +14,9 @@ Implements: fw fabric drift, fw fabric validate
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fabric](/docs/generated/agents-fabric-fabric) | called_by | Fabric Agent - Component topology system for codebase self-awareness |
-| [test_fabric_drift_absolute_paths](/docs/generated/tests-unit-test_fabric_drift_absolute_paths) | called_by | TODO: describe what this component does |
-| [t3049_fabric_url_location](/docs/generated/tests-unit-t3049_fabric_url_location) | called_by | TODO: describe what this component does |
-| [t3049_fabric_url_location](/docs/generated/tests-unit-t3049_fabric_url_location) | tests_by | TODO: describe what this component does |
+| [test_fabric_drift_absolute_paths](/docs/generated/tests-unit-test_fabric_drift_absolute_paths) | called_by | T-1673 — fabric drift orphan check honours absolute location paths. |
+| [t3049_fabric_url_location](/docs/generated/tests-unit-t3049_fabric_url_location) | called_by | T-3049 — a card's `location:` is not always a filesystem path. |
+| [t3049_fabric_url_location](/docs/generated/tests-unit-t3049_fabric_url_location) | tests_by | T-3049 — a card's `location:` is not always a filesystem path. |
 
 ## Documentation
 

@@ -1,8 +1,8 @@
 # test_all_routes_height
 
-> TODO: describe what this component does
+> Exhaustive all-routes height guard (T-2048).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_all_routes_height.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_all_routes_height.py`
 
 ## What It Does
 
@@ -13,7 +13,7 @@ must stay in lockstep. (Asserted by test_height_cap_matches_detector below.)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [ux-review](/docs/generated/agents-ux-review-ux-review) | calls | TODO: describe what this component does |
+| [ux-review](/docs/generated/agents-ux-review-ux-review) | calls | UX-review capture engine (T-2002): drives Watchtower render surfaces in a headless browser across every appearance preset and produces visual review artifacts for human review. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_all_routes_height.yaml`*

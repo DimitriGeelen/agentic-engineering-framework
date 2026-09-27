@@ -1,8 +1,8 @@
 # test_bin_fw_no_heredoc_cmd_sub
 
-> TODO: describe what this component does
+> T-1946 — Structural lint: bin/fw must contain ZERO heredoc-in-cmd-substitution patterns. Third layer of L-332 / L-408 prevention (after the learnings and the T-1945 PreToolUse edit-time WARN).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_bin_fw_no_heredoc_cmd_sub.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_bin_fw_no_heredoc_cmd_sub.bats`
 
 ## What It Does
 

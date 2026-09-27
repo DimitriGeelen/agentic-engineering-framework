@@ -1,8 +1,8 @@
 # test_bvp_sliders
 
-> TODO: describe what this component does
+> T-1929: /bvp live weight sliders + commit — visual + behavioural guards.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_bvp_sliders.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_bvp_sliders.py`
 
 ## What It Does
 

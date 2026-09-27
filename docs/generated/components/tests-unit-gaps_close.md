@@ -1,8 +1,8 @@
 # gaps_close
 
-> TODO: describe what this component does
+> T-2185 — `fw gaps close <id>` flips gauge-READY gaps to status:closed.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/gaps_close.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/gaps_close.bats`
 
 ## What It Does
 

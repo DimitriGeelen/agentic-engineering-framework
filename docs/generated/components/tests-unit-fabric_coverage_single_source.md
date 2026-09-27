@@ -1,8 +1,8 @@
 # fabric_coverage_single_source
 
-> TODO: describe what this component does
+> T-2735 — "which watched source files have no fabric card?" must have exactly ONE answer in audit.sh, and it must be the canonical expander's.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/fabric_coverage_single_source.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/fabric_coverage_single_source.bats`
 
 ## What It Does
 
@@ -23,7 +23,7 @@ join, no recursive=True, no exclude) and reported through two pass() arms,
 |-----------|--------------|-------------|
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
-| [expand_patterns](/docs/generated/agents-fabric-lib-expand_patterns) | tests | TODO: describe what this component does |
+| [expand_patterns](/docs/generated/agents-fabric-lib-expand_patterns) | tests | Fabric — shared pattern expansion with exclude support (T-1842). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-fabric_coverage_single_source.yaml`*

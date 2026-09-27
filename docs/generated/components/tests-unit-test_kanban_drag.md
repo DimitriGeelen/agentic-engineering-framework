@@ -1,8 +1,8 @@
 # test_kanban_drag
 
-> TODO: describe what this component does
+> T-2019 (arc-007 S4d): drag-to-reorder kanban — cross-column status change.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_kanban_drag.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_kanban_drag.py`
 
 ## What It Does
 
@@ -13,7 +13,7 @@ the two attributes live on the same card element
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
-| [kanban-drag](/docs/generated/web-static-kanban-drag) | calls | TODO: describe what this component does |
+| [kanban-drag](/docs/generated/web-static-kanban-drag) | calls | Drag-to-reorder kanban (cross-column status change) — arc-007 S4d (T-2019). |
 | [app](/docs/generated/web-app) | uses | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 
 ---

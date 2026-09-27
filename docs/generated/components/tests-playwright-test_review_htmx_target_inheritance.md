@@ -1,8 +1,8 @@
 # test_review_htmx_target_inheritance
 
-> TODO: describe what this component does
+> T-2135: regression net for the htmx-target-inheritance class.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_review_htmx_target_inheritance.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_review_htmx_target_inheritance.py`
 
 ## What It Does
 
@@ -12,7 +12,7 @@ T-2134 is a partial-complete arc-007 task we know exists in active/ at
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_review_htmx_target_inheritance.yaml`*

@@ -1,8 +1,8 @@
 # corpus_id_allocator
 
-> TODO: describe what this component does
+> T-2902 — the L-/PL- allocator must not reissue a live id when the corpus changes shape.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/corpus_id_allocator.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/corpus_id_allocator.bats`
 
 ## What It Does
 
@@ -17,13 +17,14 @@ and how the same defect then recurred at three more sites (G-079).
 So the load-bearing leg is `pre-fix allocator is RED on the same fixture` — it runs
 the OLD pattern against the SAME corpus and asserts it finds nothing, proving the
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [corpus-id](/docs/generated/lib-corpus-id) | calls | TODO: describe what this component does |
-| [corpus-id](/docs/generated/lib-corpus-id) | tests | TODO: describe what this component does |
+| [corpus-id](/docs/generated/lib-corpus-id) | calls | lib/corpus-id.sh — serialisation-independent max-id lookup for the YAML memory corpus |
+| [corpus-id](/docs/generated/lib-corpus-id) | tests | lib/corpus-id.sh — serialisation-independent max-id lookup for the YAML memory corpus |
 | [add-learning](/docs/generated/add-learning) | tests | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
+| [learning](/docs/generated/agents-context-lib-learning) | tests | Context Agent - add-learning command Add a learning to project memory |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-corpus_id_allocator.yaml`*

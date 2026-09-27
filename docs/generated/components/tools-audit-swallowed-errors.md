@@ -1,8 +1,8 @@
 # audit-swallowed-errors
 
-> TODO: describe what this component does
+> L-369 corpus audit: scan all task ## Verification blocks for swallowed-errors findings using the reviewer's deterministic detector.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/audit-swallowed-errors.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/audit-swallowed-errors.py`
 
 ## What It Does
 
@@ -10,8 +10,8 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [static_scan](/docs/generated/lib-reviewer-static_scan) | calls | TODO: describe what this component does |
-| [static_scan](/docs/generated/lib-reviewer-static_scan) | uses | TODO: describe what this component does |
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | calls | Static-scan reviewer (T-1443 v1.0 → v1.5). |
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | uses | Static-scan reviewer (T-1443 v1.0 → v1.5). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-audit-swallowed-errors.yaml`*

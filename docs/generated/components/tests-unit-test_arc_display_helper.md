@@ -1,8 +1,8 @@
 # test_arc_display_helper
 
-> TODO: describe what this component does
+> T-1969: pin the arc_display(arc_id_or_slug) helper.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_arc_display_helper.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_arc_display_helper.py`
 
 ## What It Does
 

@@ -1,6 +1,6 @@
 # escalation
 
-> TODO: describe what this component does
+> Escalation drift blueprint — G-019 Layer C surface (T-1595).
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/escalation.py`
 

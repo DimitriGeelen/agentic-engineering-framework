@@ -1,8 +1,8 @@
 # lib_upgrade
 
-> TODO: describe what this component does
+> Unit tests for lib/upgrade.sh
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/lib_upgrade.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/lib_upgrade.bats`
 
 ## What It Does
 

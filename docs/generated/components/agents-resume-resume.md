@@ -14,9 +14,9 @@ Synthesizes current state from handover, working memory, git, and tasks
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
-| [bvp-estimator](/docs/generated/agents-termlink-bvp-estimator-bvp-estimator) | calls | TODO: describe what this component does |
+| [bvp-estimator](/docs/generated/agents-termlink-bvp-estimator-bvp-estimator) | calls | TermLink worker entry point for the BVP estimator (T-1922): thin shell wrapper forwarding to estimator.py per the agents/<name>/<name>.sh convention. |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -24,6 +24,7 @@ Synthesizes current state from handover, working memory, git, and tasks
 | [resume](/docs/generated/tests-unit-resume) | tested_by | Unit tests for agents/resume/resume.sh (12 tests) |
 | [resume](/docs/generated/tests-unit-resume) | called_by | Unit tests for agents/resume/resume.sh (12 tests) |
 | [resume](/docs/generated/tests-unit-resume) | tests_by | Unit tests for agents/resume/resume.sh (12 tests) |
+| [t3431_fabric_session_start](/docs/generated/tests-unit-t3431_fabric_session_start) | tests_by | T-3431 (D-592): SessionStart hook (post-compact-resume.sh) runs a bounded `fw fabric enrich --describe --quiet` on every start/resume/compact and injects one summary line; `fw resume status` mirrors the cached line rather than re-running… |
 
 ## Related
 

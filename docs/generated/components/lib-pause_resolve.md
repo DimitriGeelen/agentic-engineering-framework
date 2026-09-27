@@ -1,6 +1,6 @@
 # pause_resolve
 
-> TODO: describe what this component does
+> Pause re-dispatch chain — capture operator's answer + fire a retry via Resolver.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/pause_resolve.py`
 
@@ -12,14 +12,14 @@ resolver lives next to this file in lib/.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [resolver](/docs/generated/lib-resolver) | uses | TODO: describe what this component does |
+| [resolver](/docs/generated/lib-resolver) | uses | Resolver — workflow lookup, prompt assembly, variant selection, telemetry. |
 
 ## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [pause_cli](/docs/generated/lib-pause_cli) | uses_by | TODO: describe what this component does |
-| [test_pause_resolve](/docs/generated/tests-unit-test_pause_resolve) | called_by | TODO: describe what this component does |
+| [pause_cli](/docs/generated/lib-pause_cli) | uses_by | CLI dispatcher for `fw pause`. T-1809 (dispatch-safety slice 5). |
+| [test_pause_resolve](/docs/generated/tests-unit-test_pause_resolve) | called_by | Tests for lib/pause_resolve.py — operator-answer capture + re-dispatch. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-pause_resolve.yaml`*

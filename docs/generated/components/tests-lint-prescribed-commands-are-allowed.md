@@ -1,8 +1,8 @@
 # prescribed-commands-are-allowed
 
-> TODO: describe what this component does
+> T-2702 — a command one gate PRESCRIBES must be one the budget gate ALLOWS.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/lint/prescribed-commands-are-allowed.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/lint/prescribed-commands-are-allowed.bats`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ arrive through the usual channel, so it needs a standing check rather than a
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [cmd_classify](/docs/generated/lib-cmd_classify) | tests | TODO: describe what this component does |
+| [cmd_classify](/docs/generated/lib-cmd_classify) | tests | Decompose-then-judge classifier for the budget gate's at-critical allowlist. |
 | [budget-gate](/docs/generated/budget-gate) | tests | Block Write/Edit/Bash tool execution when context budget reaches critical level (>=170K tokens). Primary enforcement for P-009. |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | tests | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 

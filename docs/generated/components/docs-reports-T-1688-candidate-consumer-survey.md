@@ -1,8 +1,8 @@
 # T-1688-candidate-consumer-survey
 
-> TODO: describe what this component does
+> **Date:** 2026-05-02 **Question:** Of every autonomous workload running in the framework today, which is the strongest candidate for retrofit through `fw termlink dispatch` (the orchestrator) to close G-064?
 
-**Type:** script | **Subsystem:** unknown | **Location:** `docs/reports/T-1688-candidate-consumer-survey.md`
+**Type:** script | **Subsystem:** docs | **Location:** `docs/reports/T-1688-candidate-consumer-survey.md`
 
 ## What It Does
 

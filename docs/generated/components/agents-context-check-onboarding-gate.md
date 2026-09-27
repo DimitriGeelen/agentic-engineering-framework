@@ -15,7 +15,7 @@ lives in check-onboarding-gate.py to keep parsing clean.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate-py) | calls | TODO: describe what this component does |
+| [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate-py) | calls | T-2815: refuse Write/Edit that adds an agent-unresolvable task to the gated onboarding set (T-532's check-active-task.sh onboarding block). |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | reads | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 
 ## Used By (2)

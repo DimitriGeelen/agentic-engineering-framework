@@ -1,8 +1,8 @@
 # test_all_routes_size
 
-> TODO: describe what this component does
+> Exhaustive all-routes response-SIZE guard (T-2775).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_all_routes_size.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_all_routes_size.py`
 
 ## What It Does
 
@@ -16,7 +16,7 @@ teach everyone to raise it, which is how a guard stops meaning anything.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [ux-review](/docs/generated/agents-ux-review-ux-review) | calls | TODO: describe what this component does |
+| [ux-review](/docs/generated/agents-ux-review-ux-review) | calls | UX-review capture engine (T-2002): drives Watchtower render surfaces in a headless browser across every appearance preset and produces visual review artifacts for human review. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_all_routes_size.yaml`*

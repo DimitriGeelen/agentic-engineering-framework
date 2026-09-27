@@ -1,8 +1,8 @@
 # lib_promote
 
-> TODO: describe what this component does
+> Unit tests for lib/promote.sh
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/lib_promote.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/lib_promote.bats`
 
 ## What It Does
 

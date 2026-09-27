@@ -8,7 +8,7 @@
 
 Cron files managed by the framework
 
-## Dependencies (6)
+## Dependencies (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -16,8 +16,10 @@ Cron files managed by the framework
 | [cron](/docs/generated/web-templates-cron) | renders | Full page template: cron status — job table with schedule, last run, status indicators. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
-| [config](/docs/generated/web-config) | calls | TODO: describe what this component does |
-| [config](/docs/generated/web-config) | uses | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | calls | Environment-based configuration for Watchtower. |
+| [config](/docs/generated/web-config) | uses | Environment-based configuration for Watchtower. |
+| [ollama_provider](/docs/generated/web-llm-ollama_provider) | calls | Ollama LLM provider — wraps the ollama Python library behind the LLMProvider interface (T-377) |
+| [ollama_provider](/docs/generated/web-llm-ollama_provider) | uses | Ollama LLM provider — wraps the ollama Python library behind the LLMProvider interface (T-377) |
 
 ## Used By (5)
 

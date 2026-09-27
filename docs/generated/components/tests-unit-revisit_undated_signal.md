@@ -1,8 +1,8 @@
 # revisit_undated_signal
 
-> TODO: describe what this component does
+> T-2865 — DEFER decisions carrying no revisit date must be surfaced, separately.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/revisit_undated_signal.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/revisit_undated_signal.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ WHAT IS PINNED: the real scanner, driven against a synthetic PROJECT_ROOT. Not a
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | calls | TODO: describe what this component does |
-| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | tests | TODO: describe what this component does |
+| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | calls | revisit-due-scan.sh — Daily scan for ripe revisit_at deferrals (T-1452 / G-053) |
+| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | tests | revisit-due-scan.sh — Daily scan for ripe revisit_at deferrals (T-1452 / G-053) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-revisit_undated_signal.yaml`*

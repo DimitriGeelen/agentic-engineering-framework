@@ -1,8 +1,8 @@
 # test_gaps_missing_title_defaults
 
-> TODO: describe what this component does
+> T-1840 — fw gaps defensive .get() for missing 'title' / 'id' fields.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_gaps_missing_title_defaults.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_gaps_missing_title_defaults.bats`
 
 ## What It Does
 

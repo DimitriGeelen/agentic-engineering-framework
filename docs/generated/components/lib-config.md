@@ -33,12 +33,12 @@ Agent-relevant settings:
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (41)
+## Used By (43)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [verify-acs](/docs/generated/lib-verify-acs) | called-by | Scans work-completed tasks with unchecked Human ACs and runs automated evidence collection where programmatic verification is possible |
-| [lib_config](/docs/generated/tests-unit-lib_config) | called-by | TODO: describe what this component does |
+| [lib_config](/docs/generated/tests-unit-lib_config) | called-by | Unit tests for lib/config.sh — 3-tier configuration resolution Origin: T-819 |
 | [config](/docs/generated/web-templates-config) | used-by | Watchtower /config page — show all FW_* settings with current values and sources |
 | [config](/docs/generated/lib-config) | called-by | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | called_by | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
@@ -55,29 +55,31 @@ Agent-relevant settings:
 | [keylock](/docs/generated/lib-keylock) | called_by | Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications. |
 | [config](/docs/generated/lib-config) | called_by | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 | [verify-acs](/docs/generated/lib-verify-acs) | called_by | Scans work-completed tasks with unchecked Human ACs and runs automated evidence collection where programmatic verification is possible |
-| [lib_config](/docs/generated/tests-unit-lib_config) | called_by | TODO: describe what this component does |
+| [lib_config](/docs/generated/tests-unit-lib_config) | called_by | Unit tests for lib/config.sh — 3-tier configuration resolution Origin: T-819 |
 | [config](/docs/generated/web-templates-config) | read_by | Watchtower /config page — show all FW_* settings with current values and sources |
 | [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
-| [liveness-check](/docs/generated/agents-monitor-liveness-check) | called_by | TODO: describe what this component does |
+| [liveness-check](/docs/generated/agents-monitor-liveness-check) | called_by | Cron liveness monitor (every 1 min, T-1269/T-1273): checks TermLink hub, framework agent, Claude instance and Watchtower; appends .context/monitors/liveness.jsonl and writes liveness-latest.yaml. |
 | [fabric](/docs/generated/tests-unit-fabric) | tests_by | Unit tests for agents/fabric/fabric.sh (10 tests) |
-| [lib_config](/docs/generated/tests-unit-lib_config) | tests_by | TODO: describe what this component does |
-| [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | called_by | TODO: describe what this component does |
-| [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | tests_by | TODO: describe what this component does |
+| [lib_config](/docs/generated/tests-unit-lib_config) | tests_by | Unit tests for lib/config.sh — 3-tier configuration resolution Origin: T-819 |
+| [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | called_by | T-1557 / L-302 — Regression: foundation YAML/config helpers must not silent-kill the calling shell under set -e -o pipefail when the requested field/key is absent. |
+| [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | tests_by | T-1557 / L-302 — Regression: foundation YAML/config helpers must not silent-kill the calling shell under set -e -o pipefail when the requested field/key is absent. |
 | [config](/docs/generated/web-blueprints-config) | called_by | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
-| [master-guard](/docs/generated/agents-git-lib-master-guard) | called_by | TODO: describe what this component does |
+| [master-guard](/docs/generated/agents-git-lib-master-guard) | called_by | master-guard.sh — Master-as-merge-only pre-commit guard (T-2396, inception T-2394 G1) |
 | [notify](/docs/generated/lib-notify) | called_by | Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh. |
-| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | called_by | TODO: describe what this component does |
+| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | called_by | T-2908: PreToolUse label gate for the MCP rail-post producer surface. |
 | [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
-| [handover_digest](/docs/generated/tests-unit-handover_digest) | tests_by | TODO: describe what this component does |
-| [rail_identity_guard](/docs/generated/tests-unit-rail_identity_guard) | tests_by | TODO: describe what this component does |
-| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | tests_by | TODO: describe what this component does |
+| [handover_digest](/docs/generated/tests-unit-handover_digest) | tests_by | T-3028 (T-3025 GO, option 3): the three state dumps digest to count + regenerating command + top-N; the narrative does not change. |
+| [rail_identity_guard](/docs/generated/tests-unit-rail_identity_guard) | tests_by | T-2904: outbound rail posts must not be signed by the shared host key. |
+| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | tests_by | The doctor/audit rail over the vector index — T-3013 (T-3005 slice 4). |
 | [search_utils](/docs/generated/web-search_utils) | called_by | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
 | [config-file](/docs/generated/lib-config-file) | called_by | Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments |
 | [watchtower](/docs/generated/lib-watchtower) | called_by | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
-| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | called_by | TODO: describe what this component does |
-| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | called_by | TODO: describe what this component does |
-| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
+| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | called_by | The doctor/audit rail over the vector index — T-3013 (T-3005 slice 4). |
+| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | called_by | T-3098 — Refuse governance writes from a linked git worktree. |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | Fabric enrichment engine — auto-detect dependency edges from source analysis. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [checkpoint](/docs/generated/checkpoint) | called_by | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+| [aef_governor](/docs/generated/lib-aef_governor) | called_by | arc-020 S5: environmental governor v1 — loadavg-based provisioning admission. |
 
 ## Related
 

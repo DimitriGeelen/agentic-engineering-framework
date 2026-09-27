@@ -1,8 +1,8 @@
 # fabric_watch_pattern_fitness
 
-> TODO: describe what this component does
+> T-2737 — the watch file is the denominator of every fabric coverage check, and nothing verified it fits the project `fw context init` stamped it into.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/fabric_watch_pattern_fitness.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/fabric_watch_pattern_fitness.bats`
 
 ## What It Does
 
@@ -23,7 +23,7 @@ registry has already decided those are components and the drift check cannot
 |-----------|--------------|-------------|
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
-| [ask](/docs/generated/web-ask) | tests | TODO: describe what this component does |
+| [ask](/docs/generated/web-ask) | tests | LLM-assisted Q&A for Watchtower search. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-fabric_watch_pattern_fitness.yaml`*

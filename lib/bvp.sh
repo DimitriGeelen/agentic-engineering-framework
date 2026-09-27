@@ -734,12 +734,14 @@ def cmd_arcs():
     if degraded:
         print(f"WARNING: arc membership DEGRADED to arc_id:-only — {degraded}")
         print("         Tag-only arcs are under-counted in this table (T-3503).")
-    print(f"{'ARC':<8} {'SLUG':<24} {'STATUS':<12} {'BVP':>5} {'NORM':>6}  {'SOURCE':<18} NAME")
-    print('-' * 96)
+    slug_width = max(24, max((len(r['slug']) for r in rows), default=24))
+    sep_len = 8 + 1 + slug_width + 1 + 12 + 1 + 5 + 1 + 6 + 2 + 18 + 1 + 8
+    print(f"{'ARC':<8} {'SLUG':<{slug_width}} {'STATUS':<12} {'BVP':>5} {'NORM':>6}  {'SOURCE':<18} NAME")
+    print('-' * sep_len)
     for r in rows:
         raw = '-' if r['bvp_raw'] is None else f"{r['bvp_raw']:>5}"
         norm = '     -' if r['bvp_norm'] is None else f"{r['bvp_norm']:>6.2f}"
-        print(f"{r['arc_id']:<8} {r['slug']:<24} {r['status']:<12} {raw:>5} {norm}  {r['source']:<18} {r['name']}")
+        print(f"{r['arc_id']:<8} {r['slug']:<{slug_width}} {r['status']:<12} {raw:>5} {norm}  {r['source']:<18} {r['name']}")
     return 0
 
 

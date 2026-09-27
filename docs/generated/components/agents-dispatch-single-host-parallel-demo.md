@@ -1,8 +1,8 @@
 # single-host-parallel-demo
 
-> TODO: describe what this component does
+> arc-011 M1 single-host parallel dispatch demo: composes write-set disjointness, orchestrator-graph decisions and yield-point polling into one end-to-end headline-mechanic demo (T-2341).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/dispatch/single-host-parallel-demo.sh`
+**Type:** script | **Subsystem:** framework-core | **Location:** `agents/dispatch/single-host-parallel-demo.sh`
 
 ## What It Does
 

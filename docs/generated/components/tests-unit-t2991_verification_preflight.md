@@ -1,8 +1,8 @@
 # t2991_verification_preflight
 
-> TODO: describe what this component does
+> T-2991: P-011 must never eval a line bash cannot parse.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2991_verification_preflight.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2991_verification_preflight.bats`
 
 ## What It Does
 
@@ -21,12 +21,12 @@ working, the test fails on evidence rather than on an assertion about wording.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [verification-port](/docs/generated/lib-verification-port) | calls | TODO: describe what this component does |
+| [verification-port](/docs/generated/lib-verification-port) | calls | lib/verification-port.sh — hard-coded Watchtower port detection (T-2732) |
 | [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
-| [verify_queue](/docs/generated/lib-verify_queue) | calls | TODO: describe what this component does |
-| [verification-port](/docs/generated/lib-verification-port) | tests | TODO: describe what this component does |
+| [verify_queue](/docs/generated/lib-verify_queue) | calls | T-2765: re-run stored ## Verification for the human review queue. |
+| [verification-port](/docs/generated/lib-verification-port) | tests | lib/verification-port.sh — hard-coded Watchtower port detection (T-2732) |
 | [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
-| [verify_queue](/docs/generated/lib-verify_queue) | tests | TODO: describe what this component does |
+| [verify_queue](/docs/generated/lib-verify_queue) | tests | T-2765: re-run stored ## Verification for the human review queue. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

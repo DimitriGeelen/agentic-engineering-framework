@@ -1,8 +1,8 @@
 # test_work_on_completed_task
 
-> TODO: describe what this component does
+> T-2036 — Pin `fw work-on T-XXX` behaviour against the P-002 "completed before commit" deadlock.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_work_on_completed_task.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_work_on_completed_task.bats`
 
 ## What It Does
 

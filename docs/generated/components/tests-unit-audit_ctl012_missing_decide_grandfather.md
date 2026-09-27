@@ -1,8 +1,8 @@
 # audit_ctl012_missing_decide_grandfather
 
-> TODO: describe what this component does
+> T-2385: CTL-012-MISSING-DECIDE grandfather cutoff regression.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_ctl012_missing_decide_grandfather.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_ctl012_missing_decide_grandfather.bats`
 
 ## What It Does
 

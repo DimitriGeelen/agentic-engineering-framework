@@ -29,13 +29,13 @@ Creates handover documents for session continuity
 | [session-metrics](/docs/generated/agents-context-session-metrics) | calls | Extract per-session quality metrics (CPT, error rate, edit bursts) from JSONL transcript |
 | [notify](/docs/generated/lib-notify) | calls | Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh. |
 | [arc_membership-sh](/docs/generated/lib-arc_membership-sh) | calls | Canonical shell helper for arc-membership scans (T-1880 / T-NEW-15). Consolidates the union-of-`arc_id:`-frontmatter + legacy `arc:<slug>`-tag scan that previously lived inline in three shell consumers: lib/arc.sh, agents/handover/handover.sh, lib/evolution_log.sh. Companion to lib/arc_membership.py (which serves the Python/Flask side).  Public API (PROJECT_ROOT must be set):   arc_tasks_with_arc_id <slug>   → T-IDs whose `arc_id:` matches slug   arc_tasks_with_tag <tag>       → T-IDs whose `tags:` includes tag  Origin: silent-corpus #1 (T-1874/75/76/77) and #2 (T-1879) — captured as L-397. Each inline consumer had to be migrated independently after the T-1850 tags-to-arc_id storage migration; consolidation prevents the next storage-format migration from leaking through nine sites again. |
-| [discard-manifest](/docs/generated/agents-handover-discard-manifest) | calls | TODO: describe what this component does |
-| [branch-hygiene](/docs/generated/lib-branch-hygiene) | calls | TODO: describe what this component does |
+| [discard-manifest](/docs/generated/agents-handover-discard-manifest) | calls | discard-manifest.sh — Category-level compaction discard manifest (T-2366, arc-012 S4) |
+| [branch-hygiene](/docs/generated/lib-branch-hygiene) | calls | lib/branch-hygiene.sh — T-100143 (C2 of T-100139 branch/worktree lifecycle GO) |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
-| [push-state](/docs/generated/lib-push-state) | calls | TODO: describe what this component does |
+| [push-state](/docs/generated/lib-push-state) | calls | lib/push-state.sh — T-3063 (leg 2 of T-3062) |
 
-## Used By (29)
+## Used By (30)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -50,24 +50,25 @@ Creates handover documents for session continuity
 | [handover_push_timeout](/docs/generated/tests-unit-handover_push_timeout) | called_by | Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT. |
 | [session-end](/docs/generated/agents-context-session-end) | called_by | SessionEnd hook — S1 reason logger + S2 handover trigger. Always exits 0. S1: appends {ts, session_id, reason} JSON line to .context/working/.session-end-log. S2: if no handover exists for current session_id, runs `fw handover` in the background (fast return, some end-reasons like API 500 give little grace). Fallback: session-silent-scanner via cron every 15 min catches sessions where this hook never fired. |
 | [session-silent-scanner](/docs/generated/agents-context-session-silent-scanner) | called_by | Silent-session scanner — S3 antifragility fallback for SessionEnd. Cron-invoked every 15 min. Walks $HOME/.claude/projects/*/<session>.jsonl, finds sessions older than SESSION_SILENT_THRESHOLD_MIN (default 30) whose session_id does NOT appear under .context/handovers/. For matches runs `fw handover` with RECOVERED=1. Closes SessionEnd gap (/exit skips hook, API 500 kills before hook fires). T-1222 cap prevents commit storms. |
-| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | Invariant: gate scripts must not emit bare 'fw' COMMANDS — use bin/fw, or the _emit_user_command/_fw_cmd helpers that resolve the right path per project. Origin: T-1146 GO / T-1203 — bare commands are not copy-pasteable and violate PL-007. |
 | [handover](/docs/generated/tests-unit-handover) | tests_by | Unit tests for agents/handover/handover.sh (10 tests) |
-| [handover_push_no_origin](/docs/generated/tests-unit-handover_push_no_origin) | called_by | TODO: describe what this component does |
-| [handover_push_no_origin](/docs/generated/tests-unit-handover_push_no_origin) | tests_by | TODO: describe what this component does |
+| [handover_push_no_origin](/docs/generated/tests-unit-handover_push_no_origin) | called_by | T-1474 — handover.sh mirror-skip must guard on origin presence. |
+| [handover_push_no_origin](/docs/generated/tests-unit-handover_push_no_origin) | tests_by | T-1474 — handover.sh mirror-skip must guard on origin presence. |
 | [handover_push_timeout](/docs/generated/tests-unit-handover_push_timeout) | tests_by | Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT. |
-| [handover_t012_active_only](/docs/generated/tests-unit-handover_t012_active_only) | called_by | TODO: describe what this component does |
-| [handover_t012_active_only](/docs/generated/tests-unit-handover_t012_active_only) | tests_by | TODO: describe what this component does |
+| [handover_t012_active_only](/docs/generated/tests-unit-handover_t012_active_only) | called_by | T-1477 — handover.sh's COMMIT_TASK lookup must only match T-012 when it is in .tasks/active/. Matching completed/ caused recurring "task is closed" warnings on every session handover commit because T-012 was completed long |
+| [handover_t012_active_only](/docs/generated/tests-unit-handover_t012_active_only) | tests_by | T-1477 — handover.sh's COMMIT_TASK lookup must only match T-012 when it is in .tasks/active/. Matching completed/ caused recurring "task is closed" warnings on every session handover commit because T-012 was completed long |
 | [test_arc_system](/docs/generated/tests-unit-test_arc_system) | called_by | Unit tests for fw arc CLI (T-1661 Phase 1 MVP) — pins create/focus/list/show/tag/close/migrate verbs, anchor handling, and handover injection of ## Current Arc section. |
-| [arc_membership_agent_surfaces](/docs/generated/tests-unit-arc_membership_agent_surfaces) | tests_by | TODO: describe what this component does |
-| [handover_checkpoint_push](/docs/generated/tests-unit-handover_checkpoint_push) | called_by | TODO: describe what this component does |
-| [handover_checkpoint_push](/docs/generated/tests-unit-handover_checkpoint_push) | tests_by | TODO: describe what this component does |
-| [handover_commit_scope](/docs/generated/tests-unit-handover_commit_scope) | called_by | TODO: describe what this component does |
-| [handover_commit_scope](/docs/generated/tests-unit-handover_commit_scope) | tests_by | TODO: describe what this component does |
-| [handover_digest](/docs/generated/tests-unit-handover_digest) | tests_by | TODO: describe what this component does |
-| [handover_task_classification](/docs/generated/tests-unit-handover_task_classification) | tests_by | TODO: describe what this component does |
-| [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | called_by | TODO: describe what this component does |
-| [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | tests_by | TODO: describe what this component does |
-| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | TODO: describe what this component does |
+| [arc_membership_agent_surfaces](/docs/generated/tests-unit-arc_membership_agent_surfaces) | tests_by | T-1879 (T-NEW-14): silent-corpus #2 sweep — agent-side surfaces must read both `arc_id:` frontmatter (T-1849 canonical, T-1850 migrated) AND legacy `arc:<slug>` tag. |
+| [handover_checkpoint_push](/docs/generated/tests-unit-handover_checkpoint_push) | called_by | T-2588 — `handover.sh --checkpoint` must push the checkpoint commit, not just commit it locally. |
+| [handover_checkpoint_push](/docs/generated/tests-unit-handover_checkpoint_push) | tests_by | T-2588 — `handover.sh --checkpoint` must push the checkpoint commit, not just commit it locally. |
+| [handover_commit_scope](/docs/generated/tests-unit-handover_commit_scope) | called_by | T-3090 — a pathspec-scoped commit must not absorb a concurrent writer's index. |
+| [handover_commit_scope](/docs/generated/tests-unit-handover_commit_scope) | tests_by | T-3090 — a pathspec-scoped commit must not absorb a concurrent writer's index. |
+| [handover_digest](/docs/generated/tests-unit-handover_digest) | tests_by | T-3028 (T-3025 GO, option 3): the three state dumps digest to count + regenerating command + top-N; the narrative does not change. |
+| [handover_task_classification](/docs/generated/tests-unit-handover_task_classification) | tests_by | T-3027 (OBS-276): `tasks_active:` must mean active. |
+| [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | called_by | T-2927 — the handover's observation-inbox section listed 1 of 112 pending observations, and said nothing about the other 111. |
+| [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | tests_by | T-2927 — the handover's observation-inbox section listed 1 of 112 pending observations, and said nothing about the other 111. |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | called_by | Fabric enrichment engine — auto-detect dependency edges from source analysis. |
+| [checkpoint](/docs/generated/checkpoint) | called_by | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
 
 ## Documentation
 

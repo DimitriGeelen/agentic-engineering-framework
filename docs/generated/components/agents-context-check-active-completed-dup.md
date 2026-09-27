@@ -12,9 +12,9 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [hook_paths](/docs/generated/lib-hook_paths) | calls | TODO: describe what this component does |
-| [hook_paths](/docs/generated/lib-hook_paths) | uses | TODO: describe what this component does |
-| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | calls | TODO: describe what this component does |
+| [hook_paths](/docs/generated/lib-hook_paths) | calls | Python-side hook project-root resolver — parity with lib/paths.sh:fw_reanchor_from_cwd. |
+| [hook_paths](/docs/generated/lib-hook_paths) | uses | Python-side hook project-root resolver — parity with lib/paths.sh:fw_reanchor_from_cwd. |
+| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | calls | T-1849: arc_id task-frontmatter validation hook (T-NEW-2). |
 
 ## Used By (3)
 

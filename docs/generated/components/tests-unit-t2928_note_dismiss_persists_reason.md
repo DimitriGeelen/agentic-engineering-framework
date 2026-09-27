@@ -1,8 +1,8 @@
 # t2928_note_dismiss_persists_reason
 
-> TODO: describe what this component does
+> T-2928 — `fw note dismiss OBS-NNN --reason "..."` accepted the reason, printed it, and discarded it.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2928_note_dismiss_persists_reason.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2928_note_dismiss_persists_reason.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_cockpit_activity_navigation
 
-> TODO: describe what this component does
+> T-2113: cockpit Recent Activity task-link click must NOT bounce back.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_cockpit_activity_navigation.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_cockpit_activity_navigation.py`
 
 ## What It Does
 

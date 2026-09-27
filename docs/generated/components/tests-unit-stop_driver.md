@@ -1,8 +1,8 @@
 # stop_driver
 
-> TODO: describe what this component does
+> T-3164 (arc-012 S1) — the continuous-run turn driver.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/stop_driver.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/stop_driver.bats`
 
 ## What It Does
 
@@ -16,7 +16,7 @@ turns it red.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [stop-driver](/docs/generated/agents-context-stop-driver) | tests | TODO: describe what this component does |
+| [stop-driver](/docs/generated/agents-context-stop-driver) | tests | Stop hook — the continuous-run turn driver (T-3164, arc-012 S1). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-stop_driver.yaml`*

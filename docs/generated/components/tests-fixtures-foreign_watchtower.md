@@ -1,8 +1,8 @@
 # foreign_watchtower
 
-> TODO: describe what this component does
+> A stand-in for ANOTHER project's Watchtower (T-2802 fixture).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/fixtures/foreign_watchtower.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/fixtures/foreign_watchtower.py`
 
 ## What It Does
 

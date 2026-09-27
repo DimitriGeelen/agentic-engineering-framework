@@ -1,8 +1,8 @@
 # test_settings_nav_link
 
-> TODO: describe what this component does
+> Playwright guard for T-2032 — the settings gear is visible and navigates to the page.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_settings_nav_link.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_settings_nav_link.py`
 
 ## What It Does
 
@@ -13,7 +13,7 @@ page load — so wait for the URL to change rather than for domcontentloaded.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_settings_nav_link.yaml`*

@@ -1,8 +1,8 @@
 # t3187_branch_identity_guard
 
-> TODO: describe what this component does
+> T-3187: the branch guard must assert IDENTITY, not reconcilability.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3187_branch_identity_guard.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3187_branch_identity_guard.bats`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ the control leg.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [branch-hygiene](/docs/generated/lib-branch-hygiene) | tests | TODO: describe what this component does |
+| [branch-hygiene](/docs/generated/lib-branch-hygiene) | tests | lib/branch-hygiene.sh — T-100143 (C2 of T-100139 branch/worktree lifecycle GO) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3187_branch_identity_guard.yaml`*

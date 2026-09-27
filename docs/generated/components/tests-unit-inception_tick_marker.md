@@ -1,8 +1,8 @@
 # inception_tick_marker
 
-> TODO: describe what this component does
+> T-1472 (OBS-019 Level D): tick_inception_decide_acs detects ceremonial ACs via `<!-- @auto-tick-on-decide -->` markers — text-wording independent.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/inception_tick_marker.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/inception_tick_marker.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # pre_compact_timewindow_dedup
 
-> TODO: describe what this component does
+> T-1478 — pre-compact.sh layers a time-window dedup on top of flock to catch SEQUENTIAL dual-fires that flock alone cannot stop.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/pre_compact_timewindow_dedup.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/pre_compact_timewindow_dedup.bats`
 
 ## What It Does
 

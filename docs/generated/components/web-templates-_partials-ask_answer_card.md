@@ -1,6 +1,6 @@
 # ask_answer_card
 
-> TODO: describe what this component does
+> Markup for the #ask-answer-card AI-answer panel (model badge, conversation thread, status, answer body) that web/static/js/search-qa.js populates.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_partials/ask_answer_card.html`
 

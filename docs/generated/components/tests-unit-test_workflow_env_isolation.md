@@ -1,8 +1,8 @@
 # test_workflow_env_isolation
 
-> TODO: describe what this component does
+> T-1700 AC6 — workflow env: plumb-through isolation invariants.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_workflow_env_isolation.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_workflow_env_isolation.bats`
 
 ## What It Does
 

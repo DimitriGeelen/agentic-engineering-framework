@@ -1,8 +1,8 @@
 # ewcr-arc0-coverage-check
 
-> TODO: describe what this component does
+> EWCR Arc 0 — the control for falsifier 1.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/ewcr-arc0-coverage-check.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/ewcr-arc0-coverage-check.py`
 
 ## What It Does
 

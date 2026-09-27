@@ -1,8 +1,8 @@
 # t3268_continuous_cycling_detector
 
-> TODO: describe what this component does
+> T-3268 (G-099 what_remains) — G-099 fixed the "wrapper says armed but turn driver isn't" drift class and named, but did not build, the detector for a sibling class: `last_terminated_reason` (bin/claude-fw:388) is a one-way latch that…
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3268_continuous_cycling_detector.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3268_continuous_cycling_detector.bats`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ separate continuous-run.jsonl ledger.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [continuous-mode](/docs/generated/lib-continuous-mode) | tests | TODO: describe what this component does |
+| [continuous-mode](/docs/generated/lib-continuous-mode) | tests | Continuous-run counters (T-3169, arc-012 S3). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3268_continuous_cycling_detector.yaml`*

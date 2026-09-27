@@ -1,8 +1,8 @@
 # t3053_multiref_traceability
 
-> TODO: describe what this component does
+> T-3053 — a commit subject may name more than one task. The traceability check read only the first ref, so a commit whose leading ref did not resolve was reported orphaned even when a later ref named a real task.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3053_multiref_traceability.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3053_multiref_traceability.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # t2920_boundary_heredoc_strip_order
 
-> TODO: describe what this component does
+> T-2920 — the project-boundary hook must not read a heredoc BODY as a command.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2920_boundary_heredoc_strip_order.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2920_boundary_heredoc_strip_order.bats`
 
 ## What It Does
 

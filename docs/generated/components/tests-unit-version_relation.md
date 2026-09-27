@@ -1,8 +1,8 @@
 # version_relation
 
-> TODO: describe what this component does
+> T-2713: consumer-vs-framework version relation must come from git ancestry, never from `sort -V` over the VERSION counter.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/version_relation.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/version_relation.bats`
 
 ## What It Does
 
@@ -21,10 +21,10 @@ Test 6 is the NEGATIVE CONTROL: it asserts the fixture pair genuinely fools
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [version-relation](/docs/generated/lib-version-relation) | tests | TODO: describe what this component does |
+| [version-relation](/docs/generated/lib-version-relation) | tests | T-2713 — one truthful answer to "is this consumer ahead or behind?". |
 | [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [version-relation](/docs/generated/lib-version-relation) | calls | TODO: describe what this component does |
+| [version-relation](/docs/generated/lib-version-relation) | calls | T-2713 — one truthful answer to "is this consumer ahead or behind?". |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-version_relation.yaml`*

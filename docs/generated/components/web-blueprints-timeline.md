@@ -19,7 +19,7 @@ T-2109: migrated from local stat+cache logic to shared.mtime_cached_get.
 |-----------|--------------|-------------|
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [timeline](/docs/generated/web-templates-timeline) | renders | Page template: Timeline |
-| [timeline_session](/docs/generated/web-templates-timeline_session) | renders | TODO: describe what this component does |
+| [timeline_session](/docs/generated/web-templates-timeline_session) | renders | Single-session timeline detail (full task list), rendered by web/blueprints/timeline.py:timeline_session. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ## Used By (8)

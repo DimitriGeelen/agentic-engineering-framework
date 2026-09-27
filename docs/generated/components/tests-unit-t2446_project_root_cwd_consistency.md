@@ -1,8 +1,8 @@
 # t2446_project_root_cwd_consistency
 
-> TODO: describe what this component does
+> T-2446: bin/fw trusts CLAUDE_PROJECT_DIR ONLY when the cwd is not genuinely inside a *different* real project.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2446_project_root_cwd_consistency.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2446_project_root_cwd_consistency.bats`
 
 ## What It Does
 

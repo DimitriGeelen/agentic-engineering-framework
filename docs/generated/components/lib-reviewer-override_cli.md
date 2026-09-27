@@ -1,6 +1,6 @@
 # override_cli
 
-> TODO: describe what this component does
+> CLI for reviewer overrides (T-1443 v1.4).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/reviewer/override_cli.py`
 
@@ -10,8 +10,8 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [overrides](/docs/generated/lib-reviewer-overrides) | calls | TODO: describe what this component does |
-| [overrides](/docs/generated/lib-reviewer-overrides) | uses | TODO: describe what this component does |
+| [overrides](/docs/generated/lib-reviewer-overrides) | calls | Reviewer override mechanism (T-1443 v1.4). |
+| [overrides](/docs/generated/lib-reviewer-overrides) | uses | Reviewer override mechanism (T-1443 v1.4). |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-override_cli.yaml`*

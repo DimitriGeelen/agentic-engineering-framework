@@ -1,8 +1,8 @@
 # tier0_hash_normalization
 
-> TODO: describe what this component does
+> T-1500: Tier 0 hash drift on retry-after-approval.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/tier0_hash_normalization.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/tier0_hash_normalization.bats`
 
 ## What It Does
 

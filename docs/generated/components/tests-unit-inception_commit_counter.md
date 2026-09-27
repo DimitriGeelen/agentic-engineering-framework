@@ -1,8 +1,8 @@
 # inception_commit_counter
 
-> TODO: describe what this component does
+> Unit tests for _count_inception_exploration_commits (T-2195)
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/inception_commit_counter.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/inception_commit_counter.bats`
 
 ## What It Does
 

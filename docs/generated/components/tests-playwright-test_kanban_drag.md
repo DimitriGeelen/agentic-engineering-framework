@@ -1,8 +1,8 @@
 # test_kanban_drag
 
-> TODO: describe what this component does
+> Playwright guard for T-2019 (arc-007 S4d) — drag-to-reorder kanban, end-to-end.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_kanban_drag.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_kanban_drag.py`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_kanban_drag.yaml`*

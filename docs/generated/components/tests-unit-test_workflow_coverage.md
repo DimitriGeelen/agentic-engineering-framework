@@ -1,8 +1,8 @@
 # test_workflow_coverage
 
-> TODO: describe what this component does
+> T-1798: Unit tests for lib/workflow_coverage.py.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_workflow_coverage.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_workflow_coverage.py`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [workflow_coverage](/docs/generated/lib-workflow_coverage) | calls | TODO: describe what this component does |
+| [workflow_coverage](/docs/generated/lib-workflow_coverage) | calls | workflow_coverage — audit-time check for workflow → dispatcher coverage. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_workflow_coverage.yaml`*

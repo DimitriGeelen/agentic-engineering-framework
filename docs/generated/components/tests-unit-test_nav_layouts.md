@@ -1,8 +1,8 @@
 # test_nav_layouts
 
-> TODO: describe what this component does
+> T-2011 (arc-007 S2d): nav-layout axis contract.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_nav_layouts.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_nav_layouts.py`
 
 ## What It Does
 

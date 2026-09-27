@@ -1,6 +1,6 @@
 # __init__
 
-> TODO: describe what this component does
+> Provider adapters for terminal session management (T-967).
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/terminal/adapters/__init__.py`
 

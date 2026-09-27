@@ -1,6 +1,6 @@
 # shortcuts-overlay
 
-> TODO: describe what this component does
+> ? Keyboard-shortcuts overlay — T-2013, arc-007 S6b.
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/static/shortcuts-overlay.js`
 

@@ -23,16 +23,16 @@ split-root consumers (masked here by the try/except fallback, feature silently d
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [arcs](/docs/generated/web-blueprints-arcs) | calls | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [arcs](/docs/generated/web-blueprints-arcs) | registers | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
-| [bvp](/docs/generated/web-blueprints-bvp) | calls | TODO: describe what this component does |
-| [bvp](/docs/generated/web-blueprints-bvp) | registers | TODO: describe what this component does |
+| [bvp](/docs/generated/web-blueprints-bvp) | calls | BVP scatter blueprint — T-1928 (arc-006, value-prioritisation, T-NEW-12a). |
+| [bvp](/docs/generated/web-blueprints-bvp) | registers | BVP scatter blueprint — T-1928 (arc-006, value-prioritisation, T-NEW-12a). |
 | [check-tier0](/docs/generated/agents-context-check-tier0) | calls | Tier 0 Enforcement Hook — PreToolUse gate for Bash tool |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [inception](/docs/generated/web-blueprints-inception) | uses | Blueprint 'inception' — routes: /inception |
 | [tasks](/docs/generated/web-blueprints-tasks) | uses | Flask blueprint: Tasks |
 | [arcs](/docs/generated/web-blueprints-arcs) | uses | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
-| [bvp](/docs/generated/web-blueprints-bvp) | uses | TODO: describe what this component does |
-| [stop-driver](/docs/generated/agents-context-stop-driver) | calls | TODO: describe what this component does |
-| [decided_unclosed](/docs/generated/lib-decided_unclosed) | calls | TODO: describe what this component does |
+| [bvp](/docs/generated/web-blueprints-bvp) | uses | BVP scatter blueprint — T-1928 (arc-006, value-prioritisation, T-NEW-12a). |
+| [stop-driver](/docs/generated/agents-context-stop-driver) | calls | Stop hook — the continuous-run turn driver (T-3164, arc-012 S1). |
+| [decided_unclosed](/docs/generated/lib-decided_unclosed) | calls | T-3175: inceptions that are DECIDED but still open — the queue nobody showed. |
 | [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 
 ## Used By (19)
@@ -47,14 +47,14 @@ split-root consumers (masked here by the try/except fallback, feature silently d
 | [test_inception](/docs/generated/tests-playwright-test_inception) | registered_by | Playwright tests for Inception pages (T-970) |
 | [test_api_approvals](/docs/generated/tests-playwright-test_api_approvals) | called_by | Playwright tests for approvals API endpoints (T-1031). |
 | [shared](/docs/generated/web-shared) | called_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
-| [approvals_close_ready_arcs](/docs/generated/tests-unit-approvals_close_ready_arcs) | tests_by | TODO: describe what this component does |
+| [approvals_close_ready_arcs](/docs/generated/tests-unit-approvals_close_ready_arcs) | tests_by | T-1961: _load_close_ready_arcs() filter logic. |
 | [test_inception](/docs/generated/tests-playwright-test_inception) | uses_by | Playwright tests for Inception pages (T-970) |
-| [test_approvals_blocked_arcs](/docs/generated/tests-web-test_approvals_blocked_arcs) | called_by | TODO: describe what this component does |
-| [test_approvals_blocked_arcs](/docs/generated/tests-web-test_approvals_blocked_arcs) | registered_by | TODO: describe what this component does |
-| [test_approvals_blocked_arcs](/docs/generated/tests-web-test_approvals_blocked_arcs) | uses_by | TODO: describe what this component does |
-| [test_approvals_origin](/docs/generated/tests-web-test_approvals_origin) | called_by | TODO: describe what this component does |
-| [test_approvals_origin](/docs/generated/tests-web-test_approvals_origin) | registered_by | TODO: describe what this component does |
-| [test_approvals_origin](/docs/generated/tests-web-test_approvals_origin) | uses_by | TODO: describe what this component does |
+| [test_approvals_blocked_arcs](/docs/generated/tests-web-test_approvals_blocked_arcs) | called_by | T-2986: an arc that meets the closure threshold but is not reviewable says so. |
+| [test_approvals_blocked_arcs](/docs/generated/tests-web-test_approvals_blocked_arcs) | registered_by | T-2986: an arc that meets the closure threshold but is not reviewable says so. |
+| [test_approvals_blocked_arcs](/docs/generated/tests-web-test_approvals_blocked_arcs) | uses_by | T-2986: an arc that meets the closure threshold but is not reviewable says so. |
+| [test_approvals_origin](/docs/generated/tests-web-test_approvals_origin) | called_by | T-3078: /approvals must not assert an agent asked when none did. |
+| [test_approvals_origin](/docs/generated/tests-web-test_approvals_origin) | registered_by | T-3078: /approvals must not assert an agent asked when none did. |
+| [test_approvals_origin](/docs/generated/tests-web-test_approvals_origin) | uses_by | T-3078: /approvals must not assert an agent asked when none did. |
 | [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
 | [core](/docs/generated/web-blueprints-core) | uses_by | Flask blueprint: Core |
 

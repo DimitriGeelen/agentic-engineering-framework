@@ -1,8 +1,8 @@
 # lib_pickup
 
-> TODO: describe what this component does
+> Unit tests for lib/pickup.sh
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/lib_pickup.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/lib_pickup.bats`
 
 ## What It Does
 

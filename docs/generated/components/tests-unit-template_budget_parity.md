@@ -1,8 +1,8 @@
 # template_budget_parity
 
-> TODO: describe what this component does
+> T-3155 — the consumer CLAUDE.md template must not contradict the budget gate.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/template_budget_parity.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/template_budget_parity.bats`
 
 ## What It Does
 

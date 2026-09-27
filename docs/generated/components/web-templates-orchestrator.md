@@ -1,6 +1,6 @@
 # orchestrator
 
-> TODO: describe what this component does
+> Orchestrator dispatch-substrate dashboard, rendered by web/blueprints/orchestrator.py.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/orchestrator.html`
 
@@ -16,7 +16,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [orchestrator](/docs/generated/web-blueprints-orchestrator) | rendered_by | TODO: describe what this component does |
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | rendered_by | T-1647 (W10 #2 of T-1641 Arc C) — Watchtower /orchestrator page. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-orchestrator.yaml`*

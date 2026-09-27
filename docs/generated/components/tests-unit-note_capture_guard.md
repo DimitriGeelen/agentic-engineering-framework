@@ -1,8 +1,8 @@
 # note_capture_guard
 
-> TODO: describe what this component does
+> T-2867 — `fw note` must refuse arguments it cannot use, never discard them.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/note_capture_guard.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/note_capture_guard.bats`
 
 ## What It Does
 

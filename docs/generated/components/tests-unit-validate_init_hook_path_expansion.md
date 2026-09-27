@@ -1,8 +1,8 @@
 # validate_init_hook_path_expansion
 
-> TODO: describe what this component does
+> T-2724 — lib/validate-init.sh must expand ${CLAUDE_PROJECT_DIR} before testing whether a hook script exists.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/validate_init_hook_path_expansion.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/validate_init_hook_path_expansion.bats`
 
 ## What It Does
 

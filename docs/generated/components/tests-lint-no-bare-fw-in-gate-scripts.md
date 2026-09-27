@@ -1,8 +1,8 @@
 # no-bare-fw-in-gate-scripts
 
-> TODO: describe what this component does
+> Invariant: gate scripts must not emit bare 'fw' COMMANDS — use bin/fw, or the _emit_user_command/_fw_cmd helpers that resolve the right path per project. Origin: T-1146 GO / T-1203 — bare commands are not copy-pasteable and violate PL-007.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/lint/no-bare-fw-in-gate-scripts.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/lint/no-bare-fw-in-gate-scripts.bats`
 
 ## What It Does
 

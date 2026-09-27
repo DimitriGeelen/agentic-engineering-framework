@@ -1,6 +1,6 @@
 # episodic_footprint
 
-> TODO: describe what this component does
+> Re-mine an episodic's git footprint AFTER the completion commit exists (T-3130).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/episodic_footprint.py`
 
@@ -17,7 +17,7 @@
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
-| [episodic_footprint_refresh](/docs/generated/tests-unit-episodic_footprint_refresh) | tests_by | TODO: describe what this component does |
+| [episodic_footprint_refresh](/docs/generated/tests-unit-episodic_footprint_refresh) | tests_by | T-3130 — the episodic's git footprint is mined before the commit it describes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-episodic_footprint.yaml`*

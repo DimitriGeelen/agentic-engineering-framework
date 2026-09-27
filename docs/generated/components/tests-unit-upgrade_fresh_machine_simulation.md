@@ -1,8 +1,8 @@
 # upgrade_fresh_machine_simulation
 
-> TODO: describe what this component does
+> T-1635: fresh-machine simulation guard for fw upgrade.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/upgrade_fresh_machine_simulation.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/upgrade_fresh_machine_simulation.bats`
 
 ## What It Does
 
@@ -24,9 +24,9 @@ Slim slice (no docker required, runs in any bats environment):
 | [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | tests | TODO: describe what this component does |
-| [master-guard](/docs/generated/agents-git-lib-master-guard) | tests | TODO: describe what this component does |
-| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | tests | TODO: describe what this component does |
+| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | tests | agents/git/lib/secret-scan.sh — Secret-scan library for the pre-commit hook (T-1844). |
+| [master-guard](/docs/generated/agents-git-lib-master-guard) | tests | master-guard.sh — Master-as-merge-only pre-commit guard (T-2396, inception T-2394 G1) |
+| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | tests | orchestrator-mcp-scan.sh — drift defense for MCP-tool task_id enforcement T-1646 (Arc C drift defense, parented under T-1644, originating in T-1641) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-upgrade_fresh_machine_simulation.yaml`*

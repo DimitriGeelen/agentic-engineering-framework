@@ -1,8 +1,8 @@
 # test_tasks_listing_bvp
 
-> TODO: describe what this component does
+> T-1982: /tasks listing — BVP badge on kanban cards + list view.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_tasks_listing_bvp.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_tasks_listing_bvp.py`
 
 ## What It Does
 

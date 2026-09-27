@@ -25,17 +25,17 @@
 | [patterns](/docs/generated/web-templates-patterns) | renders | Watchtower UI page: Patterns |
 | [graduation](/docs/generated/web-templates-graduation) | renders | Watchtower UI page: Graduation |
 | [patterns-data](/docs/generated/patterns-data) | calls | Stores failure, success, and workflow patterns discovered during project work. |
-| [gaps](/docs/generated/lib-gaps) | calls | TODO: describe what this component does |
+| [gaps](/docs/generated/lib-gaps) | calls | Gap-register closure helpers. |
 | [context_loader](/docs/generated/web-context_loader) | uses | Centralized YAML loading for context project files (learnings, patterns, decisions, practices, concerns, directives). Replaces duplicated try/except blocks across blueprints. Uses shared.load_yaml() for error collection. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [embeddings](/docs/generated/web-embeddings) | uses | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
-| [gaps](/docs/generated/lib-gaps) | uses | TODO: describe what this component does |
+| [gaps](/docs/generated/lib-gaps) | uses | Gap-register closure helpers. |
 | [search](/docs/generated/web-search) | uses | Tantivy BM25 full-text search engine — indexes all YAML/Markdown files, provides ranked search with snippets |
 | [search_utils](/docs/generated/web-search_utils) | uses | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
-| [ask](/docs/generated/web-ask) | calls | TODO: describe what this component does |
-| [qa_feedback](/docs/generated/web-qa_feedback) | calls | TODO: describe what this component does |
-| [ask](/docs/generated/web-ask) | uses | TODO: describe what this component does |
-| [qa_feedback](/docs/generated/web-qa_feedback) | uses | TODO: describe what this component does |
+| [ask](/docs/generated/web-ask) | calls | LLM-assisted Q&A for Watchtower search. |
+| [qa_feedback](/docs/generated/web-qa_feedback) | calls | Q&A feedback storage — SQLite-backed thumbs up/down tracking (T-267). |
+| [ask](/docs/generated/web-ask) | uses | LLM-assisted Q&A for Watchtower search. |
+| [qa_feedback](/docs/generated/web-qa_feedback) | uses | Q&A feedback storage — SQLite-backed thumbs up/down tracking (T-267). |
 
 ## Used By (8)
 

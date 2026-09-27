@@ -21,14 +21,16 @@ When the active task has `workflow_type: inception`:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (4)
+## Dependencies (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [review](/docs/generated/lib-review) | calls | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
 | [task-audit](/docs/generated/lib-task-audit) | calls | Scans task files for literal placeholder content that should have been replaced during authoring, blocking review and inception decisions until resolved |
-| [inception_recommendation](/docs/generated/lib-inception_recommendation) | calls | TODO: describe what this component does |
+| [inception_recommendation](/docs/generated/lib-inception_recommendation) | calls | Detection helper for the T-679 rule decay pattern (T-1715 meta-RCA, T-1716 implementation). Used by: - agents/audit/audit.sh — C-006 detective check - lib/inception.sh — Stream C sweep (do_inception_sweep --recommendation-fix) |
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [inception-readiness](/docs/generated/lib-inception-readiness) | calls | lib/inception-readiness.sh — SHARED decision-readiness predicates for inception tasks. |
+| [section-extract](/docs/generated/lib-section-extract) | calls | lib/section-extract.sh — anchored section extraction for the task-file sections that gate build/inception completion, other than ## Verification |
 
 ## Used By (23)
 
@@ -43,19 +45,19 @@ When the active task has `workflow_type: inception`:
 | [T-1212-consumer-watchtower-rca](/docs/generated/docs-reports-T-1212-consumer-watchtower-rca) | produced-by_by | NO-GO RCA — consumer Watchtower pages misscoped, superseded by T-1213 |
 | [T-607-correction-refinement-loop](/docs/generated/docs-reports-T-607-correction-refinement-loop) | produced-by_by | Correction and refinement loop research — absorbed into framework |
 | [inception_decide_ac_tick](/docs/generated/tests-unit-inception_decide_ac_tick) | called_by | Unit tests for T-1324 — tick_inception_decide_acs auto-ticks the templated [REVIEW]/[RUBBER-STAMP] Human AC after fw inception decide writes the Decision block, so the work-completed gate does not leave the task in partial-complete forever (G-008; P-039). |
-| [inception-decision-exact-match](/docs/generated/tests-lint-inception-decision-exact-match) | tests_by | TODO: describe what this component does |
+| [inception-decision-exact-match](/docs/generated/tests-lint-inception-decision-exact-match) | tests_by | Invariant: inception decision writer uses exact match on "## Decision" Origin: T-1202/T-1200 — startswith('## Decision') matched both ## Decisions and ## Decision |
 | [inception_decide_ac_tick](/docs/generated/tests-unit-inception_decide_ac_tick) | tests_by | Unit tests for T-1324 — tick_inception_decide_acs auto-ticks the templated [REVIEW]/[RUBBER-STAMP] Human AC after fw inception decide writes the Decision block, so the work-completed gate does not leave the task in partial-complete forever (G-008; P-039). |
-| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | called_by | TODO: describe what this component does |
-| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | tests_by | TODO: describe what this component does |
-| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | called_by | TODO: describe what this component does |
-| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | tests_by | TODO: describe what this component does |
-| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | called_by | TODO: describe what this component does |
-| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | tests_by | TODO: describe what this component does |
+| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | called_by | T-1503: do_inception_decide must be atomic — either fully succeeds (Decision section + Updates entry + status=work-completed) or leaves the task body untouched. |
+| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | tests_by | T-1503: do_inception_decide must be atomic — either fully succeeds (Decision section + Updates entry + status=work-completed) or leaves the task body untouched. |
+| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | called_by | Unit tests for T-1466 — tick_inception_decide_acs recognizes `[Inception decision recorded]` AC wording when ## Recommendation exists. |
+| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | tests_by | Unit tests for T-1466 — tick_inception_decide_acs recognizes `[Inception decision recorded]` AC wording when ## Recommendation exists. |
+| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | called_by | T-1472 (OBS-019 Level D): tick_inception_decide_acs detects ceremonial ACs via `<!-- @auto-tick-on-decide -->` markers — text-wording independent. |
+| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | tests_by | T-1472 (OBS-019 Level D): tick_inception_decide_acs detects ceremonial ACs via `<!-- @auto-tick-on-decide -->` markers — text-wording independent. |
 | [lib_inception](/docs/generated/tests-unit-lib_inception) | tests_by | Unit tests for inception (12 tests) |
 | [inception](/docs/generated/web-blueprints-inception) | called_by | Blueprint 'inception' — routes: /inception |
 | [audit_d10_html_comment_blindness](/docs/generated/tests-unit-audit_d10_html_comment_blindness) | tests_by | Bats unit tests pinning D10 audit ("Decision-without-Dialogue") behaviour against HTML-comment-blindness false positives (T-1889). 4 cases verify: template-stub-only Human section is silent, real unchecked AC outside comments fires, checked AC is silent, mixed comments+real AC doesn't double-count. Forward-pins the strip-comments call added to audit.sh D10 block — future refactors that remove it fail test #1. |
-| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | called_by | TODO: describe what this component does |
-| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | tests_by | TODO: describe what this component does |
+| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | called_by | T-2922 — a fresh `fw init` project must be able to complete its first inception with no Watchtower running. |
+| [t2922_greenfield_first_inception](/docs/generated/tests-integration-t2922_greenfield_first_inception) | tests_by | T-2922 — a fresh `fw init` project must be able to complete its first inception with no Watchtower running. |
 
 ## Related
 

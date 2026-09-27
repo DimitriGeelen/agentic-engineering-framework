@@ -1,8 +1,8 @@
 # escalation_scan_v05
 
-> TODO: describe what this component does
+> T-1727 — escalation-scan v0.5 unit coverage.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/escalation_scan_v05.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/escalation_scan_v05.bats`
 
 ## What It Does
 
@@ -16,9 +16,9 @@ and A7 (Evolution log) is part of the task file itself, not source.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | calls | TODO: describe what this component does |
-| [test_escalation_v05](/docs/generated/tests-playwright-test_escalation_v05) | calls | TODO: describe what this component does |
-| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | tests | TODO: describe what this component does |
+| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | calls | T-1727 — Layer B v0.5: per-candidate LLM augmentation of escalation-scan v0. |
+| [test_escalation_v05](/docs/generated/tests-playwright-test_escalation_v05) | calls | T-1727 A5 — /escalation-drift v0.5 panel Playwright coverage. |
+| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | tests | T-1727 — Layer B v0.5: per-candidate LLM augmentation of escalation-scan v0. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

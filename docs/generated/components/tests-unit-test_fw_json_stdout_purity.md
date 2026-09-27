@@ -1,8 +1,8 @@
 # test_fw_json_stdout_purity
 
-> TODO: describe what this component does
+> T-2769 — `fw <cmd> --json` must emit only JSON on stdout.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_fw_json_stdout_purity.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_fw_json_stdout_purity.py`
 
 ## What It Does
 

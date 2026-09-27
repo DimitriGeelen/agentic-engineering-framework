@@ -1,8 +1,8 @@
 # t3254-livefire
 
-> TODO: describe what this component does
+> T-3254 (arc-012) AC5 + AC6 — live-fire and its negative control.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/t3254-livefire.sh`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/t3254-livefire.sh`
 
 ## What It Does
 

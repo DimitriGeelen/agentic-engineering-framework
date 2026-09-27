@@ -15,199 +15,221 @@ A completed task qualifies when ALL of:
 
 ## Population examined
 
-- completed inceptions: 464
-- with a GO recorded:   368
-- findings:             186
+- completed inceptions: 467
+- with a GO recorded:   371
+- findings:             184
 
 These are candidates for triage, not confirmed abandoned decisions:
 some may have shipped work that was simply never linked back. Deciding
 which is which is the judgement this check exists to force.
 
-## Findings (most recent first)
+## Tiers (T-3469)
 
-- T-100200 — .tasks/completed/T-100200-enforce-session-on-master-invariant--blo.md
-- T-3461 — .tasks/completed/T-3461-sidecar-architecture-review--is-there-a-.md
-- T-3278 — .tasks/completed/T-3278-restart-based-m2-transport---cron-watche.md
-- T-3256 — .tasks/completed/T-3256-termlink-product-feedback--injectpty-inj.md
-- T-3184 — .tasks/completed/T-3184-bvp-cannot-select-work-zero-confirmed-sc.md
-- T-3114 — .tasks/completed/T-3114-release-channels-consumers-choose-stable.md
-- T-3108 — .tasks/completed/T-3108-enforcement-code-forks-with-the-branch--.md
-- T-3100 — .tasks/completed/T-3100-no-error-incident-register--counter-dead.md
-- T-3093 — .tasks/completed/T-3093-how-should-unread-branch-hygiene-finding.md
-- T-3084 — .tasks/completed/T-3084-bvp-value-axis-does-not-discriminate-ins.md
-- T-3081 — .tasks/completed/T-3081-a-learning-that-prescribes-its-own-fix-a.md
-- T-3072 — .tasks/completed/T-3072-predicted-blast-radius-for-open-tasks--c.md
-- T-3044 — .tasks/completed/T-3044-structural-message-triage--hub-messages-.md
-- T-3041 — .tasks/completed/T-3041-aef-under-multiple-uids--de-rooting-the-.md
-- T-3025 — .tasks/completed/T-3025-handover-generator-embeds-state-by-value.md
-- T-3022 — .tasks/completed/T-3022-recall-latency-is-ocorpus--brute-force-k.md
-- T-3018 — .tasks/completed/T-3018-bpmn-seam-fixture-pair-contract-with-832.md
-- T-3007 — .tasks/completed/T-3007-embedding-model-upgrade-and-domain-adapt.md
-- T-3005 — .tasks/completed/T-3005-reliability-and-antifragility-controls-f.md
-- T-3004 — .tasks/completed/T-3004-vector-memory-substrate--liveness-reliab.md
+The predicate above decides WHAT is flagged and is unchanged. These
+tiers describe a flagged item using one weaker signal the predicate
+does not consult: whether a build/refactor/test/decommission task
+created at-or-after the inception mentions it anywhere in its body.
+A body mention is weaker than a declared link, so it never removes a
+finding — it only labels one.
+
+- candidate   (19) — no build-class follower at all. This is the tier that means NOBODY BUILT THIS.
+- in-flight   (59) — followers exist, at least one still in active/. Propagation started, work unfinished.
+- linked-late (106) — followers exist and all completed. Built and shipped; only the link was never recorded.
+
+Origin OBS-535: this scan used to report one undifferentiated count,
+which read as abandonment for every tier at once.
+
+## candidate (19, most recent first)
+
+- T-3482 — .tasks/completed/T-3482-bvp-revamp-inception-remove-the-human-fr.md
 - T-2995 — .tasks/completed/T-2995-cross-project-dispatch-containment-the-b.md
-- T-2993 — .tasks/completed/T-2993-worktree-isolation-guard-blocks-the-hygi.md
-- T-2992 — .tasks/completed/T-2992-suppression-without-a-register--how-many.md
-- T-2925 — .tasks/completed/T-2925-version-discards-the-one-component-that-.md
-- T-2909 — .tasks/completed/T-2909-enforcement-baseline-cannot-name-what-ch.md
-- T-2863 — .tasks/completed/T-2863-rework-the-inception-workflow-five-failu.md
-- T-2857 — .tasks/completed/T-2857-convention--gate-a-task-touching-binfw-o.md
-- T-2822 — .tasks/completed/T-2822-worktree-policy-what-may-live-inside-a-w.md
-- T-2800 — .tasks/completed/T-2800-should-the-home-framework-install-exist-.md
-- T-2761 — .tasks/completed/T-2761-fw-upgrade-should-refuse-to-run-a-consum.md
-- T-2757 — .tasks/completed/T-2757-fw-upgrade-does-not-ship-the-pinned-work.md
-- T-2715 — .tasks/completed/T-2715-first-run-experience-why-four-green-inst.md
-- T-2703 — .tasks/completed/T-2703-greenfield-seeding-emits-tasks-that-fail.md
-- T-2679 — .tasks/completed/T-2679-determinism-graduation-tripwire--structu.md
-- T-2608 — .tasks/completed/T-2608-single-stored-representation-for-corpus-.md
-- T-2602 — .tasks/completed/T-2602-spec-driven-corpus-map-authoring-declara.md
-- T-2571 — .tasks/completed/T-2571-off-page-connector-linkage-to-referenced.md
-- T-2553 — .tasks/completed/T-2553-corpus-exercise-document-5-most-used-aef.md
-- T-2541 — .tasks/completed/T-2541-write-out-promotion-can-bpmn-to-task-pro.md
-- T-2538 — .tasks/completed/T-2538-child-2-write-out-mode-how-do-compiled-b.md
-- T-2528 — .tasks/completed/T-2528-designer-workflow-persistence-project-st.md
-- T-2527 — .tasks/completed/T-2527-aef-agent-identity-split-heartbeat-vs-session.md
-- T-2522 — .tasks/completed/T-2522-bpmn-to-aef-task-inception-yaml-mapping-.md
-- T-2520 — .tasks/completed/T-2520-aef-side-integration-surface-for-workflo.md
-- T-2505 — .tasks/completed/T-2505-ratify-p-03-red-team-test-contract-spec-.md
-- T-2494 — .tasks/completed/T-2494-rca-host-deploy-is-whack-a-mole--declare.md
-- T-2464 — .tasks/completed/T-2464-make-git-worktree-support-reliable-in-th.md
-- T-2458 — .tasks/completed/T-2458-aef-fw-mcp-adoption-strategy--consumers-.md
-- T-2453 — .tasks/completed/T-2453-f1-public-install-freshness-guarantee--f.md
-- T-2447 — .tasks/completed/T-2447-f8--bare-fw-routes-to-global-legacy-shim.md
-- T-2419 — .tasks/completed/T-2419-recommendation-gate-for-partial-complete.md
-- T-2418 — .tasks/completed/T-2418-structural-validator--human-outside--acc.md
-- T-2416 — .tasks/completed/T-2416-fw-sessions--portable-per-project-sessio.md
-- T-2413 — .tasks/completed/T-2413-investigate-cc-picker-description-influe.md
-- T-2330 — .tasks/completed/T-2330-bvp-driver-propose-queue-surface--agent-.md
-- T-2280 — .tasks/completed/T-2280-fw-doctor-cross-instance-watchtower-scan.md
-- T-2279 — .tasks/completed/T-2279-csrf-403-handler-renders-explicit-recove.md
-- T-2277 — .tasks/completed/T-2277-multi-instance-watchtower-csrf-pollution.md
-- T-2275 — .tasks/completed/T-2275-auto-linker-excludes-root-files--docsart.md
-- T-2252 — .tasks/completed/T-2252-bvp-bundle-init-refusal-vs-fw-bvp-driver.md
 - T-2234 — .tasks/completed/T-2234-incept-consumer-update-dispatch-exercise.md
-- T-2233 — .tasks/completed/T-2233-fw-consumer-recover-wrapper--one-command.md
-- T-2231 — .tasks/completed/T-2231-field-upgrade-failure-on-121do--nth-recu.md
-- T-2225 — .tasks/completed/T-2225-test-sentinel-isolation--t-test-nnn-name.md
-- T-2217 — .tasks/completed/T-2217-watchtower-side-effect-warning-truncatio.md
-- T-2203 — .tasks/completed/T-2203-aef-lacks-a-structural-observation-harve.md
-- T-2201 — .tasks/completed/T-2201-aef-pre-flight-claude-cli-config-before-.md
-- T-2181 — .tasks/completed/T-2181-rca--structural-fix-bare-path-review-lin.md
-- T-2081 — .tasks/completed/T-2081-rca-complete-button-reappears-for-1-2s-a.md
-- T-1833 — .tasks/completed/T-1833-t-1736-spike-harvest-read-session-jsonls.md
-- T-1745 — .tasks/completed/T-1745-watchtower-inception-decide-form-silentl.md
-- T-1675 — .tasks/completed/T-1675-project-shape-conflation-umbrella--frame.md
-- T-1621 — .tasks/completed/T-1621-watchtower-url-triple-file-becomes-stale.md
-- T-1610 — .tasks/completed/T-1610-yaml-schema-validation-gate-for-staged-c.md
-- T-1601 — .tasks/completed/T-1601-red-team-self-test-harness-for-governanc.md
-- T-1565 — .tasks/completed/T-1565-audit-approvalreview-workflow-for-struct.md
-- T-1544 — .tasks/completed/T-1544-pickup-update-agentsinceptionagentmd-cop.md
-- T-1538 — .tasks/completed/T-1538-pickup-add-canonical-doc-approval-surfac.md
-- T-1513 — .tasks/completed/T-1513-rca-githubmaster-diverged-2490-commits-f.md
-- T-1507 — .tasks/completed/T-1507-inception-decide-cliwatchtower-output-tr.md
-- T-1506 — .tasks/completed/T-1506-rca--tier-0-approval-self-defeats-under-.md
 - T-1505 — .tasks/completed/T-1505-pickup-fw-doctor-hook-health-scan-sessio.md
-- T-1499 — .tasks/completed/T-1499-pickup-advies-gevraagd-ring20-hosting-pa.md
-- T-1460 — .tasks/completed/T-1460-fw-audit-recursive-spawn-pathology--obse.md
-- T-1459 — .tasks/completed/T-1459-4-claude-code-hooks-mirrored-from-termli.md
-- T-1451 — .tasks/completed/T-1451-sweep-all-human-handoff-touchpoints--ren.md
-- T-1420 — .tasks/completed/T-1420-cross-project-pickup-semantic-dedup--has.md
-- T-1404 — .tasks/completed/T-1404-evidence-based-human-ac-closure--extend-.md
-- T-1355 — .tasks/completed/T-1355-claudemd-size-exceeds-claude-code-40k-pe.md
 - T-1338 — .tasks/completed/T-1338-triage-43-human-review-queue--classify-a.md
-- T-1337 — .tasks/completed/T-1337-g-048-watchtower-api-csrf-coverage--inve.md
-- T-1333 — .tasks/completed/T-1333-meta-rule-codification--a-gap-belongs-in.md
-- T-1322 — .tasks/completed/T-1322-pickup-fw-inception-decide-doesnt-tick-t.md
-- T-1321 — .tasks/completed/T-1321-pickup-vendored-agentic-framework-tracks.md
-- T-1319 — .tasks/completed/T-1319-pickup-fw-fabric-drift-and-scan-miss-rec.md
-- T-1316 — .tasks/completed/T-1316-pickup-from-email-archive-watchtower-ver.md
-- T-1314 — .tasks/completed/T-1314-pickup-watchtower-fabric-crashes-keyerro.md
-- T-1311 — .tasks/completed/T-1311-pickup-codify-rpc-resilience-tier-taxono.md
-- T-1305 — .tasks/completed/T-1305-pickup-watchtower-loadlatestaudit-picks-.md
-- T-1304 — .tasks/completed/T-1304-pickup-watchtower-ambient-strip-shows-wr.md
-- T-1303 — .tasks/completed/T-1303-pickup-watchtower-sharedpy-projectroot-f.md
 - T-1299 — .tasks/completed/T-1299-pickup-watchtower-restart-from-claude-co.md
-- T-1283 — .tasks/completed/T-1283-prompt-register-in-watchtower--reusable-.md
-- T-1268 — .tasks/completed/T-1268-cross-machine-update-propagation-frictio.md
-- T-1261 — .tasks/completed/T-1261-consumer-cron-registry-seeds-empty--fw-c.md
-- T-1253 — .tasks/completed/T-1253-pre-push-hook-version-stamping-breaks-ve.md
-- T-1252 — .tasks/completed/T-1252-audit-detection-quality-bugfix-learning-.md
-- T-1251 — .tasks/completed/T-1251-rca-bugfix-learning-coverage-stuck-at-0-.md
-- T-1213 — .tasks/completed/T-1213-rca-inception-decision-cards-on-approval.md
-- T-1200 — .tasks/completed/T-1200-rca-watchtower-inception-decide-writes-d.md
-- T-1178 — .tasks/completed/T-1178-structural-bugfix-learning-enforcement--.md
-- T-1146 — .tasks/completed/T-1146-pickup-critical-rca-agent-command-amnesi.md
-- T-1141 — .tasks/completed/T-1141-pickup-pl-007-never-dump-terminal-comman.md
 - T-1139 — .tasks/completed/T-1139-add-patch-delivery-type-to-pickup-proces.md
-- T-1136 — .tasks/completed/T-1136-upstream-session-init-concerns-check-fro.md
-- T-1134 — .tasks/completed/T-1134-upstream-portable-date-helpers-from-010-.md
-- T-1129 — .tasks/completed/T-1129-pickup-4-learnings-from-termlink-session.md
-- T-1126 — .tasks/completed/T-1126-codify-termlink-communication-protocol-i.md
-- T-1125 — .tasks/completed/T-1125-termlink-u-003-send-file-reports-ok-on-h.md
 - T-1121 — .tasks/completed/T-1121-termlink-u-001-tls-cert-regenerates-on-h.md
-- T-1120 — .tasks/completed/T-1120-pickup-review-marker-gate-blocks-watchto.md
-- T-1119 — .tasks/completed/T-1119-pickup-approvals-page-never-displays-age.md
-- T-1115 — .tasks/completed/T-1115-pre-hook-anthropic-built-in-task-tool-ta.md
-- T-1111 — .tasks/completed/T-1111-rca-empty-placeholder-sections-in-incept.md
-- T-1110 — .tasks/completed/T-1110-collapse-framework-enums-into-single-sou.md
-- T-1109 — .tasks/completed/T-1109-inception-fw-upgrade-silently-skips-web-.md
-- T-1092 — .tasks/completed/T-1092-dispatch-payload-profiles--research-path.md
-- T-1084 — .tasks/completed/T-1084-gate-bypass-discoverability--every-block.md
-- T-1067 — .tasks/completed/T-1067-horizon-status-invariant-enforcement--au.md
-- T-1017 — .tasks/completed/T-1017-test-task-pollution--e2e-and-integration.md
-- T-962 — .tasks/completed/T-962-web-terminal-in-watchtower--browser-base.md
 - T-878 — .tasks/completed/T-878-global-install-sync-violates-project-iso.md
-- T-877 — .tasks/completed/T-877-strengthen-install-to-first-session-pipe.md
-- T-866 — .tasks/completed/T-866-audit-cron-zombie-accumulation--flock-gu.md
-- T-835 — .tasks/completed/T-835-watchtower-stale-task-dashboard--notific.md
-- T-830 — .tasks/completed/T-830-session-length-optimization--when-to-cle.md
-- T-828 — .tasks/completed/T-828-inputoutput-token-breakdown--enrich-hand.md
-- T-825 — .tasks/completed/T-825-timeline-token-usage--show-per-session-t.md
-- T-818 — .tasks/completed/T-818-termlink-dispatch-result-persistence--en.md
-- T-817 — .tasks/completed/T-817-3-tier-config-resolution--env-var-config.md
 - T-815 — .tasks/completed/T-815-traceai-evaluation--opentelemetry-ai-obs.md
 - T-792 — .tasks/completed/T-792-pickup-termlink-agent-dispatch-pattern--.md
 - T-686 — .tasks/completed/T-686-article-angle-3--landscape-differentiati.md
-- T-644 — .tasks/completed/T-644-watchtower-landing-page-refactor--summar.md
-- T-636 — .tasks/completed/T-636-unified-human-approval-experience--merge.md
-- T-635 — .tasks/completed/T-635-deterministic-human-facing-action-routin.md
-- T-629 — .tasks/completed/T-629-framework-self-governance-failures--ultr.md
-- T-619 — .tasks/completed/T-619-inception-bash-task-gate-with-bootstrap-.md
 - T-600 — .tasks/completed/T-600-inception-termlink-attach-self--register.md
-- T-599 — .tasks/completed/T-599-inception-mcp-server-for-termlink--expos.md
 - T-571 — .tasks/completed/T-571-termlink-supervisor-event-loop--reliable.md
 - T-534 — .tasks/completed/T-534-well-known-priority-tags--criticalurgent.md
 - T-533 — .tasks/completed/T-533-agent-to-termlink-dispatch-rerouting--pr.md
-- T-532 — .tasks/completed/T-532-onboarding-gate--structural-enforcement-.md
-- T-495 — .tasks/completed/T-495-path-isolation--eliminate-hardcoded-abso.md
-- T-490 — .tasks/completed/T-490-fw-self-test--agent-driven-self-verifica.md
-- T-489 — .tasks/completed/T-489-end-to-end-onboarding-test--validate-fre.md
 - T-488 — .tasks/completed/T-488-framework-status-report-and-self-test-in.md
-- T-485 — .tasks/completed/T-485-inception-watchtower-smoke-test-suite--e.md
-- T-482 — .tasks/completed/T-482-inception-install-model--global-shared-v.md
 - T-468 — .tasks/completed/T-468-pr-tool-call-telemetry--capture-store--r.md
-- T-455 — .tasks/completed/T-455-fix-fw-init--isolation-onboarding-modes-.md
-- T-451 — .tasks/completed/T-451-upstream-contribution-pipeline-safe-issu.md
-- T-435 — .tasks/completed/T-435-document-claude-code-settings-and-recomm.md
-- T-396 — .tasks/completed/T-396-risk-management-process-revive-merge-arc.md
-- T-388 — .tasks/completed/T-388-search-page-ux-overhaul-unified-search-m.md
-- T-375 — .tasks/completed/T-375-llm-search-ux-overhaul--engine-selection.md
-- T-362 — .tasks/completed/T-362-auto-generate-documentation-articles-fro.md
-- T-339 — .tasks/completed/T-339-inception-link-documentation-to-componen.md
-- T-327 — .tasks/completed/T-327-research-project-visibility-and-growth-s.md
-- T-235 — .tasks/completed/T-235-agent-fabric-awareness--vector-database-.md
-- T-222 — .tasks/completed/T-222-component-fabric-integration--claudemd-a.md
-- T-181 — .tasks/completed/T-181-web-ui-inline-editing--edit-tasks-docs-a.md
-- T-178 — .tasks/completed/T-178-research-artifact-persistence--governanc.md
 - T-168 — .tasks/completed/T-168-repeatable-framework-sync--propagate-lea.md
-- T-164 — .tasks/completed/T-164-governance-inheritance--should-fw-init-s.md
-- T-157 — .tasks/completed/T-157-show-active-project-name-at-top-of-watch.md
-- T-156 — .tasks/completed/T-156-kanban-card-inline-workflow-type-selecto.md
-- T-155 — .tasks/completed/T-155-kanban-card-inline-status-selector-at-to.md
-- T-154 — .tasks/completed/T-154-kanban-card-inline-owner-selector.md
-- T-140 — .tasks/completed/T-140-fix-sprechloop-knowledge-gap--backfill--.md
-- T-133 — .tasks/completed/T-133-watchtower-docs-page--auto-discover-and-.md
-- T-122 — .tasks/completed/T-122-design-pre-completion-verification-gate.md
-- T-118 — .tasks/completed/T-118-investigate-and-remediate-silent-error-b.md
-- T-107 — .tasks/completed/T-107-initialize-german-pronunciation-app-proj.md
-- T-084 — .tasks/completed/T-084-watchtower-inception-ui-integration.md
+
+## in-flight (59, most recent first)
+
+- T-3484 — .tasks/completed/T-3484-bvp-valuecost-signal-design-define-what-.md [followers: T-3486, T-3494*, T-3499]
+- T-3475 — .tasks/completed/T-3475-sidecar-slice-1-transport-ruling-http-vs.md [followers: T-3479, T-3494*]
+- T-3461 — .tasks/completed/T-3461-sidecar-architecture-review--is-there-a-.md [followers: T-3462, T-3463, T-3464, T-3494*]
+- T-3278 — .tasks/completed/T-3278-restart-based-m2-transport---cron-watche.md [followers: T-3279, T-3280, T-3282, T-3284*, T-3314]
+- T-3256 — .tasks/completed/T-3256-termlink-product-feedback--injectpty-inj.md [followers: T-3255, T-3283*]
+- T-3093 — .tasks/completed/T-3093-how-should-unread-branch-hygiene-finding.md [followers: T-3094*, T-3095]
+- T-3044 — .tasks/completed/T-3044-structural-message-triage--hub-messages-.md [followers: T-3046*]
+- T-3041 — .tasks/completed/T-3041-aef-under-multiple-uids--de-rooting-the-.md [followers: T-3039, T-3042, T-3043, T-3082*, T-3295*]
+- T-3025 — .tasks/completed/T-3025-handover-generator-embeds-state-by-value.md [followers: T-3027, T-3028*, T-3031, T-3062, T-3063, T-3294*]
+- T-3022 — .tasks/completed/T-3022-recall-latency-is-ocorpus--brute-force-k.md [followers: T-3024*, T-3028*]
+- T-3007 — .tasks/completed/T-3007-embedding-model-upgrade-and-domain-adapt.md [followers: T-3009, T-3010*, T-3011*, T-3014]
+- T-3005 — .tasks/completed/T-3005-reliability-and-antifragility-controls-f.md [followers: T-3006*, T-3009, T-3010*, T-3011*, T-3012*, T-3013*]
+- T-3004 — .tasks/completed/T-3004-vector-memory-substrate--liveness-reliab.md [followers: T-3006*, T-3009, T-3010*, T-3011*, T-3012*, T-3040]
+- T-2993 — .tasks/completed/T-2993-worktree-isolation-guard-blocks-the-hygi.md [followers: T-3001, T-3003, T-3263*]
+- T-2992 — .tasks/completed/T-2992-suppression-without-a-register--how-many.md [followers: T-2994*, T-3064]
+- T-2925 — .tasks/completed/T-2925-version-discards-the-one-component-that-.md [followers: T-2938, T-2960, T-2961*]
+- T-2863 — .tasks/completed/T-2863-rework-the-inception-workflow-five-failu.md [followers: T-2862, T-2864*]
+- T-2822 — .tasks/completed/T-2822-worktree-policy-what-may-live-inside-a-w.md [followers: T-2823, T-2824, T-2825, T-2827, T-2829, T-2831*]
+- T-2800 — .tasks/completed/T-2800-should-the-home-framework-install-exist-.md [followers: T-2799, T-2801*, T-2803, T-2807*, T-2809*, T-2810]
+- T-2757 — .tasks/completed/T-2757-fw-upgrade-does-not-ship-the-pinned-work.md [followers: T-2767*, T-2768*]
+- T-2715 — .tasks/completed/T-2715-first-run-experience-why-four-green-inst.md [followers: T-2784, T-2785, T-2790, T-2792, T-3175*, T-3180*]
+- T-2679 — .tasks/completed/T-2679-determinism-graduation-tripwire--structu.md [followers: T-2680*, T-2681*, T-2682, T-2683]
+- T-2608 — .tasks/completed/T-2608-single-stored-representation-for-corpus-.md [followers: T-2603, T-2605, T-2618*]
+- T-2602 — .tasks/completed/T-2602-spec-driven-corpus-map-authoring-declara.md [followers: T-2601, T-2603, T-2604, T-2605, T-2609, T-2618*]
+- T-2571 — .tasks/completed/T-2571-off-page-connector-linkage-to-referenced.md [followers: T-2573, T-2574, T-2575, T-2576, T-2577, T-2578*]
+- T-2553 — .tasks/completed/T-2553-corpus-exercise-document-5-most-used-aef.md [followers: T-2555*, T-2561*, T-2563*, T-2565*]
+- T-2541 — .tasks/completed/T-2541-write-out-promotion-can-bpmn-to-task-pro.md [followers: T-2542, T-2544, T-2556*]
+- T-2528 — .tasks/completed/T-2528-designer-workflow-persistence-project-st.md [followers: T-2529*]
+- T-2522 — .tasks/completed/T-2522-bpmn-to-aef-task-inception-yaml-mapping-.md [followers: T-2523, T-2525*, T-2529*, T-2530*, T-2531, T-2532]
+- T-2505 — .tasks/completed/T-2505-ratify-p-03-red-team-test-contract-spec-.md [followers: T-2509, T-2823, T-2824, T-2831*, T-3091*, T-3098]
+- T-2494 — .tasks/completed/T-2494-rca-host-deploy-is-whack-a-mole--declare.md [followers: T-2495, T-2496*, T-2914, T-3030*, T-3116, T-3265]
+- T-2464 — .tasks/completed/T-2464-make-git-worktree-support-reliable-in-th.md [followers: T-2465, T-2466, T-2467, T-2468, T-2469, T-2470*]
+- T-2418 — .tasks/completed/T-2418-structural-validator--human-outside--acc.md [followers: T-100199, T-2420*]
+- T-2416 — .tasks/completed/T-2416-fw-sessions--portable-per-project-sessio.md [followers: T-2417*, T-2515, T-3265]
+- T-2330 — .tasks/completed/T-2330-bvp-driver-propose-queue-surface--agent-.md [followers: T-2331, T-2332*, T-2334]
+- T-2279 — .tasks/completed/T-2279-csrf-403-handler-renders-explicit-recove.md [followers: T-2278*]
+- T-2277 — .tasks/completed/T-2277-multi-instance-watchtower-csrf-pollution.md [followers: T-2278*, T-2896*]
+- T-2275 — .tasks/completed/T-2275-auto-linker-excludes-root-files--docsart.md [followers: T-2281*, T-3364]
+- T-2252 — .tasks/completed/T-2252-bvp-bundle-init-refusal-vs-fw-bvp-driver.md [followers: T-2259, T-2261, T-2386*, T-2515]
+- T-2217 — .tasks/completed/T-2217-watchtower-side-effect-warning-truncatio.md [followers: T-2218, T-2219*, T-2220*]
+- T-2203 — .tasks/completed/T-2203-aef-lacks-a-structural-observation-harve.md [followers: T-2300, T-2386*, T-2515, T-3235]
+- T-2201 — .tasks/completed/T-2201-aef-pre-flight-claude-cli-config-before-.md [followers: T-2202*, T-2300, T-3235]
+- T-2181 — .tasks/completed/T-2181-rca--structural-fix-bare-path-review-lin.md [followers: T-2182, T-2183*]
+- T-2081 — .tasks/completed/T-2081-rca-complete-button-reappears-for-1-2s-a.md [followers: T-2082*]
+- T-1833 — .tasks/completed/T-1833-t-1736-spike-harvest-read-session-jsonls.md [followers: T-1828, T-1834*, T-1844*, T-2386*, T-2515]
+- T-1621 — .tasks/completed/T-1621-watchtower-url-triple-file-becomes-stale.md [followers: T-1622, T-2386*, T-2515]
+- T-1507 — .tasks/completed/T-1507-inception-decide-cliwatchtower-output-tr.md [followers: T-1510, T-2386*, T-2515]
+- T-1506 — .tasks/completed/T-1506-rca--tier-0-approval-self-defeats-under-.md [followers: T-1508, T-2386*, T-2515, T-2664]
+- T-1499 — .tasks/completed/T-1499-pickup-advies-gevraagd-ring20-hosting-pa.md [followers: T-1494, T-1510, T-2088*]
+- T-1451 — .tasks/completed/T-1451-sweep-all-human-handoff-touchpoints--ren.md [followers: T-100122, T-100123, T-100131*, T-100142, T-100143, T-100144]
+- T-1333 — .tasks/completed/T-1333-meta-rule-codification--a-gap-belongs-in.md [followers: T-1417, T-1440, T-1441, T-1826, T-2409, T-2568]
+- T-1120 — .tasks/completed/T-1120-pickup-review-marker-gate-blocks-watchto.md [followers: T-1802*]
+- T-866 — .tasks/completed/T-866-audit-cron-zombie-accumulation--flock-gu.md [followers: T-1162, T-1719*]
+- T-818 — .tasks/completed/T-818-termlink-dispatch-result-persistence--en.md [followers: T-1539, T-2819, T-3411, T-3481*, T-3517*]
+- T-629 — .tasks/completed/T-629-framework-self-governance-failures--ultr.md [followers: T-2665*, T-633]
+- T-396 — .tasks/completed/T-396-risk-management-process-revive-merge-arc.md [followers: T-2665*, T-397]
+- T-327 — .tasks/completed/T-327-research-project-visibility-and-growth-s.md [followers: T-328, T-329, T-330, T-331, T-332*, T-333]
+- T-235 — .tasks/completed/T-235-agent-fabric-awareness--vector-database-.md [followers: T-236, T-237, T-244, T-245, T-246, T-247]
+- T-222 — .tasks/completed/T-222-component-fabric-integration--claudemd-a.md [followers: T-223, T-224, T-3241, T-3264*, T-3348]
+
+## linked-late (106, most recent first)
+
+- T-100200 — .tasks/completed/T-100200-enforce-session-on-master-invariant--blo.md [followers: T-100202]
+- T-3184 — .tasks/completed/T-3184-bvp-cannot-select-work-zero-confirmed-sc.md [followers: T-3182, T-3201]
+- T-3100 — .tasks/completed/T-3100-no-error-incident-register--counter-dead.md [followers: T-3469]
+- T-3081 — .tasks/completed/T-3081-a-learning-that-prescribes-its-own-fix-a.md [followers: T-3469]
+- T-3018 — .tasks/completed/T-3018-bpmn-seam-fixture-pair-contract-with-832.md [followers: T-3469]
+- T-2909 — .tasks/completed/T-2909-enforcement-baseline-cannot-name-what-ch.md [followers: T-2911, T-2912, T-2914]
+- T-2857 — .tasks/completed/T-2857-convention--gate-a-task-touching-binfw-o.md [followers: T-2858, T-2860]
+- T-2761 — .tasks/completed/T-2761-fw-upgrade-should-refuse-to-run-a-consum.md [followers: T-2762]
+- T-2703 — .tasks/completed/T-2703-greenfield-seeding-emits-tasks-that-fail.md [followers: T-2708, T-2722, T-2723, T-2740]
+- T-2538 — .tasks/completed/T-2538-child-2-write-out-mode-how-do-compiled-b.md [followers: T-2539]
+- T-2527 — .tasks/completed/T-2527-aef-agent-identity-split-heartbeat-vs-session.md [followers: T-2523]
+- T-2520 — .tasks/completed/T-2520-aef-side-integration-surface-for-workflo.md [followers: T-2521]
+- T-2458 — .tasks/completed/T-2458-aef-fw-mcp-adoption-strategy--consumers-.md [followers: T-2459, T-2460, T-2461]
+- T-2453 — .tasks/completed/T-2453-f1-public-install-freshness-guarantee--f.md [followers: T-2441]
+- T-2447 — .tasks/completed/T-2447-f8--bare-fw-routes-to-global-legacy-shim.md [followers: T-2441, T-2448, T-2449]
+- T-2419 — .tasks/completed/T-2419-recommendation-gate-for-partial-complete.md [followers: T-2421, T-2422, T-3355]
+- T-2413 — .tasks/completed/T-2413-investigate-cc-picker-description-influe.md [followers: T-2414]
+- T-2233 — .tasks/completed/T-2233-fw-consumer-recover-wrapper--one-command.md [followers: T-2235, T-2237]
+- T-2231 — .tasks/completed/T-2231-field-upgrade-failure-on-121do--nth-recu.md [followers: T-2232]
+- T-2225 — .tasks/completed/T-2225-test-sentinel-isolation--t-test-nnn-name.md [followers: T-2226, T-2227, T-2228]
+- T-1745 — .tasks/completed/T-1745-watchtower-inception-decide-form-silentl.md [followers: T-1746]
+- T-1675 — .tasks/completed/T-1675-project-shape-conflation-umbrella--frame.md [followers: T-1676]
+- T-1610 — .tasks/completed/T-1610-yaml-schema-validation-gate-for-staged-c.md [followers: T-100190, T-1613]
+- T-1601 — .tasks/completed/T-1601-red-team-self-test-harness-for-governanc.md [followers: T-1606, T-1607, T-1608, T-1609]
+- T-1565 — .tasks/completed/T-1565-audit-approvalreview-workflow-for-struct.md [followers: T-1567, T-1568, T-1569, T-1570, T-1571, T-1572]
+- T-1544 — .tasks/completed/T-1544-pickup-update-agentsinceptionagentmd-cop.md [followers: T-1545, T-1571]
+- T-1538 — .tasks/completed/T-1538-pickup-add-canonical-doc-approval-surfac.md [followers: T-1545, T-1567, T-1571, T-1574]
+- T-1513 — .tasks/completed/T-1513-rca-githubmaster-diverged-2490-commits-f.md [followers: T-1592]
+- T-1460 — .tasks/completed/T-1460-fw-audit-recursive-spawn-pathology--obse.md [followers: T-1445, T-1464, T-1467]
+- T-1459 — .tasks/completed/T-1459-4-claude-code-hooks-mirrored-from-termli.md [followers: T-1463, T-1467, T-3170]
+- T-1420 — .tasks/completed/T-1420-cross-project-pickup-semantic-dedup--has.md [followers: T-1425, T-1426]
+- T-1404 — .tasks/completed/T-1404-evidence-based-human-ac-closure--extend-.md [followers: T-1405, T-1409, T-1412]
+- T-1355 — .tasks/completed/T-1355-claudemd-size-exceeds-claude-code-40k-pe.md [followers: T-1417, T-1419]
+- T-1337 — .tasks/completed/T-1337-g-048-watchtower-api-csrf-coverage--inve.md [followers: T-1343]
+- T-1322 — .tasks/completed/T-1322-pickup-fw-inception-decide-doesnt-tick-t.md [followers: T-1324, T-1423, T-1430]
+- T-1321 — .tasks/completed/T-1321-pickup-vendored-agentic-framework-tracks.md [followers: T-1323, T-1430]
+- T-1319 — .tasks/completed/T-1319-pickup-fw-fabric-drift-and-scan-miss-rec.md [followers: T-1320, T-1430]
+- T-1316 — .tasks/completed/T-1316-pickup-from-email-archive-watchtower-ver.md [followers: T-1317, T-1430]
+- T-1314 — .tasks/completed/T-1314-pickup-watchtower-fabric-crashes-keyerro.md [followers: T-1318]
+- T-1311 — .tasks/completed/T-1311-pickup-codify-rpc-resilience-tier-taxono.md [followers: T-1430]
+- T-1305 — .tasks/completed/T-1305-pickup-watchtower-loadlatestaudit-picks-.md [followers: T-1307, T-1430, T-1440]
+- T-1304 — .tasks/completed/T-1304-pickup-watchtower-ambient-strip-shows-wr.md [followers: T-1308, T-1440]
+- T-1303 — .tasks/completed/T-1303-pickup-watchtower-sharedpy-projectroot-f.md [followers: T-1310]
+- T-1283 — .tasks/completed/T-1283-prompt-register-in-watchtower--reusable-.md [followers: T-1293, T-1294, T-1295, T-1301, T-1514]
+- T-1268 — .tasks/completed/T-1268-cross-machine-update-propagation-frictio.md [followers: T-1397, T-1398, T-1399, T-1400, T-1401, T-1403]
+- T-1261 — .tasks/completed/T-1261-consumer-cron-registry-seeds-empty--fw-c.md [followers: T-1430, T-3171]
+- T-1253 — .tasks/completed/T-1253-pre-push-hook-version-stamping-breaks-ve.md [followers: T-1430]
+- T-1252 — .tasks/completed/T-1252-audit-detection-quality-bugfix-learning-.md [followers: T-1430, T-2852]
+- T-1251 — .tasks/completed/T-1251-rca-bugfix-learning-coverage-stuck-at-0-.md [followers: T-1430]
+- T-1213 — .tasks/completed/T-1213-rca-inception-decision-cards-on-approval.md [followers: T-1214, T-1215, T-1430]
+- T-1200 — .tasks/completed/T-1200-rca-watchtower-inception-decide-writes-d.md [followers: T-1201, T-1202, T-1430]
+- T-1178 — .tasks/completed/T-1178-structural-bugfix-learning-enforcement--.md [followers: T-1192]
+- T-1146 — .tasks/completed/T-1146-pickup-critical-rca-agent-command-amnesi.md [followers: T-1156, T-1177, T-1203, T-1204, T-1205, T-1206]
+- T-1141 — .tasks/completed/T-1141-pickup-pl-007-never-dump-terminal-comman.md [followers: T-1156]
+- T-1136 — .tasks/completed/T-1136-upstream-session-init-concerns-check-fro.md [followers: T-1159, T-1232]
+- T-1134 — .tasks/completed/T-1134-upstream-portable-date-helpers-from-010-.md [followers: T-1158]
+- T-1129 — .tasks/completed/T-1129-pickup-4-learnings-from-termlink-session.md [followers: T-1232, T-1318]
+- T-1126 — .tasks/completed/T-1126-codify-termlink-communication-protocol-i.md [followers: T-1128]
+- T-1125 — .tasks/completed/T-1125-termlink-u-003-send-file-reports-ok-on-h.md [followers: T-1232]
+- T-1119 — .tasks/completed/T-1119-pickup-approvals-page-never-displays-age.md [followers: T-1570]
+- T-1115 — .tasks/completed/T-1115-pre-hook-anthropic-built-in-task-tool-ta.md [followers: T-1116, T-1117, T-1118, T-1430]
+- T-1111 — .tasks/completed/T-1111-rca-empty-placeholder-sections-in-incept.md [followers: T-1113, T-1497]
+- T-1110 — .tasks/completed/T-1110-collapse-framework-enums-into-single-sou.md [followers: T-3469]
+- T-1109 — .tasks/completed/T-1109-inception-fw-upgrade-silently-skips-web-.md [followers: T-1152, T-1157, T-1183]
+- T-1092 — .tasks/completed/T-1092-dispatch-payload-profiles--research-path.md [followers: T-1439]
+- T-1084 — .tasks/completed/T-1084-gate-bypass-discoverability--every-block.md [followers: T-1086, T-1089, T-1090, T-1091]
+- T-1067 — .tasks/completed/T-1067-horizon-status-invariant-enforcement--au.md [followers: T-1068, T-1069, T-1605]
+- T-1017 — .tasks/completed/T-1017-test-task-pollution--e2e-and-integration.md [followers: T-1021, T-1428]
+- T-962 — .tasks/completed/T-962-web-terminal-in-watchtower--browser-base.md [followers: T-964, T-965, T-966, T-967]
+- T-877 — .tasks/completed/T-877-strengthen-install-to-first-session-pipe.md [followers: T-1161, T-880]
+- T-835 — .tasks/completed/T-835-watchtower-stale-task-dashboard--notific.md [followers: T-3469]
+- T-830 — .tasks/completed/T-830-session-length-optimization--when-to-cle.md [followers: T-831]
+- T-828 — .tasks/completed/T-828-inputoutput-token-breakdown--enrich-hand.md [followers: T-829]
+- T-825 — .tasks/completed/T-825-timeline-token-usage--show-per-session-t.md [followers: T-826]
+- T-817 — .tasks/completed/T-817-3-tier-config-resolution--env-var-config.md [followers: T-819, T-861]
+- T-644 — .tasks/completed/T-644-watchtower-landing-page-refactor--summar.md [followers: T-645, T-649]
+- T-636 — .tasks/completed/T-636-unified-human-approval-experience--merge.md [followers: T-2664, T-638, T-639, T-640, T-641, T-642]
+- T-635 — .tasks/completed/T-635-deterministic-human-facing-action-routin.md [followers: T-2664]
+- T-619 — .tasks/completed/T-619-inception-bash-task-gate-with-bootstrap-.md [followers: T-650]
+- T-599 — .tasks/completed/T-599-inception-mcp-server-for-termlink--expos.md [followers: T-3469]
+- T-532 — .tasks/completed/T-532-onboarding-gate--structural-enforcement-.md [followers: T-2722, T-2727, T-2815, T-2846, T-2877, T-2881]
+- T-495 — .tasks/completed/T-495-path-isolation--eliminate-hardcoded-abso.md [followers: T-496]
+- T-490 — .tasks/completed/T-490-fw-self-test--agent-driven-self-verifica.md [followers: T-491, T-492]
+- T-489 — .tasks/completed/T-489-end-to-end-onboarding-test--validate-fre.md [followers: T-2128, T-492]
+- T-485 — .tasks/completed/T-485-inception-watchtower-smoke-test-suite--e.md [followers: T-486]
+- T-482 — .tasks/completed/T-482-inception-install-model--global-shared-v.md [followers: T-481, T-497, T-498, T-499, T-500]
+- T-455 — .tasks/completed/T-455-fix-fw-init--isolation-onboarding-modes-.md [followers: T-2943, T-2945, T-2947, T-2948, T-2949, T-462]
+- T-451 — .tasks/completed/T-451-upstream-contribution-pipeline-safe-issu.md [followers: T-454]
+- T-435 — .tasks/completed/T-435-document-claude-code-settings-and-recomm.md [followers: T-501]
+- T-388 — .tasks/completed/T-388-search-page-ux-overhaul-unified-search-m.md [followers: T-389, T-390, T-391, T-392]
+- T-375 — .tasks/completed/T-375-llm-search-ux-overhaul--engine-selection.md [followers: T-376, T-377, T-378, T-379, T-380, T-381]
+- T-362 — .tasks/completed/T-362-auto-generate-documentation-articles-fro.md [followers: T-363, T-364, T-365, T-366]
+- T-339 — .tasks/completed/T-339-inception-link-documentation-to-componen.md [followers: T-361]
+- T-181 — .tasks/completed/T-181-web-ui-inline-editing--edit-tasks-docs-a.md [followers: T-183]
+- T-178 — .tasks/completed/T-178-research-artifact-persistence--governanc.md [followers: T-185, T-2763]
+- T-164 — .tasks/completed/T-164-governance-inheritance--should-fw-init-s.md [followers: T-166, T-2169]
+- T-157 — .tasks/completed/T-157-show-active-project-name-at-top-of-watch.md [followers: T-530]
+- T-156 — .tasks/completed/T-156-kanban-card-inline-workflow-type-selecto.md [followers: T-3174]
+- T-155 — .tasks/completed/T-155-kanban-card-inline-status-selector-at-to.md [followers: T-3174]
+- T-154 — .tasks/completed/T-154-kanban-card-inline-owner-selector.md [followers: T-1492, T-3174]
+- T-140 — .tasks/completed/T-140-fix-sprechloop-knowledge-gap--backfill--.md [followers: T-141, T-1504]
+- T-133 — .tasks/completed/T-133-watchtower-docs-page--auto-discover-and-.md [followers: T-165, T-171]
+- T-122 — .tasks/completed/T-122-design-pre-completion-verification-gate.md [followers: T-3469]
+- T-118 — .tasks/completed/T-118-investigate-and-remediate-silent-error-b.md [followers: T-119]
+- T-107 — .tasks/completed/T-107-initialize-german-pronunciation-app-proj.md [followers: T-101, T-104, T-121, T-123]
+- T-084 — .tasks/completed/T-084-watchtower-inception-ui-integration.md [followers: T-1604]
+
+(* = follower still in active/)

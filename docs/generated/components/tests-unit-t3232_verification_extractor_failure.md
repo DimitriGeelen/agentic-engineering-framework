@@ -1,8 +1,8 @@
 # t3232_verification_extractor_failure
 
-> TODO: describe what this component does
+> T-3232 — extraction FAILURE must not read as "this task has no Verification section".
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3232_verification_extractor_failure.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3232_verification_extractor_failure.bats`
 
 ## What It Does
 
@@ -22,8 +22,8 @@ same block + one 0xff  ->  0 bytes, rc=0     <-- same answer, different world
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
-| [verification-port](/docs/generated/lib-verification-port) | tests | TODO: describe what this component does |
-| [verify_queue](/docs/generated/lib-verify_queue) | tests | TODO: describe what this component does |
+| [verification-port](/docs/generated/lib-verification-port) | tests | lib/verification-port.sh — hard-coded Watchtower port detection (T-2732) |
+| [verify_queue](/docs/generated/lib-verify_queue) | tests | T-2765: re-run stored ## Verification for the human review queue. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3232_verification_extractor_failure.yaml`*

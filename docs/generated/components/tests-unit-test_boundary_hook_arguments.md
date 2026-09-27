@@ -1,8 +1,8 @@
 # test_boundary_hook_arguments
 
-> TODO: describe what this component does
+> T-1702 / G-065 — Pattern 4 (read-side outside-path arguments).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_boundary_hook_arguments.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_boundary_hook_arguments.bats`
 
 ## What It Does
 

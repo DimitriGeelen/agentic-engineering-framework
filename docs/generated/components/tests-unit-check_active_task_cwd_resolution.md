@@ -1,8 +1,8 @@
 # check_active_task_cwd_resolution
 
-> TODO: describe what this component does
+> T-2463 (OBS-080) — the check-active-task gate must resolve PROJECT_ROOT from the per-call `cwd` Claude Code passes on stdin, NOT from the hook's process cwd.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/check_active_task_cwd_resolution.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/check_active_task_cwd_resolution.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # audit_blocks_review_and_decide
 
-> TODO: describe what this component does
+> Integration tests for the placeholder audit chokepoint (T-1111/T-1113).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/integration/audit_blocks_review_and_decide.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/integration/audit_blocks_review_and_decide.bats`
 
 ## What It Does
 

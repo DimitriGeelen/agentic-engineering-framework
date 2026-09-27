@@ -1,8 +1,8 @@
 # handover_push_no_origin
 
-> TODO: describe what this component does
+> T-1474 — handover.sh mirror-skip must guard on origin presence.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/handover_push_no_origin.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/handover_push_no_origin.bats`
 
 ## What It Does
 

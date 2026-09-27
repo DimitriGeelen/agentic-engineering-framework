@@ -1,6 +1,6 @@
 # inline_select
 
-> TODO: describe what this component does
+> Inline select form macro (T-429/H4) — replaces 12+ duplicated htmx select patterns
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_partials/inline_select.html`
 

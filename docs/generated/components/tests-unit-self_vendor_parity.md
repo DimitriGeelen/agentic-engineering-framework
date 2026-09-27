@@ -1,8 +1,8 @@
 # self_vendor_parity
 
-> TODO: describe what this component does
+> T-2711: the self-vendor PRODUCER and the audit GATE must cover the same files.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/self_vendor_parity.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/self_vendor_parity.bats`
 
 ## What It Does
 
@@ -26,9 +26,9 @@ still refused, and its remediation line pointed at the verb that could not fix i
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
 | [hook-enable](/docs/generated/bin-hook-enable) | tests | Register framework hooks in .claude/settings.json idempotently — adds { type "command", command ".agentic-framework/bin/fw hook <name>" } entries under specified event/matcher pair. Built under T-1189 to repair T-977 false-complete (G-015). |
-| [integrate-go-live](/docs/generated/bin-integrate-go-live) | tests | TODO: describe what this component does |
+| [integrate-go-live](/docs/generated/bin-integrate-go-live) | tests | integrate-go-live.sh — safe zone-3 host go-live (T-2483; OBS-086). |
 | [watchtower](/docs/generated/bin-watchtower) | tests | Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode. |
-| [migrate-horizon-null-completed](/docs/generated/bin-migrate-horizon-null-completed) | tests | TODO: describe what this component does |
+| [migrate-horizon-null-completed](/docs/generated/bin-migrate-horizon-null-completed) | tests | T-2161 (arc-009 horizon-axis-hardening, Slice 2): Null the stored `horizon:` field on every file under .tasks/completed/. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

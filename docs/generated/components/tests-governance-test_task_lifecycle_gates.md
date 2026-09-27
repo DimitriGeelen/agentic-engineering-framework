@@ -1,8 +1,8 @@
 # test_task_lifecycle_gates
 
-> TODO: describe what this component does
+> T-1608 (T-1601 GO follow-up, Phase 3): red-team harness for task-lifecycle gates.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/governance/test_task_lifecycle_gates.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/governance/test_task_lifecycle_gates.bats`
 
 ## What It Does
 

@@ -1,40 +1,24 @@
-timestamp: 2026-09-25T11:00:02Z
+timestamp: 2026-09-27T14:35:02Z
 findings:
-  - id: D4
+  - id: D1
     level: PASS
-    check: "D4: Audit trend — insufficient history (<3 entries)"
-  - id: D5
-    level: WARN
-    check: "D5: Task lifecycle — 14 anomaly(s): T-801(174d-active) T-802(174d-active) T-803(174d-active) T-2899(46d-active) T-1542(150d-active) T-1624(147d-active) T-1820(134d-active) T-2170(115d-active) T-2268(108d-active) T-2485(92d-active) (+4 more)"
-    mitigation: "Review flagged tasks for process issues"
-  - id: D13
-    level: WARN
-    check: "D13: Inception limbo — 8 task(s): A=7/B=1 T-1611(A:1hu) T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2428(A:1hu) T-2770(B)"
-    mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
-  - id: D3
+    check: "D1: Episodic quality — 0% [TODO] (18/3012)"
+  - id: D2
+    level: FAIL
+    check: "D2: Human review queue — 246 task(s) waiting >30d: T-100131(83d) T-100188(83d) T-1701(123d) T-1702(118d) T-1707(123d) T-1718(123d) T-1719(20d) T-1773(136d) T-1774(136d) T-1775(136d) T-1776(119d) T-1796(137d) T-1797(137d) T-1799(137d) T-1801(137d) T-1802(137d) T-1803(137d) T-1805(136d) T-1806(136d) T-1807(136d) T-1808(136d) T-1810(136d) T-1811(136d) T-1818(136d) T-1827(128d) T-1834(135d) T-1842(128d) T-1843(128d) T-1844(128d) T-1891(132d) T-1909(130d) T-1910(130d) T-1911(130d) T-1928(130d) T-1929(130d) T-1930(130d) T-1933(131d) T-1934(129d) T-1935(129d) T-1936(129d) T-1939(129d) T-1947(130d) T-1951(128d) T-1954(130d) T-1955(130d) T-1957(130d) T-1960(128d) T-1961(128d) T-1963(128d) T-1964(129d) T-1965(129d) T-1968(129d) T-1969(129d) T-1970(129d) T-1971(129d) T-1976(128d) T-1977(128d) T-1978(128d) T-1980(128d) T-1982(128d) T-1984(128d) T-1985(128d) T-1988(127d) T-1989(124d) T-1990(123d) T-1991(127d) T-1992(124d) T-1993(124d) T-1994(123d) T-1999(127d) T-2002(123d) T-2003(124d) T-2004(124d) T-2006(124d) T-2008(124d) T-2009(124d) T-2010(124d) T-2011(124d) T-2012(124d) T-2013(124d) T-2015(124d) T-2016(124d) T-2017(124d) T-2018(124d) T-2019(124d) T-2020(124d) T-2021(124d) T-2022(124d) T-2023(124d) T-2024(124d) T-2025(124d) T-2026(124d) T-2027(124d) T-2028(124d) T-2029(124d) T-2031(124d) T-2033(124d) T-2034(124d) T-2038(124d) T-2039(124d) T-2040(124d) T-2041(124d) T-2043(124d) T-2044(124d) T-2045(124d) T-2046(124d) T-2047(124d) T-2049(124d) T-2051(123d) T-2054(123d) T-2062(121d) T-2063(121d) T-2064(121d) T-2065(121d) T-2066(121d) T-2075(121d) T-2077(121d) T-2080(121d) T-2082(121d) T-2084(121d) T-2085(121d) T-2086(121d) T-2087(121d) T-2088(121d) T-2089(121d) T-2102(120d) T-2103(120d) T-2106(120d) T-2110(119d) T-2111(119d) T-2112(119d) T-2114(119d) T-2116(119d) T-2117(119d) T-2119(113d) T-2136(119d) T-2160(118d) T-2167(117d) T-2174(116d) T-2175(116d) T-2176(113d) T-2179(116d) T-2183(106d) T-2185(115d) T-2192(116d) T-2222(113d) T-2240(111d) T-2265(110d) T-2274(110d) T-2278(110d) T-2281(110d) T-2332(107d) T-2335(68d) T-2336(107d) T-2342(107d) T-2349(83d) T-2369(106d) T-2373(105d) T-2376(105d) T-2395(46d) T-2403(104d) T-2406(103d) T-2417(103d) T-2428(101d) T-2430(100d) T-2463(83d) T-2474(95d) T-2479(83d) T-2525(78d) T-2529(78d) T-2530(78d) T-2555(69d) T-2558(69d) T-2561(69d) T-2563(69d) T-2565(69d) T-2578(68d) T-2586(68d) T-2589(68d) T-2596(67d) T-2618(65d) T-2623(62d) T-2624(61d) T-2629(61d) T-2630(61d) T-2631(61d) T-2632(61d) T-2634(61d) T-2651(61d) T-2674(60d) T-2686(59d) T-2713(57d) T-2741(55d) T-2774(54d) T-2775(54d) T-2780(54d) T-2781(54d) T-2787(54d) T-2807(53d) T-2809(53d) T-2831(51d) T-2838(51d) T-2842(51d) T-2864(50d) T-2870(49d) T-2891(49d) T-2896(49d) T-2904(48d) T-2905(48d) T-2974(44d) T-2979(44d) T-2986(44d) T-2994(43d) T-3006(43d) T-3010(43d) T-3011(43d) T-3012(43d) T-3013(43d) T-3016(43d) T-3017(43d) T-3019(42d) T-3024(42d) T-3028(42d) T-3030(42d) T-3046(40d) T-3049(20d) T-3065(41d) T-3066(40d) T-3078(38d) T-3080(38d) T-3090(38d) T-3091(38d) T-3094(38d) T-3096(38d) T-3124(34d) T-3127(30d) T-3130(33d) T-3132(33d) T-3139(33d) T-3140(33d) T-3142(32d) T-3144(32d) T-3147(19d) T-3157(32d) T-3175(29d) T-3176(31d) T-3180(31d) T-3185(31d) T-3200(31d) T-3204(30d) T-3217(28d) T-3221(28d) T-3224(20d) T-3242(19d) T-3243(26d) T-3251(25d) T-3263(23d) T-3284(21d) T-3338(19d) T-3340(19d) T-3341(19d) T-3346(19d) T-3356(17d)"
+    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
+  - id: D8
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=37 avg=50 ratio=0.7x)"
-  - id: D7
+    check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - id: D10
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 92_commits_24h)"
-  - id: D6
+    check: "D10: Decision-without-dialogue — none detected"
+  - id: D11
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=5.3 earlier=10.1)"
-  - id: D12
-    level: PASS
-    check: "D12: Bypass log — no log file"
-  - id: D9
-    level: PASS
-    check: "D9: Control drift — normal (PASS 10_audits_checked)"
-  - id: D14
-    level: PASS
-    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
-  - id: D15
-    level: PASS
-    check: "D15: Inception limbo state — none (PASS no_limbo)"
+    check: "D11: Gap register staleness — all gaps fresh"
 
 summary:
-  pass: 8
-  warn: 2
-  fail: 0
-  total: 10
+  pass: 4
+  warn: 0
+  fail: 1
+  total: 5

@@ -1,8 +1,8 @@
 # revisit_signal_untracked
 
-> TODO: describe what this component does
+> T-2866 — the revisit signal files must never be tracked by git.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/revisit_signal_untracked.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/revisit_signal_untracked.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ rather than by rule — nothing stopped the same accident. Both are pinned here.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | calls | TODO: describe what this component does |
-| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | tests | TODO: describe what this component does |
+| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | calls | revisit-due-scan.sh — Daily scan for ripe revisit_at deferrals (T-1452 / G-053) |
+| [revisit-due-scan](/docs/generated/agents-context-revisit-due-scan) | tests | revisit-due-scan.sh — Daily scan for ripe revisit_at deferrals (T-1452 / G-053) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-revisit_signal_untracked.yaml`*

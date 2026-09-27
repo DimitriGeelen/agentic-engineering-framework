@@ -2,7 +2,7 @@
 
 > TODO: describe what this component does
 
-**Type:** config | **Subsystem:** unknown | **Location:** `tests/fixtures/termlink-protocol-frame-types.json`
+**Type:** config | **Subsystem:** tests | **Location:** `tests/fixtures/termlink-protocol-frame-types.json`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_termlink_governance_frame_contract](/docs/generated/tests-unit-test_termlink_governance_frame_contract) | called_by | TODO: describe what this component does |
+| [test_termlink_governance_frame_contract](/docs/generated/tests-unit-test_termlink_governance_frame_contract) | called_by | T-1648 — Governance frame 0x8 protocol regression test. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-fixtures-termlink-protocol-frame-types.yaml`*

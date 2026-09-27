@@ -1,8 +1,8 @@
 # t3255-livefire-agent
 
-> TODO: describe what this component does
+> T-3255 — live-fire with a REAL Claude agent (the AC5 claim T-3254 did not prove).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/t3255-livefire-agent.sh`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/t3255-livefire-agent.sh`
 
 ## What It Does
 

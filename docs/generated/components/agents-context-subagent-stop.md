@@ -31,7 +31,7 @@ SubagentStop cannot mutate the orchestrator-visible response (Claude Code docs:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| `agents/context/tests/subagent-stop-stub-test.sh` | called_by | — |
+| [subagent-stop-stub-test](/docs/generated/agents-context-tests-subagent-stop-stub-test) | called_by | Stub test for agents/context/subagent-stop.sh (T-1213) |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-subagent-stop.yaml`*

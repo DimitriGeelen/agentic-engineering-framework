@@ -1,8 +1,8 @@
 # upgrade_dedupe_user_hooks
 
-> TODO: describe what this component does
+> T-1481 — `fw upgrade --dedupe-user-hooks` opt-in remediation. Removes framework hooks from $HOME/.claude/settings.json that duplicate the project-level config; always backs up first.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/upgrade_dedupe_user_hooks.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/upgrade_dedupe_user_hooks.bats`
 
 ## What It Does
 

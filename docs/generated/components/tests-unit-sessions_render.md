@@ -1,8 +1,8 @@
 # sessions_render
 
-> TODO: describe what this component does
+> T-2417: Generic session renderer — verifies project-grouped tree rendering from canonical JSONL per agents/sessions/SCHEMA.md.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/sessions_render.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/sessions_render.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ t4  project ordering: real projects alphabetical, then (loose) last
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [render](/docs/generated/agents-sessions-render) | calls | TODO: describe what this component does |
-| [render](/docs/generated/agents-sessions-render) | tests | TODO: describe what this component does |
+| [render](/docs/generated/agents-sessions-render) | calls | Generic session renderer for fw sessions (T-2417): consumes canonical JSONL on stdin and prints a project-grouped session tree; provider-neutral by design. |
+| [render](/docs/generated/agents-sessions-render) | tests | Generic session renderer for fw sessions (T-2417): consumes canonical JSONL on stdin and prints a project-grouped session tree; provider-neutral by design. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-sessions_render.yaml`*

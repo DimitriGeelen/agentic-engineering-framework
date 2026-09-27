@@ -1,8 +1,8 @@
 # t2988_grouped_command_classification
 
-> TODO: describe what this component does
+> T-2988: shell grouping punctuation defeated safe-command classification.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2988_grouped_command_classification.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2988_grouped_command_classification.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_fabric_drift_absolute_paths
 
-> TODO: describe what this component does
+> T-1673 — fabric drift orphan check honours absolute location paths.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_fabric_drift_absolute_paths.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_fabric_drift_absolute_paths.py`
 
 ## What It Does
 

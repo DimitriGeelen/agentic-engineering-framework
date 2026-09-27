@@ -1,6 +1,6 @@
 # check-visual-verification
 
-> TODO: describe what this component does
+> Visual Verification Hook — PreToolUse Bash gate Blocks `git commit` when staged changes include .css/.html files unless the active task body contains a `## Visual Verification` section with at least one image-file reference…
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/check-visual-verification.sh`
 

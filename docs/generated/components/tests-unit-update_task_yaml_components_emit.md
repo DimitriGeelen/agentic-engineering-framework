@@ -1,8 +1,8 @@
 # update_task_yaml_components_emit
 
-> TODO: describe what this component does
+> T-1469: update-task.sh auto-populate components path used a sed line replace that left orphan ` - item` continuation lines from block-style components, producing invalid YAML.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/update_task_yaml_components_emit.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/update_task_yaml_components_emit.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # t2921_verification_comment_strip
 
-> TODO: describe what this component does
+> T-2921 — the P-011 verification extractor must strip comments STRUCTURALLY.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2921_verification_comment_strip.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2921_verification_comment_strip.bats`
 
 ## What It Does
 
@@ -21,9 +21,9 @@ over a population it silently shrank. Quiet, and worse.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [verification-port](/docs/generated/lib-verification-port) | calls | TODO: describe what this component does |
+| [verification-port](/docs/generated/lib-verification-port) | calls | lib/verification-port.sh — hard-coded Watchtower port detection (T-2732) |
 | [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
-| [verification-port](/docs/generated/lib-verification-port) | tests | TODO: describe what this component does |
+| [verification-port](/docs/generated/lib-verification-port) | tests | lib/verification-port.sh — hard-coded Watchtower port detection (T-2732) |
 | [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
 
 ---

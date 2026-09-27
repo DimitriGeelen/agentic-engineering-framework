@@ -1,8 +1,8 @@
 # t3117_gc_landing_predicate
 
-> TODO: describe what this component does
+> T-3117: `fw worktree gc` decides "has this landed?" against the right trunk, and by the right test.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3117_gc_landing_predicate.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3117_gc_landing_predicate.bats`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ Measured in the live repo on 2026-08-23: local master 1744 commits behind.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [worktree](/docs/generated/lib-worktree) | tests | TODO: describe what this component does |
+| [worktree](/docs/generated/lib-worktree) | tests | lib/worktree.sh — fw worktree topology observability. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3117_gc_landing_predicate.yaml`*

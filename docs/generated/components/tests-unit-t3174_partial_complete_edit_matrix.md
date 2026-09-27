@@ -1,8 +1,8 @@
 # t3174_partial_complete_edit_matrix
 
-> TODO: describe what this component does
+> T-3174: partial-complete state revokes a task's authority to commit its own closure artefacts — the residual scope T-3179 left open.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3174_partial_complete_edit_matrix.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3174_partial_complete_edit_matrix.bats`
 
 ## What It Does
 

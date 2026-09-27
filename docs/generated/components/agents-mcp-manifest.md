@@ -1,8 +1,8 @@
 # manifest
 
-> TODO: describe what this component does
+> Manifest emission for the framework MCP server (T-2265): derives framework-mcp-manifest.json from policy/capability-overlay/tool-set.yaml, emitting the {name, gated} contract consumed by orchestrator-mcp-scan.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/mcp/manifest.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `agents/mcp/manifest.py`
 
 ## What It Does
 
@@ -18,19 +18,19 @@ sovereignty_bound_excluded → NEVER emitted (foreclosed per tool-set.yaml §3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | calls | TODO: describe what this component does |
+| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | calls | orchestrator-mcp-scan.sh — drift defense for MCP-tool task_id enforcement T-1646 (Arc C drift defense, parented under T-1644, originating in T-1641) |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ## Used By (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [framework_mcp_server](/docs/generated/agents-mcp-framework_mcp_server) | uses_by | TODO: describe what this component does |
-| [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | called_by | TODO: describe what this component does |
-| [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | tests_by | TODO: describe what this component does |
+| [framework_mcp_server](/docs/generated/agents-mcp-framework_mcp_server) | uses_by | Framework MCP server (arc-010 Slice 2, T-2265): reads policy/capability-overlay/tool-set.yaml at startup, emits framework-mcp-manifest.json, and registers an MCP tool per read_only and agent_authority entry. |
+| [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | called_by | T-2265 (arc-010 Slice 2): integration tests for framework MCP server. |
+| [test_framework_mcp_server](/docs/generated/tests-integration-test_framework_mcp_server) | tests_by | T-2265 (arc-010 Slice 2): integration tests for framework MCP server. |
 | [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [t2461_doctor_mcp_consumer_path](/docs/generated/tests-unit-t2461_doctor_mcp_consumer_path) | tests_by | TODO: describe what this component does |
+| [t2461_doctor_mcp_consumer_path](/docs/generated/tests-unit-t2461_doctor_mcp_consumer_path) | tests_by | T-2461: fw doctor's framework-MCP-manifest check resolved its asset paths against $PROJECT_ROOT, which is the CONSUMER root in a vendored install — the manifest actually lives under $FRAMEWORK_ROOT (.agentic-framework/agents/mcp/). |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 

@@ -1,8 +1,8 @@
 # verification_pipe_buffer
 
-> TODO: describe what this component does
+> T-2743: the capture-then-pipe idiom is SIGPIPE-safe only below the pipe buffer.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/verification_pipe_buffer.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/verification_pipe_buffer.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_reviewer_decaying_task_path_ref
 
-> TODO: describe what this component does
+> T-3274: pin the decaying-`.tasks/active/` verification-reference detector.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_reviewer_decaying_task_path_ref.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_reviewer_decaying_task_path_ref.py`
 
 ## What It Does
 
@@ -13,8 +13,8 @@ detector's walk up to `.tasks/`.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [__init__](/docs/generated/lib-reviewer-__init__) | calls | TODO: describe what this component does |
-| [__init__](/docs/generated/lib-reviewer-__init__) | uses | TODO: describe what this component does |
+| [__init__](/docs/generated/lib-reviewer-__init__) | calls | Reviewer agent (T-1443 v1.0). |
+| [__init__](/docs/generated/lib-reviewer-__init__) | uses | Reviewer agent (T-1443 v1.0). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_reviewer_decaying_task_path_ref.yaml`*

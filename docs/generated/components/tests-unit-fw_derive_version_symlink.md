@@ -1,8 +1,8 @@
 # fw_derive_version_symlink
 
-> TODO: describe what this component does
+> T-2450 / F3: bin/fw _derive_version must resolve symlinks before deriving fw_dir.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/fw_derive_version_symlink.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/fw_derive_version_symlink.bats`
 
 ## What It Does
 

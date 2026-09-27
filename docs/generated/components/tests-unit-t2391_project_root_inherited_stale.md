@@ -1,8 +1,8 @@
 # t2391_project_root_inherited_stale
 
-> TODO: describe what this component does
+> T-2391: bin/fw validates an INHERITED (non-empty) PROJECT_ROOT and re-resolves when stale, instead of using it verbatim.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2391_project_root_inherited_stale.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2391_project_root_inherited_stale.bats`
 
 ## What It Does
 

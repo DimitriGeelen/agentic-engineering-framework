@@ -19,12 +19,12 @@ Graduation pipeline:
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [lib_harvest](/docs/generated/tests-unit-lib_harvest) | called-by | TODO: describe what this component does |
-| [lib_harvest](/docs/generated/tests-unit-lib_harvest) | called_by | TODO: describe what this component does |
-| [lib_harvest](/docs/generated/tests-unit-lib_harvest) | tests_by | TODO: describe what this component does |
-| [harvest_indent_agnostic](/docs/generated/tests-unit-harvest_indent_agnostic) | called_by | TODO: describe what this component does |
-| [harvest_indent_agnostic](/docs/generated/tests-unit-harvest_indent_agnostic) | tests_by | TODO: describe what this component does |
-| [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | tests_by | TODO: describe what this component does |
+| [lib_harvest](/docs/generated/tests-unit-lib_harvest) | called-by | Unit tests for lib/harvest.sh |
+| [lib_harvest](/docs/generated/tests-unit-lib_harvest) | called_by | Unit tests for lib/harvest.sh |
+| [lib_harvest](/docs/generated/tests-unit-lib_harvest) | tests_by | Unit tests for lib/harvest.sh |
+| [harvest_indent_agnostic](/docs/generated/tests-unit-harvest_indent_agnostic) | called_by | T-2676 — harvest.sh indent-agnostic entry greps (dead learnings/patterns sub-stages). Third instance of the indentation-assumption class (T-2672 resolve.sh emit-indent, 832 T-295 field report). |
+| [harvest_indent_agnostic](/docs/generated/tests-unit-harvest_indent_agnostic) | tests_by | T-2676 — harvest.sh indent-agnostic entry greps (dead learnings/patterns sub-stages). Third instance of the indentation-assumption class (T-2672 resolve.sh emit-indent, 832 T-295 field report). |
+| [t2927_observation_inbox_listing](/docs/generated/tests-unit-t2927_observation_inbox_listing) | tests_by | T-2927 — the handover's observation-inbox section listed 1 of 112 pending observations, and said nothing about the other 111. |
 
 ## Related
 

@@ -1,6 +1,6 @@
 # check-human-ac-tick
 
-> TODO: describe what this component does
+> T-1731: Human-AC tick guard hook (bash wrapper for the Python implementation). The fw hook dispatcher (bin/fw:4759) loads .sh files; the actual logic lives in check-human-ac-tick.py for clean diff parsing.
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/check-human-ac-tick.sh`
 
@@ -14,7 +14,7 @@ in check-human-ac-tick.py for clean diff parsing.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [check-human-ac-tick](/docs/generated/agents-context-check-human-ac-tick-py) | calls | TODO: describe what this component does |
+| [check-human-ac-tick](/docs/generated/agents-context-check-human-ac-tick-py) | calls | T-1731: Human-AC tick guard hook. |
 
 ## Used By (1)
 

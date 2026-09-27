@@ -1,8 +1,8 @@
 # watchtower_url_no_guess
 
-> TODO: describe what this component does
+> T-2802 — `fw watchtower url` must not answer with a guess.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/watchtower_url_no_guess.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/watchtower_url_no_guess.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_mirror_stderr_capture
 
-> TODO: describe what this component does
+> T-1843 / T-1829 — lib/mirror.sh stderr capture on push-failed.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_mirror_stderr_capture.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_mirror_stderr_capture.bats`
 
 ## What It Does
 
@@ -17,8 +17,8 @@ failure so the next stall is diagnosable from logs alone.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [mirror](/docs/generated/lib-mirror) | calls | TODO: describe what this component does |
-| [mirror](/docs/generated/lib-mirror) | tests | TODO: describe what this component does |
+| [mirror](/docs/generated/lib-mirror) | calls | lib/mirror.sh — Mirror cascade auto-recovery (T-1594, T-1591 Prevention #3). |
+| [mirror](/docs/generated/lib-mirror) | tests | lib/mirror.sh — Mirror cascade auto-recovery (T-1594, T-1591 Prevention #3). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_mirror_stderr_capture.yaml`*

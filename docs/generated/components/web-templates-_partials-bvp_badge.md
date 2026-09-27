@@ -1,6 +1,6 @@
 # bvp_badge
 
-> TODO: describe what this component does
+> T-1982: render a compact BVP_norm chip for a task.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_partials/bvp_badge.html`
 

@@ -1,8 +1,8 @@
 # test_mirror_sync
 
-> TODO: describe what this component does
+> T-1594: Mirror cascade auto-recovery (T-1591 Prevention #3)
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_mirror_sync.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_mirror_sync.bats`
 
 ## What It Does
 
@@ -16,8 +16,8 @@ in-sync, ancestor (fast-forward), diverged, unreachable.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [mirror](/docs/generated/lib-mirror) | calls | TODO: describe what this component does |
-| [mirror](/docs/generated/lib-mirror) | tests | TODO: describe what this component does |
+| [mirror](/docs/generated/lib-mirror) | calls | lib/mirror.sh — Mirror cascade auto-recovery (T-1594, T-1591 Prevention #3). |
+| [mirror](/docs/generated/lib-mirror) | tests | lib/mirror.sh — Mirror cascade auto-recovery (T-1594, T-1591 Prevention #3). |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 

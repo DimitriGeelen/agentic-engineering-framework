@@ -1,8 +1,8 @@
 # inception_decide_atomicity
 
-> TODO: describe what this component does
+> T-1503: do_inception_decide must be atomic — either fully succeeds (Decision section + Updates entry + status=work-completed) or leaves the task body untouched.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/inception_decide_atomicity.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/inception_decide_atomicity.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_t2686_laneset_order
 
-> TODO: describe what this component does
+> T-2686: the two repaired drafts must keep declared lane order == drawn order.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_t2686_laneset_order.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_t2686_laneset_order.py`
 
 ## What It Does
 

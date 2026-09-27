@@ -1,6 +1,6 @@
 # hook-telemetry
 
-> TODO: describe what this component does
+> lib/hook-telemetry.sh — per-hook fire / failure counters (T-1628, B-2 of T-1626).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/hook-telemetry.sh`
 
@@ -21,9 +21,9 @@ Files (in $PROJECT_ROOT/.context/working/):
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [hook_telemetry](/docs/generated/tests-unit-hook_telemetry) | called_by | TODO: describe what this component does |
-| [hook_telemetry](/docs/generated/tests-unit-hook_telemetry) | tests_by | TODO: describe what this component does |
-| [hook-threshold](/docs/generated/lib-hook-threshold) | called_by | TODO: describe what this component does |
+| [hook_telemetry](/docs/generated/tests-unit-hook_telemetry) | called_by | T-1628 (B-2 of T-1626) — per-hook fire / failure counters. |
+| [hook_telemetry](/docs/generated/tests-unit-hook_telemetry) | tests_by | T-1628 (B-2 of T-1626) — per-hook fire / failure counters. |
+| [hook-threshold](/docs/generated/lib-hook-threshold) | called_by | T-1631 (B-3b of T-1626) — hook-failure threshold rule. |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

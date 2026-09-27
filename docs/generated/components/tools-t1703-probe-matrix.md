@@ -1,8 +1,8 @@
 # t1703-probe-matrix
 
-> TODO: describe what this component does
+> T-1703 probe matrix — gemma4 + qwen3.5 against 3 tool catalogues. Uses simple-read prompts only (Read tool sufficient) so the Read-only catalogue cell isn't penalised for prompts that need Bash.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/t1703-probe-matrix.sh`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/t1703-probe-matrix.sh`
 
 ## What It Does
 

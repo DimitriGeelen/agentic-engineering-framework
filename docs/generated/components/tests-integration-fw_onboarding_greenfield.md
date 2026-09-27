@@ -1,8 +1,8 @@
 # fw_onboarding_greenfield
 
-> TODO: describe what this component does
+> T-2850 — greenfield onboarding integration coverage.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/integration/fw_onboarding_greenfield.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/integration/fw_onboarding_greenfield.bats`
 
 ## What It Does
 

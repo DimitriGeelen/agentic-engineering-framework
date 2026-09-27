@@ -1,8 +1,8 @@
 # test_dispatch_pause
 
-> TODO: describe what this component does
+> Tests for lib/dispatch_pause.py — operator review-queue surface for paused
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_dispatch_pause.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_dispatch_pause.py`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [dispatch_pause](/docs/generated/lib-dispatch_pause) | calls | TODO: describe what this component does |
+| [dispatch_pause](/docs/generated/lib-dispatch_pause) | calls | Paused-dispatch helpers for the operator review queue. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_dispatch_pause.yaml`*

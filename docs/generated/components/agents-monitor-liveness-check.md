@@ -1,8 +1,8 @@
 # liveness-check
 
-> TODO: describe what this component does
+> Cron liveness monitor (every 1 min, T-1269/T-1273): checks TermLink hub, framework agent, Claude instance and Watchtower; appends .context/monitors/liveness.jsonl and writes liveness-latest.yaml.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/monitor/liveness-check.sh`
+**Type:** script | **Subsystem:** audit | **Location:** `agents/monitor/liveness-check.sh`
 
 ## What It Does
 
@@ -15,6 +15,13 @@ Outputs: .context/monitors/liveness.jsonl (append-only), liveness-latest.yaml (s
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+
+## Used By (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [cron_exec_bit](/docs/generated/lib-cron_exec_bit) | called_by | T-3380: scripts a deployed crontab invokes DIRECTLY must be executable. |
+| [t3380_cron_exec_bit](/docs/generated/tests-unit-t3380_cron_exec_bit) | tests_by | T-3380 — a script the deployed crontab execs DIRECTLY must be executable. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-monitor-liveness-check.yaml`*

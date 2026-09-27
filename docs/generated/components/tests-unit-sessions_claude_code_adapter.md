@@ -1,8 +1,8 @@
 # sessions_claude_code_adapter
 
-> TODO: describe what this component does
+> T-2417: Claude Code session adapter — verifies canonical-JSONL emission per agents/sessions/SCHEMA.md from a stubbed `claude agents --all --json` response.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/sessions_claude_code_adapter.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/sessions_claude_code_adapter.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ t2  malformed JSON → exit 3
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [list](/docs/generated/agents-sessions-claude-code-list) | calls | TODO: describe what this component does |
-| [list](/docs/generated/agents-sessions-claude-code-list) | tests | TODO: describe what this component does |
+| [list](/docs/generated/agents-sessions-claude-code-list) | calls | Claude Code session adapter for fw sessions (T-2417): reads `claude agents --all --json` and emits canonical JSONL per agents/sessions/SCHEMA.md. |
+| [list](/docs/generated/agents-sessions-claude-code-list) | tests | Claude Code session adapter for fw sessions (T-2417): reads `claude agents --all --json` and emits canonical JSONL per agents/sessions/SCHEMA.md. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-sessions_claude_code_adapter.yaml`*

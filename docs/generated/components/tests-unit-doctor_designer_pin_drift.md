@@ -1,8 +1,8 @@
 # doctor_designer_pin_drift
 
-> TODO: describe what this component does
+> T-2524 (T-2521 integration hardening): fw doctor content-compares (sha256, never mtime) the vendored Workflow Designer build against policy/designer-pin.yaml. Sibling of the MCP manifest + cron registry→generated drift checks.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/doctor_designer_pin_drift.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/doctor_designer_pin_drift.bats`
 
 ## What It Does
 

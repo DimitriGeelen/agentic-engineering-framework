@@ -1,8 +1,8 @@
 # arc_membership_union
 
-> TODO: describe what this component does
+> T-1874: _arc_tasks_for unions arc_id frontmatter + legacy arc:<slug> tag.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_membership_union.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_membership_union.bats`
 
 ## What It Does
 
@@ -17,8 +17,8 @@ semantics.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
-| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | tests | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
+| [arc](/docs/generated/lib-arc) | calls | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_membership_union.yaml`*

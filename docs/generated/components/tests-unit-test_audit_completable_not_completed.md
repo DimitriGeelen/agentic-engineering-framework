@@ -1,8 +1,8 @@
 # test_audit_completable_not_completed
 
-> TODO: describe what this component does
+> T-2055 — Pin CTL-029, the active-side mirror of CTL-028. Catches tasks where Agent ACs are 100% ticked but status remains started-work/issues (shipped-but-unclosed — agent finished the work and forgot to run `--status work-completed`).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_audit_completable_not_completed.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_audit_completable_not_completed.bats`
 
 ## What It Does
 

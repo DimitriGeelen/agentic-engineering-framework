@@ -1,8 +1,8 @@
 # T-2371-arc-011-wire-evidence-demo
 
-> TODO: describe what this component does
+> **Task:** T-2371 · **Arc:** arc-011 (parallel-execution-aef) · **Date:** 2026-06-13
 
-**Type:** script | **Subsystem:** unknown | **Location:** `docs/reports/T-2371-arc-011-wire-evidence-demo.md`
+**Type:** script | **Subsystem:** docs | **Location:** `docs/reports/T-2371-arc-011-wire-evidence-demo.md`
 
 ## What It Does
 

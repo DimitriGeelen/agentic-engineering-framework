@@ -1,6 +1,6 @@
 # check-inception-recommendation
 
-> TODO: describe what this component does
+> T-2205: PreToolUse Write/Edit hook — refuse save when inception task has template-only ## Recommendation block under $CLAUDECODE=1.
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/check-inception-recommendation.sh`
 
@@ -15,13 +15,13 @@ check-arc-id.sh / check-inception-decisions.sh).
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation-py) | calls | TODO: describe what this component does |
+| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation-py) | calls | T-2205 (T-2204 Slice B): PreToolUse Write/Edit hook — refuse save when an inception task has a template-only `## Recommendation` block under |
 
 ## Used By (1)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [check_inception_recommendation](/docs/generated/tests-unit-check_inception_recommendation) | tests_by | TODO: describe what this component does |
+| [check_inception_recommendation](/docs/generated/tests-unit-check_inception_recommendation) | tests_by | T-2205: PreToolUse Write/Edit hook tests for check-inception-recommendation. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-inception-recommendation.yaml`*

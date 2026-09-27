@@ -1,8 +1,8 @@
 # test_arc_page_parity
 
-> TODO: describe what this component does
+> Playwright tests for T-1910 — arc page parity (Slices 1+2+4 of T-1905).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_arc_page_parity.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_arc_page_parity.py`
 
 ## What It Does
 
@@ -13,7 +13,7 @@ arc-grooming is in-progress.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_arc_page_parity.yaml`*

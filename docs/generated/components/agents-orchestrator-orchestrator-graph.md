@@ -1,8 +1,8 @@
 # orchestrator-graph
 
-> TODO: describe what this component does
+> Orchestrator-graph (arc-011 M1, T-2339): builds a write-set-overlap and dependency graph over active tasks and emits (task_id, parallel|serial) dispatch decisions; consumes lib.write_set.compare and yield-point.sh.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/orchestrator/orchestrator-graph.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `agents/orchestrator/orchestrator-graph.py`
 
 ## What It Does
 
@@ -12,8 +12,8 @@ Make lib/ importable
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [write_set](/docs/generated/lib-write_set) | calls | TODO: describe what this component does |
-| [yield-point](/docs/generated/agents-dispatch-yield-point) | calls | TODO: describe what this component does |
+| [write_set](/docs/generated/lib-write_set) | calls | Disjoint write-set policy validator (T-2337, arc-011 M1 §3). |
+| [yield-point](/docs/generated/agents-dispatch-yield-point) | calls | arc-011 M1 harness yield-point: cooperative-poll safety net that reads .context/working/.dispatch-flag and refuses conflicting writes during parallel dispatch (T-2338). |
 
 ## Used By (1)
 

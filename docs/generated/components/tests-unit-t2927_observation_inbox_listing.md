@@ -1,8 +1,8 @@
 # t2927_observation_inbox_listing
 
-> TODO: describe what this component does
+> T-2927 — the handover's observation-inbox section listed 1 of 112 pending observations, and said nothing about the other 111.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2927_observation_inbox_listing.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2927_observation_inbox_listing.bats`
 
 ## What It Does
 

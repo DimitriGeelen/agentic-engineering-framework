@@ -1,8 +1,8 @@
 # harvest_indent_agnostic
 
-> TODO: describe what this component does
+> T-2676 — harvest.sh indent-agnostic entry greps (dead learnings/patterns sub-stages). Third instance of the indentation-assumption class (T-2672 resolve.sh emit-indent, 832 T-295 field report).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/harvest_indent_agnostic.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/harvest_indent_agnostic.bats`
 
 ## What It Does
 

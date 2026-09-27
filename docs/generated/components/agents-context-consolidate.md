@@ -1,6 +1,6 @@
 # consolidate
 
-> TODO: describe what this component does
+> Memory consolidation engine for the Agentic Engineering Framework.
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/consolidate.py`
 

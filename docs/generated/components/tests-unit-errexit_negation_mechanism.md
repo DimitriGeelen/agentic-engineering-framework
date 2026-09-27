@@ -1,8 +1,8 @@
 # errexit_negation_mechanism
 
-> TODO: describe what this component does
+> T-3138 — pin the bash mechanism that made 106 assertions in this suite inert.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/errexit_negation_mechanism.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/errexit_negation_mechanism.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # measure_chunk_tokens
 
-> TODO: describe what this component does
+> Measure the embedder's real input ceiling and the corpus chunk-token distribution.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/measure_chunk_tokens.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/measure_chunk_tokens.py`
 
 ## What It Does
 
@@ -11,14 +11,14 @@
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [embeddings](/docs/generated/web-embeddings) | calls | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
-| [config](/docs/generated/web-config) | calls | TODO: describe what this component does |
-| [config](/docs/generated/web-config) | uses | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | calls | Environment-based configuration for Watchtower. |
+| [config](/docs/generated/web-config) | uses | Environment-based configuration for Watchtower. |
 
 ## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_chunk_cap](/docs/generated/tests-unit-test_chunk_cap) | called_by | TODO: describe what this component does |
+| [test_chunk_cap](/docs/generated/tests-unit-test_chunk_cap) | called_by | The chunker must never emit a chunk the embedder cannot swallow whole. |
 | [embeddings](/docs/generated/web-embeddings) | called_by | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
 
 ---

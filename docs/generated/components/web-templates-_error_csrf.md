@@ -1,6 +1,6 @@
 # _error_csrf
 
-> TODO: describe what this component does
+> Content partial rendered by web/app.py's 403 handler when a CSRF check fails; offers a Reload action instead of a bare Forbidden page.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_error_csrf.html`
 

@@ -1,8 +1,8 @@
 # check_task_yamls
 
-> TODO: describe what this component does
+> Parse the YAML frontmatter of every task file in .tasks/{active,completed}/.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/check_task_yamls.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/check_task_yamls.py`
 
 ## What It Does
 

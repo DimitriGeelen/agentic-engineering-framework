@@ -1,6 +1,6 @@
 # htmx-toast
 
-> TODO: describe what this component does
+> htmx-toast.js — T-2074 (T-2063 GO scope)
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/static/htmx-toast.js`
 

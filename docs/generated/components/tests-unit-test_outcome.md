@@ -1,8 +1,8 @@
 # test_outcome
 
-> TODO: describe what this component does
+> T-1697: Unit tests for lib/outcome.py.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_outcome.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_outcome.py`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [outcome](/docs/generated/lib-outcome) | calls | TODO: describe what this component does |
+| [outcome](/docs/generated/lib-outcome) | calls | Outcome enrichment — default evaluator + back-prop + read-path join. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_outcome.yaml`*

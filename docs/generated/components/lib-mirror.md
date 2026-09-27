@@ -1,6 +1,6 @@
 # mirror
 
-> TODO: describe what this component does
+> lib/mirror.sh — Mirror cascade auto-recovery (T-1594, T-1591 Prevention #3).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/mirror.sh`
 
@@ -21,10 +21,10 @@ Subcommands:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_mirror_sync](/docs/generated/tests-unit-test_mirror_sync) | called_by | TODO: describe what this component does |
-| [test_mirror_sync](/docs/generated/tests-unit-test_mirror_sync) | tests_by | TODO: describe what this component does |
-| [test_mirror_stderr_capture](/docs/generated/tests-unit-test_mirror_stderr_capture) | called_by | TODO: describe what this component does |
-| [test_mirror_stderr_capture](/docs/generated/tests-unit-test_mirror_stderr_capture) | tests_by | TODO: describe what this component does |
+| [test_mirror_sync](/docs/generated/tests-unit-test_mirror_sync) | called_by | T-1594: Mirror cascade auto-recovery (T-1591 Prevention #3) |
+| [test_mirror_sync](/docs/generated/tests-unit-test_mirror_sync) | tests_by | T-1594: Mirror cascade auto-recovery (T-1591 Prevention #3) |
+| [test_mirror_stderr_capture](/docs/generated/tests-unit-test_mirror_stderr_capture) | called_by | T-1843 / T-1829 — lib/mirror.sh stderr capture on push-failed. |
+| [test_mirror_stderr_capture](/docs/generated/tests-unit-test_mirror_stderr_capture) | tests_by | T-1843 / T-1829 — lib/mirror.sh stderr capture on push-failed. |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

@@ -1,8 +1,8 @@
 # test_pre_push_monotonic_ancestor
 
-> TODO: describe what this component does
+> T-1843 / T-1829 — pre-push monotonicity gate, ancestor refinement.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_pre_push_monotonic_ancestor.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_pre_push_monotonic_ancestor.bats`
 
 ## What It Does
 

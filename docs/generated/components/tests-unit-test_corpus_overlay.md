@@ -2,7 +2,7 @@
 
 > Unit pins for the overlay projection profiles (T-2629/T-2634): bucket routing, severity ladder + queue floor, phantom-uid filter, canonical wire shape
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_corpus_overlay.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_corpus_overlay.py`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [corpus_overlay](/docs/generated/tools-corpus_overlay) | calls | TODO: describe what this component does |
+| [corpus_overlay](/docs/generated/tools-corpus_overlay) | calls | T-2629 (T-2620 GO, Slice A): live task-state projection onto map carrier uids. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_corpus_overlay.yaml`*

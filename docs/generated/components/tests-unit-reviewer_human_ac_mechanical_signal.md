@@ -1,8 +1,8 @@
 # reviewer_human_ac_mechanical_signal
 
-> TODO: describe what this component does
+> T-1896 (T-1878 B): integration coverage for the new reviewer pattern `human-ac-mechanical-signal` — runs `bin/fw reviewer` end-to-end against synthetic task files, asserts the pattern fires (or doesn't) per design.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/reviewer_human_ac_mechanical_signal.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/reviewer_human_ac_mechanical_signal.bats`
 
 ## What It Does
 

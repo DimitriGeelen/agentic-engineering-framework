@@ -1,8 +1,8 @@
 # t3233_arm_bounds
 
-> TODO: describe what this component does
+> T-3233 — `fw continuous arm` must not report a bound it does not enforce.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3233_arm_bounds.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3233_arm_bounds.bats`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ the defect. Measured on the pre-fix code:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | tests | TODO: describe what this component does |
+| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | tests | T-2364/T-2365 (T-2158 S2+S3) — next-directive injector for post-compact resume. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

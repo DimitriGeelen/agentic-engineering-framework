@@ -24,7 +24,7 @@ it, not silently:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [fw-router](/docs/generated/bin-fw-router) | calls | TODO: describe what this component does |
+| [fw-router](/docs/generated/bin-fw-router) | calls | fw-router — the `fw` entry point on PATH (T-2793, operator decision D-377). |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

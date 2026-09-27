@@ -1,8 +1,8 @@
 # test_hooks_page
 
-> TODO: describe what this component does
+> T-1632 (B-3c of T-1626) — Playwright: /hooks page renders correctly.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_hooks_page.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_hooks_page.py`
 
 ## What It Does
 

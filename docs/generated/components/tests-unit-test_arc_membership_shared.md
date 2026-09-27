@@ -1,8 +1,8 @@
 # test_arc_membership_shared
 
-> TODO: describe what this component does
+> T-1880 (T-NEW-15): pin shared Python API for arc-membership scans.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_arc_membership_shared.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_arc_membership_shared.py`
 
 ## What It Does
 

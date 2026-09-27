@@ -1,8 +1,8 @@
 # test_approvals_arc_closure_section
 
-> TODO: describe what this component does
+> T-1961: /approvals — Arc Closure section renders for close-ready arcs.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_approvals_arc_closure_section.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_approvals_arc_closure_section.py`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # t2984_session_lifecycle_lane_geometry
 
-> TODO: describe what this component does
+> T-2984: the session-lifecycle map's lane bands stay honest.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2984_session_lifecycle_lane_geometry.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2984_session_lifecycle_lane_geometry.py`
 
 ## What It Does
 

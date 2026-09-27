@@ -1,8 +1,8 @@
 # skip_ac_partial_complete
 
-> TODO: describe what this component does
+> T-1559 — Regression: --skip-acceptance-criteria must bypass the AC check on the partial-complete recheck branch, not just the initial transition.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/skip_ac_partial_complete.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/skip_ac_partial_complete.bats`
 
 ## What It Does
 

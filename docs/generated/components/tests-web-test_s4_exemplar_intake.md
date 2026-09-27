@@ -12,11 +12,11 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_designer_registry_ghosts](/docs/generated/tests-web-test_designer_registry_ghosts) | calls | TODO: describe what this component does |
-| [designer_registry](/docs/generated/web-designer_registry) | calls | TODO: describe what this component does |
-| [bpmn_to_tasks](/docs/generated/tools-bpmn_to_tasks) | calls | TODO: describe what this component does |
-| [test_designer_registry_ghosts](/docs/generated/tests-web-test_designer_registry_ghosts) | uses | TODO: describe what this component does |
-| [designer_registry](/docs/generated/web-designer_registry) | uses | TODO: describe what this component does |
+| [test_designer_registry_ghosts](/docs/generated/tests-web-test_designer_registry_ghosts) | calls | T-2574 (T-2571 S2): pending-ref registry — ghost capture at save. |
+| [designer_registry](/docs/generated/web-designer_registry) | calls | Pending-ref registry for off-page workflow connectors (T-2574, T-2571 S2). |
+| [bpmn_to_tasks](/docs/generated/tools-bpmn_to_tasks) | calls | Child-2 forward compiler (first slice): BPMN process diagram -> AEF task skeletons. |
+| [test_designer_registry_ghosts](/docs/generated/tests-web-test_designer_registry_ghosts) | uses | T-2574 (T-2571 S2): pending-ref registry — ghost capture at save. |
+| [designer_registry](/docs/generated/web-designer_registry) | uses | Pending-ref registry for off-page workflow connectors (T-2574, T-2571 S2). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-web-test_s4_exemplar_intake.yaml`*

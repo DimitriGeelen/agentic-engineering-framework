@@ -1,6 +1,6 @@
 # dup-task-scan
 
-> TODO: describe what this component does
+> T-1863: Duplicate task-ID scanner (G-052 prevention).
 
 **Type:** script | **Subsystem:** git-traceability | **Location:** `agents/git/lib/dup-task-scan.sh`
 
@@ -22,8 +22,8 @@ Exit:
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
-| [update_task_orphan_guard](/docs/generated/tests-unit-update_task_orphan_guard) | called_by | TODO: describe what this component does |
-| [update_task_orphan_guard](/docs/generated/tests-unit-update_task_orphan_guard) | tests_by | TODO: describe what this component does |
+| [update_task_orphan_guard](/docs/generated/tests-unit-update_task_orphan_guard) | called_by | T-1863 — Structural prevention for the active+completed orphan class. Origin: T-1859 was marked work-completed in S-2026-0515-2042 but the active/T-1859 file was never removed from the index, leaving both sides tracked. |
+| [update_task_orphan_guard](/docs/generated/tests-unit-update_task_orphan_guard) | tests_by | T-1863 — Structural prevention for the active+completed orphan class. Origin: T-1859 was marked work-completed in S-2026-0515-2042 but the active/T-1859 file was never removed from the index, leaving both sides tracked. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-dup-task-scan.yaml`*

@@ -1,8 +1,8 @@
 # test_bpmn_promote
 
-> TODO: describe what this component does
+> Unit tests for `fw bpmn promote` (tools/bpmn_promote.py, T-2542).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_bpmn_promote.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_bpmn_promote.py`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [bpmn_promote](/docs/generated/tools-bpmn_promote) | calls | TODO: describe what this component does |
+| [bpmn_promote](/docs/generated/tools-bpmn_promote) | calls | fw bpmn promote — turn staged BPMN proposals into gated .tasks/ files. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_bpmn_promote.yaml`*

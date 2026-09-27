@@ -1,6 +1,6 @@
 # chat-bare-path-warn
 
-> TODO: describe what this component does
+> UserPromptSubmit hook — chat bare-path warner (T-2183, Slice 2 of T-2181)
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/chat-bare-path-warn.sh`
 
@@ -21,7 +21,7 @@ SAFETY: non-destructive (reads + truncates one YAML file), always exits 0.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [chat-bare-path-scan](/docs/generated/agents-context-chat-bare-path-scan) | calls | TODO: describe what this component does |
+| [chat-bare-path-scan](/docs/generated/agents-context-chat-bare-path-scan) | calls | Stop hook — chat bare-path scanner (T-2183, Slice 2 of T-2181) |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-chat-bare-path-warn.yaml`*

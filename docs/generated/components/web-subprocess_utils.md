@@ -32,7 +32,7 @@
 | [quality](/docs/generated/web-blueprints-quality) | called_by | Flask blueprint: Quality |
 | [session](/docs/generated/web-blueprints-session) | called_by | Flask blueprint: Session |
 | [tasks](/docs/generated/web-blueprints-tasks) | called_by | Flask blueprint: Tasks |
-| [test_inception_decide_hardening](/docs/generated/tests-web-test_inception_decide_hardening) | uses_by | TODO: describe what this component does |
+| [test_inception_decide_hardening](/docs/generated/tests-web-test_inception_decide_hardening) | uses_by | T-1470: Watchtower /inception/decide hardens against side-effect failure. |
 | [cockpit](/docs/generated/web-blueprints-cockpit) | uses_by | Flask blueprint: Cockpit |
 | [core](/docs/generated/web-blueprints-core) | uses_by | Flask blueprint: Core |
 | [inception](/docs/generated/web-blueprints-inception) | uses_by | Blueprint 'inception' — routes: /inception |

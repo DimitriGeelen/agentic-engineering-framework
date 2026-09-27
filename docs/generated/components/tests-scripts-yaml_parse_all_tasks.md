@@ -1,8 +1,8 @@
 # yaml_parse_all_tasks
 
-> TODO: describe what this component does
+> Verify every .tasks/{active,completed}/*.md frontmatter parses as YAML.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/scripts/yaml_parse_all_tasks.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/scripts/yaml_parse_all_tasks.py`
 
 ## What It Does
 

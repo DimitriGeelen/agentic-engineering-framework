@@ -1,36 +1,36 @@
 # Full-audit run timing - written by agents/audit/audit.sh (T-3127, T-3451)
 last_run:
-  timestamp: "2026-09-22T17:56:41+02:00"
-  total_seconds: 1556
+  timestamp: "2026-09-27T13:17:13+02:00"
+  total_seconds: 1587
   ceiling_seconds: 3000
   timed_out: false
   sections:
     - name: "structure"
-      seconds: 268
+      seconds: 273
     - name: "tree"
-      seconds: 182
+      seconds: 175
     - name: "compliance"
-      seconds: 1
-    - name: "quality"
       seconds: 0
+    - name: "quality"
+      seconds: 1
     - name: "traceability"
-      seconds: 159
+      seconds: 163
     - name: "corpus-health"
-      seconds: 4
+      seconds: 3
     - name: "enforcement"
-      seconds: 96
+      seconds: 97
     - name: "learning"
-      seconds: 26
+      seconds: 27
     - name: "episodic"
-      seconds: 82
+      seconds: 89
     - name: "observations"
       seconds: 3
     - name: "gaps"
-      seconds: 1
+      seconds: 0
     - name: "handover"
       seconds: 0
     - name: "graduation"
-      seconds: 179
+      seconds: 190
     - name: "research"
       seconds: 0
     - name: "oe-research"
@@ -40,90 +40,130 @@ last_run:
     - name: "oe-hourly"
       seconds: 0
     - name: "oe-daily"
-      seconds: 470
+      seconds: 485
     - name: "discovery"
-      seconds: 30
+      seconds: 31
     - name: "discovery-trends"
-      seconds: 34
+      seconds: 36
     - name: "oe-weekly"
       seconds: 0
     - name: "orchestrator"
       seconds: 1
     - name: "arc-completion"
-      seconds: 14
+      seconds: 7
 section_runs:
+  - name: "tree"
+    seconds: 175
+    timestamp: "2026-09-27T13:24:43+02:00"
+    timed_out: false
+    excludes_lock_wait: true
   - name: "corpus-health"
-    seconds: 5
-    timestamp: "2026-09-25T06:10:07+02:00"
+    seconds: 3
+    timestamp: "2026-09-27T13:27:30+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "enforcement"
+    seconds: 97
+    timestamp: "2026-09-27T13:29:07+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "learning"
+    seconds: 27
+    timestamp: "2026-09-27T13:29:34+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "observations"
     seconds: 3
-    timestamp: "2026-09-25T06:10:10+02:00"
+    timestamp: "2026-09-27T13:31:06+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "gaps"
-    seconds: 1
-    timestamp: "2026-09-25T06:10:11+02:00"
+    seconds: 0
+    timestamp: "2026-09-27T13:31:06+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "handover"
+    seconds: 0
+    timestamp: "2026-09-27T13:31:06+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "graduation"
+    seconds: 190
+    timestamp: "2026-09-27T13:34:16+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "research"
+    seconds: 0
+    timestamp: "2026-09-27T13:34:16+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "oe-daily"
-    seconds: 598
-    timestamp: "2026-09-25T07:22:01+02:00"
+    seconds: 485
+    timestamp: "2026-09-27T13:42:25+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "oe-weekly"
+    seconds: 0
+    timestamp: "2026-09-27T13:43:32+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "orchestrator"
+    seconds: 1
+    timestamp: "2026-09-27T13:43:33+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "arc-completion"
-    seconds: 0
-    timestamp: "2026-09-25T07:22:01+02:00"
-    timed_out: true
+    seconds: 7
+    timestamp: "2026-09-27T13:43:40+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "traceability"
+    seconds: 171
+    timestamp: "2026-09-27T16:02:55+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "episodic"
+    seconds: 79
+    timestamp: "2026-09-27T16:04:14+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "discovery-trends"
+    seconds: 35
+    timestamp: "2026-09-27T16:04:49+02:00"
+    timed_out: false
     excludes_lock_wait: true
   - name: "oe-hourly"
     seconds: 0
-    timestamp: "2026-09-25T12:30:02+02:00"
+    timestamp: "2026-09-27T16:30:02+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "compliance"
-    seconds: 1
-    timestamp: "2026-09-25T12:40:01+02:00"
+    seconds: 0
+    timestamp: "2026-09-27T16:39:34+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "quality"
     seconds: 1
-    timestamp: "2026-09-25T12:40:02+02:00"
+    timestamp: "2026-09-27T16:39:35+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "discovery"
-    seconds: 34
-    timestamp: "2026-09-25T12:40:36+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "traceability"
-    seconds: 189
-    timestamp: "2026-09-25T13:03:14+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "episodic"
-    seconds: 89
-    timestamp: "2026-09-25T13:04:43+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "discovery-trends"
-    seconds: 42
-    timestamp: "2026-09-25T13:05:25+02:00"
-    timed_out: false
-    excludes_lock_wait: true
-  - name: "structure"
-    seconds: 313
-    timestamp: "2026-09-25T13:14:08+02:00"
+    seconds: 31
+    timestamp: "2026-09-27T16:40:06+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "oe-research"
     seconds: 4
-    timestamp: "2026-09-25T13:15:08+02:00"
+    timestamp: "2026-09-27T16:45:07+02:00"
     timed_out: false
     excludes_lock_wait: true
   - name: "oe-fast"
     seconds: 0
-    timestamp: "2026-09-25T13:15:08+02:00"
+    timestamp: "2026-09-27T16:45:07+02:00"
+    timed_out: false
+    excludes_lock_wait: true
+  - name: "structure"
+    seconds: 277
+    timestamp: "2026-09-27T16:50:49+02:00"
     timed_out: false
     excludes_lock_wait: true

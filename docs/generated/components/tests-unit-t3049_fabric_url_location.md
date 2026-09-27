@@ -1,8 +1,8 @@
 # t3049_fabric_url_location
 
-> TODO: describe what this component does
+> T-3049 — a card's `location:` is not always a filesystem path.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3049_fabric_url_location.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3049_fabric_url_location.bats`
 
 ## What It Does
 

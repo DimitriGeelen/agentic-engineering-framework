@@ -11,8 +11,8 @@
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [chat_tab](/docs/generated/web-templates-_partials-chat_tab) | includes | Ask AI chat tab HTML partial — message thread, input bar, model/provider selector, scope filter, saved conversations sidebar |
-| [search_input](/docs/generated/web-templates-_partials-search_input) | includes | TODO: describe what this component does |
-| [search_results](/docs/generated/web-templates-_partials-search_results) | includes | TODO: describe what this component does |
+| [search_input](/docs/generated/web-templates-_partials-search_input) | includes | Search bar + mode-pill controls included by search.html; the form GETs discovery.search_view via htmx. |
+| [search_results](/docs/generated/web-templates-_partials-search_results) | includes | Result-count summary and list, included by search.html inside #search-results-area. |
 
 ## Used By (3)
 

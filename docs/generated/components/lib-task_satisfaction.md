@@ -1,6 +1,6 @@
 # task_satisfaction
 
-> TODO: describe what this component does
+> Find active tasks whose acceptance criteria are all satisfied but which were never closed (T-3061).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/task_satisfaction.py`
 

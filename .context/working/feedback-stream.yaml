@@ -43330,3 +43330,855 @@ scan_id: R-aee6b91d
 task_id: T-3465
 payload:
   task_file: .tasks/active/T-3465-propose-a-joint-integration-fixture-set-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T11:39:34Z'
+scan_id: R-2383785a
+task_id: T-3466
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T11:39:34Z'
+scan_id: R-2383785a
+task_id: T-3466
+payload:
+  task_file: .tasks/active/T-3466-fix-read-only-allowlist-gaps-f-15-and-gi.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T11:43:07Z'
+scan_id: R-d1e1d6d3
+task_id: T-3467
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T11:43:07Z'
+scan_id: R-d1e1d6d3
+task_id: T-3467
+payload:
+  task_file: .tasks/active/T-3467-finalize-t-3466-dispatch-handback-report.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T13:14:51Z'
+scan_id: R-2ae550c2
+task_id: T-3468
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T13:14:51Z'
+scan_id: R-2ae550c2
+task_id: T-3468
+payload:
+  task_file: .tasks/active/T-3468-refresh-vendored-self-copies-for-the-t-3.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T14:50:38Z'
+scan_id: R-eeb4c9e8
+task_id: T-3469
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T14:50:38Z'
+scan_id: R-eeb4c9e8
+task_id: T-3469
+payload:
+  task_file: .tasks/active/T-3469-go-scope-warn-reports-one-undifferentiat.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T15:03:24Z'
+scan_id: R-b960afd4
+task_id: T-3470
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T15:03:24Z'
+scan_id: R-b960afd4
+task_id: T-3470
+payload:
+  task_file: .tasks/active/T-3470-triage-the-25-go-scope-candidates-into-s.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T19:43:50Z'
+scan_id: R-bbec31fe
+task_id: T-3475
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T19:43:50Z'
+scan_id: R-bbec31fe
+task_id: T-3475
+payload:
+  task_file: .tasks/active/T-3475-sidecar-slice-1-transport-ruling-http-vs.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-25T19:43:50Z'
+scan_id: RC-d3537cc1
+task_id: T-3475
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-09-25T19:47:52Z'
+scan_id: R-e3027ea9
+task_id: T-3426
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T19:47:52Z'
+scan_id: R-e3027ea9
+task_id: T-3426
+payload:
+  task_file: .tasks/active/T-3426-arc-011-sidecar-slice-10-fw-sidecar-e2e-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T19:51:32Z'
+scan_id: R-f30daa51
+task_id: T-3477
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T19:51:32Z'
+scan_id: R-f30daa51
+task_id: T-3477
+payload:
+  task_file: .tasks/active/T-3477-libintegratepy-docstring-still-calls-the.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T20:08:51Z'
+scan_id: R-b8bd85af
+task_id: T-3478
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T20:08:51Z'
+scan_id: R-b8bd85af
+task_id: T-3478
+payload:
+  task_file: .tasks/active/T-3478-reply-to-010-termlink-the-three-verbs-th.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T20:20:15Z'
+scan_id: R-b89920d2
+task_id: T-3479
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T20:20:15Z'
+scan_id: R-b89920d2
+task_id: T-3479
+payload:
+  task_file: .tasks/active/T-3479-arc-011arc-020-convergence-slice-a-dual-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T20:50:42Z'
+scan_id: R-3cc40842
+task_id: T-3476
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T20:50:42Z'
+scan_id: R-3cc40842
+task_id: T-3476
+payload:
+  task_file: .tasks/active/T-3476-sidecar-e2e-peer-mode-reports-fail-for-a.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T21:03:18Z'
+scan_id: R-2b964a1a
+task_id: T-3480
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T21:03:18Z'
+scan_id: R-2b964a1a
+task_id: T-3480
+payload:
+  task_file: .tasks/active/T-3480-f-25-check-project-boundary-blind-to-sib.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T21:06:18Z'
+scan_id: R-24eb2c69
+task_id: T-3450
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T21:06:18Z'
+scan_id: R-24eb2c69
+task_id: T-3450
+payload:
+  task_file: .tasks/active/T-3450-handover-push-timeout-is-a-static-300s-w.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T21:45:39Z'
+scan_id: R-34007f2c
+task_id: T-3483
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T21:45:39Z'
+scan_id: R-34007f2c
+task_id: T-3483
+payload:
+  task_file: .tasks/active/T-3483-land-the-f-25-project-boundary-fix-on-bl.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T21:56:32Z'
+scan_id: R-37153146
+task_id: T-3482
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T21:56:32Z'
+scan_id: R-37153146
+task_id: T-3482
+payload:
+  task_file: .tasks/active/T-3482-bvp-revamp-inception-remove-the-human-fr.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-25T21:56:32Z'
+scan_id: RC-9534e60c
+task_id: T-3482
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-09-25T22:28:25Z'
+scan_id: R-5bbe6696
+task_id: T-3484
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T22:28:25Z'
+scan_id: R-5bbe6696
+task_id: T-3484
+payload:
+  task_file: .tasks/active/T-3484-bvp-valuecost-signal-design-define-what-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-25T22:28:25Z'
+scan_id: RC-23824136
+task_id: T-3484
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-09-25T22:45:02Z'
+scan_id: R-b7f85429
+task_id: T-3486
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T22:45:02Z'
+scan_id: R-b7f85429
+task_id: T-3486
+payload:
+  task_file: .tasks/active/T-3486-bvp-loop-s1-the-outcomes-ledger-and-cost.md
+---
+kind: scan_emitted
+timestamp: '2026-09-25T23:12:07Z'
+scan_id: R-b9546479
+task_id: T-3489
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-25T23:12:07Z'
+scan_id: R-b9546479
+task_id: T-3489
+payload:
+  task_file: .tasks/active/T-3489-bvp-loop-s2-the-degenerate-scorer-alarm-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T00:02:09Z'
+scan_id: R-15a982cd
+task_id: T-3495
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T00:02:09Z'
+scan_id: R-15a982cd
+task_id: T-3495
+payload:
+  task_file: .tasks/active/T-3495-degenerate-scorer-alarm-flags-a-document.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T00:20:22Z'
+scan_id: R-1a71eb6a
+task_id: T-3497
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T00:20:22Z'
+scan_id: R-1a71eb6a
+task_id: T-3497
+payload:
+  task_file: .tasks/active/T-3497-bvp-loop-s4-quality-rows--derive-operato.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T02:21:26Z'
+scan_id: R-4f65b7fb
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T02:21:26Z'
+scan_id: R-4f65b7fb
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T02:21:27Z'
+scan_id: R-f72e4a0a
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T02:21:27Z'
+scan_id: R-f72e4a0a
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T02:21:27Z'
+scan_id: R-60141341
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T02:21:27Z'
+scan_id: R-60141341
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T07:38:06Z'
+scan_id: R-24169d74
+task_id: T-3485
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T07:38:06Z'
+scan_id: R-24169d74
+task_id: T-3485
+payload:
+  task_file: .tasks/active/T-3485-repair-bvp-value-axis-equality-defect-in.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T08:01:37Z'
+scan_id: R-eb11a540
+task_id: T-3488
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T08:01:37Z'
+scan_id: R-eb11a540
+task_id: T-3488
+payload:
+  task_file: .tasks/active/T-3488-fix-duplicate-bvp-quadrant-defect-in-lib.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T08:46:17Z'
+scan_id: R-4f6da9d5
+task_id: T-3499
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T08:46:17Z'
+scan_id: R-4f6da9d5
+task_id: T-3499
+payload:
+  task_file: .tasks/active/T-3499-bvp-loop-s6--the-usage-axis-instrument-v.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T09:02:45Z'
+scan_id: R-a4ac3979
+task_id: T-3498
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T09:02:45Z'
+scan_id: R-a4ac3979
+task_id: T-3498
+payload:
+  task_file: .tasks/active/T-3498-procasfit-autonomous-run-2026-09-26--arc.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T12:41:12Z'
+scan_id: R-6afa08d8
+task_id: T-3502
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T12:41:12Z'
+scan_id: R-6afa08d8
+task_id: T-3502
+payload:
+  task_file: .tasks/active/T-3502-arc-membership-s1-the-1kb-frontmatter-re.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T13:16:00Z'
+scan_id: R-2e019f79
+task_id: T-3503
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T13:16:00Z'
+scan_id: R-2e019f79
+task_id: T-3503
+payload:
+  task_file: .tasks/active/T-3503-arc-membership-s3-fw-bvp-arcs-drops-tag-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T13:21:35Z'
+scan_id: R-895443cf
+task_id: T-3504
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T13:21:35Z'
+scan_id: R-895443cf
+task_id: T-3504
+payload:
+  task_file: .tasks/active/T-3504-arc-membership-s4-fw-arc-help-names-the-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T13:45:00Z'
+scan_id: R-33ab39f8
+task_id: T-3505
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T13:45:00Z'
+scan_id: R-33ab39f8
+task_id: T-3505
+payload:
+  task_file: .tasks/active/T-3505-fix-two-merge-blockers-auditsh-exec-bit-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T19:11:17Z'
+scan_id: R-ed076f7e
+task_id: T-3507
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T19:11:17Z'
+scan_id: R-ed076f7e
+task_id: T-3507
+payload:
+  task_file: .tasks/active/T-3507-arc-membership-s5-audits-completion-rati.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T19:19:43Z'
+scan_id: R-ea1d4c39
+task_id: T-3508
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T19:19:43Z'
+scan_id: R-ea1d4c39
+task_id: T-3508
+payload:
+  task_file: .tasks/active/T-3508-restore-the-fw-arc-close-gate-to-default.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T19:48:10Z'
+scan_id: R-c5236492
+task_id: T-3509
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T19:48:10Z'
+scan_id: R-c5236492
+task_id: T-3509
+payload:
+  task_file: .tasks/active/T-3509-vendored-tree-catch-up-after-the-t-3506-.md
+---
+kind: scan_emitted
+timestamp: '2026-09-26T23:10:38Z'
+scan_id: R-0c488f15
+task_id: T-3510
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-26T23:10:38Z'
+scan_id: R-0c488f15
+task_id: T-3510
+payload:
+  task_file: .tasks/active/T-3510-branch-hygiene-stops-recommending-a-merg.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T00:02:10Z'
+scan_id: R-33c6522e
+task_id: T-3511
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T00:02:10Z'
+scan_id: R-33c6522e
+task_id: T-3511
+payload:
+  task_file: .tasks/active/T-3511-pre-merge-commit-gate-refuses-a-branch-w.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T02:23:35Z'
+scan_id: R-08c56da3
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T02:23:35Z'
+scan_id: R-08c56da3
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T02:23:36Z'
+scan_id: R-4c7de885
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T02:23:36Z'
+scan_id: R-4c7de885
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T02:23:36Z'
+scan_id: R-7f8b72bd
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T02:23:36Z'
+scan_id: R-7f8b72bd
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T05:19:46Z'
+scan_id: R-1845cfb7
+task_id: T-2205
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T05:19:46Z'
+scan_id: R-1845cfb7
+task_id: T-2205
+payload:
+  task_file: .tasks/active/T-2205-t-2204-slice-b--pretooluse-writeedit-hoo.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T08:19:35Z'
+scan_id: R-9df78a1c
+task_id: T-3512
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T08:19:35Z'
+scan_id: R-9df78a1c
+task_id: T-3512
+payload:
+  task_file: .tasks/active/T-3512-declare-target-paths-at-capture-so-blast.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T11:44:09Z'
+scan_id: R-957e9ed9
+task_id: T-3506
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T11:44:09Z'
+scan_id: R-957e9ed9
+task_id: T-3506
+payload:
+  task_file: .tasks/active/T-3506-merge-four-reviewed-branches-into-bleedi.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T14:29:47Z'
+scan_id: R-86adf5ae
+task_id: T-3519
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T14:29:47Z'
+scan_id: R-86adf5ae
+task_id: T-3519
+payload:
+  task_file: .tasks/active/T-3519-report-dispatch-worker-cost-in-tokens-fr.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T14:37:46Z'
+scan_id: R-1fb22434
+task_id: T-3516
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T14:37:46Z'
+scan_id: R-1fb22434
+task_id: T-3516
+payload:
+  task_file: .tasks/active/T-3516-invert-the-t-1881-arc-membership-rail-to.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T14:41:26Z'
+scan_id: R-2e492ba3
+task_id: T-3520
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T14:41:26Z'
+scan_id: R-2e492ba3
+task_id: T-3520
+payload:
+  task_file: .tasks/active/T-3520-vendor-sync-agentsauditauditsh-after-t-3.md
+---
+kind: scan_emitted
+timestamp: '2026-09-27T14:56:42Z'
+scan_id: R-6d0ded74
+task_id: T-3514
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-27T14:56:42Z'
+scan_id: R-6d0ded74
+task_id: T-3514
+payload:
+  task_file: .tasks/active/T-3514-fw-bvp-arcs-auto-sizes-the-slug-column-i.md

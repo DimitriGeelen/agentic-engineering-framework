@@ -1,6 +1,6 @@
 # cron-registry
 
-> TODO: describe what this component does
+> lib/cron-registry.sh — T-2844
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/cron-registry.sh`
 

@@ -1,8 +1,8 @@
 # g065-readiness
 
-> TODO: describe what this component does
+> G-065 closure-readiness gauge — wiring-presence check.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/g065-readiness.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/g065-readiness.py`
 
 ## What It Does
 
@@ -17,7 +17,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [g065_readiness](/docs/generated/tests-unit-g065_readiness) | tests_by | TODO: describe what this component does |
+| [g065_readiness](/docs/generated/tests-unit-g065_readiness) | tests_by | T-2299: G-065 closure-readiness gauge — covers READY against live repo, NOT_READY when each wiring leg is absent, and --strict exit-code semantics. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-g065-readiness.yaml`*

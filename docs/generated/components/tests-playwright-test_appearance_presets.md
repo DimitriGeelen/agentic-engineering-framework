@@ -1,8 +1,8 @@
 # test_appearance_presets
 
-> TODO: describe what this component does
+> T-1999: regression guard for the /settings/appearance preset JS (arc-007 S1).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_appearance_presets.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_appearance_presets.py`
 
 ## What It Does
 

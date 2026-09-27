@@ -1,8 +1,8 @@
 # t3112_worktree_hook_parity
 
-> TODO: describe what this component does
+> T-3112: fw doctor audits linked worktrees for enforcement drift (R7 leg L3).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3112_worktree_hook_parity.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3112_worktree_hook_parity.bats`
 
 ## What It Does
 
@@ -21,13 +21,13 @@ person who needs the comparison in a third place and copies it. The
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [hook-parity](/docs/generated/lib-hook-parity) | tests | TODO: describe what this component does |
+| [hook-parity](/docs/generated/lib-hook-parity) | tests | lib/hook-parity.sh — the enforcement-baseline comparison predicate (T-3112, R7 leg 3) |
 | [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
-| [hook_parity](/docs/generated/lib-hook_parity) | tests | TODO: describe what this component does |
+| [hook_parity](/docs/generated/lib-hook_parity) | tests | Hook-set extraction and comparison — ONE definition, every caller (T-3112/T-3113). |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 | [checkpoint](/docs/generated/checkpoint) | calls | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
-| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | calls | TODO: describe what this component does |
+| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | calls | T-3098 — Refuse governance writes from a linked git worktree. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3112_worktree_hook_parity.yaml`*

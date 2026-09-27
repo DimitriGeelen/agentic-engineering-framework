@@ -1,8 +1,8 @@
 # episodic-corpus-check
 
-> TODO: describe what this component does
+> T-1873 — episodic corpus parse-check.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/episodic-corpus-check.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/episodic-corpus-check.py`
 
 ## What It Does
 

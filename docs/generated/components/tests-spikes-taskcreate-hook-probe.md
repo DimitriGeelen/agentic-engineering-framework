@@ -1,8 +1,8 @@
 # taskcreate-hook-probe
 
-> TODO: describe what this component does
+> tests/spikes/taskcreate-hook-probe.sh (T-1115/T-1116)
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/spikes/taskcreate-hook-probe.sh`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/spikes/taskcreate-hook-probe.sh`
 
 ## What It Does
 

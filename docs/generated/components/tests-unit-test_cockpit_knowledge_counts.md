@@ -1,8 +1,8 @@
 # test_cockpit_knowledge_counts
 
-> TODO: describe what this component does
+> T-2022: Cockpit System Health Knowledge counts come from live helpers, not a missing scan key.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_cockpit_knowledge_counts.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_cockpit_knowledge_counts.py`
 
 ## What It Does
 

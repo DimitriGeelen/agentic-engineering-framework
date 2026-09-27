@@ -1,8 +1,8 @@
 # t2813_install_hooks_write_failure
 
-> TODO: describe what this component does
+> T-2813: `fw git install-hooks` printed "=== Hooks Installed ===" and exited 0 even when every hook write failed (cat > "$hook" << 'EOF' fails silently at the redirect, before the heredoc body runs; the subsequent chmod failure was likewise…
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2813_install_hooks_write_failure.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2813_install_hooks_write_failure.bats`
 
 ## What It Does
 

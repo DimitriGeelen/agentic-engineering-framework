@@ -33,14 +33,14 @@ Allowed exceptions (Bash + Write):
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [hook-config](/docs/generated/hook-config) | triggers | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
-| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
-| [test_boundary_hook_arguments](/docs/generated/tests-unit-test_boundary_hook_arguments) | called_by | TODO: describe what this component does |
-| [test_boundary_hook_arguments](/docs/generated/tests-unit-test_boundary_hook_arguments) | tests_by | TODO: describe what this component does |
-| [g065_readiness](/docs/generated/tests-unit-g065_readiness) | tests_by | TODO: describe what this component does |
-| [g065-readiness](/docs/generated/tools-g065-readiness) | called_by | TODO: describe what this component does |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | Invariant: gate scripts must not emit bare 'fw' COMMANDS — use bin/fw, or the _emit_user_command/_fw_cmd helpers that resolve the right path per project. Origin: T-1146 GO / T-1203 — bare commands are not copy-pasteable and violate PL-007. |
+| [test_boundary_hook_arguments](/docs/generated/tests-unit-test_boundary_hook_arguments) | called_by | T-1702 / G-065 — Pattern 4 (read-side outside-path arguments). |
+| [test_boundary_hook_arguments](/docs/generated/tests-unit-test_boundary_hook_arguments) | tests_by | T-1702 / G-065 — Pattern 4 (read-side outside-path arguments). |
+| [g065_readiness](/docs/generated/tests-unit-g065_readiness) | tests_by | T-2299: G-065 closure-readiness gauge — covers READY against live repo, NOT_READY when each wiring leg is absent, and --strict exit-code semantics. |
+| [g065-readiness](/docs/generated/tools-g065-readiness) | called_by | G-065 closure-readiness gauge — wiring-presence check. |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
-| [t2920_boundary_heredoc_strip_order](/docs/generated/tests-unit-t2920_boundary_heredoc_strip_order) | called_by | TODO: describe what this component does |
-| [t2920_boundary_heredoc_strip_order](/docs/generated/tests-unit-t2920_boundary_heredoc_strip_order) | tests_by | TODO: describe what this component does |
+| [t2920_boundary_heredoc_strip_order](/docs/generated/tests-unit-t2920_boundary_heredoc_strip_order) | called_by | T-2920 — the project-boundary hook must not read a heredoc BODY as a command. |
+| [t2920_boundary_heredoc_strip_order](/docs/generated/tests-unit-t2920_boundary_heredoc_strip_order) | tests_by | T-2920 — the project-boundary hook must not read a heredoc BODY as a command. |
 
 ## Related
 

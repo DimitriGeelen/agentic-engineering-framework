@@ -1,8 +1,8 @@
 # tier0_card_provenance
 
-> TODO: describe what this component does
+> T-3078 — a Tier 0 approval card must record where it came from, derived.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/tier0_card_provenance.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/tier0_card_provenance.bats`
 
 ## What It Does
 

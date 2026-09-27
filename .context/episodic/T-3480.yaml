@@ -73,10 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 42
-  commits: 1
-  files_changed: 3
-  lines_added: 354
-  lines_removed: 1
+  commits: 4
+  files_changed: 6
+  lines_added: 1425
+  lines_removed: 2
+  footprint_refreshed_at: '2026-09-25T21:39:38Z'
+  footprint_refreshed_by_commit: 1d5d2b3f6
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3480-f-25-check-project-boundary-blind-to-sib.md

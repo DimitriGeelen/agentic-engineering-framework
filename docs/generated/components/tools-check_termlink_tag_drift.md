@@ -1,8 +1,8 @@
 # check_termlink_tag_drift
 
-> TODO: describe what this component does
+> Scan live TermLink sessions for non-canonical tag prefixes.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/check_termlink_tag_drift.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/check_termlink_tag_drift.py`
 
 ## What It Does
 
@@ -13,7 +13,7 @@ separated prefixes + host metadata equals-separated prefixes are all canonical.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | calls | TODO: describe what this component does |
+| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | calls | orchestrator-mcp-scan.sh — drift defense for MCP-tool task_id enforcement T-1646 (Arc C drift defense, parented under T-1644, originating in T-1641) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-check_termlink_tag_drift.yaml`*

@@ -1,8 +1,8 @@
 # create_task_owner_gate
 
-> TODO: describe what this component does
+> T-2674 — creation-side owner validation (residual G-040 hole).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/create_task_owner_gate.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/create_task_owner_gate.bats`
 
 ## What It Does
 

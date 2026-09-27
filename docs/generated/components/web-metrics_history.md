@@ -1,6 +1,6 @@
 # metrics_history
 
-> TODO: describe what this component does
+> Metrics history — read and query time-series audit data.
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/metrics_history.py`
 

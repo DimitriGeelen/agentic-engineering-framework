@@ -1,8 +1,8 @@
 # test_frontmatter_loader_equivalence
 
-> TODO: describe what this component does
+> T-2774: the fast YAML loader must parse identically to the pure-Python one.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_frontmatter_loader_equivalence.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_frontmatter_loader_equivalence.py`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_cron_generate_shape
 
-> TODO: describe what this component does
+> T-1769 — Pin the shape of `fw cron generate` output. Origin: T-1720 found that the generator silently produced unrunnable lines (no cwd for `python3 -m lib.X` invocations; stderr swallowed by `2>/dev/null`).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_cron_generate_shape.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_cron_generate_shape.bats`
 
 ## What It Does
 
@@ -16,7 +16,7 @@ this fixture pins it.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | tests | TODO: describe what this component does |
+| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | tests | T-1727 — Layer B v0.5: per-candidate LLM augmentation of escalation-scan v0. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 

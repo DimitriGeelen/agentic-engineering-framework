@@ -16,22 +16,22 @@ framework repo, and .agentic-framework/agents/audit/x.py in a vendored consumer.
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [task-audit](/docs/generated/lib-task-audit) | calls | Scans task files for literal placeholder content that should have been replaced during authoring, blocking review and inception decisions until resolved |
-| [task_satisfaction](/docs/generated/lib-task_satisfaction) | calls | TODO: describe what this component does |
+| [task_satisfaction](/docs/generated/lib-task_satisfaction) | calls | Find active tasks whose acceptance criteria are all satisfied but which were never closed (T-3061). |
 
 ## Used By (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
-| [audit_scan](/docs/generated/tests-unit-audit_scan) | called_by | TODO: describe what this component does |
-| [audit_scan](/docs/generated/tests-unit-audit_scan) | tests_by | TODO: describe what this component does |
-| [audit_ctl028_completed_status_consistency](/docs/generated/tests-unit-audit_ctl028_completed_status_consistency) | called_by | TODO: describe what this component does |
-| [audit_ctl028_completed_status_consistency](/docs/generated/tests-unit-audit_ctl028_completed_status_consistency) | tests_by | TODO: describe what this component does |
-| [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | called_by | TODO: describe what this component does |
-| [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | tests_by | TODO: describe what this component does |
-| [t3073_c001_recommendation_bearing_inceptions](/docs/generated/tests-unit-t3073_c001_recommendation_bearing_inceptions) | called_by | TODO: describe what this component does |
-| [t3073_c001_recommendation_bearing_inceptions](/docs/generated/tests-unit-t3073_c001_recommendation_bearing_inceptions) | tests_by | TODO: describe what this component does |
-| [task_satisfaction](/docs/generated/lib-task_satisfaction) | called_by | TODO: describe what this component does |
+| [audit_scan](/docs/generated/tests-unit-audit_scan) | called_by | Unit tests for audit scan scripts (T-961) |
+| [audit_scan](/docs/generated/tests-unit-audit_scan) | tests_by | Unit tests for audit scan scripts (T-961) |
+| [audit_ctl028_completed_status_consistency](/docs/generated/tests-unit-audit_ctl028_completed_status_consistency) | called_by | T-1870 / CTL-028: completed/ frontmatter status consistency |
+| [audit_ctl028_completed_status_consistency](/docs/generated/tests-unit-audit_ctl028_completed_status_consistency) | tests_by | T-1870 / CTL-028: completed/ frontmatter status consistency |
+| [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | called_by | T-2162 / CTL-030: completed/ stored-horizon drift detection |
+| [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | tests_by | T-2162 / CTL-030: completed/ stored-horizon drift detection |
+| [t3073_c001_recommendation_bearing_inceptions](/docs/generated/tests-unit-t3073_c001_recommendation_bearing_inceptions) | called_by | T-3073: C-001 research-artefact rail covers inceptions being DECIDED, not only inceptions being WORKED. |
+| [t3073_c001_recommendation_bearing_inceptions](/docs/generated/tests-unit-t3073_c001_recommendation_bearing_inceptions) | tests_by | T-3073: C-001 research-artefact rail covers inceptions being DECIDED, not only inceptions being WORKED. |
+| [task_satisfaction](/docs/generated/lib-task_satisfaction) | called_by | Find active tasks whose acceptance criteria are all satisfied but which were never closed (T-3061). |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ## Related

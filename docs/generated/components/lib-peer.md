@@ -1,6 +1,6 @@
 # peer
 
-> TODO: describe what this component does
+> v2 peer-consult subscriber + responder spawn-bridge.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/peer.py`
 
@@ -16,7 +16,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_peer_subscribe](/docs/generated/tests-unit-test_peer_subscribe) | called_by | TODO: describe what this component does |
+| [test_peer_subscribe](/docs/generated/tests-unit-test_peer_subscribe) | called_by | Unit tests for lib/peer.py — v2 peer-consult subscriber + responder spawn. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-peer.yaml`*

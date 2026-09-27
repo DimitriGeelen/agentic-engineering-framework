@@ -1,8 +1,8 @@
 # test_arc_detail_bvp
 
-> TODO: describe what this component does
+> T-1930: /arcs/<id> BVP signals extensions — visual + structural guards.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_arc_detail_bvp.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_arc_detail_bvp.py`
 
 ## What It Does
 

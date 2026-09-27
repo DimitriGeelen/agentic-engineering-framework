@@ -1,8 +1,8 @@
 # g065_readiness
 
-> TODO: describe what this component does
+> T-2299: G-065 closure-readiness gauge — covers READY against live repo, NOT_READY when each wiring leg is absent, and --strict exit-code semantics.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/g065_readiness.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/g065_readiness.bats`
 
 ## What It Does
 
@@ -17,7 +17,7 @@ case isolates exactly one failing condition. Avoids touching the live repo.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [g065-readiness](/docs/generated/tools-g065-readiness) | tests | TODO: describe what this component does |
+| [g065-readiness](/docs/generated/tools-g065-readiness) | tests | G-065 closure-readiness gauge — wiring-presence check. |
 | [check-project-boundary](/docs/generated/agents-context-check-project-boundary) | tests | PreToolUse hook that blocks Write/Edit/Bash operations targeting paths outside PROJECT_ROOT. Prevents cross-project edits. Part of the project boundary enforcement gate (T-559). |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 

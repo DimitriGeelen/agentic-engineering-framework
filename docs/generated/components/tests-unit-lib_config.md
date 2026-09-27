@@ -1,8 +1,8 @@
 # lib_config
 
-> TODO: describe what this component does
+> Unit tests for lib/config.sh — 3-tier configuration resolution Origin: T-819
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/lib_config.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/lib_config.bats`
 
 ## What It Does
 

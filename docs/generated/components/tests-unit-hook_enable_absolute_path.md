@@ -1,8 +1,8 @@
 # hook_enable_absolute_path
 
-> TODO: describe what this component does
+> T-1504: fw hook-enable must emit absolute hook commands.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/hook_enable_absolute_path.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/hook_enable_absolute_path.bats`
 
 ## What It Does
 

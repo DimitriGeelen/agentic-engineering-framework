@@ -38,10 +38,10 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
-| [context_tokens](/docs/generated/lib-context_tokens) | calls | TODO: describe what this component does |
+| [context_tokens](/docs/generated/lib-context_tokens) | calls | Shared "how many tokens does THIS conversation currently hold" scan. |
 | [compat](/docs/generated/lib-compat) | calls | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
 
-## Used By (20)
+## Used By (22)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -52,19 +52,21 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | [claude-fw](/docs/generated/bin-claude-fw) | read_by | Claude Code wrapper with auto-restart support. Runs claude normally, then checks for a restart signal file written by checkpoint.sh when auto-handover fires at critical budget. If found and fresh, auto-restarts with claude -c to continue seamlessly. |
 | [hook-config](/docs/generated/hook-config) | triggers_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 | [session-metrics](/docs/generated/agents-context-session-metrics) | called-by | Extract per-session quality metrics (CPT, error rate, edit bursts) from JSONL transcript |
-| [checkpoint](/docs/generated/tests-unit-checkpoint) | called-by | TODO: describe what this component does |
-| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
-| [checkpoint](/docs/generated/tests-unit-checkpoint) | called_by | TODO: describe what this component does |
-| [checkpoint](/docs/generated/tests-unit-checkpoint) | tests_by | TODO: describe what this component does |
+| [checkpoint](/docs/generated/tests-unit-checkpoint) | called-by | Unit tests for agents/context/checkpoint.sh |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | Invariant: gate scripts must not emit bare 'fw' COMMANDS — use bin/fw, or the _emit_user_command/_fw_cmd helpers that resolve the right path per project. Origin: T-1146 GO / T-1203 — bare commands are not copy-pasteable and violate PL-007. |
+| [checkpoint](/docs/generated/tests-unit-checkpoint) | called_by | Unit tests for agents/context/checkpoint.sh |
+| [checkpoint](/docs/generated/tests-unit-checkpoint) | tests_by | Unit tests for agents/context/checkpoint.sh |
 | [handover_push_timeout](/docs/generated/tests-unit-handover_push_timeout) | called_by | Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT. |
 | [handover_push_timeout](/docs/generated/tests-unit-handover_push_timeout) | tests_by | Unit tests for T-1277 — verify handover.sh wraps git push with timeout so an unreachable remote (e.g. onedev VPN down) cannot stall the auto-handover hook. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT. |
-| [arc-012-continuous-mode-live-fire](/docs/generated/docs-runbooks-arc-012-continuous-mode-live-fire) | called_by | TODO: describe what this component does |
+| [arc-012-continuous-mode-live-fire](/docs/generated/docs-runbooks-arc-012-continuous-mode-live-fire) | called_by | **Purpose:** run the continuous-run loop end-to-end and observe the `headline_mechanic` firing — an agent that crosses the context-budget threshold *without operator relay*, self-checkpoints, hands over, auto-restarts via `claude-fw`… |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
-| [doctor_hook_exercise](/docs/generated/tests-unit-doctor_hook_exercise) | called_by | TODO: describe what this component does |
-| [upgrade_duplicate_hook_detection](/docs/generated/tests-unit-upgrade_duplicate_hook_detection) | called_by | TODO: describe what this component does |
-| [context_tokens](/docs/generated/lib-context_tokens) | called_by | TODO: describe what this component does |
-| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | called_by | TODO: describe what this component does |
+| [doctor_hook_exercise](/docs/generated/tests-unit-doctor_hook_exercise) | called_by | T-1629 (B-3a of T-1626) — `fw doctor` actively exercises every configured Claude Code hook from /tmp (foreign CWD that mimics agent cd-drift) and reports any whose path doesn't resolve. |
+| [upgrade_duplicate_hook_detection](/docs/generated/tests-unit-upgrade_duplicate_hook_detection) | called_by | T-1479 — fw upgrade detects when framework hooks are registered at both user-level (~/.claude/settings.json) and project-level (.claude/settings.json), warning the consumer (does NOT auto-remove user state). |
+| [context_tokens](/docs/generated/lib-context_tokens) | called_by | Shared "how many tokens does THIS conversation currently hold" scan. |
+| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | called_by | T-3112: fw doctor audits linked worktrees for enforcement drift (R7 leg L3). |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [budget-gate](/docs/generated/budget-gate) | called_by | Block Write/Edit/Bash tool execution when context budget reaches critical level (>=170K tokens). Primary enforcement for P-009. |
+| [t3248_useful_headroom](/docs/generated/tests-unit-t3248_useful_headroom) | tests_by | T-3248 — useful-headroom measurement (arc-012 E9). |
 
 ## Documentation
 

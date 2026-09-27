@@ -1,6 +1,6 @@
 # timeline_session
 
-> TODO: describe what this component does
+> Single-session timeline detail (full task list), rendered by web/blueprints/timeline.py:timeline_session.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/timeline_session.html`
 

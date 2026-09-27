@@ -1,6 +1,6 @@
 # integrate-go-live
 
-> TODO: describe what this component does
+> integrate-go-live.sh — safe zone-3 host go-live (T-2483; OBS-086).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `bin/integrate-go-live.sh`
 
@@ -22,7 +22,7 @@ This touches ZERO .context/ data, so it cannot conflict on accumulators and
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | TODO: describe what this component does |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | T-2711: the self-vendor PRODUCER and the audit GATE must cover the same files. |
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-integrate-go-live.yaml`*

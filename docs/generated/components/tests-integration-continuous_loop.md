@@ -1,8 +1,8 @@
 # continuous_loop
 
-> TODO: describe what this component does
+> T-2368 (arc-012 S-test): end-to-end continuous-loop integration test.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/integration/continuous_loop.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/integration/continuous_loop.bats`
 
 ## What It Does
 
@@ -22,9 +22,9 @@ NOT covered here (by design): the `claude-fw` process auto-restart junction —
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [post-compact-resume](/docs/generated/agents-context-post-compact-resume) | calls | Session Resume Hook — Reinject structured context on session recovery |
-| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | calls | TODO: describe what this component does |
+| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | calls | T-2364/T-2365 (T-2158 S2+S3) — next-directive injector for post-compact resume. |
 | [post-compact-resume](/docs/generated/agents-context-post-compact-resume) | tests | Session Resume Hook — Reinject structured context on session recovery |
-| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | tests | TODO: describe what this component does |
+| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | tests | T-2364/T-2365 (T-2158 S2+S3) — next-directive injector for post-compact resume. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-continuous_loop.yaml`*

@@ -6,6 +6,8 @@
 
 ## What It Does
 
+T-3459: `_quality_scores` reads and frontmatter-parses EVERY task file in the
+
 ## Dependencies (7)
 
 | Component | Relationship | Description |

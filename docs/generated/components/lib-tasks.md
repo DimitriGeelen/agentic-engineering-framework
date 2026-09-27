@@ -41,16 +41,16 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | [git_common](/docs/generated/tests-unit-git_common) | tests_by | Unit tests for git common (10 tests) |
 | [inception_decide_ac_tick](/docs/generated/tests-unit-inception_decide_ac_tick) | called_by | Unit tests for T-1324 — tick_inception_decide_acs auto-ticks the templated [REVIEW]/[RUBBER-STAMP] Human AC after fw inception decide writes the Decision block, so the work-completed gate does not leave the task in partial-complete forever (G-008; P-039). |
 | [inception_decide_ac_tick](/docs/generated/tests-unit-inception_decide_ac_tick) | tests_by | Unit tests for T-1324 — tick_inception_decide_acs auto-ticks the templated [REVIEW]/[RUBBER-STAMP] Human AC after fw inception decide writes the Decision block, so the work-completed gate does not leave the task in partial-complete forever (G-008; P-039). |
-| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | called_by | TODO: describe what this component does |
-| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | tests_by | TODO: describe what this component does |
-| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | called_by | TODO: describe what this component does |
-| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | tests_by | TODO: describe what this component does |
-| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | called_by | TODO: describe what this component does |
-| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | tests_by | TODO: describe what this component does |
+| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | called_by | T-1503: do_inception_decide must be atomic — either fully succeeds (Decision section + Updates entry + status=work-completed) or leaves the task body untouched. |
+| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | tests_by | T-1503: do_inception_decide must be atomic — either fully succeeds (Decision section + Updates entry + status=work-completed) or leaves the task body untouched. |
+| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | called_by | Unit tests for T-1466 — tick_inception_decide_acs recognizes `[Inception decision recorded]` AC wording when ## Recommendation exists. |
+| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | tests_by | Unit tests for T-1466 — tick_inception_decide_acs recognizes `[Inception decision recorded]` AC wording when ## Recommendation exists. |
+| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | called_by | T-1472 (OBS-019 Level D): tick_inception_decide_acs detects ceremonial ACs via `<!-- @auto-tick-on-decide -->` markers — text-wording independent. |
+| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | tests_by | T-1472 (OBS-019 Level D): tick_inception_decide_acs detects ceremonial ACs via `<!-- @auto-tick-on-decide -->` markers — text-wording independent. |
 | [lib_inception](/docs/generated/tests-unit-lib_inception) | called_by | Unit tests for inception (12 tests) |
 | [lib_inception](/docs/generated/tests-unit-lib_inception) | tests_by | Unit tests for inception (12 tests) |
 | [lib_tasks](/docs/generated/tests-unit-lib_tasks) | tests_by | Unit tests for tasks (10 tests) |
-| [episodic_worktree_mining](/docs/generated/tests-unit-episodic_worktree_mining) | tests_by | TODO: describe what this component does |
+| [episodic_worktree_mining](/docs/generated/tests-unit-episodic_worktree_mining) | tests_by | T-3129 — episodic git mining in a LINKED GIT WORKTREE, and the shape of a skipped measurement. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-tasks.yaml`*

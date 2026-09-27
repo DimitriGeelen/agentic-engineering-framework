@@ -24,8 +24,8 @@ Output: JSON with additionalContext when banned tool detected, empty otherwise
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [block-task-tools](/docs/generated/agents-context-block-task-tools) | complements | PreToolUse hook that blocks Claude Code built-in task/todo tools to prevent bypassing framework task governance |
-| [audit_task_tools](/docs/generated/tests-unit-audit_task_tools) | called_by | TODO: describe what this component does |
-| [audit_task_tools](/docs/generated/tests-unit-audit_task_tools) | tests_by | TODO: describe what this component does |
+| [audit_task_tools](/docs/generated/tests-unit-audit_task_tools) | called_by | Unit tests for agents/context/audit-task-tools.sh (T-1118) |
+| [audit_task_tools](/docs/generated/tests-unit-audit_task_tools) | tests_by | Unit tests for agents/context/audit-task-tools.sh (T-1118) |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 
 ---

@@ -1,8 +1,8 @@
 # audit_ctl013_skip_nested_audit
 
-> TODO: describe what this component does
+> T-1870 / L-391: CTL-013 must skip verification lines that invoke `bin/fw audit` (or `fw audit`) — running them inside the audit lock always fails (lock held by the outer audit) and produces false-positive WARN.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_ctl013_skip_nested_audit.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_ctl013_skip_nested_audit.bats`
 
 ## What It Does
 

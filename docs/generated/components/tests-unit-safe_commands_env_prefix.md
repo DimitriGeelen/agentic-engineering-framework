@@ -1,8 +1,8 @@
 # safe_commands_env_prefix
 
-> TODO: describe what this component does
+> T-1908: pin env-var prefix stripping in is_bash_safe_command.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/safe_commands_env_prefix.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/safe_commands_env_prefix.bats`
 
 ## What It Does
 

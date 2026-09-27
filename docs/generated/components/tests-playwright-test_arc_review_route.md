@@ -1,8 +1,8 @@
 # test_arc_review_route
 
-> TODO: describe what this component does
+> T-1963: /arcs/<slug>/review — read-only review surface.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_arc_review_route.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_arc_review_route.py`
 
 ## What It Does
 

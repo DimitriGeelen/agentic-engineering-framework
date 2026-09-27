@@ -1,6 +1,6 @@
 # bats_red_attribution
 
-> TODO: describe what this component does
+> T-3126 — attribute each RED bats test to the paths it is about.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/bats_red_attribution.py`
 

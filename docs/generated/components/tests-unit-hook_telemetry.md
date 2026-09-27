@@ -1,8 +1,8 @@
 # hook_telemetry
 
-> TODO: describe what this component does
+> T-1628 (B-2 of T-1626) — per-hook fire / failure counters.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/hook_telemetry.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/hook_telemetry.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ failures flowed past while framework reported clean. Telemetry is the
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [hook-telemetry](/docs/generated/lib-hook-telemetry) | calls | TODO: describe what this component does |
-| [hook-telemetry](/docs/generated/lib-hook-telemetry) | tests | TODO: describe what this component does |
+| [hook-telemetry](/docs/generated/lib-hook-telemetry) | calls | lib/hook-telemetry.sh — per-hook fire / failure counters (T-1628, B-2 of T-1626). |
+| [hook-telemetry](/docs/generated/lib-hook-telemetry) | tests | lib/hook-telemetry.sh — per-hook fire / failure counters (T-1628, B-2 of T-1626). |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 

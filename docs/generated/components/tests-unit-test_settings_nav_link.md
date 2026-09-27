@@ -1,8 +1,8 @@
 # test_settings_nav_link
 
-> TODO: describe what this component does
+> T-2032: the top-bar action cluster has a gear link to the settings/appearance page.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_settings_nav_link.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_settings_nav_link.py`
 
 ## What It Does
 

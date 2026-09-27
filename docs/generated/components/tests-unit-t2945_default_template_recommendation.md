@@ -1,8 +1,8 @@
 # t2945_default_template_recommendation
 
-> TODO: describe what this component does
+> T-2945 — default.md shipped no `## Recommendation`, so the section the review gate demands existed in only one of the two templates that reach it.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2945_default_template_recommendation.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2945_default_template_recommendation.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # t1704-hermes3-probe
 
-> TODO: describe what this component does
+> T-1704 hermes3:8b probe — same matrix shape as T-1703, single model. hermes3 is Nous Research's function-calling-tuned line; the v3 hypothesis is that explicit tool-call training fixes what catalogue restriction couldn't.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/t1704-hermes3-probe.sh`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/t1704-hermes3-probe.sh`
 
 ## What It Does
 

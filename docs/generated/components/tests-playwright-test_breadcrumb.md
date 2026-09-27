@@ -1,8 +1,8 @@
 # test_breadcrumb
 
-> TODO: describe what this component does
+> Playwright guard for T-2009 (arc-007 S2b) — breadcrumb is htmx-fresh.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_breadcrumb.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_breadcrumb.py`
 
 ## What It Does
 
@@ -12,7 +12,7 @@ marker that only survives if there is NO full page reload
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_breadcrumb.yaml`*

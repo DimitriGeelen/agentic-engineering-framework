@@ -1,8 +1,8 @@
 # probe_handover_recall
 
-> TODO: describe what this component does
+> Probe: when the index is queried, which handovers come back, and how old are they?
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/probe_handover_recall.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/probe_handover_recall.py`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_approvals_origin
 
-> TODO: describe what this component does
+> T-3078: /approvals must not assert an agent asked when none did.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/web/test_approvals_origin.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/web/test_approvals_origin.py`
 
 ## What It Does
 

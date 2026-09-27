@@ -1,8 +1,8 @@
 # readme_five_minute_by_hand
 
-> TODO: describe what this component does
+> T-2719 (arc-016) — the README's five-minute walkthrough, run as the BY-HAND persona: a person at a terminal with no AI agent attached.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/integration/readme_five_minute_by_hand.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/integration/readme_five_minute_by_hand.bats`
 
 ## What It Does
 

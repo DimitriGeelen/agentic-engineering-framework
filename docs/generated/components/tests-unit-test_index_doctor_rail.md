@@ -1,8 +1,8 @@
 # test_index_doctor_rail
 
-> TODO: describe what this component does
+> The doctor/audit rail over the vector index — T-3013 (T-3005 slice 4).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_index_doctor_rail.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_index_doctor_rail.bats`
 
 ## What It Does
 
@@ -19,12 +19,12 @@ So: stale is proven against fresh, fresh against stale, unknown against both.
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
-| [index-health](/docs/generated/lib-index-health) | tests | TODO: describe what this component does |
+| [index-health](/docs/generated/lib-index-health) | tests | Vector-index freshness verdict — T-3013 (T-3005 slice 4). |
 | [config](/docs/generated/lib-config) | tests | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
-| [index-health](/docs/generated/lib-index-health) | calls | TODO: describe what this component does |
+| [index-health](/docs/generated/lib-index-health) | calls | Vector-index freshness verdict — T-3013 (T-3005 slice 4). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_index_doctor_rail.yaml`*

@@ -105,10 +105,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 1496
-  commits: 8
-  files_changed: 10
-  lines_added: 1043
-  lines_removed: 52
+  commits: 10
+  files_changed: 14
+  lines_added: 1492
+  lines_removed: 57
+  footprint_refreshed_at: '2026-09-25T21:09:19Z'
+  footprint_refreshed_by_commit: 4258351e6
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3450-handover-push-timeout-is-a-static-300s-w.md

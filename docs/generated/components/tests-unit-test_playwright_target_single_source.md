@@ -1,8 +1,8 @@
 # test_playwright_target_single_source
 
-> TODO: describe what this component does
+> Playwright tests must take their target from one place (T-2784).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_playwright_target_single_source.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_playwright_target_single_source.py`
 
 ## What It Does
 

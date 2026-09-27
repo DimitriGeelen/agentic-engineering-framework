@@ -1,8 +1,8 @@
 # test_bvp_scatter_arc_mode
 
-> TODO: describe what this component does
+> T-1941: pin `bvp_mode` field in /bvp scatter arc payload.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_bvp_scatter_arc_mode.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_bvp_scatter_arc_mode.py`
 
 ## What It Does
 

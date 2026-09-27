@@ -1,8 +1,8 @@
 # g066_readiness
 
-> TODO: describe what this component does
+> T-2198: G-066 closure-readiness gauge — covers READY against live repo, NOT_READY when each wiring leg is absent, and --strict exit-code semantics.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/g066_readiness.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/g066_readiness.bats`
 
 ## What It Does
 
@@ -16,10 +16,10 @@ exactly one failing condition. Avoids touching the live repo.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [g066-readiness](/docs/generated/tools-g066-readiness) | tests | TODO: describe what this component does |
-| [static_scan](/docs/generated/lib-reviewer-static_scan) | tests | TODO: describe what this component does |
-| [dispatch_cli](/docs/generated/lib-reviewer-dispatch_cli) | tests | TODO: describe what this component does |
-| [gaps](/docs/generated/lib-gaps) | tests | TODO: describe what this component does |
+| [g066-readiness](/docs/generated/tools-g066-readiness) | tests | G-066 closure-readiness gauge — wiring-presence check. |
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | tests | Static-scan reviewer (T-1443 v1.0 → v1.5). |
+| [dispatch_cli](/docs/generated/lib-reviewer-dispatch_cli) | tests | Dispatch mode for the reviewer (T-1951, G-066 prong 3). |
+| [gaps](/docs/generated/lib-gaps) | tests | Gap-register closure helpers. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

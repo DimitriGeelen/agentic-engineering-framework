@@ -1,8 +1,8 @@
 # ewcr-arc0-unknown-overlap
 
-> TODO: describe what this component does
+> EWCR Arc 0, falsifier 1 — do the Unknown-subsystem Fabric entries intersect the runtime write set?
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/ewcr-arc0-unknown-overlap.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/ewcr-arc0-unknown-overlap.py`
 
 ## What It Does
 

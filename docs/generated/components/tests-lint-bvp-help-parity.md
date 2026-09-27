@@ -1,8 +1,8 @@
 # bvp-help-parity
 
-> TODO: describe what this component does
+> T-3069: the bvp verb surface and its documentation must agree.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/lint/bvp-help-parity.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/lint/bvp-help-parity.bats`
 
 ## What It Does
 
@@ -20,7 +20,7 @@ and a peer project reached the identical wrong conclusion from theirs.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [bvp](/docs/generated/lib-bvp) | tests | TODO: describe what this component does |
+| [bvp](/docs/generated/lib-bvp) | tests | lib/bvp.sh — Business Value Points (BVP) read-only CLI |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

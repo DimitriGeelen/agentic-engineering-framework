@@ -29,8 +29,8 @@ update in place.
 | [lib_update](/docs/generated/tests-unit-lib_update) | called-by | Unit tests for update (3 tests) |
 | [lib_update](/docs/generated/tests-unit-lib_update) | called_by | Unit tests for update (3 tests) |
 | [lib_update](/docs/generated/tests-unit-lib_update) | tests_by | Unit tests for update (3 tests) |
-| [update_mode_routing](/docs/generated/tests-unit-update_mode_routing) | tests_by | TODO: describe what this component does |
-| [update_mode_routing](/docs/generated/tests-unit-update_mode_routing) | called_by | TODO: describe what this component does |
+| [update_mode_routing](/docs/generated/tests-unit-update_mode_routing) | tests_by | T-2853 — `fw update` must route by what the framework copy IS, not by which branch happens to be tested first. |
+| [update_mode_routing](/docs/generated/tests-unit-update_mode_routing) | called_by | T-2853 — `fw update` must route by what the framework copy IS, not by which branch happens to be tested first. |
 
 ## Related
 

@@ -1,6 +1,6 @@
 # smoke_test
 
-> TODO: describe what this component does
+> Watchtower smoke test — runtime route discovery + content validation.
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/smoke_test.py`
 

@@ -1,6 +1,6 @@
 # antigravity_bridge
 
-> TODO: describe what this component does
+> antigravity_bridge.py — Antigravity / OpenGravity CLI Hook Bridge for AEF
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/antigravity_bridge.py`
 

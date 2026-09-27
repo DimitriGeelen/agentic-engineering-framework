@@ -20,8 +20,8 @@ task list. Use fw work-on to create real framework tasks instead.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [block_task_tools](/docs/generated/tests-unit-block_task_tools) | called_by | TODO: describe what this component does |
-| [block_task_tools](/docs/generated/tests-unit-block_task_tools) | tests_by | TODO: describe what this component does |
+| [block_task_tools](/docs/generated/tests-unit-block_task_tools) | called_by | Unit tests for agents/context/block-task-tools.sh (T-1117) |
+| [block_task_tools](/docs/generated/tests-unit-block_task_tools) | tests_by | Unit tests for agents/context/block-task-tools.sh (T-1117) |
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
 
 ---

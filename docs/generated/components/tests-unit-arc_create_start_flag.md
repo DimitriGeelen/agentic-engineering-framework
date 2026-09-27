@@ -1,8 +1,8 @@
 # arc_create_start_flag
 
-> TODO: describe what this component does
+> T-1852 counter-proposal: `fw arc create --start` one-step convenience. Default behaviour writes `status: draft`; --start writes `status: in-progress`.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_create_start_flag.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_create_start_flag.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # t3056_recall_open_tasks
 
-> TODO: describe what this component does
+> T-3056 — memory recall must see the OPEN task corpus, not only knowledge harvested from closed work.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3056_recall_open_tasks.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3056_recall_open_tasks.bats`
 
 ## What It Does
 
@@ -18,7 +18,7 @@ Fixtures use nonsense vocabulary so a hit cannot come from the real corpus.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | tests | TODO: describe what this component does |
+| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | tests | Memory recall — query project knowledge for relevant prior learnings, patterns, and decisions. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3056_recall_open_tasks.yaml`*

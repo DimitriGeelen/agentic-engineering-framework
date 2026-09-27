@@ -1,6 +1,6 @@
 # arc-id-migration
 
-> TODO: describe what this component does
+> T-1850 (T-NEW-3): one-shot, idempotent migration `tags:[arc:X] → arc_id: X`.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/migrations/arc-id-migration.sh`
 
@@ -21,8 +21,8 @@ IMMEDIATELY after the `related_tasks:` line.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [audit_ctl_arc_tag_only_pattern](/docs/generated/tests-unit-audit_ctl_arc_tag_only_pattern) | called_by | TODO: describe what this component does |
-| [audit_ctl_arc_tag_only_pattern](/docs/generated/tests-unit-audit_ctl_arc_tag_only_pattern) | tests_by | TODO: describe what this component does |
+| [audit_ctl_arc_tag_only_pattern](/docs/generated/tests-unit-audit_ctl_arc_tag_only_pattern) | called_by | T-1881 (T-NEW-16): pin the ctl-arc-tag-only-pattern audit check. |
+| [audit_ctl_arc_tag_only_pattern](/docs/generated/tests-unit-audit_ctl_arc_tag_only_pattern) | tests_by | T-1881 (T-NEW-16): pin the ctl-arc-tag-only-pattern audit check. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-migrations-arc-id-migration.yaml`*

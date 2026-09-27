@@ -19,10 +19,10 @@ Grows over time as we learn from tasks.
 | `learnings-route` | reads | Web UI reads patterns for /learnings page |
 | [learnings-route](/docs/generated/learnings-route) | read_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
 | [learnings-route](/docs/generated/learnings-route) | called_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
-| [resolver](/docs/generated/lib-resolver) | called_by | TODO: describe what this component does |
+| [resolver](/docs/generated/lib-resolver) | called_by | Resolver — workflow lookup, prompt assembly, variant selection, telemetry. |
 | [discovery_blueprint](/docs/generated/web-blueprints-discovery) | called_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
-| [consolidate](/docs/generated/agents-context-consolidate) | called_by | TODO: describe what this component does |
-| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | called_by | TODO: describe what this component does |
+| [consolidate](/docs/generated/agents-context-consolidate) | called_by | Memory consolidation engine for the Agentic Engineering Framework. |
+| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | called_by | Memory recall — query project knowledge for relevant prior learnings, patterns, and decisions. |
 
 ---
 *Auto-generated from Component Fabric. Card: `patterns-data.yaml`*

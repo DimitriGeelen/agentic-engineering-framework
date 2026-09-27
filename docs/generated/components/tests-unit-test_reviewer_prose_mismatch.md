@@ -1,8 +1,8 @@
 # test_reviewer_prose_mismatch
 
-> TODO: describe what this component does
+> T-1947 (L-409): integration coverage for `reviewer-prose-mismatch` — the inverse of `human-ac-mechanical-signal`.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_reviewer_prose_mismatch.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_reviewer_prose_mismatch.bats`
 
 ## What It Does
 

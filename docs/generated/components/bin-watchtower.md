@@ -28,7 +28,7 @@ Resolution order (T-885, T-1287, T-1376):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (5)
+## Dependencies (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -37,17 +37,18 @@ Resolution order (T-885, T-1287, T-1376):
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 | [firewall](/docs/generated/lib-firewall) | calls | Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive |
 | [watchtower](/docs/generated/lib-watchtower) | calls | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
+| [watchtower-staleness](/docs/generated/lib-watchtower-staleness) | calls | T-2938: does the RUNNING Watchtower actually run the code on disk? |
 
 ## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [watchtower_url_refresh](/docs/generated/tests-unit-watchtower_url_refresh) | called_by | TODO: describe what this component does |
-| [watchtower_url_refresh](/docs/generated/tests-unit-watchtower_url_refresh) | tests_by | TODO: describe what this component does |
-| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | TODO: describe what this component does |
-| [t3054_watchtower_root_fallback](/docs/generated/tests-unit-t3054_watchtower_root_fallback) | tests_by | TODO: describe what this component does |
-| [watchtower_url_no_guess](/docs/generated/tests-unit-watchtower_url_no_guess) | tests_by | TODO: describe what this component does |
+| [watchtower_url_refresh](/docs/generated/tests-unit-watchtower_url_refresh) | called_by | T-1622 — `do_url` in `bin/watchtower.sh` MUST refresh the LAN URL from `detect_lan_ip` when Watchtower is running. |
+| [watchtower_url_refresh](/docs/generated/tests-unit-watchtower_url_refresh) | tests_by | T-1622 — `do_url` in `bin/watchtower.sh` MUST refresh the LAN URL from `detect_lan_ip` when Watchtower is running. |
+| [self_vendor_parity](/docs/generated/tests-unit-self_vendor_parity) | tests_by | T-2711: the self-vendor PRODUCER and the audit GATE must cover the same files. |
+| [t3054_watchtower_root_fallback](/docs/generated/tests-unit-t3054_watchtower_root_fallback) | tests_by | T-3054 — the PROJECT_ROOT -> FRAMEWORK_ROOT fallback must be audible, and the identity check must not compute its expected value from the same expression. |
+| [watchtower_url_no_guess](/docs/generated/tests-unit-watchtower_url_no_guess) | tests_by | T-2802 — `fw watchtower url` must not answer with a guess. |
 
 ## Related
 

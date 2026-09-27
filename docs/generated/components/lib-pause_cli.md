@@ -1,6 +1,6 @@
 # pause_cli
 
-> TODO: describe what this component does
+> CLI dispatcher for `fw pause`. T-1809 (dispatch-safety slice 5).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/pause_cli.py`
 
@@ -12,8 +12,8 @@ Put lib/ on path so siblings import cleanly.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [dispatch_pause](/docs/generated/lib-dispatch_pause) | uses | TODO: describe what this component does |
-| [pause_resolve](/docs/generated/lib-pause_resolve) | uses | TODO: describe what this component does |
+| [dispatch_pause](/docs/generated/lib-dispatch_pause) | uses | Paused-dispatch helpers for the operator review queue. |
+| [pause_resolve](/docs/generated/lib-pause_resolve) | uses | Pause re-dispatch chain — capture operator's answer + fire a retry via Resolver. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-pause_cli.yaml`*

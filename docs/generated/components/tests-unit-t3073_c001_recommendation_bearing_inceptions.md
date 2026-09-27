@@ -1,8 +1,8 @@
 # t3073_c001_recommendation_bearing_inceptions
 
-> TODO: describe what this component does
+> T-3073: C-001 research-artefact rail covers inceptions being DECIDED, not only inceptions being WORKED.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3073_c001_recommendation_bearing_inceptions.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3073_c001_recommendation_bearing_inceptions.bats`
 
 ## What It Does
 

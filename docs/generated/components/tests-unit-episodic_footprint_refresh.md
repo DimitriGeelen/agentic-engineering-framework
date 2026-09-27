@@ -1,8 +1,8 @@
 # episodic_footprint_refresh
 
-> TODO: describe what this component does
+> T-3130 — the episodic's git footprint is mined before the commit it describes.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/episodic_footprint_refresh.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/episodic_footprint_refresh.bats`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ The value has to be captured AT GENERATION — before the commit lands — and
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [episodic_footprint](/docs/generated/lib-episodic_footprint) | tests | TODO: describe what this component does |
+| [episodic_footprint](/docs/generated/lib-episodic_footprint) | tests | Re-mine an episodic's git footprint AFTER the completion commit exists (T-3130). |
 | [hooks](/docs/generated/agents-git-lib-hooks) | tests | Git Agent - Hook installation subcommand |
 
 ---

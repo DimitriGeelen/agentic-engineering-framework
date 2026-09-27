@@ -1,6 +1,6 @@
 # index-health
 
-> TODO: describe what this component does
+> Vector-index freshness verdict — T-3013 (T-3005 slice 4).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/index-health.sh`
 
@@ -22,9 +22,9 @@ Embed-free by construction: it reads the corpus manifest, or stats the database
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | tests_by | TODO: describe what this component does |
-| [embeddings](/docs/generated/web-blueprints-embeddings) | called_by | TODO: describe what this component does |
-| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | called_by | TODO: describe what this component does |
+| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | tests_by | The doctor/audit rail over the vector index — T-3013 (T-3005 slice 4). |
+| [embeddings](/docs/generated/web-blueprints-embeddings) | called_by | Embeddings blueprint — the recall substrate's own instrument panel (T-1719 A4). |
+| [test_index_doctor_rail](/docs/generated/tests-unit-test_index_doctor_rail) | called_by | The doctor/audit rail over the vector index — T-3013 (T-3005 slice 4). |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-index-health.yaml`*

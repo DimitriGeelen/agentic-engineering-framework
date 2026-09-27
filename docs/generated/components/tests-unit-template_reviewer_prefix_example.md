@@ -1,8 +1,8 @@
 # template_reviewer_prefix_example
 
-> TODO: describe what this component does
+> T-1895 (T-1878 A): template + CLAUDE.md surface [REVIEWER] as a peer of [REVIEW] at AC-author time, not just as a post-hoc conversion rule.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/template_reviewer_prefix_example.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/template_reviewer_prefix_example.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # audit_ctl028_completed_status_consistency
 
-> TODO: describe what this component does
+> T-1870 / CTL-028: completed/ frontmatter status consistency
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_ctl028_completed_status_consistency.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_ctl028_completed_status_consistency.bats`
 
 ## What It Does
 

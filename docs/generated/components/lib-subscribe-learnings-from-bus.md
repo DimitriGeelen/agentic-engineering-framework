@@ -23,7 +23,7 @@ events broadcast by the collector's own session — missed cross-session
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [publish-learning-to-bus](/docs/generated/lib-publish-learning-to-bus) | calls | TODO: describe what this component does |
+| [publish-learning-to-bus](/docs/generated/lib-publish-learning-to-bus) | calls | publish-learning-to-bus.sh — one-way publisher for T-1155 channel:learnings topic. |
 | `.context/project/received-learnings.yaml` | writes | — |
 | `.context/working/.subscribe-learnings-bus.cursor` | writes | — |
 

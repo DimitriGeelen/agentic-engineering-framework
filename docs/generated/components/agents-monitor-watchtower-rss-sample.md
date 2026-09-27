@@ -1,8 +1,8 @@
 # watchtower-rss-sample
 
-> TODO: describe what this component does
+> Cron RSS/CPU sampler (every 5 min, T-1615) of the Watchtower process: distinguishes memory-leak re-saturation from request-rate queueing; outputs .context/monitors/watchtower-rss.jsonl.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/monitor/watchtower-rss-sample.sh`
+**Type:** script | **Subsystem:** audit | **Location:** `agents/monitor/watchtower-rss-sample.sh`
 
 ## What It Does
 

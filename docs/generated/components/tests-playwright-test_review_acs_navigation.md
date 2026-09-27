@@ -1,8 +1,8 @@
 # test_review_acs_navigation
 
-> TODO: describe what this component does
+> T-2114: /review/T-XXX AC fragment must not bounce navigation back into itself.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_review_acs_navigation.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_review_acs_navigation.py`
 
 ## What It Does
 

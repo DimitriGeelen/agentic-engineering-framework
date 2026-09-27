@@ -1,8 +1,8 @@
 # arc_id_validation_guard
 
-> TODO: describe what this component does
+> T-1849: arc_id task-frontmatter validation guard — unit tests.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_id_validation_guard.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_id_validation_guard.bats`
 
 ## What It Does
 
@@ -17,9 +17,9 @@ Predicated on T-1848 D-Immutability — valid refs stay valid forever.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [check-arc-id](/docs/generated/agents-context-check-arc-id) | calls | TODO: describe what this component does |
-| [check-arc-id](/docs/generated/agents-context-check-arc-id) | tests | TODO: describe what this component does |
-| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | tests | TODO: describe what this component does |
+| [check-arc-id](/docs/generated/agents-context-check-arc-id) | calls | T-1849: arc_id task-frontmatter validation hook (bash wrapper for Python). The fw hook dispatcher (bin/fw:5489) loads .sh files; the actual logic lives in check-arc-id.py to keep YAML parsing + arc resolution clean. |
+| [check-arc-id](/docs/generated/agents-context-check-arc-id) | tests | T-1849: arc_id task-frontmatter validation hook (bash wrapper for Python). The fw hook dispatcher (bin/fw:5489) loads .sh files; the actual logic lives in check-arc-id.py to keep YAML parsing + arc resolution clean. |
+| [check-arc-id](/docs/generated/agents-context-check-arc-id-py) | tests | T-1849: arc_id task-frontmatter validation hook (T-NEW-2). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_id_validation_guard.yaml`*

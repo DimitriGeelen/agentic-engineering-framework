@@ -1,8 +1,8 @@
 # no-orphaned-test-dirs
 
-> TODO: describe what this component does
+> T-2697 — every tests/<dir>/ holding .bats files must be reachable from a runner.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/lint/no-orphaned-test-dirs.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/lint/no-orphaned-test-dirs.bats`
 
 ## What It Does
 
@@ -20,7 +20,7 @@ next tests/<thing>/ someone adds as well as to the ones here today.
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [test_app](/docs/generated/web-test_app) | tests | TODO: describe what this component does |
+| [test_app](/docs/generated/web-test_app) | tests | Test suite for the Watchtower web UI. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-no-orphaned-test-dirs.yaml`*

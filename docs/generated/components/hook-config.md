@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (34)
+## Dependencies (35)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -24,11 +24,11 @@
 | [post-compact-resume](/docs/generated/agents-context-post-compact-resume) | calls | Session Resume Hook — Reinject structured context on session recovery |
 | [block-plan-mode](/docs/generated/agents-context-block-plan-mode) | calls | PreToolUse hook that blocks EnterPlanMode tool calls. Enforces D-027 (plan mode prohibition) by returning exit code 2 when agent attempts to use built-in plan mode. |
 | [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
-| [check-human-ac-tick](/docs/generated/agents-context-check-human-ac-tick) | calls | TODO: describe what this component does |
-| [check-arc-id](/docs/generated/agents-context-check-arc-id) | calls | TODO: describe what this component does |
-| [check-inception-decisions](/docs/generated/agents-context-check-inception-decisions) | calls | TODO: describe what this component does |
-| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | calls | TODO: describe what this component does |
-| [check-inception-schema](/docs/generated/agents-context-check-inception-schema) | calls | TODO: describe what this component does |
+| [check-human-ac-tick](/docs/generated/agents-context-check-human-ac-tick) | calls | T-1731: Human-AC tick guard hook (bash wrapper for the Python implementation). The fw hook dispatcher (bin/fw:4759) loads .sh files; the actual logic lives in check-human-ac-tick.py for clean diff parsing. |
+| [check-arc-id](/docs/generated/agents-context-check-arc-id) | calls | T-1849: arc_id task-frontmatter validation hook (bash wrapper for Python). The fw hook dispatcher (bin/fw:5489) loads .sh files; the actual logic lives in check-arc-id.py to keep YAML parsing + arc resolution clean. |
+| [check-inception-decisions](/docs/generated/agents-context-check-inception-decisions) | calls | T-1984: inception_decisions / unlocks_inception_decision validation hook (bash wrapper). The fw hook dispatcher (bin/fw:5639) loads .sh files; actual logic in check-inception-decisions.py. |
+| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | calls | T-1945 — Heredoc-in-command-substitution edit-time guard. |
+| [check-inception-schema](/docs/generated/agents-context-check-inception-schema) | calls | T-2188: inception frontmatter schema validation hook (bash wrapper for Python). The fw hook dispatcher loads .sh files; logic lives in check-inception-schema.py. |
 | [check-tier0](/docs/generated/agents-context-check-tier0) | calls | Tier 0 Enforcement Hook — PreToolUse gate for Bash tool |
 | [check-agent-dispatch](/docs/generated/agents-context-check-agent-dispatch) | calls | Agent Dispatch Gate — PreToolUse hook for Agent tool. Tracks dispatches per session, blocks 3rd+ unless approved or TermLink not installed. |
 | [check-project-boundary](/docs/generated/agents-context-check-project-boundary) | calls | PreToolUse hook that blocks Write/Edit/Bash operations targeting paths outside PROJECT_ROOT. Prevents cross-project edits. Part of the project boundary enforcement gate (T-559). |
@@ -44,8 +44,9 @@
 | [check-settings-edit](/docs/generated/agents-context-check-settings-edit) | calls | PostToolUse hook (Write\|Edit matcher) that fires an advisory L-398 reminder when .claude/settings.json is written/edited. Reminds the agent to add `bin/fw enforcement baseline` to the active task's Verification block so the canonical hash refreshes at task-close. Strictly advisory (exit 0).  Origin: T-1886 RCA Candidate B — paired with T-1887 Candidate A (template hint). The enforcement-baseline-drift class accumulated for multiple sessions across T-1849/T-1730/T-1731 before T-1886 cleaned up. |
 | [check-active-completed-dup-sh](/docs/generated/agents-context-check-active-completed-dup-sh) | calls | Thin wrapper (T-2517) the fw hook dispatcher loads for the active/completed duplicate write-time guard. Execs check-active-completed-dup.py; the shell layer exists only because bin/fw's hook loader globs .sh files. |
 | [check-onboarding-gate](/docs/generated/agents-context-check-onboarding-gate) | calls | T-2815 PreToolUse Write/Edit hook — refuses adding an agent-unresolvable task (owner != human but agent-unresolvable: inception workflow_type or an unticked ### Human AC) to the T-532 gated onboarding set. Bash wrapper exec's the real logic in check-onboarding-gate.py. |
-| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | calls | TODO: describe what this component does |
-| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | calls | TODO: describe what this component does |
+| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | calls | T-2908: PreToolUse label gate for the MCP rail-post producer surface. |
+| [check-worktree-governance-write](/docs/generated/agents-context-check-worktree-governance-write) | calls | T-3098 — Refuse governance writes from a linked git worktree. |
+| [sidecar-inbox](/docs/generated/agents-context-sidecar-inbox) | calls | sidecar-inbox.sh — UserPromptSubmit hook: surface pending peer consults. |
 
 ## Used By (2)
 

@@ -16,7 +16,7 @@ Tests the do_add_learning() function:
 - File creation and appending
 - Output formatting
 
-## Dependencies (5)
+## Dependencies (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,6 +25,7 @@ Tests the do_add_learning() function:
 | [add-learning](/docs/generated/add-learning) | calls | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
 | [add-learning](/docs/generated/add-learning) | tests | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
 | [compat](/docs/generated/lib-compat) | tests | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
+| [learning](/docs/generated/agents-context-lib-learning) | tests | Context Agent - add-learning command Add a learning to project memory |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_learning.yaml`*

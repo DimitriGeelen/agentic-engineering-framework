@@ -1,8 +1,8 @@
 # test_render_surface_gate
 
-> TODO: describe what this component does
+> T-1766 — render-surface Human-AC gate (P-013).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_render_surface_gate.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_render_surface_gate.bats`
 
 ## What It Does
 
@@ -17,11 +17,11 @@ Human ACs — user caught the omission and asked for RCA + structural fix.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [render_surface](/docs/generated/lib-render_surface) | calls | TODO: describe what this component does |
+| [render_surface](/docs/generated/lib-render_surface) | calls | Render-surface predicate (T-1766, P-013). Decides whether a task touches the human-review rendering surface — surfaces where what the human sees depends on layout/CSS/template choices that no deterministic test can fully capture. |
 | [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
 | [shared](/docs/generated/web-shared) | tests | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [app](/docs/generated/web-app) | tests | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
-| [render_surface](/docs/generated/lib-render_surface) | tests | TODO: describe what this component does |
+| [render_surface](/docs/generated/lib-render_surface) | tests | Render-surface predicate (T-1766, P-013). Decides whether a task touches the human-review rendering surface — surfaces where what the human sees depends on layout/CSS/template choices that no deterministic test can fully capture. |
 | [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
 | [tasks](/docs/generated/web-blueprints-tasks) | tests | Flask blueprint: Tasks |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |

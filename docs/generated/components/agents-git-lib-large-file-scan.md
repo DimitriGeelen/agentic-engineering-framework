@@ -1,6 +1,6 @@
 # large-file-scan
 
-> TODO: describe what this component does
+> agents/git/lib/large-file-scan.sh — Large-file gate for the pre-commit hook (T-1845).
 
 **Type:** script | **Subsystem:** git-traceability | **Location:** `agents/git/lib/large-file-scan.sh`
 
@@ -17,7 +17,7 @@ agents/git/lib/hooks.sh:install_hooks. It can also be run standalone:
 large-file-scan.sh scan-staged       Scan git staged paths (the hook's mode)
 large-file-scan.sh scan-tree         Scan the entire tracked tree (audit mode)
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -25,6 +25,7 @@ large-file-scan.sh scan-tree         Scan the entire tracked tree (audit mode)
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [t3377_large_file_scan](/docs/generated/tests-unit-t3377_large_file_scan) | tests_by | T-3377 — large-file scan_tree: behaviour pinned against a FIXTURE repo. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-large-file-scan.yaml`*

@@ -1,8 +1,8 @@
 # t1706-tool-loop-probe
 
-> TODO: describe what this component does
+> T-1706 — Spike A probe for the thin tool-loop worker.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/t1706-tool-loop-probe.sh`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/t1706-tool-loop-probe.sh`
 
 ## What It Does
 

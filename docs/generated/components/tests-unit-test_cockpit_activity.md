@@ -1,8 +1,8 @@
 # test_cockpit_activity
 
-> TODO: describe what this component does
+> T-2020 (arc-007 S6d): cockpit live activity feed — recent commits via htmx poll.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_cockpit_activity.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_cockpit_activity.py`
 
 ## What It Does
 

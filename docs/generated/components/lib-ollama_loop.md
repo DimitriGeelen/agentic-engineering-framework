@@ -1,6 +1,6 @@
 # ollama_loop
 
-> TODO: describe what this component does
+> OllamaLoopWorker — subprocess wrapper for `claude -p` with redirected env vars.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/ollama_loop.py`
 
@@ -11,15 +11,15 @@
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [termlink](/docs/generated/agents-termlink-termlink) | calls | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
-| [termlink_worker](/docs/generated/lib-termlink_worker) | calls | TODO: describe what this component does |
+| [termlink_worker](/docs/generated/lib-termlink_worker) | calls | TermLinkWorker — subprocess wrapper for `fw termlink dispatch`. |
 
 ## Used By (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_ollama_loop](/docs/generated/tests-unit-test_ollama_loop) | called_by | TODO: describe what this component does |
-| [spawn](/docs/generated/lib-spawn) | called_by | TODO: describe what this component does |
-| [spawn](/docs/generated/lib-spawn) | uses_by | TODO: describe what this component does |
+| [test_ollama_loop](/docs/generated/tests-unit-test_ollama_loop) | called_by | T-1775: Unit tests for OllamaLoopWorker (mocked subprocess). |
+| [spawn](/docs/generated/lib-spawn) | called_by | spawn — dispatch driver: read resolver envelope, spawn worker, finalise outcome. |
+| [spawn](/docs/generated/lib-spawn) | uses_by | spawn — dispatch driver: read resolver envelope, spawn worker, finalise outcome. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-ollama_loop.yaml`*

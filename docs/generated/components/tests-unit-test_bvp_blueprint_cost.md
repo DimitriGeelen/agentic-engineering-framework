@@ -1,8 +1,8 @@
 # test_bvp_blueprint_cost
 
-> TODO: describe what this component does
+> T-1934: pin the `_compute_cost(default_when_absent=...)` contract.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_bvp_blueprint_cost.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_bvp_blueprint_cost.py`
 
 ## What It Does
 

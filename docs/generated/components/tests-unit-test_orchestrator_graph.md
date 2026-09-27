@@ -1,8 +1,8 @@
 # test_orchestrator_graph
 
-> TODO: describe what this component does
+> T-2339 (arc-011 M1 §1) — orchestrator-graph dispatch decision.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_orchestrator_graph.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_orchestrator_graph.bats`
 
 ## What It Does
 

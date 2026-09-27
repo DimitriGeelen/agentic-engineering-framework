@@ -1,8 +1,8 @@
 # test_git_hooks
 
-> TODO: describe what this component does
+> T-1607 (T-1601 GO follow-up, Phase 2): red-team harness for git hooks.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/governance/test_git_hooks.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/governance/test_git_hooks.bats`
 
 ## What It Does
 

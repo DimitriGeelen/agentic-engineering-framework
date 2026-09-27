@@ -1,6 +1,6 @@
 # evolution_log
 
-> TODO: describe what this component does
+> Detection helper for the T-1717 Q4 rigidity-vs-evolution pattern (T-1718 implementation). Mirrors lib/inception_recommendation.sh (T-1716) shape exactly: detection helper extracted so it can be tested without spinning up update-task.sh.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/evolution_log.sh`
 
@@ -28,10 +28,10 @@ Public functions:
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
-| [evolution_log_gate](/docs/generated/tests-unit-evolution_log_gate) | called_by | TODO: describe what this component does |
-| [evolution_log_gate](/docs/generated/tests-unit-evolution_log_gate) | tests_by | TODO: describe what this component does |
-| [arc_membership_agent_surfaces](/docs/generated/tests-unit-arc_membership_agent_surfaces) | tests_by | TODO: describe what this component does |
-| [arc_membership_agent_surfaces](/docs/generated/tests-unit-arc_membership_agent_surfaces) | called_by | TODO: describe what this component does |
+| [evolution_log_gate](/docs/generated/tests-unit-evolution_log_gate) | called_by | T-1718 Slice 1: Evolution-log gate |
+| [evolution_log_gate](/docs/generated/tests-unit-evolution_log_gate) | tests_by | T-1718 Slice 1: Evolution-log gate |
+| [arc_membership_agent_surfaces](/docs/generated/tests-unit-arc_membership_agent_surfaces) | tests_by | T-1879 (T-NEW-14): silent-corpus #2 sweep — agent-side surfaces must read both `arc_id:` frontmatter (T-1849 canonical, T-1850 migrated) AND legacy `arc:<slug>` tag. |
+| [arc_membership_agent_surfaces](/docs/generated/tests-unit-arc_membership_agent_surfaces) | called_by | T-1879 (T-NEW-14): silent-corpus #2 sweep — agent-side surfaces must read both `arc_id:` frontmatter (T-1849 canonical, T-1850 migrated) AND legacy `arc:<slug>` tag. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-evolution_log.yaml`*

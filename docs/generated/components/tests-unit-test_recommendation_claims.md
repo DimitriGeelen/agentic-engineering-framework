@@ -1,8 +1,8 @@
 # test_recommendation_claims
 
-> TODO: describe what this component does
+> T-100187: Recommendation-claims validator (T-100186 GO slice A).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_recommendation_claims.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_recommendation_claims.py`
 
 ## What It Does
 
@@ -12,8 +12,8 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [recommendation_claims](/docs/generated/lib-reviewer-recommendation_claims) | calls | TODO: describe what this component does |
-| [recommendation_claims](/docs/generated/lib-reviewer-recommendation_claims) | uses | TODO: describe what this component does |
+| [recommendation_claims](/docs/generated/lib-reviewer-recommendation_claims) | calls | T-100187: Recommendation-claims validator (T-100186 GO slice A). |
+| [recommendation_claims](/docs/generated/lib-reviewer-recommendation_claims) | uses | T-100187: Recommendation-claims validator (T-100186 GO slice A). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_recommendation_claims.yaml`*

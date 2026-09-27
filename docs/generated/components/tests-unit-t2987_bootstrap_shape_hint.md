@@ -1,8 +1,8 @@
 # t2987_bootstrap_shape_hint
 
-> TODO: describe what this component does
+> T-2987: the task gate advertises an unblock command it then blocks when redirected.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2987_bootstrap_shape_hint.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2987_bootstrap_shape_hint.bats`
 
 ## What It Does
 

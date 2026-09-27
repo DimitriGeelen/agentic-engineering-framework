@@ -1,8 +1,8 @@
 # escalation-triage
 
-> TODO: describe what this component does
+> You are a triage classifier dispatched by the Agentic Engineering Framework.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `prompts/escalation-triage.md`
+**Type:** script | **Subsystem:** docs | **Location:** `prompts/escalation-triage.md`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_cockpit_activity
 
-> TODO: describe what this component does
+> Playwright guard for T-2020 (arc-007 S6d) — cockpit live activity feed.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_cockpit_activity.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_cockpit_activity.py`
 
 ## What It Does
 
@@ -12,7 +12,7 @@ htmx 'load' trigger fetches the fragment → entries (or the empty-state) appear
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_cockpit_activity.yaml`*

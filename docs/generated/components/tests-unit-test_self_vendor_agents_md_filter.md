@@ -1,8 +1,8 @@
 # test_self_vendor_agents_md_filter
 
-> TODO: describe what this component does
+> T-2304 (OBS-068): regression test for _self_vendor_agents .md filter
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_self_vendor_agents_md_filter.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_self_vendor_agents_md_filter.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # inception_tick_decision_recorded
 
-> TODO: describe what this component does
+> Unit tests for T-1466 — tick_inception_decide_acs recognizes `[Inception decision recorded]` AC wording when ## Recommendation exists.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/inception_tick_decision_recorded.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/inception_tick_decision_recorded.bats`
 
 ## What It Does
 

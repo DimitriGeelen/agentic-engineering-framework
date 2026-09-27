@@ -21,7 +21,7 @@ Conditions: ?git (requires .git), ?claude,generic (provider match)
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [init](/docs/generated/lib-init) | reads | fw init - Bootstrap a new project with the Agentic Engineering Framework |
-| [git-identity](/docs/generated/lib-git-identity) | calls | TODO: describe what this component does |
+| [git-identity](/docs/generated/lib-git-identity) | calls | lib/git-identity.sh — one answer to "can this machine commit?" (T-2883) |
 
 ## Used By (7)
 
@@ -32,8 +32,8 @@ Conditions: ?git (requires .git), ?claude,generic (provider match)
 | [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | called-by | Unit tests for lib/validate-init.sh (7 tests) |
 | [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | called_by | Unit tests for lib/validate-init.sh (7 tests) |
 | [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | tests_by | Unit tests for lib/validate-init.sh (7 tests) |
-| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | tests_by | TODO: describe what this component does |
-| [validate_init_hook_path_expansion](/docs/generated/tests-unit-validate_init_hook_path_expansion) | tests_by | TODO: describe what this component does |
+| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | tests_by | T-2883 — "can this machine commit?" must be answered the way git answers it. |
+| [validate_init_hook_path_expansion](/docs/generated/tests-unit-validate_init_hook_path_expansion) | tests_by | T-2724 — lib/validate-init.sh must expand ${CLAUDE_PROJECT_DIR} before testing whether a hook script exists. |
 
 ## Related
 

@@ -1,6 +1,6 @@
 # reviewer_overrides
 
-> TODO: describe what this component does
+> Active TTL'd reviewer false-positive override listing, rendered by web/blueprints/reviewer.py.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/reviewer_overrides.html`
 

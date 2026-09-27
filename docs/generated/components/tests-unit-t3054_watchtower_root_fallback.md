@@ -1,8 +1,8 @@
 # t3054_watchtower_root_fallback
 
-> TODO: describe what this component does
+> T-3054 — the PROJECT_ROOT -> FRAMEWORK_ROOT fallback must be audible, and the identity check must not compute its expected value from the same expression.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3054_watchtower_root_fallback.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3054_watchtower_root_fallback.bats`
 
 ## What It Does
 

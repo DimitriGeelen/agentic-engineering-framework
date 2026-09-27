@@ -39,13 +39,13 @@ and any external tool that rejects unknown flags).
 This test pins the contract end-to-end: the hook recognises both
 mechanisms, logs each with its own `flag:` field, and the downstream
 
-## Dependencies (12)
+## Dependencies (13)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
 | [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
-| [add-learning](/docs/generated/add-learning) | calls | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
+| [learning](/docs/generated/agents-context-lib-learning) | calls | Context Agent - add-learning command Add a learning to project memory |
 | [pattern](/docs/generated/agents-context-lib-pattern) | calls | Context Agent - add-pattern command |
 | [decision](/docs/generated/agents-context-lib-decision) | calls | Context Agent - add-decision command |
 | [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
@@ -55,6 +55,7 @@ mechanisms, logs each with its own `flag:` field, and the downstream
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [add-learning](/docs/generated/add-learning) | calls | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
 | [add-learning](/docs/generated/add-learning) | tests | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
+| [learning](/docs/generated/agents-context-lib-learning) | tests | Context Agent - add-learning command Add a learning to project memory |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-check_active_task_switch_focus.yaml`*

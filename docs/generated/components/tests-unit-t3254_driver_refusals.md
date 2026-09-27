@@ -1,8 +1,8 @@
 # t3254_driver_refusals
 
-> TODO: describe what this component does
+> T-3254 (arc-012) — the outside driver must refuse on every armed condition.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3254_driver_refusals.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3254_driver_refusals.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ reach: whether the target session is busy. TermLink has no busy state
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [continuous-driver](/docs/generated/agents-context-continuous-driver) | tests | TODO: describe what this component does |
-| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | tests | TODO: describe what this component does |
+| [continuous-driver](/docs/generated/agents-context-continuous-driver) | tests | T-3254 (arc-012) — drive the loop from OUTSIDE when the agent stops early. |
+| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | tests | T-2364/T-2365 (T-2158 S2+S3) — next-directive injector for post-compact resume. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

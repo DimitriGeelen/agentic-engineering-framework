@@ -1,8 +1,8 @@
 # t3253_preflight_brake
 
-> TODO: describe what this component does
+> T-3253 AC3 — the breaching session is never launched.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3253_preflight_brake.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3253_preflight_brake.bats`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ EVERY BRAKE CASE HAS A CONTROL. A refusal that fires for the wrong reason is
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | tests | TODO: describe what this component does |
+| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | tests | T-2364/T-2365 (T-2158 S2+S3) — next-directive injector for post-compact resume. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3253_preflight_brake.yaml`*

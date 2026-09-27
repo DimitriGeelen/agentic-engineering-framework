@@ -1,6 +1,6 @@
 # url-credentials
 
-> TODO: describe what this component does
+> URL credential handling — one dialect, shared by every writer of an upstream URL.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/url-credentials.sh`
 
@@ -21,9 +21,9 @@ lands everywhere at once. Deliberately dependency-free and side-effect-free
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | called_by | TODO: describe what this component does |
-| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | tests_by | TODO: describe what this component does |
-| [consumer-recover](/docs/generated/lib-consumer-recover) | called_by | TODO: describe what this component does |
+| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | called_by | T-2693 — lib/url-credentials.sh, the single dialect for URL credential handling. |
+| [test_url_credentials](/docs/generated/tests-unit-test_url_credentials) | tests_by | T-2693 — lib/url-credentials.sh, the single dialect for URL credential handling. |
+| [consumer-recover](/docs/generated/lib-consumer-recover) | called_by | fw consumer-recover - one-command recovery for legacy vendored consumers |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-url-credentials.yaml`*

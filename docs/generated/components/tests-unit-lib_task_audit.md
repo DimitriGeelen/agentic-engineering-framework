@@ -1,8 +1,8 @@
 # lib_task_audit
 
-> TODO: describe what this component does
+> Unit tests for lib/task-audit.sh (T-1111/T-1113)
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/lib_task_audit.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/lib_task_audit.bats`
 
 ## What It Does
 

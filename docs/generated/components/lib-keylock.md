@@ -31,8 +31,8 @@ Stale lock cleanup: locks older than KEYLOCK_TIMEOUT (default 300s) are auto-rel
 | [lib_keylock](/docs/generated/tests-unit-lib_keylock) | called-by | Unit tests for keylock (9 tests) |
 | [lib_keylock](/docs/generated/tests-unit-lib_keylock) | called_by | Unit tests for keylock (9 tests) |
 | [create-task](/docs/generated/agents-task-create-create-task) | called_by | Task Creation Agent - Mechanical Operations |
-| [keylock_subshell_close](/docs/generated/tests-unit-keylock_subshell_close) | called_by | TODO: describe what this component does |
-| [keylock_subshell_close](/docs/generated/tests-unit-keylock_subshell_close) | tests_by | TODO: describe what this component does |
+| [keylock_subshell_close](/docs/generated/tests-unit-keylock_subshell_close) | called_by | T-1493: keylock_subshell_close_cmd emits FD-close commands so verification subshells don't leak lock FDs to long-lived daemons (e.g., .NET VBCSCompiler). Origin: 003-NTB-ATC-Plugin pickup envelope P-015 / T-146 |
+| [keylock_subshell_close](/docs/generated/tests-unit-keylock_subshell_close) | tests_by | T-1493: keylock_subshell_close_cmd emits FD-close commands so verification subshells don't leak lock FDs to long-lived daemons (e.g., .NET VBCSCompiler). Origin: 003-NTB-ATC-Plugin pickup envelope P-015 / T-146 |
 | [lib_keylock](/docs/generated/tests-unit-lib_keylock) | tests_by | Unit tests for keylock (9 tests) |
 | [task_id_race](/docs/generated/tests-unit-task_id_race) | tests_by | Regression test — concurrent fw work-on invocations must allocate distinct task IDs. Prior bug: generate_id() read max_id then (later) wrote the file; N parallel invocations all observed the same max_id and wrote T-${max+1}. Fix: keylock around read-compute-write sequence. |
 | [keylock-py](/docs/generated/lib-keylock-py) | called_by | Python sibling of lib/keylock.sh: sidecar fcntl.flock advisory locks in .context/locks/, with a bounded timeout that raises loudly rather than degrading to a silent skipped write. Guards the dispatch ledger against the concurrent-append erasure fixed in T-3042. |

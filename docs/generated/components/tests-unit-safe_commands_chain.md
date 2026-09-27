@@ -1,8 +1,8 @@
 # safe_commands_chain
 
-> TODO: describe what this component does
+> T-2834 / OBS-183 — a compound command is safe only if EVERY segment is safe.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/safe_commands_chain.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/safe_commands_chain.bats`
 
 ## What It Does
 

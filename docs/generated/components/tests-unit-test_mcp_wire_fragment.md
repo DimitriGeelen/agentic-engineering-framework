@@ -1,8 +1,8 @@
 # test_mcp_wire_fragment
 
-> TODO: describe what this component does
+> T-2272 (arc-010 Slice 2.5): framework-mcp .mcp.json fragment helper.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_mcp_wire_fragment.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_mcp_wire_fragment.bats`
 
 ## What It Does
 

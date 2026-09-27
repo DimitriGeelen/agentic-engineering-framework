@@ -1,8 +1,8 @@
 # bats-dead-negation
 
-> TODO: describe what this component does
+> T-3138 — no bats assertion in this repo may be one that cannot fail.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/lint/bats-dead-negation.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/lint/bats-dead-negation.bats`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ Every fixture here is written into BATS_TEST_TMPDIR (L-599). None of the
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [bats-dead-negation-lint](/docs/generated/tools-bats-dead-negation-lint) | tests | TODO: describe what this component does |
+| [bats-dead-negation-lint](/docs/generated/tools-bats-dead-negation-lint) | tests | T-3138: find bats assertions that cannot fail. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-bats-dead-negation.yaml`*

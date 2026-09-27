@@ -1,6 +1,6 @@
 # _pins
 
-> TODO: describe what this component does
+> Pinned-pages strip in the top nav (T-2010, arc-007 S2c).
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_pins.html`
 

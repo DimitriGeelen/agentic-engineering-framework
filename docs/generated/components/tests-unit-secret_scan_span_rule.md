@@ -1,8 +1,8 @@
 # secret_scan_span_rule
 
-> TODO: describe what this component does
+> T-2898: the ANNOUNCED pair must match at NON-OVERLAPPING SPANS.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/secret_scan_span_rule.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/secret_scan_span_rule.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ Leg (c) enumerates both lists at run time, so a future edit is caught by
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | calls | TODO: describe what this component does |
-| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | tests | TODO: describe what this component does |
+| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | calls | agents/git/lib/secret-scan.sh — Secret-scan library for the pre-commit hook (T-1844). |
+| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | tests | agents/git/lib/secret-scan.sh — Secret-scan library for the pre-commit hook (T-1844). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-secret_scan_span_rule.yaml`*

@@ -1,8 +1,8 @@
 # render_surface_review_state_dup_human
 
-> TODO: describe what this component does
+> T-1901: render-surface gate's review-state detector reads ALL `### Human` blocks, not just the first. Backward-compatible with single-header tasks.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/render_surface_review_state_dup_human.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/render_surface_review_state_dup_human.bats`
 
 ## What It Does
 

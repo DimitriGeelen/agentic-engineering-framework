@@ -12,8 +12,8 @@ Populated from conftest.py base_url fixture
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
-| [smoke_test](/docs/generated/web-smoke_test) | calls | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
+| [smoke_test](/docs/generated/web-smoke_test) | calls | Watchtower smoke test — runtime route discovery + content validation. |
 
 ## Related
 

@@ -1,8 +1,8 @@
 # test_onboarding_maps_reachable
 
-> TODO: describe what this component does
+> T-2981: the onboarding maps stay reachable from the UI the seeds send operators to.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/web/test_onboarding_maps_reachable.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/web/test_onboarding_maps_reachable.py`
 
 ## What It Does
 

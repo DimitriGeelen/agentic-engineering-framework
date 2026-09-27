@@ -1,8 +1,8 @@
 # test_task_pair_acd_gate
 
-> TODO: describe what this component does
+> T-1762: task-pair §ACD gate (P-012) — gate behaviour (T-1713 Spike 3)
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_task_pair_acd_gate.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_task_pair_acd_gate.bats`
 
 ## What It Does
 
@@ -21,10 +21,10 @@ Pins gate behaviour:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [task_pair_acd](/docs/generated/lib-task_pair_acd) | calls | TODO: describe what this component does |
+| [task_pair_acd](/docs/generated/lib-task_pair_acd) | calls | Task-pair §ACD gate (P-012). G-066 prong 2 — detect substrate-vs- deliverable conflation at work-completed time. Mirror of T-1668/T-1671's arc-level gate at the per-task level. |
 | [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
 | [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
-| [task_pair_acd](/docs/generated/lib-task_pair_acd) | tests | TODO: describe what this component does |
+| [task_pair_acd](/docs/generated/lib-task_pair_acd) | tests | Task-pair §ACD gate (P-012). G-066 prong 2 — detect substrate-vs- deliverable conflation at work-completed time. Mirror of T-1668/T-1671's arc-level gate at the per-task level. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_task_pair_acd_gate.yaml`*

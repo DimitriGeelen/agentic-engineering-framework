@@ -17,7 +17,7 @@ Initializes working memory for a new session
 | [session-metrics](/docs/generated/agents-context-session-metrics) | used-by | Extract per-session quality metrics (CPT, error rate, edit bursts) from JSONL transcript |
 | [context-dispatcher](/docs/generated/context-dispatcher) | called-by | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
 | [session-metrics](/docs/generated/agents-context-session-metrics) | read_by | Extract per-session quality metrics (CPT, error rate, edit bursts) from JSONL transcript |
-| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | Invariant: gate scripts must not emit bare 'fw' COMMANDS — use bin/fw, or the _emit_user_command/_fw_cmd helpers that resolve the right path per project. Origin: T-1146 GO / T-1203 — bare commands are not copy-pasteable and violate PL-007. |
 | [context_init](/docs/generated/tests-unit-context_init) | called_by | Unit tests for context init (16 tests) |
 | [context_init](/docs/generated/tests-unit-context_init) | tests_by | Unit tests for context init (16 tests) |
 

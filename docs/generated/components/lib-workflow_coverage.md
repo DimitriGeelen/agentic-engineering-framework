@@ -1,6 +1,6 @@
 # workflow_coverage
 
-> TODO: describe what this component does
+> workflow_coverage — audit-time check for workflow → dispatcher coverage.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/workflow_coverage.py`
 
@@ -18,15 +18,15 @@ non-resolver-driven workflows from the staleness check the same way.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [spawn](/docs/generated/lib-spawn) | uses | TODO: describe what this component does |
-| [resolver](/docs/generated/lib-resolver) | uses | TODO: describe what this component does |
-| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [spawn](/docs/generated/lib-spawn) | uses | spawn — dispatch driver: read resolver envelope, spawn worker, finalise outcome. |
+| [resolver](/docs/generated/lib-resolver) | uses | Resolver — workflow lookup, prompt assembly, variant selection, telemetry. |
+| [resolver](/docs/generated/lib-resolver) | calls | Resolver — workflow lookup, prompt assembly, variant selection, telemetry. |
 
 ## Used By (3)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_workflow_coverage](/docs/generated/tests-unit-test_workflow_coverage) | called_by | TODO: describe what this component does |
+| [test_workflow_coverage](/docs/generated/tests-unit-test_workflow_coverage) | called_by | T-1798: Unit tests for lib/workflow_coverage.py. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 

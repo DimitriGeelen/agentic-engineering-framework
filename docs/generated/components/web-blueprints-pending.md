@@ -1,6 +1,6 @@
 # pending
 
-> TODO: describe what this component does
+> Pending-updates registry blueprint — Watchtower UI for T-1268 B3.
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/pending.py`
 
@@ -13,7 +13,7 @@ Split into pending vs resolved for display
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
-| [pending](/docs/generated/web-templates-pending) | renders | TODO: describe what this component does |
+| [pending](/docs/generated/web-templates-pending) | renders | Pending cross-project/cross-machine action registry, rendered by web/blueprints/pending.py from pending-updates.yaml. |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ## Used By (3)

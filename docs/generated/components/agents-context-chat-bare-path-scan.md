@@ -1,6 +1,6 @@
 # chat-bare-path-scan
 
-> TODO: describe what this component does
+> Stop hook — chat bare-path scanner (T-2183, Slice 2 of T-2181)
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/chat-bare-path-scan.sh`
 
@@ -21,7 +21,7 @@ bullet/table-cell contexts for bare Watchtower paths NOT part of an http(s):// U
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [chat-bare-path-warn](/docs/generated/agents-context-chat-bare-path-warn) | called_by | TODO: describe what this component does |
+| [chat-bare-path-warn](/docs/generated/agents-context-chat-bare-path-warn) | called_by | UserPromptSubmit hook — chat bare-path warner (T-2183, Slice 2 of T-2181) |
 | [checkpoint](/docs/generated/checkpoint) | called_by | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
 
 ---

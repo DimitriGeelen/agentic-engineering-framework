@@ -1,8 +1,8 @@
 # claude_fw_copy_not_symlink
 
-> TODO: describe what this component does
+> T-2807 — claude-fw on PATH must be a COPY, not a symlink into $INSTALL_DIR.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/claude_fw_copy_not_symlink.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/claude_fw_copy_not_symlink.bats`
 
 ## What It Does
 

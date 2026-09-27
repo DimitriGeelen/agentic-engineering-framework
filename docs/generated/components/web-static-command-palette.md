@@ -1,6 +1,6 @@
 # command-palette
 
-> TODO: describe what this component does
+> ⌘K Command Palette — T-2012, arc-007 S6a.
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/static/command-palette.js`
 

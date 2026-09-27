@@ -1,8 +1,8 @@
 # arc_membership_dual_id
 
-> TODO: describe what this component does
+> tests/unit/arc_membership_dual_id.bats — T-1913
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_membership_dual_id.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_membership_dual_id.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_driver_rubrics
 
-> TODO: describe what this component does
+> T-2084: per-driver 0-5 scoring rubric parser for /bvp slider rows.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_driver_rubrics.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_driver_rubrics.py`
 
 ## What It Does
 
@@ -12,9 +12,9 @@ Reach the blueprint helper via the project's normal import path.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [bvp](/docs/generated/web-blueprints-bvp) | calls | TODO: describe what this component does |
-| [bvp](/docs/generated/web-blueprints-bvp) | registers | TODO: describe what this component does |
-| [bvp](/docs/generated/web-blueprints-bvp) | uses | TODO: describe what this component does |
+| [bvp](/docs/generated/web-blueprints-bvp) | calls | BVP scatter blueprint — T-1928 (arc-006, value-prioritisation, T-NEW-12a). |
+| [bvp](/docs/generated/web-blueprints-bvp) | registers | BVP scatter blueprint — T-1928 (arc-006, value-prioritisation, T-NEW-12a). |
+| [bvp](/docs/generated/web-blueprints-bvp) | uses | BVP scatter blueprint — T-1928 (arc-006, value-prioritisation, T-NEW-12a). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_driver_rubrics.yaml`*

@@ -1,8 +1,8 @@
 # audit_graduation_counter
 
-> TODO: describe what this component does
+> T-2677 — audit graduation counter shape-agnostic (dead >=20 branch).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_graduation_counter.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_graduation_counter.bats`
 
 ## What It Does
 

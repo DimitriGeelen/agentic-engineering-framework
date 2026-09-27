@@ -1,8 +1,8 @@
 # create_task_status_guard
 
-> TODO: describe what this component does
+> T-2675 — creation-side status invariant guard (companion to T-2674's owner leg; 832 rail-316: "two independent holes with separate root causes").
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/create_task_status_guard.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/create_task_status_guard.bats`
 
 ## What It Does
 

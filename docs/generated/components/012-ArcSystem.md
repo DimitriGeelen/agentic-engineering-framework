@@ -1,8 +1,8 @@
 # 012-ArcSystem
 
-> TODO: describe what this component does
+> An **arc** is a multi-task workspace grouping work by theme.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `012-ArcSystem.md`
+**Type:** script | **Subsystem:** docs | **Location:** `012-ArcSystem.md`
 
 ## What It Does
 

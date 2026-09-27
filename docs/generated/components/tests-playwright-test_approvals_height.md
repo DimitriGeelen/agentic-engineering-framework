@@ -1,8 +1,8 @@
 # test_approvals_height
 
-> TODO: describe what this component does
+> Playwright regression test for /approvals rendered height (T-2038).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_approvals_height.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_approvals_height.py`
 
 ## What It Does
 
@@ -13,7 +13,7 @@ screenshot can wedge the browser, so the page must render below it.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [ux-review](/docs/generated/agents-ux-review-ux-review) | calls | TODO: describe what this component does |
+| [ux-review](/docs/generated/agents-ux-review-ux-review) | calls | UX-review capture engine (T-2002): drives Watchtower render surfaces in a headless browser across every appearance preset and produces visual review artifacts for human review. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_approvals_height.yaml`*

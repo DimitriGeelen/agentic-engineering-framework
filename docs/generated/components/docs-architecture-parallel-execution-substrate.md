@@ -1,8 +1,8 @@
 # parallel-execution-substrate
 
-> TODO: describe what this component does
+> Status: design captured, pre-build. Companion: *Architecture — Parallel Execution: AEF Orchestration Layer*. This document is the authoritative record for the **substrate (TermLink/Rust)** half and **owns the collaboration seam** (§9).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `docs/architecture/parallel-execution-substrate.md`
+**Type:** script | **Subsystem:** docs | **Location:** `docs/architecture/parallel-execution-substrate.md`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # init_strips_upstream_credentials
 
-> TODO: describe what this component does
+> T-2817 — `fw init` must not persist a credential into the new project.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/init_strips_upstream_credentials.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/init_strips_upstream_credentials.bats`
 
 ## What It Does
 

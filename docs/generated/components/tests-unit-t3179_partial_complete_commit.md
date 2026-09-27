@@ -1,8 +1,8 @@
 # t3179_partial_complete_commit
 
-> TODO: describe what this component does
+> T-3179: partial-complete commit deadlock — the residual half of T-2054.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3179_partial_complete_commit.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3179_partial_complete_commit.bats`
 
 ## What It Does
 

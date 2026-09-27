@@ -1,6 +1,6 @@
 # _project_docs_list
 
-> TODO: describe what this component does
+> Project-docs list items, rendered by web/blueprints/core.py for docs beyond the dashboard's preview limit.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_project_docs_list.html`
 

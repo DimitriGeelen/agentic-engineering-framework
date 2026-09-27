@@ -1,6 +1,6 @@
 # search_results
 
-> TODO: describe what this component does
+> Result-count summary and list, included by search.html inside #search-results-area.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_partials/search_results.html`
 

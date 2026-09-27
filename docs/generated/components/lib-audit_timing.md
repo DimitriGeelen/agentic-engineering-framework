@@ -1,6 +1,6 @@
 # audit_timing
 
-> TODO: describe what this component does
+> T-3127: classify the persisted full-audit timing record against a warn fraction.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/audit_timing.py`
 

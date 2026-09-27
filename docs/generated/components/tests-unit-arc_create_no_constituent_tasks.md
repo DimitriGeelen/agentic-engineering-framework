@@ -1,8 +1,8 @@
 # arc_create_no_constituent_tasks
 
-> TODO: describe what this component does
+> T-1851 (T-NEW-4): constituent_tasks: field deprecated for new arcs.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_create_no_constituent_tasks.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_create_no_constituent_tasks.bats`
 
 ## What It Does
 
@@ -18,9 +18,9 @@ populations co-exist.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | calls | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
-| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | tests | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_create_no_constituent_tasks.yaml`*

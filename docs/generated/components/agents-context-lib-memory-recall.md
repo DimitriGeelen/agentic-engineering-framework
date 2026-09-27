@@ -1,6 +1,6 @@
 # memory-recall
 
-> TODO: describe what this component does
+> Memory recall — query project knowledge for relevant prior learnings, patterns, and decisions.
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/lib/memory-recall.py`
 
@@ -24,7 +24,7 @@ Colors
 |-----------|--------------|-------------|
 | [focus](/docs/generated/agents-context-lib-focus) | called_by | Context Agent - focus command |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [t3056_recall_open_tasks](/docs/generated/tests-unit-t3056_recall_open_tasks) | tests_by | TODO: describe what this component does |
+| [t3056_recall_open_tasks](/docs/generated/tests-unit-t3056_recall_open_tasks) | tests_by | T-3056 — memory recall must see the OPEN task corpus, not only knowledge harvested from closed work. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-memory-recall.yaml`*

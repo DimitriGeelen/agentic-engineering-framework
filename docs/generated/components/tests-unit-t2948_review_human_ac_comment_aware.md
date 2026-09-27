@@ -1,8 +1,8 @@
 # t2948_review_human_ac_comment_aware
 
-> TODO: describe what this component does
+> T-2948 — lib/review.sh's Human-AC counter was comment-immune BY ACCIDENT.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2948_review_human_ac_comment_aware.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2948_review_human_ac_comment_aware.bats`
 
 ## What It Does
 

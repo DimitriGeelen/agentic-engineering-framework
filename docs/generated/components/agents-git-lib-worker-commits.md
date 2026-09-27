@@ -1,6 +1,6 @@
 # worker-commits
 
-> TODO: describe what this component does
+> Git Agent - worker-commits subcommand (T-2917)
 
 **Type:** script | **Subsystem:** git-traceability | **Location:** `agents/git/lib/worker-commits.sh`
 
@@ -19,7 +19,7 @@ construction, a commit the operator did not type.
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [git](/docs/generated/agents-git-git) | called_by | Git Agent - Structural Enforcement for Git Operations |
-| [git_worker_commits](/docs/generated/tests-unit-git_worker_commits) | tests_by | TODO: describe what this component does |
+| [git_worker_commits](/docs/generated/tests-unit-git_worker_commits) | tests_by | Unit tests for agents/git/lib/worker-commits.sh (T-2917) |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-worker-commits.yaml`*

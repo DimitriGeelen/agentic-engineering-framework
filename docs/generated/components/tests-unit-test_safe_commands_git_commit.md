@@ -1,8 +1,8 @@
 # test_safe_commands_git_commit
 
-> TODO: describe what this component does
+> T-2054 — post-completion commit deadlock: `git commit` must be allowed when focus is null, WITHOUT breaking the focus-drift gate (T-1730) when focus exists.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_safe_commands_git_commit.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_safe_commands_git_commit.bats`
 
 ## What It Does
 

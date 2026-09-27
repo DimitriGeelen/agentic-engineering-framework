@@ -1,6 +1,6 @@
 # pending
 
-> TODO: describe what this component does
+> fw pending - Pending-updates registry (T-1268 B1) Append-only ledger of cross-project / cross-machine actions an agent could not complete in-session. Resolved entries are flagged, not deleted.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/pending.sh`
 

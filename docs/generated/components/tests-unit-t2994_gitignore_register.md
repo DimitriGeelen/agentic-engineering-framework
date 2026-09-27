@@ -1,8 +1,8 @@
 # t2994_gitignore_register
 
-> TODO: describe what this component does
+> T-2994: .gitignore rules that defer without naming a register entry.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2994_gitignore_register.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2994_gitignore_register.bats`
 
 ## What It Does
 
@@ -18,8 +18,8 @@ the negative control passes, the rail is inert and looks identical to working
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [gitignore-register](/docs/generated/lib-gitignore-register) | calls | TODO: describe what this component does |
-| [gitignore-register](/docs/generated/lib-gitignore-register) | tests | TODO: describe what this component does |
+| [gitignore-register](/docs/generated/lib-gitignore-register) | calls | T-2994 (build slice of T-2992) — .gitignore rules that defer without a register. |
+| [gitignore-register](/docs/generated/lib-gitignore-register) | tests | T-2994 (build slice of T-2992) — .gitignore rules that defer without a register. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2994_gitignore_register.yaml`*

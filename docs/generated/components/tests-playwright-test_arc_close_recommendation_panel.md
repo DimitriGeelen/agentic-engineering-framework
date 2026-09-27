@@ -1,8 +1,8 @@
 # test_arc_close_recommendation_panel
 
-> TODO: describe what this component does
+> T-1960: /arcs/<slug>/close — Agent Recommendation panel renders above form.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_arc_close_recommendation_panel.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_arc_close_recommendation_panel.py`
 
 ## What It Does
 

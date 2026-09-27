@@ -1,6 +1,6 @@
 # tier0_origin
 
-> TODO: describe what this component does
+> Derive the provenance of a Tier 0 approval request (T-3078).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/tier0_origin.py`
 

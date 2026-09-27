@@ -1,6 +1,6 @@
 # reviewer_audit
 
-> TODO: describe what this component does
+> Corpus-mode reviewer audit results (Pass A drift signal, Pass B re-verification), rendered by web/blueprints/reviewer.py.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/reviewer_audit.html`
 

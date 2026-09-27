@@ -1,8 +1,8 @@
 # checkpoint
 
-> TODO: describe what this component does
+> Unit tests for agents/context/checkpoint.sh
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/checkpoint.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/checkpoint.bats`
 
 ## What It Does
 

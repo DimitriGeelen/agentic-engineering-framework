@@ -1,8 +1,8 @@
 # test_task_panel_edit
 
-> TODO: describe what this component does
+> T-2017 (arc-007 S4b): inline-edit task meta cells in the side panel.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_task_panel_edit.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_task_panel_edit.py`
 
 ## What It Does
 

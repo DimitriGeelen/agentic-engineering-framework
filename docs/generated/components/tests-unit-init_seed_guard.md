@@ -1,8 +1,8 @@
 # init_seed_guard
 
-> TODO: describe what this component does
+> T-2712: fw init's "is this project fresh?" test must consider completed/ too.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/init_seed_guard.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/init_seed_guard.bats`
 
 ## What It Does
 

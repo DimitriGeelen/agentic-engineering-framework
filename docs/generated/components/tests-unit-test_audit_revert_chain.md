@@ -1,8 +1,8 @@
 # test_audit_revert_chain
 
-> TODO: describe what this component does
+> T-2058 — Pin audit.sh revert-chain suppression.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_audit_revert_chain.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_audit_revert_chain.bats`
 
 ## What It Does
 

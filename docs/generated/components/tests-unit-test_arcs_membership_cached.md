@@ -1,8 +1,8 @@
 # test_arcs_membership_cached
 
-> TODO: describe what this component does
+> T-2774: /arcs constituent resolution must not re-scan the corpus per arc.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_arcs_membership_cached.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_arcs_membership_cached.py`
 
 ## What It Does
 

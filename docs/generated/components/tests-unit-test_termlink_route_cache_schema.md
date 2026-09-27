@@ -1,8 +1,8 @@
 # test_termlink_route_cache_schema
 
-> TODO: describe what this component does
+> T-1650 — route_cache.json persistence schema regression test.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_termlink_route_cache_schema.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_termlink_route_cache_schema.py`
 
 ## What It Does
 

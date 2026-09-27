@@ -1,8 +1,8 @@
 # conformance-registry
 
-> TODO: describe what this component does
+> Conformance registry — which corpus maps have a conformance rail, and what each conforms against (T-2652 GO, slice 1 / T-2654).
 
-**Type:** config | **Subsystem:** unknown | **Location:** `tools/conformance-registry.yaml`
+**Type:** config | **Subsystem:** framework-core | **Location:** `tools/conformance-registry.yaml`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ Entry shape:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_corpus_conformance_registry](/docs/generated/tests-unit-test_corpus_conformance_registry) | called_by | TODO: describe what this component does |
+| [test_corpus_conformance_registry](/docs/generated/tests-unit-test_corpus_conformance_registry) | called_by | T-2654 (T-2652 GO slice 1): registry-driven conformance checker mechanics. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-conformance-registry.yaml`*

@@ -20,8 +20,8 @@
 |-----------|--------------|-------------|
 | [generate-component](/docs/generated/agents-docgen-generate-component) | calls | Generates component reference documentation from fabric cards |
 | [generate-component](/docs/generated/agents-docgen-generate-component) | called_by | Generates component reference documentation from fabric cards |
-| [test_docgen](/docs/generated/agents-docgen-test_docgen) | called_by | TODO: describe what this component does |
-| [test_docgen](/docs/generated/agents-docgen-test_docgen) | uses_by | TODO: describe what this component does |
+| [test_docgen](/docs/generated/agents-docgen-test_docgen) | called_by | Unit tests for the component reference doc generator agents/docgen/generate_component.py (T-387). |
+| [test_docgen](/docs/generated/agents-docgen-test_docgen) | uses_by | Unit tests for the component reference doc generator agents/docgen/generate_component.py (T-387). |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-docgen-generate_component.yaml`*

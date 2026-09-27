@@ -1,6 +1,6 @@
 # pending
 
-> TODO: describe what this component does
+> Pending cross-project/cross-machine action registry, rendered by web/blueprints/pending.py from pending-updates.yaml.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/pending.html`
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [pending](/docs/generated/web-blueprints-pending) | rendered_by | TODO: describe what this component does |
+| [pending](/docs/generated/web-blueprints-pending) | rendered_by | Pending-updates registry blueprint — Watchtower UI for T-1268 B3. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-pending.yaml`*

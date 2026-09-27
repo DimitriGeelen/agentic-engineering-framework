@@ -1,6 +1,6 @@
 # test-tier0-patterns
 
-> TODO: describe what this component does
+> Test suite for Tier 0 destructive command patterns. Run: python3 agents/context/test-tier0-patterns.py
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/test-tier0-patterns.py`
 

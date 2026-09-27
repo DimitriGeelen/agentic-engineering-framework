@@ -1,24 +1,37 @@
-# Auto-promote log — Business Value Points (BVP)
-#
-# Append-only audit trail of every auto-promotion event AND every
-# enable/disable event. Written by `fw bvp auto-promote` (T-1931 + T-1932).
-#
-# Three event types share the entries: list, distinguished by `event:`:
-#
-#   event: promotion       (T-1931) — a captured → started-work promotion
-#                                    fired. R4 metadata mandatory.
-#   event: enable          (T-1932) — auto_promote.enabled flipped true.
-#                                    Carries rationale + actor.
-#   event: disable         (T-1932) — auto_promote.enabled flipped false.
-#                                    Always safe; no rationale required.
-#
-# R4 detection mandate (event: promotion): each entry must let a forensic
-# reader reconstruct the cost formula's reasoning without re-running the
-# math. Required fields: task_id, ts, bvp_norm, cost, cost_components.*
-# (blast_radius, tier, effort, source), thresholds_at_decision.*, mechanism.
-#
-# Reversibility: every promotion is captured-style; the human can revert
-# via `fw task update T-XXX --status captured` if undesired. The log entry
-# remains as the historical record of the decision (D-immutable).
-
-entries: []
+entries:
+- event: enable
+  ts: '2026-09-25T23:17:30Z'
+  rationale: test bats fixture flipping enabled for the duration of one test
+  actor: root
+  mechanism: fw-bvp-auto-promote-enable
+- event: disable
+  ts: '2026-09-25T23:18:37Z'
+  actor: root
+  mechanism: fw-bvp-auto-promote-disable
+- event: enable
+  ts: '2026-09-25T23:26:03Z'
+  rationale: test bats fixture flipping enabled for the duration of one test
+  actor: root
+  mechanism: fw-bvp-auto-promote-enable
+- event: disable
+  ts: '2026-09-25T23:27:10Z'
+  actor: root
+  mechanism: fw-bvp-auto-promote-disable
+- event: enable
+  ts: '2026-09-25T23:37:38Z'
+  rationale: test bats fixture flipping enabled for the duration of one test
+  actor: root
+  mechanism: fw-bvp-auto-promote-enable
+- event: disable
+  ts: '2026-09-25T23:38:46Z'
+  actor: root
+  mechanism: fw-bvp-auto-promote-disable
+- event: enable
+  ts: '2026-09-25T23:46:01Z'
+  rationale: test bats fixture flipping enabled for the duration of one test
+  actor: root
+  mechanism: fw-bvp-auto-promote-enable
+- event: disable
+  ts: '2026-09-25T23:47:10Z'
+  actor: root
+  mechanism: fw-bvp-auto-promote-disable

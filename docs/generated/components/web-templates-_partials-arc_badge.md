@@ -1,6 +1,6 @@
 # arc_badge
 
-> TODO: describe what this component does
+> T-1909: render a clickable arc-membership badge for a task.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_partials/arc_badge.html`
 

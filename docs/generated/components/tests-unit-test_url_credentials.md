@@ -1,8 +1,8 @@
 # test_url_credentials
 
-> TODO: describe what this component does
+> T-2693 — lib/url-credentials.sh, the single dialect for URL credential handling.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_url_credentials.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_url_credentials.bats`
 
 ## What It Does
 
@@ -18,11 +18,11 @@ The tokens below are synthesized fixtures, not real credentials.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [url-credentials](/docs/generated/lib-url-credentials) | calls | TODO: describe what this component does |
-| [consumer-recover](/docs/generated/lib-consumer-recover) | calls | TODO: describe what this component does |
+| [url-credentials](/docs/generated/lib-url-credentials) | calls | URL credential handling — one dialect, shared by every writer of an upstream URL. |
+| [consumer-recover](/docs/generated/lib-consumer-recover) | calls | fw consumer-recover - one-command recovery for legacy vendored consumers |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [url-credentials](/docs/generated/lib-url-credentials) | tests | TODO: describe what this component does |
-| [consumer-recover](/docs/generated/lib-consumer-recover) | tests | TODO: describe what this component does |
+| [url-credentials](/docs/generated/lib-url-credentials) | tests | URL credential handling — one dialect, shared by every writer of an upstream URL. |
+| [consumer-recover](/docs/generated/lib-consumer-recover) | tests | fw consumer-recover - one-command recovery for legacy vendored consumers |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

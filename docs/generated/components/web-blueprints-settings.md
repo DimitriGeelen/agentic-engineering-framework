@@ -10,19 +10,25 @@
 The 6 named presets from the arc headline mechanic. Each is a curated combo
 over the S0 foundation axes (T-1991). Axis values MUST match foundations.css.
 
-## Dependencies (9)
+## Dependencies (15)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [shared](/docs/generated/web-shared) | imports | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [settings](/docs/generated/web-templates-settings) | renders | Full page template: settings — hook configuration, notification state, framework paths. |
-| [appearance](/docs/generated/web-templates-appearance) | renders | TODO: describe what this component does |
+| [appearance](/docs/generated/web-templates-appearance) | renders | arc-007 S1 (T-1988): Appearance picker — 6 presets + foundation axes. Fragment (rendered inside _wrapper.html → base.html). |
 | [shared](/docs/generated/web-shared) | uses | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
-| [config](/docs/generated/web-config) | calls | TODO: describe what this component does |
-| [secrets_store](/docs/generated/web-secrets_store) | calls | TODO: describe what this component does |
-| [config](/docs/generated/web-config) | uses | TODO: describe what this component does |
-| [secrets_store](/docs/generated/web-secrets_store) | uses | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | calls | Environment-based configuration for Watchtower. |
+| [secrets_store](/docs/generated/web-secrets_store) | calls | Encrypted API key storage for Watchtower. |
+| [config](/docs/generated/web-config) | uses | Environment-based configuration for Watchtower. |
+| [secrets_store](/docs/generated/web-secrets_store) | uses | Encrypted API key storage for Watchtower. |
+| [ollama_provider](/docs/generated/web-llm-ollama_provider) | calls | Ollama LLM provider — wraps the ollama Python library behind the LLMProvider interface (T-377) |
+| [manager](/docs/generated/web-llm-manager) | calls | LLM provider manager — registration, active-provider selection, hot-switching and failover between Ollama and OpenRouter (T-377) |
+| [openrouter_provider](/docs/generated/web-llm-openrouter_provider) | calls | OpenRouter LLM provider — OpenAI-compatible API client behind the LLMProvider interface (T-377) |
+| [ollama_provider](/docs/generated/web-llm-ollama_provider) | uses | Ollama LLM provider — wraps the ollama Python library behind the LLMProvider interface (T-377) |
+| [manager](/docs/generated/web-llm-manager) | uses | LLM provider manager — registration, active-provider selection, hot-switching and failover between Ollama and OpenRouter (T-377) |
+| [openrouter_provider](/docs/generated/web-llm-openrouter_provider) | uses | OpenRouter LLM provider — OpenAI-compatible API client behind the LLMProvider interface (T-377) |
 
 ## Used By (12)
 
@@ -31,12 +37,12 @@ over the S0 foundation axes (T-1991). Axis values MUST match foundations.css.
 | [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
 | [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 | [test_settings_models](/docs/generated/tests-playwright-test_settings_models) | called_by | Playwright tests for settings models endpoint (T-1025). |
-| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | called_by | TODO: describe what this component does |
-| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | registered_by | TODO: describe what this component does |
+| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | called_by | T-2033: arc-007 nav-layout polish — static guards for the sidebar/rail fixes. |
+| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | registered_by | T-2033: arc-007 nav-layout polish — static guards for the sidebar/rail fixes. |
 | [shared](/docs/generated/web-shared) | called_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [shared](/docs/generated/web-shared) | registered_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
-| [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | tests_by | TODO: describe what this component does |
-| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | uses_by | TODO: describe what this component does |
+| [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | tests_by | T-1766 — render-surface Human-AC gate (P-013). |
+| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | uses_by | T-2033: arc-007 nav-layout polish — static guards for the sidebar/rail fixes. |
 | [__init__](/docs/generated/web-blueprints-__init__) | uses_by | Flask blueprint:   Init |
 | [shared](/docs/generated/web-shared) | uses_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 

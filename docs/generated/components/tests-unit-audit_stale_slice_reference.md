@@ -1,8 +1,8 @@
 # audit_stale_slice_reference
 
-> TODO: describe what this component does
+> T-1975 (L-417 prevention): pin the stale-slice-reference audit check.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_stale_slice_reference.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_stale_slice_reference.bats`
 
 ## What It Does
 

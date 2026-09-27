@@ -1,6 +1,6 @@
 # secret-scan
 
-> TODO: describe what this component does
+> agents/git/lib/secret-scan.sh — Secret-scan library for the pre-commit hook (T-1844).
 
 **Type:** script | **Subsystem:** git-traceability | **Location:** `agents/git/lib/secret-scan.sh`
 
@@ -23,11 +23,11 @@ Configuration:
 |-----------|--------------|-------------|
 | [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
-| [test_secret_scan](/docs/generated/tests-unit-test_secret_scan) | called_by | TODO: describe what this component does |
-| [test_secret_scan](/docs/generated/tests-unit-test_secret_scan) | tests_by | TODO: describe what this component does |
-| [secret_scan_span_rule](/docs/generated/tests-unit-secret_scan_span_rule) | called_by | TODO: describe what this component does |
-| [secret_scan_span_rule](/docs/generated/tests-unit-secret_scan_span_rule) | tests_by | TODO: describe what this component does |
-| [upgrade_fresh_machine_simulation](/docs/generated/tests-unit-upgrade_fresh_machine_simulation) | tests_by | TODO: describe what this component does |
+| [test_secret_scan](/docs/generated/tests-unit-test_secret_scan) | called_by | T-1844 — pre-commit secret-scan hook (agents/git/lib/secret-scan.sh). |
+| [test_secret_scan](/docs/generated/tests-unit-test_secret_scan) | tests_by | T-1844 — pre-commit secret-scan hook (agents/git/lib/secret-scan.sh). |
+| [secret_scan_span_rule](/docs/generated/tests-unit-secret_scan_span_rule) | called_by | T-2898: the ANNOUNCED pair must match at NON-OVERLAPPING SPANS. |
+| [secret_scan_span_rule](/docs/generated/tests-unit-secret_scan_span_rule) | tests_by | T-2898: the ANNOUNCED pair must match at NON-OVERLAPPING SPANS. |
+| [upgrade_fresh_machine_simulation](/docs/generated/tests-unit-upgrade_fresh_machine_simulation) | tests_by | T-1635: fresh-machine simulation guard for fw upgrade. |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---

@@ -1,6 +1,6 @@
 # outcome
 
-> TODO: describe what this component does
+> Outcome enrichment — default evaluator + back-prop + read-path join.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/outcome.py`
 
@@ -28,8 +28,8 @@ dialogue with a human; there is no prompt to write. The sharpened rule:
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [outcome-shim](/docs/generated/lib-outcome-sh) | called_by | Thin shell shim that routes `fw outcome` invocations to lib/outcome.py. Per D-073: shim does PROJECT_ROOT export + argv passthrough only — no script-level logic. |
-| [test_outcome](/docs/generated/tests-unit-test_outcome) | called_by | TODO: describe what this component does |
-| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | called_by | TODO: describe what this component does |
+| [test_outcome](/docs/generated/tests-unit-test_outcome) | called_by | T-1697: Unit tests for lib/outcome.py. |
+| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | called_by | T-1727 — Layer B v0.5: per-candidate LLM augmentation of escalation-scan v0. |
 | [ask-py](/docs/generated/lib-ask-py) | uses_by | Python implementation of fw ask subcommand (sibling of lib/ask.sh) |
 
 ---

@@ -1,6 +1,6 @@
 # termlink_worker
 
-> TODO: describe what this component does
+> TermLinkWorker — subprocess wrapper for `fw termlink dispatch`.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/termlink_worker.py`
 
@@ -16,11 +16,11 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_termlink_worker](/docs/generated/tests-unit-test_termlink_worker) | called_by | TODO: describe what this component does |
-| [dispatch_cli](/docs/generated/lib-reviewer-dispatch_cli) | called_by | TODO: describe what this component does |
-| [ollama_loop](/docs/generated/lib-ollama_loop) | called_by | TODO: describe what this component does |
-| [dispatch_cli](/docs/generated/lib-reviewer-dispatch_cli) | uses_by | TODO: describe what this component does |
-| [spawn](/docs/generated/lib-spawn) | uses_by | TODO: describe what this component does |
+| [test_termlink_worker](/docs/generated/tests-unit-test_termlink_worker) | called_by | T-1797: Unit tests for lib/termlink_worker.py. |
+| [dispatch_cli](/docs/generated/lib-reviewer-dispatch_cli) | called_by | Dispatch mode for the reviewer (T-1951, G-066 prong 3). |
+| [ollama_loop](/docs/generated/lib-ollama_loop) | called_by | OllamaLoopWorker — subprocess wrapper for `claude -p` with redirected env vars. |
+| [dispatch_cli](/docs/generated/lib-reviewer-dispatch_cli) | uses_by | Dispatch mode for the reviewer (T-1951, G-066 prong 3). |
+| [spawn](/docs/generated/lib-spawn) | uses_by | spawn — dispatch driver: read resolver envelope, spawn worker, finalise outcome. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-termlink_worker.yaml`*

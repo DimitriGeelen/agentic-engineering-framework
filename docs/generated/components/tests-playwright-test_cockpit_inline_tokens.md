@@ -1,8 +1,8 @@
 # test_cockpit_inline_tokens
 
-> TODO: describe what this component does
+> Playwright guard for T-2024 (arc-007 S3a2) — cockpit inline-style colours re-theme.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_cockpit_inline_tokens.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_cockpit_inline_tokens.py`
 
 ## What It Does
 
@@ -12,7 +12,7 @@ An inline style that *colours* via a foundation token (the S3a2 conversions).
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_cockpit_inline_tokens.yaml`*

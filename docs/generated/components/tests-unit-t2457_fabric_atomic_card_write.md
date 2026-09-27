@@ -1,8 +1,8 @@
 # t2457_fabric_atomic_card_write
 
-> TODO: describe what this component does
+> T-2457 / OBS-080: fabric card writes must be atomic.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2457_fabric_atomic_card_write.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2457_fabric_atomic_card_write.bats`
 
 ## What It Does
 
@@ -24,7 +24,7 @@ the write completed (observed 2x during T-2440, which was actively
 | [register](/docs/generated/agents-fabric-lib-register) | calls | Fabric Agent - register and scan commands |
 | [register](/docs/generated/agents-fabric-lib-register) | tests | Fabric Agent - register and scan commands |
 | [pickup](/docs/generated/lib-pickup) | tests | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
-| [enrich](/docs/generated/agents-fabric-lib-enrich) | tests | TODO: describe what this component does |
+| [enrich](/docs/generated/agents-fabric-lib-enrich) | tests | Fabric enrichment engine — auto-detect dependency edges from source analysis. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2457_fabric_atomic_card_write.yaml`*

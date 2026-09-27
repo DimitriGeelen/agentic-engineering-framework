@@ -1,6 +1,6 @@
 # render_surface
 
-> TODO: describe what this component does
+> Render-surface predicate (T-1766, P-013). Decides whether a task touches the human-review rendering surface — surfaces where what the human sees depends on layout/CSS/template choices that no deterministic test can fully capture.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/render_surface.sh`
 
@@ -17,15 +17,16 @@ subjective question — "does this look right?" — must be answered by
 eyes, not by tests. Tasks touching these files must declare at least
 one [REVIEW] Human AC so the human review path catches the visual
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
-| [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | called_by | TODO: describe what this component does |
-| [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | tests_by | TODO: describe what this component does |
-| [check_render_surface_human_ac_sigpipe](/docs/generated/tests-unit-check_render_surface_human_ac_sigpipe) | tests_by | TODO: describe what this component does |
-| [check_render_surface_human_ac_sigpipe](/docs/generated/tests-unit-check_render_surface_human_ac_sigpipe) | called_by | TODO: describe what this component does |
+| [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | called_by | T-1766 — render-surface Human-AC gate (P-013). |
+| [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | tests_by | T-1766 — render-surface Human-AC gate (P-013). |
+| [check_render_surface_human_ac_sigpipe](/docs/generated/tests-unit-check_render_surface_human_ac_sigpipe) | tests_by | T-1900: render-surface gate error path used to die with SIGPIPE (exit 141) under set -eo pipefail when `render_surface_files_in \| head -N` produced more lines than head consumed. |
+| [check_render_surface_human_ac_sigpipe](/docs/generated/tests-unit-check_render_surface_human_ac_sigpipe) | called_by | T-1900: render-surface gate error path used to die with SIGPIPE (exit 141) under set -eo pipefail when `render_surface_files_in \| head -N` produced more lines than head consumed. |
+| [describe](/docs/generated/agents-fabric-lib-describe) | called_by | Derive a component card's `purpose` and `subsystem` from the source file itself. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-render_surface.yaml`*

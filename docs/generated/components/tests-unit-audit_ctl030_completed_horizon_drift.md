@@ -1,8 +1,8 @@
 # audit_ctl030_completed_horizon_drift
 
-> TODO: describe what this component does
+> T-2162 / CTL-030: completed/ stored-horizon drift detection
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_ctl030_completed_horizon_drift.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_ctl030_completed_horizon_drift.bats`
 
 ## What It Does
 

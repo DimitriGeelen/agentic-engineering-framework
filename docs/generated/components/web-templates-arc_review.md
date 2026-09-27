@@ -1,6 +1,6 @@
 # arc_review
 
-> TODO: describe what this component does
+> Arc review surface (headline-mechanic box + demo evidence), rendered by arcs.arc_review_surface.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/arc_review.html`
 

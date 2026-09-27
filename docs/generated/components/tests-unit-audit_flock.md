@@ -1,13 +1,19 @@
 # audit_flock
 
-> TODO: describe what this component does
+> Unit tests for agents/audit/audit.sh flock guard (T-1464) Verifies foreground audits also flock-protect (lifted T-1162's QUIET-only guard).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_flock.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_flock.bats`
 
 ## What It Does
 
 Unit tests for agents/audit/audit.sh flock guard (T-1464)
 Verifies foreground audits also flock-protect (lifted T-1162's QUIET-only guard).
+T-3298: the behavioural collision tests originally asserted exit 0 — the
+pre-T-2930 contract. T-2930 changed contention to exit 75 in ALL modes
+("did not run" is not a verdict; see t2930_audit_contention_exit_code.bats).
+These tests now pin the current contract: exit 75, foreground stderr message,
+quiet-mode silence. The fixture was already hermetic (scratch PROJECT_ROOT /
+CONTEXT_DIR, never the live lock) — only the asserted contract was stale.
 
 ## Dependencies (2)
 

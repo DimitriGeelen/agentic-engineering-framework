@@ -1,8 +1,8 @@
 # test_audit_retire_when
 
-> TODO: describe what this component does
+> T-2169 — Pin audit.sh retire_when advisory. Origin: value-drivers.yaml v3 free drivers (F-RECALL, F-ORCH) carry retire_when: text describing when the driver stops being relevant. Without an advisory rail nothing nudges the operator.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_audit_retire_when.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_audit_retire_when.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_task_panel
 
-> TODO: describe what this component does
+> Playwright guard for T-2015 (arc-007 S4a) — slide-in dockable task panel, end-to-end.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_task_panel.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_task_panel.py`
 
 ## What It Does
 
@@ -12,7 +12,7 @@ the fragment loaded into the panel body (htmx swap replaced the "Loading…")
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_task_panel.yaml`*

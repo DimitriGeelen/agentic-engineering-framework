@@ -1,8 +1,8 @@
 # handover_digest
 
-> TODO: describe what this component does
+> T-3028 (T-3025 GO, option 3): the three state dumps digest to count + regenerating command + top-N; the narrative does not change.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/handover_digest.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/handover_digest.bats`
 
 ## What It Does
 

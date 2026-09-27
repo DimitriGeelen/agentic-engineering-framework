@@ -1,8 +1,8 @@
 # test_secret_scan
 
-> TODO: describe what this component does
+> T-1844 — pre-commit secret-scan hook (agents/git/lib/secret-scan.sh).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_secret_scan.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_secret_scan.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ below are synthesized to MATCH the patterns but are not real secrets.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | calls | TODO: describe what this component does |
-| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | tests | TODO: describe what this component does |
+| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | calls | agents/git/lib/secret-scan.sh — Secret-scan library for the pre-commit hook (T-1844). |
+| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | tests | agents/git/lib/secret-scan.sh — Secret-scan library for the pre-commit hook (T-1844). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_secret_scan.yaml`*

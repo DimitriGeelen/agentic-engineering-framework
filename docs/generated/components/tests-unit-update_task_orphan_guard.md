@@ -1,8 +1,8 @@
 # update_task_orphan_guard
 
-> TODO: describe what this component does
+> T-1863 — Structural prevention for the active+completed orphan class. Origin: T-1859 was marked work-completed in S-2026-0515-2042 but the active/T-1859 file was never removed from the index, leaving both sides tracked.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/update_task_orphan_guard.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/update_task_orphan_guard.bats`
 
 ## What It Does
 
@@ -19,8 +19,8 @@ path still exists after the rename (the orphan-creation moment).
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [dup-task-scan](/docs/generated/agents-git-lib-dup-task-scan) | calls | TODO: describe what this component does |
-| [dup-task-scan](/docs/generated/agents-git-lib-dup-task-scan) | tests | TODO: describe what this component does |
+| [dup-task-scan](/docs/generated/agents-git-lib-dup-task-scan) | calls | T-1863: Duplicate task-ID scanner (G-052 prevention). |
+| [dup-task-scan](/docs/generated/agents-git-lib-dup-task-scan) | tests | T-1863: Duplicate task-ID scanner (G-052 prevention). |
 | [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
 | [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
 

@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [_pins](/docs/generated/web-templates-_pins) | includes | TODO: describe what this component does |
+| [_pins](/docs/generated/web-templates-_pins) | includes | Pinned-pages strip in the top nav (T-2010, arc-007 S2c). |
 
 ## Used By (13)
 
@@ -19,16 +19,16 @@
 | [_wrapper](/docs/generated/web-templates-_wrapper) | extended_by | Base layout wrapper: nav, header, footer, htmx/CSS includes |
 | [config](/docs/generated/web-templates-config) | used-by | Watchtower /config page — show all FW_* settings with current values and sources |
 | [config](/docs/generated/web-templates-config) | rendered_by | Watchtower /config page — show all FW_* settings with current values and sources |
-| [reviewer_audit](/docs/generated/web-templates-reviewer_audit) | extended_by | TODO: describe what this component does |
-| [reviewer_overrides](/docs/generated/web-templates-reviewer_overrides) | extended_by | TODO: describe what this component does |
-| [escalation_drift](/docs/generated/web-templates-escalation_drift) | extended_by | TODO: describe what this component does |
+| [reviewer_audit](/docs/generated/web-templates-reviewer_audit) | extended_by | Corpus-mode reviewer audit results (Pass A drift signal, Pass B re-verification), rendered by web/blueprints/reviewer.py. |
+| [reviewer_overrides](/docs/generated/web-templates-reviewer_overrides) | extended_by | Active TTL'd reviewer false-positive override listing, rendered by web/blueprints/reviewer.py. |
+| [escalation_drift](/docs/generated/web-templates-escalation_drift) | extended_by | G-019 Layer C escalation-drift scanner results (H1/H2/H3 findings), rendered by web/blueprints/escalation.py. |
 | [arc_detail](/docs/generated/web-templates-arc_detail) | extended_by | Renders /arcs/<id> detail page — arc metadata, completion stats with G-062 audit-detective threshold call-out (matches T-1656), constituent task table with status badges, section Arc Completion Discipline three-question check inline (in-progress only), fw arc close CLI snippet. |
 | [arcs_index](/docs/generated/web-templates-arcs_index) | extended_by | Renders /arcs index — list of every arc with focus dot indicator, status badge (in-progress/closed), constituent count, anchor task link, link to arc detail. |
-| [orchestrator](/docs/generated/web-templates-orchestrator) | extended_by | TODO: describe what this component does |
-| [bvp](/docs/generated/web-templates-bvp) | extended_by | TODO: describe what this component does |
-| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | called_by | TODO: describe what this component does |
-| [test_settings_nav_link](/docs/generated/tests-unit-test_settings_nav_link) | called_by | TODO: describe what this component does |
-| [test_theme_toggle_contrast](/docs/generated/tests-unit-test_theme_toggle_contrast) | called_by | TODO: describe what this component does |
+| [orchestrator](/docs/generated/web-templates-orchestrator) | extended_by | Orchestrator dispatch-substrate dashboard, rendered by web/blueprints/orchestrator.py. |
+| [bvp](/docs/generated/web-templates-bvp) | extended_by | BVP quadrant scatter plot of tasks/arcs by value score vs composite cost, served by web/blueprints/bvp.py. |
+| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | called_by | T-2033: arc-007 nav-layout polish — static guards for the sidebar/rail fixes. |
+| [test_settings_nav_link](/docs/generated/tests-unit-test_settings_nav_link) | called_by | T-2032: the top-bar action cluster has a gear link to the settings/appearance page. |
+| [test_theme_toggle_contrast](/docs/generated/tests-unit-test_theme_toggle_contrast) | called_by | T-2031: the dark-mode toggle uses --wt-text (palette text token), not --pico-color. |
 
 ## Related
 

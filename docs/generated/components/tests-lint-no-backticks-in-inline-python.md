@@ -1,8 +1,8 @@
 # no-backticks-in-inline-python
 
-> TODO: describe what this component does
+> T-2707: backticks inside a double-quoted `python3 -c "..."` block are COMMAND SUBSTITUTION performed by bash before python ever sees the source.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/lint/no-backticks-in-inline-python.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/lint/no-backticks-in-inline-python.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # task_archive_eligible
 
-> TODO: describe what this component does
+> T-1903 / L-403: `fw task archive-eligible` sweep — detect tasks stuck in .tasks/active/ with status: work-completed + all ACs ticked (the post- re-class trap) and move them to .tasks/completed/.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/task_archive_eligible.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/task_archive_eligible.bats`
 
 ## What It Does
 

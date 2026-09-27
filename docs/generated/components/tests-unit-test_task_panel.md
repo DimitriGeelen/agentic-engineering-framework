@@ -1,8 +1,8 @@
 # test_task_panel
 
-> TODO: describe what this component does
+> T-2015 (arc-007 S4a): slide-in dockable task side-panel — server-side guarantees.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_task_panel.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_task_panel.py`
 
 ## What It Does
 

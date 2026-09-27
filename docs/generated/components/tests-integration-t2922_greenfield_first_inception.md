@@ -1,8 +1,8 @@
 # t2922_greenfield_first_inception
 
-> TODO: describe what this component does
+> T-2922 — a fresh `fw init` project must be able to complete its first inception with no Watchtower running.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/integration/t2922_greenfield_first_inception.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/integration/t2922_greenfield_first_inception.bats`
 
 ## What It Does
 

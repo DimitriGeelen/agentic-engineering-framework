@@ -1,8 +1,8 @@
 # test_filter_chips
 
-> TODO: describe what this component does
+> T-2016 (arc-007 S4c): active-filter chips on the tasks board.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_filter_chips.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_filter_chips.py`
 
 ## What It Does
 

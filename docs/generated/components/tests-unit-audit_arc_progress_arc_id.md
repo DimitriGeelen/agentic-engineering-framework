@@ -1,8 +1,8 @@
 # audit_arc_progress_arc_id
 
-> TODO: describe what this component does
+> T-1875 (T-NEW-11): audit arc-progress fallback unions arc_id frontmatter with legacy arc:<slug> tag scan.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/audit_arc_progress_arc_id.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/audit_arc_progress_arc_id.bats`
 
 ## What It Does
 

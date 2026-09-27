@@ -1,8 +1,8 @@
 # test_pause_resolve
 
-> TODO: describe what this component does
+> Tests for lib/pause_resolve.py — operator-answer capture + re-dispatch.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_pause_resolve.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_pause_resolve.py`
 
 ## What It Does
 
@@ -10,8 +10,8 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [pause_resolve](/docs/generated/lib-pause_resolve) | calls | TODO: describe what this component does |
-| [default](/docs/generated/prompts-default) | calls | TODO: describe what this component does |
+| [pause_resolve](/docs/generated/lib-pause_resolve) | calls | Pause re-dispatch chain — capture operator's answer + fire a retry via Resolver. |
+| [default](/docs/generated/prompts-default) | calls | You are a Worker dispatched by the Agent on the Agentic Engineering Framework. This is the fallback prompt template used when a task_type has no explicit workflow file. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_pause_resolve.yaml`*

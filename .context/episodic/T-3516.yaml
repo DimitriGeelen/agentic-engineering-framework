@@ -66,10 +66,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 961
-  commits: 0
-  files_changed: 0
-  lines_added: 0
+  commits: 2
+  files_changed: 10
+  lines_added: 1733
   lines_removed: 0
+  footprint_refreshed_at: '2026-09-27T14:45:52Z'
+  footprint_refreshed_by_commit: c3b61c69d
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3516-invert-the-t-1881-arc-membership-rail-to.md

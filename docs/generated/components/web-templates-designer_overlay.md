@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [designer](/docs/generated/web-blueprints-designer) | renders | TODO: describe what this component does |
+| [designer](/docs/generated/web-blueprints-designer) | renders | Designer blueprint — serves the pinned Workflow Designer build (T-2521). |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-designer_overlay.yaml`*

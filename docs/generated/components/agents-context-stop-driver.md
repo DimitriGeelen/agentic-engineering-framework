@@ -1,6 +1,6 @@
 # stop-driver
 
-> TODO: describe what this component does
+> Stop hook — the continuous-run turn driver (T-3164, arc-012 S1).
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/stop-driver.sh`
 
@@ -21,7 +21,7 @@ THE CONTRACT, MEASURED (T-3163) — do not "simplify" this:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [stop_driver](/docs/generated/tests-unit-stop_driver) | tests_by | TODO: describe what this component does |
+| [stop_driver](/docs/generated/tests-unit-stop_driver) | tests_by | T-3164 (arc-012 S1) — the continuous-run turn driver. |
 | [approvals](/docs/generated/web-blueprints-approvals) | called_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
 
 ---

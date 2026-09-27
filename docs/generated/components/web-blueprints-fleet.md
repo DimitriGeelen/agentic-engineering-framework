@@ -1,6 +1,6 @@
 # fleet
 
-> TODO: describe what this component does
+> Fleet blueprint — operational dashboard for termlink fleet health (T-1103, T-1107).
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/fleet.py`
 

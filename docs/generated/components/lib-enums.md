@@ -24,12 +24,12 @@ Usage: source "$FRAMEWORK_ROOT/lib/enums.sh"
 | [lib_enums](/docs/generated/tests-unit-lib_enums) | called-by | Unit tests for enums (23 tests) |
 | [lib_enums](/docs/generated/tests-unit-lib_enums) | called_by | Unit tests for enums (23 tests) |
 | [lib_enums](/docs/generated/tests-unit-lib_enums) | tests_by | Unit tests for enums (23 tests) |
-| [test_work_on_completed_task](/docs/generated/tests-unit-test_work_on_completed_task) | tests_by | TODO: describe what this component does |
-| [corpus_conformance](/docs/generated/tools-corpus_conformance) | called_by | TODO: describe what this component does |
-| [create_task_status_guard](/docs/generated/tests-unit-create_task_status_guard) | called_by | TODO: describe what this component does |
-| [create_task_status_guard](/docs/generated/tests-unit-create_task_status_guard) | tests_by | TODO: describe what this component does |
-| [t2924_update_task_owner_gate](/docs/generated/tests-unit-t2924_update_task_owner_gate) | called_by | TODO: describe what this component does |
-| [t2924_update_task_owner_gate](/docs/generated/tests-unit-t2924_update_task_owner_gate) | tests_by | TODO: describe what this component does |
+| [test_work_on_completed_task](/docs/generated/tests-unit-test_work_on_completed_task) | tests_by | T-2036 — Pin `fw work-on T-XXX` behaviour against the P-002 "completed before commit" deadlock. |
+| [corpus_conformance](/docs/generated/tools-corpus_conformance) | called_by | Map-conformance rail — corpus map assertions vs the enforced state machine. |
+| [create_task_status_guard](/docs/generated/tests-unit-create_task_status_guard) | called_by | T-2675 — creation-side status invariant guard (companion to T-2674's owner leg; 832 rail-316: "two independent holes with separate root causes"). |
+| [create_task_status_guard](/docs/generated/tests-unit-create_task_status_guard) | tests_by | T-2675 — creation-side status invariant guard (companion to T-2674's owner leg; 832 rail-316: "two independent holes with separate root causes"). |
+| [t2924_update_task_owner_gate](/docs/generated/tests-unit-t2924_update_task_owner_gate) | called_by | T-2924 — `fw task update --owner` must validate against the owner enum. |
+| [t2924_update_task_owner_gate](/docs/generated/tests-unit-t2924_update_task_owner_gate) | tests_by | T-2924 — `fw task update --owner` must validate against the owner enum. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-enums.yaml`*

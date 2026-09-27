@@ -1,8 +1,8 @@
 # fw_help_watchtower_discoverable
 
-> TODO: describe what this component does
+> T-2808 — `fw help` must make the Watchtower port resolvable.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/fw_help_watchtower_discoverable.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/fw_help_watchtower_discoverable.bats`
 
 ## What It Does
 

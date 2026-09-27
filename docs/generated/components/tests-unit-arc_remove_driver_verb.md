@@ -1,8 +1,8 @@
 # arc_remove_driver_verb
 
-> TODO: describe what this component does
+> T-1976 — fw arc remove-driver <slug> "<name>" --rationale "<≥30 chars>" CLI verb.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_remove_driver_verb.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_remove_driver_verb.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ Pins the contract (symmetric with fw bvp driver --remove):
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
-| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | calls | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
+| [arc](/docs/generated/lib-arc) | tests | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_remove_driver_verb.yaml`*

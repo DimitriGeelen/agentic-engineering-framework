@@ -1,8 +1,8 @@
 # t3182_loop_exit_recorder
 
-> TODO: describe what this component does
+> T-3182 (arc-012) — the continuous-run loop must say why it stopped.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3182_loop_exit_recorder.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3182_loop_exit_recorder.bats`
 
 ## What It Does
 

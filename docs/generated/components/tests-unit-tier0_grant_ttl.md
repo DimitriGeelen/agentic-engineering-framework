@@ -1,8 +1,8 @@
 # tier0_grant_ttl
 
-> TODO: describe what this component does
+> T-3080 — the Tier 0 grant TTL is one window, resolved once, for BOTH approval legs.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/tier0_grant_ttl.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/tier0_grant_ttl.bats`
 
 ## What It Does
 

@@ -1,6 +1,6 @@
 # recall-usage
 
-> TODO: describe what this component does
+> Recall-usage verdict — T-3019 (T-3005 slice 6a, the "Used" signal).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/recall-usage.sh`
 

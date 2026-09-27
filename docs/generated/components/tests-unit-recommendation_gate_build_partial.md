@@ -1,8 +1,8 @@
 # recommendation_gate_build_partial
 
-> TODO: describe what this component does
+> T-2421 (T-2419 GO): Recommendation gate for partial-complete BUILD-class tasks.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/recommendation_gate_build_partial.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/recommendation_gate_build_partial.bats`
 
 ## What It Does
 

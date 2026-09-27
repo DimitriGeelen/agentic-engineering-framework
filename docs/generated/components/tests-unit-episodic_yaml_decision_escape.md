@@ -1,8 +1,8 @@
 # episodic_yaml_decision_escape
 
-> TODO: describe what this component does
+> T-1871 — episodic generator must emit valid YAML when ## Decisions content contains YAML-double-quote-hostile characters (backticks, backslashes, embedded quotes, escape sequences).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/episodic_yaml_decision_escape.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/episodic_yaml_decision_escape.bats`
 
 ## What It Does
 
@@ -24,8 +24,8 @@ rejected with "found unknown escape character `\``".
 | [episodic](/docs/generated/agents-context-lib-episodic) | calls | Context Agent - generate-episodic command |
 | [episodic](/docs/generated/agents-context-lib-episodic) | tests | Context Agent - generate-episodic command |
 | [shared](/docs/generated/web-shared) | tests | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
-| [extract_decisions](/docs/generated/agents-context-lib-extract_decisions) | calls | TODO: describe what this component does |
-| [extract_decisions](/docs/generated/agents-context-lib-extract_decisions) | tests | TODO: describe what this component does |
+| [extract_decisions](/docs/generated/agents-context-lib-extract_decisions) | calls | Extract the `## Decisions` section of a task file as YAML — T-3015. |
+| [extract_decisions](/docs/generated/agents-context-lib-extract_decisions) | tests | Extract the `## Decisions` section of a task file as YAML — T-3015. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-episodic_yaml_decision_escape.yaml`*

@@ -1,8 +1,8 @@
 # test_bulk_actions
 
-> TODO: describe what this component does
+> T-2018 (arc-007 S4e/S6c): bulk multi-select + floating action bar.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_bulk_actions.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_bulk_actions.py`
 
 ## What It Does
 

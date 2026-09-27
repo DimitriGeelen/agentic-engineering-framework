@@ -1,8 +1,8 @@
 # t2979_existing_project_onboarding_map
 
-> TODO: describe what this component does
+> T-2979: the existing-project onboarding map must stay in step with the seeds it explains.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2979_existing_project_onboarding_map.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2979_existing_project_onboarding_map.py`
 
 ## What It Does
 

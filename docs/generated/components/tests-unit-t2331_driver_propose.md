@@ -1,8 +1,8 @@
 # t2331_driver_propose
 
-> TODO: describe what this component does
+> T-2331 (T-2330 S1): `fw bvp driver --propose` non-Sovereign verb.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2331_driver_propose.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2331_driver_propose.bats`
 
 ## What It Does
 

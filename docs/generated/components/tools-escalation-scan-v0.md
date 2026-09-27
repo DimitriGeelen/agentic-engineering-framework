@@ -1,8 +1,8 @@
 # escalation-scan-v0
 
-> TODO: describe what this component does
+> T-1549 — Layer B v0 spike: scan completed tasks for symptom-fix candidates.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/escalation-scan-v0.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/escalation-scan-v0.py`
 
 ## What It Does
 

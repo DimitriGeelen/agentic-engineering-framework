@@ -69,10 +69,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 11
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 1
+  files_changed: 10
+  lines_added: 1091
+  lines_removed: 132
+  footprint_refreshed_at: '2026-09-25T22:46:56Z'
+  footprint_refreshed_by_commit: 4018d26f1
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3486-bvp-loop-s1-the-outcomes-ledger-and-cost.md

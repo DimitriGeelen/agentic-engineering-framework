@@ -1,8 +1,8 @@
 # fw_vendor_completeness
 
-> TODO: describe what this component does
+> T-2805 — a partial vendor must not capture the router, and FRAMEWORK.md must be the last thing a vendor writes.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/fw_vendor_completeness.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/fw_vendor_completeness.bats`
 
 ## What It Does
 

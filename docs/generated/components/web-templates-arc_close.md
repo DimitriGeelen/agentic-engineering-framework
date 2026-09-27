@@ -1,6 +1,6 @@
 # arc_close
 
-> TODO: describe what this component does
+> Arc-close form: §ACD demo-mode prompt + confirmation, rendered by arcs.arc_close_surface.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/arc_close.html`
 

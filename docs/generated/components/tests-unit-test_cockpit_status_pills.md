@@ -1,8 +1,8 @@
 # test_cockpit_status_pills
 
-> TODO: describe what this component does
+> T-2023 (arc-007 S3a): cockpit status colours use per-palette semantic tokens.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_cockpit_status_pills.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_cockpit_status_pills.py`
 
 ## What It Does
 

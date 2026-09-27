@@ -1,8 +1,8 @@
 # test_arc_scoped_sliders
 
-> TODO: describe what this component does
+> T-1977: /arcs/<id> live scoped-driver weight sliders — DOM + behavioural guards.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_arc_scoped_sliders.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_arc_scoped_sliders.py`
 
 ## What It Does
 

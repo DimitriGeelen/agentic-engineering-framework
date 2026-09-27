@@ -1,8 +1,8 @@
 # t3048_bats_leg_guard
 
-> TODO: describe what this component does
+> T-3048 — `fw test unit` and `fw test all` must skip, not hard-error, when the install ships no tests/unit/.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3048_bats_leg_guard.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3048_bats_leg_guard.bats`
 
 ## What It Does
 

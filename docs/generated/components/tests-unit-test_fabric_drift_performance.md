@@ -1,8 +1,8 @@
 # test_fabric_drift_performance
 
-> TODO: describe what this component does
+> T-1674 — fabric drift completes in O(n) on the live repo.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_fabric_drift_performance.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_fabric_drift_performance.py`
 
 ## What It Does
 

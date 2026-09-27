@@ -1,8 +1,8 @@
 # t1700-ollama-harness
 
-> TODO: describe what this component does
+> T-1700 ollama-research harness (v2, T-2408) — exercises the v1 dispatch substrate end-to-end through `fw resolver run` onto litellm/ollama.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/t1700-ollama-harness.sh`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/t1700-ollama-harness.sh`
 
 ## What It Does
 

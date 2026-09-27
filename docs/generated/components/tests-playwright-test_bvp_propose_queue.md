@@ -1,8 +1,8 @@
 # test_bvp_propose_queue
 
-> TODO: describe what this component does
+> T-2334 / T-2330 S3: Playwright lockdown of the /bvp propose-queue surface.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_bvp_propose_queue.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_bvp_propose_queue.py`
 
 ## What It Does
 

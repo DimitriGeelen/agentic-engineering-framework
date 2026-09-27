@@ -1,6 +1,6 @@
 # test_app
 
-> TODO: describe what this component does
+> Test suite for the Watchtower web UI.
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/test_app.py`
 
@@ -24,7 +24,7 @@ Ensure web package is importable
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [no-orphaned-test-dirs](/docs/generated/tests-lint-no-orphaned-test-dirs) | tests_by | TODO: describe what this component does |
+| [no-orphaned-test-dirs](/docs/generated/tests-lint-no-orphaned-test-dirs) | tests_by | T-2697 — every tests/<dir>/ holding .bats files must be reachable from a runner. |
 | [app](/docs/generated/web-app) | called_by | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 | [quality](/docs/generated/web-blueprints-quality) | called_by | Flask blueprint: Quality |
 

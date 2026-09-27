@@ -1,8 +1,8 @@
 # t3052_pickup_id_collision
 
-> TODO: describe what this component does
+> T-3052 — a pickup id is a filename (lib/pickup.sh:566 builds `${pickup_id}-${type}.yaml`), so reissuing one aims two envelopes at one path.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3052_pickup_id_collision.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3052_pickup_id_collision.bats`
 
 ## What It Does
 

@@ -40,7 +40,7 @@ the signal, not a reason to push through.
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | sourced_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [prompts](/docs/generated/web-blueprints-prompts) | called_by | TODO: describe what this component does |
+| [prompts](/docs/generated/web-blueprints-prompts) | called_by | Prompts blueprint — reusable agent-prompt register UI (T-1283 B3). |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-prompt.yaml`*

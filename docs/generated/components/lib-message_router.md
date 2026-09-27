@@ -1,6 +1,6 @@
 # message_router
 
-> TODO: describe what this component does
+> T-3046 — static ``msg_type`` router for recovered hub messages (slice 1 of T-3044).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/message_router.py`
 
@@ -17,8 +17,8 @@
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [t3046_message_router](/docs/generated/tests-unit-t3046_message_router) | called_by | TODO: describe what this component does |
-| [t3046_message_router](/docs/generated/tests-unit-t3046_message_router) | tests_by | TODO: describe what this component does |
+| [t3046_message_router](/docs/generated/tests-unit-t3046_message_router) | called_by | T-3046 — static msg_type router for recovered hub messages (slice 1 of T-3044). |
+| [t3046_message_router](/docs/generated/tests-unit-t3046_message_router) | tests_by | T-3046 — static msg_type router for recovered hub messages (slice 1 of T-3044). |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-message_router.yaml`*

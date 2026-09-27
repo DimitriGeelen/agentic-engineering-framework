@@ -1,8 +1,8 @@
 # t2759_upgrade_target_dir_shadowing
 
-> TODO: describe what this component does
+> T-2759: `fw upgrade` must never write a consumer's files somewhere else and then report success.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2759_upgrade_target_dir_shadowing.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2759_upgrade_target_dir_shadowing.bats`
 
 ## What It Does
 

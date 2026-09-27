@@ -1,8 +1,8 @@
 # test_session_cookie_port
 
-> TODO: describe what this component does
+> T-3065: the session cookie is named for the port actually being served.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_session_cookie_port.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_session_cookie_port.py`
 
 ## What It Does
 

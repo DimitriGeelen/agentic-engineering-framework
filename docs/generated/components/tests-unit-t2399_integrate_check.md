@@ -1,8 +1,8 @@
 # t2399_integrate_check
 
-> TODO: describe what this component does
+> T-2399: fw integrate check — L2 serialized-integration preflight (read-only).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2399_integrate_check.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2399_integrate_check.bats`
 
 ## What It Does
 
@@ -17,7 +17,7 @@ classify_path() unit checks.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [integrate](/docs/generated/lib-integrate) | tests | TODO: describe what this component does |
+| [integrate](/docs/generated/lib-integrate) | tests | fw integrate — Layer 2 serialized-integration preflight (T-2399, T-2397 slice 1). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2399_integrate_check.yaml`*

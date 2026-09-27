@@ -1,8 +1,8 @@
 # test_reviewer_audit_pass_a
 
-> TODO: describe what this component does
+> Unit tests for lib/reviewer/audit.py --pass-a corpus drift mode (T-1485 v1.5c).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_reviewer_audit_pass_a.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_reviewer_audit_pass_a.py`
 
 ## What It Does
 
@@ -10,10 +10,10 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [audit](/docs/generated/lib-reviewer-audit) | calls | TODO: describe what this component does |
-| [drift](/docs/generated/lib-reviewer-drift) | calls | TODO: describe what this component does |
-| [audit](/docs/generated/lib-reviewer-audit) | uses | TODO: describe what this component does |
-| [drift](/docs/generated/lib-reviewer-drift) | uses | TODO: describe what this component does |
+| [audit](/docs/generated/lib-reviewer-audit) | calls | Layer 3 audit cron (T-1443 v1.2, T-1484 v1.5b). |
+| [drift](/docs/generated/lib-reviewer-drift) | calls | Pass A drift detection (T-1483 v1.5). |
+| [audit](/docs/generated/lib-reviewer-audit) | uses | Layer 3 audit cron (T-1443 v1.2, T-1484 v1.5b). |
+| [drift](/docs/generated/lib-reviewer-drift) | uses | Pass A drift detection (T-1483 v1.5). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_reviewer_audit_pass_a.yaml`*

@@ -1,6 +1,6 @@
 # master-guard
 
-> TODO: describe what this component does
+> master-guard.sh — Master-as-merge-only pre-commit guard (T-2396, inception T-2394 G1)
 
 **Type:** script | **Subsystem:** git-traceability | **Location:** `agents/git/lib/master-guard.sh`
 
@@ -28,7 +28,7 @@ Bypass:  FW_ALLOW_MASTER_COMMIT=1 git commit ...   (Tier-2, WARN to stderr)
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
-| [upgrade_fresh_machine_simulation](/docs/generated/tests-unit-upgrade_fresh_machine_simulation) | tests_by | TODO: describe what this component does |
+| [upgrade_fresh_machine_simulation](/docs/generated/tests-unit-upgrade_fresh_machine_simulation) | tests_by | T-1635: fresh-machine simulation guard for fw upgrade. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-master-guard.yaml`*

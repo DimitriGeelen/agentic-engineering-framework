@@ -1,8 +1,8 @@
 # t2990_root_pollution
 
-> TODO: describe what this component does
+> T-2990: the root-pollution rail, proven in BOTH directions.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2990_root_pollution.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2990_root_pollution.bats`
 
 ## What It Does
 
@@ -16,9 +16,9 @@ planted-junk case below carries as much weight as the clean-root one.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [root-pollution](/docs/generated/lib-root-pollution) | calls | TODO: describe what this component does |
+| [root-pollution](/docs/generated/lib-root-pollution) | calls | T-2990 — root-level pollution detector. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [root-pollution](/docs/generated/lib-root-pollution) | tests | TODO: describe what this component does |
+| [root-pollution](/docs/generated/lib-root-pollution) | tests | T-2990 — root-level pollution detector. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

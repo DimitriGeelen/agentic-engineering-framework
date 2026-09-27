@@ -1,6 +1,6 @@
 # _work_queue_items
 
-> TODO: describe what this component does
+> Work-in-progress queue items for the dashboard's work-queue widget, with a focus-set action per task.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_work_queue_items.html`
 

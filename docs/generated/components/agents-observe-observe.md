@@ -32,12 +32,12 @@ Usage:
 | [observe](/docs/generated/tests-unit-observe) | tested_by | Unit tests for agents/observe/observe.sh (7 tests) |
 | [observe](/docs/generated/tests-unit-observe) | called_by | Unit tests for agents/observe/observe.sh (7 tests) |
 | [observe](/docs/generated/tests-unit-observe) | tests_by | Unit tests for agents/observe/observe.sh (7 tests) |
-| [note_capture_guard](/docs/generated/tests-unit-note_capture_guard) | called_by | TODO: describe what this component does |
-| [note_capture_guard](/docs/generated/tests-unit-note_capture_guard) | tests_by | TODO: describe what this component does |
-| [note_exit_status](/docs/generated/tests-unit-note_exit_status) | called_by | TODO: describe what this component does |
-| [note_exit_status](/docs/generated/tests-unit-note_exit_status) | tests_by | TODO: describe what this component does |
-| [t2928_note_dismiss_persists_reason](/docs/generated/tests-unit-t2928_note_dismiss_persists_reason) | called_by | TODO: describe what this component does |
-| [t2928_note_dismiss_persists_reason](/docs/generated/tests-unit-t2928_note_dismiss_persists_reason) | tests_by | TODO: describe what this component does |
+| [note_capture_guard](/docs/generated/tests-unit-note_capture_guard) | called_by | T-2867 — `fw note` must refuse arguments it cannot use, never discard them. |
+| [note_capture_guard](/docs/generated/tests-unit-note_capture_guard) | tests_by | T-2867 — `fw note` must refuse arguments it cannot use, never discard them. |
+| [note_exit_status](/docs/generated/tests-unit-note_exit_status) | called_by | T-2868 — `fw note` must exit 0 when it has written the note. |
+| [note_exit_status](/docs/generated/tests-unit-note_exit_status) | tests_by | T-2868 — `fw note` must exit 0 when it has written the note. |
+| [t2928_note_dismiss_persists_reason](/docs/generated/tests-unit-t2928_note_dismiss_persists_reason) | called_by | T-2928 — `fw note dismiss OBS-NNN --reason "..."` accepted the reason, printed it, and discarded it. |
+| [t2928_note_dismiss_persists_reason](/docs/generated/tests-unit-t2928_note_dismiss_persists_reason) | tests_by | T-2928 — `fw note dismiss OBS-NNN --reason "..."` accepted the reason, printed it, and discarded it. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-observe-observe.yaml`*

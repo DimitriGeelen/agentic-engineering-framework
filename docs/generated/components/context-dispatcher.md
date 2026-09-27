@@ -19,7 +19,7 @@ generate-episodic  Generate episodic summary for completed task
 focus         Set or show current focus
 Usage:
 
-## Dependencies (10)
+## Dependencies (11)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -33,6 +33,7 @@ Usage:
 | [episodic](/docs/generated/agents-context-lib-episodic) | calls | Context Agent - generate-episodic command |
 | [focus](/docs/generated/agents-context-lib-focus) | calls | Context Agent - focus command |
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [learning](/docs/generated/agents-context-lib-learning) | calls | Context Agent - add-learning command Add a learning to project memory |
 
 ## Used By (16)
 

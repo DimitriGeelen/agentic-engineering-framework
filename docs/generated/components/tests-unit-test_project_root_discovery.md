@@ -1,8 +1,8 @@
 # test_project_root_discovery
 
-> TODO: describe what this component does
+> T-1747 / G-069 — Regression tests for web.shared._discover_project_root.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_project_root_discovery.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_project_root_discovery.py`
 
 ## What It Does
 

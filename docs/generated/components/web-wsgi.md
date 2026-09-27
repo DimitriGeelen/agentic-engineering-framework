@@ -1,6 +1,6 @@
 # wsgi
 
-> TODO: describe what this component does
+> WSGI entry point for Watchtower.
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/wsgi.py`
 

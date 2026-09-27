@@ -14,7 +14,7 @@
 |-----------|--------------|-------------|
 | [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
 | [review](/docs/generated/web-blueprints-review) | calls | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
-| [target](/docs/generated/tests-playwright-target) | uses | TODO: describe what this component does |
+| [target](/docs/generated/tests-playwright-target) | uses | The one place the Playwright suite decides what it is talking to (T-2784). |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_review_acs.yaml`*

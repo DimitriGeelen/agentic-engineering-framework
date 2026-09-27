@@ -1,8 +1,8 @@
 # test_write_set
 
-> TODO: describe what this component does
+> T-2337 (arc-011 M1 §3) — disjoint write-set validator.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_write_set.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_write_set.bats`
 
 ## What It Does
 

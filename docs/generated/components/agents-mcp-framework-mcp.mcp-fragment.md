@@ -1,8 +1,8 @@
 # framework-mcp.mcp-fragment
 
-> TODO: describe what this component does
+> .mcp.json fragment registering the framework MCP server for consumer projects (arc-010 Slice 2).
 
-**Type:** config | **Subsystem:** unknown | **Location:** `agents/mcp/framework-mcp.mcp-fragment.json`
+**Type:** config | **Subsystem:** framework-core | **Location:** `agents/mcp/framework-mcp.mcp-fragment.json`
 
 ## What It Does
 

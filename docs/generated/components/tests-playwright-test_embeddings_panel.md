@@ -1,8 +1,8 @@
 # test_embeddings_panel
 
-> TODO: describe what this component does
+> Playwright tests for the /embeddings panel (T-1719 A4).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_embeddings_panel.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_embeddings_panel.py`
 
 ## What It Does
 

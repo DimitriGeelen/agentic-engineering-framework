@@ -1,8 +1,8 @@
 # init_git_identity_blocker
 
-> TODO: describe what this component does
+> T-2818 / OBS-170 — `fw init` must not sign off a project that cannot commit.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/init_git_identity_blocker.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/init_git_identity_blocker.bats`
 
 ## What It Does
 

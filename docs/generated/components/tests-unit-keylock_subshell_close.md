@@ -1,8 +1,8 @@
 # keylock_subshell_close
 
-> TODO: describe what this component does
+> T-1493: keylock_subshell_close_cmd emits FD-close commands so verification subshells don't leak lock FDs to long-lived daemons (e.g., .NET VBCSCompiler). Origin: 003-NTB-ATC-Plugin pickup envelope P-015 / T-146
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/keylock_subshell_close.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/keylock_subshell_close.bats`
 
 ## What It Does
 

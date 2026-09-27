@@ -1,8 +1,8 @@
 # test_peer_subscribe
 
-> TODO: describe what this component does
+> Unit tests for lib/peer.py — v2 peer-consult subscriber + responder spawn.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_peer_subscribe.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_peer_subscribe.py`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [peer](/docs/generated/lib-peer) | calls | TODO: describe what this component does |
+| [peer](/docs/generated/lib-peer) | calls | v2 peer-consult subscriber + responder spawn-bridge. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

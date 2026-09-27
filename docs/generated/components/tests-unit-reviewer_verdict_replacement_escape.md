@@ -1,8 +1,8 @@
 # reviewer_verdict_replacement_escape
 
-> TODO: describe what this component does
+> T-2730 — a rendered verdict is DATA, and must never reach `re.sub` as a replacement *template*.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/reviewer_verdict_replacement_escape.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/reviewer_verdict_replacement_escape.bats`
 
 ## What It Does
 

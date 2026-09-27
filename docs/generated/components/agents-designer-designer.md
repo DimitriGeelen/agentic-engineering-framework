@@ -1,8 +1,8 @@
 # designer
 
-> TODO: describe what this component does
+> fw designer: vendors and serves a pinned Workflow Designer release build via the Watchtower /designer blueprint (832-Workflow-designer is source of truth; T-2521).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/designer/designer.sh`
+**Type:** script | **Subsystem:** watchtower | **Location:** `agents/designer/designer.sh`
 
 ## What It Does
 
@@ -23,14 +23,14 @@ Pull-at-tag intake (T-247/D-335, T-2616): fetch artifact +
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [notify](/docs/generated/lib-notify) | calls | Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh. |
-| [corpus_spec](/docs/generated/tools-corpus_spec) | calls | TODO: describe what this component does |
+| [corpus_spec](/docs/generated/tools-corpus_spec) | calls | corpus_spec — declarative spec ⇄ designer-corpus BPMN (T-2603, arc T-2602 GO). |
 
 ## Used By (2)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [designer_sync_from_tag](/docs/generated/tests-unit-designer_sync_from_tag) | tests_by | TODO: describe what this component does |
+| [designer_sync_from_tag](/docs/generated/tests-unit-designer_sync_from_tag) | tests_by | T-2616: fw designer sync --from-tag — pull-at-tag intake contract (T-247/D-335). |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-designer-designer.yaml`*

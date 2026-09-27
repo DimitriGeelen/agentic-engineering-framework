@@ -18,8 +18,8 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [orchestrator](/docs/generated/web-blueprints-orchestrator) | surfaced_by | TODO: describe what this component does |
-| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | tracked_by | TODO: describe what this component does |
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | surfaced_by | T-1647 (W10 #2 of T-1641 Arc C) — Watchtower /orchestrator page. |
+| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | tracked_by | orchestrator-mcp-scan.sh — drift defense for MCP-tool task_id enforcement T-1646 (Arc C drift defense, parented under T-1644, originating in T-1641) |
 
 ---
 *Auto-generated from Component Fabric. Card: `cross-repo-termlink-governance-subscriber.yaml`*

@@ -1,8 +1,8 @@
 # test_pins
 
-> TODO: describe what this component does
+> T-2010 (arc-007 S2c): pinned-pages model contract.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_pins.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_pins.py`
 
 ## What It Does
 

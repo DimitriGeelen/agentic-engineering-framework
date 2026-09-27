@@ -1,8 +1,8 @@
 # test_worker_kind_drift
 
-> TODO: describe what this component does
+> T-1708 — worker_kind drift regression test.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_worker_kind_drift.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_worker_kind_drift.bats`
 
 ## What It Does
 
@@ -21,9 +21,9 @@ acceptor. Adding a kind to one without the other now fails loudly.
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [termlink](/docs/generated/agents-termlink-termlink) | calls | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
-| [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | calls | TODO: describe what this component does |
+| [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | calls | T-1706 — thin tool-execution loop for ollama-research workflow. |
 | [termlink](/docs/generated/agents-termlink-termlink) | tests | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
-| [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | tests | TODO: describe what this component does |
+| [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | tests | T-1706 — thin tool-execution loop for ollama-research workflow. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 

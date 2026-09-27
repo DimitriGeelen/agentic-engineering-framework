@@ -1,8 +1,8 @@
 # session_start_hook_warning
 
-> TODO: describe what this component does
+> T-1630 (B-4 of T-1626) — SessionStart resume hook warns on broken hooks.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/session_start_hook_warning.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/session_start_hook_warning.bats`
 
 ## What It Does
 

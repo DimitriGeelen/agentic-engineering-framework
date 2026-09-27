@@ -1,8 +1,8 @@
 # test_audit_frontmatter_variants
 
-> TODO: describe what this component does
+> T-2779: the audit's task-frontmatter check must see BOTH halves of the T-2069 class.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_audit_frontmatter_variants.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_audit_frontmatter_variants.py`
 
 ## What It Does
 

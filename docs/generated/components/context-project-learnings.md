@@ -1,8 +1,8 @@
 # learnings
 
-> TODO: describe what this component does
+> Project Learnings - Knowledge gained during development Added via: fw context add-learning "description" --task T-XXX
 
-**Type:** data | **Subsystem:** unknown | **Location:** `.context/project/learnings.yaml`
+**Type:** data | **Subsystem:** context-fabric | **Location:** `.context/project/learnings.yaml`
 
 ## What It Does
 

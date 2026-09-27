@@ -1,8 +1,8 @@
 # arc_review_verb
 
-> TODO: describe what this component does
+> T-1962 — fw arc review <slug> CLI verb.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_review_verb.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_review_verb.bats`
 
 ## What It Does
 
@@ -17,8 +17,8 @@ Pins the contract:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
-| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | calls | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
+| [arc](/docs/generated/lib-arc) | tests | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_review_verb.yaml`*

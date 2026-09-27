@@ -31,20 +31,20 @@ Before acting on a pickup message:
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [lib_pickup](/docs/generated/tests-unit-lib_pickup) | called-by | TODO: describe what this component does |
+| [lib_pickup](/docs/generated/tests-unit-lib_pickup) | called-by | Unit tests for lib/pickup.sh |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [lib_pickup](/docs/generated/tests-unit-lib_pickup) | called_by | TODO: describe what this component does |
+| [lib_pickup](/docs/generated/tests-unit-lib_pickup) | called_by | Unit tests for lib/pickup.sh |
 | [pickup-channel-bridge](/docs/generated/lib-pickup-channel-bridge) | called_by_by | One-way bridge from shell pickup to T-1155 channel bus. Invoked by pickup_process_one (lib/pickup.sh) after an envelope moves to processed/. Mirrors the envelope to 'framework:pickup' topic so online bus subscribers observe pickups alongside shell consumers. Non-fatal (exits 0 on any error); capability-probing (prefers termlink channel post; falls back to event broadcast; silent no-op if neither present). T-1165/T-1214 GO Option B: federate, don't converge. |
-| [lib_pickup](/docs/generated/tests-unit-lib_pickup) | tests_by | TODO: describe what this component does |
-| [pickup_send_remote_session](/docs/generated/tests-unit-pickup_send_remote_session) | called_by | TODO: describe what this component does |
-| [pickup_send_remote_session](/docs/generated/tests-unit-pickup_send_remote_session) | tests_by | TODO: describe what this component does |
-| [pickup_type_routing](/docs/generated/tests-unit-pickup_type_routing) | called_by | TODO: describe what this component does |
-| [pickup_type_routing](/docs/generated/tests-unit-pickup_type_routing) | tests_by | TODO: describe what this component does |
-| [t2457_fabric_atomic_card_write](/docs/generated/tests-unit-t2457_fabric_atomic_card_write) | tests_by | TODO: describe what this component does |
-| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | called_by | TODO: describe what this component does |
-| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | tests_by | TODO: describe what this component does |
-| [t3052_pickup_id_collision](/docs/generated/tests-unit-t3052_pickup_id_collision) | called_by | TODO: describe what this component does |
-| [t3052_pickup_id_collision](/docs/generated/tests-unit-t3052_pickup_id_collision) | tests_by | TODO: describe what this component does |
+| [lib_pickup](/docs/generated/tests-unit-lib_pickup) | tests_by | Unit tests for lib/pickup.sh |
+| [pickup_send_remote_session](/docs/generated/tests-unit-pickup_send_remote_session) | called_by | T-1494: fw pickup send --remote requires --session Origin: 003-NTB-ATC-Plugin pickup envelope P-006 |
+| [pickup_send_remote_session](/docs/generated/tests-unit-pickup_send_remote_session) | tests_by | T-1494: fw pickup send --remote requires --session Origin: 003-NTB-ATC-Plugin pickup envelope P-006 |
+| [pickup_type_routing](/docs/generated/tests-unit-pickup_type_routing) | called_by | Unit tests for T-1465 — pickup envelope type → task workflow_type routing. Constrained Option A (T-1455 GO): bug-report → build feature-proposal → inception |
+| [pickup_type_routing](/docs/generated/tests-unit-pickup_type_routing) | tests_by | Unit tests for T-1465 — pickup envelope type → task workflow_type routing. Constrained Option A (T-1455 GO): bug-report → build feature-proposal → inception |
+| [t2457_fabric_atomic_card_write](/docs/generated/tests-unit-t2457_fabric_atomic_card_write) | tests_by | T-2457 / OBS-080: fabric card writes must be atomic. |
+| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | called_by | T-3051 — repo-tracked helper scripts must not be gated on their exec bit. |
+| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | tests_by | T-3051 — repo-tracked helper scripts must not be gated on their exec bit. |
+| [t3052_pickup_id_collision](/docs/generated/tests-unit-t3052_pickup_id_collision) | called_by | T-3052 — a pickup id is a filename (lib/pickup.sh:566 builds `${pickup_id}-${type}.yaml`), so reissuing one aims two envelopes at one path. |
+| [t3052_pickup_id_collision](/docs/generated/tests-unit-t3052_pickup_id_collision) | tests_by | T-3052 — a pickup id is a filename (lib/pickup.sh:566 builds `${pickup_id}-${type}.yaml`), so reissuing one aims two envelopes at one path. |
 
 ## Related
 

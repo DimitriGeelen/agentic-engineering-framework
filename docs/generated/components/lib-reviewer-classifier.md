@@ -1,6 +1,6 @@
 # classifier
 
-> TODO: describe what this component does
+> Verification-line classifier (T-1483 v1.5).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/reviewer/classifier.py`
 

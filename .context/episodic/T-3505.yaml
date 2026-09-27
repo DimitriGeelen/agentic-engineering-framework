@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3505: Fix two merge-blockers: audit.sh exec bit on dispatch-f21-f24, gate two tests on t3487
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-26T13:45:14Z
+# ============================================================================
+
+task_id: T-3505
+task_name: "Fix two merge-blockers: audit.sh exec bit on dispatch-f21-f24, gate two tests on t3487"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T13:33:10Z
+completed: 2026-09-26T13:44:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-26T15:34:36+02:00
+last_commit: 2026-09-26T15:36:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  restore exec bit on agents/audit/audit.sh (dispatch-f21-f24). gate two arc-close refusal tests behind FW_REQUIRE_ARC_CLOSE_APPROVAL (t3487)
+
+# Key outcomes
+outcomes:
+  - '`dispatch-f21-f24` has a new commit on top of tip `48b07d763` restoring'
+  - '`t3487-remove-bvp-arc-approval-gate` has a new commit on top of tip `6adf45442`'
+  - 'Both gated tests demonstrated to RUN and PASS with the switch set, and SKIP'
+  - 'No other file on either branch touched; `dispatch-f25` and'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - 'tests/unit/test_arc_close_agent_gate.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-26T15:34:36'
+    action: 'T-3505: restore exec bit on agents/audit/audit.sh (dispatch-f21-f24)'
+  - time: '2026-09-26T15:36:58'
+    action: 'T-3505: gate two arc-close refusal tests behind FW_REQUIRE_ARC_CLOSE_APPROVAL (t3487)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 2
+  lines_added: 27
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3505-fix-two-merge-blockers-auditsh-exec-bit-.md
+generated_by: context-agent-hybrid

@@ -1,6 +1,6 @@
 # continuous-mode
 
-> TODO: describe what this component does
+> Continuous-run counters (T-3169, arc-012 S3).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/continuous-mode.sh`
 
@@ -21,11 +21,11 @@ take one turn and the run advanced a window per unit of work; `max_iterations: 5
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | called_by | TODO: describe what this component does |
+| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | called_by | T-2364/T-2365 (T-2158 S2+S3) — next-directive injector for post-compact resume. |
 | [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [t3268_continuous_cycling_detector](/docs/generated/tests-unit-t3268_continuous_cycling_detector) | tests_by | TODO: describe what this component does |
+| [t3268_continuous_cycling_detector](/docs/generated/tests-unit-t3268_continuous_cycling_detector) | tests_by | T-3268 (G-099 what_remains) — G-099 fixed the "wrapper says armed but turn driver isn't" drift class and named, but did not build, the detector for a sibling class: `last_terminated_reason` (bin/claude-fw:388) is a one-way latch that… |
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---

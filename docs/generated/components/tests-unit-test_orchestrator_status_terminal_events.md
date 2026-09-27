@@ -1,8 +1,8 @@
 # test_orchestrator_status_terminal_events
 
-> TODO: describe what this component does
+> T-1779 — Regression tests for `fw orchestrator status` terminal_event breakdown.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_orchestrator_status_terminal_events.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_orchestrator_status_terminal_events.py`
 
 ## What It Does
 

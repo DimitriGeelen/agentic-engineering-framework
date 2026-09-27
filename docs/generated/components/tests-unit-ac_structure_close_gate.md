@@ -1,8 +1,8 @@
 # ac_structure_close_gate
 
-> TODO: describe what this component does
+> T-3029 -- Regression: update-task.sh's close-time AC gate must not silently report zero Human ACs when a `### Human` heading is separated from `## Acceptance Criteria` by an intervening `## ` heading.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/ac_structure_close_gate.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/ac_structure_close_gate.bats`
 
 ## What It Does
 

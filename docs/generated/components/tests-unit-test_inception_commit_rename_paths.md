@@ -1,8 +1,8 @@
 # test_inception_commit_rename_paths
 
-> TODO: describe what this component does
+> T-2864 — the Watchtower decision commit must stage BOTH sides of a rename.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_inception_commit_rename_paths.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_inception_commit_rename_paths.py`
 
 ## What It Does
 

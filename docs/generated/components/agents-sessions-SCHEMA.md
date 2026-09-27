@@ -1,8 +1,8 @@
 # SCHEMA
 
-> TODO: describe what this component does
+> Canonical session schema (T-2417): JSONL contract between fw sessions provider adapters (agents/sessions/<provider>/) and the generic renderer.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/sessions/SCHEMA.md`
+**Type:** document | **Subsystem:** framework-core | **Location:** `agents/sessions/SCHEMA.md`
 
 ## What It Does
 

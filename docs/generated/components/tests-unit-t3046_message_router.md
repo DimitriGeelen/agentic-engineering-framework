@@ -1,8 +1,8 @@
 # t3046_message_router
 
-> TODO: describe what this component does
+> T-3046 — static msg_type router for recovered hub messages (slice 1 of T-3044).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3046_message_router.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3046_message_router.bats`
 
 ## What It Does
 
@@ -17,9 +17,9 @@ that has never been observed red is not treated as a guard.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [message_router](/docs/generated/lib-message_router) | calls | TODO: describe what this component does |
+| [message_router](/docs/generated/lib-message_router) | calls | T-3046 — static ``msg_type`` router for recovered hub messages (slice 1 of T-3044). |
 | [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [message_router](/docs/generated/lib-message_router) | tests | TODO: describe what this component does |
+| [message_router](/docs/generated/lib-message_router) | tests | T-3046 — static ``msg_type`` router for recovered hub messages (slice 1 of T-3044). |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

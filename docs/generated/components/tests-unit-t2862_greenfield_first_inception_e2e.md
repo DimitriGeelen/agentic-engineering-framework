@@ -1,8 +1,8 @@
 # t2862_greenfield_first_inception_e2e
 
-> TODO: describe what this component does
+> ── What the live run established (2026-08-11, S-2026-0811) ────────────────── On a fresh `fw init` greenfield project, doing only the work the seed asks: 1. AC preflight PASS (T-2862's fix works — no self-gating AC) 2.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2862_greenfield_first_inception_e2e.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2862_greenfield_first_inception_e2e.bats`
 
 ## What It Does
 

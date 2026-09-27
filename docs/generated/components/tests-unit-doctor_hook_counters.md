@@ -1,8 +1,8 @@
 # doctor_hook_counters
 
-> TODO: describe what this component does
+> T-2714 (OBS-110): every hook counter in `fw doctor` must state its denominator.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/doctor_hook_counters.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/doctor_hook_counters.bats`
 
 ## What It Does
 

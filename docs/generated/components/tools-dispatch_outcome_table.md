@@ -1,8 +1,8 @@
 # dispatch_outcome_table
 
-> TODO: describe what this component does
+> Regenerate the dispatch-outcome table cited in CLAUDE.md §Execution Model.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/dispatch_outcome_table.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/dispatch_outcome_table.py`
 
 ## What It Does
 

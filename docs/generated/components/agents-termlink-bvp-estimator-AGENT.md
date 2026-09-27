@@ -1,8 +1,8 @@
 # AGENT
 
-> TODO: describe what this component does
+> Intelligence file for the bvp-estimator TermLink worker (T-1922, arc-006): scores tasks against the BVP rubric and writes bvp_scores_proposed only — never confirmed bvp_scores.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/termlink/bvp-estimator/AGENT.md`
+**Type:** document | **Subsystem:** framework-core | **Location:** `agents/termlink/bvp-estimator/AGENT.md`
 
 ## What It Does
 

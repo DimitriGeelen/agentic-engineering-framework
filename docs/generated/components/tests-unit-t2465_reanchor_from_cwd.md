@@ -1,8 +1,8 @@
 # t2465_reanchor_from_cwd
 
-> TODO: describe what this component does
+> T-2465 — unit tests for lib/paths.sh:fw_reanchor_from_cwd (+ the hook-stdin wrapper).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2465_reanchor_from_cwd.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2465_reanchor_from_cwd.bats`
 
 ## What It Does
 

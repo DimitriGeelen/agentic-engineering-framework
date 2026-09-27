@@ -1,8 +1,8 @@
 # test_arcs_kanban
 
-> TODO: describe what this component does
+> T-1904: /arcs kanban — 4-column lifecycle layout replacing T-1853 tabs.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_arcs_kanban.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_arcs_kanban.py`
 
 ## What It Does
 

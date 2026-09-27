@@ -1,8 +1,8 @@
 # test_arcs_detail_arc_id_membership
 
-> TODO: describe what this component does
+> T-1876 (T-NEW-12): /arcs/<slug> reads arc_id frontmatter for constituents.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_arcs_detail_arc_id_membership.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_arcs_detail_arc_id_membership.py`
 
 ## What It Does
 
@@ -14,7 +14,7 @@ this test will not break it (lower bound check).
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | calls | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_arcs_detail_arc_id_membership.yaml`*

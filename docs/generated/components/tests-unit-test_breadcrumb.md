@@ -1,8 +1,8 @@
 # test_breadcrumb
 
-> TODO: describe what this component does
+> T-2009 (arc-007 S2b): path-derived breadcrumb guard.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_breadcrumb.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_breadcrumb.py`
 
 ## What It Does
 

@@ -1,6 +1,6 @@
 # git-identity
 
-> TODO: describe what this component does
+> lib/git-identity.sh — one answer to "can this machine commit?" (T-2883)
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/git-identity.sh`
 
@@ -23,14 +23,14 @@ and this one fired on every automated run.
 |-----------|--------------|-------------|
 | [termlink](/docs/generated/agents-termlink-termlink) | called_by | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | called_by | TODO: describe what this component does |
-| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | tests_by | TODO: describe what this component does |
-| [git_worker_commits](/docs/generated/tests-unit-git_worker_commits) | tests_by | TODO: describe what this component does |
+| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | called_by | T-2883 — "can this machine commit?" must be answered the way git answers it. |
+| [git_identity_check](/docs/generated/tests-unit-git_identity_check) | tests_by | T-2883 — "can this machine commit?" must be answered the way git answers it. |
+| [git_worker_commits](/docs/generated/tests-unit-git_worker_commits) | tests_by | Unit tests for agents/git/lib/worker-commits.sh (T-2917) |
 | [init](/docs/generated/lib-init) | called_by | fw init - Bootstrap a new project with the Agentic Engineering Framework |
 | [preflight](/docs/generated/lib-preflight) | called_by | fw preflight subcommand. Validates system prerequisites (bash version, git version, python3, PyYAML) before framework operations. |
 | [setup](/docs/generated/lib-setup) | called_by | fw setup - Guided onboarding wizard for new projects |
 | [validate-init](/docs/generated/lib-validate-init) | called_by | Post-init validation — reads #@init: tags from init.sh and validates each creation unit exists and is correct. Called automatically at end of fw init and available as fw validate-init. |
-| [worker_identity](/docs/generated/lib-worker_identity) | called_by | TODO: describe what this component does |
+| [worker_identity](/docs/generated/lib-worker_identity) | called_by | worker_identity — the git identity a dispatch-spawned worker commits under (T-2917). |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-git-identity.yaml`*

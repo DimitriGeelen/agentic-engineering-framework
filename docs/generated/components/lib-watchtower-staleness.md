@@ -1,6 +1,6 @@
 # watchtower-staleness
 
-> TODO: describe what this component does
+> T-2938: does the RUNNING Watchtower actually run the code on disk?
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/watchtower-staleness.sh`
 
@@ -17,11 +17,14 @@ Flask runs with `debug=False` here, so there is no reloader. Six days of a
 process holding bytes nobody could see.
 Why doctor could not see it. The existing triple check (bin/fw ~:1892) asks
 
-## Used By (1)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [watchtower](/docs/generated/bin-watchtower) | called_by | Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-watchtower-staleness.yaml`*

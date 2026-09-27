@@ -31,7 +31,7 @@ this host — /tmp/.framework.yaml, /tmp/.tasks with six seed tasks, /tmp/.conte
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [check_active_task_cwd_resolution](/docs/generated/tests-unit-check_active_task_cwd_resolution) | diagnoses | TODO: describe what this component does |
+| [check_active_task_cwd_resolution](/docs/generated/tests-unit-check_active_task_cwd_resolution) | diagnoses | T-2463 (OBS-080) — the check-active-task gate must resolve PROJECT_ROOT from the per-call `cwd` Claude Code passes on stdin, NOT from the hook's process cwd. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-no-project-markers-above-bats-tmpdir.yaml`*

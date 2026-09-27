@@ -1,8 +1,8 @@
 # measure_corpus_classes
 
-> TODO: describe what this component does
+> Measure the indexed corpus by source class — size and growth, separately.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/measure_corpus_classes.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/measure_corpus_classes.py`
 
 ## What It Does
 

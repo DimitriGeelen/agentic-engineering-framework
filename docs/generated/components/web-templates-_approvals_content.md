@@ -11,7 +11,7 @@
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [approvals](/docs/generated/web-templates-approvals) | included_by | Full page template: approvals queue — wrapper around _approvals_content partial with nav, filters, bulk actions. |
-| [test_approvals_content_tokens](/docs/generated/tests-unit-test_approvals_content_tokens) | called_by | TODO: describe what this component does |
+| [test_approvals_content_tokens](/docs/generated/tests-unit-test_approvals_content_tokens) | called_by | T-2026 (arc-007 S3c2): _approvals_content.html inline styles use semantic tokens. |
 
 ## Related
 

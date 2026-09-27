@@ -1,6 +1,6 @@
 # push-state
 
-> TODO: describe what this component does
+> lib/push-state.sh — T-3063 (leg 2 of T-3062)
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/push-state.sh`
 

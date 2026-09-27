@@ -76,10 +76,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 7
-  commits: 1
-  files_changed: 5
-  lines_added: 691
-  lines_removed: 26
+  commits: 2
+  files_changed: 9
+  lines_added: 907
+  lines_removed: 36
+  footprint_refreshed_at: '2026-09-26T19:20:13Z'
+  footprint_refreshed_by_commit: bb2416871
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3508-restore-the-fw-arc-close-gate-to-default.md

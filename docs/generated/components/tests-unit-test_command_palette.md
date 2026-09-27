@@ -1,8 +1,8 @@
 # test_command_palette
 
-> TODO: describe what this component does
+> T-2012 (arc-007 S6a): command-palette jump-list contract (server side).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_command_palette.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_command_palette.py`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # t3038_session_scoped_focus
 
-> TODO: describe what this component does
+> T-3038 (OBS-291) — focus is per-session, not per-project, for dispatched workers.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3038_session_scoped_focus.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3038_session_scoped_focus.bats`
 
 ## What It Does
 

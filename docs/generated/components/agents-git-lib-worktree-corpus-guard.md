@@ -1,6 +1,6 @@
 # worktree-corpus-guard
 
-> TODO: describe what this component does
+> T-3110 — L1 of R7: task-corpus commit guard for the SHARED pre-commit hook.
 
 **Type:** script | **Subsystem:** git-traceability | **Location:** `agents/git/lib/worktree-corpus-guard.sh`
 

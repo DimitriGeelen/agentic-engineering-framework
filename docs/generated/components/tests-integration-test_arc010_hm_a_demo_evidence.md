@@ -1,8 +1,8 @@
 # test_arc010_hm_a_demo_evidence
 
-> TODO: describe what this component does
+> T-2268 (arc-010 Slice 3 HM-A): integration contract test for the demo evidence README + traceability shape.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/integration/test_arc010_hm_a_demo_evidence.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/integration/test_arc010_hm_a_demo_evidence.bats`
 
 ## What It Does
 

@@ -1,6 +1,6 @@
 # bulk-actions
 
-> TODO: describe what this component does
+> Bulk multi-select + floating action bar — arc-007 S4e / S6c (T-2018).
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/static/bulk-actions.js`
 

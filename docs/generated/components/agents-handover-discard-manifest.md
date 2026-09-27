@@ -1,6 +1,6 @@
 # discard-manifest
 
-> TODO: describe what this component does
+> discard-manifest.sh — Category-level compaction discard manifest (T-2366, arc-012 S4)
 
 **Type:** script | **Subsystem:** handover | **Location:** `agents/handover/discard-manifest.sh`
 
@@ -28,8 +28,8 @@ Usage:
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
-| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | tests_by | TODO: describe what this component does |
-| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | tests_by | TODO: describe what this component does |
+| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | tests_by | T-2380 — the three transcript-dir read-surfaces (fw costs, discard-manifest, read-transcript.py) must encode the ~/.claude/projects/<dir> name the way Claude Code does: EVERY non-alnum char → '-'. |
+| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | tests_by | T-3051 — repo-tracked helper scripts must not be gated on their exec bit. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-handover-discard-manifest.yaml`*

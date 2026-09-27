@@ -1,6 +1,6 @@
 # designer_landing
 
-> TODO: describe what this component does
+> Designer landing page corpus-card grid, rendered by web/blueprints/designer.py.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/designer_landing.html`
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [designer](/docs/generated/web-blueprints-designer) | rendered_by | TODO: describe what this component does |
+| [designer](/docs/generated/web-blueprints-designer) | rendered_by | Designer blueprint — serves the pinned Workflow Designer build (T-2521). |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-designer_landing.yaml`*

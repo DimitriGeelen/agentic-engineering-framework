@@ -1,8 +1,8 @@
 # test_fabric_coupling_token
 
-> TODO: describe what this component does
+> T-2028 (arc-007 S5b): fabric coupling-note uses --wt-danger; categorical map stays fixed.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_fabric_coupling_token.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_fabric_coupling_token.py`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # test_approvals_style_tokens
 
-> TODO: describe what this component does
+> T-2025 (arc-007 S3c): approvals.html <style> block uses per-palette semantic tokens.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_approvals_style_tokens.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_approvals_style_tokens.py`
 
 ## What It Does
 

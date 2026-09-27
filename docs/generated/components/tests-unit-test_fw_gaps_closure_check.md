@@ -1,8 +1,8 @@
 # test_fw_gaps_closure_check
 
-> TODO: describe what this component does
+> T-1752 — `fw gaps` honours optional closure_check_command field.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_fw_gaps_closure_check.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_fw_gaps_closure_check.bats`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ T-1752 generalises so any future watching gap can declare its own check.
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [g064-readiness](/docs/generated/tools-g064-readiness) | tests | TODO: describe what this component does |
+| [g064-readiness](/docs/generated/tools-g064-readiness) | tests | G-064 closure-readiness gauge — substrate-aware check. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_fw_gaps_closure_check.yaml`*

@@ -17,7 +17,7 @@ beyond PROJECT_ROOT export and argv passthrough.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [resolver](/docs/generated/lib-resolver) | calls | Resolver — workflow lookup, prompt assembly, variant selection, telemetry. |
 
 ## Used By (2)
 

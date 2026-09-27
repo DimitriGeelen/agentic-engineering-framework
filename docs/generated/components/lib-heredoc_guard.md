@@ -1,6 +1,6 @@
 # heredoc_guard
 
-> TODO: describe what this component does
+> T-1945 — Heredoc-in-cmd-substitution detector helper.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/heredoc_guard.py`
 
@@ -16,7 +16,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | called_by | TODO: describe what this component does |
+| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | called_by | T-1945 — Heredoc-in-command-substitution edit-time guard. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-heredoc_guard.yaml`*

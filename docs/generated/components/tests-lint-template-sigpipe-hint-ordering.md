@@ -1,8 +1,8 @@
 # template-sigpipe-hint-ordering
 
-> TODO: describe what this component does
+> T-3000: the SIGPIPE hint block in .tasks/templates/default.md must lead with the form that is correct at any output size.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/lint/template-sigpipe-hint-ordering.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/lint/template-sigpipe-hint-ordering.bats`
 
 ## What It Does
 

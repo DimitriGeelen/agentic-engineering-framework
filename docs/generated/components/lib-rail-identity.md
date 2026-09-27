@@ -1,6 +1,6 @@
 # rail-identity
 
-> TODO: describe what this component does
+> rail-identity.sh — project-scoped signing identity for outbound rail posts (T-2904)
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/rail-identity.sh`
 
@@ -21,10 +21,10 @@ The signing key is selected by ENV PRECEDENCE, not by post flags (termlink
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | called_by | TODO: describe what this component does |
+| [check-rail-mcp-label](/docs/generated/agents-context-check-rail-mcp-label) | called_by | T-2908: PreToolUse label gate for the MCP rail-post producer surface. |
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [rail_identity_guard](/docs/generated/tests-unit-rail_identity_guard) | tests_by | TODO: describe what this component does |
-| [rail_identity_guard](/docs/generated/tests-unit-rail_identity_guard) | called_by | TODO: describe what this component does |
+| [rail_identity_guard](/docs/generated/tests-unit-rail_identity_guard) | tests_by | T-2904: outbound rail posts must not be signed by the shared host key. |
+| [rail_identity_guard](/docs/generated/tests-unit-rail_identity_guard) | called_by | T-2904: outbound rail posts must not be signed by the shared host key. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-rail-identity.yaml`*

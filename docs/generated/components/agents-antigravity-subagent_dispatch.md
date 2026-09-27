@@ -1,8 +1,8 @@
 # subagent_dispatch
 
-> TODO: describe what this component does
+> AEF subagent governance and dispatch helper for the Antigravity provider: prepares, scopes, and reconciles subagents under P-002 task-locking with TermLink tracking.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/antigravity/subagent_dispatch.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `agents/antigravity/subagent_dispatch.py`
 
 ## What It Does
 

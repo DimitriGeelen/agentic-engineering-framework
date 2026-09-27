@@ -1,8 +1,8 @@
 # test_consumer_recover
 
-> TODO: describe what this component does
+> T-2235 — fw consumer-recover wrapper (authorised under T-2233 GO).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_consumer_recover.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_consumer_recover.bats`
 
 ## What It Does
 
@@ -14,8 +14,8 @@ Transport is mocked via PATH shadowing — no real SSH or TermLink calls.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [consumer-recover](/docs/generated/lib-consumer-recover) | calls | TODO: describe what this component does |
-| [consumer-recover](/docs/generated/lib-consumer-recover) | tests | TODO: describe what this component does |
+| [consumer-recover](/docs/generated/lib-consumer-recover) | calls | fw consumer-recover - one-command recovery for legacy vendored consumers |
+| [consumer-recover](/docs/generated/lib-consumer-recover) | tests | fw consumer-recover - one-command recovery for legacy vendored consumers |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

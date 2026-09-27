@@ -1,8 +1,8 @@
 # t1719_ask_routing
 
-> TODO: describe what this component does
+> T-1719 A3 — `fw ask` routes through the Resolver, with a cloud fallback.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t1719_ask_routing.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t1719_ask_routing.bats`
 
 ## What It Does
 
@@ -23,8 +23,8 @@ capture fails, ask still answers. So these tests assert that ask SURVIVES
 |-----------|--------------|-------------|
 | [ask-py](/docs/generated/lib-ask-py) | calls | Python implementation of fw ask subcommand (sibling of lib/ask.sh) |
 | [ask-py](/docs/generated/lib-ask-py) | tests | Python implementation of fw ask subcommand (sibling of lib/ask.sh) |
-| [workflow_lint](/docs/generated/lib-workflow_lint) | tests | TODO: describe what this component does |
-| [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | tests | TODO: describe what this component does |
+| [workflow_lint](/docs/generated/lib-workflow_lint) | tests | Workflow schema linter for `.context/project/workflows/*.yaml`. |
+| [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | tests | T-1946 — Worker-kinds parity check helper. |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

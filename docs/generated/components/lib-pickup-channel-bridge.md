@@ -30,7 +30,7 @@ the lone live emitter resetting the cut's clean-window gate. Silent no-op
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [pickup](/docs/generated/lib-pickup) | invokes_at_process_one | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
-| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | tests_by | TODO: describe what this component does |
+| [t3051_exec_bit_gates](/docs/generated/tests-unit-t3051_exec_bit_gates) | tests_by | T-3051 — repo-tracked helper scripts must not be gated on their exec bit. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-pickup-channel-bridge.yaml`*

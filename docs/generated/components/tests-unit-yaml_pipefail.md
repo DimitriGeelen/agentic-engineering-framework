@@ -1,8 +1,8 @@
 # yaml_pipefail
 
-> TODO: describe what this component does
+> T-1557 / L-302 — Regression: foundation YAML/config helpers must not silent-kill the calling shell under set -e -o pipefail when the requested field/key is absent.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/yaml_pipefail.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/yaml_pipefail.bats`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # tier0_scope_boundary
 
-> TODO: describe what this component does
+> T-2742: Tier 0 inspects the command STRING only — characterization test.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/tier0_scope_boundary.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/tier0_scope_boundary.bats`
 
 ## What It Does
 

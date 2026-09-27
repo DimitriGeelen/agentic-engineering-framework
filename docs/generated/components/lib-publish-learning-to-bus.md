@@ -1,6 +1,6 @@
 # publish-learning-to-bus
 
-> TODO: describe what this component does
+> publish-learning-to-bus.sh — one-way publisher for T-1155 channel:learnings topic.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/publish-learning-to-bus.sh`
 

@@ -14,7 +14,7 @@ Set or show current task focus
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [ask-py](/docs/generated/lib-ask-py) | calls | Python implementation of fw ask subcommand (sibling of lib/ask.sh) |
-| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | calls | TODO: describe what this component does |
+| [memory-recall](/docs/generated/agents-context-lib-memory-recall) | calls | Memory recall — query project knowledge for relevant prior learnings, patterns, and decisions. |
 
 ## Used By (9)
 
@@ -26,9 +26,9 @@ Set or show current task focus
 | [/capture Skill](/docs/generated/capture-skill) | used-by | Emergency ejector seat for untracked conversations. When invoked, reads the JSONL transcript, extracts the current topic's conversation, writes a structured research artifact to docs/reports/, and commits it. Closes the governance gap where pure conversation sessions bypass all framework enforcement. |
 | [context_focus](/docs/generated/tests-unit-context_focus) | called_by | Unit tests for context focus (15 tests) |
 | [context_focus](/docs/generated/tests-unit-context_focus) | tests_by | Unit tests for context focus (15 tests) |
-| [t3038_session_scoped_focus](/docs/generated/tests-unit-t3038_session_scoped_focus) | called_by | TODO: describe what this component does |
-| [t3038_session_scoped_focus](/docs/generated/tests-unit-t3038_session_scoped_focus) | tests_by | TODO: describe what this component does |
-| [embed_health](/docs/generated/web-embed_health) | called_by | TODO: describe what this component does |
+| [t3038_session_scoped_focus](/docs/generated/tests-unit-t3038_session_scoped_focus) | called_by | T-3038 (OBS-291) — focus is per-session, not per-project, for dispatched workers. |
+| [t3038_session_scoped_focus](/docs/generated/tests-unit-t3038_session_scoped_focus) | tests_by | T-3038 (OBS-291) — focus is per-session, not per-project, for dispatched workers. |
+| [embed_health](/docs/generated/web-embed_health) | called_by | Typed liveness classification for the embedding provider (T-3006, slice 1 of T-3005). |
 
 ## Documentation
 

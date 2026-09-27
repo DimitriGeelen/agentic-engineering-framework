@@ -1,6 +1,6 @@
 # version-relation
 
-> TODO: describe what this component does
+> T-2713 — one truthful answer to "is this consumer ahead or behind?".
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/version-relation.sh`
 
@@ -22,11 +22,11 @@ VERSION itself has gone 1.6.354 -> 1.6.121 -> 1.6.176. A counter that resets
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
-| [t2762_upgrade_foreign_source_sha](/docs/generated/tests-unit-t2762_upgrade_foreign_source_sha) | tests_by | TODO: describe what this component does |
-| [version_relation](/docs/generated/tests-unit-version_relation) | tests_by | TODO: describe what this component does |
+| [t2762_upgrade_foreign_source_sha](/docs/generated/tests-unit-t2762_upgrade_foreign_source_sha) | tests_by | T-2762: a source repo that cannot resolve the consumer's recorded commit is not a valid upgrade source. |
+| [version_relation](/docs/generated/tests-unit-version_relation) | tests_by | T-2713: consumer-vs-framework version relation must come from git ancestry, never from `sort -V` over the VERSION counter. |
 | [upgrade](/docs/generated/lib-upgrade) | called_by | fw upgrade - Sync framework improvements to a consumer project |
-| [t2762_upgrade_foreign_source_sha](/docs/generated/tests-unit-t2762_upgrade_foreign_source_sha) | called_by | TODO: describe what this component does |
-| [version_relation](/docs/generated/tests-unit-version_relation) | called_by | TODO: describe what this component does |
+| [t2762_upgrade_foreign_source_sha](/docs/generated/tests-unit-t2762_upgrade_foreign_source_sha) | called_by | T-2762: a source repo that cannot resolve the consumer's recorded commit is not a valid upgrade source. |
+| [version_relation](/docs/generated/tests-unit-version_relation) | called_by | T-2713: consumer-vs-framework version relation must come from git ancestry, never from `sort -V` over the VERSION counter. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-version-relation.yaml`*

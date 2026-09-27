@@ -1,8 +1,8 @@
 # t2923_cmd_classify_heredoc
 
-> TODO: describe what this component does
+> T-2923 — the budget-gate classifier must not read a heredoc BODY as commands.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t2923_cmd_classify_heredoc.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t2923_cmd_classify_heredoc.bats`
 
 ## What It Does
 
@@ -21,8 +21,8 @@ quotes, so every message line became a segment.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [cmd_classify](/docs/generated/lib-cmd_classify) | calls | TODO: describe what this component does |
-| [cmd_classify](/docs/generated/lib-cmd_classify) | tests | TODO: describe what this component does |
+| [cmd_classify](/docs/generated/lib-cmd_classify) | calls | Decompose-then-judge classifier for the budget gate's at-critical allowlist. |
+| [cmd_classify](/docs/generated/lib-cmd_classify) | tests | Decompose-then-judge classifier for the budget gate's at-critical allowlist. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t2923_cmd_classify_heredoc.yaml`*

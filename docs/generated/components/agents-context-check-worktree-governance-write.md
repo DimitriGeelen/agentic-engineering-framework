@@ -1,6 +1,6 @@
 # check-worktree-governance-write
 
-> TODO: describe what this component does
+> T-3098 — Refuse governance writes from a linked git worktree.
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/check-worktree-governance-write.sh`
 
@@ -29,8 +29,8 @@ scope boundary, CLAUDE.md §Enforcement Tiers). `fw integrate`, `fw worktree`,
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [hook-config](/docs/generated/hook-config) | called_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
-| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | called_by | TODO: describe what this component does |
-| [t3113_upgrade_worktree_advisory](/docs/generated/tests-unit-t3113_upgrade_worktree_advisory) | called_by | TODO: describe what this component does |
+| [t3112_worktree_hook_parity](/docs/generated/tests-unit-t3112_worktree_hook_parity) | called_by | T-3112: fw doctor audits linked worktrees for enforcement drift (R7 leg L3). |
+| [t3113_upgrade_worktree_advisory](/docs/generated/tests-unit-t3113_upgrade_worktree_advisory) | called_by | T-3113: `fw upgrade` names which linked worktrees are behind (R7 leg L4). |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-worktree-governance-write.yaml`*

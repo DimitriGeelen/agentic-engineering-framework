@@ -1,8 +1,8 @@
 # cron_install
 
-> TODO: describe what this component does
+> Integration tests for fw cron install + fw doctor cron drift check (T-1112/T-1114)
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/integration/cron_install.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/integration/cron_install.bats`
 
 ## What It Does
 

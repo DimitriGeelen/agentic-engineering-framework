@@ -1,8 +1,8 @@
 # t3050_b005_block_message
 
-> TODO: describe what this component does
+> T-3050 — the B-005 refusal must name the way forward.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3050_b005_block_message.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3050_b005_block_message.bats`
 
 ## What It Does
 

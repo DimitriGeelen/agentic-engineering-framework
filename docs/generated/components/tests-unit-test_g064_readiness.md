@@ -1,8 +1,8 @@
 # test_g064_readiness
 
-> TODO: describe what this component does
+> T-1750 — Regression tests for tools/g064-readiness.py.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_g064_readiness.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_g064_readiness.py`
 
 ## What It Does
 
@@ -10,7 +10,7 @@
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [g064-readiness](/docs/generated/tools-g064-readiness) | calls | TODO: describe what this component does |
+| [g064-readiness](/docs/generated/tools-g064-readiness) | calls | G-064 closure-readiness gauge — substrate-aware check. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_g064_readiness.yaml`*

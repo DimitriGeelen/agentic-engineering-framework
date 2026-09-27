@@ -1,6 +1,6 @@
 # _cockpit_activity
 
-> TODO: describe what this component does
+> arc-007 S6d (T-2020): recent-activity fragment — polled by the cockpit card. Read-only; reuses the existing wt-queue-item tokens so it restyles with T-1990.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_cockpit_activity.html`
 

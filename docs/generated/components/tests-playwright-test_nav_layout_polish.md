@@ -1,8 +1,8 @@
 # test_nav_layout_polish
 
-> TODO: describe what this component does
+> T-2033: arc-007 nav-layout polish — computed-layout guards for sidebar + icon rail.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_nav_layout_polish.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_nav_layout_polish.py`
 
 ## What It Does
 

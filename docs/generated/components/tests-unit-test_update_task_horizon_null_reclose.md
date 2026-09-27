@@ -1,8 +1,8 @@
 # test_update_task_horizon_null_reclose
 
-> TODO: describe what this component does
+> T-2300: re-close-path leg-gap regression test.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_update_task_horizon_null_reclose.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_update_task_horizon_null_reclose.bats`
 
 ## What It Does
 

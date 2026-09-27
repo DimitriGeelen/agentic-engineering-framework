@@ -22,7 +22,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-03T16:51:01Z
-last_update: 2026-09-24T19:38:56Z
+last_update: '2026-09-25T19:15:06Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -50,6 +50,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=7 (lines=195,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-25T19:15:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=8 (lines=245,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-03T17:00:12Z'

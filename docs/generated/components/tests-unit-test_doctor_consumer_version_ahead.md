@@ -1,8 +1,8 @@
 # test_doctor_consumer_version_ahead
 
-> TODO: describe what this component does
+> T-1838 — fw doctor asymmetric version-skew detection.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_doctor_consumer_version_ahead.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_doctor_consumer_version_ahead.bats`
 
 ## What It Does
 

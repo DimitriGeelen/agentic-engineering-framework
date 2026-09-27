@@ -1,8 +1,8 @@
 # recover
 
-> TODO: describe what this component does
+> fw gpu recover: frees GPU memory on shared hosts by terminating the largest non-ollama VRAM consumer; reactive standalone utility with no framework imports (T-1754).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/gpu-recover/recover.sh`
+**Type:** script | **Subsystem:** framework-core | **Location:** `agents/gpu-recover/recover.sh`
 
 ## What It Does
 

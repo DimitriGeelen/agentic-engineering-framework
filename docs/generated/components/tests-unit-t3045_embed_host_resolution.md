@@ -1,8 +1,8 @@
 # t3045_embed_host_resolution
 
-> TODO: describe what this component does
+> T-3045 A6 — how Config.EMBED_HOST resolves, pinned.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3045_embed_host_resolution.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3045_embed_host_resolution.bats`
 
 ## What It Does
 
@@ -21,7 +21,7 @@ the resolution RULE in web/config.py, which is tracked: unset falls back to
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [config](/docs/generated/web-config) | tests | TODO: describe what this component does |
+| [config](/docs/generated/web-config) | tests | Environment-based configuration for Watchtower. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t3045_embed_host_resolution.yaml`*

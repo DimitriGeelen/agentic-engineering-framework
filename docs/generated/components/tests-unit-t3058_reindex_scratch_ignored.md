@@ -1,8 +1,8 @@
 # t3058_reindex_scratch_ignored
 
-> TODO: describe what this component does
+> T-3058 — the vector reindex scratch copy must be gitignored.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3058_reindex_scratch_ignored.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3058_reindex_scratch_ignored.bats`
 
 ## What It Does
 

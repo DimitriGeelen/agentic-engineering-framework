@@ -1,8 +1,8 @@
 # capture_verbs_nulltask
 
-> TODO: describe what this component does
+> T-2878 — the capture verbs must be reachable in the state that completing work creates.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/capture_verbs_nulltask.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/capture_verbs_nulltask.bats`
 
 ## What It Does
 

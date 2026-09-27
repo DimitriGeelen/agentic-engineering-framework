@@ -1,8 +1,8 @@
 # designer_sync_from_tag
 
-> TODO: describe what this component does
+> T-2616: fw designer sync --from-tag — pull-at-tag intake contract (T-247/D-335).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/designer_sync_from_tag.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/designer_sync_from_tag.bats`
 
 ## What It Does
 
@@ -16,7 +16,7 @@ LOCAL fixture origin (throwaway git repo + annotated tag) — zero network.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [designer](/docs/generated/agents-designer-designer) | tests | TODO: describe what this component does |
+| [designer](/docs/generated/agents-designer-designer) | tests | fw designer: vendors and serves a pinned Workflow Designer release build via the Watchtower /designer blueprint (832-Workflow-designer is source of truth; T-2521). |
 | [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---

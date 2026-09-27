@@ -1,6 +1,6 @@
 # decided_unclosed
 
-> TODO: describe what this component does
+> T-3175: inceptions that are DECIDED but still open — the queue nobody showed.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/decided_unclosed.py`
 
@@ -13,7 +13,7 @@ docstring; it is a park, not a pending closure.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [test_inception_close_card](/docs/generated/tests-unit-test_inception_close_card) | called_by | TODO: describe what this component does |
+| [test_inception_close_card](/docs/generated/tests-unit-test_inception_close_card) | called_by | T-3180: a decided inception must have a way to close it. |
 | [approvals](/docs/generated/web-blueprints-approvals) | called_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
 | [inception](/docs/generated/web-blueprints-inception) | called_by | Blueprint 'inception' — routes: /inception |
 

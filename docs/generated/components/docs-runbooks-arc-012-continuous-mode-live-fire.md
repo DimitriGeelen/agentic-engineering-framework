@@ -1,8 +1,8 @@
 # arc-012-continuous-mode-live-fire
 
-> TODO: describe what this component does
+> **Purpose:** run the continuous-run loop end-to-end and observe the `headline_mechanic` firing — an agent that crosses the context-budget threshold *without operator relay*, self-checkpoints, hands over, auto-restarts via `claude-fw`…
 
-**Type:** script | **Subsystem:** unknown | **Location:** `docs/runbooks/arc-012-continuous-mode-live-fire.md`
+**Type:** script | **Subsystem:** docs | **Location:** `docs/runbooks/arc-012-continuous-mode-live-fire.md`
 
 ## What It Does
 

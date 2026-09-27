@@ -1,8 +1,8 @@
 # arc_dual_identity_verbs
 
-> TODO: describe what this component does
+> T-1848 sequel — verb-side normalisation coverage.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/arc_dual_identity_verbs.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/arc_dual_identity_verbs.bats`
 
 ## What It Does
 
@@ -18,8 +18,8 @@ library, run each verb with both forms, assert success + correct routing.
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
-| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
-| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | calls | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
+| [arc](/docs/generated/lib-arc) | tests | lib/arc.sh — Arc system (T-1653 Phase 1 / T-1661 / T-1848) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_dual_identity_verbs.yaml`*

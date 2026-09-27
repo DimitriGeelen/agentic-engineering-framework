@@ -1,8 +1,8 @@
 # watchtower_health_verdict_identity
 
-> TODO: describe what this component does
+> T-2445 (F9, T-2442 batch): Watchtower HEALTH-VERDICT call-sites must gate on the identity-verified resolver, never on a default-port `/health` curl.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/watchtower_health_verdict_identity.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/watchtower_health_verdict_identity.bats`
 
 ## What It Does
 

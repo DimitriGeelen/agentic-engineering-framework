@@ -1,8 +1,8 @@
 # t3247_restart_headless_prompt
 
-> TODO: describe what this component does
+> T-3247 — the budget-critical RESTART relaunch must carry a prompt under --print.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/t3247_restart_headless_prompt.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/t3247_restart_headless_prompt.bats`
 
 ## What It Does
 

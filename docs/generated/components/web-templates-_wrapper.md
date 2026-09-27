@@ -11,7 +11,7 @@
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [base](/docs/generated/web-templates-base) | extends | Template: {{ page_title \| default("Watchtower") }} — Agentic Engineering Framework |
-| [_breadcrumb](/docs/generated/web-templates-_breadcrumb) | includes | TODO: describe what this component does |
+| [_breadcrumb](/docs/generated/web-templates-_breadcrumb) | includes | Breadcrumb trail (T-2009, arc-007 S2b). Rendered inside #content (full loads via _wrapper.html, htmx loads via render_page prepend) so it stays fresh on every navigation. |
 
 ## Used By (4)
 

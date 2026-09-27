@@ -1,8 +1,8 @@
 # standard_pin
 
-> TODO: describe what this component does
+> T-2869 — the vendored AEF↔BPMN standard must stay byte-identical to its pin.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/standard_pin.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/standard_pin.bats`
 
 ## What It Does
 

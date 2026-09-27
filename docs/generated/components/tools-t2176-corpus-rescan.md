@@ -1,8 +1,8 @@
 # t2176-corpus-rescan
 
-> TODO: describe what this component does
+> T-2176: Fresh fw reviewer scan over .tasks/completed/ to refresh stale verdict cache. Writes back ## Reviewer Verdict block per task; logs JSON per task; aggregates FAIL list.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/t2176-corpus-rescan.sh`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/t2176-corpus-rescan.sh`
 
 ## What It Does
 

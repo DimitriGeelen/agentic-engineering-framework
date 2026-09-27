@@ -1,8 +1,8 @@
 # test_audit_cron_registry_generated_drift
 
-> TODO: describe what this component does
+> T-1943 — Pin fw audit registry → generated cron drift FAIL (audit-side sibling to T-1942's doctor-side WARN).
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_audit_cron_registry_generated_drift.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_audit_cron_registry_generated_drift.bats`
 
 ## What It Does
 

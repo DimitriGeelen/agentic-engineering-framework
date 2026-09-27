@@ -1,8 +1,8 @@
 # episodic_worktree_mining
 
-> TODO: describe what this component does
+> T-3129 — episodic git mining in a LINKED GIT WORKTREE, and the shape of a skipped measurement.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/episodic_worktree_mining.bats`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/episodic_worktree_mining.bats`
 
 ## What It Does
 

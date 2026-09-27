@@ -1,8 +1,8 @@
 # bpmn
 
-> TODO: describe what this component does
+> fw bpmn agent: BPMN process diagram to AEF task compiler (Child-2 forward bridge); thin wrapper routing compile/promote to tools/bpmn_to_tasks.py and tools/bpmn_promote.py.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/bpmn/bpmn.sh`
+**Type:** script | **Subsystem:** governance | **Location:** `agents/bpmn/bpmn.sh`
 
 ## What It Does
 

@@ -1,8 +1,8 @@
 # gaps-render-agreement
 
-> TODO: describe what this component does
+> T-3140: assert `fw gaps` renders exactly the non-terminal half of the register.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tools/gaps-render-agreement.py`
+**Type:** script | **Subsystem:** framework-core | **Location:** `tools/gaps-render-agreement.py`
 
 ## What It Does
 

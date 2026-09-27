@@ -1,8 +1,8 @@
 # test_orchestrator_outcome_dedup
 
-> TODO: describe what this component does
+> T-1757 — Regression test for orchestrator status outcome dedup.
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/test_orchestrator_outcome_dedup.py`
+**Type:** script | **Subsystem:** tests | **Location:** `tests/unit/test_orchestrator_outcome_dedup.py`
 
 ## What It Does
 

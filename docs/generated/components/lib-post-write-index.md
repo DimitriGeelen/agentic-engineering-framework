@@ -1,6 +1,6 @@
 # post-write-index
 
-> TODO: describe what this component does
+> Post-write vector-index hook — T-1719 A1.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/post-write-index.sh`
 
@@ -23,8 +23,8 @@ aggregates (.context/project/learnings.yaml is ~386 chunks, decisions.yaml
 |-----------|--------------|-------------|
 | [episodic](/docs/generated/agents-context-lib-episodic) | called_by | Context Agent - generate-episodic command |
 | [pattern](/docs/generated/agents-context-lib-pattern) | called_by | Context Agent - add-pattern command |
-| [t1719_post_write_index](/docs/generated/tests-unit-t1719_post_write_index) | called_by | TODO: describe what this component does |
-| [t1719_post_write_index](/docs/generated/tests-unit-t1719_post_write_index) | tests_by | TODO: describe what this component does |
+| [t1719_post_write_index](/docs/generated/tests-unit-t1719_post_write_index) | called_by | T-1719 A1 — the post-write index hook, and the boundary of where it may be wired. |
+| [t1719_post_write_index](/docs/generated/tests-unit-t1719_post_write_index) | tests_by | T-1719 A1 — the post-write index hook, and the boundary of where it may be wired. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-post-write-index.yaml`*
