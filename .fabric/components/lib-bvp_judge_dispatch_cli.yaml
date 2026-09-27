@@ -1,0 +1,21 @@
+id: lib/bvp_judge_dispatch_cli.py
+name: bvp_judge_dispatch_cli
+type: script
+subsystem: framework-core
+location: lib/bvp_judge_dispatch_cli.py
+tags: []
+
+purpose: "Dispatch mode for the BVP score judge (T-3526), reusing T-1951's shape."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-27
+created_by: unknown

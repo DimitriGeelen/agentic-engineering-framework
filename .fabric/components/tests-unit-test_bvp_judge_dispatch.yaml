@@ -1,0 +1,21 @@
+id: tests/unit/test_bvp_judge_dispatch.py
+name: test_bvp_judge_dispatch
+type: script
+subsystem: tests
+location: tests/unit/test_bvp_judge_dispatch.py
+tags: []
+
+purpose: "Tests for lib/bvp_judge_dispatch_cli.py (T-3526, T-1951 shape reused)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-27
+created_by: unknown

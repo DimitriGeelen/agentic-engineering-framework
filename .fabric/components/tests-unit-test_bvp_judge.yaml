@@ -1,0 +1,21 @@
+id: tests/unit/test_bvp_judge.py
+name: test_bvp_judge
+type: script
+subsystem: tests
+location: tests/unit/test_bvp_judge.py
+tags: []
+
+purpose: "Tests for lib/bvp_judge.py — the BVP score judge (T-3526, D-662 slice 2 of 3)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-27
+created_by: unknown
