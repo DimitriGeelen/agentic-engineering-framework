@@ -1954,6 +1954,123 @@ else
          "Migrate to lib/arc_membership.{sh,py} (arc_tasks_for / scan_tasks_by_arc_membership). See T-1880 for pattern. Silent-corpus risk class L-397."
 fi
 
+# T-3516 (OBS-546): ctl-arc-membership-python-import.
+# The check above requires the literal token `grep`, so it is blind to a
+# Python file that re-derives arc membership without ever calling grep — a
+# silent-corpus risk in exactly the language the shell-pattern check cannot
+# see (T-3503 measured this live: two Python copies of arc membership both
+# drifted wrong while the check above reported PASS in the same run).
+#
+# Inverted design (allowlist of DIRECT derivation, not blocklist of
+# reinvention text): a blocklist of "bad regexes" is unbounded per language
+# ("the set of ways to write a regex is not finite" — this task's own
+# framing); an allowlist of files permitted to derive membership directly is
+# finite. So: any Python file outside the allowlist that (a) iterates the
+# task corpus (`.tasks/active` / `.tasks/completed` / a `T-*.md` glob) AND
+# (b) references `arc_id` WITHIN 60 LINES of that iteration, and does NOT
+# import the canonical helper, is a reinvention candidate.
+#
+# Comments are stripped (tokenize COMMENT tokens only — never strings, so a
+# real `row["arc_id"]` access still counts) before matching, so a comment
+# that merely NAMES the pattern does not trip the check — the exact class
+# that broke a T-3502 verification line on a correct tree. The 60-line
+# window (not file-wide co-occurrence) excludes large multi-purpose files
+# that iterate the corpus in one function and resolve an unrelated arc_id
+# in a different, distant function (measured false-positive risk on this
+# corpus: agents/termlink/bvp-estimator/estimator.py, >1000 lines apart).
+#
+# Allowlist: lib/arc_membership.py (canonical), lib/migrations/ (one-shot
+# migration), tests/, docs/, .fabric/, .context/ (out-of-scope surfaces).
+# Scope: lib/, web/, agents/, bin/, tools/ — *.py only (shell reinvention is
+# still caught by the grep-token check above; this is the Python half).
+# Failure mode: FAIL — same class, same severity as T-1881.
+if command -v python3 >/dev/null 2>&1; then
+    arc_py_import_findings=$(python3 - "$PROJECT_ROOT" <<'PY'
+import io
+import re
+import sys
+import tokenize
+from pathlib import Path
+
+root = Path(sys.argv[1])
+scan_dirs = ["lib", "web", "agents", "bin", "tools"]
+allow_prefixes = ("lib/arc_membership.py", "lib/migrations/")
+allow_infixes = ("/tests/", "/docs/", "/.fabric/", "/.context/")
+
+corpus_iter_re = re.compile(
+    r"""\.tasks[/'"]\s*/?\s*['"]?(active|completed)|glob\(\s*['"]T-\*\.md['"]"""
+)
+arc_id_re = re.compile(r"arc_id")
+import_re = re.compile(
+    r"(?:from\s+(?:lib\.)?arc_membership\s+import)|(?:import\s+(?:lib\.)?arc_membership\b)"
+)
+WINDOW = 60
+
+scanned = 0
+findings = []
+for d in scan_dirs:
+    base = root / d
+    if not base.is_dir():
+        continue
+    for path in sorted(base.rglob("*.py")):
+        rel = str(path.relative_to(root))
+        if rel.startswith(allow_prefixes):
+            continue
+        if any(inf in ("/" + rel + "/") for inf in allow_infixes):
+            continue
+        scanned += 1
+        try:
+            src = path.read_text(errors="replace")
+        except OSError:
+            continue
+        lines = src.splitlines()
+        try:
+            for tok in tokenize.generate_tokens(io.StringIO(src).readline):
+                if tok.type == tokenize.COMMENT:
+                    r, c = tok.start[0] - 1, tok.start[1]
+                    if 0 <= r < len(lines):
+                        lines[r] = lines[r][:c]
+        except tokenize.TokenError:
+            pass
+
+        if import_re.search("\n".join(lines)):
+            continue  # delegates — compliant regardless of local text
+
+        iter_lines = [i for i, l in enumerate(lines) if corpus_iter_re.search(l)]
+        if not iter_lines:
+            continue
+        arc_lines = [i for i, l in enumerate(lines) if arc_id_re.search(l)]
+        if not arc_lines:
+            continue
+        for il in iter_lines:
+            for al in arc_lines:
+                if abs(il - al) <= WINDOW:
+                    findings.append(f"{rel}:{il + 1}~{al + 1}")
+                    break
+            else:
+                continue
+            break
+
+print(f"scanned={scanned}")
+for f in findings:
+    print("FINDING " + f)
+PY
+)
+    arc_py_import_scanned=$(printf '%s\n' "$arc_py_import_findings" | grep '^scanned=' | cut -d= -f2)
+    arc_py_import_evidence=$(printf '%s\n' "$arc_py_import_findings" | grep '^FINDING ' | sed 's/^FINDING //')
+    arc_py_import_violations=0
+    [ -n "$arc_py_import_evidence" ] && arc_py_import_violations=$(printf '%s\n' "$arc_py_import_evidence" | grep -c .)
+    if [ "$arc_py_import_violations" -eq 0 ]; then
+        pass_over "${arc_py_import_scanned:-0}" "Python file(s) under lib/ web/ agents/ bin/ tools/" \
+             "No Python arc-membership derivation outside canonical import (T-3516, OBS-546)" \
+             "" "The scan walked no files — check that lib/ web/ agents/ bin/ tools/ exist under PROJECT_ROOT"
+    else
+        fail "Found $arc_py_import_violations Python arc-membership derivation site(s) not importing the canonical helper" \
+             "$(printf '%s\n' "$arc_py_import_evidence" | head -5)" \
+             "Import from lib.arc_membership (scan_tasks_by_arc_membership / task_dict_in_arc / task_has_arc_membership) instead of re-deriving. See T-1880/T-3516."
+    fi
+fi
+
 # T-2648 (OBS-097, 832's G-004 class): split-root asset-resolution lint.
 # Framework-owned dirs (lib/ agents/ policy/ bin/ web/) resolved via
 # PROJECT_ROOT are invisible bugs in this repo (roots coincide) but break

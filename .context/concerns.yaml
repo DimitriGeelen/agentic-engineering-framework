@@ -1021,3 +1021,68 @@
   - T-2905
   - T-1333
   follow_up_task: null
+- id: OBS-545
+  type: bug
+  severity: medium
+  surface: agents/audit/audit.sh arc-completion-ratio check
+  detected_in: T-3503 (arc-membership S3 — two Python copies of arc membership drifted
+    wrong in the same run the T-1881 rail reported PASS)
+  symptom: The audit's arc-completion-ratio check read the deprecated `constituent_tasks:`
+    cache as a fallback rather than unioning it with live membership, so an arc whose
+    cache was stale under-counted (or zeroed) its member tasks. Named in T-3503's RCA
+    but never landed in this register — T-3503 said "filed" and neither this nor
+    OBS-546 existed here until T-3516 closed the gap.
+  root_cause: The check preferred the cache when present instead of treating live
+    `lib/arc_membership.py` resolution as authoritative and the cache as a secondary
+    signal only when live resolution degrades.
+  prevention: 'FIXED (T-3507): the check now computes membership as an unconditional
+    union (live + cache), not a cache-preferred fallback; resolves via
+    `lib/arc_membership.py` rather than an inline scan; walks the corpus once per run,
+    not once per arc; degrades loudly (never silently) when live resolution fails.
+    Regression: T-3507''s fixture suite (2 empty-state-distinguishability tests +
+    1 non-empty-cache union test).'
+  blast_radius: scoped
+  observed: '2026-09-26'
+  fixed_in: T-3507
+  fixed_date: '2026-09-26'
+  status: resolved
+  related:
+  - T-3503
+  - T-3507
+  - T-3516
+  follow_up_task: null
+- id: OBS-546
+  type: bug
+  severity: medium
+  surface: agents/audit/audit.sh ctl-arc-tag-only-pattern check (T-1881)
+  detected_in: T-3503 (arc-membership S3 — same run as OBS-545)
+  symptom: The T-1881 rail requires the literal token `grep` in its pattern match, so
+    it is structurally blind to a Python file that re-derives arc membership without
+    calling grep. Measured live — it reported PASS in the same run in which two Python
+    copies of arc membership (`web/blueprints/bvp.py`, `lib/bvp.sh`'s embedded Python)
+    both drifted wrong. Named in T-3503's RCA but never landed in this register (same
+    gap as OBS-545 — see that entry).
+  root_cause: A blocklist of "bad regex patterns" is inherently language-specific and
+    open-ended ("the set of ways to write a regex is not finite" — T-3516); the shell
+    pattern only ever matched shell-idiom reinvention (`grep ... arc:<slug>`), leaving
+    every Python reinvention path structurally unreachable by the check.
+  prevention: 'FIXED (T-3516): added a sibling check, `ctl-arc-membership-python-import`,
+    that inverts the design to an allowlist of files permitted to derive membership
+    directly (finite) instead of a blocklist of reinvention text (unbounded). Flags any
+    Python file outside the allowlist that iterates the task corpus AND references
+    `arc_id` within a 60-line window without importing `lib.arc_membership`. Comments
+    are stripped via tokenize (COMMENT tokens only, not strings) before matching, so a
+    comment naming the pattern does not trip it — the T-3502 false-positive class.
+    Verified zero false positives against the live corpus (12 delegating files + 3
+    adjacent arc_id-referencing files that do not need to import). Regression:
+    tests/unit/audit_ctl_arc_membership_python_import.bats (6 tests).'
+  blast_radius: scoped
+  observed: '2026-09-26'
+  fixed_in: T-3516
+  fixed_date: '2026-09-27'
+  status: resolved
+  related:
+  - T-3503
+  - T-1881
+  - T-3516
+  follow_up_task: null

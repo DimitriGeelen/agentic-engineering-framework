@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3516: invert the T-1881 arc-membership rail to an import allowlist; close OBS-545 as resolved
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T14:38:01Z
+# ============================================================================
+
+task_id: T-3516
+task_name: "invert the T-1881 arc-membership rail to an import allowlist; close OBS-545 as resolved"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T22:36:10Z
+completed: 2026-09-27T14:37:42Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-546. agents/audit/audit.sh:1924 detects membership reinventions with arc_tag_only_pattern='grep[^|]*"^?tags:.*arc:|grep[^|]*arc:[A-Za-z0-9_-]' — every alternative requires the literal token grep, so the rail sees shell scans and is blind to Python. Measured under T-3503: it reported PASS over 461 files in the same run in which two Python copies of arc membership both omitted the legacy tag half. Those two now delegate (lib/bvp.sh:599, web/blueprints/bvp.py:441), so the blindness is latent, not active — the corpus nonetheless had five independent implementations, so reinvention is the demonstrated norm. Invert the check: assert every membership reader imports the canonical helper, with an explicit allowlist of files permitted to derive it directly. An allowlist of callers is finite; the set of ways to write a regex is not. Anchor on code sites (imports/compilation), NOT on text — a prose-matching check trips on the comment that explains it, which is exactly how a T-3502 verification line failed on a correct tree. Also: close OBS-545, whose live half shipped as T-3507 (audit.sh:7657 unions instead of falling back).
+
+# Key outcomes
+outcomes:
+  - 'New audit check `ctl-arc-membership-python-import` added to `agents/audit/audit.sh`'
+  - 'Comments are stripped (tokenize COMMENT tokens, not strings) before matching, so a'
+  - 'Zero false positives against the live corpus: verified against all 12 files that'
+  - '`tests/unit/audit_ctl_arc_membership_python_import.bats` pins: clean tree PASS,'
+  - 'OBS-545 (mitigated by T-3507, referenced by T-3503 but never landed in'
+  - '`agents/audit/audit.sh` retains its executable bit after edit (T-3317 class).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 961 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc, audit, detector]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 961
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3516-invert-the-t-1881-arc-membership-rail-to.md
+generated_by: context-agent-hybrid
