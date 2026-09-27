@@ -1,0 +1,21 @@
+id: lib/dispatch_tokens.py
+name: dispatch_tokens
+type: script
+subsystem: framework-core
+location: lib/dispatch_tokens.py
+tags: []
+
+purpose: "dispatch_tokens.py — token usage for a TermLink dispatch worker (T-3519)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-27
+created_by: unknown

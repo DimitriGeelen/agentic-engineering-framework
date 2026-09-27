@@ -1174,6 +1174,15 @@ cmd_result() {
         fi
     fi
 
+    # T-3519: token usage, from the result line's modelUsage. Operator instruction
+    # 2026-09-27 — report cost in tokens, not dollars, and embed it rather than
+    # recomputing it by hand per dispatch. Prints UNAVAILABLE (never 0) while a
+    # worker is still running: see lib/dispatch_tokens.py for why a per-turn sum of
+    # `usage` is the wrong measurement and what it gets wrong.
+    if [ -f "$FRAMEWORK_ROOT/lib/dispatch_tokens.py" ]; then
+        python3 "$FRAMEWORK_ROOT/lib/dispatch_tokens.py" "$name" 2>/dev/null || true
+    fi
+
     if [ -f "$wdir/result.md" ]; then
         cat "$wdir/result.md"
     else
