@@ -12,12 +12,12 @@ description: >
   0 of 3032 tasks declaring write_set:, so 'fw write-set check' exits 2 (undecidable)
   on every real pair — this field feeds that gate too. Do NOT write 0 for absent (T-3068).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, cost-axis]
-components: []
+components: [agents/termlink/bvp-estimator/estimator.py, tests/unit/test_t3512_write_set_blast_radius.py]
 related_tasks: [T-3471, T-3068]
 # T-3512 declares its own write_set — the first task in 3032 to do so, which is
 # the point: the field had a reader and a gate and never once had an input.
@@ -41,8 +41,8 @@ write_set:
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-26T22:32:58Z
-last_update: 2026-09-27T08:11:21Z
-date_finished:
+last_update: 2026-09-27T08:19:24Z
+date_finished: 2026-09-27T08:19:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -421,3 +421,22 @@ cmp -s .tasks/templates/default.md .agentic-framework/.tasks/templates/default.m
 ### 2026-09-27T08:11:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9df78a1c
+- **Timestamp:** 2026-09-27T08:19:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **write-set-underdeclared** (partial, heuristic) @ write_set: vs body cross-check
+     - evidence: `path='lib/write_set.py' not in write_set=['agents/termlink/bvp-estimator/estimator.py', '.tasks/templates/default.md', 'tests/unit/test_t3512_write_set_blast_radius.py']; context='a reader (`lib/write_set.py`) and a gate (`fw write-set check`) and **zero inputs**'`
+  2. **write-set-underdeclared** (partial, heuristic) @ write_set: vs body cross-check
+     - evidence: `path='tests/unit/test_bvp_estimator.py' not in write_set=['agents/termlink/bvp-estimator/estimator.py', '.tasks/templates/default.md', 'tests/unit/test_t3512_write_set_blast_radius.py']; context='- [x] `tests/unit/test_bvp_estimator.py` stays green (189 passed). The write-set'`
+
+### 2026-09-27T08:19:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

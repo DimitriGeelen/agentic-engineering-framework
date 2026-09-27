@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3512: declare target paths at capture so blast_radius is derivable before close (and fw write-set check stops returning undecidable)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T08:19:49Z
+# ============================================================================
+
+task_id: T-3512
+task_name: "declare target paths at capture so blast_radius is derivable before close (and fw write-set check stops returning undecidable)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T22:32:58Z
+completed: 2026-09-27T08:19:24Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-27T10:19:05+02:00
+last_commit: 2026-09-27T10:19:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  blast_radius falls back to the declared write_set before close
+
+# Key outcomes
+outcomes:
+  - '**Reuse the existing field, do not invent one.** `write_set:` already has a'
+  - '`score_blast_radius` derives a value from `write_set:` when it is declared,'
+  - '**Precedence: measurement beats declaration.** `components:` (resolved from'
+  - '**Absent stays None; declared-empty is 0 and says so.** A missing `write_set:`'
+  - 'The task template documents `write_set:` where an author will see it, in the'
+  - '**Demonstrated end-to-end, not just unit-tested.** At least two real tasks'
+  - 'Tests cover: declared→score, absent→None, declared-empty→0-with-its-own-token,'
+  - '`tests/unit/test_bvp_estimator.py` stays green (189 passed). The write-set'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/bvp-estimator/estimator.py'
+  - '.agentic-framework/.tasks/templates/default.md'
+  - '.agentic-framework/VERSION'
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - '.context/inbox.yaml'
+  - '.fabric/components/tests-unit-test_t3512_write_set_blast_radius.yaml'
+  - '.tasks/active/T-3512-declare-target-paths-at-capture-so-blast.md'
+  - '.tasks/active/T-3513-derive-blastradius-from-the-fabric-when-.md'
+  - '.tasks/templates/default.md'
+  - 'tests/unit/test_t3512_write_set_blast_radius.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-27T10:19:05'
+    action: 'T-3512: blast_radius falls back to the declared write_set before close'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 586 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, cost-axis]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 586
+  commits: 1
+  files_changed: 10
+  lines_added: 1237
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3512-declare-target-paths-at-capture-so-blast.md
+generated_by: context-agent-hybrid
