@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3506: Merge four reviewed branches into bleeding-edge (dispatch-f25, dispatch-f21-f24, t3485, t3487)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T11:44:22Z
+# ============================================================================
+
+task_id: T-3506
+task_name: "Merge four reviewed branches into bleeding-edge (dispatch-f25, dispatch-f21-f24, t3485, t3487)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T17:04:47Z
+completed: 2026-09-27T11:17:13Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-09-26T19:06:35+02:00
+last_commit: 2026-09-26T19:07:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  merge dispatch-f25 into bleeding-edge. merge dispatch-f21-f24 into bleeding-edge. merge t3485-bvp-quadrant-value-axis into bleeding-edge. merge t3487-remove-bvp-arc-approval-gate into bleeding-edge
+
+# Key outcomes
+outcomes:
+  - 'Pre-merge bleeding-edge SHA recorded (5ac08b2518085f8390f050b10e6f9dd965a546c3)'
+  - 'dispatch-f25 merged into bleeding-edge via ordinary merge commit (no rebase/squash) → 803a798d5'
+  - 'dispatch-f21-f24 merged into bleeding-edge via ordinary merge commit → 3c7d472d4'
+  - 't3485-bvp-quadrant-value-axis merged into bleeding-edge via ordinary merge commit → b72571179'
+  - 't3487-remove-bvp-arc-approval-gate merged into bleeding-edge via ordinary merge commit (after t3485) → d9c40f054'
+  - 'Any merge conflict reported (files, both sides, nature) with the conflicted merge aborted and tree left clean — N/A, zero conflicts across all four merges'
+  - '`fw audit` run against the merged tree, exit code confirmed not 126, PASS/WARN/FAIL counts reported (33 PASS / 22 WARN / 2 FAIL, both FAIL attributable and explained — see RCA/Recommendation)'
+  - 'Test suite run against merged tree with real measured pass/fail counts (not estimated) — full `fw test unit` corpus (5957 tests) could not complete in the available window (known 7200s ceiling per fw audit''s own WARN); targeted real runs on every file the four branches touch: see Recommendation'
+  - 'No `git push` executed at any point'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-26T19:06:35'
+    action: 'T-3506: merge dispatch-f25 into bleeding-edge'
+  - time: '2026-09-26T19:06:43'
+    action: 'T-3506: merge dispatch-f21-f24 into bleeding-edge'
+  - time: '2026-09-26T19:06:54'
+    action: 'T-3506: merge t3485-bvp-quadrant-value-axis into bleeding-edge'
+  - time: '2026-09-26T19:07:08'
+    action: 'T-3506: merge t3487-remove-bvp-arc-approval-gate into bleeding-edge'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1092 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1092
+  commits: 4
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3506-merge-four-reviewed-branches-into-bleedi.md
+generated_by: context-agent-hybrid
