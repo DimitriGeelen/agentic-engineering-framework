@@ -1128,7 +1128,24 @@
     events; the dispatch verb''s own `close_state` file if one exists; an
     explicit worker-written done sentinel distinct from any result line. Filing
     this as open rather than proposing a specific fix, per register-first
-    discipline — the fix is a separate task once a candidate is verified.'
+    discipline — the fix is a separate task once a candidate is verified.
+
+
+    RESOLVED-IN-PART 2026-09-28 (T-3529): the second candidate is now VERIFIED
+    and implemented. `run.sh`''s post-step writes `<dispatch_dir>/exit_code`,
+    `close_state` (T-3440) and `finished_at` only after the `claude -p` process
+    returns, so the worker cannot be observed in that state with work left —
+    terminal by construction, which is the property the other two candidates
+    lacked. Measured on judge-arc-r1: exit_code=0, close_state=closed,
+    finished_at=2026-09-27T23:12:24Z, while the session itself stayed `ready` in
+    `termlink list` for 38+ minutes afterwards (the watchdog `sleep`, as this
+    entry predicted). `tools/wait-dispatch.sh` implements it as the primary
+    predicate, with worker-gone and a tree-quiet fallback behind it; all three
+    paths and a negative control are exercised. Kept OPEN rather than closed
+    because the first candidate (last result line + idle period) is still
+    unverified, and because OBS-563 records a THIRD premature signal picked in
+    the meantime — the task-file move — which this entry''s advice did not
+    prevent.'
   blast_radius: cross-project (any orchestrator — human or agent — that
     sequences TermLink/`claude -p` dispatches and gates the next one on "first
     result line seen" inherits this exact race; not specific to procAsFit)
@@ -1193,4 +1210,122 @@
   - T-3528
   - T-3526
   - T-3299
+  follow_up_task: null
+
+- id: OBS-562
+  type: structural
+  severity: medium
+  surface: 'lib/arc_driver_judge.py:judge_driver — GREEN from `fw arc judge-driver`
+    means: the three wrapped static checks passed (T-3429), an arc-level or
+    project-level objective was RESOLVABLE, and the driver''s own rationale does
+    not admit doubt about itself. It does NOT mean the driver distinguishes
+    anything the arc actually pursues. The arc goal text is resolved and then
+    discarded (`level, _goal_text, notes = resolve_arc_goal(...)`); only the
+    LEVEL is used, to catch a near-max-weight claim resting on the project
+    fallback.'
+  detected_in: T-3529 (independent verification of T-3527, by construction —
+    probed rather than reasoned about)
+  symptom: 'A confidently-written driver that restates a global directive in
+    different words passes GREEN with no guidance. Measured: name
+    "dependable-execution", rationale "tracks whether execution is dependable and
+    predictable across runs, which differs from D2 in emphasis and is therefore
+    worth scoring separately on this arc" (174 chars, names a directive, no
+    self-doubt markers) against an arc with a real description: and
+    headline_mechanic:, static checks a/b/c all passing → `VERDICT: green |
+    judged green`, guidance empty. That driver is D2 (Reliability) reworded,
+    which is exactly the R5 case §Arc-Scoped Driver Suggestion Workflow warns
+    about ("manufacturing drivers to look thorough is worse than proposing zero").'
+  root_cause: 'The only mechanical discriminator available for "does this driver
+    distinguish something real" is lexical overlap between the rationale and the
+    arc goal text, and T-3527 TRIED it and rejected it on measured evidence: of 8
+    real already-approved scoped/proposed drivers, 3 (continuous-run
+    "Discard fidelity", onboarding-shape-detection "unknown-input-safety",
+    watchtower-redesign "aesthetic-cohesion") shared zero significant vocabulary
+    with their arc''s goal while being good drivers — 37.5% false positives on
+    data that had already passed review. The rejection is correct and well
+    evidenced; good drivers name what they distinguish FROM the globals rather
+    than parroting the arc''s phrasing. So what shipped is the defensible
+    behaviour, and the gap is real at the same time. The self-admission leg that
+    replaced it is genuinely calibrated (2 hits on the full live corpus, both
+    genuine, zero false positives) but narrow BY CONSTRUCTION: it catches a
+    candidate that argues against itself, not one written with confidence.'
+  prevention: 'NOT FIXED, and deliberately not papered over. T-3527''s AC claimed
+    the judge "judges a driver against the arc''s goal and objective — a driver
+    that distinguishes nothing the arc actually pursues is the case to catch";
+    what shipped honours that STRUCTURALLY (is a goal resolvable, is a big weight
+    claim backed by something arc-specific) but not SEMANTICALLY. The AC was
+    over-claimed relative to any check that can be built deterministically — that
+    is a finding about the AC, not a defect in the code, and T-3527 is not
+    reopened for it. Candidate routes, none cheap: (a) have the judge ask a model
+    the semantic question, which is the first place in this arc where a
+    non-deterministic check would be load-bearing and needs its own ruling, since
+    every verdict so far is re-runnable and auditable; (b) require the driver''s
+    rationale to name the specific global it differs from AND state the
+    difference as a contrast, then check the CONTRAST structurally rather than
+    the vocabulary; (c) accept the limit and make it visible — change GREEN''s
+    evidence line to state what was and was not checked, so a reader cannot take
+    it for more than it is. (c) is cheap and honest and should probably happen
+    regardless of (a)/(b).'
+  blast_radius: 'Any arc-scoped driver approved on this judge''s GREEN. Bounded
+    today — the M2 cap is 3 scoped drivers per arc with weight <= 6, and 7 exist
+    across in-progress arcs — but the whole point of T-3429/D-586 was to make
+    addition the default and let the reviewer hold quality, so the ceiling on
+    unchecked additions is now the reviewer''s reach rather than the operator''s
+    attention.'
+  observed: '2026-09-28'
+  status: open
+  related:
+  - T-3527
+  - T-3529
+  - T-3429
+  - T-3410
+  follow_up_task: null
+
+- id: OBS-563
+  type: process
+  severity: medium
+  surface: 'Orchestrator-side dispatch waiting. The predicate "task file has
+    appeared in .tasks/completed/" fires INSIDE `fw task update --status
+    work-completed` (which moves the file as part of its own run), which is
+    before the worker''s final commit. It is therefore a mid-sequence state, not
+    a terminal one.'
+  detected_in: T-3529 (my own error while waiting on T-3527)
+  symptom: 'The wait exited "OUTCOME: T-3527 CLOSED (moved to completed/)" and I
+    inspected a tree where the worker''s entire deliverable was STAGED and
+    uncommitted. I reported that to the operator as a governance failure by the
+    worker — "closed the task and exited without committing, exactly what the
+    prompt warned against" — and filed a task on that premise. The worker
+    committed everything moments later as dcd4946b9, report included. The finding
+    was an artefact of when I looked.'
+  root_cause: 'Same class as OBS-557, one layer over. OBS-557 was waiting on the
+    FIRST result line, which fires on a yield rather than completion; the fix was
+    to stop using result lines and wait on the outcome instead. The replacement
+    signal has the identical defect: it is a state the worker passes THROUGH on
+    its way to done, so "signal seen" and "worker finished" are different
+    moments, and everything observed in between reads as a permanent state. I
+    replaced one premature signal with another and did not ask of the new one the
+    question that had just retired the old one. Compounding it: the prompt I had
+    written warned about an uncommitted-report failure from earlier in the day,
+    so I had a ready-made explanation waiting for the evidence, and took the
+    first observation that fit it.'
+  prevention: 'Fixed for the next dispatch, as a script rather than a lesson:
+    scratch `wait-dispatch.sh` now requires the WORKER''s terminal state (the
+    tmux/termlink session gone, or a clean tree with the task closed), not the
+    task file''s location, and reports which of the two conditions fired. The
+    general rule worth keeping: a wait predicate must name a state the subject
+    cannot pass THROUGH. Ask of any candidate signal "can the worker be observed
+    in this state and still have work left?" — for both the first result line and
+    the task-file move the answer was yes. Secondary discipline, cheaper and
+    broader: when an observation matches a failure you have recently written
+    down, that is a reason to check it harder, not a reason to believe it
+    faster.'
+  blast_radius: 'Any orchestrator sequencing dispatches on task-file location —
+    including the corrected procAsFit sequencing that OBS-557 produced, if it
+    picked this predicate as its replacement.'
+  observed: '2026-09-28'
+  status: open
+  related:
+  - T-3529
+  - T-3517
+  - T-3527
   follow_up_task: null

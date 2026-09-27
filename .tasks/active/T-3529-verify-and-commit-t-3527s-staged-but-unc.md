@@ -1,28 +1,32 @@
 ---
-id: T-3527
-name: "arc-scoped-driver judge agent: judges a driver against the arc goal, wrapping
-  the existing static checks"
+id: T-3529
+name: "independently verify T-3527's arc-driver judge, and fix the dispatch-wait signal
+  that read a mid-sequence state as terminal"
 description: >
-  T-3524 GO (D-662), slice 3 of 3. The second of the two judges the operator ruled
-  for: a driver is the YARDSTICK and a task score is the MEASUREMENT, so one agent
-  holding both would judge with a yardstick it made — producer-not-judge one level
-  up. This one judges a scoped driver against the arc's goal and objective. WRAPS,
-  does not replace, lib/arc-driver-review.sh's static checks (scorable / distinct
-  / distinguishes, T-3429) — those answer structural questions correctly and stay;
-  this adds the quality judgement they cannot make. Becomes load-bearing immediately
-  because T-3523 opened fw arc set-scoped-weight to agents behind the reviewer, so
-  an agent tuning a weight is now judged rather than refused. Emits the shared green/amber/red
-  verdict with guidance. Also the natural home for OBS-559: the static reviewer currently
-  reports a TOOLING failure (scorer unimportable) as a DRIVER-QUALITY failure, which
-  misdirects any consumer without the estimator.
+  CORRECTED PREMISE. This task was filed as "the worker closed T-3527 without
+  committing" — that was WRONG, and the error is the finding. My outcome-based
+  wait fired on the task file appearing in .tasks/completed/, which happens
+  inside `fw task update --status work-completed`, BEFORE the worker's final
+  commit. I read that snapshot (work staged, nothing committed) as a terminal
+  state and as a governance failure by the worker. The worker committed
+  everything ~moments later as dcd4946b9, including the report. Same class as
+  OBS-557: a mid-sequence state read as completion, one layer over from the
+  result-line race — I replaced the result-line signal precisely to avoid this
+  and picked another signal with the same defect.
+  What the task actually delivers: (1) the independent verification of T-3527
+  that its 8/8 self-tick does not substitute for, (2) the corrected wait
+  predicate, (3) OBS-562 recording what GREEN from the arc-driver judge does and
+  does not mean, since a confidently-written vacuous driver passes it.
+  NOTE: the filename still carries the original false premise; the frontmatter
+  name and this description are the corrected record.
 
-status: work-completed
+status: started-work
 workflow_type: build
 owner: agent
-horizon: null
-tags: [arc, judge, agents]
+horizon: now
+tags: []
 components: []
-related_tasks: [T-3524, T-3429, T-3523]
+related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -49,9 +53,9 @@ related_tasks: [T-3524, T-3429, T-3523]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-27T20:29:32Z
-last_update: 2026-09-27T23:06:14Z
-date_finished: 2026-09-27T23:06:14Z
+created: 2026-09-27T23:07:15Z
+last_update: '2026-09-27T23:15:26Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -63,17 +67,17 @@ date_finished: 2026-09-27T23:06:14Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-27T20:45:10Z'
+  - ts: '2026-09-27T23:15:10Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
+      (workflow:build); effort=8 (lines=274,acs=9)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-27T20:45:26Z'
+  - ts: '2026-09-27T23:15:26Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -82,17 +86,17 @@ bvp_scores_proposed:
       D4: 2
       F-RECALL: 2
       F-AUTONOMY: 0
-      F3: 0
+      F3: 1
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3527: arc-scoped-driver judge agent: judges a driver against the arc goal, wrapping the existing static checks
+# T-3529: verify and commit T-3527's staged-but-uncommitted arc-driver-judge deliverable; the worker closed the task without committing despite an explicit prompt instruction
 
 ## Context
 
@@ -102,72 +106,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] **Imports `lib/judge_verdict.py`; defines no second verdict vocabulary.** Same
-      rule T-3526 followed. Two judges each carrying their own idea of what amber means
-      is the five-readers-of-one-predicate defect pre-ordered.
-      Evidence: `lib/arc_driver_judge.py` imports `AMBER, GREEN, RED, UNKNOWN, verdict`
-      from `lib.judge_verdict`; pinned by `test_no_local_verdict_state_constants`,
-      `test_no_local_reviewable_or_verdict_function`,
-      `test_module_imports_from_judge_verdict` in `tests/unit/test_arc_driver_judge.py`.
-- [x] **WRAPS `lib/arc-driver-review.sh`, does not replace it.** The static checks
-      (scorable / distinct / distinguishes, T-3429) answer structural questions
-      correctly and stay. A diff shows they are untouched; this agent adds the quality
-      judgement they cannot make.
-      Evidence: `git diff --stat lib/arc-driver-review.sh` shows zero changes;
-      `run_static_review()` sources and calls the real `_arc_driver_review_run` via
-      subprocess, always `--dry-run`; pinned by
-      `test_arc_driver_review_sh_is_not_reimplemented` (no local check_a/b/c, no
-      estimator import) and `test_run_static_review_control_real_handler_passes` (a
-      real subprocess call against the real repo's estimator).
-- [x] Judges a scoped driver against **the arc's goal and objective** — the D-662
-      yardstick, applied at arc level rather than task level. A driver that
-      distinguishes nothing the arc actually pursues is the case to catch.
-      Evidence: `resolve_arc_goal()` (arc-level description:/headline_mechanic:, else
-      project D1-D4 fallback) + `check_self_admission()` (calibrated against every
-      live `proposed_scoped_drivers[]`/`scoped_drivers[]` entry in `.context/arcs/` —
-      exactly 2 hits, both genuine, zero false positives) + the high-weight/
-      project-fallback-only level-match check. `docs/reports/T-3527-arc-driver-judge.md`
-      records why lexical rationale/goal overlap was tried and rejected (37.5% false
-      positives on real approved drivers).
-- [x] **Reachable on the live agent path**, verified by invoking with NO override flags.
-      T-3523 opened `fw arc set-scoped-weight` to agents behind the reviewer, so this
-      is now load-bearing. A pass obtained with `--i-am-human` is not evidence — that
-      exact mistake was made on this verb hours earlier and produced a guard no path
-      could reach.
-      Evidence: `tests/unit/t3527_arc_driver_judge_entrypoint.bats` (6/6 pass) runs the
-      real `bin/fw arc judge-driver` subprocess with zero override flags; this verb
-      carries no §ACD gate (read-only). Also manually run in this same agent session
-      ($CLAUDECODE=1) against arc-020 and all 19 live in-progress arcs (see report).
-- [x] **Fixes OBS-559 as part of its own correctness**: the static reviewer currently
-      reports a TOOLING failure (estimator unimportable) as a DRIVER-QUALITY failure.
-      This agent must emit `UNKNOWN` with guidance in that case, never a fail — a check
-      that could not run must not answer as a check that ran and judged. Pinned by a
-      test that makes the scorer unavailable.
-      Evidence: the real reachable signature is `"handler table unreadable
-      (AttributeError: ...)"` — not the literal `"estimator unimportable"` string named
-      above — verified empirically by genuinely breaking the import (`FRAMEWORK_ROOT`
-      pointed at a directory with no `agents/termlink/bvp-estimator/` at all), not
-      mocked; see the report's "OBS-559 does not manifest the way its name suggests"
-      section for why. `_is_tooling_failure()` recognises both signatures.
-      `test_run_static_review_genuinely_unimportable_estimator_is_detected` and
-      `test_judge_driver_end_to_end_tooling_failure_is_unknown_not_red` pin it against
-      the real broken state; `test_genuine_scorability_absence_is_still_red_not_swallowed`
-      is the control proving a genuine "no spec" finding still reaches RED.
-- [x] A non-green verdict carries actionable guidance naming what to change about the
-      driver — enforced by the contract, so a bare rejection is unshippable.
-      Evidence: every non-green branch in `judge_driver()` calls `judge_verdict.verdict()`,
-      which raises on empty guidance; RED/AMBER/UNKNOWN guidance strings above all name
-      the concrete next action (fix the named static check, resolve the self-admission,
-      add arc goal text, fix the estimator import).
-- [x] Tests exist, and a mutant that makes the judge always return green is killed.
-      Evidence: `test_always_green_mutant_is_killed_by_static_failure_test` (28 tests
-      total in `tests/unit/test_arc_driver_judge.py`, all passing).
-- [x] **Out of scope, confirmed by diff:** the estimator's detectors (T-3410), the
-      multi-model panel (D-662 IW-5), and `fw arc close` / `fw arc abandon`, which are
-      closure decisions and remain human-gated (T-1671, earned over four incidents).
-      Evidence: `git diff --stat` shows no changes to
-      `agents/termlink/bvp-estimator/estimator.py` or any `arc_close`/`arc_abandon`
-      function in `lib/arc.sh`; no multi-model/panel code added anywhere in this diff.
+- [x] T-3527's deliverable is verified INDEPENDENTLY, not accepted on the worker's 8/8 tick: the judge is invoked live with NO override flags, its tests are run, and the OBS-559 case (scorer unavailable) is confirmed to return UNKNOWN rather than a fail.
+- [x] The diff is checked against T-3527's own out-of-scope AC: `lib/arc-driver-review.sh` static checks untouched, no estimator-detector changes, no `fw arc close`/`abandon` changes.
+- [x] The judge's added quality leg is PROBED for a false green by construction, not reasoned about — a confidently-written driver that restates a global directive is run through it and the actual verdict recorded, whatever it is.
+- [x] OBS-562 registered in `.context/concerns.yaml`: what GREEN from this judge does and does not mean, so the next reader does not take it as "this driver distinguishes something real". Names why the obvious fix is not available (lexical overlap measured at 37.5% false positives on 8 live drivers).
+- [x] My own error is corrected on the record, not quietly dropped: the wait predicate that fired early is named, and the corrected predicate requires the worker's terminal state, not the task file's location.
+- [x] The corrected wait predicate exists as a reusable script rather than as a lesson — the next dispatch uses it, so the fix is a control and not a memory.
+- [x] `bin/fw vendor self --check` clean before close.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -201,6 +146,28 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+# T-3527's judge runs live on the agent path with NO override flags, and discriminates:
+# RED on a driver the audit independently flags as unscorable, GREEN on the one with a real spec.
+out=$(bin/fw arc judge-driver arc-020 identity-fidelity 2>&1); echo "$out" | grep -q '^RED'
+out=$(bin/fw arc judge-driver value-prioritisation "estimator-fidelity" 2>&1); echo "$out" | grep -q '^GREEN'
+# Its own suites still pass.
+python3 -m pytest tests/unit/test_arc_driver_judge.py -q > /tmp/.t3529-aj 2>&1 && grep -q passed /tmp/.t3529-aj
+timeout 300 bats tests/unit/t3527_arc_driver_judge_entrypoint.bats > /tmp/.t3529-bats 2>&1 && ! grep -q '^not ok' /tmp/.t3529-bats
+test "$(grep -c '# skip' /tmp/.t3529-bats)" -eq 0
+# Out-of-scope files are untouched by T-3527's commit (empty diff = untouched).
+test -z "$(git diff dcd4946b9~1 dcd4946b9 --name-only -- lib/arc-driver-review.sh agents/termlink/bvp-estimator/estimator.py)"
+# The corrected wait predicate exists, is executable, and its authoritative path fires on a real finished worker.
+test -x tools/wait-dispatch.sh
+bash -n tools/wait-dispatch.sh
+out=$(./tools/wait-dispatch.sh T-3527 judge-arc-r1 20 2>&1); echo "$out" | grep -q 'DONE exit-code:'
+# Control leg: it must NOT declare done for a session with no terminal marker and an open task.
+out=$(FW_DISPATCH_DIR=/nonexistent FW_WAIT_POLL=2 ./tools/wait-dispatch.sh T-3529 judge-arc-r1 5 2>&1); echo "$out" | grep -q '^TIMEOUT'
+# Both observations are registered in the REGISTER (concerns.yaml), not the inbox.
+grep -q 'id: OBS-562' .context/concerns.yaml && grep -q 'id: OBS-563' .context/concerns.yaml
+python3 -c "import yaml; yaml.safe_load(open('.context/concerns.yaml'))"
+# Vendored paths in sync before close (OBS-250).
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -328,13 +295,6 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bash -n lib/arc.sh
-python3 -m pytest tests/unit/test_arc_driver_judge.py -q > /tmp/.t3527_pytest.out 2>&1 && grep -q "passed" /tmp/.t3527_pytest.out && ! grep -q "failed" /tmp/.t3527_pytest.out
-timeout 300 bats tests/unit/t3527_arc_driver_judge_entrypoint.bats > /tmp/.t3527_bats.out 2>&1 && grep -q "^ok 6" /tmp/.t3527_bats.out && ! grep -q "^not ok" /tmp/.t3527_bats.out
-bin/fw vendor self --check
-grep -q "from lib.judge_verdict import" lib/arc_driver_judge.py && ! grep -qE "^(GREEN|AMBER|RED|UNKNOWN) *=" lib/arc_driver_judge.py
-git diff --stat lib/arc-driver-review.sh agents/termlink/bvp-estimator/estimator.py lib/judge_verdict.py > /tmp/.t3527_diffstat.out 2>&1; test ! -s /tmp/.t3527_diffstat.out
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -427,23 +387,7 @@ git diff --stat lib/arc-driver-review.sh agents/termlink/bvp-estimator/estimator
 
 ## Updates
 
-### 2026-09-27T20:29:32Z — task-created [task-create-agent]
+### 2026-09-27T23:07:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3527-arc-scoped-driver-judge-agent-judges-a-d.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3529-verify-and-commit-t-3527s-staged-but-unc.md
 - **Context:** Initial task creation
-
-### 2026-09-27T21:33:16Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-3ee933c3
-- **Timestamp:** 2026-09-27T23:06:21Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-09-27T23:06:14Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
