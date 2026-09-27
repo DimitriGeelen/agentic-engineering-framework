@@ -46,3 +46,25 @@ except Exception:
     print(-1)
 ' "$path" 2>/dev/null || echo "-1"
 }
+
+# cron_target_has_registry_marker <target_path>
+#
+# T-3161: a deployed crontab this framework generated always carries the
+# header line `fw cron generate` writes ("managed by cron-registry.yaml").
+# A target that exists but lacks it was not produced by the registry-driven
+# lane — most commonly the legacy heredoc lane `fw cron install` used to
+# share the target with (T-3070) — and is not safe for `fw cron install` to
+# overwrite unconditionally: with `jobs: []` that overwrite replaces a live,
+# populated crontab with a header-only file.
+#
+# Exit 0  → marker present (target is ours; safe to overwrite)
+# Exit 1  → target missing OR present without the marker (unmigrated / foreign)
+#
+# Single source of truth for the predicate `fw cron install`, `fw doctor`, and
+# `agents/audit/audit.sh` all need — same discipline as cron_registry_job_count
+# above and lib/cron_dry_run.py (L-332/L-408: shared logic lives in one file).
+cron_target_has_registry_marker() {
+    local path="$1"
+    [ -f "$path" ] || return 1
+    grep -q "managed by cron-registry.yaml" "$path" 2>/dev/null
+}

@@ -2717,12 +2717,26 @@ if [ -f "$_cron_registry" ] && fw_is_linked_worktree "$PROJECT_ROOT"; then
     info "Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
 elif [ -f "$_cron_registry" ] && \
      { source "$FRAMEWORK_ROOT/lib/cron-registry.sh"; [ "$(cron_registry_job_count "$_cron_registry")" = "0" ]; }; then
-    # T-2844: `fw init` seeds `jobs: []`. An empty registry has no generated form,
-    # so "present but not generated" is the correct state, not drift. Parity with
-    # the same guard in `fw doctor` (bin/fw) — both surfaces emitted this on every
-    # freshly initialised project. A malformed registry returns -1, not 0, and
-    # falls through to the checks below on purpose.
-    info "Cron drift checks skipped — registry declares no jobs (nothing to generate)"
+    # T-2844: `fw init` seeds `jobs: []`. A freshly initialised project has no
+    # deployed target either, so "present but not generated" is correct, not
+    # drift — INFO/skip. T-3161: parity with `fw doctor` (bin/fw) — `jobs: []`
+    # WITH a deployed target present is not fresh init, it is an unmigrated
+    # legacy-lane project whose live crontab the registry knows nothing about
+    # (G-088 / 001-CashWeb). That state must WARN, naming the trap directly
+    # rather than the generic "run fw cron install" remedy (that command is
+    # what erases the very jobs this WARN exists to protect — it now refuses
+    # on an unmigrated target, see T-3161's install-side gate). A malformed
+    # registry returns -1, not 0, and falls through to the checks below either way.
+    _t3161_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
+    _t3161_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
+    _t3161_target="$_t3161_target_dir/agentic-audit-${_t3161_slug}"
+    if [ -f "$_t3161_target" ]; then
+        warn "Cron registry declares no jobs but a deployed crontab exists at $_t3161_target" \
+             "$_cron_registry has jobs: [] while $_t3161_target is present on disk — likely an unmigrated legacy install, not a fresh project" \
+             "Populate .context/cron-registry.yaml jobs: to match $_t3161_target before running fw cron install (T-3161)"
+    else
+        info "Cron drift checks skipped — registry declares no jobs (nothing to generate)"
+    fi
 elif [ -f "$_cron_registry" ]; then
     _cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
     _cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"

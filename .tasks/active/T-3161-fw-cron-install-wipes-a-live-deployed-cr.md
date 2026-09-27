@@ -14,13 +14,13 @@ description: >
   /cron reports '0 jobs' and audit reports INFO while ten jobs are demonstrably running.
   The remedy the page suggests is the command that erases the schedule.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
 tags: [cron, registry, inbound-report, 001-cashweb, false-green]
 components: []
-related_tasks: [T-3160, T-3162, T-3070, T-3149]
+related_tasks: [T-3160, T-3162, T-3070, T-3149, T-3521]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -32,7 +32,7 @@ related_tasks: [T-3160, T-3162, T-3070, T-3149]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T12:09:00Z
-last_update: '2026-08-26T12:15:15Z'
+last_update: 2026-09-27T15:28:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -126,12 +126,12 @@ surface (P-013) and a separate deliverable; file it as a follow-up, do not fold 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw cron install` refuses when the deployed target exists and does not carry the registry-generated header marker (`managed by cron-registry.yaml`), naming migration as the remedy and exiting non-zero without writing either the source or the target
-- [ ] The refusal carries a bypass mechanism per L-399 producer/consumer parity (env-var form, since the gate must also survive the `audit.sh schedule install` → `fw cron install` exec), and the bypass writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`
-- [ ] `bin/fw` doctor WARNs instead of SKIPping when registry job count is 0 AND the deployed target exists; the fresh-init case (job count 0, no target) still SKIPs silently
-- [ ] `agents/audit/audit.sh` emits the same distinction — WARN on `jobs: [] + target exists`, INFO/skip on fresh init — so both surfaces agree
-- [ ] Regression test `tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats` pins: install refuses on unmigrated target, install still works on a marker-carrying target, doctor WARNs on `jobs: [] + target`, doctor SKIPs on fresh init
-- [ ] Follow-up task filed for the reporter's leg (c) — `/cron` renders deployed host state alongside the registry declaration — and referenced in `related_tasks:`
+- [x] `fw cron install` refuses when the deployed target exists and does not carry the registry-generated header marker (`managed by cron-registry.yaml`), naming migration as the remedy and exiting non-zero without writing either the source or the target
+- [x] The refusal carries a bypass mechanism per L-399 producer/consumer parity (env-var form, since the gate must also survive the `audit.sh schedule install` → `fw cron install` exec), and the bypass writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`
+- [x] `bin/fw` doctor WARNs instead of SKIPping when registry job count is 0 AND the deployed target exists; the fresh-init case (job count 0, no target) still SKIPs silently
+- [x] `agents/audit/audit.sh` emits the same distinction — WARN on `jobs: [] + target exists`, INFO/skip on fresh init — so both surfaces agree
+- [x] Regression test `tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats` pins: install refuses on unmigrated target, install still works on a marker-carrying target, doctor WARNs on `jobs: [] + target`, doctor SKIPs on fresh init
+- [x] Follow-up task filed for the reporter's leg (c) — `/cron` renders deployed host state alongside the registry declaration — and referenced in `related_tasks:` (T-3521)
 
 ## Verification
 
@@ -158,9 +158,24 @@ would have surfaced the divergence were precisely the ones the empty registry si
 **a check that compared nothing rendered as a check that found nothing**, which is
 indistinguishable from health at every surface.
 
-**Prevention:** (to be written with the fix) — the header-marker refusal makes the
-unmigrated state loud at the moment of damage, and the WARN split makes it loud
-continuously before anyone reaches for the command.
+**Prevention:** Shipped as two independent structural checks so either alone would
+have caught the field report. (1) `fw cron install` (`bin/fw`) now refuses — before
+writing source OR target — whenever the deployed target exists and lacks the
+`managed by cron-registry.yaml` header the registry-driven generator always writes;
+the predicate (`cron_target_has_registry_marker`, `lib/cron-registry.sh`) is a single
+source of truth shared by the install gate and is content-based, not job-count-based,
+so it also protects a non-empty-but-still-unmigrated registry. Bypass is the env var
+`FW_CRON_ALLOW_UNMIGRATED_OVERWRITE=1`, chosen (not a flag) so it survives
+`audit.sh schedule install`'s `exec fw cron install "$@"` per L-399 parity, and every
+use logs a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`. (2) `bin/fw doctor`
+and `agents/audit/audit.sh` no longer treat `jobs: [] ` as unconditionally "nothing to
+generate" — they now check whether the deployed target exists; if it does, they WARN
+naming the trap directly (do not run `fw cron install` yet) instead of silently
+SKIPping, so the false-green Watchtower/doctor read stops being possible before
+anyone reaches for the command that used to erase the schedule. Both checks are
+job-count-independent for (1) and existence-of-target-gated for (2), so a project can
+no longer be simultaneously "0 jobs" and "ten jobs running" without a WARN surfacing
+that fact.
 
 ## Evolution
 
@@ -242,3 +257,6 @@ continuously before anyone reaches for the command.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3161-fw-cron-install-wipes-a-live-deployed-cr.md
 - **Context:** Initial task creation
+
+### 2026-09-27T15:28:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
