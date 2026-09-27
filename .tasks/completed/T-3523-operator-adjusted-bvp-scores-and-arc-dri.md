@@ -23,12 +23,12 @@ description: >
   re-scoring and agent re-confirmation, for task bvp_scores/cost_estimate AND arc
   scoped_drivers weights.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, arc, sovereignty, provenance]
-components: []
+components: [lib/arc.sh, lib/bvp.sh, lib/bvp_sticky.py, tests/unit/arc_set_scoped_weight.bats, tests/unit/test_t3523_bvp_sticky.py]
 related_tasks: [T-3487, T-3429, T-3522, T-3471]
 write_set:
   - lib/bvp_sticky.py
@@ -63,8 +63,8 @@ write_set:
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T15:54:04Z
-last_update: 2026-09-27T16:04:43Z
-date_finished:
+last_update: 2026-09-27T19:16:51Z
+date_finished: 2026-09-27T19:16:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -441,3 +441,15 @@ cmp -s lib/arc.sh .agentic-framework/lib/arc.sh
 
 ### 2026-09-27T16:04:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e226fc02
+- **Timestamp:** 2026-09-27T19:17:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-27T19:16:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

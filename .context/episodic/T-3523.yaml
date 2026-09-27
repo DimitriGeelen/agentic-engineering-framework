@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3523: operator-adjusted BVP scores and arc drivers are STICKY: re-scoring and agent confirmation must never overwrite them
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T19:17:29Z
+# ============================================================================
+
+task_id: T-3523
+task_name: "operator-adjusted BVP scores and arc drivers are STICKY: re-scoring and agent confirmation must never overwrite them"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-27T15:54:04Z
+completed: 2026-09-27T19:16:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-27T21:16:14+02:00
+last_commit: 2026-09-27T21:16:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  an operator's BVP adjustment survives the next scoring run (D-661 leg 3)
+
+# Key outcomes
+outcomes:
+  - '**Two detection routes, neither requiring the operator to tick anything.**'
+  - '**SKIP AND REPORT, never silent.** Operator ruling: *"means skip and report'
+  - '**Covers arc scoped-driver weights too**, per the ruling: *"it also covers'
+  - 'Digest is stamped on every agent write, so the NEXT write can tell whether the'
+  - '**A fresh agent value is not sticky.** The control: an agent-confirmed score with'
+  - 'Both directions pinned in one suite and verified RED against a mutant that'
+  - '**Missing stamp is NOT treated as operator-set.** Every score in the corpus'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/bvp.sh'
+  - '.agentic-framework/lib/bvp_sticky.py'
+  - '.agentic-framework/lib/cron-registry.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/inbox.yaml'
+  - '.context/project/decisions.yaml'
+  - '.fabric/components/lib-bvp_sticky.yaml'
+  - '.fabric/components/tests-unit-test_t3523_bvp_sticky.yaml'
+  - 'lib/arc.sh'
+  - 'lib/bvp.sh'
+  - 'lib/bvp_sticky.py'
+  - '.tasks/active/T-3523-operator-adjusted-bvp-scores-and-arc-dri.md'
+  - 'tests/unit/arc_set_scoped_weight.bats'
+  - 'tests/unit/test_t3523_bvp_sticky.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-27T21:16:14'
+    action: 'T-3523: an operator''s BVP adjustment survives the next scoring run (D-661 leg 3)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 202 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, arc, sovereignty, provenance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 202
+  commits: 1
+  files_changed: 17
+  lines_added: 1396
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3523-operator-adjusted-bvp-scores-and-arc-dri.md
+generated_by: context-agent-hybrid
