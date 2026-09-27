@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3528: BVP judge sufficiency check passes template placeholder ACs: reuse the G-020 detector instead of a length threshold
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T22:30:19Z
+# ============================================================================
+
+task_id: T-3528
+task_name: "BVP judge sufficiency check passes template placeholder ACs: reuse the G-020 detector instead of a length threshold"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-27T21:36:54Z
+completed: 2026-09-27T22:29:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-28T00:28:54+02:00
+last_commit: 2026-09-28T00:28:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the BVP judge's sufficiency check no longer reads template stubs as substantive (OBS-560)
+
+# Key outcomes
+outcomes:
+  - 'One shared placeholder predicate exists (`lib/ac_placeholder.py`) and is the ONLY Python decision point for "is this AC template text": both `lib/bvp_judge.py` and `lib/resolver.py` import it, and neither carries its own copy of the ordinal-criterion stub literal any more.'
+  - '`_is_substantive()` no longer decides on length alone — a template stub of ANY length (the default template''s first ordinal stub is 17 chars, above the 15-char floor) is non-substantive. The length floor survives only as a second, weaker leg.'
+  - 'A task whose every AC is a template placeholder comes back RED, not GREEN and not AMBER: textually-present-but-template is equivalent to absence, and the guidance names what to write. Demonstrated live on T-3471 (the OBS-560 reproducer).'
+  - 'Control leg: a task with real substantive ACs still reaches GREEN. The fix must not be "everything is red now" — verified against a committed fixture, not only by reasoning.'
+  - 'Cross-language parity is pinned, not asserted: a test reads the placeholder patterns out of `lib/task-audit.sh` (the bash reader, which a PreToolUse hook cannot replace with python3) and asserts the Python predicate agrees on every one, so the two readers cannot drift silently.'
+  - 'The test that was missing exists: a fixture task carrying the ACTUAL template placeholder ACs, asserted non-green. Demonstrated in both directions — red against the pre-fix predicate, green against the fixed one.'
+  - '`bin/fw vendor self --check` is clean BEFORE `--status work-completed` (OBS-250).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/ac_placeholder.py'
+  - '.agentic-framework/lib/bvp_judge.py'
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/VERSION'
+  - '.context/concerns.yaml'
+  - '.fabric/components/lib-ac_placeholder.yaml'
+  - 'lib/ac_placeholder.py'
+  - 'lib/bvp_judge.py'
+  - 'lib/resolver.py'
+  - '.tasks/active/T-3528-bvp-judge-sufficiency-check-passes-templ.md'
+  - 'tests/unit/test_ac_placeholder.py'
+  - 'tests/unit/test_bvp_judge.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-28T00:28:54'
+    action: 'T-3528: the BVP judge''s sufficiency check no longer reads template stubs as substantive (OBS-560)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 52 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, judge, false-green]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 52
+  commits: 2
+  files_changed: 14
+  lines_added: 1297
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3528-bvp-judge-sufficiency-check-passes-templ.md
+generated_by: context-agent-hybrid

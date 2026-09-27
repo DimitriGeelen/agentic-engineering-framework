@@ -5002,3 +5002,9 @@ X'` returning empty group."
   task: T-3450
   date: 2026-09-24
   context: Added via context agent
+- id: L-678
+  learning: "A fixture named after the class it does not contain is worse than a missing fixture: the coverage gap reads as covered. T-3526's BVP judge closed 9/9 ACs with 34 green tests while returning GREEN on template-placeholder ACs, because its fixture PLACEHOLDER_ACS held 'TBD'/'fix it' — short authored text, which exercises only a length threshold — and no test used the literal template stubs the default template ships. The suite was green in every direction it looked and blind in the one that mattered. Two structural counters, both cheap: (1) name a fixture after the INPUT it contains, not the class it is meant to represent; (2) when fixing a proxy-measurement bug, add a test that RESTORES the pre-fix predicate and asserts the same fixture flips verdict — that pins the fixture as the thing which distinguishes the two implementations, and fails loudly if it ever stops reproducing the original defect. Sibling to T-1828 (gate measuring a proxy that diverged from reality) and to the session's recurring class: a check that cannot run must not answer as a check that ran and judged."
+  source: P-001
+  task: T-3528
+  date: 2026-09-27
+  context: Added via context agent

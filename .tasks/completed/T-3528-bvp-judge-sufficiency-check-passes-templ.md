@@ -19,12 +19,12 @@ description: >
   The verdict for a placeholder-AC task should be RED with guidance naming what to
   write, or AMBER at the softest; never green.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, judge, false-green]
-components: []
+components: [lib/ac_placeholder.py, lib/bvp_judge.py, lib/resolver.py, tests/unit/test_bvp_judge.py]
 related_tasks: [T-3526, T-3428, T-3525]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -53,8 +53,8 @@ related_tasks: [T-3526, T-3428, T-3525]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T21:36:54Z
-last_update: 2026-09-27T22:08:59Z
-date_finished:
+last_update: 2026-09-27T22:29:53Z
+date_finished: 2026-09-27T22:29:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -440,3 +440,20 @@ the coverage gap reads as covered.
 
 ### 2026-09-27T22:08:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ed93fb0c
+- **Timestamp:** 2026-09-27T22:30:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `out=$(bin/fw bvp judge T-3528 2>&1); ! echo "$out" | grep -q 'UNFILLED TEMPLATE STUBS'`
+
+### 2026-09-27T22:29:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
