@@ -104,34 +104,68 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] **Imports `lib/judge_verdict.py`; defines no second verdict vocabulary.** A grep
+- [x] **Imports `lib/judge_verdict.py`; defines no second verdict vocabulary.** A grep
       shows no local definition of green/amber/red, no local `reviewable()`, no local
       guidance rule. Arc membership reached five implementations of one predicate
       disagreeing three ways; the contract is one file on purpose (T-3525).
-- [ ] Judges a **proposed** score — reads `bvp_scores_proposed:` — and never writes
+      Evidence: `lib/bvp_judge.py` imports `AMBER, GREEN, RED, UNKNOWN, reviewable,
+      verdict` from `lib.judge_verdict`; pinned by
+      `test_no_local_verdict_state_constants`, `test_no_local_reviewable_or_verdict_function`,
+      `test_module_imports_from_judge_verdict` in `tests/unit/test_bvp_judge.py`.
+- [x] Judges a **proposed** score — reads `bvp_scores_proposed:` — and never writes
       `bvp_scores:` itself. Writing stays with `fw bvp confirm`, which already honours
       the T-3523 sticky guard. A test pins that the judge leaves `bvp_scores:` untouched.
-- [ ] Judges against all three of D-662's criteria, each independently demonstrable:
+      Evidence: `judge_task()` only reads; `test_never_writes_bvp_scores_field` diffs the
+      task file bytes before/after and asserts equality; `test_module_has_no_write_function`
+      pins there is no `.write_text(`/`open(..., 'w')` anywhere in the module.
+- [x] Judges against all three of D-662's criteria, each independently demonstrable:
       **presence** (are acceptance/quality criteria there at all), **sufficiency** (are
       they good enough for the score claimed), and **the goal hierarchy** (task → arc →
       project objective). A score claiming high value for work serving no stated
       objective is the case that must be caught.
-- [ ] **Population: open tasks only**, via `judge_verdict.reviewable()`. A
+      Evidence: `check_presence`, `check_sufficiency`, `check_goal_hierarchy` in
+      `lib/bvp_judge.py`, each unit-tested independently; `test_goal_hierarchy_catches_no_signal_contradiction`
+      and `test_goal_hierarchy_flags_high_claim_on_project_fallback_only` pin the
+      "high value, no stated objective" case.
+- [x] **Population: open tasks only**, via `judge_verdict.reviewable()`. A
       `work-completed` task is never judged, and the skip carries its reason.
-- [ ] **UNKNOWN, never green, when it cannot judge.** No readable objective at any
+      Evidence: `test_closed_task_is_skipped_not_judged`, `test_open_task_is_judged`;
+      real-entrypoint pin in `t3526_bvp_judge_entrypoint.bats` test 4 against a probe
+      task in `.tasks/completed/`.
+- [x] **UNKNOWN, never green, when it cannot judge.** No readable objective at any
       level yields UNKNOWN with guidance naming what would make judgement possible.
       Pinned in both directions — the control is that a judgeable task does NOT come
       back UNKNOWN, or the agent has failed safe into uselessness.
-- [ ] **Reachable on the path an agent actually takes.** Verified by running the real
+      Evidence: `test_unknown_when_no_objective_anywhere` (negative),
+      `test_judgeable_task_does_not_come_back_unknown` (control — explicit
+      `assert v["state"] != UNKNOWN`), `test_unknown_is_never_falsely_favourable` pins
+      `may_proceed()` over `if verdict:` truthiness.
+- [x] **Reachable on the path an agent actually takes.** Verified by running the real
       entry point with no override flags, not with `--i-am-human`. Twice today a guard
       was written that no live path reached, and in one case an `--i-am-human` pass had
       been mistaken for evidence.
-- [ ] Runs as an isolated worker reusing T-1951's `--dispatch` shape; results reach the
+      Evidence: `tests/unit/t3526_bvp_judge_entrypoint.bats` runs the real `bin/fw bvp
+      judge` subprocess (green/red/closed-skip/--dispatch-guard), zero override flags;
+      also manually run against the real `T-3526`/`T-3524` tasks in this repo during
+      build (green and skipped-closed respectively).
+- [x] Runs as an isolated worker reusing T-1951's `--dispatch` shape; results reach the
       caller by the same route (fw bus), with no second mechanism invented.
-- [ ] Tests exist and a mutant that makes the judge always return green is killed by
+      Evidence: `lib/bvp_judge_dispatch_cli.py` is a structural copy of
+      `lib/reviewer/dispatch_cli.py` (same `TermLinkWorker`, same `fw bus post`
+      pattern, same single-hop sentinel-guard shape); wired via `fw bvp judge
+      T-XXX --dispatch` in `lib/bvp.sh`. `tests/unit/test_bvp_judge_dispatch.py`
+      mirrors `test_reviewer_dispatch.py`'s coverage.
+- [x] Tests exist and a mutant that makes the judge always return green is killed by
       them (L-576 — a regression test never run against the regression is a tautology).
-- [ ] **Out of scope, and confirmed untouched by diff:** the estimator's detectors
+      Evidence: `test_always_green_mutant_is_killed_by_presence_test` installs the
+      always-green mutant, shows it passes silently, then restores the real
+      implementation and shows `test_presence_fails_with_no_acceptance_criteria`'s
+      input flips back to RED — proving the suite discriminates.
+- [x] **Out of scope, and confirmed untouched by diff:** the estimator's detectors
       (T-3410), and any multi-model judge panel (D-662 IW-5, deferred not rejected).
+      Evidence: `git status` shows no changes to
+      `agents/termlink/bvp-estimator/estimator.py` or `lib/judge_verdict.py`; no
+      multi-model/panel code was added anywhere in this diff.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +325,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+bash -n lib/bvp.sh
+python3 -m pytest tests/unit/test_bvp_judge.py tests/unit/test_bvp_judge_dispatch.py -q > /tmp/.t3526_pytest.out 2>&1 && grep -q "passed" /tmp/.t3526_pytest.out && ! grep -q "failed" /tmp/.t3526_pytest.out
+bats tests/unit/t3526_bvp_judge_entrypoint.bats > /tmp/.t3526_bats.out 2>&1 && grep -q "^ok 5" /tmp/.t3526_bats.out && ! grep -q "^not ok" /tmp/.t3526_bats.out
+bin/fw vendor self --check
+grep -q "from lib.judge_verdict import" lib/bvp_judge.py && ! grep -qE "^(GREEN|AMBER|RED|UNKNOWN) *=" lib/bvp_judge.py
 
 ## RCA
 

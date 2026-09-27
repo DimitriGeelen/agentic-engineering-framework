@@ -2105,6 +2105,12 @@ USAGE:
                                   R3 regression guard (max delta ≤1)
   fw bvp estimate measure-a3 [--n N] [--output PATH]
                                   A3 latency measurement (mean <5s SLA)
+  fw bvp judge T-<id> [--json]
+                                  judge a PROPOSED score: presence/sufficiency/
+                                  goal-hierarchy (T-3526, D-662). Read-only.
+  fw bvp judge T-<id> --dispatch [--timeout N] [--json]
+                                  judge via isolated TermLink worker; see
+                                  `fw bvp judge --help`
   fw bvp auto-promote [--dry-run]
                                   promote captured → started-work for HV/LC
                                   tasks (off by default; reads policy
@@ -2332,6 +2338,57 @@ EOF
             fi
             return $_rc
         fi
+    fi
+    # T-3526 (D-662 slice 2 of 3): 'judge' verb — independent judge of a
+    # PROPOSED score against presence/sufficiency/goal-hierarchy. Read-only:
+    # writes nothing, ever (not bvp_scores:, not bvp_scores_proposed:). Kept
+    # out of the in-process Python heredoc for the same reason 'estimate' is —
+    # a separate concern with its own dispatch mode, invokable directly via
+    # TermLink convention (lib/bvp_judge_dispatch_cli.py mirrors T-1951's
+    # reviewer --dispatch shape rather than inventing a second one).
+    if [ "${1:-}" = "judge" ]; then
+        shift
+        local sub="${1:-}"
+        if [ -z "$sub" ] || [ "$sub" = "--help" ] || [ "$sub" = "-h" ]; then
+            cat <<'EOF'
+fw bvp judge — judge a PROPOSED score against presence/sufficiency/goal-hierarchy (T-3526)
+
+USAGE:
+  fw bvp judge T-<id> [--json]
+                            judge inline; read-only, writes nothing
+  fw bvp judge T-<id> --dispatch [--timeout N] [--json]
+                            judge via isolated TermLink worker (T-1951 shape);
+                            result posted to the fw bus — read with
+                            `fw bus manifest T-<id>`
+
+NOTES:
+  - Judges the LATEST bvp_scores_proposed: entry; never writes bvp_scores: or
+    bvp_scores_proposed: (D-662, T-3524 slice 2 of 3). The proposer stays
+    agents/termlink/bvp-estimator/estimator.py; the human's door stays
+    `fw bvp confirm` (T-1924), protected by the T-3523 sticky guard.
+  - Verdict is green/amber/red/unknown (lib/judge_verdict.py, T-3525);
+    amber/red/unknown always carry actionable guidance.
+  - Open tasks only; closed (work-completed) tasks are skipped, never rescored.
+EOF
+            return 0
+        fi
+        local _has_jdispatch=0 _jarg
+        for _jarg in "$@"; do
+            if [ "$_jarg" = "--dispatch" ]; then _has_jdispatch=1; break; fi
+        done
+        if [ "$_has_jdispatch" = "1" ]; then
+            local _jdispatch_args=()
+            for _jarg in "$@"; do
+                [ "$_jarg" != "--dispatch" ] && _jdispatch_args+=("$_jarg")
+            done
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                python3 -m lib.bvp_judge_dispatch_cli "${_jdispatch_args[@]}"
+        fi
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            PYTHONPATH="$FRAMEWORK_ROOT" \
+            python3 -m lib.bvp_judge_cli "$@"
+        return $?
     fi
     _bvp_python_engine "$@"
 }
