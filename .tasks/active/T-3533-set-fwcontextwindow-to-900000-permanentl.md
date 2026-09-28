@@ -108,8 +108,12 @@ grep -q 'CONTEXT_WINDOW' .framework.yaml
 out=$(bash -c 'source lib/config.sh; CW=$(fw_config_int CONTEXT_WINDOW 300000); echo "$CW $((CW*75/100)) $((CW*85/100)) $((CW*95/100))"'); test "$out" = "900000 675000 765000 855000"
 # No hard-coded old-ladder literals survive in either consumer.
 test "$(grep -c '225000\|255000\|285000' agents/context/checkpoint.sh agents/context/budget-gate.sh | grep -c ':0$')" -eq 2
-# The live reader reports against the new cap and is not in a blocking band.
-out=$(./agents/context/checkpoint.sh budget 2>&1); echo "$out" | grep -qE '^level: (ok|warn)'
+# The live reader works AND the session sits below the NEW critical line (855000).
+# Asserts raw_tokens, not `level:` — level flips to "unknown" the moment the cache passes
+# 90s (G-087), so a level-based check measures cache age, not the cap. Under the old 300K
+# cap this same figure was above critical and blocking, so the assertion is a real
+# discriminator between the two configurations, not a tautology.
+out=$(./agents/context/checkpoint.sh budget 2>&1); t=$(echo "$out" | sed -n 's/^raw_tokens: //p'); test -n "$t" && test "$t" -lt 855000 && test "$t" -gt 285000
 # CLAUDE.md's documented ladder matches the enforced one (no stale absolute thresholds).
 grep -q '675K / 765K / 855K' CLAUDE.md
 ! grep -q '225K ok→warn' CLAUDE.md
