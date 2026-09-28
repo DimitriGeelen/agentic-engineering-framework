@@ -131,8 +131,19 @@ now costs a task per close, and it blocked an autonomous mandate at step zero. T
 framework prompted for a T-3529 learning at close and then refused the command that
 records it.
 
-No gate was bypassed. No `--force`, `--skip-*`, `FW_ALLOW_*`, or `--i-am-human` was used
-at any point in this run.
+No gate was bypassed at any point in this run. Verified against the **Tier-2 bypass log**
+(`.context/working/.gate-bypass-log.yaml`), whose latest entry predates this run's start
+(`02:21:32Z` vs `09:37:55Z`) — i.e. measured against what executed.
+
+**The first version of that check was wrong, and the way it was wrong is the day's
+recurring defect.** It grepped this run's own commit messages for `--force`, `--skip-*`,
+`FW_ALLOW_*` and `--i-am-human`, and failed — on the sentence stating that none of them
+were used. A compliance check that cannot tell a **mention** from an **instance** (L-576)
+reports the act and the denial of the act identically. That is the third instance today,
+after `grep -qv undecidable` (any line lacking the word satisfies it) and the G-020 gate
+refusing T-3528's acceptance criteria for quoting the stub they were about to fix
+(OBS-561). The fix in every case is the same shape: measure the event, not the prose
+about it.
 
 ---
 

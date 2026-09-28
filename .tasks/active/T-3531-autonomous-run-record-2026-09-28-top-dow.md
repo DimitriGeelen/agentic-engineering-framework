@@ -1,8 +1,10 @@
 ---
 id: T-3531
-name: "autonomous run record 2026-09-28: top-down selection and execution log with per-unit rationale and check results"
+name: "autonomous run record 2026-09-28: top-down selection and execution log with
+  per-unit rationale and check results"
 description: >
-  autonomous run record 2026-09-28: top-down selection and execution log with per-unit rationale and check results
+  autonomous run record 2026-09-28: top-down selection and execution log with per-unit
+  rationale and check results
 
 status: started-work
 workflow_type: build
@@ -38,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T09:37:55Z
-last_update: 2026-09-28T09:37:55Z
-date_finished: null
+last_update: '2026-09-28T09:45:11Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +52,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-28T09:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=292,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3531: autonomous run record 2026-09-28: top-down selection and execution log with per-unit rationale and check results
@@ -112,7 +124,11 @@ out=$(bin/fw bvp --include-proposed 2>&1); echo "$out" | grep -q 'have no known 
 test "$(grep -c '^\*\*SQ-[0-9]' docs/reports/T-3531-autonomous-run-2026-09-28.md)" -eq 4
 # Gates refused are recorded, and the run claims no bypass — assert the claim is true of the run's own commits.
 grep -q 'No gate was bypassed' docs/reports/T-3531-autonomous-run-2026-09-28.md
-test -z "$(git log --format=%B a0dcf50c3..HEAD | grep -iE '(--force|--skip-[a-z]|FW_ALLOW_|--i-am-human)')"
+# Measures what EXECUTED, not what prose says. The first version of this line grepped the
+# run's own commit messages for bypass flags and failed — on the sentence stating none were
+# used (mention-vs-instance, L-576; third instance today). The Tier-2 bypass log is the
+# authoritative record: assert it gained no entry at or after this run's start.
+python3 -c "import yaml,sys; d=yaml.safe_load(open('.context/working/.gate-bypass-log.yaml')) or []; sys.exit(1 if [e for e in d if str(e.get('ts','')) >= '2026-09-28T09:37:55Z'] else 0)"
 # Handback present with the sections the mandate names.
 grep -q '^## Handback' docs/reports/T-3531-autonomous-run-2026-09-28.md
 grep -q 'Objectives advanced' docs/reports/T-3531-autonomous-run-2026-09-28.md
