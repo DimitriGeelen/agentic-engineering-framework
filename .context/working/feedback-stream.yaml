@@ -44602,3 +44602,47 @@ scan_id: R-fdf10711
 task_id: T-3539
 payload:
   task_file: .tasks/active/T-3539-inception-reviewdecide-dies-silently-a-f.md
+---
+kind: scan_emitted
+timestamp: '2026-09-28T18:23:50Z'
+scan_id: R-f6ef984d
+task_id: T-3532
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-28T18:23:50Z'
+scan_id: R-f6ef984d
+task_id: T-3532
+payload:
+  task_file: .tasks/active/T-3532-workflow-management-task-class-wm-nnn-gi.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-09-28T18:23:50Z'
+scan_id: RC-8f6830f8
+task_id: T-3532
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-09-28T18:31:53Z'
+scan_id: R-32c17bfb
+task_id: T-3540
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-09-28T18:31:53Z'
+scan_id: R-32c17bfb
+task_id: T-3540
+payload:
+  task_file: .tasks/active/T-3540-inception-refusal-is-truncated-mid-list-.md

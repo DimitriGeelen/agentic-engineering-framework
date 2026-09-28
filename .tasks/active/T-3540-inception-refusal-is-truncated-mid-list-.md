@@ -6,12 +6,12 @@ description: >
   inception refusal is truncated mid-list, and fw task review hands off a task its
   own warning says is not decision-ready
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/review.sh, web/blueprints/inception.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T18:25:50Z
-last_update: '2026-09-28T18:30:32Z'
-date_finished:
+last_update: 2026-09-28T18:31:33Z
+date_finished: 2026-09-28T18:31:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -447,3 +447,27 @@ process reliable.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3540-inception-refusal-is-truncated-mid-list-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-32c17bfb
+- **Timestamp:** 2026-09-28T18:31:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] The refusal message now tells you what to fix, in full.
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='names the c' in Expected: the full list of undisposed questions (IW-1 … IW-5), not `- IW` cut mid-token. If anything is still clipped, the message now says it was cli`
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 13
+     - evidence: `bin/fw task review T-3535 > /dev/null 2>&1`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+     - evidence: `out=$(bin/fw task review T-3532 2>&1); ! echo "$out" | grep -q 'NOT DECISION-READY'`
+
+### 2026-09-28T18:31:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
