@@ -1174,7 +1174,54 @@ run_verification_commands() {
         fi
     fi
 
-    [ -z "$verify_cmds" ] && return 0
+    # T-3546 / OBS-565: SAY the zero. This used to be a bare `return 0`, so a
+    # close that verified nothing printed exactly what a close with nothing to
+    # verify printed — nothing — and the two are the same text.
+    #
+    # Measured on T-3545: a splice put its `## Verification` heading mid-sentence
+    # inside the Human-AC template comment (whose own text contains the phrase
+    # "added to ## Verification"), so no heading existed at line start, the
+    # extractor returned empty, and the task closed with `6/6 checked ✓` and no
+    # gate section at all. T-3544 eleven minutes earlier printed
+    # `Verification: 18/18 passed ✓`. One absent line was the whole difference,
+    # and nobody notices an absence. Worse, `work-completed → started-work` is
+    # not a valid transition, so that task can never have the gate run on it.
+    #
+    # REPORTING, NOT GUARDING — the distinction is load-bearing. An empty block
+    # is legitimate: CLAUDE.md documents tasks without `## Verification` as
+    # backward-compatible, and refusing here would break every one of them. The
+    # rc=2 leg above already refuses when the block cannot be READ (T-3232).
+    # The heading probe below therefore only chooses WORDING; it never gates,
+    # never refuses, and never touches the exit code. That keeps intact the
+    # deliberate decision at the rc=2 branch not to re-derive the heading — a
+    # guard that reimplements the code it guards cannot detect that code being
+    # fixed or re-broken (the G-072 class 577-CashWeb raised).
+    if [ -z "$verify_cmds" ]; then
+        echo ""
+        echo -e "${CYAN}=== Verification Gate (P-011) ===${NC}"
+        if grep -q '^## Verification' "$TASK_FILE" 2>/dev/null; then
+            echo -e "  ${YELLOW}Verification: 0 commands — the section is present but yielded none.${NC}"
+            echo "  Nothing was verified. Most likely the block holds only comments."
+        elif grep -q '## Verification' "$TASK_FILE" 2>/dev/null; then
+            # T-3545's exact shape, and the reason this branch exists: the file
+            # visibly contains '## Verification', so telling the reader there is
+            # "no section" sends them looking for something they can already see.
+            # The heading is simply not at the start of a line — spliced into the
+            # Human-AC template comment, whose own text carries that phrase.
+            echo -e "  ${YELLOW}Verification: 0 commands — '## Verification' appears in this file but NOT at the start of a line.${NC}"
+            echo "  Nothing was verified. The heading is embedded in another line, so the"
+            echo "  extractor never saw a section (T-3545: spliced into the Human-AC"
+            echo "  template comment, which itself contains that phrase)."
+            echo "  Localise it with: grep -n '## Verification' $TASK_FILE"
+        else
+            echo -e "  ${YELLOW}Verification: skipped — no '## Verification' section in this task.${NC}"
+            echo "  Nothing was verified. That is allowed and may be correct; it is printed"
+            echo "  so an unverified close cannot look identical to a verified one."
+        fi
+        echo "  Note: work-completed → started-work is not a valid transition, so this"
+        echo "  gate cannot be re-run on this task once it closes."
+        return 0
+    fi
 
     # T-2991: refuse an unparseable block BEFORE the read loop below evals any
     # line of it. Order is the whole point — a multi-line `python3 -c "` block's
