@@ -6,10 +6,10 @@ description: >
   autonomous run record 2026-09-28: top-down selection and execution log with per-unit
   rationale and check results
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T09:37:55Z
-last_update: '2026-09-28T09:45:11Z'
-date_finished:
+last_update: 2026-09-28T09:45:14Z
+date_finished: 2026-09-28T09:45:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,6 +61,24 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=292,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-28T09:45:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -355,3 +373,20 @@ grep -q 'Objectives advanced' docs/reports/T-3531-autonomous-run-2026-09-28.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3531-autonomous-run-record-2026-09-28-top-dow.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d1d60943
+- **Timestamp:** 2026-09-28T09:46:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Cost-vs-estimate deltas are recorded for each dispatched unit, using `lib/dispatch_tokens.py` (`modelUsage`), never per-turn summation — the latter was measured wrong by ~66x on output in this session
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/dispatch_tokens.py in: Cost-vs-estimate deltas are recorded for each dispatched unit, using `lib/dispatch_tokens.py` (`modelUsage`), never per-turn summation — the latter wa`
+
+### 2026-09-28T09:45:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
