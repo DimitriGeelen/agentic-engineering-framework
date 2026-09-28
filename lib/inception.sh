@@ -567,7 +567,11 @@ do_inception_decide() {
         source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || true
         if command -v inception_underdisposed_questions >/dev/null 2>&1; then
             local _underdisposed
-            _underdisposed=$(inception_underdisposed_questions "$task_file")
+            # `|| true` — see T-3539. Finding-signal return code (1 = found), and
+            # this runs under `set -euo pipefail`, so an unguarded assignment kills
+            # `fw inception decide` silently instead of printing the refusal below.
+            # Only the output is used; the rc is never read.
+            _underdisposed=$(inception_underdisposed_questions "$task_file") || true
             if [ -n "$_underdisposed" ]; then
                 local _ud_count
                 _ud_count=$(printf '%s\n' "$_underdisposed" | grep -c .)

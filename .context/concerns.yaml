@@ -1440,3 +1440,65 @@
   - T-3526
   - T-3527
   follow_up_task: null
+
+- id: OBS-566
+  type: structural
+  severity: high
+  surface: 'Shell functions that signal a FINDING through a non-zero exit code,
+    captured by callers as `out=$(fn ...)` under `set -e`. Bash cannot
+    distinguish "I successfully found something" from "I failed", so the finding
+    becomes a silent death at the assignment — and the death happens BEFORE the
+    caller can report what was found.'
+  detected_in: T-3539 (operator hit it as "Unknown error from fw inception
+    decide", twice, on both inceptions handed to them)
+  symptom: 'lib/inception-readiness.sh:inception_underdisposed_questions returns
+    1 to mean "I found under-disposed questions" — documented, correct, and a
+    trap. All THREE call sites (lib/review.sh:145, lib/inception.sh:570,
+    agents/task-create/update-task.sh:848) captured it unguarded under
+    `set -euo pipefail`, so `fw task review`, `fw inception decide` and
+    `fw task update --status work-completed` were ALL silently broken on any
+    inception with an undisposed question. `bin/fw task review T-3532` exited 1
+    with zero bytes on both streams. Watchtower, handed a non-zero exit and two
+    empty streams, could only render "Unknown error" — honest and useless, and
+    it pointed the reader at the web layer when the fault was two layers down.
+    The diagnostic destroyed the thing it was diagnosing: the more wrong the
+    inception was, the more certainly the command died before saying so.'
+  root_cause: 'A non-error condition expressed as a non-zero exit, meeting a
+    `set -e` caller. THIRD instance of this exact class in one day: (1) L-387,
+    `cmd | grep -q` where grep exits on match and the producer takes SIGPIPE,
+    pipeline returns 141 with the pattern PRESENT; (2) T-3537, find_task_file
+    returns 1 when not found, masked for years by `local x=$(...)` — `local`
+    always exits 0 — and unmasked the moment someone dropped `local`, silently
+    killing `fw context focus`; (3) this. The repetition is the finding: the
+    pattern is idiomatic enough to keep being written, and invisible enough to
+    survive review. Unit tests cannot see any of them — every one of these
+    functions is CORRECT in isolation; the defect lives in the composition of
+    its contract with the caller shell options.'
+  prevention: 'FIXED for this instance: `|| true` at all three call sites with
+    per-site rationale; a CALLER CONTRACT block at the function definition so
+    the producer warns about the consumer hazard it creates; 6 tests including a
+    control proving the unguarded form really dies (a test that cannot fail
+    against the pre-fix tree measures nothing) and a structural test that every
+    call site carries the guard, so a fourth added later goes red; Watchtower
+    now names the SHAPE ("failed and produced NO output on either stream — that
+    is a CLI-side failure, not a Watchtower one") plus the reproducer command.
+    NOT FIXED — the class. Nothing stops the next function signalling a finding
+    through its exit code. A lint for `x=$(fn …)` where fn is a known
+    finding-signal would catch it, but the set of such functions is declared
+    nowhere; enumerating them is the prerequisite and is its own unit of work.
+    Candidate stronger fix worth weighing first: make finding-signal functions
+    return 0 and carry the finding ONLY in stdout — all three callers here
+    already ignored the rc and read only the output, so the rc was pure hazard
+    with no consumer.'
+  blast_radius: 'Any fw verb whose implementation captures a finding-signal
+    helper under set -e. Confirmed: the entire inception workflow. Suspected
+    wider — the two sibling instances found today were in task focus resolution
+    and in verification-line pipelines, i.e. three unrelated subsystems, which
+    suggests the pattern is repo-wide rather than local to inception.'
+  observed: '2026-09-28'
+  status: open
+  related:
+  - T-3539
+  - T-3537
+  - T-2874
+  follow_up_task: null

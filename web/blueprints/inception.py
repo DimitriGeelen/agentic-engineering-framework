@@ -642,10 +642,25 @@ def record_decision(task_id):
         # and the reason is visible inline. The logging.error above preserves
         # server-side observability regardless of the client-facing status.
         import html as _html
+        # T-3539: when the CLI exits non-zero having written NOTHING to either
+        # stream, say exactly that. "Unknown error" is true but useless, and it
+        # points the reader at Watchtower when the fault is upstream in the CLI.
+        # Measured origin: three call sites of inception_underdisposed_questions
+        # used `out=$(fn …)` unguarded, and that function returns 1 to mean "I
+        # found under-disposed questions". Under `set -e` the command died before
+        # printing its own warning, so Watchtower was handed an exit code and two
+        # empty streams and could only shrug. Naming the shape would have pointed
+        # at the CLI in one read instead of a full diagnosis session.
+        _silent = (
+            "fw inception decide failed and produced NO output on either stream.\n"
+            "That is a CLI-side failure, not a Watchtower one — the command died "
+            "before it could report a reason, so there is nothing to show here.\n"
+            f"Reproduce on the host: bin/fw task review {task_id}"
+        )
         # T-3280: same operator-facing translation on the failure path.
         reason = _html.escape(
-            _operator_facing_stderr((stderr or stdout or "Unknown error from fw inception decide")[:3000])[:300]
-            or "Unknown error from fw inception decide"
+            _operator_facing_stderr((stderr or stdout or _silent)[:3000])[:300]
+            or _silent
         )
         return (
             f'<div class="go-decision" style="border:1px solid #ef4444; border-radius:6px; padding:0.6rem;">'

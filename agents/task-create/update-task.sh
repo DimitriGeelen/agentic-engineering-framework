@@ -845,7 +845,10 @@ check_disposition_gate() {
     source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || return 0
 
     local underdisposed missing=0 missing_list=""
-    underdisposed=$(inception_underdisposed_questions "$TASK_FILE")
+    # `|| true` — see T-3539. Finding-signal return code (1 = found under-disposed
+    # questions), and an unguarded assignment under `set -e` kills the close gate
+    # before it can report WHY it refused. Only the output is used below.
+    underdisposed=$(inception_underdisposed_questions "$TASK_FILE") || true
     if [ -n "$underdisposed" ]; then
         local q_id q_disp q_rat
         while IFS=' ' read -r q_id q_disp q_rat; do

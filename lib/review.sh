@@ -142,7 +142,16 @@ emit_review() {
         source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || true
         if command -v inception_underdisposed_questions >/dev/null 2>&1; then
             local _underdisposed
-            _underdisposed=$(inception_underdisposed_questions "$task_file")
+            # `|| true` is load-bearing (T-3539). This function returns 1 to mean
+            # "I FOUND under-disposed questions" — a finding signal, not an error —
+            # and emit_review's callers run under `set -euo pipefail`. Without the
+            # guard the assignment propagates that 1 and kills the command HERE,
+            # before the warning below can print: `fw task review T-3532` exited 1
+            # with zero output, and Watchtower rendered the resulting empty stderr
+            # as "Unknown error from fw inception decide". The diagnostic destroyed
+            # the thing it was diagnosing. Only the OUTPUT is used below; the return
+            # code is never read, so discarding it loses nothing.
+            _underdisposed=$(inception_underdisposed_questions "$task_file") || true
             if [ -n "$_underdisposed" ]; then
                 echo "" >&2
                 echo "WARNING: this inception is NOT decision-ready — $(printf '%s\n' "$_underdisposed" | grep -c .) Open Question(s) lack disposition/rationale:" >&2

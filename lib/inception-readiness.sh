@@ -30,6 +30,26 @@
 #               '## Open Questions' section — grandfathered, matching T-2190)
 #           1 — at least one under-disposed question (count = line count)
 #
+#   ⚠ CALLER CONTRACT (T-3539) — THE RETURN CODE IS A *FINDING*, NOT AN ERROR.
+#
+#   Return 1 means "I successfully found under-disposed questions". Under
+#   `set -e` that is indistinguishable from failure, so
+#
+#       out=$(inception_underdisposed_questions "$f")        # WRONG under set -e
+#       out=$(inception_underdisposed_questions "$f") || true # correct
+#
+#   All three real callers use only the OUTPUT and never read the return code,
+#   so `|| true` discards nothing.
+#
+#   Measured cost of getting this wrong: all three call sites — lib/review.sh,
+#   lib/inception.sh, agents/task-create/update-task.sh — had the unguarded form,
+#   which silently killed `fw task review`, `fw inception decide` AND
+#   `fw task update --status work-completed` on any inception with an undisposed
+#   question. `fw task review T-3532` exited 1 printing NOTHING, and Watchtower,
+#   handed a non-zero exit with empty stderr, could only say "Unknown error from
+#   fw inception decide". The warning this function exists to trigger was the
+#   very thing that prevented itself from being printed.
+#
 #   Parsing contract is IDENTICAL to the pre-T-3279 check_disposition_gate,
 #   including the T-2218 RC5 anchored-marker fix (an IW-N mention inside prose
 #   must not flush the previous question's verdict).

@@ -81,28 +81,28 @@ cost_estimate_proposed:
 
 - **IW-1: Are WM tasks stored in a separate `.tasks/workflow/` directory, or in `active/` with a class marker?**
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: Directory. `.tasks/workflow/` — shipped T-3537. Chosen because episodic gen, staleness audits, review-queue counts and find_task_file all glob active/+completed/ and assume closure; a directory is skipped BY CONSTRUCTION, a marker needs a special case in each and the missed one is a silent bug.
 
 - **IW-2: Does the gate ENFORCE per-WM scope fences, or are they advisory with an audit rail behind them?**
   confidence: 1
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: Enforced, not advisory. Shipped T-3537: under WM focus a Write/Edit to any source path exits 2. Verified live — a real source write was refused with focus WM-001. An advisory fence is no fence when the risk IS the standing exemption.
 
 - **IW-3: Does WM-002 (close-out) carry the just-closed task's id to bound its scope, and if so who sets it — `update-task.sh` at close?**
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: Capability-scoped, not task-id-scoped. WM-002 is bounded by 'no source writes', not by the id of the task that just closed. Binding the id would couple the fence to the close transition, which OBS-468 already shows is the fragile part. Revisit if the log shows misuse.
 
 - **IW-4: Is Tier 3 (pre-approved read categories, "Spec only" since the tiers were written) implemented in this arc or split out as its own?**
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: Split out and shipped separately as T-3536. Measurement dissolved most of it: T-3096 had already built the fw read allowlist, and the claimed '4 of 7 blocks were reads' was false. Real residue was 3 read-only verbs shipped after that derivation; added with negative controls.
 
 - **IW-5: How does this interact with OBS-468 / T-3432, where session-scoped focus means close FAILS to clear focus and the session hard-deadlocks?**
   confidence: 1
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: No collision. OBS-468/T-3432 is close FAILING to clear focus under session-scoped focus (stale value); WM adds a NEW valid focus value. Different states, different fixes. T-3537's 148-test regression run included the focus suites and stayed green.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
