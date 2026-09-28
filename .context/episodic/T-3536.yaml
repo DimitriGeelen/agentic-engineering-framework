@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3536: Tier 3: implement pre-approved read categories so status queries and discovery do not require an active task
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-28T15:52:26Z
+# ============================================================================
+
+task_id: T-3536
+task_name: "Tier 3: implement pre-approved read categories so status queries and discovery do not require an active task"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-28T13:55:05Z
+completed: 2026-09-28T15:51:53Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-28T17:51:37+02:00
+last_commit: 2026-09-28T17:51:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  three read-only judge verbs were gated at focus-null; the filed premise was wrong (OBS-565)
+
+# Key outcomes
+outcomes:
+  - '**The scope claim is re-measured before anything is built.** This task was filed on the agent''s assertion that "4 of today''s 7 blocks were pure reads" and that Tier 3 is unimplemented. Neither survives contact: T-3096 already classified every `fw` verb with file:line evidence and built the allowlist. The real, measured gap is recorded here — with the mis-cited cases named — before any code changes.'
+  - '**Every command actually blocked during this session is classified** read / write / not-a-real-command, by running it through `is_bash_safe_command` rather than from memory, and the classification is written down.'
+  - 'Any genuine read-only gap found is closed in `agents/context/lib/safe-commands.sh` with the same discipline the file already uses: named origin, stated evidence, and sub-verb granularity — never a whole-verb allow where read and write forms differ by an argument.'
+  - '**No verb is widened whose write form shares its name.** The file''s existing rule (`git config`, `git symbolic-ref`, `fw outcome backprop`, `fw sidecar inbox` without `--peek` are all deliberately excluded) is followed, not relaxed.'
+  - '**A negative control accompanies every addition**: for each newly-allowed form, a sibling write form is asserted to remain GATED. An allowlist test that only proves things pass cannot distinguish a correct rule from one that allows everything.'
+  - 'Existing allowlist tests stay green, and the chain rule is preserved — a chain is safe only if EVERY segment is safe.'
+  - '`bin/fw vendor self --check` clean before close (`agents/` is a vendored path).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.context/concerns.yaml'
+  - '.tasks/active/T-3536-tier-3-implement-pre-approved-read-categ.md'
+  - 'tests/unit/t3536_judge_verbs_allowlist.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-28T17:51:37'
+    action: 'T-3536: three read-only judge verbs were gated at focus-null; the filed premise was wrong (OBS-565)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 116 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 116
+  commits: 1
+  files_changed: 7
+  lines_added: 269
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3536-tier-3-implement-pre-approved-read-categ.md
+generated_by: context-agent-hybrid
