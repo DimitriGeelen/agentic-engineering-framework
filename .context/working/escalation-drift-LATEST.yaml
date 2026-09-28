@@ -1,12 +1,12 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-09-27T03:23:02.522700+00:00
-corpus_total: 3007
-bug_class_total: 522
+generated: 2026-09-28T03:23:03.026816+00:00
+corpus_total: 3022
+bug_class_total: 523
 bug_class_pct: 17
 h1_flagged: 368
 h1_pct_of_bug_class: 70
-h2_repeat_patterns: 170
+h2_repeat_patterns: 171
 h3_flagged: 265
 h3_pct_of_bug_class: 50
 recent_30d_flagged: 7
@@ -28,15 +28,15 @@ recent_sample:
     name: "sidecar e2e peer mode reports FAIL for a peer that has not answered YET: a"
 h2_top:
   - learning: "P-011"
-    task_count: 2959
+    task_count: 3003
   - learning: "L-387"
-    task_count: 2685
+    task_count: 2728
   - learning: "L-291"
-    task_count: 1291
+    task_count: 1306
   - learning: "L-398"
-    task_count: 1026
+    task_count: 1040
   - learning: "P-010"
-    task_count: 612
+    task_count: 624
   - learning: "L-399"
     task_count: 109
   - learning: "L-006"

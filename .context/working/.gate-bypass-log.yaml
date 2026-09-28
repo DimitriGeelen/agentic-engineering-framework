@@ -8949,3 +8949,13 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic'
   tier: 2
   mechanism: allow-unlabeled-mcp token
   detail: "mcp__termlink__termlink_channel_post (unlabeled, via allow-unlabeled-mcp token)"
+- ts: "2026-09-28T02:21:32Z"
+  gate: rail-mcp-label
+  tier: 2
+  mechanism: allow-unlabeled-mcp token
+  detail: "mcp__termlink__termlink_channel_post (unlabeled, via allow-unlabeled-mcp token)"
+- timestamp: '2026-09-28T12:49:05Z'
+  task: 'T-3447'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
