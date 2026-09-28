@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3537: WM task class: WM-001/002/003 with enforced scope fences, so selection and trailing work have a home that never weakens the gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-28T17:06:47Z
+# ============================================================================
+
+task_id: T-3537
+task_name: "WM task class: WM-001/002/003 with enforced scope fences, so selection and trailing work have a home that never weakens the gate"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-28T13:56:36Z
+completed: 2026-09-28T17:04:29Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-28T19:04:00+02:00
+last_commit: 2026-09-28T19:04:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the WM task class — selection and close-out get a task, not an exemption
+
+# Key outcomes
+outcomes:
+  - '**A closed set of three WM tasks exists in `.tasks/workflow/`** — WM-001 (selection & discovery), WM-002 (close-out & trailing work), WM-003 (session lifecycle). Directory separation, not a marker in `active/` (IW-1): every mechanism that assumes tasks close — episodic generation, staleness audits, review-queue counts, `find_task_file` — globs `active/` and `completed/`, so a separate directory is skipped **by construction rather than by special-case**.'
+  - '**One predicate, one place.** `lib/wm_tasks.sh` is the only definition of what a WM task is and which fence it carries. No second reader — the defect this repo has paid for on arc membership (five implementations, three disagreements) and on AC placeholders (OBS-560) this morning.'
+  - '**Focus on a WM task satisfies the task gate** — the focus-null dead end (OBS-250, 12+ instances) is reachable no more. Demonstrated by the gate allowing a previously-refused read with focus set to WM-001.'
+  - '**THE FENCE, ENFORCED NOT ADVISORY (IW-2): under WM focus, a Write/Edit to any source path is REFUSED.** This is the whole safety property — a standing task is a standing exemption unless fenced, and an advisory fence is no fence. The exempt paths (`.context/`, `.tasks/`, `.claude/`, `.git/`) still work, because those are what housekeeping writes.'
+  - '**Negative controls carry equal weight to positive ones.** For every "WM focus allows X" test there is a "WM focus still refuses Y" test, where Y is a source write. A gate test that only proves things pass cannot distinguish a correct fence from one that permits everything — the exact false-green shape of OBS-560 and of the allowlist test in T-3536.'
+  - '**The fence message names the way out** — which WM task is in focus, why the write was refused, and that real work needs a real task. A refusal an agent cannot act on gets routed around (`[REVIEWER]`: 7 uses against 412).'
+  - '**Nothing already working is narrowed.** The full existing `check-active-task` and safe-command suites stay green; a normal `T-` focus behaves exactly as before, pinned by a test that a T- task can still write source.'
+  - '`bin/fw vendor self --check` clean before close (`lib/` and `agents/` are vendored).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/context/lib/focus.sh'
+  - '.agentic-framework/lib/wm_tasks.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/lib/focus.sh'
+  - '.fabric/components/lib-wm_tasks.yaml'
+  - 'lib/wm_tasks.sh'
+  - '.tasks/active/T-3537-wm-task-class-wm-001002003-with-enforced.md'
+  - '.tasks/workflow/WM-001-selection-and-discovery.md'
+  - '.tasks/workflow/WM-002-close-out-and-trailing-work.md'
+  - '.tasks/workflow/WM-003-session-lifecycle.md'
+  - 'tests/unit/t3537_wm_task_class.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-28T19:04:00'
+    action: 'T-3537: the WM task class — selection and close-out get a task, not an exemption'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 187 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 187
+  commits: 1
+  files_changed: 14
+  lines_added: 882
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3537-wm-task-class-wm-001002003-with-enforced.md
+generated_by: context-agent-hybrid
