@@ -5717,3 +5717,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-565
+  text: "P-011 reports NOTHING when it runs zero commands, so a malformed ## Verification heading closes a task with a silent skip that looks identical to a clean close. Hit live on T-3545 (2026-09-28): a splice landed the heading mid-sentence inside the Human-AC template comment (which contains the literal phrase 'added to ## Verification'), so no heading existed at line start; extract_verification_block returned empty, update-task.sh:1178 '[ -z $verify_cmds ] && return 0' returned 0, and the close printed 'Acceptance criteria: 6/6 checked' and 'Moved to completed/' with NO gate section at all. T-3544 minutes earlier printed 'Verification: 18/18 passed'. The difference is one absent line, and an absent line is not something anyone notices. NOT a missing guard: update-task.sh:1152 deliberately refuses to re-check for the heading, because a guard that reimplements the code it guards cannot detect that code being fixed or re-broken (the G-072 class 577-CashWeb raised) — that reasoning is correct and must not be undone. The fix is to REPORT rather than to guard: emit one line when the gate runs zero commands ('Verification: no ## Verification section — gate skipped') so the skip is visible without re-deriving the heading. Also note work-completed -> started-work is not a valid transition, so a task closed this way cannot have the gate re-run on it at all; T-3545's nine commands had to be executed by hand."
+  captured: 2026-09-28T22:56:43Z
+  context_task: WM-002
+  tags: []
+  status: pending
+  promoted_to: null

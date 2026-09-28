@@ -1,0 +1,21 @@
+id: tests/unit/t3545_branch_hygiene_header_parity.bats
+name: t3545_branch_hygiene_header_parity
+type: script
+subsystem: tests
+location: tests/unit/t3545_branch_hygiene_header_parity.bats
+tags: []
+
+purpose: "T-3545 / OBS-467 — a module header must not assert the opposite of its own code."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-28
+created_by: unknown

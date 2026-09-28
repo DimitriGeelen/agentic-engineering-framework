@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3545: OBS-467 residue: branch-hygiene and worktree headers still assert master as the integration target that T-3188 replaced with the dev branch
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-28T22:54:16Z
+# ============================================================================
+
+task_id: T-3545
+task_name: "OBS-467 residue: branch-hygiene and worktree headers still assert master as the integration target that T-3188 replaced with the dev branch"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-28T22:48:30Z
+completed: 2026-09-28T22:54:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-29T00:53:38+02:00
+last_commit: 2026-09-29T00:53:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a module header that asserts the opposite of its own code
+
+# Key outcomes
+outcomes:
+  - '`lib/branch-hygiene.sh`''s module header states the real resolution order — dev branch'
+  - 'The three other stale master references in that file''s comments (the divergence header,'
+  - '`lib/worktree.sh`''s trunk-resolution header no longer implies a worktree lands on master'
+  - 'A test pins header-vs-code parity: it fails if the resolution chain prefers the dev'
+  - 'No behaviour change — T-3188''s and T-3194''s existing suites stay green, verified by'
+  - 'OBS-467 is updated in the register to record which legs were already closed by T-3188,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - '.agentic-framework/lib/worktree.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/inbox.yaml'
+  - 'lib/branch-hygiene.sh'
+  - 'lib/worktree.sh'
+  - '.tasks/active/T-3545-obs-467-residue-branch-hygiene-and-workt.md'
+  - 'tests/unit/t3545_branch_hygiene_header_parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T00:53:38'
+    action: 'T-3545: a module header that asserts the opposite of its own code'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 8
+  lines_added: 463
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3545-obs-467-residue-branch-hygiene-and-workt.md
+generated_by: context-agent-hybrid

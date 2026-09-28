@@ -4,12 +4,12 @@ name: "OBS-467 residue: branch-hygiene and worktree headers still assert master 
 description: >
   OBS-467 residue: branch-hygiene and worktree headers still assert master as the integration target that T-3188 replaced with the dev branch
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/branch-hygiene.sh, lib/worktree.sh, tests/unit/t3545_branch_hygiene_header_parity.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T22:48:30Z
-last_update: 2026-09-28T22:48:30Z
-date_finished: null
+last_update: 2026-09-28T22:54:00Z
+date_finished: 2026-09-28T22:54:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -106,15 +106,28 @@ stays homed there per §Gap Homing.
 - [x] OBS-467 is updated in the register to record which legs were already closed by T-3188,
       so the next reader does not re-derive the four fixed sites
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+<!-- No Human criteria: every criterion here is a deterministic shell check, and
+     nothing this task touches is a render surface. The template's Human block was
+     removed as the template itself instructs when all criteria are agent-verifiable. -->
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification
+## Verification
+
+<!-- ⚠ THIS SECTION WAS MALFORMED AT CLOSE AND THE P-011 GATE THEREFORE DID NOT RUN.
+     Recorded here rather than quietly repaired, because the failure is the finding.
+
+     The heading was spliced mid-sentence into the Human template comment above
+     (which contains the literal phrase "added to ## Verification"), so no
+     `## Verification` existed at line start. update-task.sh treats a missing
+     section as the supported backward-compatible case and passes the task
+     through — it cannot distinguish "no verification intended" from "verification
+     present but unparseable". The close printed `Acceptance criteria: 6/6 ✓` and
+     `Moved to completed/` with no gate section at all, and the absence of a line
+     is not something a reader notices. Filed as OBS-565.
+
+     work-completed → started-work is not a valid transition, so the gate cannot
+     be re-run on this task. The commands below were instead executed by hand
+     under the gate's real semantics (`bash -c 'set -o pipefail; <line>'`, each
+     line judged on its own exit code); the results are recorded in ## Updates. -->
 
 # Header-vs-code parity, with a control leg that restores the pre-T-3188 header
 # over the current code and proves the check goes red on the contradiction.
@@ -246,7 +259,39 @@ something.
 
 ## Updates
 
+### 2026-09-28T23:05Z — P-011 did not run at close; commands executed by hand [agent]
+- **Action:** Discovered after close that no `## Verification` heading existed at line
+  start (spliced mid-sentence into the Human template comment), so the gate ran zero
+  commands and reported nothing. `fw task update T-3545 --status started-work` is refused
+  — `work-completed → started-work` is not a valid transition — so the gate cannot be
+  re-run on this task. Executed all nine verification commands by hand instead, each under
+  the gate's real semantics (`bash -c 'set -o pipefail; <line>'`, judged on its own rc).
+- **Output:** 9 of 9 passed.
+  - `t3545_branch_hygiene_header_parity.bats` — green, 0 skips
+  - `t3188_hygiene_release_train.bats` — green
+  - `t3194_remediation_target.bats` — green
+  - `t3187_branch_identity_guard.bats` — green
+  - `t100143_branch_hygiene.bats` — green
+  - the false sentence is absent from `lib/branch-hygiene.sh`
+  - OBS-467 carries a `resolution:` naming T-3188
+  - `bin/fw vendor self --check` clean
+- **Context:** The gate's silence is the finding, not this task's result. Filed as OBS-565.
+  The task's work stands on the evidence above; what it does NOT have is a gate-produced
+  verdict, and that distinction is recorded here rather than papered over.
+
 ### 2026-09-28T22:48:30Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3545-obs-467-residue-branch-hygiene-and-workt.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6be0d71c
+- **Timestamp:** 2026-09-28T22:54:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-28T22:54:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
