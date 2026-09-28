@@ -55,8 +55,14 @@ first_resolved_ref() {
     run module_header "$BH"
     [ -n "$output" ]
     # The exact false sentence this task removed, and any re-phrasing of it.
-    ! echo "$output" | grep -qi 'Judged against TARGET = origin/master when present'
-    ! echo "$output" | grep -qiE '^#[[:space:]]*Judged against[^.]*origin/master[^.]*\.$'
+    #
+    # Counted rather than written `! cmd`. Bash exempts a negated command from
+    # errexit, so a non-final `! echo … | grep -q …` is INERT — it cannot fail
+    # the test, and the first version of this file shipped exactly that (caught
+    # by tools/bats-dead-negation-lint.py at pre-push, T-3138/T-3191). A test
+    # that cannot fail is the same false green the whole task is about.
+    [ "$(echo "$output" | grep -ci 'Judged against TARGET = origin/master when present')" -eq 0 ]
+    [ "$(echo "$output" | grep -ciE '^#[[:space:]]*Judged against[^.]*origin/master[^.]*\.$')" -eq 0 ]
 }
 
 @test "the header names the dev branch it actually resolves against" {
