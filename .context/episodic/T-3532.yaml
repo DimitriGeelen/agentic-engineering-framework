@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3532: Workflow-management task class (WM-NNN): give governance-necessary work a home so the task gate never has to be weakened
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-28T18:24:03Z
+# ============================================================================
+
+task_id: T-3532
+task_name: "Workflow-management task class (WM-NNN): give governance-necessary work a home so the task gate never has to be weakened"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-28T12:37:47Z
+completed: 2026-09-28T18:23:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-28T14:41:14+02:00
+last_commit: 2026-09-28T15:58:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — workflow-management task class (WM-NNN), operator-originated. operator ruling — GO, B then A, with A recorded not promised
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3532-workflow-management-task-class.md'
+  - '.tasks/active/T-3532-workflow-management-task-class-wm-nnn-gi.md'
+  - '.tasks/active/T-3536-tier-3-implement-pre-approved-read-categ.md'
+  - '.tasks/active/T-3537-wm-task-class-wm-001002003-with-enforced.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-28T14:41:14'
+    action: 'T-3532: inception — workflow-management task class (WM-NNN), operator-originated'
+  - time: '2026-09-28T15:58:42'
+    action: 'T-3532: operator ruling — GO, B then A, with A recorded not promised'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 346 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 346
+  commits: 3
+  files_changed: 19
+  lines_added: 1780
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3532-workflow-management-task-class-wm-nnn-gi.md
+generated_by: context-agent-hybrid
