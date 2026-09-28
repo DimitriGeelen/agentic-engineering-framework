@@ -6,8 +6,18 @@
 # their own WARN formatting and count lines. Always exits 0: this is an
 # advisory rail, never a gate.
 #
-# Judged against TARGET = origin/master when present, else master. Repos with
-# no master lineage produce no findings (nothing to judge against).
+# Judged against TARGET = the DEV branch — `origin/$FW_DEV_BRANCH` (default
+# `bleeding-edge`) when present, then its local ref, and only then origin/master
+# or master. T-3188. Under the release train (CLAUDE.md §Release-Train Branch
+# Model) master lags deliberately, so judging landings against it would report
+# every branch already landed on bleeding-edge as unlanded; the master legs
+# remain solely for a master-only consumer that has no dev branch. Repos with
+# neither lineage produce no findings (nothing to judge against).
+#
+# This header said "TARGET = origin/master" for as long as the code did not
+# (T-3545 / OBS-467). Read the resolution chain in fw_branch_hygiene, not this
+# comment, if the two ever disagree again — and see the parity test in
+# tests/unit/t3545_branch_hygiene_header_parity.bats, which exists to stop them.
 #
 # Finding classes (one token-prefixed line each):
 #   merged-undeleted <branch>                    local branch tip contained in TARGET
@@ -452,14 +462,19 @@ fw_branch_hygiene_head() {
 }
 
 # ── T-100144 (C3 of T-100139): divergence summary for handover ──
-# Prints machine-parseable lines for the current checkout vs origin/master:
-#   divergence <branch> ahead=<n> behind=<n>     (any non-master branch)
+# Prints machine-parseable lines for the current checkout vs the DEV branch
+# (`origin/$FW_DEV_BRANCH`, default `bleeding-edge`; origin/master only when no
+# dev branch exists — T-3188):
+#   divergence <branch> ahead=<n> behind=<n>     (any branch that is neither
+#                                                master nor the dev branch)
 #   fork ahead=<a> behind=<b> threshold=<t>      (T-100195: behind > threshold AND ahead > threshold —
 #                                                bidirectional fork; a go-live `git merge` conflicts)
 #   nudge behind=<n> threshold=<t>               (behind > FW_BRANCH_BEHIND_WARN AND ahead <= threshold —
 #                                                pure/small lag; land with `fw integrate run`)
-# Silent (no output, exit 0) on master, detached HEAD, or no origin/master —
-# the handover stays neutral on a tidy checkout. Threshold shared with the
+# Silent (no output, exit 0) on master, on the dev branch itself, on detached
+# HEAD, or when the comparand does not resolve — the handover stays neutral on a
+# tidy checkout. Silence ON the dev branch is the point: bleeding-edge running
+# ahead of master IS the release train, not divergence. Threshold shared with the
 # fw_branch_hygiene doctor scan above. `fork` and `nudge` are mutually exclusive:
 # a fork needs reconcile-while-small, a lag needs a one-way land — never both.
 fw_branch_divergence() {
@@ -510,12 +525,12 @@ fw_branch_divergence() {
 #                                            (`git merge --ff-only`, cannot conflict)
 #   nudge (0<ahead<=t, behind>t)          → advise landing the unique commits
 #                                            via `fw integrate run` (one-way)
-#                                            rather than merging origin/master in
+#                                            rather than merging the dev branch in
 #   minor (0<ahead<=t, 0<behind<=t)       → advise `fw sync` (rebase+push)
 #
 # Exit codes: 0 = no action needed / safely reconciled / advisory printed.
 #             1 = refused (fork) or an attempted fast-forward failed.
-#             2 = usage error (not a repo / no origin / no origin/master).
+#             2 = usage error (not a repo / no origin / no comparand ref).
 # ── T-3194: one name for the branch every remediation string must point at ──
 # fw_branch_hygiene and fw_branch_divergence each resolve their own comparand
 # (they prefer different refs, deliberately, and both are pinned by T-3188's

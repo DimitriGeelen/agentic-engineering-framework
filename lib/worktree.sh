@@ -15,8 +15,14 @@
 # lib/integrate.py: check|classify; the mutating `fw integrate run` is arc-011's slice).
 # `create` is a separate follow-up. This avoids duplicating the existing integrate surface.
 
-# Resolve the "master" ref this repo integrates onto (local first, then origin).
-# The trunk every landing verdict is measured against.
+# Resolve the TRUNK ref this repo integrates onto (local first, then origin).
+# The ref every landing verdict is measured against.
+#
+# Named `master` throughout for history, but under the release train
+# (CLAUDE.md §Release-Train Branch Model) a worktree lands on the DEV branch —
+# `fw integrate run bleeding-edge --push` — and never on master, which is the
+# consumer install surface. T-3545 / OBS-467 corrected this header; the
+# resolution below is unchanged.
 #
 # REMOTE FIRST (T-3117). This used to prefer refs/heads/master, and in the
 # session-on-master flow (T-100196) that ref is never updated: work lands by

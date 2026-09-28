@@ -5033,6 +5033,7 @@ observations:
   text: "STALE master-as-integration-target references survive T-3185 (found by 832, sidecar @13): lib/branch-hygiene.sh:9 'Judged against TARGET = origin/master', lib/worktree.sh:18 'Resolve the master ref this repo integrates onto', lib/worktree.sh:196 on_master, agents/handover/handover.sh:303 'land the strand with fw integrate run master --push'. Under the release-train (T-3185: bleeding-edge is master's ONLY writer; worktrees land on bleeding-edge, never master) these read trunk-based and the handover nudge would tell a strand cut from bleeding-edge to merge into master — the exact injection the model forbids. Fix: resolve the integration target to the dev branch (bleeding-edge when present, else master) in one helper and use it from all four sites; test pins the nudge text. Also: 832's vendored tree (v1.6.354) has no integrate agent while handover.sh references it."
   captured: 2026-09-22T10:44:25Z
   context_task: T-3428
+  resolution: "PARTLY ALREADY CLOSED when re-measured at HEAD 2026-09-28 (T-3545). T-3188 had already fixed the BEHAVIOUR on all four reported sites: the handover merge-back nudge emits `fw integrate run ${_bd_devname} --push` not master (handover.sh:477); branch-hygiene's remediation string uses $_gl_dev (:604); fw_branch_hygiene and fw_branch_divergence both resolve origin/$FW_DEV_BRANCH first and keep master only as the master-only-consumer fallback. lib/worktree.sh:246 `on_master` is not a defect — a factual field with one test consumer that decides nothing. What genuinely survived, and is what T-3545 fixed, is HEADERS asserting the opposite of their own code: branch-hygiene.sh:9 read 'Judged against TARGET = origin/master when present, else master' at the top of the rail whose findings decide branch deletion. Pinned by tests/unit/t3545_branch_hygiene_header_parity.bats so the two cannot drift apart again. 832's second point — their vendored tree has no integrate agent while handover.sh references it — stays homed with them per Gap Homing."
   tags: []
   status: pending
   promoted_to: null
@@ -5685,6 +5686,34 @@ observations:
   text: "FALSE GREEN in the brand-new BVP score judge (T-3526), found on the FIRST real task it was pointed at. 'fw bvp judge T-3471' returns GREEN with evidence '2/2 AC item(s) substantive (>= 15 chars after stripping prefix markers)'. T-3471's acceptance criteria are literally the template placeholders '- [ ] [First criterion]' and '- [ ] [Second criterion]'. '[First criterion]' is 17 characters, so a pure length threshold passes it. ROOT CAUSE: lib/bvp_judge.py:140 _is_substantive() is length-only (MIN_SUBSTANTIVE_CHARS = 15) with no template/placeholder detection. A judge whose stated second criterion is SUFFICIENCY ('are they good enough to justify the score claimed') therefore approves template text as sufficient. WHAT MAKES THIS WORSE THAN A MISSING FEATURE: the framework ALREADY has a placeholder detector — agents/context/check-active-task.sh:1053, the G-020 scope gate, whose comment reads 'Placeholder ACs ([First criterion]) indicate the task was created from template'. The judge reinvented a weaker check beside an existing stronger one, and the weaker version passes exactly the input the stronger one exists to catch. It is also the same lesson T-3428 already paid for and wrote down: scoring specs strip template text BEFORE matching, measured as 'template-only prose scored 4 unstripped, 0 stripped'. Two prior defences existed and neither was reused. NOTE ON PROCESS, which is the reason this was caught: T-3526 closed with 9/9 ACs ticked and 34 passing tests across three suites, all green. None of its tests used a real placeholder-AC task as a fixture, so the suite could not see it. It took pointing the judge at one live open task. This is the producer-not-judge principle earning its keep on the very feature built to implement it."
   captured: 2026-09-27T21:36:42Z
   context_task: T-3527
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-561
+  text: "sidecar consult to cacc73ea32b121dd/832-Workflow-designer unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation 832-T838-VALUE-REVIEW-SEAM, client_msg_id 34830410-2cee-4e8f-ab14-93ff1cfa8b8b). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-27T21:48:02Z
+  context_task: T-3527
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-562
+  text: "sidecar consult to cacc73ea32b121dd/832-Workflow-designer unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation 832-T838-VALUE-REVIEW-SEAM, client_msg_id 4ea91975-d8a4-4e1a-8961-00ef5043ba04). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-27T22:38:01Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-563
+  text: "sidecar consult to cacc73ea32b121dd/010-termlink unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation e2e-ab947312, client_msg_id c929ec8f-1f1d-4b27-86cc-6dafbac72b0b). Re-posts and inbox nudges have not produced a reply."
+  captured: 2026-09-28T07:23:01Z
+  context_task: null
+  tags: [sidecar]
+  status: pending
+  promoted_to: null
+- id: OBS-564
+  text: "tests/unit/t3095_audit_branch_hygiene.bats test 8 ('not a git repository: block is silent, emits nothing') is RED on a pristine tree — confirmed by checking out lib/branch-hygiene.sh and lib/worktree.sh at HEAD and re-running (identical single failure). Found while verifying T-3545 caused no regression; it is NOT caused by T-3545, whose diff is comments only. The assertion is '! echo $output | grep -q Branch hygiene' for a non-repo fixture dir, so the block is emitting a Branch-hygiene line where it should stay silent — either the fixture dir is resolving to an enclosing git repo, or the not-a-repo guard stopped short-circuiting. Worth one task: a silent-on-non-repo guard that no longer holds is the same false-green family as the rest of this rail. 11 of 12 in that file pass, so it reads as healthy at a glance."
+  captured: 2026-09-28T22:52:30Z
+  context_task: T-3545
   tags: []
   status: pending
   promoted_to: null
