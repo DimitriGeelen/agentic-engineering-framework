@@ -4,10 +4,10 @@ name: "set FW_CONTEXT_WINDOW to 900000 permanently per operator ruling, and veri
 description: >
   set FW_CONTEXT_WINDOW to 900000 permanently per operator ruling, and verify the budget ladder actually scales rather than being hard-coded literals
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T12:48:45Z
-last_update: 2026-09-28T12:48:45Z
-date_finished: null
+last_update: 2026-09-28T12:52:32Z
+date_finished: 2026-09-28T12:52:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -342,3 +342,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3533-set-fwcontextwindow-to-900000-permanentl.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c31bec5e
+- **Timestamp:** 2026-09-28T12:52:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-28T12:52:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

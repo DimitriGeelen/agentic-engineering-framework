@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3533: set FW_CONTEXT_WINDOW to 900000 permanently per operator ruling, and verify the budget ladder actually scales rather than being hard-coded literals
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-28T12:52:49Z
+# ============================================================================
+
+task_id: T-3533
+task_name: "set FW_CONTEXT_WINDOW to 900000 permanently per operator ruling, and verify the budget ladder actually scales rather than being hard-coded literals"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-28T12:48:45Z
+completed: 2026-09-28T12:52:32Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-28T14:51:53+02:00
+last_commit: 2026-09-28T14:52:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CONTEXT_WINDOW 900000, permanently — operator ruling. budget check asserts raw_tokens against the new critical line, not level:
+
+# Key outcomes
+outcomes:
+  - '`CONTEXT_WINDOW` is set to 900000 **persistently** in `.framework.yaml` (operator ruling, 2026-09-28: *"Limit is 900k, that should be permanently changed"*) — not an env var, which would die with the session.'
+  - 'The change is demonstrated to be LIVE rather than merely written: `agents/context/checkpoint.sh budget` reports the same token count against the new cap, and the escalation ladder moves with it (warn/urgent/critical at 675k/765k/855k, not 225k/255k/285k).'
+  - 'Both consumers are confirmed to derive their thresholds from the cap rather than carrying literals — `agents/context/checkpoint.sh` and `agents/context/budget-gate.sh`. A config change that does not reach the gate that enforces it is the false-green class this session has fixed three times; it is checked, not assumed.'
+  - 'CLAUDE.md''s §Context Budget Management ladder is updated so the documented thresholds match the live ones. A documented number that contradicts the enforced one is worse than no number, because it reads as authoritative.'
+  - '`bin/fw vendor self --check` clean before close (the two budget scripts are vendored paths).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/VERSION'
+  - 'CLAUDE.md'
+  - '.framework.yaml'
+  - '.tasks/active/T-3533-set-fwcontextwindow-to-900000-permanentl.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-28T14:51:53'
+    action: 'T-3533: CONTEXT_WINDOW 900000, permanently — operator ruling'
+  - time: '2026-09-28T14:52:31'
+    action: 'T-3533: budget check asserts raw_tokens against the new critical line, not level:'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 5
+  lines_added: 369
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3533-set-fwcontextwindow-to-900000-permanentl.md
+generated_by: context-agent-hybrid
