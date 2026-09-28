@@ -765,11 +765,23 @@ _fw_single_command_is_safe() {
                     case "$fw_sub3" in status|log|worker-commits) return 0 ;; esac
                     ;;
                 arc)
-                    case "$fw_sub3" in list|ls|show|review|show-suggestions|help) return 0 ;; esac
+                    # T-3536: judge-driver and review-driver added. Both post-date
+                    # T-3096's derivation, which is why they were absent rather than
+                    # excluded — see the parity note at the end of this arm.
+                    #   judge-driver  lib/arc.sh:1971 "Read-only. … never mutates the
+                    #                 arc YAML … it only reports a verdict"; and
+                    #                 lib/arc_driver_judge.py has zero write calls.
+                    #   review-driver T-3429's static check. `approve-driver` DOES
+                    #                 mutate scoped_drivers[] and stays absent.
+                    case "$fw_sub3" in list|ls|show|review|show-suggestions|help|judge-driver|review-driver) return 0 ;; esac
                     ;;
                 bvp)
                     # bare `fw bvp` is the ranking; `fw bvp T-123` is per-task detail.
-                    case "$fw_sub3" in ""|arcs|--quadrant|--include-proposed|--include-completed|--help|-h|T-*) return 0 ;; esac
+                    # T-3536: `judge` added — lib/bvp_judge.py:383 "Never writes
+                    # anything. Never touches `bvp_scores:`", zero write calls in the
+                    # module. `confirm` writes bvp_scores: and stays absent, as does
+                    # `estimate-cost`, which writes cost_estimate:.
+                    case "$fw_sub3" in ""|arcs|--quadrant|--include-proposed|--include-completed|--help|-h|T-*|judge) return 0 ;; esac
                     ;;
                 healing)
                     case "$fw_sub3" in diagnose|patterns|suggest) return 0 ;; esac

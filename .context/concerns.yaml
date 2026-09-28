@@ -1388,3 +1388,55 @@
   - T-1667
   - T-3535
   follow_up_task: T-3538
+
+- id: OBS-565
+  type: structural
+  severity: medium
+  surface: 'agents/context/lib/safe-commands.sh — the fw read-only allowlist is a
+    SNAPSHOT of a one-time derivation (T-3096 classified every arm of bin/fw''s
+    dispatch case with file:line evidence). Nothing keeps it in parity with the
+    verbs that ship afterwards, so a new read-only verb is absent by OMISSION
+    rather than by decision, and the omission is invisible.'
+  detected_in: T-3536 (found while trying to verify a DIFFERENT claim — that a
+    Tier 3 read gap existed. It did not; T-3096 had closed it. This is what was
+    actually there.)
+  symptom: 'Three read-only verbs shipped on 2026-09-28 and were all unreachable
+    at focus-null the same day: `fw bvp judge` (T-3526, whose module docstring
+    reads "Never writes anything. Never touches bvp_scores:"), `fw arc
+    judge-driver` (T-3527, documented read-only at lib/arc.sh:1971 — "never
+    mutates the arc YAML … it only reports a verdict"), and `fw arc
+    review-driver` (T-3429). Both judge modules contain zero write calls.
+    These are the producer-not-judge verbs — precisely what an agent calls to
+    decide whether to proceed — and an agent between tasks could not call them.'
+  root_cause: 'A gated read is INDISTINGUISHABLE from a correctly gated write
+    until somebody runs it with focus null. There is no signal at author time:
+    the verb works fine in every session that happens to hold a focus, which is
+    most of them. So the allowlist decays silently as the CLI grows, and the
+    decay surfaces only as an agent being mysteriously blocked on something
+    obviously harmless. Same family as the session''s other findings — a check
+    whose failure mode is silence.'
+  prevention: 'PARTIALLY FIXED. T-3536 added the three verbs with named evidence
+    per entry and 13 tests, 6 of them negative controls asserting the write
+    siblings (bvp confirm, bvp estimate-cost, arc approve-driver,
+    set-scoped-weight, remove-driver, close) stay refused — an allowlist test
+    that only asserts passes cannot distinguish a correct rule from one that
+    allows everything. The CLASS is NOT fixed: nothing stops the next read-only
+    verb shipping without its entry. Candidates: (a) a lint that enumerates
+    bin/fw''s dispatch arms and reports any verb absent from BOTH the allowlist
+    and a declared-write list, so every new verb must be classified once — this
+    is the T-3096 derivation turned into a rail rather than a report; (b) an AC
+    in the task template for CLI-adding tasks; (c) accept the decay and re-derive
+    periodically. (a) is the only one that fails loudly. Not built here: it is a
+    separate unit of work and this task was already scope-corrected once.'
+  blast_radius: 'Every read-only verb added after 2026-08 (T-3096). Agents
+    between tasks, at session start, and immediately after a close — the states
+    where discovery matters most and where an active task is least likely to
+    exist.'
+  observed: '2026-09-28'
+  status: open
+  related:
+  - T-3536
+  - T-3096
+  - T-3526
+  - T-3527
+  follow_up_task: null

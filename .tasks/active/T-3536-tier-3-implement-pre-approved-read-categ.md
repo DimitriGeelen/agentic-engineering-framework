@@ -1,8 +1,10 @@
 ---
 id: T-3536
-name: "Tier 3: implement pre-approved read categories so status queries and discovery do not require an active task"
+name: "Tier 3: implement pre-approved read categories so status queries and discovery
+  do not require an active task"
 description: >
-  Tier 3: implement pre-approved read categories so status queries and discovery do not require an active task
+  Tier 3: implement pre-approved read categories so status queries and discovery do
+  not require an active task
 
 status: started-work
 workflow_type: build
@@ -38,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T13:55:05Z
-last_update: 2026-09-28T13:55:05Z
-date_finished: null
+last_update: '2026-09-28T14:00:36Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +52,88 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-28T14:00:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-28T14:00:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3536: Tier 3: implement pre-approved read categories so status queries and discovery do not require an active task
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**SCOPE CORRECTED BEFORE BUILDING. The premise this task was filed on was wrong.**
+
+Filed as "implement Tier 3, because 4 of today's 7 blocks were pure reads." Both halves
+failed on measurement:
+
+1. **Tier 3's read surface is already implemented.** T-3096 classified every arm of
+   `bin/fw`'s dispatch case against the function it routes to, with file:line evidence,
+   and built the allowlist from it (`agents/context/lib/safe-commands.sh`).
+2. **The "4 of 7 pure reads" claim was false.** Each command was re-run through
+   `is_bash_safe_command` rather than recalled:
+
+| command | verdict | what it actually was |
+|---|---|---|
+| `./agents/context/checkpoint.sh budget` | **SAFE** | already allowlisted — my block came from *chaining* it with the next row |
+| `bin/fw arcs` | GATED | **not a real verb** — no `arcs)` arm exists in `bin/fw`. The gate correctly refused a command that does not exist |
+| `bin/fw arc list` | SAFE | already allowlisted |
+| `bin/fw bvp` | SAFE | already allowlisted |
+| `bin/fw config get` | SAFE | already allowlisted |
+| `bin/fw task review` | SAFE | already allowlisted |
+| `bin/fw config set` | GATED | correct — it writes |
+| `bin/fw termlink cleanup` | GATED | correct — it kills processes |
+
+So the blocks were: my own chaining of a nonexistent verb (the chain rule correctly poisons
+the whole chain), genuine writes, and G-020 placeholder-AC refusals — a different gate
+entirely. **No Tier 3 read gap existed.**
+
+**What the measurement did find**, which is real and is what this task delivers: three
+read-only verbs that shipped *after* T-3096's derivation and were therefore absent from the
+allowlist by omission — `fw bvp judge` (T-3526), `fw arc judge-driver` (T-3527),
+`fw arc review-driver` (T-3429). Both judge modules contain zero write calls; `lib/arc.sh:1971`
+documents `judge-driver` as read-only in as many words. These are the producer-not-judge verbs
+built earlier today, and an agent between tasks could not call them.
+
+The class is registered as **OBS-565**: the allowlist is a snapshot with no parity rail, and
+a gated read is indistinguishable from a correctly gated write until someone runs it at
+focus-null.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **The scope claim is re-measured before anything is built.** This task was filed on the agent's assertion that "4 of today's 7 blocks were pure reads" and that Tier 3 is unimplemented. Neither survives contact: T-3096 already classified every `fw` verb with file:line evidence and built the allowlist. The real, measured gap is recorded here — with the mis-cited cases named — before any code changes.
+- [x] **Every command actually blocked during this session is classified** read / write / not-a-real-command, by running it through `is_bash_safe_command` rather than from memory, and the classification is written down.
+- [x] Any genuine read-only gap found is closed in `agents/context/lib/safe-commands.sh` with the same discipline the file already uses: named origin, stated evidence, and sub-verb granularity — never a whole-verb allow where read and write forms differ by an argument.
+- [x] **No verb is widened whose write form shares its name.** The file's existing rule (`git config`, `git symbolic-ref`, `fw outcome backprop`, `fw sidecar inbox` without `--peek` are all deliberately excluded) is followed, not relaxed.
+- [x] **A negative control accompanies every addition**: for each newly-allowed form, a sibling write form is asserted to remain GATED. An allowlist test that only proves things pass cannot distinguish a correct rule from one that allows everything.
+- [x] Existing allowlist tests stay green, and the chain rule is preserved — a chain is safe only if EVERY segment is safe.
+- [x] `bin/fw vendor self --check` clean before close (`agents/` is a vendored path).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +167,27 @@ date_finished: null
 -->
 
 ## Verification
+
+# The three read-only verbs are reachable, and their write siblings are not — 13 tests,
+# 6 of them negative controls, plus the chain rule in both directions.
+timeout 300 bats tests/unit/t3536_judge_verbs_allowlist.bats > /tmp/.t3536 2>&1 && ! grep -q '^not ok' /tmp/.t3536
+test "$(grep -c '# skip' /tmp/.t3536)" -eq 0
+# Nothing already allowed was narrowed: every pre-existing allowlist suite still green.
+timeout 400 bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats tests/unit/t3096_safe_commands_wrappers.bats > /tmp/.t3536b 2>&1 && ! grep -q '^not ok' /tmp/.t3536b
+test "$(grep -c '# skip' /tmp/.t3536b)" -eq 0
+# The scope correction is recorded on the task, not silently dropped.
+grep -q 'SCOPE CORRECTED BEFORE BUILDING' .tasks/active/T-3536-tier-3-implement-pre-approved-read-categ.md
+# The class, not just the three instances, is in the register.
+grep -q 'id: OBS-565' .context/concerns.yaml
+python3 -c "import yaml; yaml.safe_load(open('.context/concerns.yaml'))"
+# Each added entry carries its evidence in the file itself, per the file's own convention
+# (named origin + a file:line citation). Asserts the CITATIONS, which are line-stable —
+# an earlier version of this line grepped a quoted phrase that wraps across a comment line
+# break, so it failed on formatting rather than on substance.
+grep -q 'lib/bvp_judge.py:383' agents/context/lib/safe-commands.sh
+grep -q 'lib/arc.sh:1971' agents/context/lib/safe-commands.sh
+# Vendored copy in sync (agents/ is a vendored path).
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
