@@ -34,6 +34,41 @@ scoped_drivers:              # max 3, weight ≤6 each (M2). Approved by fw arc 
       is injective or survives re-provisioning. This is the arc's reason to exist
       — a slice that strengthens name↔actor injectivity scores here even if it touches
       no general-reliability surface."
+    # T-3547: the MECHANISM. Approved 2026-09-07 with a weight and a rationale and
+    # nothing that could score it, so `fw audit` and `fw doctor` WARNed for three
+    # weeks that this "cannot be scored, so it contributes nothing to any ranking
+    # while its weight and rubric read as a live axis". Schema + semantics:
+    # policy/value-drivers.yaml §DECLARATIVE SCORING SPECS (T-3428).
+    #
+    # Level design — what each level asks:
+    #   1  does this go anywhere near identity or addressing?
+    #   3  does it touch a NAMING or RESOLUTION surface — the machinery that turns
+    #      a name into an actor?
+    #   5  does it change INJECTIVITY or SURVIVAL — whether two actors can collapse
+    #      to one, or whether a name still resolves after the instance that minted
+    #      it died?
+    #
+    # L5 keys on the vocabulary of collapse and re-resolution rather than identity
+    # generally, which every address-adjacent task in this arc carries. Measured
+    # over all 14 arc members: L1×5, L3×8, L5×1 (T-3309).
+    scoring:
+      kind: signals
+      strip_template: true
+      levels:
+        1:
+          keywords: ["identity", "addressable", "whoami", "correspondent"]
+        3:
+          keywords: ["circuit id", "five-part address", "rail identity",
+                     "identity fingerprint", "project id", "address slot",
+                     "topic_for_circuit", "hub fingerprint"]
+          paths: ["lib/aef_address.py", "lib/aef_resolve.py", "lib/aef_circuit.py",
+                  "lib/sidecar/circuit.py", "lib/project_identity.sh",
+                  "lib/aef_election.py", "lib/aef_governor.py"]
+        5:
+          keywords: ["injective", "re-resolve", "identity collision",
+                     "collapse to one", "same fingerprint", "shared fingerprint",
+                     "per-project key", "survives re-provisioning",
+                     "name↔actor", "two distinct actors"]
   - name: provisioning-safety
     weight: 4
     approved_at: '2026-09-07T12:34:06Z'
@@ -42,6 +77,37 @@ scoped_drivers:              # max 3, weight ≤6 each (M2). Approved by fw arc 
       admission, path/fleet gate, integrity-verify). Distinguishes from D1/D2 
       because it governs a SUCCESSFUL-but-WRONG action — a typo'd address 
       provisioning a hub — a failure class only this arc introduces by 
-      pre-authorizing infra self-heal. Most framework work never provisions 
+      pre-authorizing infra self-heal. Most framework work never provisions
       infrastructure, so this axis is meaningful only here.
+    # T-3547: the MECHANISM. Same three-week WARN as its sibling above.
+    #
+    # THE POLARITY TRAP, which the level split exists to avoid: provisioning work
+    # is not automatically good on this axis. The driver prices a SUCCESSFUL-but-
+    # WRONG action — a typo'd address provisioning a hub. So expanding what can be
+    # auto-created is a 3, and BOUNDING it is a 5; L5 keys on containment
+    # vocabulary (idempotency, admission control, integrity-verify, fleet/path
+    # gate) and never on provisioning vocabulary.
+    #
+    # `election` and `governor` are PATHS here, not keywords. As keywords they
+    # lifted 10 of the arc's 14 members to level 3 — every task whose body merely
+    # mentions those slices as context, which is most of them — and a driver that
+    # gives 71% of its own arc one score orders nothing. Restricted to the files
+    # that implement them, the level means "touched the provisioning path" rather
+    # than "talked about it". Measured after the change: L0×1, L1×6, L3×6, L5×1.
+    scoring:
+      kind: signals
+      strip_template: true
+      levels:
+        1:
+          keywords: ["provision", "hub", "fleet", "self-heal", "bootstrap"]
+        3:
+          keywords: ["auto-provision", "pre-authorized", "claim-based election",
+                     "repo-source", "provision-audit", "admission"]
+          paths: ["lib/aef_election.py", "lib/aef_governor.py",
+                  "lib/aef_repo_source.py", "lib/aef_provision_audit.py"]
+        5:
+          keywords: ["idempotenc", "load-adaptive", "admission control",
+                     "integrity-verify", "integrity verification", "fleet gate",
+                     "path gate", "blast-radius containment",
+                     "successful but wrong", "provisioning the wrong"]
 proposed_scoped_drivers: []  # T-1925 agent proposals (2 of a possible 2 — a third would be manufactured, R5)
