@@ -658,10 +658,22 @@ def record_decision(task_id):
             f"Reproduce on the host: bin/fw task review {task_id}"
         )
         # T-3280: same operator-facing translation on the failure path.
-        reason = _html.escape(
-            _operator_facing_stderr((stderr or stdout or _silent)[:3000])[:300]
-            or _silent
-        )
+        # T-3540: 1500, not 300. The FAILURE path had the tightest budget of any
+        # message on this page while the sibling success-adjacent path at :608
+        # already allowed 1500 — exactly backwards, since a refusal is the message
+        # that has to be actionable. Measured: the disposition refusal names which
+        # IW-N questions are undisposed, and 300 chars cut the list after
+        # "Not yet disposed:\n    - IW" — clipping the one part the operator needed
+        # and leaving a message that reads as a broken system rather than a gate.
+        _full = _operator_facing_stderr((stderr or stdout or _silent)[:3000]) or _silent
+        reason = _html.escape(_full[:1500])
+        if len(_full) > 1500:
+            # Say that it was cut, and where the rest is. A silently-clipped message
+            # is indistinguishable from a message that simply stops making sense.
+            reason += _html.escape(
+                f"\n\n… output truncated at 1500 chars. Full text: "
+                f"bin/fw task review {task_id}"
+            )
         return (
             f'<div class="go-decision" style="border:1px solid #ef4444; border-radius:6px; padding:0.6rem;">'
             f'<strong>{task_id}</strong>: '

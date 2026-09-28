@@ -6,12 +6,12 @@ description: >
   Inception: Workflow-management task class (WM-NNN): give governance-necessary work
   a home so the task gate never has to be weakened
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
-components: [agents/context/check-active-task.sh, agents/context/lib/focus.sh, agents/task-create/update-task.sh, lib/inception-readiness.sh, lib/inception.sh, lib/review.sh, lib/wm_tasks.sh, web/blueprints/inception.py]
+components: []
 related_tasks: [T-3536, T-3537]
 # T-1984 GO-scope traceability. Operator ruling 2026-09-28: "We're fine with doing B
 # first, but A is really important, so we must be absolutely sure that gets done next."
@@ -28,8 +28,8 @@ inception_decisions:
     text: "The WM- namespace (WM-001 selection, WM-002 close-out, WM-003 session lifecycle) with per-id scope fences enforced in the gate. Sequenced AFTER Tier 3, NOT dropped: operator ruled it is the important half."
     ships_in: deferred:T-3537
 created: 2026-09-28T12:37:47Z
-last_update: 2026-09-28T18:23:49Z
-date_finished: 2026-09-28T18:23:49Z
+last_update: '2026-09-28T12:45:10Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -140,15 +140,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -205,11 +205,7 @@ Twelve instances of the closed-task/focus-null dead end, three today, one of whi
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Twelve instances of the closed-task/focus-null dead end, three today, one of which blocked an autonomous mandate at step zero and one of which forced a worker to file T-3530 purely to commit finished work. The gate's purpose is governance coverage, not bookkeeping; selection and close-out ARE work, so they need tasks rather than an exemption. Tier 3 (pre-approved read categories) has been 'Spec only' in CLAUDE.md since the tiers were written, which is the read half of the same gap. GO rather than DEFER because the evidence is complete and the alternative designs are already enumerated with their trade-offs; what remains is a scope-fence design decision, not a knowledge gap.
-
-**Date**: 2026-09-28T18:23:49Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -218,37 +214,3 @@ Twelve instances of the closed-task/focus-null dead end, three today, one of whi
 
 ### 2026-09-28T12:39:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-09-28T18:23:49Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Twelve instances of the closed-task/focus-null dead end, three today, one of which blocked an autonomous mandate at step zero and one of which forced a worker to file T-3530 purely to commit finished work. The gate's purpose is governance coverage, not bookkeeping; selection and close-out ARE work, so they need tasks rather than an exemption. Tier 3 (pre-approved read categories) has been 'Spec only' in CLAUDE.md since the tiers were written, which is the read half of the same gap. GO rather than DEFER because the evidence is complete and the alternative designs are already enumerated with their trade-offs; what remains is a scope-fence design decision, not a knowledge gap.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-f6ef984d
-- **Timestamp:** 2026-09-28T18:23:50Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 1
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
-     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-8f6830f8
-- **Timestamp:** 2026-09-28T18:23:50Z
-- **Overall:** CONFIRMED
-- **Claims:** 1
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `T-3530` | task | ✓ pass |
-
-### 2026-09-28T18:23:49Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

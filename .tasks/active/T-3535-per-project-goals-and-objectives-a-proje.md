@@ -8,15 +8,15 @@ description: >
   not own, with an optional arc-level goal, a serves_objective mapping, and a Watchtower
   surface
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-09-28T13:19:21Z
-last_update: 2026-09-28T13:20:25Z
+last_update: 2026-09-28T18:29:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -42,6 +42,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-28T13:30:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=148,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -192,3 +202,7 @@ Selection is specified top-down but no objectives artefact exists, so 'anything 
 
 ### 2026-09-28T13:20:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-28T18:29:24Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

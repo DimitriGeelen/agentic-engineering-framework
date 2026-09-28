@@ -430,6 +430,31 @@ except ImportError:
     # terminals scroll to end of output. Even on a 24-row terminal where the
     # header + URL + QR + everything else has scrolled off, this final line
     # is the last thing in the visible frame.
+    # T-3540: if this inception is NOT decision-ready, the footer must say so.
+    #
+    # The warning at the top of emit_review already names the undisposed
+    # questions, but on a real terminal it has scrolled off by the time the
+    # operator reads the last line — which is precisely why the footer exists
+    # (T-2127). Emitting a bare "Decide:" link for a task the gate will refuse
+    # produces a handoff artefact that CANNOT become a decision: it looks like a
+    # decision request and is not one. That is the false-green family.
+    #
+    # Emission is still not blocked — the review page is a legitimate route to
+    # reaching dispositions, and refusing here would strand a task whose only
+    # problem is that nobody has answered its questions yet. But the blocker now
+    # travels WITH the handoff, so an agent pasting this output cannot hand the
+    # operator a link that will refuse them without saying so first. Measured
+    # origin: two inceptions handed over in one session, both refused at the
+    # Watchtower, the operator seeing only "Decision not recorded".
+    if [ -n "${_underdisposed:-}" ]; then
+        local _ud_n
+        _ud_n=$(printf '%s\n' "$_underdisposed" | grep -c .)
+        echo -e "  ${RED}NOT DECISION-READY${NC} — ${_ud_n} Open Question(s) undisposed."
+        echo -e "  A go/no-go at this link will be REFUSED by the T-2190 disposition gate."
+        echo -e "  Dispose them first (disposition: + rationale: under each IW-N), then re-run this."
+        echo ""
+    fi
+
     echo -e "  → ${BOLD}Decide:${NC} ${review_url}"
     echo ""
 }
