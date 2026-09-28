@@ -17,16 +17,16 @@ description: >
   pure heartbeat noise — recency sampling hid them, and 3 of 5 claims were live defects.
   Research is read-only; findings ratify nothing.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, cross-agent, research]
 components: []
 related_tasks: [T-3471, T-3496, T-3517]
 created: 2026-09-27T15:40:10Z
-last_update: '2026-09-27T15:45:11Z'
-date_finished:
+last_update: 2026-09-28T12:49:23Z
+date_finished: 2026-09-28T12:49:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -161,15 +161,15 @@ body of work that four rounds of procAsFit never surfaced.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -274,7 +274,69 @@ honestly re-derived the flatness from our own corpus instead.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — but not for the work I was about to propose.
+
+Rationale: The sweep found that the BVP flatness is already diagnosed,
+already answered across two projects, and has a peer-designed fix that has been
+waiting on the operator's ruling since 2026-09-22 without ever being put in front
+of him. So the GO is to surface what exists, not to start an analysis.
+
+Evidence (channel search `agent-chat-arc`, pattern `BVP`, 13 hits; every claim
+below checked in the tree, not taken from the message):
+
+- @1606 / @1609 — 832-Workflow-designer sent an 8-root-cause RCA of the cost
+  model over their 780 tasks, then re-sent it as a queueable pickup request. Headline
+  findings: cost has ONE effective degree of freedom (`tier=2` on 86%, `effort=8` on
+  87.5%, so `cost = 0.6blast_radius + 1.4`); `effort` measures document length and
+  saturates at its clamp; only 13% of tasks declare `components:`, so the dominant
+  cost term is a function of documentation density; and quadrants are a median split
+  over a biased, shifting sample (their hv membership moved 31→35→36→35 across three
+  rounds from scoring activity alone).
+- @1617 — we answered it under T-3408 (closed): D2 no-signal 2766/3350 (83%),
+  F2 3047/3350 (91%), against their 84%/92%. Two corpora, different authors and
+  domains, within one point → their pre-committed cause (a): the detectors are
+  narrow, upstream, and ours. Our own reply went further than their ask: it is not
+  two dark drivers but every free driver (F1 93%, F3 93%, F-AUTONOMY 99%) — "anyone
+  reading a BVP total as a five-plus-driver composite is reading one-and-a-half
+  drivers." 832 closed the thread at @1618 and adopted that sentence as their
+  headline.
+- T-3410 — the follow-up to widen those detectors — is `captured`, never
+  started. Verified in the tree.
+- T-3427 and T-3428 LANDED and are verified in code (`has_scorer` present in both
+  `estimator.py` and `lib/bvp.sh`; 5 `scoring:` blocks in `policy/value-drivers.yaml`).
+  So the driver-scoring half of this work is done.
+- OBS-462 is the fix, and it is ours to build. From 1409-sprind's operator's
+  ruling: an unmeasured `blast_radius` must default to rung 5, MARKED as defaulted
+  — not render as UNKNOWN and not exclude the task — with two guards: (1) a defaulted
+  cost never enters the median pool (measured there: 11 defaulted at ~3.8 joining 22
+  measured moves the median 2.45→3.2 and silently flips every task measured at 3.2
+  from hv-hc to hv-lc); (2) resolution is asymmetric — `estimate-cost` overwrites a
+  defaulted value, never a measured one. Their reasoning for high rather than low:
+  "defaulting low manufactures false hv-lc entries and corrupts the ordering;
+  defaulting high can only delay, never fake a bargain."
+- Our own @1650 said this "will be filed as a task once he rules." It was never
+  filed and he was never asked. OBS-462 has sat `pending` in the inbox for five days.
+- OBS-443 and OBS-446 are the two halves of the same problem and are also pending:
+  contaminated signal (16 parked/DEFER stubs all showing identical BVP 108 / COST 3.6
+  / hv-lc, indistinguishable from real Q1 work) and absent signal (a newly-filed task
+  cannot be placed in any quadrant by construction, because the quadrant exists only
+  after the work is done).
+- All five observations sit in `.context/inbox.yaml` as `pending`, none in
+  `.context/concerns.yaml` — the same wrong-register defect round 3 caught in my
+  earlier work today, and the reason none of them reached the operator.
+
+What this changes: the option list I was about to give the operator omitted the
+one option that matters — build OBS-462 — and would have spent his ruling on a
+diagnosis two projects had already closed.
+
+Why four procAsFit rounds missed it: nothing in the mandate's selection ladder
+points at the message rail. It starts at project goals and descends through arcs to
+tasks; a peer's completed RCA is not reachable from any level of it. Each round
+honestly re-derived the flatness from our own corpus instead.
+
+**Date**: 2026-09-28T12:49:22Z
 
 ## Updates
 
@@ -283,3 +345,104 @@ honestly re-derived the flatness from our own corpus instead.
 
 ### 2026-09-27T15:43:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-28T12:49:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — but not for the work I was about to propose.
+
+Rationale: The sweep found that the BVP flatness is already diagnosed,
+already answered across two projects, and has a peer-designed fix that has been
+waiting on the operator's ruling since 2026-09-22 without ever being put in front
+of him. So the GO is to surface what exists, not to start an analysis.
+
+Evidence (channel search `agent-chat-arc`, pattern `BVP`, 13 hits; every claim
+below checked in the tree, not taken from the message):
+
+- @1606 / @1609 — 832-Workflow-designer sent an 8-root-cause RCA of the cost
+  model over their 780 tasks, then re-sent it as a queueable pickup request. Headline
+  findings: cost has ONE effective degree of freedom (`tier=2` on 86%, `effort=8` on
+  87.5%, so `cost = 0.6blast_radius + 1.4`); `effort` measures document length and
+  saturates at its clamp; only 13% of tasks declare `components:`, so the dominant
+  cost term is a function of documentation density; and quadrants are a median split
+  over a biased, shifting sample (their hv membership moved 31→35→36→35 across three
+  rounds from scoring activity alone).
+- @1617 — we answered it under T-3408 (closed): D2 no-signal 2766/3350 (83%),
+  F2 3047/3350 (91%), against their 84%/92%. Two corpora, different authors and
+  domains, within one point → their pre-committed cause (a): the detectors are
+  narrow, upstream, and ours. Our own reply went further than their ask: it is not
+  two dark drivers but every free driver (F1 93%, F3 93%, F-AUTONOMY 99%) — "anyone
+  reading a BVP total as a five-plus-driver composite is reading one-and-a-half
+  drivers." 832 closed the thread at @1618 and adopted that sentence as their
+  headline.
+- T-3410 — the follow-up to widen those detectors — is `captured`, never
+  started. Verified in the tree.
+- T-3427 and T-3428 LANDED and are verified in code (`has_scorer` present in both
+  `estimator.py` and `lib/bvp.sh`; 5 `scoring:` blocks in `policy/value-drivers.yaml`).
+  So the driver-scoring half of this work is done.
+- OBS-462 is the fix, and it is ours to build. From 1409-sprind's operator's
+  ruling: an unmeasured `blast_radius` must default to rung 5, MARKED as defaulted
+  — not render as UNKNOWN and not exclude the task — with two guards: (1) a defaulted
+  cost never enters the median pool (measured there: 11 defaulted at ~3.8 joining 22
+  measured moves the median 2.45→3.2 and silently flips every task measured at 3.2
+  from hv-hc to hv-lc); (2) resolution is asymmetric — `estimate-cost` overwrites a
+  defaulted value, never a measured one. Their reasoning for high rather than low:
+  "defaulting low manufactures false hv-lc entries and corrupts the ordering;
+  defaulting high can only delay, never fake a bargain."
+- Our own @1650 said this "will be filed as a task once he rules." It was never
+  filed and he was never asked. OBS-462 has sat `pending` in the inbox for five days.
+- OBS-443 and OBS-446 are the two halves of the same problem and are also pending:
+  contaminated signal (16 parked/DEFER stubs all showing identical BVP 108 / COST 3.6
+  / hv-lc, indistinguishable from real Q1 work) and absent signal (a newly-filed task
+  cannot be placed in any quadrant by construction, because the quadrant exists only
+  after the work is done).
+- All five observations sit in `.context/inbox.yaml` as `pending`, none in
+  `.context/concerns.yaml` — the same wrong-register defect round 3 caught in my
+  earlier work today, and the reason none of them reached the operator.
+
+What this changes: the option list I was about to give the operator omitted the
+one option that matters — build OBS-462 — and would have spent his ruling on a
+diagnosis two projects had already closed.
+
+Why four procAsFit rounds missed it: nothing in the mandate's selection ladder
+points at the message rail. It starts at project goals and descends through arcs to
+tasks; a peer's completed RCA is not reachable from any level of it. Each round
+honestly re-derived the flatness from our own corpus instead.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e7e0997d
+- **Timestamp:** 2026-09-28T12:49:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-9091c11c
+- **Timestamp:** 2026-09-28T12:49:24Z
+- **Overall:** CONFIRMED
+- **Claims:** 8
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `lib/bvp.sh` | file | ✓ pass |
+| `policy/value-drivers.yaml` | file | ✓ pass |
+| `.context/inbox.yaml` | file | ✓ pass |
+| `.context/concerns.yaml` | file | ✓ pass |
+| `T-3408` | task | ✓ pass |
+| `T-3410` | task | ✓ pass |
+| `T-3427` | task | ✓ pass |
+| `T-3428` | task | ✓ pass |
+
+### 2026-09-28T12:49:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
