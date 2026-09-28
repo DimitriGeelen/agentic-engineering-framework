@@ -8911,6 +8911,45 @@ with open('$BYPASS_LOG', 'w') as f:
         # (.context/provisions.jsonl, written via lib/aef_provision_log.py).
         PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/aef_provision_log.py" "$@"
         ;;
+    whoami)
+        # T-3534: answer "who am I and where" from any cwd inside the project.
+        # Origin: another project's agent had to ask the OPERATOR which project it
+        # was talking to. Identity was implied in four places and answerable in none.
+        #
+        # Reports BOTH identities because they answer different questions:
+        #   project  — id + name, committed in .framework.yaml, shared by every
+        #              clone/checkout. Governance and addressing use this.
+        #   instance — id@host:root, runtime, never stored. Distinguishes two
+        #              checkouts of one project; the shape TermLink tags already use.
+        source "$FRAMEWORK_ROOT/lib/project_identity.sh"
+        _wai_id=$(fw_project_id "$PROJECT_ROOT")
+        echo -e "${BOLD}Project${NC}"
+        if [ -n "$_wai_id" ]; then
+            echo -e "  id:        ${GREEN}${_wai_id}${NC}"
+        else
+            echo -e "  id:        ${YELLOW}(unregistered)${NC} — run: $(basename "$0") whoami --register"
+        fi
+        echo    "  name:      $(fw_project_name "$PROJECT_ROOT")"
+        echo    "  root:      $PROJECT_ROOT"
+        echo    "  host:      $(hostname 2>/dev/null || echo unknown)"
+        echo ""
+        echo -e "${BOLD}Instance${NC}  (this checkout; clones share the id and differ here)"
+        echo    "  $(fw_project_instance "$PROJECT_ROOT")"
+        if [ "${1:-}" = "--register" ]; then
+            # Mints only when absent. An existing id is preserved unconditionally —
+            # re-registering must never silently re-identify a project.
+            echo ""
+            _wai_new=$(fw_project_identity_ensure "$PROJECT_ROOT")
+            if [ "$_wai_new" = "$_wai_id" ]; then
+                echo -e "  ${CYAN}unchanged${NC} — this project already has an identity. Ids are minted once."
+                echo    "  Forking to a NEW project is a different action and is not this verb."
+            else
+                echo -e "  ${GREEN}registered:${NC} $_wai_new  (written to .framework.yaml)"
+            fi
+        fi
+        exit 0
+        ;;
+
     gaps)
         # T-397: Register renamed gaps.yaml → concerns.yaml; fall back to old name.
         GAPS_FILE="$PROJECT_ROOT/.context/project/concerns.yaml"

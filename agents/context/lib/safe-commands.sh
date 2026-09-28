@@ -884,6 +884,14 @@ _fw_single_command_is_safe() {
                             ;;
                     esac
                     ;;
+                whoami)
+                    # T-3534: bare `fw whoami` only reads .framework.yaml and the
+                    # hostname. `--register` MINTS an id and writes the file, so it
+                    # is absent — same sub-verb granularity as `fw config get` vs
+                    # `set`. Identity questions are exactly what an agent asks
+                    # between tasks, when focus is most likely to be null.
+                    case " $cmd " in *" --register "*) ;; *) return 0 ;; esac
+                    ;;
                 note)
                     # T-2878: observation capture. Same class as the context
                     # add-* verbs above — the gate must not block the record

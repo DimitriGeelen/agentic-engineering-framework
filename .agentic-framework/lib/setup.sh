@@ -174,6 +174,31 @@ setup_step_identity() {
         mv "$tmp_yaml" "$fw_yaml"
     fi
 
+    # T-3534: mint the immutable project id if this project has none.
+    #
+    # Deliberately AFTER the rewrite above, which strips and re-adds
+    # project_name/description/owner: project_id must never pass through that
+    # filter, because a rewrite that drops it would silently re-identify the
+    # project on the next init. Appending afterwards keeps it out of the blast
+    # radius of any future edit to that block.
+    #
+    # ensure() preserves an existing id unconditionally — `fw init` re-run on a
+    # live project is routine (upgrade, repair, re-onboard) and must never change
+    # who the project IS. Forking to a new project is a separate, sovereignty-gated
+    # action, not a flag on init.
+    if [ -f "$FRAMEWORK_ROOT/lib/project_identity.sh" ]; then
+        # shellcheck disable=SC1091
+        . "$FRAMEWORK_ROOT/lib/project_identity.sh"
+        local _pid_before _pid_after
+        _pid_before=$(fw_project_id "$dir")
+        _pid_after=$(fw_project_identity_ensure "$dir")
+        if [ -z "$_pid_before" ]; then
+            echo "  Project identity: $_pid_after (minted once; never changes)"
+        else
+            echo "  Project identity: $_pid_after (preserved)"
+        fi
+    fi
+
     echo -e "  ${GREEN}OK${NC}  Project identity: $project_name (owner: $owner)"
     echo ""
 }
