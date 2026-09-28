@@ -3358,6 +3358,31 @@ sys.exit(0 if '$_tl_topic' in names else 1)
                     warnings=$((warnings + 1))
                 done <<< "$_dm_rows"
             fi
+
+            # T-3544/OBS-567: the same question asked of the INBOUND consult
+            # inbox, which is the rail peers are actually told to use and the
+            # one both of the incidents above arrived on. 832 waited six days;
+            # 010-termlink found 49 of ours unread on their side and called
+            # consumption "the gap, and it is ours". Same fact-function
+            # contract, same WARN shape, deliberately not a second idiom.
+            local _ib_rows _ib_rc
+            _ib_rows=$(fw_sidecar_inbox_stale_facts "$PROJECT_ROOT" "$(fw_config SIDECAR_CONSULT_WARN_HOURS)"); _ib_rc=$?
+            if [ "$_ib_rc" -eq 2 ]; then
+                _doctor_warn_host "Consult-inbox backlog check could not run (fw sidecar inbox-stale --json produced no readable output)"
+            elif [ "$_ib_rc" -eq 0 ] && [ -n "$_ib_rows" ]; then
+                local _ib_topic _ib_unread _ib_age _ib_from _ib_age_disp
+                while IFS=$'\t' read -r _ib_topic _ib_unread _ib_age _ib_from; do
+                    [ -z "$_ib_topic" ] && continue
+                    if [ "$_ib_age" = "unknown" ]; then
+                        _ib_age_disp="age unknown"
+                    else
+                        _ib_age_disp=$(awk -v h="$_ib_age" 'BEGIN{if (h>=48) printf "%.1fd", h/24; else printf "%.0fh", h}')
+                    fi
+                    echo -e "  ${YELLOW}WARN${NC}  $_ib_unread unread consult(s) on $_ib_topic, oldest $_ib_age_disp from $_ib_from"
+                    echo "         A peer is waiting. Run: fw sidecar inbox --peek to read without draining, then fw sidecar inbox to drain"
+                    warnings=$((warnings + 1))
+                done <<< "$_ib_rows"
+            fi
         fi
         fi  # T-2452/F6-style --quick guard
     else

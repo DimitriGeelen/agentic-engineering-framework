@@ -3768,10 +3768,41 @@ check_sidecar_ledger() {
         done <<< "$_dm_rows"
     fi
 
+    # T-3544/OBS-567: the INBOUND consult backlog. Placed here, beside the DM
+    # check and BEFORE the outbox-existence gate, for the identical reason: a
+    # project that has never sent a consult can still be sitting on unread
+    # ones, so this must not inherit the ledger's "no outbox → stay silent"
+    # short-circuit. The outbound ledger's own PASS line reads like a verdict
+    # on the whole sidecar, which is how a six-day peer blockage went unseen
+    # while every number on this check was green.
+    local _ib_rows _ib_rc
+    _ib_rows=$(fw_sidecar_inbox_stale_facts "$PROJECT_ROOT" "$(fw_config SIDECAR_CONSULT_WARN_HOURS)"); _ib_rc=$?
+    if [ "$_ib_rc" -eq 2 ]; then
+        _bad=1
+        warn "Sidecar: consult-inbox backlog check could not run" \
+             "fw sidecar inbox-stale --json produced no readable output" \
+             "Run: bin/fw sidecar inbox-stale --json — an unreadable check is the same silent-failure shape as an unreadable ledger (T-3420)"
+    elif [ "$_ib_rc" -eq 0 ] && [ -n "$_ib_rows" ]; then
+        _bad=1
+        local _ib_topic _ib_unread _ib_age _ib_from _ib_age_disp
+        while IFS=$'\t' read -r _ib_topic _ib_unread _ib_age _ib_from; do
+            [ -z "$_ib_topic" ] && continue
+            if [ "$_ib_age" = "unknown" ]; then
+                _ib_age_disp="age unknown"
+            else
+                _ib_age_disp=$(awk -v h="$_ib_age" 'BEGIN{if (h>=48) printf "%.1fd", h/24; else printf "%.0fh", h}')
+            fi
+            warn "$_ib_unread unread consult(s) on $_ib_topic, oldest $_ib_age_disp from $_ib_from" \
+                 "fw sidecar inbox-stale --json: unread=$_ib_unread age_hours=$_ib_age from=$_ib_from on $_ib_topic" \
+                 "A peer is waiting. Run: bin/fw sidecar inbox --peek to read without draining, then bin/fw sidecar inbox to drain"
+        done <<< "$_ib_rows"
+    fi
+
     local _facts _rc _unknown _expired _stored _delivered _total _deadletters
     _facts=$(fw_sidecar_ledger_facts "$PROJECT_ROOT"); _rc=$?
-    # No outbox — the ledger has nothing to report. Any DM WARN above has
-    # already been printed by this point, so returning here does not lose it.
+    # No outbox — the ledger has nothing to report. Any DM or consult-inbox
+    # WARN above has already been printed by this point, so returning here
+    # does not lose it (T-3544 added the second one under the same guarantee).
     [ "$_rc" -eq 1 ] && return 0
     if [ "$_rc" -ne 0 ] || [ -z "$_facts" ]; then
         warn "Sidecar ledger unreadable" \

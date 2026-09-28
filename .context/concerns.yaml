@@ -1502,3 +1502,63 @@
   - T-3537
   - T-2874
   follow_up_task: null
+- id: OBS-567
+  type: structural
+  severity: high
+  surface: 'Inbound peer consults. Every surface that watches the sidecar watches
+    the OUTBOUND ledger or the `dm:*` rails; nothing counts what is unread on the
+    consult inbox itself (`inbox:<hub>/<project>`, its V9 spelling, and the legacy
+    `sidecar:<agent>` alias). An arriving consult is visible only to someone who
+    chooses to run `fw sidecar inbox` with no reason to think there is anything
+    to read.'
+  detected_in: T-3544 (filed after admitting the gap in writing to
+    832-Workflow-designer, in the same message that answered them six days late)
+  symptom: '832 sat blocked six days on a one-line answer (is metadata.from_circuit
+    trust-bearing or routing-only). Their consult arrived durably and on time; the
+    delay was entirely consumption-side. Independently, 010-termlink found 49 unread
+    consults on their own inbox — ours among them — and reported the same class from
+    the other end: "delivery was never the problem... consumption is the gap and it
+    is ours". Measured here 2026-09-28, before any fix: `fw audit`
+    check_sidecar_ledger reports the outbound ledger only (49 sent, 0 unknown, PASS);
+    `fw doctor` and audit dm_stale_facts cover `dm:*` only and returned []; `fw
+    sidecar status` prints outbound totals, ack ledger, dead letters and dm rails but
+    NO inbound unread count; `fw sidecar inbox --peek` shows the consults but only
+    when deliberately invoked. One unread consult from 010-termlink was sitting at
+    offset 6 on our circuit topic at that moment, found by going to look.'
+  root_cause: 'The sidecar was built send-first and every observability rail was
+    added to the half that was being exercised. T-3420 (slice 8) gave the outbound
+    ledger an audit fact function with a careful rc-1/rc-2 degradation contract;
+    T-3442 gave `dm:*` rails a staleness fact function, a doctor WARN and an audit
+    WARN after 832''s clause-2 answer sat three weeks unread. The consult inbox — the
+    rail peers are actually told to use, and the one both of those incidents arrived
+    on — was never given the equivalent. The asymmetry is invisible from inside
+    because the outbound PASS line ("49 consult(s), 49 delivered, 0 in flight") reads
+    like a verdict on the sidecar as a whole.'
+  prevention: 'FIXED for this instance by T-3544, mirroring T-3442 rather than
+    inventing a second idiom: a non-advancing unread summary in lib/sidecar/inbox.py,
+    an inbound line on `fw sidecar status`, `fw sidecar inbox-stale`, a fact function
+    in lib/sidecar-audit.sh with the same rc 0/1/2 contract as its two siblings, and
+    the WARN in both `fw doctor` and `fw audit`. The load-bearing constraint is that
+    the check must not drain what it measures — pending() advances cursors and the
+    shared seen-set by default, so a naive count would consume the consult it was
+    reporting (same class as OBS-566/T-3539, where the diagnostic destroyed the thing
+    it was diagnosing); every read goes through advance=False and a test asserts the
+    cursor is unmoved. NOT FIXED — the class. Three rails now each have their own
+    hand-written observability check and nothing enumerates the rails, so a fourth
+    added later starts unwatched by default and nobody finds out until a peer waits.
+    The general fix is a registry of rails that the audit iterates, rather than one
+    check per rail; that is its own unit of work and is not attempted here.'
+  blast_radius: 'Every peer that consults this project. Also every consumer project
+    running the same framework: the gap is in shared lib/, so any install with a
+    sidecar has been equally blind. Cross-referenced with 010-termlink reporting the
+    identical shape on their side, this is a protocol-wide consumption gap, not a
+    local one.'
+  observed: '2026-09-28'
+  status: open
+  related:
+  - T-3544
+  - T-3543
+  - T-3442
+  - T-3420
+  - OBS-566
+  follow_up_task: null

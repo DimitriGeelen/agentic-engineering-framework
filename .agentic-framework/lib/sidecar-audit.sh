@@ -101,3 +101,60 @@ except Exception:
 ' || return 2
     return 0
 }
+
+# fw_sidecar_inbox_stale_facts <project_root> [threshold_hours]
+#
+#   T-3544 / OBS-567: the INBOUND consult backlog. Third sibling to the two
+#   functions above, and the one whose absence had a measured cost — 832 waited
+#   six days on a consult that had arrived, durably, because every surface
+#   watching the sidecar watched the outbound ledger or the dm:* rails and
+#   nothing counted what was unread on the rail peers are told to use. The
+#   outbound PASS line ("49 consult(s), 49 delivered, 0 in flight") reads like a
+#   verdict on the sidecar as a whole, which is exactly why the gap survived.
+#
+#   Hub-calling, like dm-stale and unlike the ledger: how many records sit past
+#   our cursor has no durable local answer. Same degradation shape — rc 1 when
+#   there is nothing to check, rc 2 when the check could not run, never zeros
+#   for a check that did not happen.
+#
+#   AGE_HOURS may be the literal string `unknown`: an unread consult whose
+#   envelope carries no usable timestamp is still owed work and is reported
+#   rather than dropped. Callers must not arithmetic on it blindly.
+#
+#     stdout : one line per stale topic, TAB-separated:
+#              TOPIC<TAB>UNREAD<TAB>AGE_HOURS<TAB>OLDEST_FROM
+#     rc 0   : facts printed (possibly empty — nothing is stale)
+#     rc 1   : the sidecar has never been used under <project_root>, or
+#              termlink is not installed — the caller stays silent
+#     rc 2   : sidecar_cli.py is missing, or the inbox-stale call itself failed
+#              to produce parseable JSON — the caller should say so
+fw_sidecar_inbox_stale_facts() {
+    local root="${1:?fw_sidecar_inbox_stale_facts: project root required}"
+    local threshold_hours="${2:-24}"
+    command -v termlink >/dev/null 2>&1 || return 1
+    [ -d "$root/.context/sidecar" ] || return 1
+
+    local lib_dir
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    [ -f "$lib_dir/sidecar_cli.py" ] || return 2
+
+    local rows
+    rows=$(FRAMEWORK_ROOT="$root" timeout 60 python3 "$lib_dir/sidecar_cli.py" \
+           inbox-stale --threshold-hours "$threshold_hours" --json 2>/dev/null) || return 2
+    [ -n "$rows" ] || return 2
+
+    printf '%s' "$rows" | python3 -c '
+import json, sys
+try:
+    rows = json.load(sys.stdin)
+    for r in rows:
+        age = r.get("age_hours")
+        print("\t".join((
+            str(r["topic"]), str(r["unread"]),
+            "unknown" if age is None else str(age),
+            str(r.get("oldest_from") or "unknown"))))
+except Exception:
+    sys.exit(2)
+' || return 2
+    return 0
+}

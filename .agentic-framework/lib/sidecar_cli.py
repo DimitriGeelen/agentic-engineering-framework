@@ -145,6 +145,26 @@ def cmd_inbox(args) -> int:
     return 0
 
 
+def _inbound_or_unknown() -> dict:
+    """`inbox.unread_summary()`, or an explicit UNKNOWN when no address can be
+    derived (T-3544).
+
+    The library raises rather than guessing, which is right: an unreadable hub
+    anchor means the inbox has no address, and inventing one would be worse
+    than failing. But `fw sidecar status` is a status command — it should
+    report what it could not determine, not abort. So the failure is caught
+    HERE, at the display boundary, and rendered as `unknown` with its reason.
+
+    `unread: None` is deliberately not `0`. Everything in this task exists
+    because a check that cannot see its subject had been indistinguishable
+    from a check that saw nothing wrong.
+    """
+    try:
+        return inbox.unread_summary()
+    except circuit.CircuitError as exc:
+        return {"unread": None, "topics": [], "reason": str(exc)}
+
+
 def cmd_status(args) -> int:
     snap = status_mod.snapshot()
     # T-3442: DM rail summary is queried HERE, separately from
@@ -154,6 +174,16 @@ def cmd_status(args) -> int:
     # answer of its own, so it is merged in at the CLI boundary instead of
     # folded into the hub-free function.
     dm_rows = dm.summary()
+    # T-3544: the INBOUND consult backlog, merged at the CLI boundary for the
+    # same reason dm_rows is (see the comment above) — snapshot() stays
+    # hub-free. Until this line existed, `status` reported the outbound ledger
+    # in five ways and the one number a waiting peer cares about in none.
+    #
+    # An unreadable hub anchor degrades to UNKNOWN, never to 0. `status` must
+    # not start crashing on a host that could always run it, and it must not
+    # answer "no consults waiting" when what it means is "I could not look" —
+    # that false green is the whole subject of this task.
+    inbound = _inbound_or_unknown()
     probe = None
     if args.probe:
         # Kept apart from the file-derived numbers on purpose: the hub's
@@ -163,11 +193,23 @@ def cmd_status(args) -> int:
     if args.json:
         payload = dict(snap)
         payload["dm_rails"] = dm_rows
+        payload["inbound"] = inbound
         if probe is not None:
             payload["hub_probe"] = probe
         print(json.dumps(payload, indent=2))
         return 0
     print(status_mod.render(snap))
+    # Printed unconditionally, including the zero. "inbound unread: 0" is a
+    # measurement; the absence of a line is indistinguishable from a check
+    # that was never made, which is the state this whole task is about.
+    if inbound["unread"] is None:
+        print(f"inbound unread:   unknown — {inbound.get('reason', 'no address')}")
+    else:
+        print(f"inbound unread:   {inbound['unread']}")
+    for row in inbound["topics"]:
+        age = "unknown" if row["age_hours"] is None else f"{row['age_hours']}h"
+        print(f"  {row['topic']}: {row['unread']} unread, oldest {age}"
+              f" from {row['oldest_from'] or 'unknown'}")
     if dm_rows:
         print("dm rails:")
         for row in dm_rows:
@@ -309,6 +351,33 @@ def cmd_dm_stale(args) -> int:
     return 0
 
 
+def cmd_inbox_stale(args) -> int:
+    """Consult-inbox topics holding an unread consult older than
+    `--threshold-hours` — the fact both `fw doctor` and `fw audit`'s
+    `check_sidecar_ledger` read for the T-3544 WARN. Deliberately the same
+    contract as `dm-stale` above: exit 0 always, because a backlog is a
+    finding and not a command failure, and the caller decides what a non-empty
+    list means. Moves no cursor — see `inbox.unread_summary`.
+
+    The ONE thing it does not do is exit 0 on a failure to look. When no
+    address can be derived, it exits 2 with the reason on stderr, so the fact
+    function reports rc 2 ("the check could not run") deliberately rather than
+    picking that up from an incidental traceback — and so neither caller can
+    mistake "I could not look" for "nothing is waiting"."""
+    try:
+        rows = inbox.unread_stale(min_age_hours=args.threshold_hours)
+    except circuit.CircuitError as exc:
+        print(f"consult-inbox backlog check could not run: {exc}", file=sys.stderr)
+        return 2
+    if args.json:
+        print(json.dumps(rows, indent=2))
+        return 0
+    for row in rows:
+        age = "unknown" if row["age_hours"] is None else row["age_hours"]
+        print(f"{row['topic']}\t{row['unread']}\t{age}\t{row['oldest_from'] or 'unknown'}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="fw sidecar",
                                      description=__doc__.split("\n")[0])
@@ -387,6 +456,13 @@ def build_parser() -> argparse.ArgumentParser:
     ds.add_argument("--threshold-hours", type=float, default=24.0)
     ds.add_argument("--json", action="store_true")
     ds.set_defaults(func=cmd_dm_stale)
+
+    ibs = sub.add_parser("inbox-stale", help="consult-inbox topics holding an unread "
+                         "consult older than --threshold-hours (T-3544, "
+                         "fw doctor / fw audit fact source)")
+    ibs.add_argument("--threshold-hours", type=float, default=24.0)
+    ibs.add_argument("--json", action="store_true")
+    ibs.set_defaults(func=cmd_inbox_stale)
 
     return parser
 

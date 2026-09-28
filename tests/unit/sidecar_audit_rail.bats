@@ -143,12 +143,30 @@ run_facts() {
 }
 
 @test "audit check body reads our own ledger only: no termlink token in check_sidecar_ledger" {
+    # T-3544: comments are stripped from BOTH halves now, with one rule.
+    #
+    # The property under test is that this check never invokes the hub
+    # directly — it goes through the fact functions, which own the rc 0/1/2
+    # degradation contract. That is a claim about CODE. The lib half already
+    # allowed its header to name the word (to say it is absent from the code);
+    # the audit half did not, so a comment that merely mentioned a PEER called
+    # `010-termlink` failed a test about hub invocation. That is a check
+    # measuring text where it means behaviour, which is the defect class this
+    # rail exists to catch — so the test is fixed rather than the prose.
+    #
+    # `^[[:space:]]*#` rather than `^#`: comments inside a function body are
+    # indented, so the old lib-side pattern would not have stripped them.
     body=$(awk '/^check_sidecar_ledger\(\) \{/{f=1} f{print} f&&/^\}/{exit}' "$AUDIT_SH")
     [ -n "$body" ]
-    [ "$(printf '%s' "$body" | grep -c 'termlink')" -eq 0 ]
-    [ "$(grep -c 'termlink' "$SIDECAR_AUDIT_LIB")" -eq 0 ] || {
-        # the lib's header comment names the word once to say it is absent from code;
-        # the code lines themselves must not carry it
-        [ "$(grep -v '^#' "$SIDECAR_AUDIT_LIB" | grep -c 'termlink')" -eq 0 ]
-    }
+    [ "$(printf '%s\n' "$body" | grep -v '^[[:space:]]*#' | grep -c 'termlink')" -eq 0 ]
+
+    # In the lib, every non-comment mention must be an AVAILABILITY PROBE
+    # (`command -v termlink`, the rc-1 "nothing to check" leg the hub-calling
+    # fact functions need) and never an invocation that reads the hub here.
+    # Asserted as a property rather than a count, so adding a fourth rail does
+    # not go red for being a fourth rail.
+    lib_hits=$(grep -v '^[[:space:]]*#' "$SIDECAR_AUDIT_LIB" | grep -c 'termlink')
+    lib_probes=$(grep -v '^[[:space:]]*#' "$SIDECAR_AUDIT_LIB" | grep -c 'command -v termlink')
+    [ "$lib_hits" -gt 0 ]
+    [ "$lib_hits" -eq "$lib_probes" ]
 }
