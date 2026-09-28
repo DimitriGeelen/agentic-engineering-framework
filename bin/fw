@@ -1303,6 +1303,7 @@ show_help() {
     echo -e "  ${GREEN}plugin-audit${NC}          Audit plugins for task-system awareness"
     echo -e "  ${GREEN}ux-review${NC} <url>       Browser-driving UX review of an interactive render surface"
     echo -e "  ${GREEN}gpu${NC} <cmd>             GPU coordination (recover)"
+    echo -e "  ${GREEN}whoami${NC} ${CYAN}[--register]${NC} Which project this is (id, name, root) and which instance you are"
     echo -e "  ${GREEN}gaps${NC}                 Show spec-reality gaps being watched"
     echo -e "  ${GREEN}provisions${NC} ${CYAN}[--tail N]${NC} Show the auto-provision audit trail (arc-020 S7)"
     echo -e "  ${GREEN}traceability${NC} baseline Set traceability baseline (imported projects)"
