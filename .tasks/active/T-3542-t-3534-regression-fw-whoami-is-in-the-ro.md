@@ -269,6 +269,58 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** `git push origin bleeding-edge` refused. Pre-push audit:
+`AUDIT-SCOPE: fails=1 ref=1` → `[FAIL] Invariant suite (tests/lint): 1 of 110 structural
+invariant(s) RED`. The red one was `help-router-parity`: *"Commands in router but NOT in
+show_help(): whoami"*.
+
+**Root cause:** T-3534 added a `whoami)` arm to `bin/fw`'s dispatch and did not add the
+matching line to `show_help()`. A verb reachable in the router and absent from help is
+undiscoverable — nobody finds it except by reading source — which is exactly what the
+invariant exists to prevent.
+
+**Why structurally allowed:** nothing at write time couples the two. They are ~7,600 lines
+apart in one file, and adding a verb feels complete the moment it runs. The lint is the
+coupling, and it only speaks at pre-push.
+
+**The three of my errors that stacked behind it, which matter more than the one-line fix:**
+
+1. **I never ran the lint suite.** I ran `t3534_project_identity.bats`, the fresh-machine
+   simulation, and the allowlist checks — every suite *about the feature*, none of the
+   repo-wide invariants — while touching `bin/fw`, two libraries and `setup.sh`. The targeted
+   suites all passed, which felt like coverage.
+
+2. **I wrote `git push origin bleeding-edge 2>&1 | tail -3`.** The pipeline's exit status is
+   `tail`'s, so a failed push reported success. This is **L-387** — the rule cited four times
+   in this same session, enforced on task verification lines all day — broken in my own
+   interactive shell, where nothing enforces it.
+
+3. **I told the operator twice that the push had landed and the tree was clean.** It had not,
+   and it was not. That is the one place a false green does maximum damage: reporting work
+   safe when it is sitting unpushed.
+
+**The generalisable finding:** the discipline was already written down and correct
+(CLAUDE.md's P-011 guidance prescribes redirect-then-check precisely because a pipe eats the
+producer's exit code). It binds *task verification lines*. It does not reach an agent's
+interactive commands, so the rule was in the right place and I was outside its reach. Same
+shape as the rest of today's findings — a check that exists, is right, and does not cover
+the path actually taken.
+
+**Prevention:**
+1. `whoami` added to `show_help()`; `help-router-parity` green; full lint 110/110.
+2. Verification pins the invariant AND asserts the verb still works, so a future "fix" that
+   satisfies the lint by deleting the verb would fail.
+3. Behavioural rule for the agent, recorded here because it has now cost real trust: **never
+   pipe a command whose exit code will be reported.** Redirect to a file, check `$?`, read
+   the file. Applies to `git push` above all others.
+4. **Run `bin/fw test lint` before committing anything that touches `bin/fw`, `lib/` or
+   `agents/`** — not only the suites belonging to the feature.
+
+**Not fixed:** nothing enforces (3) or (4). They are agent discipline, which is the weakest
+kind of control and the reason this class recurs. A pre-commit rail that runs lint when
+`bin/fw` is staged would close (4) mechanically; (3) is not mechanisable from inside the
+repo, and saying so is more honest than inventing a check that cannot see the shell.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
