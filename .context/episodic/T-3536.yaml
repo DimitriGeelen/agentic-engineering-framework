@@ -76,10 +76,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 116
-  commits: 1
-  files_changed: 7
-  lines_added: 269
-  lines_removed: 13
+  commits: 2
+  files_changed: 9
+  lines_added: 372
+  lines_removed: 18
+  footprint_refreshed_at: '2026-09-28T15:52:35Z'
+  footprint_refreshed_by_commit: abc032f31
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3536-tier-3-implement-pre-approved-read-categ.md

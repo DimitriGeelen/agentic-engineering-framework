@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3529: independently verify T-3527's arc-driver judge, and fix the dispatch-wait signal that read a mid-sequence state as terminal
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-27T23:24:14Z
+# ============================================================================
+
+task_id: T-3529
+task_name: "independently verify T-3527's arc-driver judge, and fix the dispatch-wait signal that read a mid-sequence state as terminal"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-27T23:07:15Z
+completed: 2026-09-27T23:23:46Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-28T01:22:51+02:00
+last_commit: 2026-09-28T01:22:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verified T-3527 independently; fixed my own dispatch-wait signal (OBS-562, OBS-563)
+
+# Key outcomes
+outcomes:
+  - 'T-3527''s deliverable is verified INDEPENDENTLY, not accepted on the worker''s 8/8 tick: the judge is invoked live with NO override flags, its tests are run, and the OBS-559 case (scorer unavailable) is confirmed to return UNKNOWN rather than a fail.'
+  - 'The diff is checked against T-3527''s own out-of-scope AC: `lib/arc-driver-review.sh` static checks untouched, no estimator-detector changes, no `fw arc close`/`abandon` changes.'
+  - 'The judge''s added quality leg is PROBED for a false green by construction, not reasoned about — a confidently-written driver that restates a global directive is run through it and the actual verdict recorded, whatever it is.'
+  - 'OBS-562 registered in `.context/concerns.yaml`: what GREEN from this judge does and does not mean, so the next reader does not take it as "this driver distinguishes something real". Names why the obvious fix is not available (lexical overlap measured at 37.5% false positives on 8 live drivers).'
+  - 'My own error is corrected on the record, not quietly dropped: the wait predicate that fired early is named, and the corrected predicate requires the worker''s terminal state, not the task file''s location.'
+  - 'The corrected wait predicate exists as a reusable script rather than as a lesson — the next dispatch uses it, so the fix is a control and not a memory.'
+  - '`bin/fw vendor self --check` clean before close.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'verified T-3527 independently; fixed my own dispatch-wait signal (OBS-562, OBS-563)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/concerns.yaml'
+  - '.context/episodic/T-3527.yaml'
+  - '.fabric/components/tools-wait-dispatch.yaml'
+  - '.tasks/active/T-3529-verify-and-commit-t-3527s-staged-but-unc.md'
+  - '.tasks/completed/T-3527-arc-scoped-driver-judge-agent-judges-a-d.md'
+  - 'tools/wait-dispatch.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-28T01:22:51'
+    action: 'T-3529: verified T-3527 independently; fixed my own dispatch-wait signal (OBS-562, OBS-563)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 1
+  files_changed: 6
+  lines_added: 722
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3529-verify-and-commit-t-3527s-staged-but-unc.md
+generated_by: context-agent-hybrid

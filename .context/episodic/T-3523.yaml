@@ -86,10 +86,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 202
-  commits: 1
-  files_changed: 17
-  lines_added: 1396
-  lines_removed: 22
+  commits: 2
+  files_changed: 19
+  lines_added: 1509
+  lines_removed: 27
+  footprint_refreshed_at: '2026-09-27T19:18:04Z'
+  footprint_refreshed_by_commit: 77e5125ed
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3523-operator-adjusted-bvp-scores-and-arc-dri.md

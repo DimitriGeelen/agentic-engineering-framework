@@ -84,10 +84,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 187
-  commits: 1
-  files_changed: 14
-  lines_added: 882
-  lines_removed: 13
+  commits: 2
+  files_changed: 16
+  lines_added: 998
+  lines_removed: 18
+  footprint_refreshed_at: '2026-09-28T17:06:57Z'
+  footprint_refreshed_by_commit: 9050c8aea
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3537-wm-task-class-wm-001002003-with-enforced.md

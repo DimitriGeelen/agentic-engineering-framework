@@ -1,0 +1,21 @@
+id: tests/unit/test_sidecar_unread_summary.py
+name: test_sidecar_unread_summary
+type: script
+subsystem: tests
+location: tests/unit/test_sidecar_unread_summary.py
+tags: []
+
+purpose: "T-3544 / OBS-567 — the inbound consult backlog must be countable without being consumed."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-28
+created_by: unknown
