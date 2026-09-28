@@ -1329,3 +1329,62 @@
   - T-3517
   - T-3527
   follow_up_task: null
+
+- id: OBS-564
+  type: structural
+  severity: high
+  surface: 'The arc lifecycle has an entrance and no exit. `fw arc create` is
+    routinely used; `fw arc close` has never once succeeded. Measured
+    2026-09-28 across .context/arcs/*.yaml: 20 arcs, 18 in-progress + 2 draft,
+    `closed_at` null on every one, oldest created 2026-05-01.'
+  detected_in: T-3538 (operator said "20 open arcs bothers me"; the agent had
+    been about to prescribe a project-objectives artefact for it, which would
+    not have touched the cause)
+  symptom: 'Five months, ~4 arcs created per month, closure rate ZERO. Eight
+    arcs sit at or above the framework''s own >=80% close-ready threshold — the
+    one /approvals uses to auto-surface arcs — and two are at 100% with every
+    constituent task complete. Both 100% arcs (onboarding-shape-detection,
+    readme-first-run) simultaneously appear on the stale-past-30-days audit
+    list: complete, stale, and open at the same time. The condition is silent
+    because "arc still open" renders identically to "arc still being worked
+    on", so a zero closure rate never presents as a failure anywhere.'
+  root_cause: 'Correct increments, unmeasured aggregate. `fw arc close` requires
+    a wire-level --demo artefact (G-062), requires the headline_mechanic to have
+    demonstrably fired, defaults to OPEN on >=2 unresolved pushbacks (ACD), and
+    is agent-refused entirely under $CLAUDECODE=1 (T-1671). Each constraint was
+    earned by a real incident — T-1626, T-1633, T-1641, then T-1667 and T-1670
+    after the third and fourth — and each was individually right. Nobody
+    measured what they compose to. The decisive counter-evidence against
+    blaming the demo requirement: FOUR of the eight close-ready arcs
+    (parallel-execution-aef, continuous-run, orchestrator-rethink,
+    horizon-axis-hardening) ALREADY have demo_evidence captured and are still
+    open. The binding constraint is not any single gate but that closure is
+    operator-only, manual, per-arc, and nothing surfaces the queue as owed
+    work.'
+  prevention: 'NOT FIXED. T-3538 prepares a close-out pack for the eight so the
+    operator can rule per arc rather than excavate — that clears the BACKLOG,
+    not the rate. Candidate structural fixes, none chosen here because each
+    touches a gate earned over four incidents: (a) an audit/doctor rail that
+    WARNs on an arc at >=80% with a captured demo and a GO anchor — i.e.
+    surfaces "closure is owed" the way stale-arc already surfaces "activity is
+    owed"; (b) a batch ruling surface, since the cost is per-arc operator
+    attention and eight separate ceremonies is the actual friction; (c) prepare
+    the close packet automatically at the >=80% transition so the artefact
+    exists before anyone asks. Explicitly NOT a candidate: weakening the demo
+    requirement or lifting the agent refusal — the four-with-demos measurement
+    says the gates are not what is binding, and T-1671 exists because an agent
+    auto-closed an arc.'
+  blast_radius: 'Every arc in the corpus, and the whole layer above tasks. With
+    no arcs ever closing, arc-level completion carries no information, the
+    "prefer an in-flight arc" selection rule can never retire one, and 20
+    concurrent arcs is the visible symptom the operator reported. Also
+    cross-project: any consumer adopting the arc model inherits an exit-less
+    lifecycle.'
+  observed: '2026-09-28'
+  status: open
+  related:
+  - T-3538
+  - T-1671
+  - T-1667
+  - T-3535
+  follow_up_task: T-3538
