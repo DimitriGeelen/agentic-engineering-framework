@@ -12,9 +12,23 @@ owner: human
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-3536, T-3537]
+# T-1984 GO-scope traceability. Operator ruling 2026-09-28: "We're fine with doing B
+# first, but A is really important, so we must be absolutely sure that gets done next."
+# Recorded here rather than promised, because a promise does not survive a context reset
+# and today's audit reports 19 GO'd inceptions with no build follower. The close gate
+# validates every ships_in: referent is reachable, and the audit rail surfaces a GO'd
+# inception whose followers never shipped — so A going missing becomes a WARN, not a
+# silence.
+inception_decisions:
+  - id: tier-3-read-categories
+    text: "Implement Tier 3 pre-approved read categories so status queries and discovery do not require an active task — the read half, separable and carrying no standing exemption."
+    ships_in: deferred:T-3536
+  - id: wm-task-class
+    text: "The WM- namespace (WM-001 selection, WM-002 close-out, WM-003 session lifecycle) with per-id scope fences enforced in the gate. Sequenced AFTER Tier 3, NOT dropped: operator ruled it is the important half."
+    ships_in: deferred:T-3537
 created: 2026-09-28T12:37:47Z
-last_update: 2026-09-28T12:39:28Z
+last_update: '2026-09-28T12:45:10Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,6 +54,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-28T12:45:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=148,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
