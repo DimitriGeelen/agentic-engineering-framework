@@ -4,16 +4,16 @@ name: "Investigate double-hover disclosure on struktur.html entity rows"
 description: >
   Inception: Investigate double-hover disclosure on struktur.html entity rows
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-09-24T07:14:31Z
-last_update: 2026-09-24T07:20:55Z
-date_finished:
+last_update: 2026-09-28T12:49:05Z
+date_finished: 2026-09-28T12:49:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -99,15 +99,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -176,7 +176,32 @@ persistent pane) removes them together rather than one at a time.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — replace the two-stage hover with one gesture per question
+(point to identify, click to read in a persistent pane).
+
+Rationale: The double hover is not only a redundant gesture. Stage two is
+unreliable — entering the card writes a viewport-derived `8px` into an
+element positioned in document coordinates (`letzteZeile` is never assigned),
+so at any real scroll position the card teleports out from under the pointer,
+re-targets to a neighbouring row and collapses again. Reproduced twice
+(VM-515 to VM-601, VM-503 to VM-511). When it does work, the expanded card is
+868px on a 900px viewport holding 1514px of content, readable only while a
+pointer is held inside it and destroyed 260ms after it leaves, with no keyboard
+path at all. All four defects share one cause: hover is being used to deliver an
+article. Splitting identification (hover, sticky panel) from reading (click,
+persistent pane) removes them together rather than one at a time.
+
+Evidence:
+- `docs/reports/T-3447-struktur-double-hover.md` — full trace
+- MutationObserver trace: `top 3346.7px h165 -> top 8px h868 -> top 3376.45px h185`, entity changed
+- Measured: expanded card 868px / 900px viewport (96%); content 1514px in 866px box
+- Keyboard focus on a row leaves `#k-mehr` hidden; click pins `#panel` but not `#karte`
+- `tools/tests/test_struktur_ui.py` is green because all five card tests hover `#B-307` at low scrollY
+- Target files: `/opt/1409-sprind/tools/site_build.py:1710,1757-1763,1773-1776`
+
+**Date**: 2026-09-28T12:49:05Z
 
 ## Updates
 
@@ -185,3 +210,55 @@ persistent pane) removes them together rather than one at a time.
 
 ### 2026-09-24T07:20:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-28T12:49:05Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — replace the two-stage hover with one gesture per question
+(point to identify, click to read in a persistent pane).
+
+Rationale: The double hover is not only a redundant gesture. Stage two is
+unreliable — entering the card writes a viewport-derived `8px` into an
+element positioned in document coordinates (`letzteZeile` is never assigned),
+so at any real scroll position the card teleports out from under the pointer,
+re-targets to a neighbouring row and collapses again. Reproduced twice
+(VM-515 to VM-601, VM-503 to VM-511). When it does work, the expanded card is
+868px on a 900px viewport holding 1514px of content, readable only while a
+pointer is held inside it and destroyed 260ms after it leaves, with no keyboard
+path at all. All four defects share one cause: hover is being used to deliver an
+article. Splitting identification (hover, sticky panel) from reading (click,
+persistent pane) removes them together rather than one at a time.
+
+Evidence:
+- `docs/reports/T-3447-struktur-double-hover.md` — full trace
+- MutationObserver trace: `top 3346.7px h165 -> top 8px h868 -> top 3376.45px h185`, entity changed
+- Measured: expanded card 868px / 900px viewport (96%); content 1514px in 866px box
+- Keyboard focus on a row leaves `#k-mehr` hidden; click pins `#panel` but not `#karte`
+- `tools/tests/test_struktur_ui.py` is green because all five card tests hover `#B-307` at low scrollY
+- Target files: `/opt/1409-sprind/tools/site_build.py:1710,1757-1763,1773-1776`
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-19837b64
+- **Timestamp:** 2026-09-28T12:49:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-54543252
+- **Timestamp:** 2026-09-28T12:49:06Z
+- **Overall:** CONTRADICTED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-3447-struktur-double-hover.md` | file | ✓ pass |
+| `tools/tests/test_struktur_ui.py` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `/opt/1409-sprind/tools/site_build.py:1710,1757-1763,1773-1776` | file | ✗ fail — file not found at PROJECT_ROOT |
+
+### 2026-09-28T12:49:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
