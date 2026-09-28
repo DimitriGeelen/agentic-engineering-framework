@@ -264,8 +264,8 @@ rev_out=$(bin/fw reviewer T-2240 2>&1); echo "$rev_out" | grep -qE "Overall:.*(P
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-28fb5d31
-- **Timestamp:** 2026-08-02T08:03:48Z
+- **Scan ID:** R-a803adb7
+- **Timestamp:** 2026-09-28T05:19:50Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

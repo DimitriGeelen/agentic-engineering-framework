@@ -1,8 +1,20 @@
 ---
 id: T-3521
-name: "Watchtower /cron renders deployed host state alongside registry declaration, not registry alone"
+name: "Watchtower /cron renders deployed host state alongside registry declaration,
+  not registry alone"
 description: >
-  Follow-up from T-3161 (G-088 / 001-CashWeb field report), scope-fenced leg (c). The /cron page (web/templates/cron.html, web/blueprints/cron.py) renders only the registry's declared job count/list — when the registry says jobs: [] but a deployed target at /etc/cron.d/agentic-audit-<slug> carries live jobs (e.g. legacy heredoc-lane installs never migrated to the registry), the page asserts '0 jobs — No jobs in cron registry' with no hedge, which is what produced the original operator report ('our cron jobs are not installed'). T-3161 fixed the install-time refusal and the doctor/audit WARN-vs-SKIP split, both host-fact detectors; this task is the render surface (P-013): read the deployed target's actual content (job count, marker presence) alongside the registry declaration and show both, so an unmigrated project's page reflects host reality instead of only the registry's (possibly stale-relative-to-host) view.
+  Follow-up from T-3161 (G-088 / 001-CashWeb field report), scope-fenced leg (c).
+  The /cron page (web/templates/cron.html, web/blueprints/cron.py) renders only the
+  registry's declared job count/list — when the registry says jobs: [] but a deployed
+  target at /etc/cron.d/agentic-audit-<slug> carries live jobs (e.g. legacy heredoc-lane
+  installs never migrated to the registry), the page asserts '0 jobs — No jobs in
+  cron registry' with no hedge, which is what produced the original operator report
+  ('our cron jobs are not installed'). T-3161 fixed the install-time refusal and the
+  doctor/audit WARN-vs-SKIP split, both host-fact detectors; this task is the render
+  surface (P-013): read the deployed target's actual content (job count, marker presence)
+  alongside the registry declaration and show both, so an unmigrated project's page
+  reflects host reality instead of only the registry's (possibly stale-relative-to-host)
+  view.
 
 status: captured
 workflow_type: build
@@ -38,8 +50,8 @@ related_tasks: [T-3161]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T15:39:58Z
-last_update: 2026-09-27T15:39:58Z
-date_finished: null
+last_update: '2026-09-27T15:45:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-27T15:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-27T15:45:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3521: Watchtower /cron renders deployed host state alongside registry declaration, not registry alone

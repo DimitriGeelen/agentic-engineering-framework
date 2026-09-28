@@ -14,12 +14,12 @@ description: >
   /cron reports '0 jobs' and audit reports INFO while ten jobs are demonstrably running.
   The remedy the page suggests is the command that erases the schedule.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [cron, registry, inbound-report, 001-cashweb, false-green]
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/cron-registry.sh]
 related_tasks: [T-3160, T-3162, T-3070, T-3149, T-3521]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -32,8 +32,8 @@ related_tasks: [T-3160, T-3162, T-3070, T-3149, T-3521]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T12:09:00Z
-last_update: 2026-09-27T15:28:18Z
-date_finished:
+last_update: 2026-09-28T22:42:31Z
+date_finished: 2026-09-28T22:42:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -70,6 +70,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=5 (body:class-neutral); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-27T15:45:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 0
+      D4: 5
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=5 (body:class-neutral); F-RECALL=0 (no-signal); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -136,7 +153,10 @@ surface (P-013) and a separate deliverable; file it as a follow-up, do not fold 
 ## Verification
 
 out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
-bats tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats > /tmp/.t3161-bats 2>&1 && grep -q "^ok 1 " /tmp/.t3161-bats && ! grep -q "^not ok" /tmp/.t3161-bats
+timeout 300 bats tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats > /tmp/.t3161-bats 2>&1 && grep -q "^ok 1 " /tmp/.t3161-bats && ! grep -q "^not ok" /tmp/.t3161-bats
+# T-3217: a skipped bats test reports `ok`, so the line above passes on a suite that
+# measured nothing. Six tests, none of them host-conditional — zero is the right number.
+test "$(grep -c '# skip' /tmp/.t3161-bats)" -eq 0
 
 ## RCA
 
@@ -260,3 +280,15 @@ that fact.
 
 ### 2026-09-27T15:28:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c3cf635f
+- **Timestamp:** 2026-09-28T22:46:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-28T22:42:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

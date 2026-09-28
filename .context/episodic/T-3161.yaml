@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3161: fw cron install wipes a live deployed crontab when the registry declares jobs: [], and both drift checks skip instead of warning
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-28T22:46:23Z
+# ============================================================================
+
+task_id: T-3161
+task_name: "fw cron install wipes a live deployed crontab when the registry declares jobs: [], and both drift checks skip instead of warning"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T12:09:00Z
+completed: 2026-09-28T22:42:31Z
+duration_days: 33
+updates_count: 2
+first_commit: 2026-09-27T17:44:37+02:00
+last_commit: 2026-09-27T17:44:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw cron install refuses to overwrite an unmigrated legacy crontab
+
+# Key outcomes
+outcomes:
+  - '`fw cron install` refuses when the deployed target exists and does not carry the registry-generated header marker (`managed by cron-registry.yaml`), naming migration as the remedy and exiting non-zero without writing either the source or the target'
+  - 'The refusal carries a bypass mechanism per L-399 producer/consumer parity (env-var form, since the gate must also survive the `audit.sh schedule install` → `fw cron install` exec), and the bypass writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`'
+  - '`bin/fw` doctor WARNs instead of SKIPping when registry job count is 0 AND the deployed target exists; the fresh-init case (job count 0, no target) still SKIPs silently'
+  - '`agents/audit/audit.sh` emits the same distinction — WARN on `jobs: [] + target exists`, INFO/skip on fresh init — so both surfaces agree'
+  - 'Regression test `tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats` pins: install refuses on unmigrated target, install still works on a marker-carrying target, doctor WARNs on `jobs: [] + target`, doctor SKIPs on fresh init'
+  - 'Follow-up task filed for the reporter''s leg (c) — `/cron` renders deployed host state alongside the registry declaration — and referenced in `related_tasks:` (T-3521)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'lib/cron-registry.sh'
+  - '.tasks/active/T-3161-fw-cron-install-wipes-a-live-deployed-cr.md'
+  - '.tasks/active/T-3521-watchtower-cron-renders-deployed-host-st.md'
+  - 'tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-27T17:44:37'
+    action: 'T-3161: fw cron install refuses to overwrite an unmigrated legacy crontab'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 48153 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cron, registry, inbound-report, 001-cashweb, false-green]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 48153
+  commits: 1
+  files_changed: 6
+  lines_added: 605
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3161-fw-cron-install-wipes-a-live-deployed-cr.md
+generated_by: context-agent-hybrid
