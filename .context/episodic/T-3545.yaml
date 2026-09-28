@@ -76,10 +76,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 5
-  commits: 1
-  files_changed: 8
-  lines_added: 463
-  lines_removed: 21
+  commits: 2
+  files_changed: 11
+  lines_added: 635
+  lines_removed: 34
+  footprint_refreshed_at: '2026-09-28T22:57:17Z'
+  footprint_refreshed_by_commit: c8525ee60
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3545-obs-467-residue-branch-hygiene-and-workt.md

@@ -6,12 +6,12 @@ description: >
   P-011 reports nothing when it runs zero verification commands, so a silent skip
   is indistinguishable from a clean close
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, tests/unit/t3546_p011_reports_the_zero.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T22:57:22Z
-last_update: '2026-09-28T23:00:36Z'
-date_finished:
+last_update: 2026-09-28T23:14:41Z
+date_finished: 2026-09-28T23:14:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -194,8 +194,10 @@ timeout 600 bats tests/unit/t3220_verification_gate_exits.bats > /tmp/.t3546-322
 
 # The rc-2 contract and the G-072 reasoning are untouched: the extractor status
 # is still the only thing that refuses, and the new probe never exits.
+# Asserted behaviourally in t3546 test 10 rather than by pattern-matching source
+# text here: the earlier draft of this line was a `! grep -q` for a shape that
+# could never appear, which passes on every possible tree and measures nothing.
 grep -q 'extract_rc' agents/task-create/update-task.sh
-! grep -q "grep -q '\^## Verification' \"\$TASK_FILE\" 2>/dev/null; then exit" agents/task-create/update-task.sh
 
 # This task's own close must now PRINT its verification count rather than skip —
 # the bug being fixed is one this very file could have reproduced.
@@ -325,3 +327,15 @@ separate unit of work.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3546-p-011-reports-nothing-when-it-runs-zero-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f6509a22
+- **Timestamp:** 2026-09-28T23:16:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-28T23:14:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
