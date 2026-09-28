@@ -546,6 +546,40 @@ of those would be deciding the question above by action.
 
 ## Updates
 
+### 2026-09-28T23:40Z — RECONCILIATION: what is actually live, measured [T-3548 / WM-002]
+The branch-hygiene rail reports this task `parked-but-landed` — *"a parked task's code is
+already live in origin/bleeding-edge; task record and tree disagree"* — and the audit
+raises it as the item to settle **before anything else**. Settled here as a record
+correction, not by deleting the branch (the mitigation text explicitly forbids that) and
+not by un-parking it (the parking was a Sovereign call, T-3498).
+
+**The finding is accurate and the danger is already contained.** Both facts matter, and
+reading only the first would be alarming:
+
+- **Live in `bleeding-edge`:** the switch `FW_REQUIRE_ARC_CLOSE_APPROVAL`
+  (`lib/arc.sh:809-836`) and its `fw bvp confirm` sibling, plus the `confirmed_via` /
+  `closed_via` provenance fields.
+- **NOT live:** the gate removal this task's title describes. **T-3508 restored the default
+  to on** (`f4e5e5b4e` — *"restore the fw arc close gate to default-on; the waiver stays, as
+  opt-out"*), so the switch shipped inverted from this task's intent: an opt-OUT waiver, not
+  an opt-IN restore.
+- **Measured, not read** — the live predicate evaluated with the env var unset:
+  ```
+  FW_REQUIRE_ARC_CLOSE_APPROVAL unset, CLAUDECODE=1 → GATE FIRES (agent refused)
+  ```
+  `fw arc close` is still agent-refused by default, exactly as T-1671 and §ACD require.
+
+**Why the record and tree disagreed:** T-3498 parked this task — *"arc-close gate removal is
+outside the authorisation; Sovereign question recorded"* — after part of its mechanism had
+already landed. T-3508 then made that landed mechanism safe by flipping its default. So the
+tree is correct and the *title* is what is now misleading: this task reads as "remove the
+gate", and what exists is "the gate, with a documented waiver".
+
+**What remains open, and is not mine:** whether the waiver should exist at all, and whether
+this task should be retitled to what shipped, abandoned as superseded by T-3508, or kept
+parked pending the Sovereign question T-3498 recorded. All three are operator calls. The
+branch `t3487-remove-bvp-arc-approval-gate` is deliberately left in place.
+
 ### 2026-09-25T22:46:23Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3487-remove-human-approval-gate-on-fw-bvp-con.md
