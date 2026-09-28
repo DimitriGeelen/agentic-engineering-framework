@@ -331,6 +331,48 @@ bin/fw vendor self --check
 
 ## Evolution
 
+### 2026-09-28 — the task was nearly built beside the thing it belongs inside
+
+- **What changed:** filed proposing a project identity with no reference to the five-part
+  address (`host/hub/project/session/agent`) — which is ratified twice (T-3287 GO, D-599) and
+  fully BUILT, all seven arc-020 slices `work-completed`. The operator named it. Had it been
+  built as filed, the repo would have gained a SECOND project-identity notion beside a shipped
+  one — the five-readers-of-one-predicate defect that cost a day on arc membership.
+- **Plan impact:** the deliverable stopped being "a new identity scheme" and became "the
+  stable token slot 3 was always reaching for". `project=<path>` → `project=<project-id>`.
+- **Triggered:** three new ACs, now carried by T-3541.
+
+### 2026-09-28 — instances share the id; only a fork differs
+
+- **What changed:** the agent had argued that two checkouts both answering "I am 999" was the
+  failure requiring an immutable id. Wrong — a clone IS the same project. Operator: *"we
+  definitely want the same id. Only if you fork it, then it should be a separate process."*
+- **Plan impact:** split into PROJECT identity (committed, shared) and INSTANCE identity
+  (id@host:root, runtime). Both reported. The `session` token already separates two instances
+  on one host, so sharing the id costs nothing.
+- **Triggered:** the fork case became a separate sovereignty-gated verb rather than a flag on
+  `fw init`, and `fw init` preserves an existing id with no exception and no override.
+
+### 2026-09-28 — what looked like the obvious reuse was disqualified by one fact
+
+- **What changed:** `.context/rail-identity.key` is a project-owned signing key with a stable
+  fingerprint — the closest existing candidate, and checked FIRST this time rather than after
+  building. It is gitignored (`.gitignore:55`), so a clone mints a different key.
+- **Plan impact:** instances would not share it, which is the exact property just ruled on.
+  Rejected, with the evidence recorded so the next reader does not re-litigate it. Also
+  clarified that a signing key has a rotation lifecycle and identity must not.
+- **Triggered:** nothing — the check cost one command and saved the rebuild.
+
+### 2026-09-28 — over-scoped at filing, split rather than half-built
+
+- **What changed:** 12 ACs covering two deliverables (mint an identity; swap it into a
+  ratified wire format). CLAUDE.md's sizing rule is explicit about this shape.
+- **Plan impact:** slice 1 ships the identity and the verb. The address swap carries a
+  migration question over existing `lib/aef_circuit.py` path-form entries that is a
+  compatibility ruling on a ratified format — the operator's call, not the agent's.
+- **Triggered:** T-3541, carrying the four deferred criteria verbatim. Recorded as a ticked
+  AC explaining the split, rather than rewriting the criteria to match what got built.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
