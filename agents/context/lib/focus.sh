@@ -59,7 +59,46 @@ do_focus() {
         # on the one path that could still write it. A rule stated in a comment on one
         # side of a seam is not enforced on the other. Origin: 832 rail 461 (their
         # 8842cedb); both call sites verified in our tree before adopting.
-        local task_file=$(find_task_file "$task_id" active)
+        # T-3537: workflow-management tasks resolve from .tasks/workflow/, not
+        # active/. They never close, so the completed/-fallback reasoning above does
+        # not apply to them — but the same producer/consumer parity rule does, and
+        # this is where it nearly broke. The gate (check-active-task.sh) was taught
+        # to accept WM focus BEFORE this writer was taught to set it, which made the
+        # whole fence green, fully tested, and structurally unreachable: the third
+        # instance of L-573 in one day, found only by running `fw context focus
+        # WM-001` on the live path instead of testing the predicate.
+        local task_file=""
+        local _wm_lib="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/wm_tasks.sh"
+        if [ -f "$_wm_lib" ]; then
+            # shellcheck disable=SC1090
+            . "$_wm_lib"
+            if fw_is_wm_task "$task_id"; then
+                if ! fw_is_known_wm_task "$task_id"; then
+                    echo -e "${RED}Unknown workflow-management task: $task_id${NC}" >&2
+                    echo "  Known: $FW_WM_IDS (files in .tasks/workflow/)." >&2
+                    echo "  Adding another is an operator decision, not a convenience (T-3537)." >&2
+                    exit 1
+                fi
+                task_file=$(fw_find_wm_task "$task_id" "$PROJECT_ROOT")
+                if [ -z "$task_file" ]; then
+                    echo -e "${RED}Workflow task $task_id has no file in .tasks/workflow/${NC}" >&2
+                    exit 1
+                fi
+            fi
+        fi
+        # `|| true` is load-bearing under context.sh's `set -euo pipefail`.
+        # find_task_file ends with `[[ -n "$result" ]] && echo "$result"`, so it
+        # RETURNS 1 when the task is not found. The original line was
+        # `local task_file=$(find_task_file …)`, and `local` always exits 0 — it
+        # was masking that non-zero. Dropping `local` to allow the WM branch above
+        # to pre-set the variable also removed the mask, so `set -e` killed the
+        # script at this line and T-2874's "completed, not active" refusal never
+        # printed: exit 1, zero output, three tests red. Measured, then fixed here
+        # rather than by restoring `local`, because the masking was accidental and
+        # the next person to touch this line would have hit it again.
+        if [ -z "$task_file" ]; then
+            task_file=$(find_task_file "$task_id" active) || true
+        fi
         if [ -z "$task_file" ]; then
             # Distinguish the two causes. They exit identically but need different
             # recoveries, and "not found" sends the operator hunting for a typo in an

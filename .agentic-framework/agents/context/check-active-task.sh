@@ -582,6 +582,61 @@ if [ -z "$CURRENT_TASK" ] && [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ]; th
     fi
 fi
 
+# --- Workflow-management task class (T-3537) ---------------------------------
+#
+# A WM task satisfies the task gate — it IS a task, which is the whole point:
+# selection and close-out are work, so they get a task rather than an exemption.
+# What a WM task does NOT get is the ability to write source. That fence is what
+# stops a standing task becoming a standing exemption, which is the rogue-action
+# risk the gate exists to prevent, re-entering through the front door.
+#
+# Placed here, immediately before the null-focus block and BEFORE the session
+# stamp and drift gates, because those reason about a task lifecycle a WM task
+# deliberately does not have (it never closes, and it is not session-scoped).
+if [ -n "$CURRENT_TASK" ]; then
+    _wm_lib="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/lib/wm_tasks.sh"
+    if [ -f "$_wm_lib" ]; then
+        # shellcheck disable=SC1090
+        . "$_wm_lib"
+        if fw_is_wm_task "$CURRENT_TASK"; then
+            # Shape alone is not admission: an invented WM-742 must not mint
+            # itself a standing exemption. Both the id and its file must exist.
+            if ! fw_is_known_wm_task "$CURRENT_TASK" || [ -z "$(fw_find_wm_task "$CURRENT_TASK" "$PROJECT_ROOT")" ]; then
+                echo "" >&2
+                echo "BLOCKED: '$CURRENT_TASK' is not a workflow-management task this project ships." >&2
+                echo "" >&2
+                echo "Known: $FW_WM_IDS (files in .tasks/workflow/)." >&2
+                echo "Adding another is an operator decision, not a convenience (T-3537)." >&2
+                echo "Policy: P-002 / T-3537 (WM class admission)" >&2
+                exit 2
+            fi
+            if ! fw_wm_write_allowed "${FILE_PATH:-}" "$PROJECT_ROOT"; then
+                echo "" >&2
+                echo "BLOCKED: $CURRENT_TASK is a workflow-management task — it cannot write source." >&2
+                echo "" >&2
+                echo "  fence:   $(fw_wm_fence "$CURRENT_TASK")" >&2
+                echo "  wanted:  ${FILE_PATH:-(unknown)}" >&2
+                echo "" >&2
+                echo "WM tasks exist so selection, close-out and session lifecycle have a task" >&2
+                echo "to run under — NOT so source can be edited without one. The moment the" >&2
+                echo "work touches source it has stopped being workflow management." >&2
+                echo "" >&2
+                echo "To unblock:" >&2
+                echo "  $(_fw_cmd) work-on '<what you are actually building>' --type build" >&2
+                echo "  $(_fw_cmd) work-on T-XXX     (resume an existing task)" >&2
+                echo "" >&2
+                echo "Writes to .context/, .tasks/, .claude/ and .git/ are permitted here —" >&2
+                echo "that is what workflow management legitimately records." >&2
+                echo "Policy: T-3537 (WM scope fence — enforced, not advisory)" >&2
+                exit 2
+            fi
+            # Fence satisfied. A WM task never closes and is not session-scoped,
+            # so the stamp, staleness and drift gates below do not apply to it.
+            exit 0
+        fi
+    fi
+fi
+
 if [ -z "$CURRENT_TASK" ]; then
     echo "" >&2
     echo "BLOCKED: No active task. Framework rule: nothing gets done without a task." >&2
@@ -589,6 +644,9 @@ if [ -z "$CURRENT_TASK" ]; then
     echo "To unblock:" >&2
     echo "  1. Create a task:  $(_fw_cmd) task create --name '...' --type build --start" >&2
     echo "  2. Set focus:      $(_fw_cmd) context focus T-XXX" >&2
+    echo "  3. Workflow work?  $(_fw_cmd) context focus WM-001   (selection/discovery)" >&2
+    echo "                     $(_fw_cmd) context focus WM-002   (close-out, trailing work)" >&2
+    echo "                     $(_fw_cmd) context focus WM-003   (session lifecycle)" >&2
     _bootstrap_shape_hint "${BASH_CMD:-}"
     echo "" >&2
     echo "$(_blocked_subject)" >&2

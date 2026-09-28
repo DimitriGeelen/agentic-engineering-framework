@@ -1,13 +1,19 @@
 ---
 id: T-3537
-name: "WM task class: WM-001/002/003 with enforced scope fences, so selection and trailing work have a home that never weakens the gate"
+name: "WM task class: WM-001/002/003 with enforced scope fences, so selection and
+  trailing work have a home that never weakens the gate"
 description: >
-  Slice A of T-3532. Sequenced AFTER T-3536 (Tier 3 reads), per operator ruling 2026-09-28: 'We're fine with doing B first, but A is really important, so we must be absolutely sure that gets done next.' A closed set of workflow-management tasks in their own WM- namespace with per-id scope fences enforced in the gate, so selection and post-close trailing work have a home without ever weakening the task gate. Scope fences are load-bearing: a standing task is a standing exemption unless fenced.
+  Slice A of T-3532. Sequenced AFTER T-3536 (Tier 3 reads), per operator ruling 2026-09-28:
+  'We're fine with doing B first, but A is really important, so we must be absolutely
+  sure that gets done next.' A closed set of workflow-management tasks in their own
+  WM- namespace with per-id scope fences enforced in the gate, so selection and post-close
+  trailing work have a home without ever weakening the task gate. Scope fences are
+  load-bearing: a standing task is a standing exemption unless fenced.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T13:56:36Z
-last_update: 2026-09-28T13:57:44Z
-date_finished: null
+last_update: 2026-09-28T16:46:03Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-28T14:00:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-28T14:00:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3537: WM task class: WM-001/002/003 with enforced scope fences, so selection and trailing work have a home that never weakens the gate
@@ -62,8 +96,14 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A closed set of three WM tasks exists in `.tasks/workflow/`** — WM-001 (selection & discovery), WM-002 (close-out & trailing work), WM-003 (session lifecycle). Directory separation, not a marker in `active/` (IW-1): every mechanism that assumes tasks close — episodic generation, staleness audits, review-queue counts, `find_task_file` — globs `active/` and `completed/`, so a separate directory is skipped **by construction rather than by special-case**.
+- [x] **One predicate, one place.** `lib/wm_tasks.sh` is the only definition of what a WM task is and which fence it carries. No second reader — the defect this repo has paid for on arc membership (five implementations, three disagreements) and on AC placeholders (OBS-560) this morning.
+- [x] **Focus on a WM task satisfies the task gate** — the focus-null dead end (OBS-250, 12+ instances) is reachable no more. Demonstrated by the gate allowing a previously-refused read with focus set to WM-001.
+- [x] **THE FENCE, ENFORCED NOT ADVISORY (IW-2): under WM focus, a Write/Edit to any source path is REFUSED.** This is the whole safety property — a standing task is a standing exemption unless fenced, and an advisory fence is no fence. The exempt paths (`.context/`, `.tasks/`, `.claude/`, `.git/`) still work, because those are what housekeeping writes.
+- [x] **Negative controls carry equal weight to positive ones.** For every "WM focus allows X" test there is a "WM focus still refuses Y" test, where Y is a source write. A gate test that only proves things pass cannot distinguish a correct fence from one that permits everything — the exact false-green shape of OBS-560 and of the allowlist test in T-3536.
+- [x] **The fence message names the way out** — which WM task is in focus, why the write was refused, and that real work needs a real task. A refusal an agent cannot act on gets routed around (`[REVIEWER]`: 7 uses against 412).
+- [x] **Nothing already working is narrowed.** The full existing `check-active-task` and safe-command suites stay green; a normal `T-` focus behaves exactly as before, pinned by a test that a T- task can still write source.
+- [x] `bin/fw vendor self --check` clean before close (`lib/` and `agents/` are vendored).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +137,29 @@ date_finished: null
 -->
 
 ## Verification
+
+# The class exists as a closed set of three, in its own directory.
+test "$(ls .tasks/workflow/WM-*.md 2>/dev/null | wc -l)" -eq 3
+# One predicate, one place — and the gate + focus verb both consume THAT file.
+test -f lib/wm_tasks.sh
+grep -q 'wm_tasks.sh' agents/context/check-active-task.sh
+grep -q 'wm_tasks.sh' agents/context/lib/focus.sh
+# The gate behaviour, end-to-end through the real hook: 13 tests, 6 negative controls.
+timeout 300 bats tests/unit/t3537_wm_task_class.bats > /tmp/.t3537 2>&1 && ! grep -q '^not ok' /tmp/.t3537
+test "$(grep -c '# skip' /tmp/.t3537)" -eq 0
+# THE LIVE PRODUCER PATH — the fence was green, tested and unreachable until this
+# worked, because the gate accepted WM focus before the focus verb could set it (L-573).
+out=$(bin/fw context focus WM-001 2>&1); echo "$out" | grep -q 'Focus set: WM-001'
+# ...and the T-2874 refusals that the same edit silently broke are intact again.
+out=$(bin/fw context focus T-3528 2>&1); echo "$out" | grep -q 'completed, not active'
+out=$(bin/fw context focus T-99999 2>&1); echo "$out" | grep -q 'Task not found'
+# Restore focus to this task (the checks above moved it).
+bin/fw context focus T-3537 > /dev/null 2>&1
+# Nothing already working is narrowed: every focus + gate suite, run individually
+# (a single multi-file bats invocation reports spurious setup_file failures).
+bash -c 'n=0; for f in tests/unit/*focus*.bats tests/unit/check_active_task*.bats tests/unit/test_check_active_task*.bats; do timeout 300 bats "$f" > /tmp/.one 2>&1; n=$((n+$(grep -c "^not ok" /tmp/.one))); done; exit $n'
+# Vendored copies in sync (lib/ and agents/ are vendored paths).
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -323,3 +386,7 @@ date_finished: null
 
 ### 2026-09-28T13:57:44Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-09-28T16:46:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
