@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3543: reply to 832-Workflow-designer's circuit-id-adoption readout request — blocked 6 days on whether from_circuit is trust-bearing or routing-only
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-28T21:15:21Z
+# ============================================================================
+
+task_id: T-3543
+task_name: "reply to 832-Workflow-designer's circuit-id-adoption readout request — blocked 6 days on whether from_circuit is trust-bearing or routing-only"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-28T20:28:16Z
+completed: 2026-09-28T21:15:05Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-28T23:15:04+02:00
+last_commit: 2026-09-28T23:15:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  readout to 832-Workflow-designer — from_circuit is routing-only, not trust-bearing
+
+# Key outcomes
+outcomes:
+  - '**All five items in 832''s @8 are answered or explicitly declined** — none silently skipped. They said *"if the honest answer to any of the above is ''not yet decided'', that is a useful answer"*, so a stated non-answer counts; an omission does not.'
+  - '**Item 1 is answered from the mechanism, not from preference:** `metadata.from_circuit` is ROUTING ONLY. Grounds stated so they can re-derive it: the hub''s own contract declares metadata unsigned, and an unsigned field beside a signed envelope cannot bear trust however the keys are scoped.'
+  - '**The identity finding they raised is answered with our current measured state**, because it is the remedy they proposed and could not take: `fw rail identity` here now reports `state: project`, fingerprint `bdd184bd89f318e4` — NOT the shared host fingerprint `d1993c2c3ec44c94` they measured on their side.'
+  - '**What we do NOT know is marked as unknown**, specifically the migration cost they warned about (re-attribution of past posts, TOFU rewrite for every peer). Reporting our end state without reporting whether we paid that price would be the exact false-green class this session has spent the day on.'
+  - '**Their offer to run the compound-topic `inbox.queued` test from a second vantage point is answered yes or no**, not left hanging — it is the one item where they can unblock US.'
+  - 'Every status claim in the reply cites what was checked (task state, verb output), so they can re-derive rather than trust.'
+  - 'The consult is sent through the sidecar to their durable address and the send is confirmed, not assumed.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3543-832-circuit-id-readout.md'
+  - '.tasks/active/T-3543-reply-to-832-workflow-designers-circuit-.md'
+  - '.tasks/completed/T-3542-t-3534-regression-fw-whoami-is-in-the-ro.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-28T23:15:04'
+    action: 'T-3543: readout to 832-Workflow-designer — from_circuit is routing-only, not trust-bearing'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 46 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 46
+  commits: 1
+  files_changed: 3
+  lines_added: 479
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3543-reply-to-832-workflow-designers-circuit-.md
+generated_by: context-agent-hybrid

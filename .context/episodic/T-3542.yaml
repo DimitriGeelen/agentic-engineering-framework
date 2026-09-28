@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3542: T-3534 regression: fw whoami is in the router but not show_help, breaking help-router-parity and blocking push
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-28T20:26:57Z
+# ============================================================================
+
+task_id: T-3542
+task_name: "T-3534 regression: fw whoami is in the router but not show_help, breaking help-router-parity and blocking push"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-28T20:10:14Z
+completed: 2026-09-28T20:23:10Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-28T22:19:05+02:00
+last_commit: 2026-09-28T22:23:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw whoami was in the router but not show_help — help-router-parity RED, push blocked. RCA — the lint was right, my shell habits were not
+
+# Key outcomes
+outcomes:
+  - '`fw whoami` appears in `show_help()`, so `tests/lint/help-router-parity.bats` is green again — a verb reachable in the router but absent from help is undiscoverable, which is why the invariant exists.'
+  - 'The full lint suite is green: 110/110, not "the one I broke". The regression reached a commit because I ran targeted suites and never `bin/fw test lint`, despite touching `bin/fw`, two libs and `setup.sh`.'
+  - '`bin/fw audit --section structure` reports **Fail: 0**, which is the actual gate that blocked the push.'
+  - 'The push lands: `git log --oneline origin/bleeding-edge..HEAD` is empty, verified WITHOUT a pipe that could mask the exit code.'
+  - '`bin/fw vendor self --check` clean before close.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'bin/fw'
+  - '.tasks/active/T-3542-t-3534-regression-fw-whoami-is-in-the-ro.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-28T22:19:05'
+    action: 'T-3542: fw whoami was in the router but not show_help — help-router-parity RED, push blocked'
+  - time: '2026-09-28T22:23:09'
+    action: 'T-3542: RCA — the lint was right, my shell habits were not'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 2
+  files_changed: 5
+  lines_added: 421
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3542-t-3534-regression-fw-whoami-is-in-the-ro.md
+generated_by: context-agent-hybrid
