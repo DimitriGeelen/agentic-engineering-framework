@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3538: arc close-out pack: prepare the 8 close-ready arcs so the operator rules per arc instead of excavating — zero arcs have closed in five months
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-28T15:35:29Z
+# ============================================================================
+
+task_id: T-3538
+task_name: "arc close-out pack: prepare the 8 close-ready arcs so the operator rules per arc instead of excavating — zero arcs have closed in five months"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-28T15:31:34Z
+completed: 2026-09-28T15:35:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-28T17:35:10+02:00
+last_commit: 2026-09-28T17:35:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc close-out pack + OBS-564 — zero arcs have closed in five months
+
+# Key outcomes
+outcomes:
+  - 'A close-out pack exists at `docs/reports/T-3538-arc-closeout-pack.md` covering every in-progress arc at or above the framework''s own close-ready threshold (≥80% complete), with membership resolved through `lib/arc_membership.py` — the canonical import — and never re-derived locally (T-3516 / OBS-546 rail).'
+  - '**Per arc, the four things the operator needs to rule without excavating:** (1) completion, with the specific tasks still open named; (2) the `headline_mechanic` verbatim, since G-062 makes "did the demo show THIS firing" the mandatory closing question; (3) a concrete `--demo` candidate, or an explicit statement that none was found; (4) the anchor task''s `## Recommendation` state, because `fw arc close` needs it.'
+  - '**Arcs that are NOT close-ready are named as such, not omitted.** An arc that looks ready and is not is a worse outcome than one left out — the pack says which of the ≥80% arcs have a blocker and what it is.'
+  - '**No arc is closed by this task.** `fw arc close` is agent-refused under `$CLAUDECODE=1` (T-1671, earned over four incidents) and that refusal is respected, not routed around. The deliverable is evidence for a human decision; every actual closure remains the operator''s.'
+  - 'The Watchtower surface is quoted from the tool, not synthesised: `/arcs/<slug>` and `/arcs/<slug>/close` per CLAUDE.md §Arc Action Handoffs, which requires the URL as the primary affordance and CLI only as headless fallback.'
+  - 'The **zero-closures finding is registered** in `.context/concerns.yaml` — 20 arcs, five months, closure rate 0, with the gate history (T-1626, T-1633, T-1641, T-1667, T-1670) that produced it. The pack clears a backlog; the register is what carries the structural finding once the backlog is gone.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/concerns.yaml'
+  - 'docs/reports/T-3538-arc-closeout-pack.md'
+  - '.tasks/active/T-3538-arc-close-out-pack-prepare-the-8-close-r.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-28T17:35:10'
+    action: 'T-3538: arc close-out pack + OBS-564 — zero arcs have closed in five months'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 3
+  lines_added: 535
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3538-arc-close-out-pack-prepare-the-8-close-r.md
+generated_by: context-agent-hybrid
