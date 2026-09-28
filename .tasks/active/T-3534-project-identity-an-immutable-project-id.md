@@ -1,8 +1,10 @@
 ---
 id: T-3534
-name: "project identity: an immutable project id + name registered at fw init, and one verb that answers who-and-where from any cwd"
+name: "project identity: an immutable project id + name registered at fw init, and
+  one verb that answers who-and-where from any cwd"
 description: >
-  project identity: an immutable project id + name registered at fw init, and one verb that answers who-and-where from any cwd
+  project identity: an immutable project id + name registered at fw init, and one
+  verb that answers who-and-where from any cwd
 
 status: started-work
 workflow_type: build
@@ -39,8 +41,8 @@ arc_id: arc-020
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T13:17:13Z
-last_update: 2026-09-28T13:17:13Z
-date_finished: null
+last_update: '2026-09-28T13:30:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +53,36 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-28T13:30:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=298,acs=10)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-28T13:30:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: identity-fidelity=? (unscored (no scorer for identity-fidelity; 
+      not counted)); provisioning-safety=? (unscored (no scorer for 
+      provisioning-safety; not counted)); D1=4 (body:structural-gate); D2=4 
+      (body:fw-audit-or-doctor); D3=3 (body:component-discoverability); D4=2 
+      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3534: project identity: an immutable project id + name registered at fw init, and one verb that answers who-and-where from any cwd
@@ -89,9 +121,13 @@ answer.
 - [ ] A project carries an **immutable id**, generated once at `fw init`, stored in `.framework.yaml`, and distinct from both its display name and its root path. Regenerating it is refused, not silently re-rolled — a project that can change identity has none.
 - [ ] **One verb answers who-and-where** from any cwd inside the project, and reports the addressing triple the messaging case actually needs: project id, display name, current root, and host. Works in a vendored consumer (`.agentic-framework/bin/fw`) exactly as in the framework repo.
 - [ ] **Project identity and instance identity are distinguished, and both are reported.** A `git clone` legitimately shares the project id — it IS the same project — so the id alone cannot address a checkout. The instance is `project id + host + root`, which is the shape TermLink session tags already use (`host=107,project=001-…`). Pinned by a test that two checkouts of one project agree on id and differ on instance.
-- [ ] `fw init` on a project that already has an id **preserves it**. Re-running init must never mint a new identity over an existing one — that is the silent-corruption case, since nothing downstream would report the change.
+- [ ] `fw init` on a project that already has an id **preserves it, with no exception and no flag**. Re-running init must never mint a new identity over an existing one — that is the silent-corruption case, since nothing downstream would report the change. Multiple instances of one project sharing an id is the DESIGNED behaviour, not a tolerated side effect (operator ruling, below).
+- [ ] **Forking to a new project is a separate verb, not a flag on `init`** — it (a) mints a fresh id, (b) records the `descended_from:` parent id so the lineage survives, (c) writes a Tier-2 log entry, and (d) is **refused under `$CLAUDECODE=1`**. Re-identifying a project is sovereignty-class: an agent that can change which project it is can walk out of the T-559 boundary gate. Pinned by a test that the agent path is refused and the human path succeeds — tested on the agent path, since a pass obtained with an override flag proves nothing (L-573).
 - [ ] The id is resolved from `.framework.yaml`, never inferred from the directory name or path. A project moved or renamed keeps its identity; verified by a test that relocates a fixture project and re-reads it.
 - [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green — `fw init` is one of the three consumer-facing setup commands, and this touches it (CLAUDE.md §Consumer-Facing Command Hygiene, T-1633).
+- [ ] **The minted id replaces the path in slot 3 of the ratified five-part address** — `aef::host=<fqdn>::hub=<H>::project=<project-id>::@<agent>::` instead of `project=<path>`. This task does NOT invent a second identity notion beside `lib/aef_address.py`; it supplies the stable token that slot was always reaching for. Operator ruling, below.
+- [ ] **The elision machinery is retired or justified, not left dangling.** `elide_path()`, the display-only ellipsis form, and `serialize()`'s refusal to emit it exist *because* slot 3 is a long, layout-leaking path. With an id, display and wire are the same string. Either remove that code or record in the task why it must stay — leaving a mechanism whose reason has gone is how dead guards accumulate.
+- [ ] **Migration is answered, not assumed:** existing circuit-registry entries (`lib/aef_circuit.py`) carry path-form addresses. State whether path-form is accepted-and-upgraded, rejected, or dual-read during a window — and pin the chosen behaviour with a test over a real pre-migration entry, not a synthetic one.
 - [ ] A **scoring spec** is written for arc-020's `identity-fidelity` driver from this use case, checked with `bin/fw bvp driver --validate-scoring`, so the driver stops being a live-looking axis with no mechanism (the audit WARN and today's RED verdict from `fw arc judge-driver`).
 - [ ] `bin/fw vendor self --check` clean before close.
 
@@ -324,6 +360,64 @@ answer.
 -->
 
 ## Decisions
+
+### 2026-09-28 — where identity lives, and how a fork differs from an instance
+
+- **Chose:** an immutable id in `.framework.yaml`, minted once at `fw init`. Instances of a
+  project (clones, checkouts, deployments) **share it by design**. Forking to a new project
+  is a **separate verb**, sovereignty-gated.
+- **Operator ruling, verbatim:** *"Sometimes we also want to have different instances of a
+  project and we definitely want the same id, right? Only if you fork it, then it should be
+  a separate process. So I think to make that a separate verb makes perfect sense."*
+- **Why a verb and not `fw init --new-identity`:** a flag on `init` puts re-identification on
+  the same code path as routine setup, where it is one typo away from firing. A separate verb
+  makes the intent explicit at the call site and gives the `$CLAUDECODE=1` refusal somewhere
+  to live. The framework has this shape already — `fw arc close` and `fw inception decide`
+  are agent-refused for the same reason: they are decisions, not operations.
+- **Rejected — derive identity from the git remote URL:** fails on a fact about this repo,
+  which has two remotes (OneDev `origin` plus a GitHub mirror), so there is no non-arbitrary
+  answer to which is the identity. A remote migration would also change identity, which is
+  the single thing identity must never do. Excludes local-only and non-git projects entirely.
+- **Rejected — make TermLink's `project=` tag authoritative:** makes a core governance
+  property depend on an explicitly optional tool (CLAUDE.md requires graceful degradation
+  when TermLink is absent), and TermLink is deliberately machine-wide, the inverse of the
+  per-project isolation this is meant to establish. Directive 4 violation.
+### 2026-09-28 — the id IS slot 3 of the five-part address (operator)
+
+- **Operator ruling, verbatim:** *"For communications sake, or identity sake, we can still use
+  the five part identity that we minted before, that we also use for agent to agent
+  communication… Even if it's up to running on the same host, it will have a different session
+  ID then. And instead of the path that we minted, maybe we use the project ID and replace
+  step 3 in that 5 part identity by the project ID instead of the path."*
+- **Chose:** `project=<project-id>` replaces `project=<path>` in the V9 address. This task
+  does not create a parallel identity concept — it supplies the stable token the ratified
+  scheme was already reaching for.
+- **What it already is:** `host / hub / project / session / agent`, ratified twice (T-3287
+  D1–D7 GO 2026-09-07; D-599 on T-3433 2026-09-22) and BUILT — arc-020's seven slices are all
+  `work-completed`: `lib/aef_address.py` (V9 library with `climb()`/`ladder()`),
+  `lib/aef_circuit.py`, `lib/aef_resolve.py`, plus election, governor, repo-source and
+  provision audit.
+- **Why the path was always the weak slot, from the code itself:** `lib/aef_address.py` carries
+  `elide_path()` for display, refuses the elided form in `serialize()`, and comments that
+  otherwise *"the wire would re-collapse two projects into one correspondent"*. That entire
+  mechanism exists because slot 3 is a path. An id makes display and wire the same string —
+  nothing to elide, nothing to collapse — and stops every address leaking filesystem layout to
+  every other host on the circuit.
+- **Why the instance case is safe:** two instances of one project on one host share the project
+  id and are separated by the `session` token, which is what that slot is for. The operator
+  made this point explicitly, and it is why sharing the id across instances costs nothing.
+- **Agent near-miss, recorded because it is the point:** this task was filed proposing a
+  project identity with no reference to the five-part address at all. Had it been built as
+  filed, the repo would have gained a SECOND project-identity notion beside a ratified, shipped
+  one — the same five-readers-of-one-predicate defect that cost a day on arc membership, and
+  that `lib/ac_placeholder.py` was written this morning to stop repeating. The operator caught
+  it; no check would have.
+
+- **Agent correction recorded:** the filed ACs originally required only that `fw init`
+  preserve an existing id. That rule is right, and on its own it makes a fork silently
+  inherit its parent's identity — two different projects, one id, nothing saying so. The
+  preservation rule and the fork case had to be separated; they were not, until this
+  exchange.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
