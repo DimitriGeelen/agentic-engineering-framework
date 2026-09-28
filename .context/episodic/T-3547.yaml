@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3547: T-3541 slice: give arc-020's two scoped drivers (identity-fidelity, provisioning-safety) declarative scoring specs so they stop being names without mechanisms
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-28T23:31:22Z
+# ============================================================================
+
+task_id: T-3547
+task_name: "T-3541 slice: give arc-020's two scoped drivers (identity-fidelity, provisioning-safety) declarative scoring specs so they stop being names without mechanisms"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-28T23:19:37Z
+completed: 2026-09-28T23:31:02Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-29T01:30:54+02:00
+last_commit: 2026-09-29T01:30:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-020's two scoped drivers stop being names without mechanisms
+
+# Key outcomes
+outcomes:
+  - 'Both drivers have a declarative `scoring:` spec that passes'
+  - 'Each spec''s levels are tried against real tasks with `fw bvp driver --explain`, and'
+  - 'Discrimination is MEASURED, not asserted, and the figures are recorded here. A spec'
+  - 'The specs are attached to `.context/arcs/arc-020.yaml`''s `scoped_drivers[]` entries,'
+  - '`fw audit` no longer WARNs that `identity-fidelity` or `provisioning-safety` has'
+  - 'The other four unscorable drivers are left alone and named here, so this task is not'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-28 — level 3 of provisioning-safety keys on paths, not on `election`/`governor` keywords'
+    chose: 'move `election` and `governor` out of level 3''s `keywords:` and rely on the four `lib/aef_*.py` paths for that level.'
+    rationale: 'measured. As keywords they lifted **10 of the arc''s 14 members** to level 3 — every task whose body merely mentions those slices as context, which is most of an arc built around them. A driver that gives 71% of its own arc one score orders nothing. After the change the distribution is L0×1, L1×6, L3×6, L5×1, which actually ranks.'
+    alternatives_rejected: ['leaving it and reporting the concentration. The authoring header''s own advice is to try a spec on real tasks precisely so a level that fires uniformly is found before it is attached, and "uniform enough to be useless" is exactly what it describes.']
+  - decision: '2026-09-28 — the spec is inlined into arc-020.yaml and the draft files deleted'
+    chose: 'one inline `scoring:` block per driver entry; `.context/arcs/scoring/*.yaml` drafts removed after attachment.'
+    rationale: '`estimator.py:load_scoring_spec` reads only the inline `scoring:` key. A `scoring_file:` reference is **not** read at runtime — `--scoring-file` is a CLI-only try-before-you-attach affordance. Keeping the drafts would have left two copies where only one is live, and the dead one reads as authoritative.'
+    alternatives_rejected: ['keeping the drafts as documentation. Their design commentary moved into the arc file as comments instead, so the reasoning sits where the mechanism does.']
+  - decision: '2026-09-28 — a scoped driver cannot score a non-member, which retires the cross-arc question'
+    chose: 'measure discrimination WITHIN arc-020 only.'
+    rationale: '`fw bvp driver --explain identity-fidelity T-3546` refuses — *"driver not found in policy or in T-3546''s arc scoped_drivers"*. Cross-arc separation is therefore guaranteed by construction and measuring it would have produced a meaningless green. This corrected an acceptance criterion written before the constraint was known; the correction is recorded on the criterion rather than silently applied.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/arc-020.yaml'
+  - '.tasks/active/T-3547-t-3541-slice-give-arc-020s-two-scoped-dr.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T01:30:54'
+    action: 'T-3547: arc-020''s two scoped drivers stop being names without mechanisms'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 2
+  lines_added: 410
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3547-t-3541-slice-give-arc-020s-two-scoped-dr.md
+generated_by: context-agent-hybrid
