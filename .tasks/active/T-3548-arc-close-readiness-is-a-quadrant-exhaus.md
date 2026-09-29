@@ -111,8 +111,11 @@ arcs makes that worse.
 
 - **IW-1: Does "no unestimated tasks" mean CONFIRMED estimates, or marked-PROPOSED ones?**
   confidence: 2
-  disposition:
-  rationale: Decisive and three orders of magnitude apart. Measured 2026-09-29 over 3,530
+  disposition: answered
+  rationale: ANSWER — MARKED-PROPOSED counts as estimated, and the verdict must name the
+    provenance ("closed on estimator figures, N of M confirmed"). A GO on this task ratifies
+    that reading; say otherwise and it becomes confirmed-only.
+    Decisive and three orders of magnitude apart. Measured 2026-09-29 over 3,530
     task files: confirmed `bvp_scores:` = 0, confirmed `cost_estimate:` = 0, proposed scores
     = 3,464, proposed cost = 1,278. Reading it as CONFIRMED makes every arc permanently
     unclosable, reproducing today's zero-closures-in-five-months with a better-sounding
@@ -123,8 +126,16 @@ arcs makes that worse.
 - **IW-2: Q1/Q2 membership needs a cost median — over the ARC's tasks or the CORPUS? And how
     is tied-at-median value treated?**
   confidence: 2
-  disposition:
-  rationale: `lib/bvp.sh:265-272` splits on the median of known costs, and the population is
+  disposition: answered
+  rationale: ANSWER, two parts. (i) The cost median is taken over the CORPUS, not the arc — an
+    arc-internal median labels half of any uniformly-expensive arc "low cost" by construction,
+    which is meaningless as a closure test. (ii) Tied-at-median value stays HIGH-value (the
+    existing `>=`), accepted as a CHOSEN conservative behaviour: it over-counts Q1 by about the
+    tied cohort and therefore keeps arcs OPEN rather than closing them early. The alternative —
+    extending T-3485's withholding to non-degenerate medians — is deliberately NOT taken here,
+    because T-3485's own comment argues that moving tied mass to the other side is equally
+    invented. A GO ratifies both parts.
+    `lib/bvp.sh:265-272` splits on the median of known costs, and the population is
     unspecified for this use. An arc of uniformly expensive work has an internal median that
     labels half of it "low cost", which is meaningless as a closure test. 1409-sprind measured
     the adjacent hazard: defaulted costs entering the median pool moved it 2.45 -> 3.2 and
@@ -139,8 +150,15 @@ arcs makes that worse.
 
 - **IW-3: How is "arc goals achieved" judged, and does any part of it mechanise?**
   confidence: 2
-  disposition:
-  rationale: The goal is `headline_mechanic` (present on 20 of 20 open arcs; G-062 mandates it
+  disposition: answered
+  rationale: ANSWER — L3 SPLITS. The reviewer certifies only the mechanical half: `demo_evidence`
+    is non-empty, resolves, and is traceable to the arc. The judgement half — does the artefact
+    show the `headline_mechanic` firing — stays prose in the anchor task's Recommendation and
+    remains the operator's, which is where the operator said to put it. This keeps §ACD's binding
+    question exactly where G-062 put it and adds only a precondition check. A GO ratifies the
+    split. Consequence to expect: 16 of 20 open arcs currently fail the mechanical half outright,
+    because they have no demo at all.
+    The goal is `headline_mechanic` (present on 20 of 20 open arcs; G-062 mandates it
     at create). §ACD already asks the binding question — does the captured `--demo` show the
     mechanic firing — in prose. Only 4 of 20 open arcs have `demo_evidence` at all, so this leg
     is mostly a demand for an artefact that does not exist yet. Proposed split: the mechanical
@@ -150,8 +168,16 @@ arcs makes that worse.
 
 - **IW-4: Is reviewer-gating arc CLOSURE the delegation already made, or a new sovereignty step?**
   confidence: 1
-  disposition:
-  rationale: "Same as with the task" points at D-586/T-3429 (driver approval became
+  disposition: deferred
+  rationale: DEFERRED ON PURPOSE, and not to the build work — to its own operator ruling. This
+    is the one Sovereign question in the set and an agent must not dispose of it by answering
+    it. A GO here authorises Slices A and B (the predicate and the mechanical demo check, both
+    surfacing-side) and explicitly does NOT authorise Slice C. Deferring is the correct
+    disposition rather than a dodge: T-1671's refusal is incident-derived, so reversing it needs
+    a decision that cites the incident and states what has changed — which cannot be produced by
+    this exploration. If the operator wants C, the cleanest route is to say so and let it be
+    filed as its own inception with its own rationale.
+    "Same as with the task" points at D-586/T-3429 (driver approval became
     reviewer-gated by default) and D-626/T-3445 (deterministic Human criteria delegate to the
     reviewer). But T-1671 made arc closure agent-refused after a FOURTH incident in which an
     agent auto-closed an arc — the refusal is incident-derived, not general policy, and reversing
