@@ -134,7 +134,13 @@ frontmatter reader, which now uses libyaml's CSafeLoader. Equality test: tests/w
      ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
      If your Expected clause is grep-able / file-exists / structural (a deterministic
      shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
+     command in `## Verification
+
+python3 -m pytest tests/web/test_t3574_arc_page_perf.py -q -k "synthetic or warm"
+bin/fw vendor self --check
+bin/fw watchtower current
+
+ instead of a Human AC here. Only keep [REVIEW] if
      verification genuinely needs human taste (tone, feel, layout rhythm).
      See CLAUDE.md §AC Classification Guidance for the conversion rule.
 
@@ -354,6 +360,17 @@ frontmatter reader, which now uses libyaml's CSafeLoader. Equality test: tests/w
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO (close after the Human render check)
+
+**Rationale:** The arc page cost was an uncached whole-corpus `yaml.safe_load` in `_bvp_coherence_for_arc` plus a whole-corpus walk in `_arc_member_tasks`. Both now use a stat-signature cached task index and the mtime-cached frontmatter reader, so only the arc's own files are parsed. BVP numbers are unchanged.
+
+**Evidence:**
+- Live server: /arcs/continuous-run 25.8s cold / 15.9s warm -> 1.04s / 0.31s; /arcs/readme-first-run 2.74s / 0.44s -> 0.28s / 0.14s
+- `_bvp_signals` JSON for 4 arcs byte-identical before/after
+- tests/web/test_t3574_arc_page_perf.py: 8 tests pass (new vs inlined legacy on the live corpus, synthetic control leg, warm-request parse count)
+- `bin/fw watchtower current` passes; `bin/fw vendor self --check` clean
+
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -385,14 +402,3 @@ frontmatter reader, which now uses libyaml's CSafeLoader. Equality test: tests/w
 ### 2026-09-29T23:22:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Recommendation
-
-**Recommendation:** GO (close after the Human render check)
-
-**Rationale:** The arc page cost was an uncached whole-corpus `yaml.safe_load` in `_bvp_coherence_for_arc` plus a whole-corpus walk in `_arc_member_tasks`. Both now use a stat-signature cached task index and the mtime-cached frontmatter reader, so only the arc's own files are parsed. BVP numbers are unchanged.
-
-**Evidence:**
-- Live server: /arcs/continuous-run 25.8s cold / 15.9s warm -> 1.04s / 0.31s; /arcs/readme-first-run 2.74s / 0.44s -> 0.28s / 0.14s
-- `_bvp_signals` JSON for 4 arcs byte-identical before/after
-- tests/web/test_t3574_arc_page_perf.py: 8 tests pass (new vs inlined legacy on the live corpus, synthetic control leg, warm-request parse count)
-- `bin/fw watchtower current` passes; `bin/fw vendor self --check` clean
