@@ -8,15 +8,15 @@ description: >
   not own, with an optional arc-level goal, a serves_objective mapping, and a Watchtower
   surface
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-09-28T13:19:21Z
-last_update: '2026-09-29T13:45:11Z'
+last_update: 2026-09-29T22:14:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -243,3 +243,7 @@ Selection is specified top-down but no objectives artefact exists, so 'anything 
 ### 2026-09-28T18:29:24Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-09-29T22:14:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
