@@ -63,12 +63,12 @@ This task applies that guidance. A fresh review then decides whether T-3552/T-35
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `.headline-mechanic-box` uses a light tint instead of the solid primary background, so links inside it (the anchor task link) are legible and the warn stripe reads as a warning
-- [ ] No Arc Closure label still describes the old ≥80% rule: section h3, BLOCKED tooltip, stat-tile breakdown, template comment
-- [ ] `blocked_reason` carries no raw backticks, so `## Recommendation` is not shown twice in two styles
-- [ ] The headline-mechanic box on each card is labelled and styled neutrally, so it no longer reads as a third complaint
-- [ ] The L4 "absent" summary reads for an operator: no internal identifiers, ends with a full stop; its unit test is updated and still asserts absent and invalid read differently
-- [ ] Watchtower restarted and current; the independent reviewer re-reviews on fresh screenshots
+- [x] `.headline-mechanic-box` uses a light tint instead of the solid primary background, so links inside it (the anchor task link) are legible and the warn stripe reads as a warning
+- [x] No Arc Closure label still describes the old ≥80% rule: section h3, BLOCKED tooltip, stat-tile breakdown, template comment
+- [x] `blocked_reason` carries no raw backticks, so `## Recommendation` is not shown twice in two styles
+- [x] The headline-mechanic box on each card is labelled and styled neutrally, so it no longer reads as a third complaint
+- [x] The L4 "absent" summary reads for an operator: no internal identifiers, ends with a full stop; its unit test is updated and still asserts absent and invalid read differently
+- [x] Watchtower restarted and current; the independent reviewer re-reviews on fresh screenshots (re-review GREEN on both, appended to docs/reports/T-3557-render-review-2026-09-29.md)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -79,6 +79,12 @@ This task applies that guidance. A fresh review then decides whether T-3552/T-35
      If your Expected clause is grep-able / file-exists / structural (a deterministic
      shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
      command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
+
+python3 -m pytest tests/unit/test_t3552_arc_close_readiness.py -q > /tmp/.t3571.out 2>&1 && grep -q passed /tmp/.t3571.out && ! grep -q failed /tmp/.t3571.out
+! grep -q "Arcs ready for review\|Close-ready arcs\|completion threshold" web/templates/_approvals_content.html
+grep -q "color-mix(in srgb, var(--pico-primary) 12%" web/templates/approvals.html
+grep -q "GREEN" docs/reports/T-3557-render-review-2026-09-29.md
+bin/fw watchtower current
      verification genuinely needs human taste (tone, feel, layout rhythm).
      See CLAUDE.md §AC Classification Guidance for the conversion rule.
 

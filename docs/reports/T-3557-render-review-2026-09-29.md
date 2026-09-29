@@ -69,3 +69,21 @@ A second, smaller defect in the same box: `blocked_reason` is plain text that co
 - Acceptable as is.
 - Optional polish: "the sibling dm: rail's 24" is awkward because of the colon. "the sibling DM rail's 24h" would be clearer.
 - The narrow, character-wrapped key column is page-wide and not caused by this row. It is out of scope here.
+
+---
+
+## Re-review after T-3571 (fresh independent reviewer, new screenshot approvals-arc-closure-v2.png)
+
+**T-3552: GREEN.** All four guidance points verified on the live page, not taken from the author's claim.
+- Anchor link: T-2718 is visible, green and underlined on the 12% color-mix tint.
+- Wording: heading "Arc closure queue"; BLOCKED tooltip "Meets L1 and L2, but the anchor advisory is missing"; stat tile "Meeting L1 + L2"; the template comment no longer says ≥80%.
+- Cards: onboarding-shape-detection shows BLOCKED with its reason; readme-first-run shows GO.
+- Backticks: gone.
+
+**T-3553: GREEN.** Both cards have a "Demo evidence:" box with operator-readable text ending in a full stop. The amber stripe now reads as a warning. The third box is labelled "Headline mechanic:", so a blocked card shows two distinct warnings plus one description.
+
+**Optional, non-blocking:**
+- "( ## Recommendation" chip spacing is slightly redundant with the sentence.
+- The headline-mechanic box is still italic.
+- The headline text has no full stop (that comes from the arc YAML).
+- Dark theme not checked.
