@@ -1,0 +1,111 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3563: an arc should carry its story - what it is, why, research, decisions - not only a one-line demo mechanic
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T19:05:09Z
+# ============================================================================
+
+task_id: T-3563
+task_name: "an arc should carry its story - what it is, why, research, decisions - not only a one-line demo mechanic"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T16:59:10Z
+completed: 2026-09-29T19:04:55Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-29T19:01:10+02:00
+last_commit: 2026-09-29T20:04:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — an arc should carry its story; three-vendor review brief. three-vendor review — amber x3, converged arc structure; objective is the keystone. operator adopts the structure; external review, not the operator, approves drafted intent. pilot drafts for three arcs (continuous-run, readme-first-run, orchestrator-rethink); external fit review launched. fold in 055's arc-dossier proposal; verified the arc page never renders headline_mechanic. pilot applied — three arcs now carry their story (purpose, objective, criteria, context, decisions). GO recommended — structure settled, pilot applied to three arcs, three build tasks scoped. operator's target is 055's arc-007 layout; 832 ownership proposal recorded (OBS). pilot reviewed by all three vendors; 25 corrections applied, 1 declined with evidence
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/continuous-run.yaml'
+  - '.context/arcs/orchestrator-rethink.yaml'
+  - '.context/arcs/readme-first-run.yaml'
+  - '.context/inbox.yaml'
+  - '.context/working/focus.yaml'
+  - 'docs/reports/T-3563-arc-story.md'
+  - 'docs/reports/T-3563-external-review-brief.md'
+  - 'docs/reports/T-3563-pilot-continuous-run.yaml'
+  - 'docs/reports/T-3563-pilot-orchestrator-rethink.yaml'
+  - 'docs/reports/T-3563-pilot-readme-first-run.yaml'
+  - 'docs/reports/T-3563-pilot-review-anthropic.md'
+  - 'docs/reports/T-3563-pilot-review-brief.md'
+  - 'docs/reports/T-3563-pilot-review-openai.md'
+  - 'docs/reports/T-3563-pilot-review-zai.md'
+  - 'docs/reports/T-3563-pilot-revision-log.md'
+  - 'docs/reports/T-3563-review-anthropic.md'
+  - 'docs/reports/T-3563-review-openai.md'
+  - 'docs/reports/T-3563-review-zai.md'
+  - '.tasks/active/T-3563-an-arc-should-carry-its-story---what-it-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T19:01:10'
+    action: 'T-3563: inception — an arc should carry its story; three-vendor review brief'
+  - time: '2026-09-29T19:03:05'
+    action: 'T-3563: three-vendor review — amber x3, converged arc structure; objective is the keystone'
+  - time: '2026-09-29T19:11:06'
+    action: 'T-3563: operator adopts the structure; external review, not the operator, approves drafted intent'
+  - time: '2026-09-29T19:16:42'
+    action: 'T-3563: pilot drafts for three arcs (continuous-run, readme-first-run, orchestrator-rethink); external fit review launched'
+  - time: '2026-09-29T19:30:39'
+    action: 'T-3563: fold in 055''s arc-dossier proposal; verified the arc page never renders headline_mechanic'
+  - time: '2026-09-29T19:39:21'
+    action: 'T-3563: pilot applied — three arcs now carry their story (purpose, objective, criteria, context, decisions)'
+  - time: '2026-09-29T19:39:44'
+    action: 'T-3563: GO recommended — structure settled, pilot applied to three arcs, three build tasks scoped'
+  - time: '2026-09-29T19:45:56'
+    action: 'T-3563: operator''s target is 055''s arc-007 layout; 832 ownership proposal recorded (OBS)'
+  - time: '2026-09-29T20:04:28'
+    action: 'T-3563: pilot reviewed by all three vendors; 25 corrections applied, 1 declined with evidence'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 125 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 125
+  commits: 9
+  files_changed: 19
+  lines_added: 2452
+  lines_removed: 416
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3563-an-arc-should-carry-its-story---what-it-.md
+generated_by: context-agent-hybrid

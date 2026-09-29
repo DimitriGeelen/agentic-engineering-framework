@@ -7,16 +7,16 @@ description: >
   research, decisions and their history — and how that is derived from the inception
   context fabric rather than retyped.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: [T-3548, T-3552, T-3553, T-1667, T-1848]
 created: 2026-09-29T16:59:10Z
-last_update: '2026-09-29T17:00:38Z'
-date_finished:
+last_update: 2026-09-29T19:04:55Z
+date_finished: 2026-09-29T19:04:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -125,15 +125,15 @@ inceptions with a research report in `docs/reports/`; **1** arc sets `design_doc
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -207,9 +207,65 @@ asked for the same thing, built it, and showed the arc page has never rendered
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The structure is settled and the pilot worked. Three vendors (amber ×3)
+agreed on the fields, and the operator adopted them, with external review rather than the
+operator approving drafted intent. On three real arcs, isolated workers drafted every field
+from the anchor inception with 112 citations, all of which resolve. An independent reviewer
+checked every citation, found nothing invented, and caught three real faults that were
+then corrected: a success criterion claiming a paused capability was live, an objective
+that dropped the arc's primary outcome, and a miscounted membership. That is the review
+catching what matters rather than rubber-stamping. A peer project (055) independently
+asked for the same thing, built it, and showed the arc page has never rendered
+`headline_mechanic` (verified here: 0 occurrences in `arc_detail.html`).
+
+**Date**: 2026-09-29T19:04:54Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-09-29T19:04:54Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The structure is settled and the pilot worked. Three vendors (amber ×3)
+agreed on the fields, and the operator adopted them, with external review rather than the
+operator approving drafted intent. On three real arcs, isolated workers drafted every field
+from the anchor inception with 112 citations, all of which resolve. An independent reviewer
+checked every citation, found nothing invented, and caught three real faults that were
+then corrected: a success criterion claiming a paused capability was live, an objective
+that dropped the arc's primary outcome, and a miscounted membership. That is the review
+catching what matters rather than rubber-stamping. A peer project (055) independently
+asked for the same thing, built it, and showed the arc page has never rendered
+`headline_mechanic` (verified here: 0 occurrences in `arc_detail.html`).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-de316024
+- **Timestamp:** 2026-09-29T19:04:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-919208f0
+- **Timestamp:** 2026-09-29T19:04:56Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-3563-arc-story.md` | file | ✓ pass |
+
+### 2026-09-29T19:04:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
