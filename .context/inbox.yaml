@@ -5759,3 +5759,18 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-571
+  text: "_HUMAN_AC_MECHANICAL_RE's T-1897 conformance widening matches ordinary English, so the D-626 delegation surface is ~13 false positives and the rail built to detect 'delegation reaches nothing' is SILENCED BY THEM. The two alternates '\\bnames?\\s+(the|current|missing)?\\S' and '\\bshows?\\s+(?!no)(the|current|missing)?\\S' match any sentence containing name/names/show/shows followed by a word. Empirically: 'Please name your favourite colour' -> MATCH 'name y'; 'the SALVAGE verdicts are the right call and name the reason' -> MATCH 'name the r'; 'a relaunched session shows the listener still attached' -> MATCH 'shows the l'. All 13 tasks on 'fw reviewer surface --json' delegable_tasks classify deterministic on such a fragment. Reviewed by hand: 4 are strategic ratifications (T-100201 ratify-dissolution, T-3091 verdicts-are-right-call, T-3049 is-this-wanted, T-1805 matches-ADR-intent), 6 are act-in-the-world live smokes needing real hardware or a real relaunched session (T-1774, T-1775 both need a pi installed; T-2373, T-3338, T-3346, T-464), 1 is render/taste (T-2049 links clickable and readable), 2 have a sovereign sibling AC that makes converting the first incoherent (T-2183, T-3389). Net safely-delegable: approximately ZERO. CONSEQUENCE, and it is the reason this is not cosmetic: the T-3445 audit/doctor WARN fires only when reviewer-closeable==0 AND operator-only>50. We report 13 and 344, so the surface reads 'OK' and the WARN never fires - a bug that manufactures fake delegation is suppressing the alarm for the exact condition it manufactures. 832 measured a TRUE 0 out of 342; our 13 is not a healthier number, it is 13 misfires. Same class as every other finding this session: a check measuring TEXT instead of the behaviour it stands for. Also affects the reviewer static-scan detector human-ac-mechanical-signal, which shares the regex."
+  captured: 2026-09-29T08:08:03Z
+  context_task: WM-002
+  tags: [bug]
+  status: pending
+  promoted_to: null
+  urgent: true
+- id: OBS-572
+  text: "act-in-the-world classifier (lib/delegation.py _ACT_IN_THE_WORLD_RE) is under-inclusive, leaving 6 false positives on the D-626 delegation surface after T-3554 fixed the prose-matching half. The 6 now match GENUINELY mechanical Expected tokens ('exit 0', 'exit code', backticked 'shows `status: success`', 'file missing', author-declared [RUBBER-STAMP]) - the deterministic regex is behaving correctly. They are still undelegable because their STEPS need the operator's own hardware or a live session, which act-in-the-world should have caught first (it is evaluated before deterministic). Misses measured: T-1774/T-1775 say 'pi installed)' and the alternate '\\\\b(re)?install(s|ed|ing)?\\\\s+\\\\S' requires whitespace-then-nonspace AFTER the verb, so a trailing paren defeats it; T-2373 'Real-claude E2E ... without manual intervention' and T-464 'Test /capture skill in a live session' have no install/login vocabulary at all - the family is 'requires a live interactive session', which T-3457 did not enumerate. CONSEQUENCE: the T-3445 rail WARNs only when reviewer-closeable==0, and 6>0, so the alarm STILL does not fire even though the true safely-delegable count is likely 0. Candidate fix: add a 'live session / real-agent E2E / interactive run' family to T-3457's second group, and relax the trailing \\\\s+\\\\S on the install alternate to a word boundary. Filed separately from T-3554 per one-bug-one-task: different regex, different cause, different evidence."
+  captured: 2026-09-29T09:03:57Z
+  context_task: T-3554
+  tags: [bug]
+  status: pending
+  promoted_to: null

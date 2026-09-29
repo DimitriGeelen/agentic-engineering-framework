@@ -965,14 +965,51 @@ _HUMAN_AC_MECHANICAL_RE = re.compile(
         \brow\s+(written|appended) |
         \bstatus:\s*\w+      |
         # === Conformance-checking dialect (T-1897 widening) ===
-        # "block message names X / names the X / names current focus"
-        \bnames?\s+(the\s+|current\s+|missing\s+)?\S |
-        # "shows X / shows the Y / shows current Z"  (NB: taste gate suppresses
-        # "shows good", "shows rhythm" via _HUMAN_AC_TASTE_RE).
+        #
+        # T-3554 (OBS-571): these two alternates ended in `\S`, which matches ANY
+        # non-space character — so `\bnames?\s+\S` matched any English sentence
+        # containing "name" followed by a word. Measured:
+        #     MATCH 'name y'   | Please name your favourite colour.
+        #     MATCH 'shows s'  | This paragraph shows something entirely subjective.
+        # Every one of the 13 tasks on the D-626 delegation surface classified
+        # `deterministic` on a fragment like that, and none was safely delegable
+        # (4 strategic ratifications, 6 act-in-the-world, 1 render/taste, 2 with a
+        # sovereign sibling criterion). Worse, the T-3445 rail WARNs only when
+        # reviewer-closeable is 0 — reporting 13 fake ones suppressed the alarm for
+        # exactly the condition the fakes created.
+        #
+        # T-1897's intent was CONFORMANCE: "block message names `--switch-focus`",
+        # "shows .context/working/focus.yaml". The object of the verb is an
+        # identifier, not prose. Requiring it to LOOK like one keeps every case
+        # T-1897 was built for and drops the English.
+        #
+        # `(?-i: )` on the ALL-CAPS branch is load-bearing: this pattern compiles
+        # with re.I, under which `[A-Z][A-Z0-9_]{2,}` matches any three-letter word
+        # — which is how "your" and "something" got through the first draft of this
+        # very fix.
+        \bnames?\s+(?:(?:the|current|missing)\s+)*(?:
+            `[^`]+`                                  # `--flag`, `focus.yaml`
+          | --?[A-Za-z][\w-]*                        # --switch-focus, -f
+          | [\w.-]+/[\w./-]+                         # .context/working/focus.yaml
+          | (?-i:[A-Z][A-Z0-9_]{2,})                 # FW_SAFE_MODE, PROJECT_ROOT
+          | T-\d+                                    # T-1730
+          | "[^"]+"                                  # "focus.yaml"
+          | [\w-]+\.(?:py|sh|md|ya?ml|json|jsonl|html|txt|log|cast)\b
+        ) |
+        # "shows X" — same tightening. (NB: the taste gate additionally suppresses
+        # "shows good", "shows rhythm" via _HUMAN_AC_TASTE_RE.)
         # Negation objects excluded (T-2641): "maps show no prompt" is a
         # UI-absence assertion, not grep-able conformance — 832 foreign-corpus
         # FP on their T-100 (rail 240 fixture).
-        \bshows?\s+(?!no\b)(the\s+|current\s+|missing\s+)?\S |
+        \bshows?\s+(?!no\b)(?:(?:the|current|missing)\s+)*(?:
+            `[^`]+`
+          | --?[A-Za-z][\w-]*
+          | [\w.-]+/[\w./-]+
+          | (?-i:[A-Z][A-Z0-9_]{2,})
+          | T-\d+
+          | "[^"]+"
+          | [\w-]+\.(?:py|sh|md|ya?ml|json|jsonl|html|txt|log|cast)\b
+        ) |
         # "points at X / points to X"
         \bpoints?\s+(at|to)\b |
         # "contains the override flag / contains the focus name"
