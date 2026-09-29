@@ -120,14 +120,22 @@ arcs makes that worse.
     cost. Leaning proposed-with-provenance so the verdict reads "closed on estimator figures,
     none confirmed" rather than a bare PASS. Operator's call.
 
-- **IW-2: Q1/Q2 membership needs a cost median — over the ARC's tasks or the CORPUS?**
-  confidence: 1
+- **IW-2: Q1/Q2 membership needs a cost median — over the ARC's tasks or the CORPUS? And how
+    is tied-at-median value treated?**
+  confidence: 2
   disposition:
   rationale: `lib/bvp.sh:265-272` splits on the median of known costs, and the population is
     unspecified for this use. An arc of uniformly expensive work has an internal median that
     labels half of it "low cost", which is meaningless as a closure test. 1409-sprind measured
     the adjacent hazard: defaulted costs entering the median pool moved it 2.45 -> 3.2 and
     silently flipped every task at 3.2 from hv-hc to hv-lc. IW-1's answer constrains this.
+    S4 ADDED A SECOND HALF, measured 2026-09-29 over 204 ranked tasks: the value axis has only
+    31 distinct norm values, and 36 tasks sit EXACTLY on the median (0.26). The comparison is
+    `>=`, so all 36 are promoted to high-value. T-3485's QUAD_VALUE_WITHHELD exists for this
+    equality defect but is deliberately scoped to fire only when the median collapses onto the
+    corpus floor (0.04 here), so it stays silent. Net: L2 will over-count Q1 by roughly the
+    tied cohort, which keeps arcs OPEN — conservative, but it should be a chosen behaviour
+    rather than a discovered one.
 
 - **IW-3: How is "arc goals achieved" judged, and does any part of it mechanise?**
   confidence: 2

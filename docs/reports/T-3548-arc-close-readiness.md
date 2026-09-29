@@ -161,6 +161,72 @@ Note also that D-626's own carve-outs list *inception go/no-go* as never-delegab
 close is nearer to a go/no-go than to a criterion check. That is an independent argument for the
 IW-3 split: the reviewer certifies the mechanical predicate, the operator rules on the arc.
 
+## 6b. S4 RESULT — run 2026-09-29, and it changes two of the four answers
+
+`fw bvp --include-proposed`, 204 actionable tasks. Three findings, in order of how much they
+move the design.
+
+### (a) The value axis is NOT degenerate — assumption A2's worst case does not hold
+
+| | |
+|---|---|
+| BVP norm range | 0.04 – 0.44 |
+| median | 0.26 |
+| tasks at-or-above median | **104 of 204 = 51%** |
+
+A 51/49 split is a healthy axis. The fear that "the estimator scores everything high so no arc
+ever empties its Q1" is **not supported**. A2 is disproved in the reassuring direction.
+
+### (b) But the cost-known subset is badly biased, and this is the real finding
+
+Only **32 of 204 (16%)** have a cost at all — `fw bvp` says so itself in its header: *"172/204
+(84%) have no known cost — blast_radius unmeasured, so no quadrant"*. Of those 32:
+
+| quadrant | count |
+|---|---:|
+| hv-lc (Q1) | 18 |
+| hv-hc (Q2) | 9 |
+| lv-lc | 4 |
+| lv-hc | 1 |
+
+**27 of 32 = 84% high-value**, against a corpus-wide 51%. The tasks that happen to carry a cost
+estimate are wildly unrepresentative — a selection effect, since costs get produced for work
+someone was actively weighing, which is disproportionately the valuable work.
+
+**This is the strongest argument for L1 so far, and it is the operator's leg.** Today's quadrant
+view is computed over a biased 16% sample and reads 84% high-value. Under L1 the cost-known
+population becomes the whole arc, the bias disappears, and the split should revert toward the
+true 51%. Without L1 the quadrant view is not just incomplete — it is *skewed towards saying
+high-value work remains*, which would make arcs look less closeable than they are.
+
+### (c) Ties at the median inflate Q1, and T-3485's guard does not catch this case
+
+The value axis has only **31 distinct norm values across 204 tasks**, with heavy clustering:
+
+| norm | tasks |
+|---:|---:|
+| 0.21 | 46 |
+| **0.26 (= the median)** | **36** |
+| 0.40 | 27 |
+| 0.19 | 22 |
+| 0.36 | 20 |
+
+**36 tasks sit exactly ON the median**, and the comparison is `bvp_norm >= bvp_median`, so all 36
+are promoted to high-value. T-3485 built `QUAD_VALUE_WITHHELD` ('v-thin') for precisely this
+equality defect — but scoped it to fire only when the median has collapsed onto the corpus
+*floor*. Here the floor is 0.04 and the median is 0.26, so `value_axis_degenerate` is False and
+the guard stays silent while 36 tied tasks are still being assigned a side by `>=`.
+
+That is not a bug in T-3485 — its own comment says the narrow scoping is deliberate, because
+moving tied mass to the other side is equally invented. But it means **L2 will over-count Q1 by
+roughly the size of the tied-at-median cohort**, and an over-counted Q1 keeps arcs open. It is a
+precision problem in the conservative direction, which is the right direction, but it should be
+named rather than discovered later.
+
+**Net effect on the four questions:** IW-2 gains a concrete sub-question (how to treat
+tied-at-median value), and the case for L1 strengthens considerably. IW-1, IW-3 and IW-4 are
+unchanged.
+
 ## 7. Recommendation
 
 **GO** on the definition. **Decompose before building:**
