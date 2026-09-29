@@ -8,8 +8,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [agents/audit/audit.sh, bin/fw, lib/config.sh, lib/sidecar-audit.sh, lib/sidecar_cli.py, lib/sidecar/inbox.py, tests/unit/sidecar_audit_rail.bats, tests/unit/t3544_inbox_backlog_rail.bats, tests/unit/test_sidecar_unread_summary.py, web/blueprints/config.py]
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-28T21:57:41Z
-last_update: 2026-09-28T22:31:14Z
+last_update: 2026-09-29T21:13:48Z
 date_finished: 2026-09-28T22:31:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -143,8 +143,7 @@ destroyed the thing it was diagnosing. Every read added here goes through
 - [x] `fw sidecar status` degrades to `unknown` with a reason, never to `0`, when no
       address can be derived — and `inbox-stale` exits 2 in that case rather than 0
 
-### Human
-- [ ] [REVIEW] The new `SIDECAR_CONSULT_WARN_HOURS` row reads correctly on the /config page
+- [x] [AGENT-REVIEWED] The new `SIDECAR_CONSULT_WARN_HOURS` row reads correctly on the /config page
 
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower restart && sleep 3 && bin/fw watchtower url`
@@ -158,6 +157,11 @@ destroyed the thing it was diagnosing. Every read added here goes through
   **If not:** note which part reads wrong (wrapping, truncation, or the description itself)
   and leave the AC unticked — the description text is in `web/blueprints/config.py` and
   `lib/config.sh`, and both must be changed together or the parity lint goes red.
+
+  **Reviewed 2026-09-29 by an independent agent reviewer (not the producer), GREEN** on a live screenshot of /config: same style as neighbours, default 4, description stands alone. Report: `docs/reports/T-3557-render-review-2026-09-29.md`. Moved from `### Human` on the operator's ruling (T-3557 IW-1, 2026-09-29): "These are not things I need to decide on review… That's low risk stuff."
+
+
+### Human
 
 ## Verification
 

@@ -258,3 +258,7 @@ yes by the operator; rewriting existing tasks' criteria text.
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-09-29 — ruling applied before the build (operator, verbatim)
+"as always use the external reviewer. These are not things I need to decide on review, right? That's low risk stuff. Why are we still using it and not applying our changed approach here?"
+— Asked about T-3552/T-3553/T-3544, three render-only [REVIEW] criteria. The agent had routed them to the operator because the D-626 classifier still carves out render surfaces (T-1766) and `fw task delegate` has no route for them. IW-1 already rules UX/render out of the human set; the gap is that nothing applies it yet. Interim path per task: independent agent reviewer on live screenshots → report in docs/reports/T-3557-render-review-2026-09-29.md → on green, criterion moved to Agent with the verdict cited, owner → agent, close with a logged --skip-render-review naming this ruling. The build of T-3557 must remove the need for that bypass.

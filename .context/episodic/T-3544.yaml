@@ -1,0 +1,124 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3544: sidecar inbound-consult backlog is invisible — unread consults have no count in status, no doctor WARN, no audit check (the six-day 832 blockage)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T21:13:50Z
+# ============================================================================
+
+task_id: T-3544
+task_name: "sidecar inbound-consult backlog is invisible — unread consults have no count in status, no doctor WARN, no audit check (the six-day 832 blockage)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-28T21:57:41Z
+completed: 2026-09-28T22:31:14Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-29T00:30:13+02:00
+last_commit: 2026-09-29T00:35:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the inbound consult backlog is now counted, WARNed and un-drainable. close — 18/18 verification, partial-complete on the /config render review
+
+# Key outcomes
+outcomes:
+  - '`lib/sidecar/inbox.py` gains an unread-summary function that reports count, oldest'
+  - 'A test asserts the summary leaves `inbox-state.json` cursors and seen-set byte-identical,'
+  - '`fw sidecar status` reports the inbound unread count on its own line, and carries it'
+  - '`fw sidecar inbox-stale [--threshold-hours N] [--json]` exists and mirrors `dm-stale`''s'
+  - '`lib/sidecar-audit.sh` gains a fact function with the same rc contract as its siblings:'
+  - '`fw doctor` emits a WARN naming the unread count, the age and the peer, next to the'
+  - '`fw audit` `check_sidecar_ledger` emits the same WARN, so the cron''d sweep sees it too'
+  - 'Bats coverage for the fact function includes both degradation paths and a negative'
+  - '`bin/fw vendor self --check` clean before close (OBS-250 — vendored paths touched)'
+  - 'The threshold is a config key, present in BOTH registries (`lib/config.sh` and'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/sidecar-audit.sh'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/blueprints/config.py'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - '.context/concerns.yaml'
+  - '.context/episodic/T-3447.yaml'
+  - '.context/episodic/T-3481.yaml'
+  - '.context/episodic/T-3514.yaml'
+  - '.context/episodic/T-3522.yaml'
+  - '.context/episodic/T-3523.yaml'
+  - '.context/episodic/T-3525.yaml'
+  - '.context/episodic/T-3526.yaml'
+  - '.context/episodic/T-3528.yaml'
+  - '.context/episodic/T-3529.yaml'
+  - '.context/episodic/T-3530.yaml'
+  - '.context/episodic/T-3531.yaml'
+  - '.context/episodic/T-3532.yaml'
+  - '.context/episodic/T-3533.yaml'
+  - '.context/episodic/T-3534.yaml'
+  - '.context/episodic/T-3536.yaml'
+  - '.context/episodic/T-3537.yaml'
+  - '.context/episodic/T-3538.yaml'
+  - '.context/episodic/T-3542.yaml'
+  - '.fabric/components/tests-unit-t3544_inbox_backlog_rail.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_unread_summary.yaml'
+  - 'lib/config.sh'
+  - 'lib/sidecar-audit.sh'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/inbox.py'
+  - '.tasks/active/T-3544-sidecar-inbound-consult-backlog-is-invis.md'
+  - 'tests/unit/sidecar_audit_rail.bats'
+  - 'tests/unit/t3544_inbox_backlog_rail.bats'
+  - 'tests/unit/test_sidecar_unread_summary.py'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T00:30:13'
+    action: 'T-3544: the inbound consult backlog is now counted, WARNed and un-drainable'
+  - time: '2026-09-29T00:35:45'
+    action: 'T-3544: close — 18/18 verification, partial-complete on the /config render review'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 33 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 33
+  commits: 3
+  files_changed: 44
+  lines_added: 2361
+  lines_removed: 79
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3544-sidecar-inbound-consult-backlog-is-invis.md
+generated_by: context-agent-hybrid

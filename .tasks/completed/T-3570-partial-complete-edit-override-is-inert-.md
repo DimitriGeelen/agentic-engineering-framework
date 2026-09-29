@@ -4,12 +4,12 @@ name: "partial-complete edit override is inert from Bash - gate reads hook env, 
 description: >
   partial-complete edit override is inert from Bash - gate reads hook env, message tells agent to prefix the command
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, tests/unit/t3174_partial_complete_edit_matrix.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T21:09:22Z
-last_update: 2026-09-29T21:09:22Z
-date_finished: null
+last_update: 2026-09-29T21:12:53Z
+date_finished: 2026-09-29T21:12:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -71,7 +71,7 @@ FW_SAFE_MODE (T-3179); the sibling FW_SWITCH_FOCUS works because it is parsed fr
 - [x] A token merely mentioned inside an argument does not authorise (negative control in the bats matrix)
 - [x] Every honoured use still writes the Tier-2 entry to `.gate-bypass-log.yaml`
 - [x] `tests/unit/t3174_partial_complete_edit_matrix.bats` drives the hook with the command string an agent actually types; the new prefix test is red before the fix and green after (observed: `not ok 12` before, 14/14 after)
-- [ ] `bin/fw vendor self --check` clean
+- [x] `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -253,6 +253,14 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** a Bash call prefixed `FW_ALLOW_PARTIAL_COMPLETE_EDIT=1` was refused by the very block message that prescribes that prefix (found while finalizing a partial-complete task on a reviewer's green verdict).
+
+**Root cause:** `check-active-task.sh:911` tested `${FW_ALLOW_PARTIAL_COMPLETE_EDIT:-0}`, the hook process's environment. A PreToolUse hook is launched by Claude Code, not by the agent's command, so a command-line prefix never reaches it. It had to be parsed from `$BASH_CMD`, as FW_SWITCH_FOCUS is.
+
+**Why structurally allowed:** the T-3174 tests set the variable on the hook process (`FW_ALLOW_PARTIAL_COMPLETE_EDIT=1 bash "$HOOK"`), the one route an agent does not have. They measured a proxy (env var reaches hook) rather than the property (the advertised command works). Same class CLAUDE.md already records for FW_SAFE_MODE (T-3179); nothing asserted it for newer env-var bypasses.
+
+**Prevention:** the matrix now drives the hook with the command string an agent types, plus two negative controls. Wider class: every `FW_ALLOW_*` a block message tells an agent to prefix deserves the same command-string test; filed as an observation (lint candidate), not scoped into this bug.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -333,3 +341,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3570-partial-complete-edit-override-is-inert-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-114c5bfc
+- **Timestamp:** 2026-09-29T21:13:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-29T21:12:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
