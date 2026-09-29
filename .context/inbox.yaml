@@ -5811,5 +5811,7 @@ observations:
   captured: 2026-09-29T17:45:55Z
   context_task: T-3563
   tags: [bug]
-  status: pending
+  status: dismissed
+  dismissed_reason: "Operator chose option A 2026-09-29: adopt 832's predicate upstream as T-3568."
+  dismissed_at: 2026-09-29T19:44:39Z
   promoted_to: null
