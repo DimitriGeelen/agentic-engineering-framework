@@ -297,7 +297,9 @@ def _parse_fm_from_path(path: Path) -> dict | None:
     if not m:
         return None
     try:
-        result: dict | None = yaml.safe_load(m.group(1)) or {}
+        # T-3574: libyaml's C loader is ~10x faster than the pure-Python
+        # SafeLoader that yaml.safe_load uses; same resolver, same output.
+        result: dict | None = yaml.load(m.group(1), Loader=_FM_YAML_LOADER) or {}
     except yaml.YAMLError:
         return None
     return result
@@ -305,6 +307,48 @@ def _parse_fm_from_path(path: Path) -> dict | None:
 
 def _parse_frontmatter(path: Path) -> dict | None:
     return mtime_cached_get(path, _parse_fm_from_path, _FM_CACHE, default=None)
+
+
+# T-3574: task-file index shared by every arc-page consumer. Membership used to be
+# re-derived per call by reading + regexing all ~3,600 task files, and coherence
+# re-parsed all of them with an uncached yaml.safe_load (measured: 28s of a 29s
+# request). The index is rebuilt only when a task file is added, removed or
+# touched; validity is one stat per file (~30ms) instead of one read per file.
+_FM_YAML_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+_TASK_ID_PREFIX_RE = re.compile(r"^(T-\d+)")
+_TASK_INDEX_CACHE: dict[str, object] = {}
+
+
+def _task_index() -> dict:
+    """Return {"paths_by_id": {T-id: [Path,...]}, "by_arc_id": ..., "by_tag": ...}.
+
+    Cached on a signature of (path, mtime_ns) over every task file, so a task
+    edit invalidates it and an unchanged corpus never re-reads a file.
+    """
+    from lib.arc_membership import scan_tasks_by_arc_membership
+
+    files: list[Path] = []
+    for sub in ("active", "completed"):
+        files.extend(sorted((PROJECT_ROOT / ".tasks" / sub).glob("T-*.md")))
+    sig_parts = []
+    for p in files:
+        try:
+            sig_parts.append((str(p), p.stat().st_mtime_ns))
+        except OSError:
+            continue
+    sig = hash(tuple(sig_parts))
+    if _TASK_INDEX_CACHE.get("sig") == sig and "index" in _TASK_INDEX_CACHE:
+        return _TASK_INDEX_CACHE["index"]  # type: ignore[return-value]
+    paths_by_id: dict[str, list[Path]] = {}
+    for p in files:
+        m = _TASK_ID_PREFIX_RE.match(p.name)
+        if m:
+            paths_by_id.setdefault(m.group(1), []).append(p)
+    by_arc_id, by_tag = scan_tasks_by_arc_membership(PROJECT_ROOT)
+    index = {"paths_by_id": paths_by_id, "by_arc_id": by_arc_id, "by_tag": by_tag}
+    _TASK_INDEX_CACHE["sig"] = sig
+    _TASK_INDEX_CACHE["index"] = index
+    return index
 
 
 def _latest_proposed_scores(fm: dict) -> dict | None:
@@ -438,12 +482,11 @@ def _arc_member_tasks(arc_slug: str, arc_id_str: str) -> list[dict]:
     pattern requires the literal token `grep`, so a Python reinvention is invisible
     to it (OBS-546). Same import style as the sibling blueprint arcs.py:34.
     """
-    from lib.arc_membership import scan_tasks_by_arc_membership
-
     targets = {x for x in (arc_slug, arc_id_str) if x}
     if not targets:
         return []
-    by_arc_id, by_tag = scan_tasks_by_arc_membership(PROJECT_ROOT)
+    index = _task_index()
+    by_arc_id, by_tag = index["by_arc_id"], index["by_tag"]
     ids: set[str] = set()
     for key in (arc_slug, arc_id_str):
         if key:
@@ -453,16 +496,16 @@ def _arc_member_tasks(arc_slug: str, arc_id_str: str) -> list[dict]:
     if not ids:
         return []
 
+    # T-3574: parse only the arc's own candidate files (located by the T-NNN
+    # filename prefix), not the whole corpus. Order matches the old glob walk:
+    # active/ then completed/, each sorted by path.
+    candidates = [p for tid in ids for p in index["paths_by_id"].get(tid, [])]
+    candidates.sort(key=lambda p: (0 if p.parent.name == "active" else 1, str(p)))
     members: list[dict] = []
-    patterns = [
-        str(PROJECT_ROOT / ".tasks" / "active" / "T-*.md"),
-        str(PROJECT_ROOT / ".tasks" / "completed" / "T-*.md"),
-    ]
-    for pattern in patterns:
-        for p in sorted(glob.glob(pattern)):
-            fm = _parse_frontmatter(Path(p))
-            if fm and str(fm.get("id") or "").strip() in ids:
-                members.append(fm)
+    for p in candidates:
+        fm = _parse_frontmatter(p)
+        if fm and str(fm.get("id") or "").strip() in ids:
+            members.append(fm)
     return members
 
 

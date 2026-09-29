@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T22:36:00Z
-last_update: 2026-09-29T23:22:12Z
+last_update: 2026-09-29T23:23:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,10 +99,26 @@ Prior art: L-002 (T-1233): scan-all-files routes need caches in web/shared.py.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Each task file's frontmatter is parsed at most once per arc-page request (or served from a cache invalidated by file change); profile shows `_parse_fm_from_path` calls reduced from ~3,556 to the arc's own members or a cached index
-- [ ] `/arcs/continuous-run` and `/arcs/readme-first-run` each respond in under 3s cold and under 1s warm on this host, measured with curl before and after; numbers recorded in the task
-- [ ] BVP numbers on the arc page are unchanged: a test compares arc BVP_norm/BVP_raw and per-driver contributions before and after the change for at least two arcs
-- [ ] Existing arc/BVP web tests pass; `bin/fw watchtower current` passes after restart; `bin/fw vendor self --check` clean
+- [x] Each task file's frontmatter is parsed at most once per arc-page request (or served from a cache invalidated by file change); profile shows `_parse_fm_from_path` calls reduced from ~3,556 to the arc's own members or a cached index
+- [x] `/arcs/continuous-run` and `/arcs/readme-first-run` each respond in under 3s cold and under 1s warm on this host, measured with curl before and after; numbers recorded in the task
+- [x] BVP numbers on the arc page are unchanged: a test compares arc BVP_norm/BVP_raw and per-driver contributions before and after the change for at least two arcs
+- [x] Existing arc/BVP web tests pass; `bin/fw watchtower current` passes after restart; `bin/fw vendor self --check` clean
+
+### Results (measured 2026-09-30, host load ~28)
+
+| | before | after |
+|---|---|---|
+| `_bvp_signals("continuous-run")` in-process | 28.7s | 0.4s |
+| GET /arcs/continuous-run, live server, cold / warm | 25.8s / 15.9s | 1.04s / 0.31s |
+| GET /arcs/readme-first-run, live server, cold / warm | 2.74s / 0.44s | 0.28s / 0.14s |
+| full page in-process, warm (cProfile) | 36s | 0.38s (`_bvp_signals` 0.14s) |
+
+Root cause: `_bvp_coherence_for_arc` read + `yaml.safe_load`ed all ~3,590 task files with no cache (28 of the 29s),
+and `_arc_member_tasks` walked the whole corpus to find ~28 members. Fix: `bvp._task_index()` (stat-signature
+cached membership + id->path map), members/coherence parse only the arc's own files through the mtime-cached
+frontmatter reader, which now uses libyaml's CSafeLoader. Equality test: tests/web/test_t3574_arc_page_perf.py
+(new vs inlined legacy on the live corpus: members, per-driver scores, raw/norm, coherence). Before/after
+`_bvp_signals` JSON for 4 arcs byte-identical.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
