@@ -201,3 +201,46 @@ machine-checked definition, not by prose, so there is nothing to misread.
    (ambiguity is an error, never "no mailboxes"), topic ACLs or end-to-end encryption.
 5. **Tell 832 and 010-termlink now:** the five-level model stands, and `from_circuit`
    is routing-only and untrusted until verification ships.
+
+## Dialogue Log — segment 3 (operator, after round 1; verbatim, voice transcript)
+
+> Ok, I guess we need to widen the window for the amount of cycles we can. Deef is 2,
+> put this to 10. Because it's a key one. We recently, not for the first time, did a
+> lot of work on this consumption issue. Every time you say we got in place. The last
+> one was the whole design. We discussed building the API that we've got to send the
+> receiver, sender flagging the, or the receiver flagging that a message has been sent.
+> Then storing it locally, including digital binary blobs. Then looking if it can be
+> injected into the prompt. Then have a prompt drop that does that regularly too. And
+> we're also sending a message back to the sender using the same sidecar API that the
+> message has been received. Then when it's been injected into the prompt message that
+> the message has been injected, has been consumed. For lack of a better word, you can
+> propose a better word. And then when the response comes back, indicate that the
+> response is ready and is coming back. And maybe of a state that the message has been
+> sent and received. This will be documented and designed and I think even
+> implemented, but for some reason that's still not working. So I really implore you
+> to look that up and incorporate that thinking into our discussion and design we're
+> having here now. And maybe send it for another review round.
+
+### F-5 — The consumption design exists, was ratified, and was never built
+
+The design the operator described is `docs/architecture/sidecar-target-architecture.md`
+(D-645, ratified 2026-09-25; design of record T-3397). Its build order has eight
+slices. Measured 2026-09-29:
+
+- **Slice 0** shipped (T-3462).
+- **The slice-1 transport** was ruled GO (T-3475, 2026-09-25: HTTP).
+- **Slice 1 itself** (receiver sidecar process, HTTP API, durable address, local
+  storage, receiver-side flag) **has no task and no code.** There is no HTTP server in
+  `lib/sidecar/`; `RECEIVED` and `HANDED_OVER` appear nowhere. Every later slice hangs
+  off it.
+- **Why it escaped:** the GO-scope audit counts T-3475 as built because two tasks
+  mention it (T-3479, address dual-read; T-3494, an unrelated estimator task). A
+  mention counted as a build. Filed OBS-575.
+
+So the round-1 reviewers' unanimous "consumption first" recommendation independently
+rediscovered D-645's slices 1–4, and the operator's "for some reason it's still not
+working" has a plain answer: it was designed and ratified, and then it was not built.
+
+Round 2 (`T-3558-external-review-brief-round2.md`) puts D-645, the built-versus-designed
+gap, the operator's lifecycle with proposed state names, and round 1's findings to the
+same three reviewers.

@@ -5788,3 +5788,10 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-575
+  text: "The GO-scope audit (go-scope-unpropagated) counts a GO'd inception as built when ANY task references it, so T-3475 (sidecar slice 1 transport ruling, GO 2026-09-25, HTTP) reads 'followers: T-3479, T-3494*' and is never flagged as unbuilt. Neither follower builds slice 1: T-3479 is address dual-read (arc-011/020 convergence), T-3494 is a BVP estimator task that merely mentions T-3475. The keystone the GO authorised — a receiver sidecar process with an HTTP API, local storage and a receiver-side flag — has no task and no code (no HTTP server in lib/sidecar/; RECEIVED and HANDED_OVER appear nowhere). Consequence: D-645's whole consumption design (received, tick+readiness+inject, handed-over, blobs) hangs off a slice that was never started, and the audit built to catch exactly that reported it as having followers. Same class as this session's other findings: a mention (proxy) counted as a build (property). Found during T-3558 at the operator's request to trace why the consumption design 'still does not work'."
+  captured: 2026-09-29T15:35:21Z
+  context_task: T-3558
+  tags: [bug]
+  status: pending
+  promoted_to: null
