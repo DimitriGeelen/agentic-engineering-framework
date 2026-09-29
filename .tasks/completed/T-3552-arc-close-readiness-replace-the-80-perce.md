@@ -1,13 +1,14 @@
 ---
-id: T-3571
-name: "arc closure cards: fix the reviewer's amber findings on T-3552/T-3553 (invisible link, stale 80% wording, unlabelled box, demo text)"
+id: T-3552
+name: "arc close-readiness: replace the 80 percent ratio with L1 plus L2 quadrant
+  exhaustion"
 description: >
-  arc closure cards: fix the reviewer's amber findings on T-3552/T-3553 (invisible link, stale 80% wording, unlabelled box, demo text)
+  arc close-readiness: replace the 80 percent ratio with L1 plus L2 quadrant exhaustion
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -37,9 +38,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-29T21:14:55Z
-last_update: 2026-09-29T21:14:55Z
-date_finished: null
+created: 2026-09-29T08:29:23Z
+last_update: 2026-09-29T21:23:15Z
+date_finished: 2026-09-29T08:40:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,27 +51,123 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=418,acs=13)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3571: arc closure cards: fix the reviewer's amber findings on T-3552/T-3553 (invisible link, stale 80% wording, unlabelled box, demo text)
+# T-3552: arc close-readiness: replace the 80 percent ratio with L1 plus L2 quadrant exhaustion
 
 ## Context
 
-An independent agent reviewer returned AMBER on T-3552 and T-3553 (render checks on the
-/approvals Arc Closure cards), with specific guidance: docs/reports/T-3557-render-review-2026-09-29.md.
-This task applies that guidance. A fresh review then decides whether T-3552/T-3553 close.
+T-3548 Slice A. The operator's ruling, verbatim:
+
+> *"the threshold for Arc should not be 80%, it should be no high value, low cost,
+> no high cost items left anymore"* … *"no unestimated tasks, point. And then no
+> high value, no Q1, Q1 and Q2, quadrant 1 and quadrant 2 tasks left. And then we
+> also talked about validating if the R goals are achieved."*
+
+Three legs:
+
+| leg | predicate |
+|---|---|
+| **L1** | no unestimated open member — every one carries BOTH a value score and a cost |
+| **L2** | no open member is high-value — neither `hv-lc` (Q1) nor `hv-hc` (Q2) remains |
+| **L3** | the arc's goals are validated in the anchor's Recommendation + Rationale |
+
+**What 80% actually measured.** `_load_close_ready_arcs(threshold=0.80)` is a
+*completion ratio* — `completed / total` over constituents. It answers "how much of
+the list is ticked", which is a statement about the list, not about the work. An arc
+at 85% whose remaining 15% is the entire high-value core reads as close-ready; an arc
+at 70% whose remainder is all low-value polish reads as not. Both backwards.
+
+L1+L2 replace a proxy with the property: closure is about what is *left*, and value
+is what makes leftovers matter.
+
+**This is a surfacing heuristic, not the close gate.** `lib/arc.sh:arc_close()` has
+no ratio check and gains none here — `fw arc close` stays agent-refused (T-1671) and
+operator-owned. What changes is which arcs the operator is *shown*, and why.
+
+**Precondition, now met (T-3551).** L1 was unevaluable until an hour ago: the cost
+sweep excluded partial-complete tasks, which is exactly where `components:` lands, so
+0 of 16 arcs could pass L1. After T-3551's sweep, 7 of 16 pass. A gate that refuses
+everything carries no information — L1 only became worth wiring once it could
+discriminate.
+
+**One predicate, one reader.** The legs live in `lib/arc_close_readiness.py` so
+`/approvals`, `/arcs/<slug>` and `fw review-queue` cannot drift apart. This repo has
+already paid for the alternative: arc membership had five readers and three verdicts
+(OBS-546). Quadrant classification is imported from `lib/bvp.sh`'s own python body
+rather than re-derived, for the same reason.
+
+### Result — measured against the live corpus
+
+Corpus medians over OPEN tasks: value `0.2370` (n=491), cost `3.60` (n=261),
+value axis **not** degenerate (so T-3485's `v-thin` withholding does not fire).
+
+| | arcs surfaced |
+|---|---|
+| old `completion_ratio >= 0.80` | **8** |
+| new L1+L2 | **2** — `onboarding-shape-detection`, `readme-first-run` |
+
+The two the new predicate keeps are the two with **zero open members** — genuinely
+finished. The six it drops are the point:
+
+| arc | ratio | open | high-value open |
+|---|---|---|---|
+| `orchestrator-rethink` | 85% | 18 | **8** |
+| `continuous-run` | 89% | 6 | 3 |
+| `parallel-execution-aef` | 95% | 2 | 2 |
+| `ewcr-arc0-contract-evidence` | 95% | 1 | 1 |
+| `capability-overlay` | 80% | 3 | 1 (and L1 fails — unestimated) |
+| `horizon-axis-hardening` | 80% | 1 | 1 |
+
+Each read "close-ready" on the ratio while its remaining work was the high-value
+part. That is the failure the ratio cannot see, because `completed / total` has no
+term for what kind of thing is left.
+
+Per-leg over all 16 in-progress arcs: **L1 passes 7**, **L2 passes 1**
+(`project-shape-resilience`), **L1+L2 passes 2**. The legs disagree with each
+other, which is what a predicate carrying information looks like.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `.headline-mechanic-box` uses a light tint instead of the solid primary background, so links inside it (the anchor task link) are legible and the warn stripe reads as a warning
-- [x] No Arc Closure label still describes the old ≥80% rule: section h3, BLOCKED tooltip, stat-tile breakdown, template comment
-- [x] `blocked_reason` carries no raw backticks, so `## Recommendation` is not shown twice in two styles
-- [x] The headline-mechanic box on each card is labelled and styled neutrally, so it no longer reads as a third complaint
-- [x] The L4 "absent" summary reads for an operator: no internal identifiers, ends with a full stop; its unit test is updated and still asserts absent and invalid read differently
-- [x] Watchtower restarted and current; the independent reviewer re-reviews on fresh screenshots (re-review GREEN on both, appended to docs/reports/T-3557-render-review-2026-09-29.md)
+- [x] `lib/arc_close_readiness.py` evaluates L1, L2 and L3 as separate, individually-reported legs
+- [x] L1 fails when any OPEN member lacks a value score or a cost, and names the offending task IDs
+- [x] L2 fails when any OPEN member classifies `hv-lc` or `hv-hc`, and names them
+- [x] Quadrant classification is IMPORTED from `lib/bvp.sh`'s python body, never re-implemented
+- [x] CONTROL: an arc whose open members are all low-value and fully estimated passes L1+L2
+- [x] CONTROL: an arc with one unestimated open member fails L1 even when every other leg passes — so a pass cannot be reached by ignoring a leg
+- [x] A CLOSED member never blocks a leg — closure is about what is left, not what was done
+- [x] `_load_close_ready_arcs` surfaces on L1+L2 instead of `completion_ratio >= 0.80`, and the ratio is still reported as information
+- [x] `fw arc close` remains agent-refused and gains no new gate — this task changes what is SURFACED, not what is permitted
+- [x] Measured against the live corpus: which arcs the new predicate surfaces vs the old 80%, recorded in this task
 
-### Human
+- [x] [AGENT-REVIEWED] The Arc Closure section on `/approvals` reads correctly with the new, much shorter list
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`
+  2. Open the printed URL, go to `/approvals`, find the **Arc Closure** section.
+  3. It should list **2 arcs** (`onboarding-shape-detection`, `readme-first-run`) where it previously listed 8.
+  4. `onboarding-shape-detection` should render WITHOUT a verdict badge and WITH its blocked reason (its anchor has no `## Recommendation`); `readme-first-run` should show `GO`.
+
+  **Expected:** the section still reads as a queue rather than an error — a
+  near-empty list is the honest answer here (6 of the 8 arcs it used to show still
+  have high-value work open), but you are the judge of whether it *reads* that way
+  or reads as broken.
+
+  **If not:** say which of the two it reads as, and whether the section needs a
+  line explaining why arcs left it. The predicate itself is pinned by
+  `tests/unit/test_t3552_arc_close_readiness.py`; this criterion is only about how
+  the shortened list presents.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -79,12 +176,6 @@ This task applies that guidance. A fresh review then decides whether T-3552/T-35
      If your Expected clause is grep-able / file-exists / structural (a deterministic
      shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
      command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-
-python3 -m pytest tests/unit/test_t3552_arc_close_readiness.py -q > /tmp/.t3571.out 2>&1 && grep -q passed /tmp/.t3571.out && ! grep -q failed /tmp/.t3571.out
-! grep -q "Arcs ready for review\|Close-ready arcs\|completion threshold" web/templates/_approvals_content.html
-grep -q "color-mix(in srgb, var(--pico-primary) 12%" web/templates/approvals.html
-grep -q "GREEN" docs/reports/T-3557-render-review-2026-09-29.md
-bin/fw watchtower current
      verification genuinely needs human taste (tone, feel, layout rhythm).
      See CLAUDE.md §AC Classification Guidance for the conversion rule.
 
@@ -106,6 +197,12 @@ bin/fw watchtower current
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+  **Reviewed 2026-09-29 by an independent agent reviewer (not the producer): GREEN on re-review after T-3571 fixed the first review's amber findings (invisible anchor link, stale ≥80% wording, raw backticks).** Report: `docs/reports/T-3557-render-review-2026-09-29.md`. Moved from `### Human` on the operator's ruling (T-3557 IW-1, 2026-09-29): "These are not things I need to decide on review… That's low risk stuff."
+
+
+### Human
+
 
 ## Verification
 
@@ -228,6 +325,21 @@ bin/fw watchtower current
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
+timeout 300 python3 -m pytest tests/unit/test_t3552_arc_close_readiness.py -q > /tmp/.t3552.out 2>&1 && grep -q "17 passed" /tmp/.t3552.out
+test "$(grep -c 'failed\|error' /tmp/.t3552.out)" -eq 0
+timeout 300 python3 -m pytest tests/web/test_approvals_blocked_arcs.py tests/unit/test_approvals_expand_overflow.py -q > /tmp/.t3552b.out 2>&1 && grep -q "passed" /tmp/.t3552b.out
+test "$(grep -c 'failed\|error' /tmp/.t3552b.out)" -eq 0
+python3 -c "import ast; ast.parse(open('web/blueprints/approvals.py').read()); ast.parse(open('lib/arc_close_readiness.py').read()); ast.parse(open('lib/bvp_py.py').read())"
+# the quadrant classifier is IMPORTED, never re-implemented (OBS-546 class)
+test "$(grep -c 'def quadrant' lib/arc_close_readiness.py)" -eq 0
+grep -q 'bvp.quadrant(' lib/arc_close_readiness.py
+# the ratio is no longer the predicate
+grep -q '_arc_readiness_legs' web/blueprints/approvals.py
+# fw arc close gains NO new gate — this task changes what is surfaced, not what is permitted
+test "$(grep -c 'arc_close_readiness\|_arc_readiness_legs' lib/arc.sh)" -eq 0
+bin/fw watchtower current
+bin/fw vendor self --check
+
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -276,6 +388,35 @@ bin/fw watchtower current
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The predicate is built, pinned and measured, and the one thing left
+is a judgement I cannot make for you: whether a two-row Arc Closure section *reads*
+as a queue or as a breakage. The substance is settled — 6 of the 8 arcs the 80%
+ratio called close-ready still have high-value work open, and the two that remain
+are the two with zero open members. What I can't tell from here is whether the
+operator opening `/approvals` tomorrow will read the short list as "good, almost
+nothing is actually ready" or as "the page is broken". That is a render judgement,
+which is why it stayed a `[REVIEW]` rather than being routed to the reviewer.
+
+Nothing here permits a closure that was not permitted before: `fw arc close` is
+still agent-refused (T-1671), still operator-owned, and gained no new gate —
+verification line 9 asserts `lib/arc.sh` does not import the predicate at all.
+
+**Evidence:**
+- 17 tests, 0 skips, both controls present; the unmeasured-remainder guard verified
+  RED against a deliberately broken build (L2 passing when nothing is classifiable).
+- Old vs new on the live corpus: 8 arcs surfaced → 2; per-leg L1 passes 7, L2 passes
+  1, so the legs disagree with each other rather than moving together.
+- `orchestrator-rethink`: 85% complete, 18 open members, **8 of them Q1/Q2** — the
+  clearest single instance of what the ratio could not see.
+- Quadrant classification imported from `lib/bvp.sh` via the new `lib/bvp_py.py`,
+  never re-derived; pinned by a test that fails if anyone writes a local `quadrant`.
+- The population difference from `fw bvp` (this includes partial-complete, the
+  ranking excludes it) is documented in the module docstring rather than left to be
+  discovered — 134 of 152 open arc members are partial-complete, so on the ranking's
+  population L2 would pass every arc by never looking.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -327,7 +468,19 @@ bin/fw watchtower current
 
 ## Updates
 
-### 2026-09-29T21:14:55Z — task-created [task-create-agent]
+### 2026-09-29T08:29:23Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3571-arc-closure-cards-fix-the-reviewers-ambe.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3552-arc-close-readiness-replace-the-80-perce.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ee640f77
+- **Timestamp:** 2026-09-29T08:40:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-29T08:40:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

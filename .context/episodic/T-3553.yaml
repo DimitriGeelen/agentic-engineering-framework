@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3553: arc demo evidence is never checked until close - add the mechanical leg
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T21:23:44Z
+# ============================================================================
+
+task_id: T-3553
+task_name: "arc demo evidence is never checked until close - add the mechanical leg"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T08:42:50Z
+completed: 2026-09-29T08:52:55Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-29T10:54:07+02:00
+last_commit: 2026-09-29T10:54:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc demo evidence was never checked until the close form
+
+# Key outcomes
+outcomes:
+  - '`fw arc demo-check <arc>` validates the arc''s RECORDED `demo_evidence:` and exits 0 valid / 1 invalid-or-absent / 2 indeterminate'
+  - 'It reuses `_arc_validate_demo_path` / `_arc_validate_demo_url` — the rules are not re-implemented anywhere'
+  - '`demo_evidence: null` is reported as ABSENT with its own wording, distinct from "recorded but invalid"'
+  - 'A URL demo reports indeterminate (exit 2) without making a network call'
+  - '`lib/arc_close_readiness.py` reports L4 as a leg, and an indeterminate L4 does NOT count as ready'
+  - 'CONTROL: an arc with valid, traceable demo evidence passes L4 — without this, a build that fails every arc satisfies the rest'
+  - 'L4 does NOT change which arcs `_load_close_ready_arcs` surfaces; the filter stays L1+L2'
+  - 'Measured: L4 across all 18 in-progress arcs, recorded in this task'
+  - '[AGENT-REVIEWED] The demo-evidence line reads right on each Arc Closure card'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/arc_close_readiness.py'
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - '.agentic-framework/web/templates/_approvals_content.html'
+  - '.fabric/components/lib-arc_close_readiness.yaml'
+  - '.fabric/components/lib-bvp_py.yaml'
+  - 'lib/arc_close_readiness.py'
+  - 'lib/arc.sh'
+  - '.tasks/active/T-3552-arc-close-readiness-replace-the-80-perce.md'
+  - '.tasks/active/T-3553-arc-demo-evidence-is-never-checked-until.md'
+  - 'tests/unit/t3553_arc_demo_check.bats'
+  - 'tests/unit/test_t3552_arc_close_readiness.py'
+  - 'web/blueprints/approvals.py'
+  - 'web/templates/_approvals_content.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T10:54:07'
+    action: 'T-3553: arc demo evidence was never checked until the close form'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 14
+  lines_added: 1202
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3553-arc-demo-evidence-is-never-checked-until.md
+generated_by: context-agent-hybrid

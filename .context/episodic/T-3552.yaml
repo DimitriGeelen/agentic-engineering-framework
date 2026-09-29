@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3552: arc close-readiness: replace the 80 percent ratio with L1 plus L2 quadrant exhaustion
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T21:23:16Z
+# ============================================================================
+
+task_id: T-3552
+task_name: "arc close-readiness: replace the 80 percent ratio with L1 plus L2 quadrant exhaustion"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T08:29:23Z
+completed: 2026-09-29T08:45:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-29T10:41:32+02:00
+last_commit: 2026-09-29T10:41:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc close-readiness is quadrant exhaustion, not a completion ratio
+
+# Key outcomes
+outcomes:
+  - '`lib/arc_close_readiness.py` evaluates L1, L2 and L3 as separate, individually-reported legs'
+  - 'L1 fails when any OPEN member lacks a value score or a cost, and names the offending task IDs'
+  - 'L2 fails when any OPEN member classifies `hv-lc` or `hv-hc`, and names them'
+  - 'Quadrant classification is IMPORTED from `lib/bvp.sh`''s python body, never re-implemented'
+  - 'CONTROL: an arc whose open members are all low-value and fully estimated passes L1+L2'
+  - 'CONTROL: an arc with one unestimated open member fails L1 even when every other leg passes — so a pass cannot be reached by ignoring a leg'
+  - 'A CLOSED member never blocks a leg — closure is about what is left, not what was done'
+  - '`_load_close_ready_arcs` surfaces on L1+L2 instead of `completion_ratio >= 0.80`, and the ratio is still reported as information'
+  - '`fw arc close` remains agent-refused and gains no new gate — this task changes what is SURFACED, not what is permitted'
+  - 'Measured against the live corpus: which arcs the new predicate surfaces vs the old 80%, recorded in this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/arc_close_readiness.py'
+  - '.agentic-framework/lib/bvp_py.py'
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - 'lib/arc_close_readiness.py'
+  - 'lib/bvp_py.py'
+  - '.tasks/active/T-3552-arc-close-readiness-replace-the-80-perce.md'
+  - 'tests/unit/test_t3552_arc_close_readiness.py'
+  - 'web/blueprints/approvals.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T10:41:32'
+    action: 'T-3552: arc close-readiness is quadrant exhaustion, not a completion ratio'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15
+  commits: 1
+  files_changed: 8
+  lines_added: 1653
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3552-arc-close-readiness-replace-the-80-perce.md
+generated_by: context-agent-hybrid

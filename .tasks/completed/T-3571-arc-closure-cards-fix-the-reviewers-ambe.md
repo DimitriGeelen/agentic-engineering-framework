@@ -1,15 +1,15 @@
 ---
-id: T-3553
-name: "arc demo evidence is never checked until close - add the mechanical leg"
+id: T-3571
+name: "arc closure cards: fix the reviewer's amber findings on T-3552/T-3553 (invisible link, stale 80% wording, unlabelled box, demo text)"
 description: >
-  arc demo evidence is never checked until close - add the mechanical leg
+  arc closure cards: fix the reviewer's amber findings on T-3552/T-3553 (invisible link, stale 80% wording, unlabelled box, demo text)
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
-components: []
+components: [lib/arc_close_readiness.py, web/blueprints/approvals.py, web/templates/_approvals_content.html, web/templates/approvals.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -37,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-29T08:42:50Z
-last_update: 2026-09-29T08:52:55Z
-date_finished: 2026-09-29T08:52:55Z
+created: 2026-09-29T21:14:55Z
+last_update: 2026-09-29T21:21:27Z
+date_finished: 2026-09-29T21:21:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,137 +50,27 @@ date_finished: 2026-09-29T08:52:55Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-29T08:45:11Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=309,acs=10)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-29T08:45:28Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3553: arc demo evidence is never checked until close - add the mechanical leg
+# T-3571: arc closure cards: fix the reviewer's amber findings on T-3552/T-3553 (invisible link, stale 80% wording, unlabelled box, demo text)
 
 ## Context
 
-T-3548 Slice B, and the leg the operator named third:
-
-> *"we also talked about validating if the R goals are achieved. That's a good one.
-> That can be in the recommendation and rationale."*
-
-T-3552 built L3 as **"the anchor Recommendation carries a verdict and a rationale"**
-— prose, written by an agent, asserting the goals were met. G-062 already says that
-is not enough:
-
-> the mandatory question is whether the captured `--demo` artefact shows the
-> `headline_mechanic` firing — not whether substrate / tests / AC checkboxes ship.
-
-**The gap.** `_arc_validate_demo_path` and `_arc_validate_demo_url` (T-1668 §ACD
-Layer B) are real, thorough validators — existence, ≥256 bytes, extension
-allowlist, and traceability to the arc id or one of its member tasks. They run at
-exactly one moment: when the operator types `fw arc close --demo <path>`. **Nothing
-ever checks the `demo_evidence:` an arc already carries.**
-
-So an arc can be surfaced as close-ready with no demo at all, and the first time
-anyone finds out is at the close form. Live right now: `readme-first-run` passes
-L1, L2 and L3 and is one of the two arcs T-3552 surfaces — with
-`demo_evidence: null`. Across 18 in-progress arcs, 11 carry `demo_evidence: null`.
-
-**What this adds.** A fourth leg, L4, evaluated by the SAME validators rather than
-a second opinion: a new `fw arc demo-check <arc>` verb runs the recorded
-`demo_evidence:` through `_arc_validate_demo_path` / `_arc_validate_demo_url`, and
-`lib/arc_close_readiness.py` reports it as a leg.
-
-**L4 does not filter the queue.** Surfacing stays on L1+L2 (T-3552). Like L3, a
-failed L4 surfaces the arc *with the reason attached* — T-2986's lesson: an arc
-that is finished-but-blocked must not look identical to one that is not ready.
-The operator still decides; they just stop finding out at the last step.
-
-**A URL demo is indeterminate, not passing.** Validating it needs the network,
-which surfacing must not depend on. It reports `indeterminate` in its own words and
-does not count toward `ready` — consistent with every other leg built today:
-unproven is not true.
-
-### Result — L4 across all 18 in-progress arcs
-
-**4 valid, 14 record nothing.**
-
-| arc | L4 |
-|---|---|
-| `continuous-run` | VALID — `docs/reports/T-3239-continuous-loop-demo/REPORT.md` |
-| `horizon-axis-hardening` | VALID — `docs/reports/arc-009-demo-evidence.md` |
-| `orchestrator-rethink` | VALID — `docs/reports/orchestrator-rethink-demo/README.md` |
-| `parallel-execution-aef` | VALID — `docs/reports/T-2371-arc-011-wire-evidence-demo.md` |
-| the other 14 | `absent: records no demo_evidence` |
-
-**The gap this closes, concretely.** Both arcs T-3552 surfaces record no demo:
-
-```
-onboarding-shape-detection   L1=True L2=True L3=False L4=False  ready=False
-readme-first-run             L1=True L2=True L3=True  L4=False  ready=False
-```
-
-`readme-first-run` cleared all three earlier legs and read ready. It now reads
-not-ready, for the right reason and before the operator opens the close form.
-
-**A false negative I built and removed.** The first version judged only the first
-token of `demo_evidence:`, and reported `parallel-execution-aef` invalid — its
-entry leads with a `.sh` (not on the allowlist) followed by a `.md` that validates
-cleanly. That is the check being wrong about a real arc: the exact failure the leg
-exists to prevent, rebuilt one level down. Now any candidate may satisfy it, and
-the multi-artefact shape is pinned by a test using that arc's real entry.
+An independent agent reviewer returned AMBER on T-3552 and T-3553 (render checks on the
+/approvals Arc Closure cards), with specific guidance: docs/reports/T-3557-render-review-2026-09-29.md.
+This task applies that guidance. A fresh review then decides whether T-3552/T-3553 close.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `fw arc demo-check <arc>` validates the arc's RECORDED `demo_evidence:` and exits 0 valid / 1 invalid-or-absent / 2 indeterminate
-- [x] It reuses `_arc_validate_demo_path` / `_arc_validate_demo_url` — the rules are not re-implemented anywhere
-- [x] `demo_evidence: null` is reported as ABSENT with its own wording, distinct from "recorded but invalid"
-- [x] A URL demo reports indeterminate (exit 2) without making a network call
-- [x] `lib/arc_close_readiness.py` reports L4 as a leg, and an indeterminate L4 does NOT count as ready
-- [x] CONTROL: an arc with valid, traceable demo evidence passes L4 — without this, a build that fails every arc satisfies the rest
-- [x] L4 does NOT change which arcs `_load_close_ready_arcs` surfaces; the filter stays L1+L2
-- [x] Measured: L4 across all 18 in-progress arcs, recorded in this task
+- [x] `.headline-mechanic-box` uses a light tint instead of the solid primary background, so links inside it (the anchor task link) are legible and the warn stripe reads as a warning
+- [x] No Arc Closure label still describes the old ≥80% rule: section h3, BLOCKED tooltip, stat-tile breakdown, template comment
+- [x] `blocked_reason` carries no raw backticks, so `## Recommendation` is not shown twice in two styles
+- [x] The headline-mechanic box on each card is labelled and styled neutrally, so it no longer reads as a third complaint
+- [x] The L4 "absent" summary reads for an operator: no internal identifiers, ends with a full stop; its unit test is updated and still asserts absent and invalid read differently
+- [x] Watchtower restarted and current; the independent reviewer re-reviews on fresh screenshots (re-review GREEN on both, appended to docs/reports/T-3557-render-review-2026-09-29.md)
+
 ### Human
-
-- [ ] [REVIEW] The demo-evidence line reads right on each Arc Closure card
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`
-  2. Open that URL → `/approvals` → **Arc Closure**.
-  3. Both cards (`onboarding-shape-detection`, `readme-first-run`) should now carry a
-     **Demo evidence:** box with an amber left border, saying the arc records none.
-  4. The section subtitle should read "nothing unestimated (L1) and no high-value work
-     left (L2)…" — it previously said "completion ≥80%", which is no longer the rule.
-
-  **Expected:** on a blocked arc there are now **two** boxes — "Not yet reviewable"
-  (no anchor advisory) and "Demo evidence" — and they should read as two distinct
-  reasons, not as the same complaint twice.
-
-  **If not:** say whether the two boxes should be merged into one "what's missing"
-  block, or whether the demo line belongs inline next to the completion ratio
-  instead. Stacking is my guess, not a considered layout call.
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -189,6 +79,12 @@ the multi-artefact shape is pinned by a test using that arc's real entry.
      If your Expected clause is grep-able / file-exists / structural (a deterministic
      shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
      command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
+
+python3 -m pytest tests/unit/test_t3552_arc_close_readiness.py -q > /tmp/.t3571.out 2>&1 && grep -q passed /tmp/.t3571.out && ! grep -q failed /tmp/.t3571.out
+! grep -q "Arcs ready for review\|Close-ready arcs\|completion threshold" web/templates/_approvals_content.html
+grep -q "color-mix(in srgb, var(--pico-primary) 12%" web/templates/approvals.html
+grep -q "GREEN" docs/reports/T-3557-render-review-2026-09-29.md
+bin/fw watchtower current
      verification genuinely needs human taste (tone, feel, layout rhythm).
      See CLAUDE.md §AC Classification Guidance for the conversion rule.
 
@@ -332,26 +228,6 @@ the multi-artefact shape is pinned by a test using that arc's real entry.
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
-timeout 300 bats tests/unit/t3553_arc_demo_check.bats > /tmp/.t3553.out 2>&1 && ! grep -q "^not ok" /tmp/.t3553.out
-test "$(grep -c '# skip' /tmp/.t3553.out)" -eq 0
-test "$(grep -c '^ok ' /tmp/.t3553.out)" -eq 15
-timeout 300 python3 -m pytest tests/unit/test_t3552_arc_close_readiness.py -q > /tmp/.t3553b.out 2>&1 && grep -q "22 passed" /tmp/.t3553b.out
-bash -n lib/arc.sh
-python3 -c "import ast; ast.parse(open('lib/arc_close_readiness.py').read()); ast.parse(open('web/blueprints/approvals.py').read())"
-# the verb is routed, and delegates rather than restating the rules
-grep -q 'demo-check) arc_demo_check' lib/arc.sh
-bash -c 'body=$(awk "/^arc_demo_check\(\)/,/^}/" lib/arc.sh | grep -v "^[[:space:]]*#"); echo "$body" | grep -q _arc_validate_demo_path && [ "$(echo "$body" | grep -c jsonl)" -eq 0 ]'
-# the surfacing filter is still L1+L2 only — L4 reports, it does not filter
-# BEHAVIOURAL: every surfaced arc passes L1+L2, and at least one surfaced arc FAILS L4 —
-# which is only possible if L4 reports rather than filters. (A string match on the filter
-# expression was the first version here and was too brittle to be worth trusting.)
-PROJECT_ROOT=. python3 -c "import sys; sys.path.insert(0,'.'); from web.blueprints.approvals import _load_close_ready_arcs as f; rows=f(); assert rows, 'nothing surfaced'; assert all(r['readiness']['l1']['passed'] and r['readiness']['l2']['passed'] for r in rows), 'a surfaced arc fails L1/L2'; assert any(not r['readiness']['l4']['passed'] for r in rows), 'no surfaced arc fails L4 — cannot tell reporting from filtering'"
-# fw arc close still gains no readiness gate
-test "$(grep -c 'arc_close_readiness' lib/arc.sh)" -eq 0
-timeout 300 python3 -m pytest tests/unit/test_arc_close_agent_gate.py -q > /tmp/.t3553c.out 2>&1 && grep -q "passed" /tmp/.t3553c.out
-bin/fw watchtower current
-bin/fw vendor self --check
-
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -374,6 +250,14 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on /approvals the anchor-task link inside a "Not yet reviewable" box was invisible; three labels still described the retired ≥80% rule; an unlabelled box read as a third complaint.
+
+**Root cause:** `.headline-mechanic-box` used `--pico-primary-background`, the solid button fill, as a panel background, so links (primary-coloured) matched it. The label drift came from T-3552 changing the predicate and one subtitle, but not every string that described the old one.
+
+**Why structurally allowed:** the render checks were queued for a human who had not got to them, and the only tests of the section assert strings and counts, never legibility. Nobody looked at the page until an independent reviewer did.
+
+**Prevention:** the operator's risk-only review ruling (T-3557) routes render checks to an independent agent reviewer at once, instead of an operator queue. This one caught all of it in minutes. The verification here pins the retired wording's absence and the tint.
 
 ## Evolution
 
@@ -400,38 +284,6 @@ bin/fw vendor self --check
 -->
 
 ## Recommendation
-
-**Recommendation:** GO
-
-**Rationale:** The leg is built, reuses the existing validators rather than forming
-a second opinion, and immediately earned its place: both arcs the queue surfaces
-record no demo evidence, and one of them (`readme-first-run`) had cleared L1, L2 and
-L3 and read *ready*. It now reads not-ready, for the right reason, and before the
-operator opens the close form rather than at it.
-
-What's left for you is layout, not substance: a blocked arc now shows two boxes —
-"Not yet reviewable" (no anchor advisory) and "Demo evidence" — and whether those
-read as two distinct reasons or as the same complaint twice is a taste call.
-Stacking them is my guess, not a considered decision.
-
-**Evidence:**
-- 15 bats + 22 pytest, 0 skips. Controls present in both directions: a valid
-  traceable artefact passes, an untraceable one fails, and an unevaluated L4 is
-  reported as `not-evaluated` rather than defaulting either way.
-- L4 across all 18 in-progress arcs: **4 valid, 14 record nothing**.
-- `fw arc close` gains no gate — `lib/arc.sh` does not reference the readiness
-  predicate at all (verification line 10), and the 10 existing agent-gate tests stay
-  green.
-- L4 reports, it does not filter: verified behaviourally (every surfaced arc passes
-  L1+L2 while at least one fails L4 — impossible if L4 were filtering).
-- Rendered and confirmed live: `curl /approvals` shows the Demo evidence box and the
-  corrected subtitle.
-
-**Correction made during the build:** my first version judged only the first token of
-`demo_evidence:` and called `parallel-execution-aef` invalid — its entry leads with a
-`.sh` (not allowlisted) followed by a `.md` that validates. That is the check being
-wrong about a real arc, which is the failure this leg exists to prevent. Any
-candidate may now satisfy it, pinned by a test using that arc's real entry.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -483,19 +335,19 @@ candidate may now satisfy it, pinned by a test using that arc's real entry.
 
 ## Updates
 
-### 2026-09-29T08:42:50Z — task-created [task-create-agent]
+### 2026-09-29T21:14:55Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3553-arc-demo-evidence-is-never-checked-until.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3571-arc-closure-cards-fix-the-reviewers-ambe.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-146d69e6
-- **Timestamp:** 2026-09-29T08:53:19Z
+- **Scan ID:** R-b4a66361
+- **Timestamp:** 2026-09-29T21:21:29Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 
-### 2026-09-29T08:52:55Z — status-update [task-update-agent]
+### 2026-09-29T21:21:27Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
