@@ -63,9 +63,26 @@ _fw_push_state_branch() {
     git -C "${1:-$PWD}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo ""
 }
 
-# Unpushed commit count against the local remote-tracking ref. No fetch: the
-# ref is updated by our own pushes, which is exactly the question being asked,
-# and handover generation must stay offline (T-3025).
+# Unpushed commit count against the local remote-tracking ref. No fetch:
+# handover generation must stay offline (T-3025), and the ref is updated by our
+# own pushes.
+#
+# T-3550 — THE ONE CASE WHERE THAT REF IS WRONG, and it is this file's own
+# worst case. A push killed by `timeout` (exit 124) can have been ACCEPTED by
+# the remote and still never advance refs/remotes/, because the kill is exactly
+# what prevents local git from writing it. So for `last_failure_kind: killed`
+# this counter reports commits outstanding when nothing is outstanding — it
+# agrees with the false red instead of catching it, and the self-heal below
+# cannot fire for the very failure kind that most needs clearing.
+#
+# This is NOT fixed by adding a fetch here; the offline contract is deliberate
+# and correct. It is fixed at the push site, which is already online:
+# agents/handover/handover.sh resolves exit 124 via `fw_push_resolve_killed`
+# (lib/push-resolve.sh) and REPAIRS the tracking ref when the remote turns out
+# to carry HEAD. That repair is what makes this offline read trustworthy again.
+# Measured origin: handover S-2026-0929-0932, remote c97d39fb1 vs tracking ref
+# 28938d2de. Stated here because a reader of this function would otherwise
+# reasonably conclude the ref is authoritative, which is how the bug survived.
 _fw_push_state_unpushed() {
     local root="$1" branch="$2"
     git -C "$root" rev-parse --verify --quiet "refs/remotes/origin/$branch" >/dev/null 2>&1 || {

@@ -5745,3 +5745,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-569
+  text: "A push killed by `timeout` (exit 124) is recorded as a FAILURE, but its outcome is INDETERMINATE: the timeout bounds the local git process, not the remote transaction. Measured 2026-09-29 on handover S-2026-0929-0932 — origin accepted c97d39fb1 and advanced its ref, then timeout killed local git at 455s (elapsed ~498s) before it could update refs/remotes/ or exit 0. Result: push-state recorded last_failure_kind=killed, the operator was told 'Run git push manually after resolving', and the local tracking ref stayed at 28938d2de — so the standard follow-up check (git rev-list origin/bleeding-edge..HEAD) ALSO read stale and agreed with the false red. T-3063 correctly split killed-vs-refused in the MESSAGE but still routes both to _push_failed=true. Fix: on exit 124 only, resolve against the remote (git ls-remote) before declaring anything — remote-carries-HEAD means the push succeeded. agents/handover/handover.sh:161"
+  captured: 2026-09-29T07:44:36Z
+  context_task: WM-002
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-570
+  text: "tests/unit/handover_push_timeout.bats has 3 tests RED since T-3063/T-3450 and nobody noticed. They grep handover.sh/checkpoint.sh for implementation STRINGS ('timed out after', '${FW_HANDOVER_PUSH_TIMEOUT:-60}', an exact timeout invocation line) rather than asserting behaviour. T-3063 replaced the 'timed out after' wording with KILLED; T-3450 replaced the static :-60 default with a derived timeout. Both were correct changes; the tests pinned the prose and rotted. Verified pre-existing and NOT caused by T-3550: both strings are absent from the COMMITTED handover.sh as well as the working copy. Same family as the sidecar/termlink/log_gate_bypass comment-vs-code traps this session: a check that measures text instead of the behaviour it stands for. Fix is per-test judgement about what each SHOULD assert, so it is not a chore - hence filed, not absorbed into T-3550."
+  captured: 2026-09-29T07:53:03Z
+  context_task: T-3550
+  tags: [bug]
+  status: pending
+  promoted_to: null

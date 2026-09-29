@@ -5008,3 +5008,15 @@ X'` returning empty group."
   task: T-3528
   date: 2026-09-27
   context: Added via context agent
+- id: L-679
+  learning: "A link that can silently dangle is a WEAKER record than no link, because a reader trusts it. From 832-Workflow-designer (their @9), derived independently on their side, and it names the through-line of this whole session: the judge's length threshold, the G-020 gate reading quoted stub text, inception_underdisposed_questions dying under set -e, P-011 returning 0 on an unreachable heading, the outbound sidecar ledger's six green counters saying nothing about anything inbound, and a module header asserting the opposite of its own code. In every case the record LOOKED present and was not, and the looking-present is what stopped anyone checking. Their operational corollary is the useful part: validate a link AT WRITE TIME rather than sweeping for dangles later — they made the carrier field mandatory and validated before the write, and made promote FAIL LOUDLY rather than write a placeholder when it could not read the id back. Applied here the same way: T-3546 makes P-011 say the zero at the moment it happens, rather than adding a sweep that finds unverified closes afterwards."
+  source: P-001
+  task: WM-002
+  date: 2026-09-28
+  context: Added via context agent
+- id: L-680
+  learning: "A timeout bounds the LOCAL PROCESS, never the remote transaction it was driving. 'timeout N git push' exiting 124 means 'we stopped waiting', not 'it did not happen' — the remote may already have accepted the ref. Worse, the obvious way to check AGREES with the wrong answer: the kill is exactly what prevents refs/remotes from advancing, so 'git rev-list origin/BRANCH..HEAD' reports commits outstanding and confirms a failure that did not occur. One stale cache, two agreeing voices, nothing to notice. Only 'git ls-remote' resolves it, because only ls-remote asks the remote. Generalises past git: whenever a bound is placed around work, the exit code of the BOUND is not a verdict on the WORK, and any indeterminate outcome needs a third state with its own words (L-621, L-665, T-2930 OBS-221 exit 75, T-3063 exit 124)."
+  source: P-001
+  task: T-3550
+  date: 2026-09-29
+  context: Added via context agent

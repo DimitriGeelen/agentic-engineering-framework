@@ -159,14 +159,53 @@ _push_to_remotes() {
             # Same distinction T-2930/OBS-221 drew for audit exit 75, applied
             # at the caller that does the bounding.
             if [ "$_exit" -eq 124 ]; then
-                _push_kind="killed"
-                echo -e "  ${YELLOW}WARNING: Push to $remote_name was KILLED at ${_push_timeout}s (${_push_timeout_source}) — the pre-push gate did not finish, so NO verdict was produced (T-3063).${NC}" >&2
-                echo -e "  ${YELLOW}         This is not 'the gate refused you'. Measure it: time bin/fw audit --section structure${NC}" >&2
+                # T-3550: the kill bounded OUR PROCESS, not the remote's
+                # transaction — the remote may already have accepted the ref.
+                # Exit 124 is therefore indeterminate, not failed, and the one
+                # predicate that resolves it is `ls-remote`. Do NOT substitute
+                # `rev-list origin/<b>..HEAD`: the kill is exactly what stops
+                # the tracking ref advancing, so that check agrees with the
+                # wrong answer. See lib/push-resolve.sh.
+                _resolution="indeterminate:not-checked"
+                if [ -f "$FRAMEWORK_ROOT/lib/push-resolve.sh" ]; then
+                    . "$FRAMEWORK_ROOT/lib/push-resolve.sh"
+                    _resolution=$(fw_push_resolve_killed "$PROJECT_ROOT" "$remote_name" 60)
+                fi
+                case "$_resolution" in
+                    landed)
+                        # Not a failure. Saying otherwise sends the operator to
+                        # redo finished work, which is how a real warning gets
+                        # trained into noise.
+                        _push_kind="success"
+                        echo -e "  ${GREEN}Pushed to $remote_name ✓ (local git was killed at ${_push_timeout}s, but the remote had already accepted the ref — resolved via ls-remote, tracking ref repaired)${NC}"
+                        echo -e "  ${YELLOW}NOTE: the push timeout is too tight for this repo — the work landed, but nothing else about this run was verified. Measure it: time bin/fw audit --section structure${NC}" >&2
+                        ;;
+                    not-landed)
+                        _push_kind="killed"
+                        _push_failed=true
+                        echo -e "  ${YELLOW}WARNING: Push to $remote_name was KILLED at ${_push_timeout}s (${_push_timeout_source}) — the pre-push gate did not finish, so NO verdict was produced (T-3063). The remote confirms it does NOT carry HEAD, so nothing landed.${NC}" >&2
+                        echo -e "  ${YELLOW}         This is not 'the gate refused you'. Measure it: time bin/fw audit --section structure${NC}" >&2
+                        ;;
+                    *)
+                        # We could not ask. That is a third state and it gets
+                        # its own words — reporting it as failed would be a
+                        # guess wearing a verdict's clothes.
+                        _push_kind="killed"
+                        _push_failed=true
+                        echo -e "  ${YELLOW}WARNING: Push to $remote_name was KILLED at ${_push_timeout}s (${_push_timeout_source}), and the remote could not be reached to find out whether it landed (${_resolution}).${NC}" >&2
+                        echo -e "  ${YELLOW}         The outcome is UNKNOWN, not failed. Resolve it against the remote, NOT against the local tracking ref:${NC}" >&2
+                        echo -e "  ${YELLOW}           git ls-remote $remote_name refs/heads/\$(git rev-parse --abbrev-ref HEAD)   # compare to: git rev-parse HEAD${NC}" >&2
+                        ;;
+                esac
             else
                 _push_kind="refused"
+                _push_failed=true
                 echo -e "  ${YELLOW}WARNING: Push to $remote_name was REFUSED (exit ${_exit}) — a gate or the remote said no; its message is above.${NC}" >&2
             fi
-            _push_failed=true
+            # T-3550: each branch above now owns this flag. It used to be set
+            # unconditionally here, which is what made exit 124 a failure by
+            # construction — there was no reachable path on which a killed push
+            # could turn out to have worked, so the question was never asked.
         fi
     done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
 
