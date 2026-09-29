@@ -193,6 +193,20 @@ Selection is specified top-down but no objectives artefact exists, so 'anything 
   "absolute tops quick links to the sections which should be anchors". The arc page
   builds that shape first (T-3564); the project objectives page reuses it rather than
   inventing a second layout.
+- IW-3 resolved 2026-09-30. The operator's "002" is the greenfield onboarding seed
+  `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` ("Define goals and
+  architecture"), not a project. Findings:
+  (1) it produces free-form prose in docs/reports/T-002-*.md that nothing reads again,
+  links arcs to, or checks for staleness. That is the same decay as this repo's own
+  001-Vision.md (hand-written "Current State", frozen since 2026-02-14, T-038);
+  (2) the existing-project seed set has NO goals step (its T-002 is "first governed commit");
+  (3) this repo's own T-002 is "create core agents", so the framework never authored objectives.
+  Design consequence: seed T-002 writes the structured objectives file (headline,
+  objectives with a measure, out-of-scope); the existing-project seeds gain the same step;
+  "evergreen" comes from computed progress plus audit rails (arc serving nothing AND
+  stale; objective with no arc serving it), never from re-writing prose; this repo
+  back-fills once (agent draft from directives + 001-Vision.md + arcs, external review,
+  operator sees it once).
 
 ## Decisions
 
