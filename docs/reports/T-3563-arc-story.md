@@ -47,3 +47,65 @@ on "the substrate is in place". It succeeded at that job. It was never designed 
 explain the arc, and nothing else on the arc was either.
 
 External review brief: `T-3563-external-review-brief.md`.
+
+## Agent reflection (written before reading the reviews)
+
+Recorded in chat before any review returned, as an independent fourth view: keep the
+headline mechanic as a separate testable claim; put the story *beside* it; derive the
+story from the anchor inception rather than retyping it; make one written **objective**
+the keystone that drivers, scoring and closure L3 all read (the D-662 BVP judge today
+scores tasks against the arc's `description`/`headline_mechanic`, median 34 words, never
+written for that job); record evolution as short dated lines, not a log; the main risk is
+a mandatory field filled with boilerplate.
+
+## External review — synthesis (three vendors, 2026-09-29)
+
+Verbatim: `T-3563-review-{openai,zai,anthropic}.md`. **Verdicts: amber, amber, amber.**
+All three: the operator's direction is right, implemented with the changes below.
+
+### Unanimous (and matching the agent's reflection)
+
+1. **Keep `headline_mechanic` unchanged,** as the sharp, falsifiable demo claim. Do not
+   expand it into the narrative; that would blunt G-062.
+2. **A written `objective` is the keystone.** Scoped drivers, task scoring and closure L3
+   are all judged against it, and it links upward to the project's objectives.
+3. **A short, hand-written `purpose`:** what the arc is and why it exists.
+4. **Decisions as a curated list,** each with a source link and an active/superseded
+   status: pivots and reversals, not a transcript.
+5. **Index, don't copy.** The arc summarises and links into the anchor inception; it does
+   not absorb it.
+6. **Top risk, all three: boilerplate.** Gate *substance*, not presence: word bounds,
+   links that must resolve, a reviewer check that rejects template or copy-pasted prose.
+
+### Additions worth keeping
+
+- **OpenAI: agent-drafted text must never silently become authoritative intent.**
+  Intent fields (purpose, objective, success criteria) change only with human approval.
+  Derived fields flag drift from their sources; they are never auto-rewritten over
+  approved content. **Pilot before enforcing.**
+- **OpenAI: `success_criteria`** with stable IDs, so L3 assesses each criterion rather
+  than asking "were the goals achieved?" in one breath.
+- **Z.ai: `non_goals`** as an explicit scope boundary; hard word bounds (purpose ≤25,
+  objective ≤40, decisions ≤20 each); `stale_since` set on pivot or scope cut, with
+  re-confirmation required at closure.
+- **Anthropic: `open_questions`** carried from the inception and kept current.
+
+### Converged structure (agent's consolidation)
+
+| field | written by | bound | job |
+|---|---|---|---|
+| `headline_mechanic` | human | unchanged | falsifiable demo claim (G-062, closure L4) |
+| `purpose` | human (agent may draft) | ≤25 words | what and why |
+| `objective` + `supports` | **human-approved** | ≤40 words | the yardstick for drivers, scoring, L3; links to project objectives |
+| `success_criteria` | human-approved | stable IDs | what L3 checks, one by one |
+| `non_goals` | human | short list | the scope boundary |
+| `context` | derived draft, human-approved | 3–6 bullets | background, each bullet linking into the anchor inception |
+| `decisions` | curated | ≤20 words each | status + source link; superseded ones kept, marked |
+| `open_questions` | carried from inception | — | what is still unresolved |
+| `history` | appended | one line per material change, capped | evolution without a log |
+| `evidence` | links | — | research report, dialogue log, design doc, demo |
+
+**Rules:** intent fields change only with human approval; derived fields flag
+staleness and never rewrite approved text; substance gates, not presence gates; the BVP
+judge and closure L3 switch from `description` to `objective`; **pilot on 2–3 arcs
+before any enforcement.**
