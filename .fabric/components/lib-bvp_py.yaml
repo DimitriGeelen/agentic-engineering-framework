@@ -1,0 +1,21 @@
+id: lib/bvp_py.py
+name: bvp_py
+type: script
+subsystem: framework-core
+location: lib/bvp_py.py
+tags: []
+
+purpose: "Importable access to `lib/bvp.sh`'s python body. T-3552."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-29
+created_by: unknown

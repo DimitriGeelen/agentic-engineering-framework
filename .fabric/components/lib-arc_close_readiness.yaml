@@ -1,0 +1,21 @@
+id: lib/arc_close_readiness.py
+name: arc_close_readiness
+type: script
+subsystem: framework-core
+location: lib/arc_close_readiness.py
+tags: []
+
+purpose: "Arc close-readiness: L1 + L2 + L3. T-3552 (T-3548 Slice A)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-29
+created_by: unknown

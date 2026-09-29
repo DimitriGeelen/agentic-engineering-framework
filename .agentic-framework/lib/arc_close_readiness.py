@@ -195,8 +195,9 @@ def _read_fm(path, parse_frontmatter=None) -> dict:
 
 
 def evaluate(open_members: list[tuple[str, dict]], medians: dict,
-             recommendation: dict | None = None, *, framework_root=None) -> dict:
-    """Evaluate L1, L2, L3 for one arc.
+             recommendation: dict | None = None, *, framework_root=None,
+             demo: dict | None = None) -> dict:
+    """Evaluate L1, L2, L3 and (when supplied) L4 for one arc.
 
     `open_members` — (task_id, frontmatter) for members still in .tasks/active/.
     CLOSED members are not passed and never block a leg: closure is a claim about
@@ -204,6 +205,19 @@ def evaluate(open_members: list[tuple[str, dict]], medians: dict,
 
     `recommendation` — {'present': bool, 'verdict': str, 'has_rationale': bool},
     supplied by the caller (see module docstring).
+
+    `demo` — T-3553. {'state': 'valid'|'absent'|'invalid'|'indeterminate',
+    'detail': str}, normally the result of `fw arc demo-check <arc>`. The check
+    lives in shell because `_arc_validate_demo_path` already implements every rule
+    (existence, ≥256 bytes, extension allowlist, traceability to the arc) and a
+    second implementation here would be a second opinion.
+
+    L4 is OPTIONAL and its absence is visible rather than silent: when `demo` is
+    None the leg reports `not-evaluated` and is excluded from `ready`. A caller
+    that wants the full verdict supplies it. Defaulting an unevaluated leg to
+    "pass" would be the false-green this whole arc of work exists to remove;
+    defaulting it to "fail" would make every existing caller report not-ready for
+    a check they never asked for.
     """
     bvp = bvp_py.load(framework_root)
     weights = medians.get("weights") or {}
@@ -280,10 +294,38 @@ def evaluate(open_members: list[tuple[str, dict]], medians: dict,
     else:
         l3 = Leg("L3", True, f"anchor advisory present: {rec.get('verdict')}")
 
+    # ── L4 (T-3553) ─────────────────────────────────────────────────────────
+    state = (demo or {}).get("state") if demo else "not-evaluated"
+    detail = (demo or {}).get("detail", "") if demo else ""
+    if state == "not-evaluated":
+        l4 = Leg("L4", False,
+                 "demo evidence not evaluated — supply `demo=` to include this leg")
+    elif state == "valid":
+        l4 = Leg("L4", True, f"demo evidence present and traceable to this arc: {detail}")
+    elif state == "absent":
+        l4 = Leg("L4", False,
+                 "the arc records no demo_evidence — §ACD asks whether a captured "
+                 "artefact shows the headline_mechanic firing, and that question "
+                 "currently has no subject", [detail] if detail else [])
+    elif state == "indeterminate":
+        l4 = Leg("L4", False,
+                 f"demo evidence is a URL and was not verified here: {detail}. "
+                 "Unproven is not proven; it is checked at close time.")
+    else:
+        l4 = Leg("L4", False,
+                 f"demo evidence is recorded but does not validate: {detail}",
+                 [detail] if detail else [])
+
+    ready = l1.passed and l2.passed and l3.passed
+    if demo is not None:
+        ready = ready and l4.passed
+
     return {
         "l1": l1.as_dict(),
         "l2": l2.as_dict(),
         "l3": l3.as_dict(),
-        "ready": l1.passed and l2.passed and l3.passed,
+        "l4": l4.as_dict(),
+        "l4_evaluated": demo is not None,
+        "ready": ready,
         "open_members": len(open_members),
     }

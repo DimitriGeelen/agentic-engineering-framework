@@ -1,9 +1,8 @@
 ---
-id: T-3552
-name: "arc close-readiness: replace the 80 percent ratio with L1 plus L2 quadrant
-  exhaustion"
+id: T-3553
+name: "arc demo evidence is never checked until close - add the mechanical leg"
 description: >
-  arc close-readiness: replace the 80 percent ratio with L1 plus L2 quadrant exhaustion
+  arc demo evidence is never checked until close - add the mechanical leg
 
 status: work-completed
 workflow_type: build
@@ -38,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-29T08:29:23Z
-last_update: '2026-09-29T08:45:11Z'
-date_finished: 2026-09-29T08:40:00Z
+created: 2026-09-29T08:42:50Z
+last_update: 2026-09-29T08:52:55Z
+date_finished: 2026-09-29T08:52:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,116 +58,128 @@ cost_estimate_proposed:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=418,acs=13)
+      (workflow:build); effort=8 (lines=309,acs=10)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-29T08:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3552: arc close-readiness: replace the 80 percent ratio with L1 plus L2 quadrant exhaustion
+# T-3553: arc demo evidence is never checked until close - add the mechanical leg
 
 ## Context
 
-T-3548 Slice A. The operator's ruling, verbatim:
+T-3548 Slice B, and the leg the operator named third:
 
-> *"the threshold for Arc should not be 80%, it should be no high value, low cost,
-> no high cost items left anymore"* … *"no unestimated tasks, point. And then no
-> high value, no Q1, Q1 and Q2, quadrant 1 and quadrant 2 tasks left. And then we
-> also talked about validating if the R goals are achieved."*
+> *"we also talked about validating if the R goals are achieved. That's a good one.
+> That can be in the recommendation and rationale."*
 
-Three legs:
+T-3552 built L3 as **"the anchor Recommendation carries a verdict and a rationale"**
+— prose, written by an agent, asserting the goals were met. G-062 already says that
+is not enough:
 
-| leg | predicate |
+> the mandatory question is whether the captured `--demo` artefact shows the
+> `headline_mechanic` firing — not whether substrate / tests / AC checkboxes ship.
+
+**The gap.** `_arc_validate_demo_path` and `_arc_validate_demo_url` (T-1668 §ACD
+Layer B) are real, thorough validators — existence, ≥256 bytes, extension
+allowlist, and traceability to the arc id or one of its member tasks. They run at
+exactly one moment: when the operator types `fw arc close --demo <path>`. **Nothing
+ever checks the `demo_evidence:` an arc already carries.**
+
+So an arc can be surfaced as close-ready with no demo at all, and the first time
+anyone finds out is at the close form. Live right now: `readme-first-run` passes
+L1, L2 and L3 and is one of the two arcs T-3552 surfaces — with
+`demo_evidence: null`. Across 18 in-progress arcs, 11 carry `demo_evidence: null`.
+
+**What this adds.** A fourth leg, L4, evaluated by the SAME validators rather than
+a second opinion: a new `fw arc demo-check <arc>` verb runs the recorded
+`demo_evidence:` through `_arc_validate_demo_path` / `_arc_validate_demo_url`, and
+`lib/arc_close_readiness.py` reports it as a leg.
+
+**L4 does not filter the queue.** Surfacing stays on L1+L2 (T-3552). Like L3, a
+failed L4 surfaces the arc *with the reason attached* — T-2986's lesson: an arc
+that is finished-but-blocked must not look identical to one that is not ready.
+The operator still decides; they just stop finding out at the last step.
+
+**A URL demo is indeterminate, not passing.** Validating it needs the network,
+which surfacing must not depend on. It reports `indeterminate` in its own words and
+does not count toward `ready` — consistent with every other leg built today:
+unproven is not true.
+
+### Result — L4 across all 18 in-progress arcs
+
+**4 valid, 14 record nothing.**
+
+| arc | L4 |
 |---|---|
-| **L1** | no unestimated open member — every one carries BOTH a value score and a cost |
-| **L2** | no open member is high-value — neither `hv-lc` (Q1) nor `hv-hc` (Q2) remains |
-| **L3** | the arc's goals are validated in the anchor's Recommendation + Rationale |
+| `continuous-run` | VALID — `docs/reports/T-3239-continuous-loop-demo/REPORT.md` |
+| `horizon-axis-hardening` | VALID — `docs/reports/arc-009-demo-evidence.md` |
+| `orchestrator-rethink` | VALID — `docs/reports/orchestrator-rethink-demo/README.md` |
+| `parallel-execution-aef` | VALID — `docs/reports/T-2371-arc-011-wire-evidence-demo.md` |
+| the other 14 | `absent: records no demo_evidence` |
 
-**What 80% actually measured.** `_load_close_ready_arcs(threshold=0.80)` is a
-*completion ratio* — `completed / total` over constituents. It answers "how much of
-the list is ticked", which is a statement about the list, not about the work. An arc
-at 85% whose remaining 15% is the entire high-value core reads as close-ready; an arc
-at 70% whose remainder is all low-value polish reads as not. Both backwards.
+**The gap this closes, concretely.** Both arcs T-3552 surfaces record no demo:
 
-L1+L2 replace a proxy with the property: closure is about what is *left*, and value
-is what makes leftovers matter.
+```
+onboarding-shape-detection   L1=True L2=True L3=False L4=False  ready=False
+readme-first-run             L1=True L2=True L3=True  L4=False  ready=False
+```
 
-**This is a surfacing heuristic, not the close gate.** `lib/arc.sh:arc_close()` has
-no ratio check and gains none here — `fw arc close` stays agent-refused (T-1671) and
-operator-owned. What changes is which arcs the operator is *shown*, and why.
+`readme-first-run` cleared all three earlier legs and read ready. It now reads
+not-ready, for the right reason and before the operator opens the close form.
 
-**Precondition, now met (T-3551).** L1 was unevaluable until an hour ago: the cost
-sweep excluded partial-complete tasks, which is exactly where `components:` lands, so
-0 of 16 arcs could pass L1. After T-3551's sweep, 7 of 16 pass. A gate that refuses
-everything carries no information — L1 only became worth wiring once it could
-discriminate.
-
-**One predicate, one reader.** The legs live in `lib/arc_close_readiness.py` so
-`/approvals`, `/arcs/<slug>` and `fw review-queue` cannot drift apart. This repo has
-already paid for the alternative: arc membership had five readers and three verdicts
-(OBS-546). Quadrant classification is imported from `lib/bvp.sh`'s own python body
-rather than re-derived, for the same reason.
-
-### Result — measured against the live corpus
-
-Corpus medians over OPEN tasks: value `0.2370` (n=491), cost `3.60` (n=261),
-value axis **not** degenerate (so T-3485's `v-thin` withholding does not fire).
-
-| | arcs surfaced |
-|---|---|
-| old `completion_ratio >= 0.80` | **8** |
-| new L1+L2 | **2** — `onboarding-shape-detection`, `readme-first-run` |
-
-The two the new predicate keeps are the two with **zero open members** — genuinely
-finished. The six it drops are the point:
-
-| arc | ratio | open | high-value open |
-|---|---|---|---|
-| `orchestrator-rethink` | 85% | 18 | **8** |
-| `continuous-run` | 89% | 6 | 3 |
-| `parallel-execution-aef` | 95% | 2 | 2 |
-| `ewcr-arc0-contract-evidence` | 95% | 1 | 1 |
-| `capability-overlay` | 80% | 3 | 1 (and L1 fails — unestimated) |
-| `horizon-axis-hardening` | 80% | 1 | 1 |
-
-Each read "close-ready" on the ratio while its remaining work was the high-value
-part. That is the failure the ratio cannot see, because `completed / total` has no
-term for what kind of thing is left.
-
-Per-leg over all 16 in-progress arcs: **L1 passes 7**, **L2 passes 1**
-(`project-shape-resilience`), **L1+L2 passes 2**. The legs disagree with each
-other, which is what a predicate carrying information looks like.
+**A false negative I built and removed.** The first version judged only the first
+token of `demo_evidence:`, and reported `parallel-execution-aef` invalid — its
+entry leads with a `.sh` (not on the allowlist) followed by a `.md` that validates
+cleanly. That is the check being wrong about a real arc: the exact failure the leg
+exists to prevent, rebuilt one level down. Now any candidate may satisfy it, and
+the multi-artefact shape is pinned by a test using that arc's real entry.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `lib/arc_close_readiness.py` evaluates L1, L2 and L3 as separate, individually-reported legs
-- [x] L1 fails when any OPEN member lacks a value score or a cost, and names the offending task IDs
-- [x] L2 fails when any OPEN member classifies `hv-lc` or `hv-hc`, and names them
-- [x] Quadrant classification is IMPORTED from `lib/bvp.sh`'s python body, never re-implemented
-- [x] CONTROL: an arc whose open members are all low-value and fully estimated passes L1+L2
-- [x] CONTROL: an arc with one unestimated open member fails L1 even when every other leg passes — so a pass cannot be reached by ignoring a leg
-- [x] A CLOSED member never blocks a leg — closure is about what is left, not what was done
-- [x] `_load_close_ready_arcs` surfaces on L1+L2 instead of `completion_ratio >= 0.80`, and the ratio is still reported as information
-- [x] `fw arc close` remains agent-refused and gains no new gate — this task changes what is SURFACED, not what is permitted
-- [x] Measured against the live corpus: which arcs the new predicate surfaces vs the old 80%, recorded in this task
-
+- [x] `fw arc demo-check <arc>` validates the arc's RECORDED `demo_evidence:` and exits 0 valid / 1 invalid-or-absent / 2 indeterminate
+- [x] It reuses `_arc_validate_demo_path` / `_arc_validate_demo_url` — the rules are not re-implemented anywhere
+- [x] `demo_evidence: null` is reported as ABSENT with its own wording, distinct from "recorded but invalid"
+- [x] A URL demo reports indeterminate (exit 2) without making a network call
+- [x] `lib/arc_close_readiness.py` reports L4 as a leg, and an indeterminate L4 does NOT count as ready
+- [x] CONTROL: an arc with valid, traceable demo evidence passes L4 — without this, a build that fails every arc satisfies the rest
+- [x] L4 does NOT change which arcs `_load_close_ready_arcs` surfaces; the filter stays L1+L2
+- [x] Measured: L4 across all 18 in-progress arcs, recorded in this task
 ### Human
 
-- [ ] [REVIEW] The Arc Closure section on `/approvals` reads correctly with the new, much shorter list
+- [ ] [REVIEW] The demo-evidence line reads right on each Arc Closure card
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`
-  2. Open the printed URL, go to `/approvals`, find the **Arc Closure** section.
-  3. It should list **2 arcs** (`onboarding-shape-detection`, `readme-first-run`) where it previously listed 8.
-  4. `onboarding-shape-detection` should render WITHOUT a verdict badge and WITH its blocked reason (its anchor has no `## Recommendation`); `readme-first-run` should show `GO`.
+  2. Open that URL → `/approvals` → **Arc Closure**.
+  3. Both cards (`onboarding-shape-detection`, `readme-first-run`) should now carry a
+     **Demo evidence:** box with an amber left border, saying the arc records none.
+  4. The section subtitle should read "nothing unestimated (L1) and no high-value work
+     left (L2)…" — it previously said "completion ≥80%", which is no longer the rule.
 
-  **Expected:** the section still reads as a queue rather than an error — a
-  near-empty list is the honest answer here (6 of the 8 arcs it used to show still
-  have high-value work open), but you are the judge of whether it *reads* that way
-  or reads as broken.
+  **Expected:** on a blocked arc there are now **two** boxes — "Not yet reviewable"
+  (no anchor advisory) and "Demo evidence" — and they should read as two distinct
+  reasons, not as the same complaint twice.
 
-  **If not:** say which of the two it reads as, and whether the section needs a
-  line explaining why arcs left it. The predicate itself is pinned by
-  `tests/unit/test_t3552_arc_close_readiness.py`; this criterion is only about how
-  the shortened list presents.
+  **If not:** say whether the two boxes should be merged into one "what's missing"
+  block, or whether the demo line belongs inline next to the completion ratio
+  instead. Stacking is my guess, not a considered layout call.
 
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
@@ -321,18 +332,23 @@ other, which is what a predicate carrying information looks like.
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
-timeout 300 python3 -m pytest tests/unit/test_t3552_arc_close_readiness.py -q > /tmp/.t3552.out 2>&1 && grep -q "17 passed" /tmp/.t3552.out
-test "$(grep -c 'failed\|error' /tmp/.t3552.out)" -eq 0
-timeout 300 python3 -m pytest tests/web/test_approvals_blocked_arcs.py tests/unit/test_approvals_expand_overflow.py -q > /tmp/.t3552b.out 2>&1 && grep -q "passed" /tmp/.t3552b.out
-test "$(grep -c 'failed\|error' /tmp/.t3552b.out)" -eq 0
-python3 -c "import ast; ast.parse(open('web/blueprints/approvals.py').read()); ast.parse(open('lib/arc_close_readiness.py').read()); ast.parse(open('lib/bvp_py.py').read())"
-# the quadrant classifier is IMPORTED, never re-implemented (OBS-546 class)
-test "$(grep -c 'def quadrant' lib/arc_close_readiness.py)" -eq 0
-grep -q 'bvp.quadrant(' lib/arc_close_readiness.py
-# the ratio is no longer the predicate
-grep -q '_arc_readiness_legs' web/blueprints/approvals.py
-# fw arc close gains NO new gate — this task changes what is surfaced, not what is permitted
-test "$(grep -c 'arc_close_readiness\|_arc_readiness_legs' lib/arc.sh)" -eq 0
+timeout 300 bats tests/unit/t3553_arc_demo_check.bats > /tmp/.t3553.out 2>&1 && ! grep -q "^not ok" /tmp/.t3553.out
+test "$(grep -c '# skip' /tmp/.t3553.out)" -eq 0
+test "$(grep -c '^ok ' /tmp/.t3553.out)" -eq 15
+timeout 300 python3 -m pytest tests/unit/test_t3552_arc_close_readiness.py -q > /tmp/.t3553b.out 2>&1 && grep -q "22 passed" /tmp/.t3553b.out
+bash -n lib/arc.sh
+python3 -c "import ast; ast.parse(open('lib/arc_close_readiness.py').read()); ast.parse(open('web/blueprints/approvals.py').read())"
+# the verb is routed, and delegates rather than restating the rules
+grep -q 'demo-check) arc_demo_check' lib/arc.sh
+bash -c 'body=$(awk "/^arc_demo_check\(\)/,/^}/" lib/arc.sh | grep -v "^[[:space:]]*#"); echo "$body" | grep -q _arc_validate_demo_path && [ "$(echo "$body" | grep -c jsonl)" -eq 0 ]'
+# the surfacing filter is still L1+L2 only — L4 reports, it does not filter
+# BEHAVIOURAL: every surfaced arc passes L1+L2, and at least one surfaced arc FAILS L4 —
+# which is only possible if L4 reports rather than filters. (A string match on the filter
+# expression was the first version here and was too brittle to be worth trusting.)
+PROJECT_ROOT=. python3 -c "import sys; sys.path.insert(0,'.'); from web.blueprints.approvals import _load_close_ready_arcs as f; rows=f(); assert rows, 'nothing surfaced'; assert all(r['readiness']['l1']['passed'] and r['readiness']['l2']['passed'] for r in rows), 'a surfaced arc fails L1/L2'; assert any(not r['readiness']['l4']['passed'] for r in rows), 'no surfaced arc fails L4 — cannot tell reporting from filtering'"
+# fw arc close still gains no readiness gate
+test "$(grep -c 'arc_close_readiness' lib/arc.sh)" -eq 0
+timeout 300 python3 -m pytest tests/unit/test_arc_close_agent_gate.py -q > /tmp/.t3553c.out 2>&1 && grep -q "passed" /tmp/.t3553c.out
 bin/fw watchtower current
 bin/fw vendor self --check
 
@@ -387,32 +403,35 @@ bin/fw vendor self --check
 
 **Recommendation:** GO
 
-**Rationale:** The predicate is built, pinned and measured, and the one thing left
-is a judgement I cannot make for you: whether a two-row Arc Closure section *reads*
-as a queue or as a breakage. The substance is settled — 6 of the 8 arcs the 80%
-ratio called close-ready still have high-value work open, and the two that remain
-are the two with zero open members. What I can't tell from here is whether the
-operator opening `/approvals` tomorrow will read the short list as "good, almost
-nothing is actually ready" or as "the page is broken". That is a render judgement,
-which is why it stayed a `[REVIEW]` rather than being routed to the reviewer.
+**Rationale:** The leg is built, reuses the existing validators rather than forming
+a second opinion, and immediately earned its place: both arcs the queue surfaces
+record no demo evidence, and one of them (`readme-first-run`) had cleared L1, L2 and
+L3 and read *ready*. It now reads not-ready, for the right reason, and before the
+operator opens the close form rather than at it.
 
-Nothing here permits a closure that was not permitted before: `fw arc close` is
-still agent-refused (T-1671), still operator-owned, and gained no new gate —
-verification line 9 asserts `lib/arc.sh` does not import the predicate at all.
+What's left for you is layout, not substance: a blocked arc now shows two boxes —
+"Not yet reviewable" (no anchor advisory) and "Demo evidence" — and whether those
+read as two distinct reasons or as the same complaint twice is a taste call.
+Stacking them is my guess, not a considered decision.
 
 **Evidence:**
-- 17 tests, 0 skips, both controls present; the unmeasured-remainder guard verified
-  RED against a deliberately broken build (L2 passing when nothing is classifiable).
-- Old vs new on the live corpus: 8 arcs surfaced → 2; per-leg L1 passes 7, L2 passes
-  1, so the legs disagree with each other rather than moving together.
-- `orchestrator-rethink`: 85% complete, 18 open members, **8 of them Q1/Q2** — the
-  clearest single instance of what the ratio could not see.
-- Quadrant classification imported from `lib/bvp.sh` via the new `lib/bvp_py.py`,
-  never re-derived; pinned by a test that fails if anyone writes a local `quadrant`.
-- The population difference from `fw bvp` (this includes partial-complete, the
-  ranking excludes it) is documented in the module docstring rather than left to be
-  discovered — 134 of 152 open arc members are partial-complete, so on the ranking's
-  population L2 would pass every arc by never looking.
+- 15 bats + 22 pytest, 0 skips. Controls present in both directions: a valid
+  traceable artefact passes, an untraceable one fails, and an unevaluated L4 is
+  reported as `not-evaluated` rather than defaulting either way.
+- L4 across all 18 in-progress arcs: **4 valid, 14 record nothing**.
+- `fw arc close` gains no gate — `lib/arc.sh` does not reference the readiness
+  predicate at all (verification line 10), and the 10 existing agent-gate tests stay
+  green.
+- L4 reports, it does not filter: verified behaviourally (every surfaced arc passes
+  L1+L2 while at least one fails L4 — impossible if L4 were filtering).
+- Rendered and confirmed live: `curl /approvals` shows the Demo evidence box and the
+  corrected subtitle.
+
+**Correction made during the build:** my first version judged only the first token of
+`demo_evidence:` and called `parallel-execution-aef` invalid — its entry leads with a
+`.sh` (not allowlisted) followed by a `.md` that validates. That is the check being
+wrong about a real arc, which is the failure this leg exists to prevent. Any
+candidate may now satisfy it, pinned by a test using that arc's real entry.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -464,19 +483,19 @@ verification line 9 asserts `lib/arc.sh` does not import the predicate at all.
 
 ## Updates
 
-### 2026-09-29T08:29:23Z — task-created [task-create-agent]
+### 2026-09-29T08:42:50Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3552-arc-close-readiness-replace-the-80-perce.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3553-arc-demo-evidence-is-never-checked-until.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ee640f77
-- **Timestamp:** 2026-09-29T08:40:41Z
+- **Scan ID:** R-146d69e6
+- **Timestamp:** 2026-09-29T08:53:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 
-### 2026-09-29T08:40:00Z — status-update [task-update-agent]
+### 2026-09-29T08:52:55Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

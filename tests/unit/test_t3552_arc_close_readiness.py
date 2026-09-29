@@ -226,3 +226,65 @@ def test_bvp_py_loader_raises_rather_than_exporting_an_empty_module():
         assert "bvp.sh" in str(e)
     else:
         raise AssertionError("expected a RuntimeError naming the cause")
+
+
+# ═══════════════════ L4: demo evidence (T-3553, Slice B) ═════════════════════
+#
+# L3 asks whether the anchor's Recommendation asserts the goals were met — prose,
+# written by an agent. G-062 says that is not enough: the mandatory question is
+# whether a captured artefact shows the headline_mechanic firing. L4 is that
+# question, answered by `fw arc demo-check` (which reuses lib/arc.sh's validators
+# rather than forming a second opinion).
+
+
+def test_l4_control_valid_demo_passes_and_arc_is_ready():
+    """CONTROL. Without it, 'fail every arc' satisfies every other L4 test —
+    and 14 of 18 live arcs DO fail L4, which is the shape a broken check hides in."""
+    r = acr.evaluate([("T-1", _fm(1, 1))], MEDIANS, GOOD_REC,
+                     demo={"state": "valid", "detail": "docs/reports/x.md"})
+    assert r["l4"]["passed"], r["l4"]["summary"]
+    assert r["ready"] is True
+
+
+def test_l4_absent_blocks_readiness_even_when_l1_l2_l3_all_pass():
+    """The exact live gap: readme-first-run cleared L1+L2+L3 with demo_evidence: null."""
+    r = acr.evaluate([("T-1", _fm(1, 1))], MEDIANS, GOOD_REC,
+                     demo={"state": "absent", "detail": "records no demo_evidence"})
+    assert r["l1"]["passed"] and r["l2"]["passed"] and r["l3"]["passed"]
+    assert not r["l4"]["passed"]
+    assert r["ready"] is False
+
+
+def test_l4_indeterminate_is_not_a_pass():
+    """A URL cannot be judged offline. Unproven is not proven — the same line
+    T-3550 drew for a killed push."""
+    r = acr.evaluate([("T-1", _fm(1, 1))], MEDIANS, GOOD_REC,
+                     demo={"state": "indeterminate", "detail": "https://example/x"})
+    assert not r["l4"]["passed"]
+    assert r["ready"] is False
+
+
+def test_l4_invalid_is_worded_differently_from_absent():
+    """'recorded but does not validate' and 'nothing recorded' are different
+    problems with different fixes, and must not read the same."""
+    absent = acr.evaluate([], MEDIANS, GOOD_REC,
+                          demo={"state": "absent", "detail": ""})["l4"]["summary"]
+    invalid = acr.evaluate([], MEDIANS, GOOD_REC,
+                           demo={"state": "invalid", "detail": "too small"})["l4"]["summary"]
+    assert absent != invalid
+    assert "no demo_evidence" in absent
+    assert "does not validate" in invalid
+
+
+def test_l4_omitted_is_reported_as_not_evaluated_and_excluded_from_ready():
+    """Backwards compatibility with a visible seam.
+
+    Defaulting an unevaluated leg to pass would be the false-green this work
+    exists to remove; defaulting it to fail would make every pre-T-3553 caller
+    report not-ready for a check it never asked for. So it is excluded from
+    `ready` AND said out loud.
+    """
+    r = acr.evaluate([("T-1", _fm(1, 1))], MEDIANS, GOOD_REC)
+    assert r["l4_evaluated"] is False
+    assert "not evaluated" in r["l4"]["summary"]
+    assert r["ready"] is True  # three-leg verdict, unchanged

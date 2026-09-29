@@ -269,7 +269,10 @@
 <h2 id="section-arc-closure" class="approvals-group-heading">Arc Closure</h2>
 <div class="section-header">
     <h3>Arcs ready for review</h3>
-    <small>{{ arc_close_count }} arc{{ '' if arc_close_count == 1 else 's' }} — completion ≥80% with agent <code>## Recommendation</code> on anchor</small>
+    {# T-3552: the subtitle described the OLD predicate (completion ≥80%). An arc
+       list whose caption names a threshold it no longer uses teaches the reader a
+       rule the code does not follow. #}
+    <small>{{ arc_close_count }} arc{{ '' if arc_close_count == 1 else 's' }} — nothing unestimated (L1) and no high-value work left (L2); demo evidence and anchor advisory shown per arc</small>
 </div>
 {% for a in arcs_close_ready %}
 <div class="approval-card arc-closure" data-arc-slug="{{ a.slug }}" data-verdict="{{ a.verdict }}">
@@ -341,6 +344,19 @@
         (<code>## Recommendation</code> — verdict, rationale, evidence), then this arc
         becomes reviewable here.
         {% endif %}
+    </div>
+    {% endif %}
+    {# T-3553 (T-3548 Slice B): demo evidence, stated HERE rather than discovered at
+       the close form. §ACD/G-062's mandatory question is whether a captured artefact
+       shows the headline_mechanic firing; `fw arc demo-check` answers it from the
+       arc's recorded demo_evidence:. Computing that and not showing it would be the
+       measure-it-and-report-it-nowhere shape this slice exists to remove. #}
+    {% if a.readiness and a.readiness.l4_evaluated %}
+    {% set _l4 = a.readiness.l4 %}
+    <div class="headline-mechanic-box"
+         style="border-left-color:{{ 'var(--wt-success)' if _l4.passed else 'var(--wt-warn)' }};">
+        <strong>Demo evidence:</strong>
+        {% if _l4.passed %}present and traceable to this arc.{% else %}{{ _l4.summary }}{% endif %}
     </div>
     {% endif %}
     {% if a.headline_mechanic %}

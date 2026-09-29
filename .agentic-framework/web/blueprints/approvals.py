@@ -616,7 +616,7 @@ def _arc_readiness_legs(arc: dict, constituents) -> dict | None:
             open_members.append((tid, _acr._read_fm(matches[0])))
 
         rec = _anchor(arc) or {}
-        return _acr.evaluate(
+        legs = _acr.evaluate(
             open_members,
             _READINESS_MEDIANS,
             {
@@ -625,8 +625,59 @@ def _arc_readiness_legs(arc: dict, constituents) -> dict | None:
                 "has_rationale": True,  # `_anchor_recommendation` has no rationale probe
             },
         )
+
+        # T-3553: L4 costs a subprocess, so it runs only for arcs that already
+        # cleared L1+L2 — the set the operator is actually being offered. Adding
+        # it for all 18 in-progress arcs would put 18 `fw arc demo-check` calls on
+        # every /approvals render to answer a question about 2 of them.
+        if legs["l1"]["passed"] and legs["l2"]["passed"]:
+            demo = _arc_demo_state(arc)
+            legs = _acr.evaluate(
+                open_members,
+                _READINESS_MEDIANS,
+                {
+                    "present": bool(rec.get("present")),
+                    "verdict": rec.get("verdict", ""),
+                    "has_rationale": True,
+                },
+                demo=demo,
+            )
+        return legs
     except Exception:
         return None
+
+
+def _arc_demo_state(arc: dict) -> dict:
+    """Run `fw arc demo-check` for one arc. T-3553.
+
+    Shells out on purpose. `_arc_validate_demo_path` (lib/arc.sh) already encodes
+    every rule — existence, minimum size, extension allowlist, traceability to the
+    arc or one of its member tasks — and re-expressing those in python would be a
+    second opinion about the same question. The exit code carries the three states
+    a boolean would flatten.
+    """
+    import subprocess
+
+    slug = str(arc.get("slug") or arc.get("id") or "").strip()
+    if not slug:
+        return {"state": "absent", "detail": "arc has no slug or id"}
+    fw = Path(__file__).resolve().parents[2] / "bin" / "fw"
+    try:
+        p = subprocess.run([str(fw), "arc", "demo-check", slug],
+                           capture_output=True, text=True, timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        # Could not ask. Not the same as "no demo" — say so.
+        return {"state": "indeterminate", "detail": "demo-check could not be run"}
+
+    out = ((p.stdout or "") + (p.stderr or "")).strip().splitlines()
+    first = out[0] if out else ""
+    if p.returncode == 0:
+        return {"state": "valid", "detail": first.replace("valid: ", "", 1)}
+    if p.returncode == 2:
+        return {"state": "indeterminate", "detail": first}
+    if first.startswith("absent:"):
+        return {"state": "absent", "detail": first}
+    return {"state": "invalid", "detail": first}
 
 
 def _load_decided_unclosed():

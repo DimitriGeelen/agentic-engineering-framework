@@ -1205,6 +1205,96 @@ EOF
 #   agent runs `fw arc review <slug>` → emits clickable URL + QR → human opens
 #   /arcs/<slug>/close (T-1911/T-1902) → submits via the §ACD-exempt
 #   `--from-watchtower` path which the Flask backend invokes.
+# T-3553 (T-3548 Slice B) — check the demo evidence an arc ALREADY carries.
+#
+# `_arc_validate_demo_path` / `_arc_validate_demo_url` are thorough and have run at
+# exactly one moment since T-1668: when the operator types `fw arc close --demo
+# <path>`. Nothing ever looked at the `demo_evidence:` already recorded on the arc.
+# So an arc could be surfaced close-ready with no demo at all and the first anyone
+# heard of it was the close form — live at the time of writing, `readme-first-run`
+# passed L1+L2+L3 with `demo_evidence: null`, and 11 of 18 in-progress arcs carry
+# null.
+#
+# This verb is a READER. It validates, it never writes, and it never closes
+# anything. The §ACD gates on `fw arc close` are untouched.
+#
+# Exit codes are the contract, because the caller must be able to tell three things
+# apart that a boolean would flatten:
+#   0  valid        — recorded, present, ≥256 bytes, allowlisted, traceable to this arc
+#   1  invalid      — recorded but fails a rule, OR nothing recorded at all
+#   2  indeterminate— a URL, which cannot be judged without the network
+#
+# `indeterminate` is deliberately NOT `valid`. Surfacing must not depend on a
+# network call, and "we could not check" is a different sentence from "it checks
+# out" — the same distinction T-3550 drew for a killed push an hour ago.
+arc_demo_check() {
+    local id="${1:-}"
+    [ -n "$id" ] || { echo "Usage: fw arc demo-check <arc-id-or-slug>" >&2; return 2; }
+    id="$(_arc_normalize_input "$id")"
+    _arc_validate_id "$id" || return 2
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+
+    local arc_path demo
+    arc_path="$(_arc_path "$id")"
+    # Take the value up to the first ` #` comment — several arcs carry a long
+    # trailing rationale after the path (continuous-run's is a paragraph).
+    demo=$(awk -F'demo_evidence:[[:space:]]*' '/^demo_evidence:[[:space:]]*/ {print $2; exit}' "$arc_path")
+    demo="${demo%%  #*}"
+    demo="$(printf '%s' "$demo" | sed -e 's/^[[:space:]"]*//' -e 's/[[:space:]"]*$//')"
+
+    if [ -z "$demo" ] || [ "$demo" = "null" ] || [ "$demo" = "~" ]; then
+        echo "absent: arc '$id' records no demo_evidence." >&2
+        echo "  §ACD (G-062): closure asks whether a captured artefact shows the" >&2
+        echo "  headline_mechanic firing. With nothing recorded, that question has" >&2
+        echo "  no subject — 'substrate is in place' is not an answer to it." >&2
+        return 1
+    fi
+
+    case "$demo" in
+        http://*|https://*)
+            echo "indeterminate: demo_evidence is a URL ($demo)." >&2
+            echo "  Validating it needs the network, which this check does not use." >&2
+            echo "  Verify at close time: bin/fw arc close $id --demo '$demo'" >&2
+            return 2 ;;
+    esac
+
+    # Multi-artefact entries are recorded by hand on several arcs, e.g.
+    # `parallel-execution-aef`: "agents/.../single-host-parallel-demo.sh (T-2341,
+    # exit 0) + docs/reports/T-2371-arc-011-wire-evidence-demo.md".
+    #
+    # PASS IF ANY CANDIDATE VALIDATES. G-062 asks whether a captured artefact
+    # shows the headline_mechanic firing — one that does is enough, and the
+    # sentence does not get less true because a second path was listed beside it.
+    #
+    # Judging only the first token was the first thing I wrote here, and it
+    # reported `parallel-execution-aef` invalid: its leading token is a `.sh`,
+    # which is not on the evidence allowlist, while the `.md` next to it passes
+    # cleanly. That is the check being wrong about a real arc — exactly the false
+    # negative this leg exists to remove, rebuilt one level down.
+    local cand rc_last=1
+    for cand in $(printf '%s' "$demo" | tr '+,' '  '); do
+        case "$cand" in
+            \(*|*\)|exit|[0-9]*) continue ;;   # prose fragments like "(T-2341," / "0)"
+        esac
+        case "$cand" in
+            */*|*.*) ;;                        # only things shaped like a path
+            *) continue ;;
+        esac
+        if _arc_validate_demo_path "$cand" "$id" "$arc_path" 2>/dev/null; then
+            echo "valid: $cand"
+            return 0
+        fi
+        rc_last=1
+    done
+
+    # Nothing validated — re-run the first candidate WITHOUT suppressing stderr so
+    # the caller sees a real reason rather than a bare exit code.
+    local first
+    first=$(printf '%s' "$demo" | tr '+,' '  ' | awk '{print $1}')
+    _arc_validate_demo_path "$first" "$id" "$arc_path"
+    return "${rc_last:-1}"
+}
+
 arc_review() {
     local id="${1:-}"
     [ -n "$id" ] || { echo "Usage: fw arc review <arc-id-or-slug>" >&2; return 2; }
@@ -1279,6 +1369,7 @@ arc_dispatch() {
         tag)     arc_tag     "$@";;
         close)   arc_close   "$@";;
         review)  arc_review  "$@";;                     # T-1962
+        demo-check) arc_demo_check "$@";;               # T-3553 (T-3548 Slice B)
         abandon) arc_abandon "$@";;
         migrate) arc_migrate "$@";;
         approve-driver)   arc_approve_driver   "$@";;   # T-1926 (arc-006)
