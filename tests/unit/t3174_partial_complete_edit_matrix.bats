@@ -157,3 +157,29 @@ _run_hook_write() {
     [[ "$output" =~ "will NOT" ]]
     [[ "$output" =~ "no outgoing edge" ]]
 }
+
+# -- T-3570: the override as an AGENT actually types it -----------------------
+# The AC5 tests above set the variable on the HOOK process. An agent cannot:
+# its Bash call reaches the hook as a command STRING, so the block message's
+# own advice ("FW_ALLOW_PARTIAL_COMPLETE_EDIT=1 <command>") was inert while
+# those tests stayed green. These drive the hook exactly as the agent's call does.
+
+@test "T-3570: command-string prefix is honoured on a Bash write (the advertised route)" {
+    _focus_on T-1100
+    run _run_hook_bash "FW_ALLOW_PARTIAL_COMPLETE_EDIT=1 bin/fw task update T-1100 --status work-completed"
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "FW_ALLOW_PARTIAL_COMPLETE_EDIT" ]]
+    grep -q "flag: 'FW_ALLOW_PARTIAL_COMPLETE_EDIT'" "$TEST_TEMP_DIR/.context/working/.gate-bypass-log.yaml"
+}
+
+@test "T-3570 control: the same Bash write WITHOUT the prefix stays blocked" {
+    _focus_on T-1100
+    run _run_hook_bash "bin/fw task update T-1100 --status work-completed"
+    [ "$status" -eq 2 ]
+}
+
+@test "T-3570 control: the token merely MENTIONED inside an argument does not authorise" {
+    _focus_on T-1100
+    run _run_hook_bash "echo 'xFW_ALLOW_PARTIAL_COMPLETE_EDIT=1' > lib/some_source.sh"
+    [ "$status" -eq 2 ]
+}
