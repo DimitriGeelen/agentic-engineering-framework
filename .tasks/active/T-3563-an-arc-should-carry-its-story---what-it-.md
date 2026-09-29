@@ -167,7 +167,32 @@ inceptions with a research report in `docs/reports/`; **1** arc sets `design_doc
 
 **Recommendation:** GO
 
-**Rationale:** Operator 2026-09-29: far more emphasis on the arc headline — what it is, background, research, decisions, back-and-forth, the context fabric built in inceptions. Measured: 19 of 20 arcs have an anchor task, 14 anchors are inceptions with a research report in docs/reports, yet only 1 arc links a design_doc and 1 records a decision. The story exists one hop away and the arc never surfaces it. The headline_mechanic (median 46 words) is a demo check, not a description. External review by three vendors requested before design.
+**Rationale:** The structure is settled and the pilot worked. Three vendors (amber ×3)
+agreed on the fields, and the operator adopted them, with external review rather than the
+operator approving drafted intent. On three real arcs, isolated workers drafted every field
+from the anchor inception with 112 citations, all of which resolve. An independent reviewer
+checked every citation, found nothing invented, and caught three real faults that were
+then corrected: a success criterion claiming a paused capability was live, an objective
+that dropped the arc's primary outcome, and a miscounted membership. That is the review
+catching what matters rather than rubber-stamping. A peer project (055) independently
+asked for the same thing, built it, and showed the arc page has never rendered
+`headline_mechanic` (verified here: 0 occurrences in `arc_detail.html`).
+
+**Evidence:**
+- Research and dialogue: `docs/reports/T-3563-arc-story.md`
+- Structure review: `docs/reports/T-3563-review-{openai,zai,anthropic}.md`
+- Pilot drafts and fit review: `docs/reports/T-3563-pilot-*.yaml`, `T-3563-pilot-review-brief.md`
+- Applied: `.context/arcs/{continuous-run,readme-first-run,orchestrator-rethink}.yaml`
+
+**What a GO authorises, as three build tasks:**
+1. **Roll the fields out** to the remaining arcs by the same draft-then-external-review
+   pipeline, and switch the BVP judge (D-662) and closure L3 from `description` to
+   `objective`.
+2. **The arc dossier** (055's proposal): long-form document per arc, decision trail and
+   research library assembled from member tasks, the operator's dialogue captured as it
+   happens, and a rot test that fails when a member task or research path goes missing.
+3. **The Purpose block first on the arc page:** headline, purpose, objective, drivers,
+   dossier. A render surface, so it carries a `[REVIEW]`.
 
 ## Decisions
 
