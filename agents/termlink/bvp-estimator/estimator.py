@@ -3581,6 +3581,27 @@ def _cost_proposed_is_stale(fm: dict, stale_hours: int) -> bool:
         return True
 
 
+def _cost_sweep_in_scope(fm: dict, task_path: Path, statuses: list[str]) -> bool:
+    """T-3551. Is this task in the cost sweep's population?
+
+    Two ways in, and the second is why this is a function rather than an `in`:
+
+      1. status ∈ statuses          — the original scope (captured, started-work)
+      2. partial-complete           — status `work-completed` AND the file is still
+                                      under `.tasks/active/`
+
+    (2) cannot be written as a status, because `work-completed` names two different
+    situations that share one word: a task awaiting Human-criterion verification in
+    `active/`, and a task archived in `completed/`. The first is open work carrying
+    freshly-resolved `components:`; the second is finished. Only the directory
+    separates them, so the directory is part of the predicate.
+    """
+    status = fm.get("status")
+    if status in statuses:
+        return True
+    return status == "work-completed" and task_path.parent.name == "active"
+
+
 def cmd_cost_sweep(stale_hours: int = 24,
                    statuses: list[str] | None = None,
                    cron: bool = False) -> int:
@@ -3589,6 +3610,22 @@ def cmd_cost_sweep(stale_hours: int = 24,
     Scope: tasks with status ∈ statuses AND (no `cost_estimate:` OR
     `cost_estimate_proposed:` is stale/missing OR `unscored: true`).
     Sovereignty: never overwrites confirmed `cost_estimate:`.
+
+    T-3551 — PLUS partial-complete, which the status list alone cannot express.
+    `components:` is resolved at the `work-completed` transition, and this scope
+    stopped at `work-completed`, so the cost input arrived exactly when the sweep
+    stopped asking for it. Measured: 50 active tasks carried `components:` and a
+    `blast_radius: null` proposal, and every one of the 50 was `work-completed`.
+    The sweep had been running every 15 minutes throughout — it was never idle, it
+    was looking at a population that excluded the data.
+
+    A `work-completed` task still in `.tasks/active/` is partial-complete: agent
+    criteria done, Human criteria outstanding. It is open work, and arc
+    close-readiness L1 ("no unestimated tasks") governs it. Archived tasks under
+    `completed/` stay out — they are not remaining work, and re-scoring 3,040 files
+    every 15 minutes would churn the corpus for a decision nobody is making.
+
+    Hence the predicate is (status, directory), not status alone.
     """
     if statuses is None:
         statuses = ["started-work", "captured"]
@@ -3602,7 +3639,7 @@ def cmd_cost_sweep(stale_hours: int = 24,
     for tp in task_files:
         try:
             fm, _ = parse_task(tp)
-            if fm.get("status") not in statuses:
+            if not _cost_sweep_in_scope(fm, tp, statuses):
                 continue
             if fm.get("cost_estimate"):
                 # Confirmed score exists — leave it alone (sovereignty).
