@@ -5806,3 +5806,10 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-577
+  text: "832-Workflow-designer consult @11 (2026-09-29, arrived via the fixed sidecar-inbox hook; from_agent null, identity in body only): owner:human is enforced as a sovereignty claim even when no Human acceptance criterion is open, so such tasks can never close and fw task delegate cannot help (it converts criteria, never the owner field). 832 measured 45 of 112 human-owned tasks stale; their operator ruled 'owner: human is a sovereignty claim only while a Human AC is actually open'; they built a predicate, gate arm, attended-only corrector and audit detector in their vendored copy and offer it upstream, with four asks (a-d). SAME DEFECT HIT HERE TODAY: T-3562, promoted from OBS-575 with owner:human by default, finished with all Agent criteria ticked and zero Human criteria, refused 'Cannot complete human-owned task'; 'fw task delegate T-3562 --dry-run' reported 'converted 0, left human 0, owner: human (unchanged)'. Aligns with our operator's T-3557 direction (human for risk only). Also: their corpus-wide surface scan drops ticked criteria, so all-ticked tasks are invisible to check_delegation_surface. Needs a reply to 832 and a decision on adoption."
+  captured: 2026-09-29T17:45:55Z
+  context_task: T-3563
+  tags: [bug]
+  status: pending
+  promoted_to: null

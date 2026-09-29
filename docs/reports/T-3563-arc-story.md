@@ -162,3 +162,18 @@ proposal, not an instruction; claims verified against our code where cheap:
 **Consequence for scope.** T-3563's build is three parts, not one: (a) the arc fields from
 the three-vendor review, now being piloted; (b) the dossier plus the anti-rot test; (c) the
 arc page's Purpose block. Part (c) is a render surface.
+
+## Operator's target, 2026-09-29: 055's arc-007 page
+
+Operator, verbatim: *"http://192.168.10.107:3050/arcs/arc-007 look at this this how i want
+it to be"*. Page structure, extracted 2026-09-29 (top to bottom): **Purpose** (h2:
+headline as a blockquote; approved drivers table: driver, weight, what it means and how
+it is measured) → **Dossier** (`<details>`, ten sections: 1 Headline and goal · 2 Background
+· 3 Value drivers and gates · 4 Scope · 5 Decision trail [when, decision, record,
+evidence] · 6 Research library [artifact, question it answers, round, reviews] · 7 Operator
+dialogue log · 8 Open questions · 9 Milestones and tasks · 10 Closing the arc) → then BVP
+signals, scoped-driver management, reports and evidence, constituent tasks, ACD check.
+
+This settles part (c) of the build: the target is 055's layout. Our pilot fields already
+supply sections 1, 2, 4, 5 and 8. Missing: the research library (6), the operator dialogue
+log (7), and the page itself.
