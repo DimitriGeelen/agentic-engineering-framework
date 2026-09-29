@@ -145,9 +145,9 @@ would have patched the layer this inception removes. So A is not built as scoped
   rationale: Operator 2026-09-29, segment 3 — "the reviewer is not a creator or producer. That is our principle." Independence is a LADDER, not one floor: same agent with another lens, another TermLink agent, TermLink dispatch, a different model from the same vendor, a different vendor, an external agent via OpenRouter, several external agents. The rung is chosen by the impact-risk model (IW-7). This supersedes D-662 item 5's "panel deferred": the panel is now designed in as the top rungs, bought when impact warrants it.
 
 - **IW-7: What is the impact-risk model that picks the review rung?**
-  confidence: 1
-  disposition:
-  rationale: Operator 2026-09-29, segment 3 — "we need to have an impact risk model." Impact has two sides: the risk materialising, AND the value the change is meant to bring, so closing something as done without delivering it is itself a risk. The model sets how much to spend on the review, because external review costs money. Agent note: most inputs already exist per task — BVP value, blast_radius, tier, effort, inception voi_score and IW confidence. But the value axis is coarse (5 vectors cover 69% of 494 tasks), so a model leaning on value alone would barely separate tasks. Needs a design and a spend ceiling.
+  confidence: 2
+  disposition: answered
+  rationale: Operator 2026-09-29, segment 3 — "we need to have an impact risk model." Impact has two sides: the risk materialising, AND the value the change is meant to bring, so closing something as done without delivering it is itself a risk. The model sets how much to spend on the review, because external review costs money. Agent note: most inputs already exist per task — BVP value, blast_radius, tier, effort, inception voi_score and IW confidence. But the value axis is coarse (5 vectors cover 69% of 494 tasks), so a model leaning on value alone would barely separate tasks. Needs a design and a spend ceiling. ANSWERED 2026-09-30: two questions (must a human decide = hard gate; else impact = max(cost_if_wrong, value_at_stake) picks the rung), inputs all existing, weekly spend ceiling that degrades one rung and says so. Design: docs/reports/T-3557-agent-reviewer-default.md §IW-7.
 
 - **IW-4: What happens to the ~350 open Human criteria already on the operator's desk?**
   confidence: 2

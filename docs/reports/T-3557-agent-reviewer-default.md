@@ -182,3 +182,46 @@ Read as assent to each proposal. For IW-4, that is the one-off sweep of all open
 Human criteria (the answer the agent had suggested); the reading was stated back to
 the operator in chat as reversible. IW-7 (the impact-risk model) is the one question
 left, and it is answered by design work, not by a ruling.
+
+## IW-7: the impact-risk model (proposal, 2026-09-30)
+
+**The operator's frame:** impact has two sides. One is the risk materialising. The other
+is the value the change is meant to bring, because closing something as done without
+delivering it is itself a risk. The model sets how much review to buy, and external
+review costs money.
+
+**Two questions per criterion, answered from data the framework already holds.**
+
+1. **Must a human decide?** This is a hard gate, not a score. It applies to Tier 0,
+   irreversible external acts (publish, deploy, pay, credentials, privileged infra),
+   sovereignty fields and project direction. When it applies, the reviewer's job is to
+   *recognise* it and escalate, with what the human should look at. Nothing on this
+   list is bought down by more review.
+2. **Otherwise, how independent must the reviewer be?** This is set by
+   `impact = max(cost_if_wrong, value_at_stake)`:
+
+| Input | Where it already lives | High when |
+|---|---|---|
+| reversibility | git-only change vs anything leaving the repo | anything not undone by `git revert` |
+| blast radius | `cost_estimate.blast_radius`, `components:` | ≥5 components, or a consumer-install path (`lib/`, `agents/`, `bin/fw`, `web/`, seeds, `fw upgrade`) |
+| audience | vendored surface, other projects | reaches consumer projects or peers |
+| value at stake | BVP_norm, inception `voi_score`, arc objective | high-BVP work, `voi_score ≥ 0.6`, project objectives |
+| uncertainty | inception IW confidence, reviewer's own confidence | confidence ≤1 on a question the change depends on |
+
+| Impact | Rung (from the operator's independence ladder) | Measured today |
+|---|---|---|
+| low: reversible, internal, blast ≤2 | 1–2: an independent agent of the same vendor, not the producer | 5 render checks (T-3544/3552/3553/3571/3564). The reviewer found 2 real defects the producer missed. |
+| medium: consumer-facing code, blast 3–5, or an inception GO | 3–4: a different model, or TermLink dispatch, with one reviewer | — |
+| high: project objectives, security, cross-project, `voi ≥ 0.6` | 5–7: a panel of 3 vendors | project objectives (T-3535). All three returned amber, and they split on 3 mappings, which went to the operator. |
+
+**Spend ceiling.** Every external call is logged with its rung and cost. A weekly
+ceiling is set as a config key. When the ceiling is reached, work drops one rung *and
+says so* in the verdict ("reviewed at rung 2, ceiling reached; rung 5 was due"). It
+never silently skips review.
+
+**Why this does not lean on value alone.** The value axis is coarse: 5 vectors cover 69%
+of 494 tasks (IW-7 note). So `max()` lets reversibility, blast radius and audience carry
+the decision when value does not separate tasks.
+
+**Proposed disposition:** answered, confidence 2. Every input exists already; the
+thresholds are first guesses to calibrate against the first month of logged verdicts.
