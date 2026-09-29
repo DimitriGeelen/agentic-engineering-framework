@@ -80,14 +80,14 @@ inceptions with a research report in `docs/reports/`; **1** arc sets `design_doc
 ## Open Questions
 
 - **IW-1: What must an arc carry so that it explains itself?**
-  confidence: 1
-  disposition:
-  rationale: Pending three-vendor external review (operator request) and operator dialogue.
+  confidence: 3
+  disposition: answered
+  rationale: Converged structure from three-vendor review (amber x3) plus agent reflection, adopted by operator 2026-09-29 ("I'm fine with it") — headline_mechanic unchanged; purpose, objective+supports, success_criteria, non_goals, context, decisions, open_questions, history, evidence. See docs/reports/T-3563-arc-story.md.
 
 - **IW-2: Is the arc story derived from the inception fabric, written by hand, or both?**
-  confidence: 1
-  disposition:
-  rationale: Pending review; A-1 suggests derivation is possible for 14 of 20 arcs.
+  confidence: 3
+  disposition: answered
+  rationale: Both, by operator ruling 2026-09-29 segment 2: an agent drafts from the anchor inception (index, don't copy), an independent external panel that never includes the drafter checks it against the sources, and the operator is shown the result non-blocking and may correct it. Replaces the reviewers' "human approval for intent fields".
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh

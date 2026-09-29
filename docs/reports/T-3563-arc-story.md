@@ -109,3 +109,19 @@ All three: the operator's direction is right, implemented with the changes below
 staleness and never rewrite approved text; substance gates, not presence gates; the BVP
 judge and closure L3 switch from `description` to `objective`; **pilot on 2–3 arcs
 before any enforcement.**
+
+## Dialogue Log — segment 2 (operator, verbatim)
+
+> I'm fine with it, but I don't want everything to land on the human operator. Then get
+> external consultation to get it fitted context-wise. Good context, right? You can show
+> it to me, but it doesn't have to be too much friction. You need to be able to continue
+> independently. Show it to me if I cannot respond. Proceed progress can always correct.
+
+**Decision recorded:** the converged structure is adopted. The reviewers' rule "intent
+fields change only with human approval" is replaced, by operator ruling, with
+**external-review approval**: an agent drafts, an independent external panel (never the
+drafter) checks the draft against its sources, and the operator is shown the result
+non-blocking and may correct it afterwards. This is T-3557's principle applied to arcs:
+the human for risk, independent agent review for the rest.
+
+**Pilot:** `continuous-run`, `readme-first-run`, `orchestrator-rethink`.
