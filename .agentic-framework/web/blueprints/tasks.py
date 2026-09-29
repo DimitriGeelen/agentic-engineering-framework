@@ -657,6 +657,10 @@ def _build_active_filter_chips(active: dict, view: str) -> list[dict]:
     return chips
 
 
+# T-3575: cards shown per non-final board column before the "+N more" list link.
+BOARD_COLUMN_CAP = 20
+
+
 @bp.route("/tasks")
 def tasks():
     # T-1233: Use cached task metadata (avoids re-reading 1200+ files per request)
@@ -757,6 +761,7 @@ def tasks():
         active_filter_chips=active_filter_chips,
         page_title="Tasks",
         tasks=all_tasks,
+        board_column_cap=BOARD_COLUMN_CAP,
         statuses=statuses,
         types=types,
         components=components,
