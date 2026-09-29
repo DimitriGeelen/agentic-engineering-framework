@@ -5774,3 +5774,10 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-573
+  text: "The budget-critical auto-handover (agents/context/checkpoint.sh:275) wraps the WHOLE handover in FW_HANDOVER_TOTAL_TIMEOUT, default 60s. The push inside it is bounded at 398s, derived by T-3450 from the measured pre-push gate cost (structure section 273s). The outer bound is smaller than the gate the inner push must pass, so an auto-handover that pushes is killed at 60s before its push can finish - at exactly the moment a session is dying and unpushed commits matter most. T-3450 raised the inner bound and never touched the outer one. Because the OUTER timeout kills handover.sh itself, T-3550's killed-push resolution never runs either, so the outcome is not even recorded. Arithmetic from measured values, not a reproduction - a budget-critical auto-handover was not triggered to confirm it. The guard that should have caught this, tests/unit/handover_push_timeout.bats test 4 (T-1277 belt-and-braces), went red for an unrelated wording reason (checkpoint.sh now invokes 'bash handover.sh') and nobody noticed; test 8 still pins the outer default at 60, i.e. it asserts the bug. Fix direction: derive the outer bound from the inner one (inner + generation headroom) rather than asserting either."
+  captured: 2026-09-29T09:54:01Z
+  context_task: WM-002
+  tags: [bug]
+  status: pending
+  promoted_to: null
