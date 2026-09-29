@@ -117,3 +117,87 @@ matches its `from_circuit`.
 3. **Correct the record with 832 and 010-termlink:** the five-level model is not
    superseded; answer 832's readout request, including the trust-vs-routing
    question. (IW-3)
+
+## External review — synthesis (2026-09-29)
+
+Three reviewers, three vendors, run independently on
+`T-3558-external-review-brief.md`. Verbatim reviews:
+`T-3558-review-openai.md`, `T-3558-review-zai.md`, `T-3558-review-anthropic.md`.
+Independence caveat: the Anthropic reviewer (Sonnet 5) shares the builder's vendor.
+
+**Verdicts: amber, amber, amber.** Sound direction; not to proceed as written.
+
+### Where all three agree
+
+| # | finding | OpenAI | Z.ai | Anthropic |
+|---|---|---|---|---|
+| 1 | **Consumption is the real failure, and the proposal does nothing for it.** Each named this as its TOP RISK. | ✓ | ✓ | ✓ |
+| 2 | Consumption can be fixed now, with no TermLink change | ✓ | ✓ | ✓ |
+| 3 | The routing/trust split is right as architecture | ✓ | ✓ | ✓ |
+| 4 | Anchor identity at the **project** rung; session/agent are claims or delegations under it | ✓ | ✓ | ✓ |
+| 5 | "Optional" hub verification is not acceptable; verification must be mandatory where trust is decided | ✓ | ✓ | ✓ |
+| 6 | Routing is not privacy: hub topics are readable by anyone on the hub | ✓ | ✓ | ✓ |
+| 7 | Replay protection is missing | ✓ | ✓ | ✓ |
+| 8 | Key lifecycle (issuance, rotation, revocation) is missing | ✓ | ✓ | ✓ |
+| 9 | One normative, machine-checked spec, so ruling text and code cannot drift again (F-2) | ✓ | ✓ | ✓ |
+| 10 | Migrating off the shared `dm:` topic needs a deprecation/watch window | ✓ | ✓ | ✓ |
+
+The consensus on #1 is the headline. The agent flagged consumption as question 5
+of the brief, but the agent's own proposal contained nothing for it. It led with
+addressing, which is the part that was easier to reason about. All three reviewers
+say the priority is the reverse.
+
+### The one real disagreement: `dm:`
+
+- **Demote** (OpenAI, Z.ai). Z.ai's decisive argument: pairwise topics do not compose
+  with the fallback ladder, since a coarse-level recipient cannot watch a topic named
+  by a fine-level pair. Add n² sprawl and no multi-party story.
+- **Re-key per project** (Anthropic). Its argument: a rule where the same conversation
+  uses a different prefix depending on whether two projects share a host is
+  topology-dependent, and prose rules like that are what produced F-2.
+
+**Resolution proposed:** demote (2 of 3, and the ladder argument is structural).
+Answer Anthropic's objection with finding #9: the rule is enforced by one shared,
+machine-checked definition, not by prose, so there is nothing to misread.
+
+### Points only one reviewer raised, each worth keeping
+
+- **OpenAI: separate key files under one OS user are not a security boundary.** If
+  co-resident projects run as the same user (they do here: root), each can read the
+  others' keys. Per-project keys then give *attribution between cooperating agents*,
+  not protection against a malicious one. Real isolation needs separate OS principals
+  or a credential broker. **This bounds what the trust half can ever promise on a
+  single host, and it is the operator's call how far to go.**
+- **OpenAI:** delivered ≠ accepted ≠ completed. A transport receipt must never be read
+  as "the agent acted". Fallback must not silently *widen* who can read an
+  agent-private message.
+- **Z.ai:** make reading mail a **framework gate**: no task opens or closes across
+  unread mail addressed to this project. This is AEF's own enforcement pattern
+  ("nothing gets done without a task"), applied to consumption.
+- **Z.ai:** don't wait on TermLink for trust. Sign with the existing per-project key
+  now and verify recipient-side against fingerprints exchanged out of band.
+- **Z.ai:** peer mail that requests *action* must enter AEF's task and Tier-0 path,
+  never act as a side channel around the human.
+- **Z.ai:** answer 832 now: `from_circuit` is routing-only and untrusted until
+  verification ships. Peers may already be trusting it.
+- **Anthropic:** ship a synthetic canary with a response deadline, so the next silent
+  consumption gap is caught automatically, not by a human noticing.
+
+### Revised proposal (agent, after review)
+
+1. **Consumption first, ours, no TermLink change:** a mail-read gate at session start
+   and task boundaries (project-level inbox at minimum); ack-on-receipt with
+   escalate-on-silence; delivered / accepted / completed as separate states; a canary
+   with a deadline. Unanswered or refused mail feeds the T-3555 ledger.
+2. **Routing:** `inbox:<circuit-id>` with the ladder; `dm:` demoted by policy; one
+   machine-checked address spec that both AEF and peers import; migration with a watch
+   window on the shared topic; D-660 amended.
+3. **Trust, in two honest stages:** (a) now, sign with the per-project key and verify
+   recipient-side, mandatory, stated plainly as *attribution between cooperating
+   agents*; (b) real isolation needs OS-level separation or a broker, which is the
+   operator's decision. Replay protection, key lifecycle and confidentiality belong to
+   the trust design, not to later.
+4. **TermLink proposal, theirs to decide:** named identities, deterministic `whoami`
+   (ambiguity is an error, never "no mailboxes"), topic ACLs or end-to-end encryption.
+5. **Tell 832 and 010-termlink now:** the five-level model stands, and `from_circuit`
+   is routing-only and untrusted until verification ships.
