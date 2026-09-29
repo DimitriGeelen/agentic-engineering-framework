@@ -244,3 +244,72 @@ working" has a plain answer: it was designed and ratified, and then it was not b
 Round 2 (`T-3558-external-review-brief-round2.md`) puts D-645, the built-versus-designed
 gap, the operator's lifecycle with proposed state names, and round 1's findings to the
 same three reviewers.
+
+## External review ROUND 2 — synthesis (2026-09-29)
+
+Same three reviewers, fresh sessions, input `T-3558-external-review-brief-round2.md`.
+Verbatim: `T-3558-review2-openai.md`, `T-3558-review2-zai.md`,
+`T-3558-review2-anthropic.md`. **Verdicts: amber, amber, amber.**
+
+### Unanimous
+
+| # | finding |
+|---|---|
+| 1 | **D-645 is the right direction.** It is the first proposal in either round that attacks consumption with mechanism rather than agent discipline: two confirmations split "retry" from "escalate", store-then-inject makes durability independent of the agent. |
+| 2 | **Push and gate are complementary.** Push gives timeliness; the gate *audits the push* by reading the lifecycle store (anything past its deadline), not the mailbox. The gate **forces a decision** (accept / decline / defer), never the work, or any peer can block a project by sending mail. |
+| 3 | **Injection security cannot rest on framing.** Injection grants *attention*, never *authority*: a peer request can at most become a task proposal through AEF's approval path. Authenticated callers only; an unknown sender is quarantined, stored and surfaced, never injected. Safety must not depend on the model behaving. |
+| 4 | **"Consumed" is the wrong word.** Keep HANDED_OVER (OpenAI prefers PRESENTED, and accepts HANDED_OVER if narrowly defined). |
+| 5 | **Missing:** idempotency (a stable message id, dedup at store), a deadline with a named owner for every non-terminal state, and states for failure paths. |
+| 6 | **Readiness comes from the runtime, not a sidecar guess.** v1: inject at a safe boundary, never mid-tool-call. |
+| 7 | **Cadence:** event-driven on receipt, plus a periodic reconciliation sweep whose own heartbeat is monitored. |
+| 8 | **Why designs stall:** the audit counts a mention as a build (OBS-575). Ratification must create the slice tasks, "built" must mean verified evidence, and a stalled ratified decision must escalate like an unanswered message. |
+| 9 | **First slice is vertical,** between two real agent sessions, proven by a run-time nonce whose transformed value must come back in the reply; the receiving session is not told a message is coming; negative controls must fail (disable injection, kill the receiver, never-ready runtime). |
+
+### Top risks, and they are one risk
+
+- OpenAI: *counting a successful enqueue as consumption, recreating the silent failure behind more convincing receipts.*
+- Z.ai: *the health machinery lying again — RECEIVED set, HANDED_OVER never arriving, while the ledger reads green.*
+- Anthropic: *the design is ratified a second time and still not built, because the audit that treats "mentioned" as "built" is not fixed.*
+
+All three are the same failure: **a proxy counted as the property.** That is the
+pattern this session has found at every layer, from the P-011 gate to the push timeout
+to the delegation regex, and now in both halves of consumption.
+
+### Additions per reviewer, worth keeping
+
+- **OpenAI — the runtime adapter is the decisive unspecified component.** HTTP push to a
+  sidecar does not reach the agent. Something must insert content at a safe boundary,
+  *wake an idle agent*, and record which model invocation received it. "A prompt queue
+  can become another unread inbox."
+- **OpenAI:** model the lifecycle as layers (delivery, presentation, disposition,
+  response, monitoring) over an append-only event log, not one linear chain;
+  at-least-once delivery with idempotent handling, never an exactly-once promise.
+- **Z.ai:** *"internal states may fail a test but never pass one; only externally
+  observable behaviour passes."* Add sender-side `UNDELIVERABLE`. `ESCALATED` is set by
+  infrastructure on deadline, never by the party it exists to catch. If the hub stays as a
+  fallback carrier, confirm semantics must be identical across carriers. Rename
+  `INJECTED_NOW` to `HUB_ACCEPTED` or delete it.
+- **Anthropic:** a `REJECTED`/quarantine state for messages that fail authentication; a
+  first-contact sender stops at `RECEIVED` until a trust decision is made; a missed-tick
+  alarm, so a dead tick is loud.
+
+### F-6 — The runtime adapter already existed, and was broken (found while checking OpenAI's point)
+
+The only runtime adapter today is the `UserPromptSubmit` hook
+`agents/context/sidecar-inbox.sh` (T-3407). It fires only when a human types, so it
+cannot wake an idle agent. **And since 2026-09-24 it surfaced nothing:** T-3442 wrapped
+the producer's output as `{"consults": [...]}`, the hook still required a list, and it
+exited 0 silently. The hook's own suite faked the producer with the old shape and stayed
+green. That is why the 7 consults were never seen while the operator talked to the agent.
+**Fixed and closed as T-3559**, with a contract test that runs the real producer into the
+real hook (verified RED against the pre-fix hook).
+
+So the answer to "why does consumption still not work" has two layers, both measured:
+1. **Design:** D-645 was ratified and slice 1 was never built (OBS-575).
+2. **Adapter:** the one adapter that did exist was silently broken for five days
+   (T-3559, now fixed).
+
+Waking an **idle** agent remains unsolved by any existing hook. The candidate already in
+the system is TermLink's PTY injection into a TermLink-registered session, which is one
+reason the Session Launch Policy requires `claude-fw --termlink`. This session is not
+TermLink-registered, and so could not have been woken.
