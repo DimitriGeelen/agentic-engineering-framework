@@ -106,12 +106,12 @@ can quickly click through it." So, relative to 055's layout:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The very first element under the arc title is a quick-link bar with one in-page `href="#…"` link per rendered section, and every link's target id exists on the page (test asserts both directions: no dead link, no unlinked section)
-- [ ] A Purpose block (purpose + objective) follows the quick links; it renders from the T-3563 story fields and is omitted cleanly (no empty box) on arcs without them
-- [ ] A task overview sits directly after Purpose: counts by status plus the open tasks listed with links, before any BVP or report section; the full constituent table remains lower down with its own anchor
-- [ ] The story sections render when present (success criteria, context, decisions with status, open questions, non-goals, history, evidence), each with a stable anchor id; absent fields produce no heading
-- [ ] Existing sections (BVP signals, scoped drivers, reports & evidence, constituent tasks, §ACD check, closed) keep working and each gets an anchor in the quick-link bar
-- [ ] Web tests cover an arc with story fields (continuous-run) and one without; `bin/fw watchtower current` passes after restart
+- [x] The very first element under the arc title is a quick-link bar with one in-page `href="#…"` link per rendered section, and every link's target id exists on the page (test asserts both directions: no dead link, no unlinked section)
+- [x] A Purpose block (purpose + objective) follows the quick links; it renders from the T-3563 story fields and is omitted cleanly (no empty box) on arcs without them
+- [x] A task overview sits directly after Purpose: counts by status plus the open tasks listed with links, before any BVP or report section; the full constituent table remains lower down with its own anchor
+- [x] The story sections render when present (success criteria, context, decisions with status, open questions, non-goals, history, evidence), each with a stable anchor id; absent fields produce no heading
+- [x] Existing sections (BVP signals, scoped drivers, reports & evidence, constituent tasks, §ACD check, closed) keep working and each gets an anchor in the quick-link bar
+- [x] Web tests cover an arc with story fields (continuous-run) and one without; `bin/fw watchtower current` passes after restart
 - [ ] Render review by an independent agent reviewer on live screenshots, compared against 055's arc-007 and the operator additions above (operator ruling, T-3557 IW-1)
 
 ### Human
@@ -272,6 +272,10 @@ can quickly click through it." So, relative to 055's layout:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+python3 -m pytest tests/web/test_t3564_arc_page_layout.py -q > /tmp/.t3564.out 2>&1 && grep -q passed /tmp/.t3564.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 

@@ -35,6 +35,14 @@
     .focus-dot.on { background: var(--pico-primary); }
     .focus-dot.off { background: transparent; border: 1px solid var(--pico-muted-color); }
     .focus-dot-btn:hover .focus-dot { box-shadow: 0 0 0 2px var(--pico-primary-focus, rgba(0,127,255,0.3)); }
+    /* T-3564: quick links + purpose + task overview */
+    .arc-quicklinks { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin: 0.4rem 0 0.8rem 0; padding: 0.4rem 0.7rem; font-size: 0.9rem; background: var(--pico-card-sectioning-background-color); border-radius: 4px; }
+    .arc-quicklinks a { white-space: nowrap; }
+    .arc-purpose { padding: 0.8rem 1rem; border-left: 4px solid var(--pico-primary); background: var(--pico-card-background-color); margin: 1rem 0; }
+    .arc-purpose p { margin: 0.3rem 0; }
+    .arc-src { font-size: 0.8em; color: var(--pico-muted-color); }
+    .arc-story li { margin-bottom: 0.5rem; }
+    section[id] { scroll-margin-top: 1rem; }
 </style>
 
 <p><a href="/arcs">← All arcs</a></p>
@@ -56,6 +64,9 @@
               onclick="startArcH1Edit(this, '{{ arc_slug }}')">{{ arc.get('name', arc_id) }}</span>
         {% if focused %}<span class="focus-pill">FOCUSED</span>{% endif %}
     </h1>
+    <nav class="arc-quicklinks" aria-label="Arc sections">
+        {% for sec in sections %}<a href="#{{ sec.id }}">{{ sec.title }}</a>{% endfor %}
+    </nav>
     <p class="muted">id: <code>{{ arc_id }}</code></p>
     {% if arc.get('description') %}<p>{{ arc.description }}</p>{% endif %}
     <p>
@@ -69,6 +80,17 @@
     </p>
 </article>
 
+{# ── T-3564: purpose, task overview, story sections ── #}
+{% if 'purpose' in section_ids %}
+<section id="purpose" class="arc-purpose">
+    <h2>Purpose</h2>
+    {% if story.purpose %}<p>{{ story.purpose }}</p>{% endif %}
+    {% if story.objective %}<p><strong>Objective:</strong> {{ story.objective }}</p>{% endif %}
+</section>
+{% endif %}
+
+<section id="task-overview">
+    <h2>Task overview</h2>
 <div class="stats-strip">
     <div class="stat-box">
         <div class="v">{{ stats.completed }} / {{ stats.total }}</div>
@@ -87,6 +109,94 @@
         <div class="l">Audit detective (G-062 / T-1656)</div>
     </div>
 </div>
+    {% if task_overview.total %}
+    <p>
+        {% for label, n in task_overview.counts %}<span class="badge {% if label == 'done' %}badge-ok{% elif label == 'started-work' %}badge-info{% elif label == 'issues' %}badge-warn{% else %}badge-muted{% endif %}">{{ n }} {{ label }}</span> {% endfor %}
+    </p>
+    {% if task_overview.open_tasks %}
+    <p class="muted" style="margin-bottom: 0.2rem;">Open tasks ({{ task_overview.open_tasks|length }}):</p>
+    <ul>
+        {% for c in task_overview.open_tasks %}
+        <li><a href="/tasks/{{ c.id }}">{{ c.id }}</a> {{ c.name }} <small class="muted">· {{ c.status }}</small></li>
+        {% endfor %}
+    </ul>
+    {% else %}<p class="muted">No open tasks.</p>{% endif %}
+    {% else %}<p class="muted">No constituent tasks yet.</p>{% endif %}
+    <p><small><a href="#constituent-tasks">Full task table ↓</a></small></p>
+</section>
+
+{% if 'success-criteria' in section_ids %}
+<section id="success-criteria" class="arc-story">
+    <h2>Success criteria</h2>
+    <ul>
+        {% for r in story.success_criteria %}
+        <li>{% if r.id %}<strong>{{ r.id }}</strong> {% endif %}{{ r.text }}
+            {% if r.evidence %}<br><small class="muted">Evidence: {{ r.evidence }}</small>{% endif %}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if 'context' in section_ids %}
+<section id="context" class="arc-story">
+    <h2>Context</h2>
+    <ul>
+        {% for r in story.context %}<li>{{ r.text }}{% if r.source_ref.text %} <span class="arc-src">— {% if r.source_ref.href %}<a href="{{ r.source_ref.href }}">{{ r.source_ref.text }}</a>{% else %}<code>{{ r.source_ref.text }}</code>{% endif %}</span>{% endif %}</li>{% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if 'decisions' in section_ids %}
+<section id="decisions" class="arc-story">
+    <h2>Decisions</h2>
+    <ul>
+        {% for r in story.decisions %}
+        <li>{{ r.text }}
+            {% if r.status %}<span class="badge {% if r.status == 'active' %}badge-ok{% else %}badge-muted{% endif %}">{{ r.status }}</span>{% endif %}
+            {% if r.date %}<small class="muted">{{ r.date }}</small>{% endif %}{% if r.source_ref.text %} <span class="arc-src">— {% if r.source_ref.href %}<a href="{{ r.source_ref.href }}">{{ r.source_ref.text }}</a>{% else %}<code>{{ r.source_ref.text }}</code>{% endif %}</span>{% endif %}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if 'open-questions' in section_ids %}
+<section id="open-questions" class="arc-story">
+    <h2>Open questions</h2>
+    <ul>
+        {% for r in story.open_questions %}<li>{{ r.text }}{% if r.source_ref.text %} <span class="arc-src">— {% if r.source_ref.href %}<a href="{{ r.source_ref.href }}">{{ r.source_ref.text }}</a>{% else %}<code>{{ r.source_ref.text }}</code>{% endif %}</span>{% endif %}</li>{% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if 'non-goals' in section_ids %}
+<section id="non-goals" class="arc-story">
+    <h2>Non-goals</h2>
+    <ul>
+        {% for r in story.non_goals %}<li>{{ r.text }}</li>{% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if 'history' in section_ids %}
+<section id="history" class="arc-story">
+    <h2>History</h2>
+    <ul>
+        {% for r in story.history %}<li>{% if r.date %}<strong>{{ r.date }}</strong> — {% endif %}{{ r.text }}{% if r.source_ref.text %} <span class="arc-src">— {% if r.source_ref.href %}<a href="{{ r.source_ref.href }}">{{ r.source_ref.text }}</a>{% else %}<code>{{ r.source_ref.text }}</code>{% endif %}</span>{% endif %}</li>{% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% if 'evidence' in section_ids %}
+<section id="evidence" class="arc-story">
+    <h2>Evidence</h2>
+    <ul>
+        {% for r in story.evidence %}
+        <li>{{ r.label }}: {% if r.ref.href %}<a href="{{ r.ref.href }}">{{ r.value }}</a>{% else %}<code>{{ r.value }}</code>{% endif %}</li>
+        {% endfor %}
+    </ul>
+    {% if story.story_review %}<p class="muted"><small>{{ story.story_review }}</small></p>{% endif %}
+</section>
+{% endif %}
 
 {% if has_specialized_view %}
 <p><strong>Specialized view available:</strong> <a href="/orchestrator">→ /orchestrator</a> (MCP audit, live sessions, recent dispatches).</p>
@@ -374,15 +484,17 @@
 {% endif %}
 
 {% if reports %}
-<h2>Reports &amp; evidence</h2>
+<section id="reports"><h2>Reports &amp; evidence</h2>
 <p class="muted">Arc-keyed reports under <code>docs/reports/{{ arc_id }}-*.md</code>:</p>
 <ul>
     {% for r in reports %}
     <li><a href="/file/{{ r.path }}"><code>{{ r.name }}</code></a></li>
     {% endfor %}
 </ul>
+</section>
 {% endif %}
 
+<section id="constituent-tasks">
 <h2>Constituent tasks{% if constituents %} <small class="muted" style="font-weight:normal;">({{ constituents|length }})</small>{% endif %}</h2>
 {% if constituents %}
 <p class="muted"><small>BVP_norm = score weighted by drivers / max-possible, [0,1]. BVP_raw = unscaled sum. Cost = composite F8. Italic + <code>*</code> = estimator-proposed (not yet human-confirmed). <code>—</code> = no score data yet. Numbers match <a href="/bvp">/bvp</a> scatter (same compute helpers). [T-1978]</small></p>
@@ -442,8 +554,10 @@
 {% else %}
 <p class="muted">No constituent tasks. Tag tasks with <code>arc:{{ arc_id }}</code> or run <code>fw arc tag {{ arc_id }} T-XXXX</code>.</p>
 {% endif %}
+</section>
 
 {% if arc.status != 'closed' %}
+<section id="completion-check">
 <h2>§Arc Completion Discipline — three-question check</h2>
 <p class="muted">Per CLAUDE.md, before declaring this arc shipped, you MUST be able to answer all three with concrete evidence — not by argument:</p>
 <div class="completion-check">
@@ -490,9 +604,12 @@
 {% if arc.demo_evidence %}
 <p class="muted"><small><strong>Latest demo on file:</strong> <code>{{ arc.demo_evidence }}</code> — preserved across any aborted close attempts.</small></p>
 {% endif %}
+</section>
 {% else %}
+<section id="arc-closed">
 <h2>Arc closed</h2>
 <p>Decision: <strong>{{ arc.decision or 'unspecified' }}</strong>{% if arc.closed_at %} · {{ arc.closed_at }}{% endif %}</p>
+</section>
 {% endif %}
 
 <script>
