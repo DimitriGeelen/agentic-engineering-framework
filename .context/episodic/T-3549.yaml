@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3549: RCA: inceptions keep reaching the operator with undisposed Open Questions — the readiness check warns instead of refusing, and an agent narrates past a warning
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T07:31:19Z
+# ============================================================================
+
+task_id: T-3549
+task_name: "RCA: inceptions keep reaching the operator with undisposed Open Questions — the readiness check warns instead of refusing, and an agent narrates past a warning"
+workflow_type: refactor
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T07:18:43Z
+completed: 2026-09-29T07:30:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-29T09:30:23+02:00
+last_commit: 2026-09-29T09:30:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  an inception handoff is REFUSED when the decision it invites would be
+
+# Key outcomes
+outcomes:
+  - 'Blast radius measured and recorded in `## RCA`: how many inceptions in `active/` and'
+  - '**One** readiness predicate for inception handoff exists, covering every known requirement'
+  - '`fw task review` REFUSES to emit a handoff for an inception that fails it, naming each'
+  - 'The refusal names `deferred` explicitly as an always-available disposition, because the'
+  - 'Auto-adjust where the repair is mechanical and needs no judgement (a malformed or absent'
+  - 'A bypass exists, is env-var shaped per L-399/T-1890 parity, and writes a Tier-2 entry'
+  - 'Tests pin: a ready inception still emits its handoff (control); an unready one is refused;'
+  - '`bin/fw vendor self --check` clean, so the fix reaches vendored consumer instances rather'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/inception-readiness.sh'
+  - '.agentic-framework/lib/review.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/episodic/T-3548.yaml'
+  - '.context/inbox.yaml'
+  - 'lib/inception-readiness.sh'
+  - 'lib/review.sh'
+  - '.tasks/active/T-3549-rca-inceptions-keep-reaching-the-operato.md'
+  - '.tasks/completed/T-3548-arc-close-readiness-is-a-quadrant-exhaus.md'
+  - 'tests/unit/t3549_inception_handoff_refusal.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T09:30:23'
+    action: 'T-3549: an inception handoff is REFUSED when the decision it invites would be'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 10
+  lines_added: 1024
+  lines_removed: 139
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3549-rca-inceptions-keep-reaching-the-operato.md
+generated_by: context-agent-hybrid

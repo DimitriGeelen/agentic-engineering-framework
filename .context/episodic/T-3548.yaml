@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3548: Arc close-readiness is a quadrant-exhaustion predicate, not a completion ratio — and the verdict is reviewer-gated like a task
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T07:18:23Z
+# ============================================================================
+
+task_id: T-3548
+task_name: "Arc close-readiness is a quadrant-exhaustion predicate, not a completion ratio — and the verdict is reviewer-gated like a task"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T06:55:58Z
+completed: 2026-09-29T07:18:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-29T09:01:40+02:00
+last_commit: 2026-09-29T09:16:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — arc close-readiness as quadrant exhaustion, not a completion ratio. S4 spike result — A2 disproved, and L1 gets its strongest argument. dispose IW-1..IW-4 — the gate was right, the dispositions were mine to fill
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3548-arc-close-readiness.md'
+  - '.tasks/active/T-3548-arc-close-readiness-is-a-quadrant-exhaus.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T09:01:40'
+    action: 'T-3548: inception — arc close-readiness as quadrant exhaustion, not a completion ratio'
+  - time: '2026-09-29T09:05:02'
+    action: 'T-3548: S4 spike result — A2 disproved, and L1 gets its strongest argument'
+  - time: '2026-09-29T09:16:20'
+    action: 'T-3548: dispose IW-1..IW-4 — the gate was right, the dispositions were mine to fill'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22
+  commits: 4
+  files_changed: 4
+  lines_added: 759
+  lines_removed: 19
+  footprint_refreshed_at: '2026-09-29T07:18:35Z'
+  footprint_refreshed_by_commit: 4399d1036
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3548-arc-close-readiness-is-a-quadrant-exhaus.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,21 @@
+id: tests/unit/t3549_inception_handoff_refusal.bats
+name: t3549_inception_handoff_refusal
+type: script
+subsystem: tests
+location: tests/unit/t3549_inception_handoff_refusal.bats
+tags: []
+
+purpose: "T-3549 — an inception handoff is REFUSED when the decision it invites would be"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-29
+created_by: unknown
