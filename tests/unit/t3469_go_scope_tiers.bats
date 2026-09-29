@@ -112,7 +112,26 @@ field() { echo "$1" | awk -F'|' -v n="$2" '{print $n}'; }
 @test "report still states the qualifier the WARN used to omit" {
     run_scan
     grep -q 'candidates for triage, not confirmed abandoned decisions' "$REPORT"
-    grep -q 'NOBODY BUILT THIS' "$REPORT"
+    # T-3562: was 'NOBODY BUILT THIS' on the unmentioned tier. That, and its sibling
+    # claims on the other tiers, asserted knowledge the scan does not have.
+    grep -q 'whether any of this work was built is UNKNOWN' "$REPORT"
+}
+
+@test "T-3562: a MENTION is reported as a mention, never as building" {
+    # Origin: T-3475 (D-645 slice 1, GO 2026-09-25) sat unbuilt for four days under an
+    # 'in-flight' tier described as 'Propagation started', because an unrelated task
+    # mentioned it. The words must claim only what a mention can show.
+    run_scan
+    [ "$(grep -ci 'propagation started' "$REPORT")" -eq 0 ]
+    [ "$(grep -ci 'built and shipped' "$REPORT")" -eq 0 ]
+    grep -q 'A mention is a mention, not a' "$REPORT"
+    # and the remedy names the implements-relation that already exists
+    grep -q 'unlocks_inception_decision' "$REPORT"
+}
+
+@test "T-3562: the WARN leads with the no-declared-link count and says built is unknown" {
+    grep -q 'have NO declared build link — whether they were built is UNKNOWN' "$ROOT/agents/audit/audit.sh"
+    [ "$(grep -c 'nobody built these' "$ROOT/agents/audit/audit.sh")" -eq 0 ]
 }
 
 @test "an empty corpus reports zero findings rather than failing" {

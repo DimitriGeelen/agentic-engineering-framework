@@ -5736,7 +5736,9 @@ observations:
   captured: 2026-09-28T23:36:54Z
   context_task: WM-002
   tags: []
-  status: pending
+  status: dismissed
+  dismissed_reason: "Verified (OBS-574) and resolved in T-3558: agent-to-agent traffic on inbox:<circuit-id> with the ladder fallback; dm:<fp>:<fp> is TermLink transport only. 832 told on 2026-09-29 (client_msg_id c8ec7241). D-660 amendment is T-3558's GO, awaiting the operator."
+  dismissed_at: 2026-09-29T16:48:40Z
   promoted_to: null
 - id: OBS-568
   text: "NO REFUSAL LEDGER EXISTS — a correctly-firing gate leaves no trace, which is why the same class recurs. Measured 2026-09-29 while doing T-3549's RCA: .context/working/.gate-bypass-log.yaml records BYPASSES, and grepping lib/ agents/ bin/fw for any refusal ledger returns zero hits. So when a gate refuses — doing exactly its job — the only artefact produced is the operator's irritation. Concretely for the inception-disposition class: 504 inceptions, and the corpus shows 0 active and 1 of 472 completed with undisposed questions, because the agent fixes it within minutes of the operator bouncing off the gate. The corpus SELF-HEALS after every incident, so counting artefacts finds nothing and no audit section, metric, trend line or learning can observe the pattern. That is why three operator-facing instances (T-3532, T-3535, T-3548) produced three LOCAL fixes instead of one structural one: at the moment each fix was designed there was no second data point visible to anyone. The pattern lived only in the operator's memory, which is the thing the framework exists to stop relying on. PROPOSED: a refusal ledger (.context/working/refusals.jsonl or similar) that every gate appends to when it refuses — gate id, task, reason, timestamp, caller — plus an audit rail that WARNs when one gate refuses repeatedly, which turns 'we keep doing this' from a feeling into a number. Serves every gate, not just inceptions, so it is framework-wide and belongs in its own task rather than folded into T-3549. Note the design tension to settle first: a refusal is not always a defect (a gate refusing a genuinely bad action is the system working), so the rail must distinguish 'refused and then fixed' from 'refused and abandoned' — the T-3549 shape is the former and is still worth counting."
@@ -5772,7 +5774,9 @@ observations:
   captured: 2026-09-29T09:03:57Z
   context_task: T-3554
   tags: [bug]
-  status: pending
+  status: dismissed
+  dismissed_reason: "Superseded by T-3557 (operator 2026-09-29): review becomes an interpreting agent reviewer, so the D-626 regex no longer decides delegation and patching its act-in-the-world branch would repair the layer being removed. An interpreting reviewer escalates T-1774 (needs a Raspberry Pi) instead of ticking it."
+  dismissed_at: 2026-09-29T16:48:40Z
   promoted_to: null
 - id: OBS-573
   text: "The budget-critical auto-handover (agents/context/checkpoint.sh:275) wraps the WHOLE handover in FW_HANDOVER_TOTAL_TIMEOUT, default 60s. The push inside it is bounded at 398s, derived by T-3450 from the measured pre-push gate cost (structure section 273s). The outer bound is smaller than the gate the inner push must pass, so an auto-handover that pushes is killed at 60s before its push can finish - at exactly the moment a session is dying and unpushed commits matter most. T-3450 raised the inner bound and never touched the outer one. Because the OUTER timeout kills handover.sh itself, T-3550's killed-push resolution never runs either, so the outcome is not even recorded. Arithmetic from measured values, not a reproduction - a budget-critical auto-handover was not triggered to confirm it. The guard that should have caught this, tests/unit/handover_push_timeout.bats test 4 (T-1277 belt-and-braces), went red for an unrelated wording reason (checkpoint.sh now invokes 'bash handover.sh') and nobody noticed; test 8 still pins the outer default at 60, i.e. it asserts the bug. Fix direction: derive the outer bound from the inner one (inner + generation headroom) rather than asserting either."
@@ -5792,6 +5796,13 @@ observations:
   text: "The GO-scope audit (go-scope-unpropagated) counts a GO'd inception as built when ANY task references it, so T-3475 (sidecar slice 1 transport ruling, GO 2026-09-25, HTTP) reads 'followers: T-3479, T-3494*' and is never flagged as unbuilt. Neither follower builds slice 1: T-3479 is address dual-read (arc-011/020 convergence), T-3494 is a BVP estimator task that merely mentions T-3475. The keystone the GO authorised — a receiver sidecar process with an HTTP API, local storage and a receiver-side flag — has no task and no code (no HTTP server in lib/sidecar/; RECEIVED and HANDED_OVER appear nowhere). Consequence: D-645's whole consumption design (received, tick+readiness+inject, handed-over, blobs) hangs off a slice that was never started, and the audit built to catch exactly that reported it as having followers. Same class as this session's other findings: a mention (proxy) counted as a build (property). Found during T-3558 at the operator's request to trace why the consumption design 'still does not work'."
   captured: 2026-09-29T15:35:21Z
   context_task: T-3558
+  tags: [bug]
+  status: promoted
+  promoted_to: task
+- id: OBS-576
+  text: "tests/unit/t3099_go_scope_structural.bats is 1 ok / 11 not ok at HEAD, i.e. BEFORE T-3562 touched audit.sh (verified by running it against 'git show HEAD:agents/audit/audit.sh'). Its assertions grep the audit output for '^WARN|Found 1 GO-scope-not-propagated inception' and '^PASS|No GO-scope-not-propagated inception', wording the check no longer emits (T-3469 reworded the WARN). Same class as OBS-570: a suite pinned to output prose went red when the prose legitimately changed, and nobody saw it because the full unit-suite run times out (handover audit reports tests/unit UNKNOWN: timed_out=true, 98 of 6196 listed failed). The structural predicate T-3099 introduced is still exercised by t3469_go_scope_tiers.bats, so coverage is not zero, but t3099's own 11 cases currently assert nothing. Needs per-case judgement on what each should assert, like OBS-570."
+  captured: 2026-09-29T17:13:18Z
+  context_task: T-3563
   tags: [bug]
   status: pending
   promoted_to: null

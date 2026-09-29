@@ -2355,9 +2355,14 @@ findings = [(t_id, path) for t_id, path in candidates if t_id not in referenced]
 
 def tier_of(t_id):
     # linked-late | in-flight | candidate.
-    # 'candidate' is the only tier that means nobody built this. The other two
-    # mean the work propagated and the LINK was never recorded -- a bookkeeping
-    # gap, not an abandoned decision.
+    # T-3562: these tiers are decided by a MENTION in a later task body, never by
+    # a declared link, so none of them is evidence that anything was built. The
+    # comment here used to say the other two tiers mean the work propagated;
+    # that belief is how T-3475 (D-645 slice 1, GO 2026-09-25) sat unbuilt
+    # under an in-flight label, because an unrelated estimator task mentioned it.
+    # candidate = no later build-class task mentions it at all.
+    # in-flight = mentioned by at least one task still in active/.
+    # linked-late = mentioned only by completed tasks. Built: UNKNOWN.
     # NOTE: comments, not a docstring. This whole scan lives inside a
     # double-quoted 'python3 -c' string, so a triple-quoted docstring closes
     # the shell string and the rest of the function is handed to bash as
@@ -2418,12 +2423,17 @@ lines.append('created at-or-after the inception mentions it anywhere in its body
 lines.append('A body mention is weaker than a declared link, so it never removes a')
 lines.append('finding — it only labels one.')
 lines.append('')
-lines.append('- candidate   (' + str(n_cand) + ') — no build-class follower at all. '
-             'This is the tier that means NOBODY BUILT THIS.')
-lines.append('- in-flight   (' + str(n_flight) + ') — followers exist, at least one still '
-             'in active/. Propagation started, work unfinished.')
-lines.append('- linked-late (' + str(n_linked) + ') — followers exist and all completed. '
-             'Built and shipped; only the link was never recorded.')
+lines.append('EVERY item below has NO declared build link. A mention is a mention, not a')
+lines.append('build: whether any of this work was built is UNKNOWN until a build task')
+lines.append('declares it with unlocks_inception_decision: (T-1984). (T-3562: these tiers')
+lines.append('used to describe a mention as evidence that the work was under way or done;')
+lines.append('that label hid D-645 slice 1, unbuilt, for four days.)')
+lines.append('')
+lines.append('- candidate   (' + str(n_cand) + ') — no later build-class task mentions it at all.')
+lines.append('- in-flight   (' + str(n_flight) + ') — mentioned by at least one task still in '
+             'active/. A mention, not evidence that the work started.')
+lines.append('- linked-late (' + str(n_linked) + ') — mentioned only by completed tasks. '
+             'Whether it was built is UNKNOWN: check, then declare the link.')
 lines.append('')
 lines.append('Origin OBS-535: this scan used to report one undifferentiated count,')
 lines.append('which read as abandonment for every tier at once.')
@@ -2487,9 +2497,9 @@ else
              "the workflow_type:inception filter matched ${_gs_inceptions:-0} completed task(s), of which 0 recorded a GO" \
              "Check the GO predicate against .tasks/completed/ by hand — an empty GO set is what T-3099 found and repaired, and it can regress"
     else
-        warn "${_gs_cand:-0} GO'd inception(s) with NO build follower — nobody built these (plus ${_gs_flight:-0} in-flight, ${_gs_linked:-0} built-but-unlinked; $_gs_count unlinked in total, of ${_gs_go:-0} GO-recorded completed inception(s) examined)" \
+        warn "$_gs_count GO'd inception(s) have NO declared build link — whether they were built is UNKNOWN (${_gs_cand:-0} not even mentioned by a later task; ${_gs_flight:-0} mentioned by an open task; ${_gs_linked:-0} mentioned only by closed tasks; of ${_gs_go:-0} GO-recorded completed inception(s) examined). A mention is not a build (T-3562)." \
              "$_gs_sample" \
-             "Only the first number means abandoned work. in-flight = followers exist, some still in active/; built-but-unlinked = followers exist and all completed, so the work shipped and only related_tasks: / unlocks_inception_decision: was never recorded. Triage per tier: cat $GO_SCOPE_REPORT_PATH (origin: T-2078, T-2091, T-3099; tiers T-3469/OBS-535; sibling to L-417/T-1975)"
+             "For each: find the task that builds it and declare unlocks_inception_decision: [T-XXXX:<decision-id>] on it, or record that it was never built. The tiers are mentions only; the unmentioned ones are the likeliest abandoned, but a mention proves nothing either way (T-3475 was mentioned and unbuilt). Triage per tier: cat $GO_SCOPE_REPORT_PATH (origin: T-2078, T-2091, T-3099; tiers T-3469/OBS-535; wording T-3562)"
     fi
 fi
 # end GO-scope-not-propagated scan (T-3099)
