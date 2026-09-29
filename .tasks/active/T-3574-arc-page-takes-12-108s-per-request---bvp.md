@@ -121,6 +121,12 @@ frontmatter reader, which now uses libyaml's CSafeLoader. Equality test: tests/w
 `_bvp_signals` JSON for 4 arcs byte-identical.
 
 ### Human
+- [ ] [REVIEW] Arc pages render unchanged and load fast
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`, then open `<url>/arcs/continuous-run` and `<url>/arcs/readme-first-run`
+  2. Check the BVP block, constituents table and quick-link bar look as before
+  **Expected:** both pages load in about a second; BVP raw/norm and per-driver contributions unchanged (continuous-run raw 63, norm 0.233)
+  **If not:** note which block differs and reopen T-3574
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
