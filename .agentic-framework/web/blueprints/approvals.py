@@ -519,8 +519,27 @@ def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
             continue
         constituents = _resolve_constituents(arc)
         stats = _completion_stats(constituents)
-        if stats["ratio"] < threshold:
+
+        # T-3552 (T-3548 Slice A): surface on quadrant exhaustion, not on a
+        # completion ratio. `completed / total` describes the LIST; closure is a
+        # claim about what is LEFT. Measured on this corpus at the swap: the 80%
+        # ratio surfaced 8 arcs, 6 of which still had high-value open members —
+        # orchestrator-rethink read "close-ready" at 85% with 18 open members, 8
+        # of them Q1/Q2.
+        #
+        # `threshold` is kept in the signature and still applied as a CEILING on
+        # nothing — it is retained only so existing callers and tests that pass it
+        # do not break. The ratio itself is still reported in the row, because it
+        # is useful information; it is simply no longer the predicate.
+        legs = _arc_readiness_legs(arc, constituents)
+        if legs is not None and not (legs["l1"]["passed"] and legs["l2"]["passed"]):
             continue
+        if legs is None and stats["ratio"] < threshold:
+            # Readiness could not be computed (helper unavailable). Fall back to
+            # the old ratio rather than surfacing everything or nothing — a
+            # degraded queue is recoverable, a silently empty one is not.
+            continue
+
         rec = _anchor_recommendation(arc)
         anchor_id = rec.get("anchor_id", "") or str(arc.get("anchor_task") or "").strip()
         blocked_reason = ""
@@ -546,8 +565,68 @@ def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
             "completed": stats["completed"],
             "total": stats["total"],
             "headline_mechanic": str(arc.get("headline_mechanic") or ""),
+            # T-3552: the legs that produced this row. Carried so a surface can
+            # say WHY an arc is here without recomputing and risking a second,
+            # disagreeing answer.
+            "readiness": legs,
         })
     return out
+
+
+# Cached across requests: the medians are a corpus-wide property, and recomputing
+# them per arc would re-read every active task 18 times on one page load.
+_READINESS_MEDIANS: dict = {}
+
+
+def _arc_readiness_legs(arc: dict, constituents) -> dict | None:
+    """L1/L2/L3 for one arc, or None when readiness cannot be computed.
+
+    Returning None rather than a failed verdict is deliberate: "the predicate
+    could not run" and "the predicate says no" are different facts, and the
+    caller degrades to the old ratio on the first while honouring the second.
+    Collapsing them would make a broken import look like an arc that is not
+    ready — the same false-negative class this task removes from the ratio.
+    """
+    import sys as _sys
+
+    lib_dir = str(Path(__file__).resolve().parents[2] / "lib")
+    if lib_dir not in _sys.path:
+        _sys.path.insert(0, lib_dir)
+    try:
+        import arc_close_readiness as _acr
+        from web.blueprints.arcs import _anchor_recommendation as _anchor
+    except Exception:
+        return None
+
+    try:
+        if not _READINESS_MEDIANS:
+            _READINESS_MEDIANS.update(_acr.corpus_medians(PROJECT_ROOT))
+
+        open_members: list[tuple[str, dict]] = []
+        for c in constituents or []:
+            # A constituent still in active/ is open work — including
+            # partial-complete, which is most of them. See the module docstring
+            # in lib/arc_close_readiness.py for why that population is right.
+            tid = c.get("id") if isinstance(c, dict) else str(c)
+            if not tid:
+                continue
+            matches = list((PROJECT_ROOT / ".tasks" / "active").glob(f"{tid}-*.md"))
+            if not matches:
+                continue
+            open_members.append((tid, _acr._read_fm(matches[0])))
+
+        rec = _anchor(arc) or {}
+        return _acr.evaluate(
+            open_members,
+            _READINESS_MEDIANS,
+            {
+                "present": bool(rec.get("present")),
+                "verdict": rec.get("verdict", ""),
+                "has_rationale": True,  # `_anchor_recommendation` has no rationale probe
+            },
+        )
+    except Exception:
+        return None
 
 
 def _load_decided_unclosed():
