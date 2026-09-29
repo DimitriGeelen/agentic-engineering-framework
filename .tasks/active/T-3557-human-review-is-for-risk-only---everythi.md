@@ -237,6 +237,27 @@ yes by the operator; rewriting existing tasks' criteria text.
 
 **Recommendation:** GO
 
+**Evidence (2026-09-30):**
+- Escalation spike on 10 real open Human criteria across six classes. The answer key was
+  written BEFORE the reviewer ran (docs/reports/T-3557-spike-answer-key.md); the verdicts
+  are in docs/reports/T-3557-spike-verdicts.md. Result:
+  - 3 of 3 risk criteria escalated (external publish, release-policy ruling, root deploy).
+  - 0 of 4 routine criteria escalated.
+  - Every green names its evidence: gate fired, live mutex smoke run, headless render,
+    `gh pr view`.
+  - 1 red found a real defect with a concrete fix.
+  - 1 amber correctly kept `--none` human-only.
+  - Both GO criteria are met: defensible verdicts with reasons, including correct
+    escalation.
+- Live use before the spike: 5 render criteria (T-3544, T-3552, T-3553, T-3571, T-3564)
+  closed on independent verdicts. The reviewer caught 2 real defects the producer had
+  missed (an invisible link, and a sticky bar that did not stick).
+- IW-7 designed: docs/reports/T-3557-agent-reviewer-default.md §IW-7. All seven IW
+  questions are disposed.
+- Surface today: 352 criteria wait on the operator. 194 of them only because the task
+  touches a render surface. 55 fall in the classes that stay human (tier0 11,
+  act-in-the-world 22, sovereignty 22).
+
 **Rationale:** Operator direction 2026-09-29: rubber-stamping is friction with no value; human-in-the-loop only for Tier 0 and high risk; everything else an independent agent reviewer evaluates interpretively (good+why / not good+what is needed / escalate). The verdict contract already exists (lib/judge_verdict.py green/amber/red/unknown, guidance mandatory on non-green); what is missing is an interpretive agent behind it - every current judge is a static script. Measured: 353 open Human criteria, of which only 11 are tier-0/bypass.
 
 ## Decisions
