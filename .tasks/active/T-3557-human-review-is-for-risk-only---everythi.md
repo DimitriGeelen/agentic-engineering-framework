@@ -1,8 +1,11 @@
 ---
 id: T-3557
-name: "human review is for risk only - everything else goes to an independent agent reviewer that judges, not a script"
+name: "human review is for risk only - everything else goes to an independent agent
+  reviewer that judges, not a script"
 description: >
-  Replace the D-626 regex classifier (which decides whether a Human criterion is mechanical enough to delegate) with an independent agent reviewer as the default, keeping the human for risk.
+  Replace the D-626 regex classifier (which decides whether a Human criterion is mechanical
+  enough to delegate) with an independent agent reviewer as the default, keeping the
+  human for risk.
 
 status: started-work
 workflow_type: inception
@@ -12,8 +15,8 @@ tags: []
 components: []
 related_tasks: [T-3445, T-3554, T-3555, T-1443]
 created: 2026-09-29T11:17:54Z
-last_update: 2026-09-29T11:17:54Z
-date_finished: null
+last_update: '2026-09-29T11:30:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +25,33 @@ target_blast_radius: 5            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-09-29T11:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 4
+      effort: 8
+    rationale: blast_radius=5 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=8 (lines=200,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-29T11:30:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3557: human review is for risk only - everything else goes to an independent agent reviewer that judges, not a script
@@ -100,19 +130,24 @@ would have patched the layer this inception removes. So A is not built as scoped
 -->
 
 - **IW-1: What exactly is "risk" — the set that stays human?**
-  confidence: 1
-  disposition:
-  rationale: Operator said "tier 0 or really big UX", then that UX the agent can test with operator feedback afterwards. Agent proposal: Tier 0 + irreversible external acts (publish, deploy, pay, credentials) + sovereignty fields; UX moves to the agent reviewer, non-blocking operator feedback after. Needs the operator's yes/no.
+  confidence: 3
+  disposition: answered
+  rationale: Operator 2026-09-29, dialogue segment 3 — "On point 1, yes, that is correct." Stays human: Tier 0, irreversible external acts (publish, deploy, pay, credentials), sovereignty fields. UX moves to the agent reviewer with non-blocking operator feedback afterwards.
 
 - **IW-2: Do inception go/no-go and arc closure move to the agent reviewer too?**
-  confidence: 0
-  disposition:
-  rationale: Both are agent-refused by design today (T-1259, T-1671). On T-3548 the operator said of arc closure "then it goes to the external reviewer and it's done. Same as with the task." That is a sovereignty change and is the operator's to make explicitly, not the agent's to infer.
+  confidence: 3
+  disposition: answered
+  rationale: Operator 2026-09-29, segment 3 — yes, both go to agents. Arc closures are agent-driven "just the same as task closures, unless it is a Tier 0". Inceptions go to agents too, but the reviewer must first judge whether THIS inception needs a human in the loop, on complexity, impact and uncertainty. This lifts T-1259 and T-1671 as default refusals; the build is where those gates are rewired, not this inception.
 
 - **IW-3: How independent must the reviewer be from the builder?**
-  confidence: 2
+  confidence: 3
+  disposition: answered
+  rationale: Operator 2026-09-29, segment 3 — "the reviewer is not a creator or producer. That is our principle." Independence is a LADDER, not one floor: same agent with another lens, another TermLink agent, TermLink dispatch, a different model from the same vendor, a different vendor, an external agent via OpenRouter, several external agents. The rung is chosen by the impact-risk model (IW-7). This supersedes D-662 item 5's "panel deferred": the panel is now designed in as the top rungs, bought when impact warrants it.
+
+- **IW-7: What is the impact-risk model that picks the review rung?**
+  confidence: 1
   disposition:
-  rationale: D-662 allows the same model for now and defers a multi-model panel. Agent's floor: a separate process with no shared context, seeing only the artefacts and the criteria — never the builder grading its own work in the same session. Panel stays deferred per D-662.
+  rationale: Operator 2026-09-29, segment 3 — "we need to have an impact risk model." Impact has two sides: the risk materialising, AND the value the change is meant to bring, so closing something as done without delivering it is itself a risk. The model sets how much to spend on the review, because external review costs money. Agent note: most inputs already exist per task — BVP value, blast_radius, tier, effort, inception voi_score and IW confidence. But the value axis is coarse (5 vectors cover 69% of 494 tasks), so a model leaning on value alone would barely separate tasks. Needs a design and a spend ceiling.
 
 - **IW-4: What happens to the ~350 open Human criteria already on the operator's desk?**
   confidence: 1

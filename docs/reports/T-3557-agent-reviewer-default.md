@@ -110,3 +110,66 @@ Under the operator's rule, the floor of what must stay human is the 11 tier-0
 criteria, and the ceiling is roughly 11 + 22 + 22 + 18 = 73, depending on IW-1 and
 IW-2. So between 280 and 342 of 353 criteria — **79% to 97%** of today's human
 review load — would move to the agent reviewer.
+
+### Segment 3 — operator answers IW-1, IW-2, IW-3 and names the impact-risk model (verbatim)
+
+> On point 1, yes, that is correct. Yes, they also go to agents, although upon
+> inception, the agent needs to evaluate if that is something a human in the loop
+> should evaluate. I think we need to look at complexity, impact, and uncertainty.
+> That is a difficult one, but our closures should be agent-driven, just the same as
+> task closures, unless it is a Tier 0 again, right? But our closures work done.
+>
+> Point 3: Yes, the reviewer is not a creator or producer. That is our principle.
+> So, we have different levels. It could be a Termlink agent, another agent over
+> Termlink, a Termlink dispatch agent, a different model, from the same vendor, or a
+> different vendor. It could be an external agent via OpenRouter, for instance, or
+> multiple external agents based on the impact and the risk. So, we need to have an
+> impact risk model.
+>
+> And also, the impact of the change drives how much we spend on the review (low
+> risk, risk, risk impact). Impact is both the risk materializing and also the
+> impact the change should bring to our product. So, if saying it is closed without
+> having delivered what you set out is also a risk, that then drives the Termlink
+> review—same agent, another agent, or multiple agent review, multiple lenses/same
+> agent, or external review, right? Three, five agents, different agents. But
+> external review costs money. Still, we want to have an impact risk model.
+
+### What the agent took from segment 3
+
+| IW | answer |
+|---|---|
+| IW-1 | Confirmed as proposed: Tier 0, irreversible external acts, sovereignty stay human; UX goes to the agent reviewer with feedback afterwards. |
+| IW-2 | Arc closure goes to the agent reviewer, like task closure, unless Tier 0. Inceptions go to the agent reviewer too, but it must first judge whether this particular inception needs a human, on **complexity, impact and uncertainty**. |
+| IW-3 | "The reviewer is not a creator or producer." Independence is a **ladder**, not one floor. |
+
+**The review ladder, as stated (cheapest to most independent):**
+
+1. same agent, a different lens
+2. another agent over TermLink
+3. TermLink dispatch agent
+4. different model, same vendor
+5. different vendor
+6. external agent via OpenRouter
+7. several external agents (three, five)
+
+**What selects the rung: an impact-risk model (IW-7, new).** Two points the operator
+made that the model has to carry:
+
+- **Impact has two sides.** The risk *materialising*, and the value the change is
+  *meant* to bring. So "closed without having delivered what you set out" is itself
+  a risk: a high-value task that fails silently costs as much as a risky change
+  that breaks something.
+- **Review costs money at the top rungs.** The model decides how much to spend, so it
+  needs a spend ceiling as well as a ranking.
+
+**Consequence for D-662.** D-662 item 5 deferred the multi-model panel. The operator
+now designs it in as the top rungs of the ladder, bought when impact warrants it. So
+this supersedes item 5 rather than contradicting it: deferred has become conditional.
+
+**Agent's caveat on the model's inputs, recorded rather than dismissed.** Most of
+the signals already exist per task: BVP value, blast_radius, tier, effort, and for
+inceptions voi_score and IW confidence. The value axis is coarse, though. Five
+vectors cover 69% of 494 active tasks (measured 2026-09-29), so a model that leans
+on value alone would put most tasks on the same rung. The cost/risk side
+(blast_radius 1 vs 9) discriminates. Both sides need a better value signal to earn
+equal weight.
