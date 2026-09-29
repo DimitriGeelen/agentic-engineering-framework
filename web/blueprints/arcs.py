@@ -731,6 +731,116 @@ def arcs_index():
     )
 
 
+# ── T-3564: arc page layout — quick links, purpose, task overview, story ──
+# One ordered list of {id, title} drives BOTH the quick-link bar and the
+# section wrappers in arc_detail.html, so a link and its target cannot drift.
+
+def _source_ref(src: Any) -> dict[str, str]:
+    """Turn a story `source:` string into {text, href} ('' href = plain text)."""
+    text = str(src or "").strip()
+    if not text:
+        return {"text": "", "href": ""}
+    path = text.split("#", 1)[0]
+    if re.fullmatch(r"T-\d+", path):
+        return {"text": text, "href": f"/tasks/{path}"}
+    if path.startswith("docs/") and (PROJECT_ROOT / path).is_file():
+        return {"text": text, "href": f"/file/{path}"}
+    return {"text": text, "href": ""}
+
+
+def _arc_story(arc: dict[str, Any]) -> dict[str, Any]:
+    """Normalise the T-3563 story fields; absent/empty fields stay empty."""
+    def _text(v: Any) -> str:
+        return str(v).strip() if v not in (None, "") else ""
+
+    def _rows(key: str, primary: str) -> list[dict[str, Any]]:
+        raw = arc.get(key)
+        out: list[dict[str, Any]] = []
+        if not isinstance(raw, list):
+            return out
+        for item in raw:
+            if isinstance(item, dict):
+                text = _text(item.get(primary))
+                if not text:
+                    continue
+                row = {k: _text(v) for k, v in item.items()}
+                row["text"] = text
+                row["source_ref"] = _source_ref(item.get("source"))
+                out.append(row)
+            elif _text(item):
+                out.append({"text": _text(item), "source_ref": _source_ref("")})
+        return out
+
+    ev_raw = arc.get("evidence")
+    evidence = []
+    if isinstance(ev_raw, dict):
+        for k, v in ev_raw.items():
+            if _text(v):
+                evidence.append({"label": str(k).replace("_", " "), "ref": _source_ref(v),
+                                 "value": _text(v)})
+    return {
+        "purpose": _text(arc.get("purpose")),
+        "objective": _text(arc.get("objective")),
+        "success_criteria": _rows("success_criteria", "criterion"),
+        "context": _rows("context", "point"),
+        "decisions": _rows("decisions", "decision"),
+        "open_questions": _rows("open_questions", "question"),
+        "non_goals": _rows("non_goals", "text"),
+        "history": _rows("history", "event"),
+        "evidence": evidence,
+        "story_review": _text(arc.get("story_review")),
+    }
+
+
+def _task_overview(constituents: list[dict[str, Any]]) -> dict[str, Any]:
+    """Counts by status (completed -> 'done') plus the still-open tasks."""
+    counts: dict[str, int] = {}
+    open_tasks: list[dict[str, Any]] = []
+    for c in constituents:
+        if c.get("missing"):
+            label = "missing"
+        elif c.get("completed"):
+            label = "done"
+        else:
+            label = str(c.get("status") or "?")
+            open_tasks.append(c)
+        counts[label] = counts.get(label, 0) + 1
+    order = ["done", "started-work", "issues", "captured"]
+    ordered = sorted(counts.items(),
+                     key=lambda kv: (order.index(kv[0]) if kv[0] in order else len(order), kv[0]))
+    return {"counts": ordered, "open_tasks": open_tasks, "total": len(constituents)}
+
+
+def _arc_sections(arc: dict[str, Any], story: dict[str, Any], constituents: list,
+                  reports: list, bvp_info: Any) -> list[dict[str, str]]:
+    """Ordered {id, title} of every section the page renders (drives quick links)."""
+    s: list[dict[str, str]] = []
+    if story["purpose"] or story["objective"]:
+        s.append({"id": "purpose", "title": "Purpose"})
+    s.append({"id": "task-overview", "title": "Task overview"})
+    for sid, title, key in (
+        ("success-criteria", "Success criteria", "success_criteria"),
+        ("context", "Context", "context"),
+        ("decisions", "Decisions", "decisions"),
+        ("open-questions", "Open questions", "open_questions"),
+        ("non-goals", "Non-goals", "non_goals"),
+        ("history", "History", "history"),
+        ("evidence", "Evidence", "evidence"),
+    ):
+        if story[key]:
+            s.append({"id": sid, "title": title})
+    if bvp_info:
+        s.append({"id": "bvp-signals", "title": "BVP signals"})
+    if reports:
+        s.append({"id": "reports", "title": "Reports & evidence"})
+    s.append({"id": "constituent-tasks", "title": "Constituent tasks"})
+    if arc.get("status") == "closed":
+        s.append({"id": "arc-closed", "title": "Arc closed"})
+    else:
+        s.append({"id": "completion-check", "title": "Completion check"})
+    return s
+
+
 @bp.route("/arcs/<arc_id>")
 def arc_detail(arc_id: str):
     """Detail page for one arc.
@@ -757,8 +867,14 @@ def arc_detail(arc_id: str):
     reports = _arc_reports(arc_slug)
     # T-1930 (arc-006): BVP signals — arc-level scores, coherence, proposed drivers.
     bvp_info = _bvp_signals(arc, arc_slug, arc_numeric)
+    story = _arc_story(arc)
+    sections = _arc_sections(arc, story, constituents, reports, bvp_info)
     return render_page(
         "arc_detail.html",
+        story=story,
+        sections=sections,
+        section_ids={x["id"] for x in sections},
+        task_overview=_task_overview(constituents),
         page_title=f"Arc: {arc.get('name', arc_id)}",
         arc=arc,
         arc_id=arc_id,
