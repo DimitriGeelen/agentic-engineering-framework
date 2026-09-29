@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3559: sidecar-inbox hook silently surfaces nothing since T-3442 wrapped the peek output
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T15:48:01Z
+# ============================================================================
+
+task_id: T-3559
+task_name: "sidecar-inbox hook silently surfaces nothing since T-3442 wrapped the peek output"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T15:42:22Z
+completed: 2026-09-29T15:47:38Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar-inbox hook silently surfaces nothing since T-3442 wrapped the peek output
+
+# Key outcomes
+outcomes:
+  - 'The hook reads the current producer shape, `{"consults": [...]}`, and surfaces every consult in it'
+  - 'An unrecognised payload shape is SAID in the surfaced context rather than treated as an empty inbox; the prompt is still never blocked'
+  - 'End-to-end test pipes the real producer''s JSON into the real hook and asserts consults appear — the contract lives at the join, so it is tested at the join (L-399)'
+  - 'CONTROL: a genuinely empty inbox still produces no output, so the fix does not turn every prompt into noise'
+  - 'Negative control verified: the new test goes RED against the pre-fix hook'
+  - 'Live: running the hook against the real inbox surfaces the 7 unread consults'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3559-sidecar-inbox-hook-silently-surfaces-not.md
+generated_by: context-agent-hybrid
