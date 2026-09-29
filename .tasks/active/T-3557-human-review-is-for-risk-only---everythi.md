@@ -1,0 +1,225 @@
+---
+id: T-3557
+name: "human review is for risk only - everything else goes to an independent agent reviewer that judges, not a script"
+description: >
+  Replace the D-626 regex classifier (which decides whether a Human criterion is mechanical enough to delegate) with an independent agent reviewer as the default, keeping the human for risk.
+
+status: started-work
+workflow_type: inception
+owner: human
+horizon: now
+tags: []
+components: []
+related_tasks: [T-3445, T-3554, T-3555, T-1443]
+created: 2026-09-29T11:17:54Z
+last_update: 2026-09-29T11:17:54Z
+date_finished: null
+# revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
+# revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+# ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
+target_blast_radius: 5            # int 0..9. Anticipated component count of the build work this inception would authorise on GO.
+                                  # Substitutes for the absent components: list in the F8 cost formula (040). Required.
+                                  # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
+voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
+                                  # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+---
+
+# T-3557: human review is for risk only - everything else goes to an independent agent reviewer that judges, not a script
+
+## Problem Statement
+
+Operator, 2026-09-29 (full transcript in `docs/reports/T-3557-agent-reviewer-default.md`):
+
+> *"we want to kick out the rubber stamping, it's just a lot of friction … click,
+> click, click, and just pass up. … we want human in the loop for things that have
+> high risk … That's all tier 0 or really big UX. But UX you can also test yourself
+> … The expected result is a pass, because this and this is the external agent that
+> has reviewed it … Or it says it's not good and this is what's needed to bring it to
+> good. Or it says, nuclear, escalate to human … It's not binary. Almost never is.
+> Interpretation is needed … That's why we want agent reviewer. … Agent, you do it.
+> And if we can run scripts to assess parts … that's fine … but it's not only that."*
+
+**Two things are wrong with today's model, and they compound.**
+
+1. **The default is inverted.** D-626 (T-3445) routes a Human criterion to the
+   reviewer only if a classifier proves it *deterministic*; everything else stays
+   the operator's ("when in doubt, human"). Measured today: 353 open Human criteria
+   on the operator's desk, of which **11** are tier-0/bypass. The rest are render
+   (197), unclassified (62), act-in-the-world (22), sovereignty (22), taste (21),
+   inception (18).
+2. **The "reviewer" is a script.** `fw reviewer`, the BVP judge and the arc-driver
+   judge all run static code; `--dispatch` runs the same code in an isolated worker.
+   Nothing in the review path *interprets*. So "delegate to the reviewer" could only
+   ever mean "delegate what a regex can settle" — which is why the classifier had to
+   exist, and why its bugs (OBS-571, OBS-572) decided what the operator saw.
+
+**What already exists and is reused, not rebuilt.**
+- The verdict contract: `lib/judge_verdict.py` — green / amber / red / unknown;
+  a non-green verdict *cannot be constructed* without guidance. That is the
+  operator's three outcomes ("good because…", "not good, here's what's needed",
+  "escalate") almost word for word; *unknown* is the escalation.
+- The judging doctrine: **D-662** (operator, 2026-09-27) — separate parties, the
+  judge can refuse, judged against the criteria *and the goal hierarchy*, open tasks
+  only, same model allowed for now, multi-model panel deferred not rejected.
+  This inception **extends D-662 from BVP scores and arc drivers to Human-criterion
+  review**. It does not invent a second doctrine.
+- Isolated execution: `lib/termlink_worker.py` (the `--dispatch` substrate).
+
+**What this dissolves.** OBS-572 (the act-in-the-world regex misses "pi installed)"
+and "live session") stops mattering: an interpreting reviewer reads T-1774, sees it
+needs hardware it cannot operate, and returns *unknown → escalate*. The regex fix
+would have patched the layer this inception removes. So A is not built as scoped.
+
+## Assumptions
+
+- **A-1:** most non-risk Human criteria can be judged by an agent that reads the
+  artefacts and, where useful, runs scripts or drives the page (Playwright) — it does
+  not need the operator's eyes to reach a defensible green/amber/red.
+- **A-2:** `lib/judge_verdict.py` is sufficient as the review verdict contract without
+  changes; the missing piece is only the interpreting agent behind it.
+- **A-3:** operator feedback on UX *after* an agent green is worth more than a
+  blocking operator gate before it — the operator said as much ("you just tell me it's
+  good and I give you the feedback").
+
+## Open Questions
+
+<!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
+     --status work-completed. Disposition gate (agents/task-create/update-task.sh
+     check_disposition_gate) refuses on under-disposed inceptions.
+
+     Per-question shape:
+
+       - **IW-1: <question text>**
+         confidence: 0-3      (your confidence in your current answer; 0=guess, 3=verified)
+         disposition: answered | deferred | dissolved
+         rationale: <one-line evidence — file:line, decision id, dialogue ref>
+
+     Never bare yes/no — the gate refuses bare checkboxes. See 050-Inceptions.md
+     §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
+     FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
+-->
+
+- **IW-1: What exactly is "risk" — the set that stays human?**
+  confidence: 1
+  disposition:
+  rationale: Operator said "tier 0 or really big UX", then that UX the agent can test with operator feedback afterwards. Agent proposal: Tier 0 + irreversible external acts (publish, deploy, pay, credentials) + sovereignty fields; UX moves to the agent reviewer, non-blocking operator feedback after. Needs the operator's yes/no.
+
+- **IW-2: Do inception go/no-go and arc closure move to the agent reviewer too?**
+  confidence: 0
+  disposition:
+  rationale: Both are agent-refused by design today (T-1259, T-1671). On T-3548 the operator said of arc closure "then it goes to the external reviewer and it's done. Same as with the task." That is a sovereignty change and is the operator's to make explicitly, not the agent's to infer.
+
+- **IW-3: How independent must the reviewer be from the builder?**
+  confidence: 2
+  disposition:
+  rationale: D-662 allows the same model for now and defers a multi-model panel. Agent's floor: a separate process with no shared context, seeing only the artefacts and the criteria — never the builder grading its own work in the same session. Panel stays deferred per D-662.
+
+- **IW-4: What happens to the ~350 open Human criteria already on the operator's desk?**
+  confidence: 1
+  disposition:
+  rationale: D-662 says open tasks only. Options — sweep them all through the agent reviewer once, or only apply the new routing to criteria written from now on. The sweep is what clears the operator's desk; it is also a large one-off volume.
+
+- **IW-5: What becomes of the D-626 classifier?**
+  confidence: 2
+  disposition:
+  rationale: Agent proposal — drop "deterministic" as the delegation test entirely; keep only the risk carve-outs (tier0, act-in-the-world, sovereignty) as a router to the human. The classifier stops deciding what the reviewer may judge and only decides what the human must.
+
+- **IW-6: Where does an escalation or a red verdict land, so it is not lost?**
+  confidence: 2
+  disposition:
+  rationale: Ties to T-3555 (refusal ledger) — the operator's "negative recording". Agent proposal: every non-green review verdict is recorded; unknown/escalate surfaces on /approvals; repeats feed the T-3555 recurrence detector.
+
+## Exploration Plan
+
+1. **Spike (≤2h):** point an interpreting reviewer at 5 real open Human criteria of
+   different classes (render, unclassified, act-in-the-world) and record the verdicts
+   it reaches, with reasons. Tests A-1 on real material, not fixtures.
+2. **Measure:** re-cut the 353 by the IW-1 answer — how many stay human.
+3. **Design note:** routing, verdict recording, escalation surface (IW-5, IW-6).
+
+## Technical Constraints
+
+<!-- What platform, browser, network, or hardware constraints apply?
+     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
+     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
+     For infrastructure: network topology, firewall rules, latency bounds.
+     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+
+## Scope Fence
+
+**IN:** who reviews what (the routing policy); an interpreting agent reviewer as the
+default for non-risk Human criteria; reuse of `lib/judge_verdict.py` and D-662;
+where non-green verdicts and escalations are recorded.
+
+**OUT:** the multi-model judge panel (D-662: deferred, not rejected); changing the
+sovereignty gates on `fw inception decide` / `fw arc close` unless IW-2 is answered
+yes by the operator; rewriting existing tasks' criteria text.
+
+## Acceptance Criteria
+
+### Agent
+<!-- @auto-tick-on-decide -->
+- [ ] Problem statement validated
+<!-- @auto-tick-on-decide -->
+- [ ] Assumptions tested
+<!-- @auto-tick-on-decide -->
+- [ ] Recommendation written with rationale
+
+### Human
+<!-- @auto-tick-on-decide -->
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+  **Steps:**
+  1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
+  2. Review the Agent Recommendation section and go/no-go criteria evaluation
+  3. Record decision via the Watchtower form or the command shown alongside the QR code
+  **Expected:** Decision recorded, task completed
+  **If not:** Ask agent for clarification on specific findings
+
+## Go/No-Go Criteria
+
+<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
+**GO if:**
+- The spike shows an interpreting reviewer reaching defensible verdicts, with reasons,
+  on real criteria — including correctly escalating the ones it cannot verify
+- IW-1 yields a bounded "stays human" set the operator agrees with
+
+**NO-GO if:**
+- The reviewer's verdicts on the spike set are not defensible (it ticks what it
+  cannot have verified), i.e. we would be replacing click-through with auto-through
+
+## Verification
+
+# Shell commands that MUST pass before work-completed. One per line.
+# Lines starting with # are comments (skipped). Empty lines ignored.
+# For inception tasks, verification is often not needed (decisions, not code).
+#
+# Toolchain hint (L-291): if a GO decision will mean editing *.vbproj/*.csproj/*.xaml,
+# *.go, Cargo.toml, tsconfig.json, or pom.xml in the build task, plan to add the
+# matching build command (dotnet build / go build / cargo check / tsc --noEmit /
+# mvn compile) to that build task's ## Verification — P-011 only runs what you write.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Operator direction 2026-09-29: rubber-stamping is friction with no value; human-in-the-loop only for Tier 0 and high risk; everything else an independent agent reviewer evaluates interpretively (good+why / not good+what is needed / escalate). The verdict contract already exists (lib/judge_verdict.py green/amber/red/unknown, guidance mandatory on non-green); what is missing is an interpretive agent behind it - every current judge is a static script. Measured: 353 open Human criteria, of which only 11 are tier-0/bypass.
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
