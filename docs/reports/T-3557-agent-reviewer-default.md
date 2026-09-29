@@ -173,3 +173,12 @@ vectors cover 69% of 494 active tasks (measured 2026-09-29), so a model that lea
 on value alone would put most tasks on the same rung. The cost/risk side
 (blast_radius 1 vs 9) discriminates. Both sides need a better value signal to earn
 equal weight.
+
+### Segment 4 — operator answers IW-4, IW-5, IW-6
+
+> 4 +5 +6
+
+Read as assent to each proposal. For IW-4, that is the one-off sweep of all open
+Human criteria (the answer the agent had suggested); the reading was stated back to
+the operator in chat as reversible. IW-7 (the impact-risk model) is the one question
+left, and it is answered by design work, not by a ruling.

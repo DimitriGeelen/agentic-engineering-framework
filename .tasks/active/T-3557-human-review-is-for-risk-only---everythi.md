@@ -150,19 +150,19 @@ would have patched the layer this inception removes. So A is not built as scoped
   rationale: Operator 2026-09-29, segment 3 — "we need to have an impact risk model." Impact has two sides: the risk materialising, AND the value the change is meant to bring, so closing something as done without delivering it is itself a risk. The model sets how much to spend on the review, because external review costs money. Agent note: most inputs already exist per task — BVP value, blast_radius, tier, effort, inception voi_score and IW confidence. But the value axis is coarse (5 vectors cover 69% of 494 tasks), so a model leaning on value alone would barely separate tasks. Needs a design and a spend ceiling.
 
 - **IW-4: What happens to the ~350 open Human criteria already on the operator's desk?**
-  confidence: 1
-  disposition:
-  rationale: D-662 says open tasks only. Options — sweep them all through the agent reviewer once, or only apply the new routing to criteria written from now on. The sweep is what clears the operator's desk; it is also a large one-off volume.
+  confidence: 2
+  disposition: answered
+  rationale: Operator 2026-09-29, segment 4 — "4 +5 +6", read as assent to the agent's suggested answer, a one-off SWEEP of all open Human criteria through the reviewer (consistent with D-662 "open tasks only"; closed work is never re-reviewed). Reading stated back to the operator in chat; reversible if meant otherwise, and nothing is swept before the build task exists.
 
 - **IW-5: What becomes of the D-626 classifier?**
-  confidence: 2
-  disposition:
-  rationale: Agent proposal — drop "deterministic" as the delegation test entirely; keep only the risk carve-outs (tier0, act-in-the-world, sovereignty) as a router to the human. The classifier stops deciding what the reviewer may judge and only decides what the human must.
+  confidence: 3
+  disposition: answered
+  rationale: Operator 2026-09-29, segment 4 — assent. "deterministic" is dropped as the delegation test; the classifier keeps only the risk carve-outs (tier0, irreversible act-in-the-world, sovereignty) and routes those to the human. It no longer decides what the reviewer may judge, only what the human must.
 
 - **IW-6: Where does an escalation or a red verdict land, so it is not lost?**
-  confidence: 2
-  disposition:
-  rationale: Ties to T-3555 (refusal ledger) — the operator's "negative recording". Agent proposal: every non-green review verdict is recorded; unknown/escalate surfaces on /approvals; repeats feed the T-3555 recurrence detector.
+  confidence: 3
+  disposition: answered
+  rationale: Operator 2026-09-29, segment 4 — assent. Every non-green review verdict is recorded on the T-3555 refusal ledger (the operator's "negative recording"); unknown/escalate surfaces on /approvals; repeats feed the T-3555 recurrence detector.
 
 ## Exploration Plan
 
