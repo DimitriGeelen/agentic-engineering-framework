@@ -1043,28 +1043,80 @@ _fw_single_command_is_safe() {
 has_bash_write_pattern() {
     local cmd="$1"
 
-    # Redirect operators (but not comparison operators like 2>&1)
-    if echo "$cmd" | grep -qE '[^2>&]>[^>&]|>>'; then
+    # Redirect operators, but not descriptor duplication like `2>&1`.
+    #
+    # Issue #78: the previous regex was '[^2>&]>[^>&]|>>'. That leading class was reaching
+    # for the fd-dup idiom, but it tests the character BEFORE the operator — and `2>&1`
+    # and `2> file` differ only AFTER it. So every redirect preceded by `2` was exempted,
+    # including one that truncates a real file: `bin/fw audit 2> out.txt` reported
+    # no-write, and with is_bash_safe_command also returning safe that is a Tier-1 gate
+    # bypass — a file-truncating write permitted with no active task. `&>` missed for the
+    # same reason. `1>` and `3>` were never exempted, which is what made the shape of the
+    # bug visible: the exclusion was about the fd digit, not about duplication.
+    #
+    # The rule is about what FOLLOWS the operator. `>` or `>>` not followed by `&` opens a
+    # file for writing; `>&` duplicates a descriptor and writes no file. A trailing
+    # operator at end-of-string is malformed and counts as a write (fail closed).
+    #
+    # Herestring, not `echo "$cmd" |`: under `set -eo pipefail` a `grep -q` that matches
+    # early closes the pipe, `echo` takes SIGPIPE, and the pipeline exits 141. On a
+    # security predicate that reads as "no write pattern" — failing OPEN.
+    #
+    # Amendment (same PR): `>>?($|[^&])` is right about what
+    # FOLLOWS the operator, but it classifies `2>/dev/null` as a WRITE — one of the most
+    # common idioms in shell. Writing to /dev/null opens no file; the kernel discards the
+    # descriptor. So the first cut of this fix removed a fail-OPEN and introduced a fail-CLOSED in the same
+    # function, structurally identical to the `-i`-inside-a-filename refusal fixed below.
+    # Found by a consumer project (010-termlink) running the vendored first cut.
+    #
+    # Three things here are load-bearing:
+    #
+    #  1. STRIP, DO NOT SHORT-CIRCUIT. A rule that returned early on "contains /dev/null"
+    #     would exempt a real write sitting beside it. Stripping keeps a MIX correct:
+    #         cmd 2>/dev/null           -> `cmd 2`            -> not-write
+    #         cmd > out.txt 2>/dev/null -> `cmd > out.txt 2`  -> WRITE, correctly
+    #  2. THE TRAILING BOUNDARY, with \2 putting the delimiter back. Without it
+    #     `/dev/nullish` matches `/dev/null`, the `ish` is left behind, and a real write is
+    #     silently exempted — a NEW fail-open, strictly worse than the bug being fixed.
+    #     `> /dev/nullish` and `> /dev/null.bak` must stay WRITE.
+    #  3. THE FALLBACK. If the strip yields nothing, test the ORIGINAL command. A broken
+    #     helper must make this gate STRICTER, never looser.
+    local _probe
+    _probe="$(sed -E 's#>>?[[:space:]]*/dev/(null|stderr|stdout)([^A-Za-z0-9_./-]|$)#\2#g' <<< "$cmd")"
+    [ -n "$_probe" ] || _probe="$cmd"
+    if grep -qE '>>?($|[^&])' <<< "$_probe"; then
         return 0
     fi
 
-    # In-place sed
-    if echo "$cmd" | grep -qE '\bsed\b.*-i'; then
+    # In-place sed — anchored on an actual FLAG, not a bare `-i` substring.
+    #
+    # The previous rule was '\bsed\b.*-i', with no boundary after the `-i`. Any
+    # `-i` appearing anywhere after the word `sed` matched, including inside a FILENAME:
+    # `sed -n '1,5p' data-in-flight.txt` was refused as an in-place edit. Fail-closed, and
+    # it matters more than it looks — false refusals teach an operator the gate is noise,
+    # and a gate people route around is how a genuine fail-open survives unnoticed.
+    if grep -qE '\bsed\b.*(^|[[:space:]])(-[a-zA-Z]*i([^a-zA-Z0-9-]|$)|--in-place)' <<< "$cmd"; then
         return 0
     fi
+
+    # The three rules below were `echo "$cmd" | grep -qE`. Under `set -eo pipefail`
+    # a matching `grep -q` exits and closes the pipe, `echo` takes SIGPIPE, and the rule
+    # returns 141 — which on THIS predicate means "no write pattern found". A match would
+    # therefore fail the security gate OPEN — the same failure the redirect comment above
+    # describes. Herestrings now.
 
     # Destructive file operations (already caught by Tier 0 but belt-and-suspenders)
-    if echo "$cmd" | grep -qE '\b(rm|rmdir)\b'; then
+    if grep -qE '\b(rm|rmdir)\b' <<< "$cmd"; then
         return 0
     fi
 
     # Heredoc
-    if echo "$cmd" | grep -qE '<<\s*['"'"'"]?EOF'; then
+    if grep -qE '<<\s*['"'"'"]?EOF' <<< "$cmd"; then
         return 0
     fi
 
     # tee (writes to file)
-    if echo "$cmd" | grep -qE '\btee\b'; then
+    if grep -qE '\btee\b' <<< "$cmd"; then
         return 0
     fi
 
