@@ -16,7 +16,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-09-28T13:19:21Z
-last_update: 2026-09-28T18:29:24Z
+last_update: '2026-09-29T13:45:11Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -52,6 +52,15 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=6 (lines=148,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T13:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=152,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -179,6 +188,11 @@ Selection is specified top-down but no objectives artefact exists, so 'anything 
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation
      can be revised before fw inception decide. -->
+- Operator, 2026-09-29, when shown this decision: the page shape is 055's arc-007
+  (http://192.168.10.107:3050/arcs/arc-007), plus "a task overview more on the top" and
+  "absolute tops quick links to the sections which should be anchors". The arc page
+  builds that shape first (T-3564); the project objectives page reuses it rather than
+  inventing a second layout.
 
 ## Decisions
 

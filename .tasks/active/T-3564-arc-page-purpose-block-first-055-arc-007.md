@@ -2,7 +2,13 @@
 id: T-3564
 name: "arc page: Purpose block first, 055 arc-007 layout (T-3563 GO part C)"
 description: >
-  T-3563 GO, operator-chosen target: 055's arc-007 page (http://192.168.10.107:3050/arcs/arc-007). Purpose block above stats and tasks: headline_mechanic as a quote (0 occurrences in web/templates/arc_detail.html today, verified), purpose, objective, success criteria, drivers with rationale and metric, then the dossier. Arcs without the fields render as before. Render surface: needs a [REVIEW]. 055's tested patch (their arcs.py +33, arc_detail.html +38, test_arc_page_dossier.py) is the reference; note shared.render_markdown_safe lacks the tables extra.
+  T-3563 GO, operator-chosen target: 055's arc-007 page (http://192.168.10.107:3050/arcs/arc-007).
+  Purpose block above stats and tasks: headline_mechanic as a quote (0 occurrences
+  in web/templates/arc_detail.html today, verified), purpose, objective, success criteria,
+  drivers with rationale and metric, then the dossier. Arcs without the fields render
+  as before. Render surface: needs a [REVIEW]. 055's tested patch (their arcs.py +33,
+  arc_detail.html +38, test_arc_page_dossier.py) is the reference; note shared.render_markdown_safe
+  lacks the tables extra.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: [T-3563]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T19:06:01Z
-last_update: 2026-09-29T19:06:01Z
-date_finished: null
+last_update: '2026-09-29T19:15:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +56,63 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-29T19:15:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-29T19:15:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3564: arc page: Purpose block first, 055 arc-007 layout (T-3563 GO part C)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reference shape: 055's http://192.168.10.107:3050/arcs/arc-007 (Purpose block, then a
+numbered dossier of 10 sections, then BVP, reports, tasks, closure). Ours today
+(web/templates/arc_detail.html) opens straight into BVP signals; the T-3563 story fields
+(purpose, objective, success_criteria, non_goals, context, decisions, open_questions,
+history, evidence) are in 3 arc YAMLs and rendered nowhere.
+
+**Operator additions, 2026-09-29 (verbatim):** "I want a task overview more on the top.
+And I will add absolute tops quick links to the sections which should be anchors and I
+can quickly click through it." So, relative to 055's layout:
+1. a quick-link bar at the very top of the page, one link per section, each an in-page
+   anchor (055 has none: 0 `href="#…"` on its arc-007 page, measured 2026-09-29);
+2. a task overview near the top, not after BVP and reports as in both 055's page and ours.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The very first element under the arc title is a quick-link bar with one in-page `href="#…"` link per rendered section, and every link's target id exists on the page (test asserts both directions: no dead link, no unlinked section)
+- [ ] A Purpose block (purpose + objective) follows the quick links; it renders from the T-3563 story fields and is omitted cleanly (no empty box) on arcs without them
+- [ ] A task overview sits directly after Purpose: counts by status plus the open tasks listed with links, before any BVP or report section; the full constituent table remains lower down with its own anchor
+- [ ] The story sections render when present (success criteria, context, decisions with status, open questions, non-goals, history, evidence), each with a stable anchor id; absent fields produce no heading
+- [ ] Existing sections (BVP signals, scoped drivers, reports & evidence, constituent tasks, §ACD check, closed) keep working and each gets an anchor in the quick-link bar
+- [ ] Web tests cover an arc with story fields (continuous-run) and one without; `bin/fw watchtower current` passes after restart
+- [ ] Render review by an independent agent reviewer on live screenshots, compared against 055's arc-007 and the operator additions above (operator ruling, T-3557 IW-1)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
