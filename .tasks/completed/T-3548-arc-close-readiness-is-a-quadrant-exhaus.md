@@ -6,16 +6,16 @@ description: >
   Inception: Arc close-readiness is a quadrant-exhaustion predicate, not a completion
   ratio — and the verdict is reviewer-gated like a task
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-09-29T06:55:58Z
-last_update: 2026-09-29T07:18:07Z
-date_finished: 2026-09-29T07:18:07Z
+last_update: '2026-09-29T07:00:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -240,15 +240,15 @@ question of who issues the verdict.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -331,11 +331,7 @@ queue's usefulness. Producing those ~14 missing estimates is small and can prece
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: The 80 percent ratio is a surfacing heuristic in web/blueprints/approvals.py:484, not a gate, so replacing it changes what the approvals queue offers rather than what is permitted — the change is cheap. It is also actively misleading: it weights a typo fix and a keystone identically and rises fastest when the easy work is done, so arc-003 (85.4 percent, 18 open) and arc-019 (92.3 percent, 1 open) read as the same kind of nearly-done. The operator's definition — no unestimated tasks, no Q1 or Q2 left, arc goals demonstrably achieved — is value-aware and cannot be gamed that way, and its first leg closes the false-green hole that a naive quadrant threshold would open, because an unestimated task BLOCKS closure instead of silently failing to count. Open questions are real but bounded and are what this inception is for: whether estimated means confirmed (0 of 3530 today) or marked-proposed (3464 value, 1278 cost), how goal-achievement is judged against headline_mechanic when only 4 of 20 open arcs have captured demo evidence, and whether reviewer-gating arc closure is the same delegation D-586 and D-626 already made or a larger sovereignty step that needs its own ruling.
-
-**Date**: 2026-09-29T07:18:06Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -344,40 +340,3 @@ queue's usefulness. Producing those ~14 missing estimates is small and can prece
 
 ### 2026-09-29T06:58:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-09-29T07:18:06Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** The 80 percent ratio is a surfacing heuristic in web/blueprints/approvals.py:484, not a gate, so replacing it changes what the approvals queue offers rather than what is permitted — the change is cheap. It is also actively misleading: it weights a typo fix and a keystone identically and rises fastest when the easy work is done, so arc-003 (85.4 percent, 18 open) and arc-019 (92.3 percent, 1 open) read as the same kind of nearly-done. The operator's definition — no unestimated tasks, no Q1 or Q2 left, arc goals demonstrably achieved — is value-aware and cannot be gamed that way, and its first leg closes the false-green hole that a naive quadrant threshold would open, because an unestimated task BLOCKS closure instead of silently failing to count. Open questions are real but bounded and are what this inception is for: whether estimated means confirmed (0 of 3530 today) or marked-proposed (3464 value, 1278 cost), how goal-achievement is judged against headline_mechanic when only 4 of 20 open arcs have captured demo evidence, and whether reviewer-gating arc closure is the same delegation D-586 and D-626 already made or a larger sovereignty step that needs its own ruling.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-fd5e2cc7
-- **Timestamp:** 2026-09-29T07:18:08Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 1
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
-     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-63ca97d7
-- **Timestamp:** 2026-09-29T07:18:08Z
-- **Overall:** CONTRADICTED
-- **Claims:** 4
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `web/blueprints/approvals.py:484` | file_line | ✓ pass |
-| `lib/arc.sh:arc_close()` | file | ✗ fail — file not found at PROJECT_ROOT |
-| `docs/reports/T-3548-arc-close-readiness.md` | file | ✓ pass |
-| `T-1671` | task | ✓ pass |
-
-### 2026-09-29T07:18:07Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO
