@@ -42,3 +42,114 @@ grill_me:
       closure of the *original* orchestrator-rethink headline mechanic indefinitely?"
     - "Should arc-003 close on its existing demo, with parallel-execution opening a
       sibling arc — keeping the §ACD ledger clean?"
+
+# ── Arc story (T-3563) — purpose, objective and context, derived from the anchor inception and
+#    externally reviewed. headline_mechanic above is the separate, testable demo claim (G-062).
+purpose: Re-opened the T-1061 orchestrator substrate after it was declared shipped while nothing used
+  it and no routing policy was ever asked.
+objective: The framework's own dispatches pick their model from recorded outcome history during ordinary
+  autonomous operation; every routing constant carries a human ruling; and the routing, cache and governance
+  contracts are pinned by tests.
+supports: []
+success_criteria:
+- id: SC-1
+  criterion: A framework dispatch given only --task-type (no --model) resolves its model from route_cache,
+    and the outcome is written back.
+  evidence: 'docs/reports/orchestrator-rethink-demo/README.md — meta-01-*.json show resolution_source:
+    route_cache; cache-02→cache-03 deltas show write-back'
+- id: SC-2
+  criterion: Each of the 13 silently-defaulted routing-policy constants has an explicit recorded ruling
+    rather than a code-author default.
+  evidence: .tasks/completed/T-1642-arc-a--orchestrator-routing-policy-consu.md §Recommendation — 13-parameter
+    table with proposed defaults for human override
+- id: SC-3
+  criterion: Drift defenses exist for the routing/governance contracts so a new tool or constant change
+    cannot skip governance silently.
+  evidence: .context/project/concerns.yaml#G-061 closure_criteria and partial_mitigation (MCP task_id
+    audit, frame-0x8 golden, tag lint, route_cache schema, /orchestrator page)
+- id: SC-4
+  criterion: At least one autonomous workload — not agent-run verification — dispatches through the orchestrator
+    over a sustained period.
+  evidence: .context/project/concerns.yaml#G-064 — status closed 2026-06-10, 481 dispatches / 290 cron
+    firings, escalation-triage live since 2026-05-14
+non_goals:
+- Cost-aware / cost-weighted model selection — deferred to T-1637, kept horizon:later.
+- Solving the sub-agent /tmp/ bypass (G-015); T-1645 reframes the claim instead.
+- Parallel-execution architecture — opened as the sibling arc parallel-execution-aef via T-2303.
+- Agent-side closure of this arc; the closure verdict is the operator's.
+context:
+- point: T-1061 was called shipped on cargo tests and line-number reads; the user replied that nothing
+    orchestrated and routing rules were never consulted.
+  source: .tasks/completed/T-1641-t-1061-orchestrator-arc-reconsideration-.md#problem-statement
+- point: A 10-worker TermLink investigation found the substrate behaviourally real but operationally dormant
+    — zero framework call-sites passed task_type or --model.
+  source: docs/reports/T-1641-orchestrator-arc-reconsideration.md#findings
+- point: Thirteen routing-policy parameters — fallback chain, promotion/failure thresholds, cache TTL,
+    confidence, taxonomy — were defaulted by code authors, never asked.
+  source: docs/reports/T-1641-orchestrator-arc-reconsideration.md#findings
+- point: The demo proved read path, write path and failure path on the wire, but every cache row came
+    from synthetic verification dispatches.
+  source: docs/reports/orchestrator-rethink-demo/README.md#closure-status
+- point: That absence of real consumers was registered as G-064 and later closed once cron-driven escalation
+    triage supplied autonomous dispatch volume.
+  source: .context/project/concerns.yaml#G-064
+- point: The same 'shipped before substrate-verified' signature appeared in three arcs in five weeks,
+    making this arc the pattern's test case.
+  source: .context/project/decisions.yaml#D-058
+decisions:
+- decision: 'Split the reconsideration three ways: policy (T-1642), framework wiring (T-1643), drift defenses
+    (T-1644).'
+  status: active
+  date: 2026-05-01
+  source: .tasks/completed/T-1641-t-1061-orchestrator-arc-reconsideration-.md#decision
+- decision: Treat 'shipped before substrate-verified' as a recurring class, not an incident; register
+    G-062.
+  status: active
+  date: 2026-05-01
+  source: D-058
+- decision: Arc stays OPEN by default; fw arc close refuses under CLAUDECODE=1, closure is the operator's.
+  status: active
+  date: 2026-05-02
+  source: .tasks/completed/T-1671-implement-default-to-open-agent-gate-in-.md
+- decision: 'Defer the fallback-chain order regression test: pinning the order would lock a policy default
+    by accident.'
+  status: active
+  date: 2026-05-01
+  source: .context/project/concerns.yaml#G-061
+- decision: Parallel-execution work becomes a sibling arc rather than an extension of this one.
+  status: active
+  date: 2026-06-10
+  source: .tasks/completed/T-2303-scoping-inception--parallel-execution-ar.md
+open_questions:
+- question: Is the three-task-type demo sufficient evidence for closure, or must further work ship first?
+  source: .context/arcs/orchestrator-rethink.yaml
+- question: The fallback-chain order test remains unwritten pending the policy ruling it depends on —
+    who unblocks it?
+  source: .context/project/concerns.yaml#G-061
+- question: 'constituent_tasks lists 31 tasks while 123 task files carry arc_id: orchestrator-rethink
+    (or arc-003) — which set does closure count?'
+  source: .context/arcs/orchestrator-rethink.yaml
+history:
+- date: 2026-05-01
+  event: Arc opened after user pushback; T-1641 reconsideration returns GO on a three-way split.
+  source: T-1641
+- date: 2026-05-02
+  event: Framework-side wiring lands; routing demo captured on the wire.
+  source: .tasks/completed/T-1643-arc-b--framework-side-wiring-of-orchestr.md
+- date: 2026-05-02
+  event: Agent auto-closed the arc, reverted two minutes later; close gate built in response.
+  source: .context/arcs/orchestrator-rethink.yaml
+- date: 2026-05-02
+  event: Closure declared OPEN as 5th incident; G-064 registered for zero production consumers.
+  source: docs/reports/orchestrator-rethink-demo/README.md#closure-status
+- date: 2026-06-10
+  event: G-064 closed on measured cron dispatch volume; closure verdict still unrecorded.
+  source: .context/project/concerns.yaml#G-064
+evidence:
+  research_report: docs/reports/T-1641-orchestrator-arc-reconsideration.md
+  dialogue_log: docs/reports/T-1641-orchestrator-arc-reconsideration.md#dialogue-log-c-001-extension
+  demo: docs/reports/orchestrator-rethink-demo/README.md
+story_source: docs/reports/T-3563-pilot-orchestrator-rethink.yaml
+story_review: 'T-3563 pilot, 2026-09-29: drafted by an isolated Opus 5 worker from the anchor inception;
+  checked against sources by an independent external panel (never the drafter); corrections applied. Operator
+  may correct.'

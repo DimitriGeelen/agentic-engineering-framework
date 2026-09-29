@@ -1,118 +1,123 @@
 # T-3563 pilot draft — arc 'readme-first-run'. Drafted 2026-09-29 by an isolated Claude Opus 5 worker (Read/Grep/Glob only) from the arc and its anchor inception. NOT yet applied to .context/arcs/readme-first-run.yaml; pending external review.
-purpose: >-
-  Make the README's five-minute walkthrough true for a person with no agent, and keep
-  it true with a by-hand persona test.
-
-objective: >-
-  State: no README first-run step asserts an outcome the by-hand persona cannot observe,
-  and each persona's regressions are caught by its own scenario rather than masked by
-  the other's.
-
+purpose: Make the README's five-minute walkthrough true for a person with no agent, and keep it true with
+  a by-hand persona test.
+objective: A person with no agent reaches a working first task via the README's five-minute walkthrough
+  without hitting an uncleared block, and each persona's regressions are caught by its own scenario, not
+  masked by the other's.
 supports: []
-
 success_criteria:
-  - id: SC-1
-    criterion: "No step in the README's five-minute block promises a refusal that cannot fire in a plain shell."
-    evidence: "tests/integration/readme_five_minute_by_hand.bats test 2; README.md step 2 now reads 'Try to commit without a task' (git-level, fires for both personas)."
-  - id: SC-2
-    criterion: "The by-hand path has its own executable scenario whose commands are extracted from README.md, not retyped, and is picked up by a runner that runs today."
-    evidence: "five_minute_block() awk extraction at tests/integration/readme_five_minute_by_hand.bats:47; `bats --count tests/integration/` delta 532−528=4, recorded in T-2719."
-  - id: SC-3
-    criterion: "That scenario goes red when the documented path regresses — proven by mutation, not by having only ever passed."
-    evidence: "T-2719 evidence table: old step-2 wording restored → test 2 red; restored → green (L-530)."
-  - id: SC-4
-    criterion: "Blocks found while walking the path by hand are either cleared or filed against an owning task, none left unrecorded."
-    evidence: "T-2816 and T-2817 fixed; T-2815 filed to arc-017; OBS-170 closed by T-2883; OBS-171 recorded open."
-  - id: SC-5
-    criterion: "A live by-hand run on a clean machine is captured as the arc's demo artefact — the mechanic firing, not the suite going green."
-    evidence: "`demo_evidence:` in .context/arcs/readme-first-run.yaml is non-null and traceable to that run; currently null."
-
+- id: SC-1
+  criterion: No step in the README's five-minute block promises a refusal that cannot fire in a plain
+    shell.
+  evidence: tests/integration/readme_five_minute_by_hand.bats test 2; README.md step 2 now reads 'Try
+    to commit without a task' (git-level, fires for both personas).
+- id: SC-2
+  criterion: The by-hand path has its own executable scenario whose commands are extracted from README.md,
+    not retyped, and is picked up by a runner that runs today.
+  evidence: five_minute_block() awk extraction at tests/integration/readme_five_minute_by_hand.bats:47;
+    `bats --count tests/integration/` delta 532−528=4, recorded in T-2719.
+- id: SC-3
+  criterion: That scenario goes red when the documented path regresses — proven by mutation, not by having
+    only ever passed.
+  evidence: 'T-2719 evidence table: old step-2 wording restored → test 2 red; restored → green (L-530).'
+- id: SC-4
+  criterion: Blocks found while walking the path by hand are either cleared or filed against an owning
+    task, none left unrecorded.
+  evidence: T-2816 and T-2817 fixed; T-2815 filed to arc-017; OBS-170 closed by T-2883; OBS-171 recorded
+    open.
+- id: SC-5
+  criterion: A live by-hand run on a clean machine is captured as the arc's demo artefact — the mechanic
+    firing, not the suite going green.
+  evidence: '`demo_evidence:` in .context/arcs/readme-first-run.yaml is non-null and traceable to that
+    run; currently null.'
 non_goals:
-  - "Redesign the seeded onboarding task set — that is arc-017 (T-2815)."
-  - "Change the T-532 onboarding enforcement gate; T-2719 found the block itself correct."
-  - "Make the edit-time task gate reach a human's terminal — it is a Claude Code PreToolUse hook on agent tool calls and cannot."
-  - "Set a git identity for the operator; T-2883's scope was detect-and-tell only."
-
+- Redesign the seeded onboarding task set — that is arc-017 (T-2815).
+- Change the T-532 onboarding enforcement gate; T-2719 found the block itself correct.
+- Make the edit-time task gate reach a human's terminal — it is a Claude Code PreToolUse hook on agent
+  tool calls and cannot.
+- Set a git identity for the operator; T-2883's scope was detect-and-tell only.
 context:
-  - point: "Origin: four green install/onboarding surfaces coexisted with a blocked first external user; the persona question (IW-11) was left open."
-    source: "docs/reports/T-2715-first-run-experience.md#1-problem-statement"
-  - point: "IW-11 asked whether the first-run path is tested as an agent-assisted or a by-hand reader. This arc is T-2715's GO item 3."
-    source: "docs/reports/T-2715-first-run-experience.md#4-open-questions"
-  - point: "Measured against published bytes: by-hand edit gave RC=0 and created the file; agent Write gave exit 2, T-532. Same step, opposite outcomes."
-    source: ".tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md#context"
-  - point: "Why: the task gate is a PreToolUse hook on an agent's Write/Edit/Bash. A person typing into a terminal is never routed through it."
-    source: ".tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md#persona-a--by-hand-no-agent"
-  - point: "The arc's thesis: the by-hand failure is invisible to the agent-assisted test, where the same step blocks and is marked correct."
-    source: ".tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md#context"
-  - point: "Related first-run defect, not this arc's: the onboarding orientation task carries four Agent ACs and zero Human ACs."
-    source: "docs/reports/T-2715-first-run-experience.md#F-7"
-
+- point: 'Origin: four green install/onboarding surfaces coexisted with a blocked first external user;
+    the persona question (IW-11) was left open.'
+  source: docs/reports/T-2715-first-run-experience.md#1-problem-statement
+- point: IW-11 asked whether the first-run path is tested as an agent-assisted or a by-hand reader. This
+    arc is T-2715's GO item 3.
+  source: docs/reports/T-2715-first-run-experience.md#4-open-questions
+- point: 'Measured against published bytes: by-hand edit gave RC=0 and created the file; agent Write gave
+    exit 2, T-532. Same step, opposite outcomes.'
+  source: .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md#context
+- point: 'Why: the task gate is a PreToolUse hook on an agent''s Write/Edit/Bash. A person typing into
+    a terminal is never routed through it.'
+  source: .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md#persona-a--by-hand-no-agent
+- point: 'The arc''s thesis: the by-hand failure is invisible to the agent-assisted test, where the same
+    step blocks and is marked correct.'
+  source: .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md#context
+- point: 'Related first-run defect, not this arc''s: the onboarding orientation task carries four Agent
+    ACs and zero Human ACs.'
+  source: docs/reports/T-2715-first-run-experience.md#F-7
 decisions:
-  - decision: "Two personas, separate scenarios — not one shared first-run path."
-    status: active
-    date: 2026-08-02
-    source: ".context/arcs/readme-first-run.yaml"
-  - decision: "README step 2 demonstrates the commit gate, which fires for both personas."
-    status: active
-    date: 2026-08-05
-    source: ".tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md"
-  - decision: "Extract the walkthrough's commands from README.md rather than copying them into the test."
-    status: active
-    date: 2026-08-05
-    source: "tests/integration/readme_five_minute_by_hand.bats"
-  - decision: "File the agent-unresolvable onboarding task as arc-017's invariant; do not fix it here."
-    status: active
-    date: 2026-08-05
-    source: "T-2815"
-  - decision: "Keystone GO, arc stays open — substrate shipped is not the mechanic demonstrated."
-    status: active
-    date: 2026-08-05
-    source: ".tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md#recommendation"
-  - decision: "Resolve git identity via `git var GIT_COMMITTER_IDENT` across all six surfaces."
-    status: active
-    date: 2026-08-09
-    source: "T-2883"
-  - decision: "Closure blocker OBS-170 dismissed as stale; only a live by-hand run remains."
-    status: superseded
-    date: 2026-08-09
-    source: ".tasks/completed/T-2883-obs-170-surface-missing-git-identity-bef.md#evolution"
-
+- decision: Two personas, separate scenarios — not one shared first-run path.
+  status: active
+  date: 2026-08-02
+  source: .context/arcs/readme-first-run.yaml
+- decision: README step 2 demonstrates the commit gate, which fires for both personas.
+  status: active
+  date: 2026-08-05
+  source: .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md
+- decision: Extract the walkthrough's commands from README.md rather than copying them into the test.
+  status: active
+  date: 2026-08-05
+  source: tests/integration/readme_five_minute_by_hand.bats
+- decision: File the agent-unresolvable onboarding task as arc-017's invariant; do not fix it here.
+  status: active
+  date: 2026-08-05
+  source: T-2815
+- decision: Keystone GO, arc stays open — substrate shipped is not the mechanic demonstrated.
+  status: active
+  date: 2026-08-05
+  source: .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md#recommendation
+- decision: Resolve git identity via `git var GIT_COMMITTER_IDENT` across all six surfaces.
+  status: active
+  date: 2026-08-09
+  source: T-2883
+- decision: Closure blocker OBS-170 dismissed as stale; only a live by-hand run remains.
+  status: superseded
+  date: 2026-08-09
+  source: .tasks/completed/T-2883-obs-170-surface-missing-git-identity-bef.md#evolution
 open_questions:
-  - question: "No live by-hand run has been captured — the arc's demo_evidence is still null, and closure is the operator's call."
-    source: ".context/arcs/readme-first-run.yaml"
-  - question: "OBS-171 open: `fw init` refuses a non-existent target and names no path in the error."
-    source: ".tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md"
-  - question: "Has any user ever completed the seeded onboarding tasks, or does everyone use the skip verb?"
-    source: "docs/reports/T-2715-first-run-experience.md#F-5"
-
+- question: No live by-hand run has been captured — the arc's demo_evidence is still null, and closure
+    is the operator's call.
+  source: .context/arcs/readme-first-run.yaml
+- question: 'OBS-171 open: `fw init` refuses a non-existent target and names no path in the error.'
+  source: .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md
+- question: Has any user ever completed the seeded onboarding tasks, or does everyone use the skip verb?
+  source: docs/reports/T-2715-first-run-experience.md#F-5
 history:
-  - date: 2026-08-02
-    event: "Arc opened with keystone T-2719, from T-2715 GO item 3 (IW-11)."
-    source: ".context/arcs/readme-first-run.yaml"
-  - date: 2026-08-05
-    event: "Both personas re-run against published mirror 970da8a9d under isolated HOME."
-    source: "T-2719"
-  - date: 2026-08-05
-    event: "Second defect scoped out: agent-unresolvable onboarding task filed to arc-017."
-    source: "T-2815"
-  - date: 2026-08-05
-    event: "Keystone work-completed with GO; arc deliberately left open on OBS-170."
-    source: "T-2719"
-  - date: 2026-08-09
-    event: "OBS-170 found already fixed; real defect was an inverted false-positive warning."
-    source: "T-2883"
-
+- date: 2026-08-02
+  event: Arc opened with keystone T-2719, from T-2715 GO item 3 (IW-11).
+  source: .context/arcs/readme-first-run.yaml
+- date: 2026-08-05
+  event: Both personas re-run against published mirror 970da8a9d under isolated HOME.
+  source: T-2719
+- date: 2026-08-05
+  event: 'Second defect scoped out: agent-unresolvable onboarding task filed to arc-017.'
+  source: T-2815
+- date: 2026-08-05
+  event: Keystone work-completed with GO; arc deliberately left open on OBS-170.
+  source: T-2719
+- date: 2026-08-09
+  event: OBS-170 found already fixed; real defect was an inverted false-positive warning.
+  source: T-2883
 evidence:
-  research_report: "docs/reports/T-2715-first-run-experience.md"
-  dialogue_log: "docs/reports/T-2715-first-run-experience.md#6-dialogue-log"
-  design_doc: ".tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md"
-  persona_test: "tests/integration/readme_five_minute_by_hand.bats"
-
+  research_report: docs/reports/T-2715-first-run-experience.md
+  dialogue_log: docs/reports/T-2715-first-run-experience.md#6-dialogue-log
+  design_doc: .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md
+  persona_test: tests/integration/readme_five_minute_by_hand.bats
 provenance:
-  - ".context/arcs/readme-first-run.yaml"
-  - ".tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md"
-  - ".tasks/completed/T-2883-obs-170-surface-missing-git-identity-bef.md"
-  - "docs/reports/T-2715-first-run-experience.md"
-  - "tests/integration/readme_five_minute_by_hand.bats"
-  - "README.md"
-  - ".context/project/decisions.yaml"
+- .context/arcs/readme-first-run.yaml
+- .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md
+- .tasks/completed/T-2883-obs-170-surface-missing-git-identity-bef.md
+- docs/reports/T-2715-first-run-experience.md
+- tests/integration/readme_five_minute_by_hand.bats
+- README.md
+- .context/project/decisions.yaml

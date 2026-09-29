@@ -35,3 +35,148 @@ scoped_drivers:              # max 3, weight ≤6 each (M2). Approved by fw arc 
       driver becomes redundant.R2: weight 3 — propose only if operator wants the arc-scoped
       axis in addition.Likely to be withdrawn after F-AUTONOMY activation settles.'
 proposed_scoped_drivers: []  # Per T-2158 §S4 spike critique: 1 firm + 1 conditional + 1 reject.
+
+# ── Arc story (T-3563) — purpose, objective and context, derived from the anchor inception and
+#    externally reviewed. headline_mechanic above is the separate, testable demo claim (G-062).
+purpose: Let a long-running agent cross context-budget boundaries unattended — self-compact, self-resume,
+  keep working — while staying inside operator-set safety bounds.
+objective: An armed session continues its own work across budget boundaries with no operator relay, bounded
+  by tier ceiling, iteration and task caps, expiry and a halt file, with every lossy discard enumerated
+  for review afterwards.
+supports: []
+success_criteria:
+- id: SC-1
+  criterion: Crossing the budget threshold on a real session drives handover, restart and directive re-injection,
+    reproducibly.
+  evidence: docs/reports/T-3239-continuous-loop-demo/evidence/E8-livefire-budget-restart.txt (6/6, 3/3
+    consecutive runs)
+- id: SC-2
+  criterion: Every brake stops the loop by name — halt file, platform guard, disabled, terminated, max_tasks,
+    max_iterations, expiry, unreadable state.
+  evidence: docs/reports/T-3239-continuous-loop-demo/evidence/E1-brake-truth-table.txt (11/11, asserts
+    stdout shape not log line)
+- id: SC-3
+  criterion: A session that stops early without tripping the budget gauge can be carried forward without
+    an operator, via an externally-driven turn rather than the in-session loop.
+  evidence: 'T-3254 (work-completed) ships the cron-injects-a-turn path; T-3257 live-fire proves it drives
+    a real agent to completion (9/9, twice). Not yet armed in production: continuous-driver-10m is deliberately
+    left PAUSED (D-546), and re-arming it is T-3283 (captured, horizon later, blocked on G-097/G-098).'
+- id: SC-4
+  criterion: Arc, focus task, iteration counter and tier ceiling survive the restart boundary and are
+    visible to the operator.
+  evidence: docs/reports/T-3239-continuous-loop-demo/REPORT.md#e6--the-arc-focus-crosses-the-boundary-44;
+    `fw resume status`
+- id: SC-5
+  criterion: The budget gauge never reports a healthy session when it could not measure one.
+  evidence: docs/reports/T-3239-continuous-loop-demo/evidence/E3-budget-selftrigger.txt (reproduction);
+    T-3241 closed 2026-09-05
+non_goals:
+- Removing or weakening any Tier 0 / consequential-action human gate.
+- Truly unbounded autonomous operation — no ceiling, no run-length cap.
+- Adding a new global scoring driver; F-AUTONOMY lives in policy/value-drivers.yaml.
+- Orchestrator model routing — that is the sibling arc orchestrator-rethink.
+context:
+- point: 'Before the arc, continuous operation was operator-gated: a human ran /compact and fw handover
+    at every budget boundary.'
+  source: docs/reports/T-2158-continuous-run.md#problem-statement
+- point: T-111 already shipped the data-preservation half; this arc adds self-triggering, bounded-autonomy
+    machinery and a discard audit.
+  source: docs/reports/T-2158-continuous-run.md#prior-art-finding-surfaced-by-briefing-engine
+- point: 'The headline sentence bundles two mechanisms that fail independently: in-session Stop-hook continuation
+    (M1) and budget restart (M2).'
+  source: docs/reports/T-3239-continuous-loop-demo/REPORT.md#the-distinction-everything-else-depends-on-l-652
+- point: 'L-652: the wrapper''s auto-restart is gated on its own flag, not on continuous-mode, so ledger
+    events can prove the pre-arc substrate.'
+  source: .context/project/learnings.yaml#L-652
+- point: 'Sovereignty narrows rather than disappears: Tier 0 stays gated post-resume; only the compaction
+    checkpoint is surrendered.'
+  source: docs/reports/T-2158-continuous-run.md#spike-findings-s1-s6-conducted-2026-06-13
+- point: The halt file is the only brake, and writing it needs shell access on the host — no brake from
+    a phone.
+  source: .tasks/active/T-3200-the-continuous-run-halt-has-no-watchtowe.md
+decisions:
+- decision: GO with refinements — extend T-111's substrate; file as sibling of orchestrator-rethink, not
+    child.
+  status: active
+  date: 2026-06-13
+  source: .tasks/completed/T-2158-continuous-run-arc--agent-driven-compact.md
+- decision: 'Scoped drivers cut to two: Discard fidelity firm, Loop closure conditional, Bounded-safety
+    integrity rejected.'
+  status: active
+  date: 2026-06-13
+  source: docs/reports/T-2158-continuous-run.md#spike-findings-s1-s6-conducted-2026-06-13
+- decision: Self-trigger rides checkpoint.sh's existing restart signal; the agent cannot invoke /compact
+    itself.
+  status: superseded
+  date: 2026-06-13
+  source: docs/reports/T-2158-continuous-run.md#spike-findings-s1-s6-conducted-2026-06-13
+- decision: M2 entry point is budget-gate.sh writing .restart-requested, consumed by claude-fw.
+  status: active
+  date: 2026-09-01
+  source: docs/reports/T-3239-continuous-loop-demo/REPORT.md#the-distinction-everything-else-depends-on-l-652
+- decision: Keep honouring the platform's stop_hook_active; widening M1 is a sovereignty call, not a quiet
+    fix.
+  status: active
+  date: 2026-09-01
+  source: .tasks/active/T-3240-the-stop-hook-loop-caps-at-one-continuat.md
+- decision: 'Add a third path: an external cron driver injects a turn into an idle armed session.'
+  status: active
+  date: 2026-09-03
+  source: .tasks/completed/T-3254-arc-012-drive-the-loop-from-outside-when.md
+- decision: Ship a tmux send-keys transport leg, because termlink inject cannot reach a claude TUI.
+  status: active
+  date: 2026-09-05
+  source: .tasks/completed/T-3277-continuous-driver-pluggable-transport---.md
+- decision: Leave the continuous-driver-10m cron paused; carry the re-arm to T-3283.
+  status: active
+  date: 2026-09-05
+  source: D-546
+- decision: 'Arc stays OPEN on M1: M2''s deliverable is on the wire, M1''s is disproven.'
+  status: active
+  date: 2026-09-01
+  source: docs/reports/T-3239-continuous-loop-demo/REPORT.md#bottom-line
+open_questions:
+- question: Should a session drive more than one turn in-session, and bounded by which counter?
+  source: .tasks/active/T-3240-the-stop-hook-loop-caps-at-one-continuat.md
+- question: Keep the tmux transport leg, or wait for the upstream TermLink fix (G-097) and keep one named
+    transport?
+  source: .tasks/active/T-3276-should-continuous-driver-carry-a-non-ter.md
+- question: When does a drivable substrate exist to re-arm the 10-minute driver cron (G-097, G-098)?
+  source: .tasks/active/T-3283-re-arm-continuous-driver-10m-cron-once-a.md
+- question: Does the loop trip at stock dials? E8 moved three, and a session's first 90 seconds are structurally
+    unmeasurable.
+  source: docs/reports/T-3239-continuous-loop-demo/REPORT.md#what-is-not-proven-stated-plainly
+- question: Does the proposed Watchtower halt control give the no-shell operator a real brake? (awaiting
+    human review)
+  source: .tasks/active/T-3200-the-continuous-run-halt-has-no-watchtowe.md
+history:
+- date: 2026-06-01
+  event: Human files the arc draft as inception T-2158; recommendation DEFER pending an evidence walk.
+  source: docs/reports/T-2158-continuous-run.md#dialogue-log
+- date: 2026-06-05
+  event: DEFER recorded; task parked to horizon later.
+  source: .tasks/completed/T-2158-continuous-run-arc--agent-driven-compact.md
+- date: 2026-06-13
+  event: Spikes S1-S6 walked; GO-with-refinements; arc created with two scoped drivers.
+  source: .context/arcs/continuous-run.yaml
+- date: 2026-08-26
+  event: Stop-hook turn driver added, so the loop could take its own next turn in-session.
+  source: .tasks/completed/T-3164-stop-hook-turn-driver--the-continuous-lo.md
+- date: 2026-09-01
+  event: 'Wire-level demo: M2 proven live, M1 disproven at one continuation, arc kept OPEN.'
+  source: docs/reports/T-3239-continuous-loop-demo/REPORT.md
+- date: 2026-09-03
+  event: Pivot to a third path — drive the loop from outside the session.
+  source: .tasks/completed/T-3254-arc-012-drive-the-loop-from-outside-when.md
+- date: 2026-09-05
+  event: Driver drove a real agent to completion; cron left paused; unmeasurable-gauge fix closed.
+  source: .tasks/completed/T-3257-real-agent-live-fire-for-continuous-driv.md
+evidence:
+  research_report: docs/reports/T-2158-continuous-run.md
+  dialogue_log: docs/reports/T-2158-continuous-run.md#dialogue-log
+  demo: docs/reports/T-3239-continuous-loop-demo/REPORT.md
+  headline_demo_transcript: docs/reports/T-3239-continuous-loop-demo/evidence/E8-livefire-budget-restart.txt
+story_source: docs/reports/T-3563-pilot-continuous-run.yaml
+story_review: 'T-3563 pilot, 2026-09-29: drafted by an isolated Opus 5 worker from the anchor inception;
+  checked against sources by an independent external panel (never the drafter); corrections applied. Operator
+  may correct.'
