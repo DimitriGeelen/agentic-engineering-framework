@@ -10,12 +10,12 @@ description: >
   arc_detail.html +38, test_arc_page_dossier.py) is the reference; note shared.render_markdown_safe
   lacks the tables extra.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/blueprints/arcs.py, web/templates/arc_detail.html]
 related_tasks: [T-3563]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: [T-3563]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T19:06:01Z
-last_update: 2026-09-29T22:21:34Z
-date_finished:
+last_update: 2026-09-29T22:53:14Z
+date_finished: 2026-09-29T22:53:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -377,3 +377,15 @@ bin/fw vendor self --check
 
 ### 2026-09-29T22:21:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9f328577
+- **Timestamp:** 2026-09-29T22:54:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-29T22:53:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

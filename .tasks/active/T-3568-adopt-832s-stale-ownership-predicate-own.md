@@ -1,8 +1,21 @@
 ---
 id: T-3568
-name: "adopt 832's stale-ownership predicate: owner human holds only while a Human criterion is open"
+name: "adopt 832's stale-ownership predicate: owner human holds only while a Human
+  criterion is open"
 description: >
-  Operator decision 2026-09-29 (option A): adopt 832-Workflow-designer's T-931 upstream (their consult @11, OBS-577). Rule: owner: agent human is a sovereignty claim only while a Human acceptance criterion is actually OPEN; with none open, ownership returns to the agent. Hit here on T-3562 (0 Human criteria, all Agent criteria ticked, refused 'Cannot complete human-owned task'; fw task delegate reported owner unchanged). Scope from 832: read-only predicate (OWNER-STALE / OWNER-JUSTIFIED / NOT-HUMAN-OWNED); close-gate arm that consults it and refuses the moment one Human criterion is open; attended-only corrector, never on cron; fail-safe = DO NOT FLIP on any uncertain path; audit detector check_stale_ownership; a ledger line per reversion. Ours to add: the cross-check test that the enforcing scanner and the reporting predicate agree (their G-052 close condition), and review of their patch by the external panel before merge. Also: fw note promote defaults new tasks to owner human, which manufactures this class.
+  Operator decision 2026-09-29 (option A): adopt 832-Workflow-designer's T-931 upstream
+  (their consult @11, OBS-577). Rule: owner: agent human is a sovereignty claim only
+  while a Human acceptance criterion is actually OPEN; with none open, ownership returns
+  to the agent. Hit here on T-3562 (0 Human criteria, all Agent criteria ticked, refused
+  'Cannot complete human-owned task'; fw task delegate reported owner unchanged).
+  Scope from 832: read-only predicate (OWNER-STALE / OWNER-JUSTIFIED / NOT-HUMAN-OWNED);
+  close-gate arm that consults it and refuses the moment one Human criterion is open;
+  attended-only corrector, never on cron; fail-safe = DO NOT FLIP on any uncertain
+  path; audit detector check_stale_ownership; a ledger line per reversion. Ours to
+  add: the cross-check test that the enforcing scanner and the reporting predicate
+  agree (their G-052 close condition), and review of their patch by the external panel
+  before merge. Also: fw note promote defaults new tasks to owner human, which manufactures
+  this class.
 
 status: captured
 workflow_type: build
@@ -38,8 +51,8 @@ related_tasks: [T-3562, T-3557, T-3445]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T19:43:59Z
-last_update: 2026-09-29T19:43:59Z
-date_finished: null
+last_update: '2026-09-29T19:45:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +63,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-29T19:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-29T19:45:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3568: adopt 832's stale-ownership predicate: owner human holds only while a Human criterion is open

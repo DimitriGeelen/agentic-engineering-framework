@@ -1,8 +1,16 @@
 ---
 id: T-3561
-name: "D-645 slice 1 vertical: receiver sidecar to real agent and back, proven by a run-time nonce"
+name: "D-645 slice 1 vertical: receiver sidecar to real agent and back, proven by
+  a run-time nonce"
 description: >
-  D-645 (ratified 2026-09-25) was never built past slice 0: T-3475 GO'd the slice-1 transport (HTTP) and slice 1 itself never got a task (OBS-575). This is that task, re-scoped vertically per six external reviews (T-3558, two rounds, three vendors, amber x2): one durable, authenticated path between two REAL agent sessions — receive, store, RECEIVED, inject at a safe point through a real runtime adapter, HANDED_OVER, reply — proven by a nonce generated at test time whose transformed value must come back in the reply, with negative controls that must fail. Injection grants attention, never authority.
+  D-645 (ratified 2026-09-25) was never built past slice 0: T-3475 GO'd the slice-1
+  transport (HTTP) and slice 1 itself never got a task (OBS-575). This is that task,
+  re-scoped vertically per six external reviews (T-3558, two rounds, three vendors,
+  amber x2): one durable, authenticated path between two REAL agent sessions — receive,
+  store, RECEIVED, inject at a safe point through a real runtime adapter, HANDED_OVER,
+  reply — proven by a nonce generated at test time whose transformed value must come
+  back in the reply, with negative controls that must fail. Injection grants attention,
+  never authority.
 
 status: captured
 workflow_type: build
@@ -11,7 +19,9 @@ horizon: now
 tags: []
 components: []
 related_tasks: [T-3397, T-3475, T-3558, T-3559, T-3555]
-write_set: ["lib/sidecar/receiver.py", "lib/sidecar/lifecycle.py", "lib/sidecar/adapter.py", "lib/sidecar/outbox.py", "lib/sidecar/inbox.py", "lib/sidecar_cli.py", "agents/context/sidecar-inbox.sh", "tests/unit/t3561_*", "docs/architecture/sidecar-target-architecture.md"]
+write_set: ["lib/sidecar/receiver.py", "lib/sidecar/lifecycle.py", "lib/sidecar/adapter.py",
+  "lib/sidecar/outbox.py", "lib/sidecar/inbox.py", "lib/sidecar_cli.py", "agents/context/sidecar-inbox.sh",
+  "tests/unit/t3561_*", "docs/architecture/sidecar-target-architecture.md"]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -39,8 +49,8 @@ write_set: ["lib/sidecar/receiver.py", "lib/sidecar/lifecycle.py", "lib/sidecar/
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T16:46:15Z
-last_update: 2026-09-29T16:46:15Z
-date_finished: null
+last_update: '2026-09-29T17:00:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-29T17:00:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 2
+      effort: 8
+    rationale: blast_radius=7 (9-write-set-paths); tier=2 (workflow:build); 
+      effort=8 (lines=309,acs=12)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-29T17:00:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3561: D-645 slice 1 vertical: receiver sidecar to real agent and back, proven by a run-time nonce

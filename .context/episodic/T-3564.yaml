@@ -1,0 +1,125 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3564: arc page: Purpose block first, 055 arc-007 layout (T-3563 GO part C)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T22:54:56Z
+# ============================================================================
+
+task_id: T-3564
+task_name: "arc page: Purpose block first, 055 arc-007 layout (T-3563 GO part C)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T19:06:01Z
+completed: 2026-09-29T22:53:14Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-29T23:36:35+02:00
+last_commit: 2026-09-30T00:52:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real acceptance criteria — 055 arc-007 shape plus the operator's two additions (top quick-link anchors, task overview near the top); same shape noted on T-3535. started; build prompt for TermLink worker. arc page — quick links, Purpose, Task overview, story sections. build notes, verification lines, AC ticks, vendor sync of arc page. render review prompt; file T-3574 (arc page 12-108s, pre-existing BVP parse); save two T-3535 objective reviews. independent render review AMBER (5 fixes); round-2 fix prompt. round 2 render fixes — awaiting review, list cap, sticky jump bar, task-file links, scoped-drivers anchor, purpose headline. round 2 build notes; vendor sync of arc page. round-2 re-review prompt. round 3 — quick-link bar moved out of the header card so it actually pins; Playwright geometry test. vendor sync — arc page round 3, plus T-3570/T-3571 vendored copies left unstaged earlier
+
+# Key outcomes
+outcomes:
+  - 'The very first element under the arc title is a quick-link bar with one in-page `href="#…"` link per rendered section, and every link''s target id exists on the page (test asserts both directions: no dead link, no unlinked section)'
+  - 'A Purpose block (purpose + objective) follows the quick links; it renders from the T-3563 story fields and is omitted cleanly (no empty box) on arcs without them'
+  - 'A task overview sits directly after Purpose: counts by status plus the open tasks listed with links, before any BVP or report section; the full constituent table remains lower down with its own anchor'
+  - 'The story sections render when present (success criteria, context, decisions with status, open questions, non-goals, history, evidence), each with a stable anchor id; absent fields produce no heading'
+  - 'Existing sections (BVP signals, scoped drivers, reports & evidence, constituent tasks, §ACD check, closed) keep working and each gets an anchor in the quick-link bar'
+  - 'Web tests cover an arc with story fields (continuous-run) and one without; `bin/fw watchtower current` passes after restart'
+  - 'Render review by an independent agent reviewer on live screenshots, compared against 055''s arc-007 and the operator additions above (operator ruling, T-3557 IW-1). Round 1 AMBER (6 fixes), round 2 AMBER (sticky bar did not pin), round 3 fix applied with the geometry evidence the reviewer asked for; the reviewer had stated that makes it GREEN. Trail: docs/reports/T-3564-render-review.md'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'round 2 render fixes — awaiting review, list cap, sticky jump bar, task-file links, scoped-drivers anchor, purpose headline'
+    source: git-mined
+  - description: 'independent render review AMBER (5 fixes); round-2 fix prompt'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/lib/arc_close_readiness.py'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - '.agentic-framework/web/blueprints/arcs.py'
+  - '.agentic-framework/web/templates/_approvals_content.html'
+  - '.agentic-framework/web/templates/approvals.html'
+  - '.agentic-framework/web/templates/arc_detail.html'
+  - 'docs/reports/T-3535-objectives-review-anthropic.md'
+  - 'docs/reports/T-3535-objectives-review-zai.md'
+  - 'docs/reports/T-3564-build-notes.md'
+  - 'docs/reports/T-3564-build-prompt.md'
+  - 'docs/reports/T-3564-fix-prompt.md'
+  - 'docs/reports/T-3564-render-review.md'
+  - 'docs/reports/T-3564-rereview-prompt.md'
+  - 'docs/reports/T-3564-review-prompt.md'
+  - '.tasks/active/T-3535-per-project-goals-and-objectives-a-proje.md'
+  - '.tasks/active/T-3564-arc-page-purpose-block-first-055-arc-007.md'
+  - '.tasks/active/T-3574-arc-page-takes-12-108s-per-request---bvp.md'
+  - 'tests/playwright/test_arc_quicklinks_sticky.py'
+  - 'tests/web/test_t3564_arc_page_layout.py'
+  - 'web/blueprints/arcs.py'
+  - 'web/templates/arc_detail.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T23:36:35'
+    action: 'T-3564: real acceptance criteria — 055 arc-007 shape plus the operator''s two additions (top quick-link anchors, task overview near the top); same shape noted on T-3535'
+  - time: '2026-09-30T00:22:14'
+    action: 'T-3564: started; build prompt for TermLink worker'
+  - time: '2026-09-30T00:27:54'
+    action: 'T-3564: arc page — quick links, Purpose, Task overview, story sections'
+  - time: '2026-09-30T00:30:12'
+    action: 'T-3564: build notes, verification lines, AC ticks, vendor sync of arc page'
+  - time: '2026-09-30T00:39:01'
+    action: 'T-3564: render review prompt; file T-3574 (arc page 12-108s, pre-existing BVP parse); save two T-3535 objective reviews'
+  - time: '2026-09-30T00:41:26'
+    action: 'T-3564: independent render review AMBER (5 fixes); round-2 fix prompt'
+  - time: '2026-09-30T00:44:49'
+    action: 'T-3564: round 2 render fixes — awaiting review, list cap, sticky jump bar, task-file links, scoped-drivers anchor, purpose headline'
+  - time: '2026-09-30T00:45:39'
+    action: 'T-3564: round 2 build notes; vendor sync of arc page'
+  - time: '2026-09-30T00:46:27'
+    action: 'T-3564: round-2 re-review prompt'
+  - time: '2026-09-30T00:52:32'
+    action: 'T-3564: round 3 — quick-link bar moved out of the header card so it actually pins; Playwright geometry test'
+  - time: '2026-09-30T00:52:55'
+    action: 'T-3564: vendor sync — arc page round 3, plus T-3570/T-3571 vendored copies left unstaged earlier'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 227 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 227
+  commits: 11
+  files_changed: 23
+  lines_added: 1563
+  lines_removed: 65
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3564-arc-page-purpose-block-first-055-arc-007.md
+generated_by: context-agent-hybrid

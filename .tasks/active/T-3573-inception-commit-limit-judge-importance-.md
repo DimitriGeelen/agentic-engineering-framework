@@ -1,8 +1,19 @@
 ---
 id: T-3573
-name: "Inception commit limit: judge importance at the boundary instead of cutting work off — extend per-inception when important and still producing findings"
+name: "Inception commit limit: judge importance at the boundary instead of cutting
+  work off — extend per-inception when important and still producing findings"
 description: >
-  Operator 2026-09-30: 'if we hit the boundary of two, we should not just stop. Maybe we should evaluate how important it is. And if it's an important inception then suggest to increase it and just not cut the work directly.' Today agents/git/lib/hooks.sh:238 blocks at INCEPTION_COMMIT_LIMIT (project-wide only; no per-inception setting). Design: at the limit, compute importance (voi_score, target_blast_radius, arc/BVP) and momentum (research artifact growth, IW questions newly disposed since last N commits). Important + moving -> propose an extension that an independent agent reviewer judges (T-3557 ruling), recorded per inception in frontmatter (e.g. inception_commit_extension: {to, reason, by}); the hook honours it. Unimportant or circling -> block as today, with the reason (no new findings; decide, narrow or split). Every extension logged. Must stay consistent with Inception Discipline (no build artefacts before GO).
+  Operator 2026-09-30: 'if we hit the boundary of two, we should not just stop. Maybe
+  we should evaluate how important it is. And if it's an important inception then
+  suggest to increase it and just not cut the work directly.' Today agents/git/lib/hooks.sh:238
+  blocks at INCEPTION_COMMIT_LIMIT (project-wide only; no per-inception setting).
+  Design: at the limit, compute importance (voi_score, target_blast_radius, arc/BVP)
+  and momentum (research artifact growth, IW questions newly disposed since last N
+  commits). Important + moving -> propose an extension that an independent agent reviewer
+  judges (T-3557 ruling), recorded per inception in frontmatter (e.g. inception_commit_extension:
+  {to, reason, by}); the hook honours it. Unimportant or circling -> block as today,
+  with the reason (no new findings; decide, narrow or split). Every extension logged.
+  Must stay consistent with Inception Discipline (no build artefacts before GO).
 
 status: captured
 workflow_type: build
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T22:17:43Z
-last_update: 2026-09-29T22:17:43Z
-date_finished: null
+last_update: '2026-09-29T22:30:55Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-29T22:30:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-29T22:30:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3573: Inception commit limit: judge importance at the boundary instead of cutting work off — extend per-inception when important and still producing findings

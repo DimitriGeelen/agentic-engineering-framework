@@ -1,8 +1,15 @@
 ---
 id: T-3574
-name: "Arc page takes 12-108s per request - _bvp_signals re-parses ~3,600 task frontmatters on every load"
+name: "Arc page takes 12-108s per request - _bvp_signals re-parses ~3,600 task frontmatters
+  on every load"
 description: >
-  Measured 2026-09-30: GET /arcs/continuous-run 108.5s, /arcs/readme-first-run 12.2s. cProfile of arc_detail (168s in-process): _bvp_signals 156.6s cumulative; bvp._parse_fm_from_path called 3,556 times (77.8s, ~22ms each); bvp._arc_member_tasks 46.4s; arcs._bvp_coherence_for_arc 31.6s. Pre-existing: T-3564's build (dd4a2880c..3805546c0) did not touch these functions. Fix direction: parse each task's frontmatter once per request (or reuse the existing task/approvals cache), and scope member lookup to the arc instead of the whole corpus. Profile: rerun the cProfile snippet in the T-3564 session notes.
+  Measured 2026-09-30: GET /arcs/continuous-run 108.5s, /arcs/readme-first-run 12.2s.
+  cProfile of arc_detail (168s in-process): _bvp_signals 156.6s cumulative; bvp._parse_fm_from_path
+  called 3,556 times (77.8s, ~22ms each); bvp._arc_member_tasks 46.4s; arcs._bvp_coherence_for_arc
+  31.6s. Pre-existing: T-3564's build (dd4a2880c..3805546c0) did not touch these functions.
+  Fix direction: parse each task's frontmatter once per request (or reuse the existing
+  task/approvals cache), and scope member lookup to the arc instead of the whole corpus.
+  Profile: rerun the cProfile snippet in the T-3564 session notes.
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T22:36:00Z
-last_update: 2026-09-29T22:36:00Z
-date_finished: null
+last_update: '2026-09-29T22:45:22Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-29T22:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-29T22:45:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3574: Arc page takes 12-108s per request - _bvp_signals re-parses ~3,600 task frontmatters on every load
