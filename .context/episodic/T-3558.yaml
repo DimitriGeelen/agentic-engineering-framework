@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3558: circuit address everywhere - D-660 wording dropped the 5-level model a peer then abandoned; TermLink keys are per machine
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T19:14:32Z
+# ============================================================================
+
+task_id: T-3558
+task_name: "circuit address everywhere - D-660 wording dropped the 5-level model a peer then abandoned; TermLink keys are per machine"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T14:35:01Z
+completed: 2026-09-29T19:14:19Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-29T16:37:32+02:00
+last_commit: 2026-09-29T18:47:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — circuit address everywhere; D-660's wording dropped it and a peer followed. external review brief — three vendors on addressing, identity and trust. three external reviews — amber, amber, amber; consumption is the unanimous top risk. the consumption design exists (D-645) and was never built — round-2 review launched. round-2 external reviews saved verbatim — amber x3. round-2 synthesis — D-645 right, amber x3, one shared top risk; adapter finding recorded. questions answered, GO recommended; T-3561 tasks D-645 slice 1 so it cannot stall again; T-3560 recorded
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.context/working/focus.yaml'
+  - 'docs/reports/T-3558-circuit-address-everywhere.md'
+  - 'docs/reports/T-3558-external-review-brief.md'
+  - 'docs/reports/T-3558-external-review-brief-round2.md'
+  - 'docs/reports/T-3558-review2-anthropic.md'
+  - 'docs/reports/T-3558-review2-openai.md'
+  - 'docs/reports/T-3558-review2-zai.md'
+  - 'docs/reports/T-3558-review-anthropic.md'
+  - 'docs/reports/T-3558-review-openai.md'
+  - 'docs/reports/T-3558-review-zai.md'
+  - '.tasks/active/T-3558-circuit-address-everywhere---d-660-wordi.md'
+  - '.tasks/active/T-3560-arc-scoped-driver-weight-range-is-1-6-op.md'
+  - '.tasks/active/T-3561-d-645-slice-1-vertical-receiver-sidecar-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T16:37:32'
+    action: 'T-3558: inception — circuit address everywhere; D-660''s wording dropped it and a peer followed'
+  - time: '2026-09-29T16:45:29'
+    action: 'T-3558: external review brief — three vendors on addressing, identity and trust'
+  - time: '2026-09-29T16:48:25'
+    action: 'T-3558: three external reviews — amber, amber, amber; consumption is the unanimous top risk'
+  - time: '2026-09-29T17:36:31'
+    action: 'T-3558: the consumption design exists (D-645) and was never built — round-2 review launched'
+  - time: '2026-09-29T17:42:18'
+    action: 'T-3558: round-2 external reviews saved verbatim — amber x3'
+  - time: '2026-09-29T17:49:12'
+    action: 'T-3558: round-2 synthesis — D-645 right, amber x3, one shared top risk; adapter finding recorded'
+  - time: '2026-09-29T18:47:28'
+    action: 'T-3558: questions answered, GO recommended; T-3561 tasks D-645 slice 1 so it cannot stall again; T-3560 recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 279 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 279
+  commits: 7
+  files_changed: 14
+  lines_added: 2280
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3558-circuit-address-everywhere---d-660-wordi.md
+generated_by: context-agent-hybrid

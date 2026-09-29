@@ -7,16 +7,16 @@ description: >
   correct the record with 832 and 010-termlink; decide whether to propose per-project
   identity to TermLink.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/sidecar-inbox.sh, tests/unit/sidecar_inbox_hook.bats]
 related_tasks: [T-3518, T-3433, T-3287, T-3543]
 created: 2026-09-29T14:35:01Z
-last_update: '2026-09-29T14:45:27Z'
-date_finished:
+last_update: 2026-09-29T19:14:19Z
+date_finished: 2026-09-29T19:14:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -138,15 +138,15 @@ the trust layer (signer verification, replay, key lifecycle); any TermLink chang
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -207,9 +207,48 @@ the trust layer (signer verification, replay, key lifecycle); any TermLink chang
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Amend D-660 so the rule it states is the rule the code already follows: the circuit id, with the fallback ladder (agent, session, project, hub, host), is the address after `inbox:` for all agent-to-agent traffic, and `dm:<fp>:<fp>` is TermLink transport only, never a private circuit. D-660 was worded `inbox:<agent-id>` where D-599 said `inbox:<circuit-id>`, and a peer (832) acted on the wording and withdrew the model. `dm:` keys on TermLink's machine-wide identity, so between co-resident projects it collapses into one shared topic (OBS-567, verified OBS-574). Two rounds of three-vendor external review returned amber, not red: they endorse the direction and put consumption first. That is scoped to D-645's own build, not to this addressing ruling.
+
+**Date**: 2026-09-29T19:14:18Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-09-29T19:14:18Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Amend D-660 so the rule it states is the rule the code already follows: the circuit id, with the fallback ladder (agent, session, project, hub, host), is the address after `inbox:` for all agent-to-agent traffic, and `dm:<fp>:<fp>` is TermLink transport only, never a private circuit. D-660 was worded `inbox:<agent-id>` where D-599 said `inbox:<circuit-id>`, and a peer (832) acted on the wording and withdrew the model. `dm:` keys on TermLink's machine-wide identity, so between co-resident projects it collapses into one shared topic (OBS-567, verified OBS-574). Two rounds of three-vendor external review returned amber, not red: they endorse the direction and put consumption first. That is scoped to D-645's own build, not to this addressing ruling.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fe9b4353
+- **Timestamp:** 2026-09-29T19:14:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-82bd0bd7
+- **Timestamp:** 2026-09-29T19:14:20Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-3558-circuit-address-everywhere.md` | file | ✓ pass |
+| `lib/sidecar/circuit.py` | file | ✓ pass |
+
+### 2026-09-29T19:14:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
