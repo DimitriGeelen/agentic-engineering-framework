@@ -1,17 +1,10 @@
 ---
-id: T-3574
-name: "Arc page takes 12-108s per request - _bvp_signals re-parses ~3,600 task frontmatters
-  on every load"
+id: T-3575
+name: "Tasks page slow at ~3,600 tasks - 30s TTL cache means most visits are cold (3.4s) and the page ships 1MB of markup"
 description: >
-  Measured 2026-09-30: GET /arcs/continuous-run 108.5s, /arcs/readme-first-run 12.2s.
-  cProfile of arc_detail (168s in-process): _bvp_signals 156.6s cumulative; bvp._parse_fm_from_path
-  called 3,556 times (77.8s, ~22ms each); bvp._arc_member_tasks 46.4s; arcs._bvp_coherence_for_arc
-  31.6s. Pre-existing: T-3564's build (dd4a2880c..3805546c0) did not touch these functions.
-  Fix direction: parse each task's frontmatter once per request (or reuse the existing
-  task/approvals cache), and scope member lookup to the arc instead of the whole corpus.
-  Profile: rerun the cProfile snippet in the T-3564 session notes.
+  Measured 2026-09-30: GET /tasks cold 3.35s, warm 0.22s (cache from T-1233 / L-002 still works); page is 1,041,285 bytes; browser DOMContentLoaded 1.1s even when warm. Two causes: (1) web/shared.py _task_cache has _TASK_CACHE_TTL = 30s, so any visit >30s after the last one rebuilds from ~3,600 files; web/shared.py already has mtime_cached_get (line ~503) for invalidate-on-change. (2) the page renders every task. Fix: invalidate on task-dir change instead of time (keep a safety TTL), and cut the default payload (active tasks in full; completed paged or loaded on demand). Measure before/after: cold and warm server time, bytes, and browser DOMContentLoaded.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-29T22:36:00Z
-last_update: 2026-09-29T23:22:12Z
-date_finished:
+created: 2026-09-29T23:21:25Z
+last_update: 2026-09-29T23:21:25Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,52 +50,25 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-29T22:45:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-29T22:45:22Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3574: Arc page takes 12-108s per request - _bvp_signals re-parses ~3,600 task frontmatters on every load
+# T-3575: Tasks page slow at ~3,600 tasks - 30s TTL cache means most visits are cold (3.4s) and the page ships 1MB of markup
 
 ## Context
 
-Baseline 2026-09-30: /arcs/continuous-run 108.5s, /arcs/readme-first-run 12.2s. cProfile:
-`_bvp_signals` 156.6s of 168s; `bvp._parse_fm_from_path` called 3,556 times (~22ms each);
-`bvp._arc_member_tasks` 46.4s; `arcs._bvp_coherence_for_arc` 31.6s. Pre-existing, not T-3564.
-Prior art: L-002 (T-1233): scan-all-files routes need caches in web/shared.py.
+Operator 2026-09-30: "the tasks page ... takes a long time ... We already did it before and I
+thought we had a solution." Prior fix: T-1233 / L-002 (TTL caches in web/shared.py). It still
+works (warm 0.22s) but the 30s TTL makes most visits cold (3.35s), and the page ships
+1,041,285 bytes (browser DOMContentLoaded 1.1s warm).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Each task file's frontmatter is parsed at most once per arc-page request (or served from a cache invalidated by file change); profile shows `_parse_fm_from_path` calls reduced from ~3,556 to the arc's own members or a cached index
-- [ ] `/arcs/continuous-run` and `/arcs/readme-first-run` each respond in under 3s cold and under 1s warm on this host, measured with curl before and after; numbers recorded in the task
-- [ ] BVP numbers on the arc page are unchanged: a test compares arc BVP_norm/BVP_raw and per-driver contributions before and after the change for at least two arcs
-- [ ] Existing arc/BVP web tests pass; `bin/fw watchtower current` passes after restart; `bin/fw vendor self --check` clean
+- [ ] The task metadata cache in web/shared.py is invalidated when a task file changes (reuse `mtime_cached_get` or an equivalent directory-mtime check) rather than every 30s; a safety TTL may remain but is minutes, not seconds; a test proves a changed task file is reflected on the next request
+- [ ] The default /tasks payload is cut substantially (e.g. active tasks in full, completed paged or loaded on demand) without removing any filter, search or view the page offers today; measured bytes before/after recorded in the task
+- [ ] Measured on this host with curl and a browser navigation timing: cold and warm server time, bytes, DOMContentLoaded, before and after, recorded in the task; warm DOMContentLoaded under 500ms
+- [ ] Existing tasks-page web tests pass; `bin/fw watchtower current` passes after restart; `bin/fw vendor self --check` clean
+- [ ] Render review by an independent agent reviewer on live screenshots (operator ruling, T-3557 IW-1)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -355,10 +321,7 @@ Prior art: L-002 (T-1233): scan-all-files routes need caches in web/shared.py.
 
 ## Updates
 
-### 2026-09-29T22:36:00Z — task-created [task-create-agent]
+### 2026-09-29T23:21:25Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3574-arc-page-takes-12-108s-per-request---bvp.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3575-tasks-page-slow-at-3600-tasks---30s-ttl-.md
 - **Context:** Initial task creation
-
-### 2026-09-29T23:22:12Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
