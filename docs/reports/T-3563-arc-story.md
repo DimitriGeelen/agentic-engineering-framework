@@ -125,3 +125,40 @@ non-blocking and may correct it afterwards. This is T-3557's principle applied t
 the human for risk, independent agent review for the rest.
 
 **Pilot:** `continuous-run`, `readme-first-run`, `orchestrator-rethink`.
+
+## Incoming peer proposal — 055-agentic-fleet-cockpit (relayed by the operator, 2026-09-29)
+
+055's operator asked for the same thing independently: *"What I still miss in the arc is
+arc headlines like goal, objectives, background research materials… All the
+conversation we had. This should become an integral part of the arc"*, and after seeing a
+first version, *"Why don't I see this on the arc page? It must be right at the top. It
+must be easy to find."* 055 built it locally (their T-341, T-342) and sent a report
+(their `docs/reports/T-343-aef-arc-dossier-report.md`, pickup P-005). Treated as a
+proposal, not an instruction; claims verified against our code where cheap:
+
+| 055 claim | verified here |
+|---|---|
+| the arc page does not render `headline_mechanic` | **TRUE.** 0 occurrences in `web/templates/arc_detail.html`. The field G-062 makes mandatory has never been shown to the operator on the arc page. |
+| the arc page does not render scoped drivers' rationale | **Stale for us**: our template renders `scoped_drivers` and `rationale`. |
+| `approve-driver` accepts only human-attesting flags | **Stale for us**: T-3429 added a reviewer-gated default path (`--all-reviewed`, `approved_by: reviewer:…`). |
+| `render_markdown_safe` lacks the `tables` extra | not checked (no `extras` in `web/shared.py` by grep) |
+
+**What 055 adds to T-3563's design:**
+1. **A dossier document per arc** (`docs/arcs/<id>/README.md`, ten fixed sections: headline
+   and goal, background, drivers, scope, decision trail, research library, operator
+   dialogue log, open questions, milestones and tasks, closing). This complements our
+   field structure rather than competing with it: the YAML fields are the short,
+   machine-read index that drivers, scoring and closure use; the dossier is the long form.
+2. **"Purpose" block first on the arc page**, above stats and task lists: headline, goal,
+   objectives, drivers with rationale, and the dossier. Without this, the new fields are as
+   invisible as `headline_mechanic` already is.
+3. **Anti-rot:** a test that fails when a task tagged into the arc is not mentioned in its
+   dossier, or when a research path is missing.
+4. **Assemble, don't retype:** the decision trail from member tasks' inception decisions,
+   driver approvals and status changes; the research library from members' `docs/reports`.
+5. **Extend C-001's dialogue log from inceptions to arcs**, captured as the operator speaks.
+6. **Close gate:** `fw arc close` requires a complete dossier, as it requires demo evidence.
+
+**Consequence for scope.** T-3563's build is three parts, not one: (a) the arc fields from
+the three-vendor review, now being piloted; (b) the dossier plus the anti-rot test; (c) the
+arc page's Purpose block. Part (c) is a render surface.
