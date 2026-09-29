@@ -7,3 +7,16 @@ Order: title → quick links → Purpose → Task overview → success criteria 
 Tests: new file 2 passed. Existing arc tests (test_arcs_routes, test_arc_display_helper, test_arcs_membership_cached, test_approvals_blocked_arcs) pass. `tests/unit/test_arcs_pages_tokens.py::test_only_neutral_fallback_hexes_remain` fails on `#2a7`/`#c33` in arc_detail.html; those are T-3429 reviewer badges, and it fails identically with my changes stashed (pre-existing, not touched).
 
 Done: watchtower restart + `current` (ok), `vendor self` + `--check` (clean). Not done: the independent render review AC (left to the parent) and any browser/screenshot check; the page is ~55s/request under the test client so I did not run playwright arc tests.
+
+## Round 2
+
+Applied render-review GUIDANCE 1-6 (`docs/reports/T-3564-render-review.md`):
+
+1. `_task_overview`: work-completed tasks still in `active/` are labelled `awaiting review` (badge-warn) and listed apart from open tasks; open tasks sort issues, started-work, captured.
+2. Both lists capped at 10 with a "+N more — full table" line.
+3. Quick-link bar is sticky, with a "Jump to:" label and contrasting background; `scroll-margin-top` raised to 4.5rem (also for `h3[id]`).
+4. `_source_ref` links `.tasks/(active|completed)/T-NNNN-…` to `/tasks/T-NNNN`.
+5. Scoped-drivers `<h3 id="scoped-drivers">`, added to `_arc_sections` (the one ordered list) when scoped drivers exist.
+6. Purpose is a `<blockquote><strong>` headline; objective is plain text below.
+
+Tests: 4 new in `tests/web/test_t3564_arc_page_layout.py`. Run together with test_arcs_routes, test_arc_display_helper, test_arcs_membership_cached and test_approvals_blocked_arcs: 37 passed, 0 failed. Watchtower restarted, `watchtower current` exit 0, `vendor self --check` clean.
