@@ -1,9 +1,9 @@
 # T-3563 pilot draft — arc 'orchestrator-rethink'. Drafted 2026-09-29 by an isolated Claude Opus 5 worker (Read/Grep/Glob only) from the arc and its anchor inception. NOT yet applied to .context/arcs/orchestrator-rethink.yaml; pending external review.
-purpose: Re-opened the T-1061 orchestrator substrate after it was declared shipped while nothing used
-  it and no routing policy was ever asked.
-objective: The framework's own dispatches pick their model from recorded outcome history during ordinary
-  autonomous operation; every routing constant carries a human ruling; and the routing, cache and governance
-  contracts are pinned by tests.
+purpose: Make the framework use outcome-informed model routing in everyday operation, under explicit human
+  policy and regression protection, so shipped infrastructure delivers observable orchestration.
+objective: Ordinary framework workloads select models using recorded outcomes; the 13 identified routing-policy
+  parameters have explicit human dispositions, including deferrals; and routing, cache and governance
+  contracts have regression protection.
 supports: []
 success_criteria:
 - id: SC-1
@@ -14,13 +14,17 @@ success_criteria:
 - id: SC-2
   criterion: Each of the 13 silently-defaulted routing-policy constants has an explicit recorded ruling
     rather than a code-author default.
-  evidence: .tasks/completed/T-1642-arc-a--orchestrator-routing-policy-consu.md §Recommendation — 13-parameter
-    table with proposed defaults for human override
+  evidence: .tasks/completed/T-1642-arc-a--orchestrator-routing-policy-consu.md §Recommendation records
+    GO and a table of 13 proposed defaults, each named as a separate decision still to be recorded in
+    decisions.yaml. The cited material does not establish a human disposition and rationale per parameter;
+    those records must be linked before this criterion passes.
 - id: SC-3
-  criterion: Drift defenses exist for the routing/governance contracts so a new tool or constant change
-    cannot skip governance silently.
-  evidence: .context/project/concerns.yaml#G-061 closure_criteria and partial_mitigation (MCP task_id
-    audit, frame-0x8 golden, tag lint, route_cache schema, /orchestrator page)
+  criterion: G-061's minimum defenses are evidenced — MCP task_id audit, an approved fallback-order regression
+    test, governance-frame golden fixture, task-type tag validator and the Watchtower /orchestrator page.
+  evidence: .context/project/concerns.yaml#G-061 records partial mitigation — four of the five minimum
+    defenses shipped (T-1646, T-1648, T-1649, T-1647); the fallback-chain order test remains deferred
+    pending the policy consultation. T-1650's route_cache schema test is additional protection, not a
+    substitute for the missing one.
 - id: SC-4
   criterion: At least one autonomous workload — not agent-run verification — dispatches through the orchestrator
     over a sustained period.
@@ -80,6 +84,9 @@ open_questions:
 - question: The fallback-chain order test remains unwritten pending the policy ruling it depends on —
     who unblocks it?
   source: .context/project/concerns.yaml#G-061
+- question: Where are the human dispositions and rationales for all 13 T-1642 policy parameters, including
+    explicit deferrals?
+  source: .tasks/completed/T-1642-arc-a--orchestrator-routing-policy-consu.md#recommendation
 - question: 'constituent_tasks lists 31 tasks while 123 task files carry arc_id: orchestrator-rethink
     (or arc-003) — which set does closure count?'
   source: .context/arcs/orchestrator-rethink.yaml

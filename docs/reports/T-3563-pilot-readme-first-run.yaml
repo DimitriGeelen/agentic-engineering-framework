@@ -1,9 +1,9 @@
 # T-3563 pilot draft — arc 'readme-first-run'. Drafted 2026-09-29 by an isolated Claude Opus 5 worker (Read/Grep/Glob only) from the arc and its anchor inception. NOT yet applied to .context/arcs/readme-first-run.yaml; pending external review.
 purpose: Make the README's five-minute walkthrough true for a person with no agent, and keep it true with
   a by-hand persona test.
-objective: A person with no agent reaches a working first task via the README's five-minute walkthrough
-  without hitting an uncleared block, and each persona's regressions are caught by its own scenario, not
-  masked by the other's.
+objective: 'The documented first-run path is independently usable without an agent: promised behaviour
+  matches a plain shell, blockers have actionable remedies, and by-hand regressions remain visible independently
+  of agent-assisted success.'
 supports: []
 success_criteria:
 - id: SC-1
@@ -12,17 +12,21 @@ success_criteria:
   evidence: tests/integration/readme_five_minute_by_hand.bats test 2; README.md step 2 now reads 'Try
     to commit without a task' (git-level, fires for both personas).
 - id: SC-2
-  criterion: The by-hand path has its own executable scenario whose commands are extracted from README.md,
-    not retyped, and is picked up by a runner that runs today.
-  evidence: five_minute_block() awk extraction at tests/integration/readme_five_minute_by_hand.bats:47;
-    `bats --count tests/integration/` delta 532−528=4, recorded in T-2719.
+  criterion: The by-hand path has an executable scenario that runs commands extracted from README.md and
+    is picked up by a runner that runs today.
+  evidence: Partially established — five_minute_block() at tests/integration/readme_five_minute_by_hand.bats:47
+    extracts the fenced block for text assertions, but the two behavioural tests execute separately authored
+    commands. Runner inclusion is recorded in T-2719 as a `bats --count tests/integration/` delta of 532−528=4;
+    execution of the extracted walkthrough remains unproven.
 - id: SC-3
   criterion: That scenario goes red when the documented path regresses — proven by mutation, not by having
     only ever passed.
-  evidence: 'T-2719 evidence table: old step-2 wording restored → test 2 red; restored → green (L-530).'
+  evidence: 'T-2719''s evidence table records that restoring the old edit-refusal wording turns test 2
+    red and restoring the correction turns it green (L-530). That verifies the wording guard; no cited
+    mutation demonstrates detection of a broken executable walkthrough step.'
 - id: SC-4
-  criterion: Blocks found while walking the path by hand are either cleared or filed against an owning
-    task, none left unrecorded.
+  criterion: Blocks on the documented by-hand path are cleared or have remedies the reader can execute;
+    other discovered defects are recorded against owning tasks.
   evidence: T-2816 and T-2817 fixed; T-2815 filed to arc-017; OBS-170 closed by T-2883; OBS-171 recorded
     open.
 - id: SC-5
@@ -42,7 +46,7 @@ context:
   source: docs/reports/T-2715-first-run-experience.md#1-problem-statement
 - point: IW-11 asked whether the first-run path is tested as an agent-assisted or a by-hand reader. This
     arc is T-2715's GO item 3.
-  source: docs/reports/T-2715-first-run-experience.md#4-open-questions
+  source: .tasks/completed/T-2715-first-run-experience-why-four-green-inst.md
 - point: 'Measured against published bytes: by-hand edit gave RC=0 and created the file; agent Write gave
     exit 2, T-532. Same step, opposite outcomes.'
   source: .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md#context
@@ -64,7 +68,8 @@ decisions:
   status: active
   date: 2026-08-05
   source: .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md
-- decision: Extract the walkthrough's commands from README.md rather than copying them into the test.
+- decision: Run README-extracted commands in the by-hand scenario; current extraction only supports text
+    assertions.
   status: active
   date: 2026-08-05
   source: tests/integration/readme_five_minute_by_hand.bats
@@ -81,7 +86,7 @@ decisions:
   date: 2026-08-09
   source: T-2883
 - decision: Closure blocker OBS-170 dismissed as stale; only a live by-hand run remains.
-  status: superseded
+  status: active
   date: 2026-08-09
   source: .tasks/completed/T-2883-obs-170-surface-missing-git-identity-bef.md#evolution
 open_questions:
@@ -118,6 +123,7 @@ provenance:
 - .tasks/completed/T-2719-keystone-readme-five-minute-path-tested-.md
 - .tasks/completed/T-2883-obs-170-surface-missing-git-identity-bef.md
 - docs/reports/T-2715-first-run-experience.md
+- .tasks/completed/T-2715-first-run-experience-why-four-green-inst.md
 - tests/integration/readme_five_minute_by_hand.bats
 - README.md
 - .context/project/decisions.yaml

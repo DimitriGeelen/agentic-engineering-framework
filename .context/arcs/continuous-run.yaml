@@ -40,16 +40,18 @@ proposed_scoped_drivers: []  # Per T-2158 §S4 spike critique: 1 firm + 1 condit
 #    externally reviewed. headline_mechanic above is the separate, testable demo claim (G-062).
 purpose: Let a long-running agent cross context-budget boundaries unattended — self-compact, self-resume,
   keep working — while staying inside operator-set safety bounds.
-objective: An armed session continues its own work across budget boundaries with no operator relay, bounded
-  by tier ceiling, iteration and task caps, expiry and a halt file, with every lossy discard enumerated
-  for review afterwards.
+objective: Armed sessions continue useful work across context-budget boundaries without operator relay,
+  within tier/blast-radius limits, run caps and expiry, with an operator halt and category-level discard
+  manifests available for review.
 supports: []
 success_criteria:
 - id: SC-1
-  criterion: Crossing the budget threshold on a real session drives handover, restart and directive re-injection,
-    reproducibly.
-  evidence: docs/reports/T-3239-continuous-loop-demo/evidence/E8-livefire-budget-restart.txt (6/6, 3/3
-    consecutive runs)
+  criterion: A real armed session crosses successive budget boundaries, hands over, restarts and resumes
+    useful work without operator relay.
+  evidence: 'docs/reports/T-3239-continuous-loop-demo/evidence/E8-livefire-budget-restart.txt shows budget-triggered
+    handover, restart and directive re-injection with three non-default dials (6/6, 3/3 consecutive runs).
+    The same transcript then records missing-input errors and restart-budget exhaustion: productive continuation
+    across successive boundaries is not established by it.'
 - id: SC-2
   criterion: Every brake stops the loop by name — halt file, platform guard, disabled, terminated, max_tasks,
     max_iterations, expiry, unreadable state.
@@ -68,8 +70,24 @@ success_criteria:
     `fw resume status`
 - id: SC-5
   criterion: The budget gauge never reports a healthy session when it could not measure one.
-  evidence: docs/reports/T-3239-continuous-loop-demo/evidence/E3-budget-selftrigger.txt (reproduction);
-    T-3241 closed 2026-09-05
+  evidence: docs/reports/T-3239-continuous-loop-demo/evidence/E3-budget-selftrigger.txt reproduces the
+    false healthy reading. T-3241 (closed 2026-09-05) adds unknown-state reporting for failed or insufficient
+    measurements plus a safe checkpoint.sh reader, but its ACs deliberately preserve post-compact-resume's
+    ok/0 seed and leave fast-path enforcement unchanged — so the universal claim is not established by
+    that task alone.
+- id: SC-6
+  criterion: Each autonomous handover records a category-level discard manifest available for post-hoc
+    operator review.
+  evidence: Required by docs/reports/T-2158-continuous-run.md (S6 Q4, build slice S4); shipped by T-2366
+    — agents/handover/discard-manifest.sh emits a per-session manifest linked from the handover body.
+    Category-level (tool-results, turns, working-set files at risk) only; a token-level diff is impossible.
+- id: SC-7
+  criterion: After resume, work exceeding the configured tier/blast-radius boundary is prevented, and
+    Tier 0 actions still require the human gate.
+  evidence: Required by docs/reports/T-2158-continuous-run.md (S3, build slice S5). T-3254's prerequisite
+    section records the session closing an over-ceiling task anyway; T-3253 then closed on the behavioural
+    AC — with the ceiling breached the task is not worked — plus an under-ceiling control leg. The Tier
+    0 leg rests on S3's hook argument, not on a demo.
 non_goals:
 - Removing or weakening any Tier 0 / consequential-action human gate.
 - Truly unbounded autonomous operation — no ceiling, no run-length cap.
@@ -91,8 +109,9 @@ context:
 - point: 'Sovereignty narrows rather than disappears: Tier 0 stays gated post-resume; only the compaction
     checkpoint is surrendered.'
   source: docs/reports/T-2158-continuous-run.md#spike-findings-s1-s6-conducted-2026-06-13
-- point: The halt file is the only brake, and writing it needs shell access on the host — no brake from
-    a phone.
+- point: At filing the halt file was the only brake, and writing it needed shell access on the host —
+    no brake from a phone. T-3200 has since shipped a Watchtower halt/resume control that writes the same
+    file; only its human usability review is open.
   source: .tasks/active/T-3200-the-continuous-run-halt-has-no-watchtowe.md
 decisions:
 - decision: GO with refinements — extend T-111's substrate; file as sibling of orchestrator-rethink, not
@@ -105,6 +124,11 @@ decisions:
   status: active
   date: 2026-06-13
   source: docs/reports/T-2158-continuous-run.md#spike-findings-s1-s6-conducted-2026-06-13
+- decision: F-AUTONOMY activates globally in the same commit as arc creation; the arc's landing is its
+    gate.
+  status: active
+  date: 2026-06-13
+  source: docs/reports/T-2158-continuous-run.md#recommendation
 - decision: Self-trigger rides checkpoint.sh's existing restart signal; the agent cannot invoke /compact
     itself.
   status: superseded
@@ -146,9 +170,9 @@ open_questions:
 - question: Does the loop trip at stock dials? E8 moved three, and a session's first 90 seconds are structurally
     unmeasurable.
   source: docs/reports/T-3239-continuous-loop-demo/REPORT.md#what-is-not-proven-stated-plainly
-- question: Does the proposed Watchtower halt control give the no-shell operator a real brake? (awaiting
-    human review)
-  source: .tasks/active/T-3200-the-continuous-run-halt-has-no-watchtowe.md
+- question: Is the shipped Watchtower halt control (T-3200, agent ACs green) findable and legible to a
+    worried operator on a phone? Its human review AC is still open.
+  source: .tasks/active/T-3200-the-continuous-run-halt-has-no-watchtowe.md#recommendation
 history:
 - date: 2026-06-01
   event: Human files the arc draft as inception T-2158; recommendation DEFER pending an evidence walk.
@@ -169,7 +193,8 @@ history:
   event: Pivot to a third path — drive the loop from outside the session.
   source: .tasks/completed/T-3254-arc-012-drive-the-loop-from-outside-when.md
 - date: 2026-09-05
-  event: Driver drove a real agent to completion; cron left paused; unmeasurable-gauge fix closed.
+  event: External driver drove a real agent to completion on a direct tmux pane; production cron stayed
+    paused.
   source: .tasks/completed/T-3257-real-agent-live-fire-for-continuous-driv.md
 evidence:
   research_report: docs/reports/T-2158-continuous-run.md
@@ -178,5 +203,6 @@ evidence:
   headline_demo_transcript: docs/reports/T-3239-continuous-loop-demo/evidence/E8-livefire-budget-restart.txt
 story_source: docs/reports/T-3563-pilot-continuous-run.yaml
 story_review: 'T-3563 pilot, 2026-09-29: drafted by an isolated Opus 5 worker from the anchor inception;
-  checked against sources by an independent external panel (never the drafter); corrections applied. Operator
-  may correct.'
+  checked against sources by three external reviewers (Anthropic Sonnet 5, OpenAI, Z.ai GLM-5.3), never
+  the drafter; 25 corrections applied, 1 declined with evidence (docs/reports/T-3563-pilot-review-*.md).
+  Operator may correct.'
