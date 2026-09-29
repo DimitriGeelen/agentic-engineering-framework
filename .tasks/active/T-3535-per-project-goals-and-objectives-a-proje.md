@@ -207,6 +207,15 @@ Selection is specified top-down but no objectives artefact exists, so 'anything 
   stale; objective with no arc serving it), never from re-writing prose; this repo
   back-fills once (agent draft from directives + 001-Vision.md + arcs, external review,
   operator sees it once).
+- Rollout ruling, operator 2026-09-30: "for this project that works, but for other
+  projects, either they're [greenfield] we have to do it one time, or for existing
+  [projects] we have to do the same, right?" So: one authoring moment per project, four
+  entry points. (a) greenfield: seed T-002 writes the objectives file; (b) existing-code
+  onboarding: the same step added to lib/seeds/tasks/existing-project/; (c) already-onboarded
+  consumers: `fw upgrade` seeds a one-time "define objectives" task where no objectives
+  file exists, drafted by that project's agent from its own material, independently
+  reviewed, seen once by that project's operator; audit WARNs "no project objectives"
+  until it exists; (d) this repo: agent draft now (option C1, operator "yes").
 
 ## Decisions
 
