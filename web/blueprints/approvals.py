@@ -545,7 +545,7 @@ def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
         blocked_reason = ""
         if not rec.get("present"):
             blocked_reason = (
-                f"anchor {anchor_id or '(none set)'} has no `## Recommendation` — the agent "
+                f"anchor {anchor_id or '(none set)'} has no Recommendation section — the agent "
                 f"advisory that closure review reads. Until it is written the arc cannot be "
                 f"judged, only counted."
             ) if anchor_id else (

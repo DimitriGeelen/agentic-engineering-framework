@@ -272,7 +272,9 @@ def test_l4_invalid_is_worded_differently_from_absent():
     invalid = acr.evaluate([], MEDIANS, GOOD_REC,
                            demo={"state": "invalid", "detail": "too small"})["l4"]["summary"]
     assert absent != invalid
-    assert "no demo_evidence" in absent
+    assert "none recorded" in absent
+    # T-3571: operator-facing — no internal identifiers leak into the card
+    assert "demo_evidence" not in absent and "§ACD" not in absent
     assert "does not validate" in invalid
 
 

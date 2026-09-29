@@ -18,7 +18,7 @@
     <a href="#section-arc-closure" class="approval-stat approval-stat-group decisions-active" style="text-decoration:none; color:inherit;">
         <span class="stat-value">{{ arc_close_count }}</span>
         <span class="stat-label">Arc Closure</span>
-        <span class="stat-breakdown">Close-ready arcs</span>
+        <span class="stat-breakdown">Meeting L1 + L2</span>
     </a>
     {% endif %}
     {% if bvp_proposal_count and bvp_proposal_count > 0 %}
@@ -264,11 +264,11 @@
 {% endfor %}
 {% endif %}
 
-<!-- T-1961: Arc closure — arcs that are close-ready (in-progress + ≥80% complete + anchor Recommendation) -->
+<!-- T-1961: Arc closure queue — in-progress arcs meeting L1 + L2 (T-3552); anchor advisory and demo evidence shown per card -->
 {% if arcs_close_ready %}
 <h2 id="section-arc-closure" class="approvals-group-heading">Arc Closure</h2>
 <div class="section-header">
-    <h3>Arcs ready for review</h3>
+    <h3>Arc closure queue</h3>
     {# T-3552: the subtitle described the OLD predicate (completion ≥80%). An arc
        list whose caption names a threshold it no longer uses teaches the reader a
        rule the code does not follow. #}
@@ -284,7 +284,7 @@
             {% if a.blocked_reason %}
             <span class="verdict-badge" data-verdict="BLOCKED"
                   style="display:inline-block; padding:0.15rem 0.55rem; border-radius:3px; font-size:0.72rem; font-weight:700; letter-spacing:0.05em; background:var(--wt-warn); color:#1a1a1a;"
-                  title="Meets the completion threshold but is not yet reviewable">BLOCKED</span>
+                  title="Meets L1 and L2, but the anchor advisory is missing">BLOCKED</span>
             {% else %}
             <span class="verdict-badge" data-verdict="{{ _v }}"
                   style="display:inline-block; padding:0.15rem 0.55rem; border-radius:3px; font-size:0.72rem; font-weight:700; letter-spacing:0.05em;
@@ -363,7 +363,11 @@
     {# T-2111: headline_mechanic moved out of .approval-meta (0.75rem muted) into
        the readable .headline-mechanic-box callout — body text + accent stripe on
        tinted primary bg. Same class as T-2110's arc_review.html. #}
-    <div class="headline-mechanic-box">{{ a.headline_mechanic }}</div>
+    {# T-3571: labelled and neutral — unlabelled, in the same style as the two
+       warning boxes above it, it read as a third complaint. #}
+    <div class="headline-mechanic-box" style="border-left-color:var(--pico-muted-border-color); font-style:normal;">
+        <strong>Headline mechanic:</strong> <em>{{ a.headline_mechanic }}</em>
+    </div>
     {% endif %}
 </div>
 {% endfor %}

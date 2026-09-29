@@ -49,7 +49,10 @@
    primary background. If a 3rd consumer lands, promote to shared CSS
    (T-2102 applied the same "no premature promotion" rule). */
 .headline-mechanic-box {
-    padding: 0.6rem 1rem; background: var(--pico-primary-background);
+    /* T-3571: was var(--pico-primary-background), the SOLID button fill. Links inside
+       the box took the same colour and vanished, and a --wt-warn stripe on it barely
+       read as a warning (independent render review, docs/reports/T-3557-render-review-*). */
+    padding: 0.6rem 1rem; background: color-mix(in srgb, var(--pico-primary) 12%, transparent);
     color: var(--pico-color); border-left: 3px solid var(--pico-primary);
     border-radius: 4px; margin: 0.5rem 0 0 0;
     font-style: italic; line-height: 1.4;

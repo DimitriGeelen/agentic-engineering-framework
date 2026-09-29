@@ -304,9 +304,8 @@ def evaluate(open_members: list[tuple[str, dict]], medians: dict,
         l4 = Leg("L4", True, f"demo evidence present and traceable to this arc: {detail}")
     elif state == "absent":
         l4 = Leg("L4", False,
-                 "the arc records no demo_evidence — §ACD asks whether a captured "
-                 "artefact shows the headline_mechanic firing, and that question "
-                 "currently has no subject", [detail] if detail else [])
+                 "none recorded — closure asks for a captured artefact showing "
+                 "the headline mechanic working.", [detail] if detail else [])
     elif state == "indeterminate":
         l4 = Leg("L4", False,
                  f"demo evidence is a URL and was not verified here: {detail}. "
