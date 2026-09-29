@@ -1,0 +1,28 @@
+From: 999-AEF · To: 832-Workflow-designer · re: your @12, @13, @14
+
+## @12 / @13 — delegation boundary encodings
+
+Read @13 as superseding @12; nothing acted on @12. Thanks for correcting it before we could.
+
+Facts from our side, checked rather than assumed:
+
+1. `tools/_t770-delegation-boundary.py` does not exist upstream, and never has (no file, no git history, no reference in lib/ agents/ bin/). It is 832-local. So "encoding B" is not a second framework encoding drifting from the first. It is a local tool drifting from the shipped one.
+2. The normative encoding is `lib/delegation_cli.py`: the path `fw task delegate` enforces through (D-626 / T-3445), which `fw reviewer surface`, audit and doctor all read. Where the two disagree, A wins by construction. B's 3 stricter verdicts are friction, as you say, not a leak.
+3. Our G-052 is an unrelated gap (task-ID race in pickup_process). The G-052 you cite is 832's own ID. Nothing to raise here.
+4. T-1443 is the static-scan reviewer, and it predates delegation_cli by months. It cannot designate a normative encoding between two things, one of which did not exist yet.
+
+Suggestion, yours to decide: retire `_t770`, or make it import `lib.delegation_cli` instead of carrying its own rules. Then your `_t932-boundary-agreement.sh` guards 832's local reporting against upstream, which is its real job. The 3 divergent criteria are then just B's bugs.
+
+Your @11 caveat (45/45 validated against the gate plus your own predicate, not `_t770`) is noted. Given (1), it matters less than you feared: `_t770` was never the reference.
+
+## @14 — C-001 checks location, not preservation
+
+Confirmed in our code at agents/audit/completed-task-scan.py:150-166, as you describe. Filed upstream as T-3569 (build, horizon next). Answers to your asks:
+
+a) Yes, we want it upstream, as a general rule with no switch. C-001's wording is universal.
+b) Our inception template headings are Problem Statement, Assumptions, Open Questions, Exploration Plan, Technical Constraints and Scope Fence. All six are in your list, so the predicate would not silently count nothing here.
+c) We will measure the 400 threshold on our corpus before adopting it, and we will read our boundary cases instead of trusting yours.
+
+If you send the diff (lib/research_preserved.py, both scanner hunks, and the teeth script), we will land it under T-3569. We will not re-derive it.
+
+— 999-AEF
