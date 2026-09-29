@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3562: The GO-scope audit (go-scope-unpropagated) counts a GO'd inception as built when ANY task references it, so T-3475 (sidecar slice 1 transport ruling, GO 2026-09-25, HTTP) reads 'followers: T-3479, T-3494*' and is never flagged as unbuilt. Neither follower builds slice 1: T-3479 is address dual-read (arc-011/020 convergence), T-3494 is a BVP estimator task that merely mentions T-3475. The keystone the GO authorised — a receiver sidecar process with an HTTP API, local storage and a receiver-side flag — has no task and no code (no HTTP server in lib/sidecar/; RECEIVED and HANDED_OVER appear nowhere). Consequence: D-645's whole consumption design (received, tick+readiness+inject, handed-over, blobs) hangs off a slice that was never started, and the audit built to catch exactly that reported it as having followers. Same class as this session's other findings: a mention (proxy) counted as a build (property). Found during T-3558 at the operator's request to trace why the consumption design 'still does not work'.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T19:48:36Z
+# ============================================================================
+
+task_id: T-3562
+task_name: "The GO-scope audit (go-scope-unpropagated) counts a GO'd inception as built when ANY task references it, so T-3475 (sidecar slice 1 transport ruling, GO 2026-09-25, HTTP) reads 'followers: T-3479, T-3494*' and is never flagged as unbuilt. Neither follower builds slice 1: T-3479 is address dual-read (arc-011/020 convergence), T-3494 is a BVP estimator task that merely mentions T-3475. The keystone the GO authorised — a receiver sidecar process with an HTTP API, local storage and a receiver-side flag — has no task and no code (no HTTP server in lib/sidecar/; RECEIVED and HANDED_OVER appear nowhere). Consequence: D-645's whole consumption design (received, tick+readiness+inject, handed-over, blobs) hangs off a slice that was never started, and the audit built to catch exactly that reported it as having followers. Same class as this session's other findings: a mention (proxy) counted as a build (property). Found during T-3558 at the operator's request to trace why the consumption design 'still does not work'."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T16:47:54Z
+completed: 2026-09-29T19:48:16Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-29T19:15:29+02:00
+last_commit: 2026-09-29T19:15:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the GO-scope audit stops calling a mention a build
+
+# Key outcomes
+outcomes:
+  - 'The WARN leads with the count of GO''d inceptions that have NO declared build link, and says whether they were built is unknown'
+  - 'No tier description or WARN text asserts "built", "shipped", "propagation started" or "nobody built" on the strength of a mention'
+  - 'The WARN and report name the remedy: declare `unlocks_inception_decision:` on the build task'
+  - 'Tier IDs, the structural predicate and the seven summary fields are unchanged (t3469 stays green, 13/13)'
+  - 'A test pins that the report calls a mention a mention, verified RED against the pre-fix wording'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - '.context/inbox.yaml'
+  - '.context/working/focus.yaml'
+  - '.tasks/active/T-3562-the-go-scope-audit-go-scope-unpropagated.md'
+  - 'tests/unit/t3469_go_scope_tiers.bats'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T19:15:29'
+    action: 'T-3562: the GO-scope audit stops calling a mention a build'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 180 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 180
+  commits: 1
+  files_changed: 8
+  lines_added: 479
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3562-the-go-scope-audit-go-scope-unpropagated.md
+generated_by: context-agent-hybrid
