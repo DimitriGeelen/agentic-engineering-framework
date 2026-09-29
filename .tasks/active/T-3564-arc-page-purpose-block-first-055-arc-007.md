@@ -10,7 +10,7 @@ description: >
   arc_detail.html +38, test_arc_page_dossier.py) is the reference; note shared.render_markdown_safe
   lacks the tables extra.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: [T-3563]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T19:06:01Z
-last_update: '2026-09-29T19:15:27Z'
+last_update: 2026-09-29T22:21:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -369,3 +369,6 @@ can quickly click through it." So, relative to 055's layout:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3564-arc-page-purpose-block-first-055-arc-007.md
 - **Context:** Initial task creation
+
+### 2026-09-29T22:21:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
