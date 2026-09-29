@@ -946,41 +946,30 @@ def _bvp_coherence_for_arc(arc: dict, arc_slug: str, arc_numeric: str) -> list[d
     if not claims:
         return []
 
-    # Collect constituent task paths (either slug or arc-NNN form).
-    constituent_paths: list[Path] = []
-    tasks_dir = PROJECT_ROOT / ".tasks"
-    for sub in ("active", "completed"):
-        for p in (tasks_dir / sub).glob("T-*.md"):
-            try:
-                m = _FRONTMATTER_RE.match(p.read_text())
-            except OSError:
-                continue
-            if not m:
-                continue
-            try:
-                fm = yaml.safe_load(m.group(1)) or {}
-            except yaml.YAMLError:
-                continue
+    # Collect constituent task frontmatters (either slug or arc-NNN form).
+    # T-3574: this used to read + yaml.safe_load every task file twice over (once
+    # to find members, once per claimed driver). Members come from the cached
+    # task index; each is parsed once via the mtime-cached frontmatter reader.
+    from web.blueprints.bvp import _parse_frontmatter, _task_index
+    index = _task_index()
+    ids: set[str] = set()
+    for key in (arc_slug, arc_numeric):
+        if key:
+            ids.update(index["by_arc_id"].get(key, []))
+    constituent_fms: list[dict] = []
+    for tid in sorted(ids):
+        for p in index["paths_by_id"].get(tid, []):
+            fm = _parse_frontmatter(p) or {}
             aid = str(fm.get("arc_id") or "").strip()
             if aid and (aid == arc_slug or (arc_numeric and aid == arc_numeric)):
-                constituent_paths.append(p)
-    if not constituent_paths:
+                constituent_fms.append(fm)
+    if not constituent_fms:
         return []
 
     findings: list[dict] = []
     for driver_id, claim_val in claims.items():
         scores = []
-        for p in constituent_paths:
-            try:
-                m = _FRONTMATTER_RE.match(p.read_text())
-            except OSError:
-                continue
-            if not m:
-                continue
-            try:
-                fm = yaml.safe_load(m.group(1)) or {}
-            except yaml.YAMLError:
-                continue
+        for fm in constituent_fms:
             s = (fm.get("bvp_scores") or {}).get(driver_id)
             if s is None:
                 continue
