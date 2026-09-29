@@ -5781,3 +5781,10 @@ observations:
   tags: [bug]
   status: pending
   promoted_to: null
+- id: OBS-574
+  text: "OBS-567 VERIFIED on our side, 2026-09-29 — 832 is right. DM rails are addressed with the MACHINE-WIDE TermLink identity (~/.termlink/identity.key, 'termlink identity show' -> d1993c2c3ec44c94, via lib/sidecar/dm.py:identity_fingerprint -> 'termlink whoami'), NOT with the per-project rail signing identity ('fw rail identity' -> bdd184bd89f318e4, .context/rail-identity.key). T-3543 migrated SIGNING to per-project and never touched ADDRESSING, so between any two co-resident projects on host .107 dm:<fp>:<fp> is dm:d1993c2c3ec44c94:d1993c2c3ec44c94 — which exists with count=7 and envelopes from >=3 projects. Side finding, measured: from a process that is not itself a registered TermLink session, 'termlink whoami' returns ambiguous=true with 173 candidates and no identity, so identity_fingerprint() returns None, which its docstring says callers treat as 'no rails' rather than an error. Whether fw doctor's DM-rail check degrades that way in practice is UNVERIFIED."
+  captured: 2026-09-29T13:56:17Z
+  context_task: T-3557
+  tags: [bug]
+  status: pending
+  promoted_to: null
