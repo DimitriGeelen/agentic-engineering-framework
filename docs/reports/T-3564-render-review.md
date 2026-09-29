@@ -38,3 +38,34 @@
 6. (Optional) **Promote the purpose line the way 055 does.** Render `story.purpose` as a `<blockquote><strong>` headline, with the objective below it as normal text.
 
 Once items 1 to 5 are done this is GREEN. Item 1 is the only fix that changes what a reader understands; the others are polish.
+
+## Re-review (round 2)
+
+**VERDICT: AMBER.** Five of the six items are fixed and I confirmed them on the live page. Item 3, the sticky jump bar, does not work. The CSS is present, but the bar never sticks, and the builder's own screenshot `arc-readme-decisions-v2.png` shows no bar after the jump. The operator asked specifically for quick links, so this one matters. It is a one-line move away from GREEN.
+
+### WHAT I CHECKED
+
+- Diff `4206079a6` (`web/blueprints/arcs.py`, `web/templates/arc_detail.html`, tests), the builder's "## Round 2" notes, the v2 screenshots against round 1, and live HTML from `:3002` for `arc-grooming`, `readme-first-run` and `value-prioritisation`.
+- **Item 1, awaiting review: FIXED.** On `arc-grooming` the page now shows an `awaiting review` badge (badge-warn) and "Awaiting human review (11)", and "Open tasks" no longer lists the partial-completes. `_task_overview` sorts open tasks issues, then started-work, then captured.
+- **Item 2, list cap: FIXED.** `rows[:10]` is applied to both lists. On `arc-grooming` the awaiting list shows "… +1 more — full table", which is 11 minus 10.
+- **Item 3, sticky bar: NOT FIXED.** The `.arc-quicklinks` rule has `position: sticky; top: 0`, the "Jump to:" label, a contrasting background and a border. The label and styling are good; the top screenshot shows the bar now reads as navigation. But `<nav class="arc-quicklinks">` sits *inside* `<article class="arc-header">` (template line 52 to about 83). A sticky element can only stick inside its parent, and that article is about one card tall, so the bar scrolls away with the header. The v2 decisions screenshot confirms it: "Decisions" is near the top of the viewport and there is no bar anywhere on the screen. Since round 1 also had no bar, what changed is that headings now land about 4.5rem lower, below a bar that is not there.
+- **Item 4, task-file links: FIXED.** `.tasks/completed/T-2719-…md#context` and similar references now render as links to `/tasks/T-2719`, with the `#fragment` kept in the text. `readme-first-run` has 8 hrefs to `/tasks/T-2719`. `.context/` and `tests/` paths stay plain code, as the guidance intended.
+- **Item 5, scoped-drivers anchor: FIXED.** `value-prioritisation`, which has non-empty `scoped_drivers`, renders both `id="scoped-drivers"` and `href="#scoped-drivers"`. Arcs with empty `scoped_drivers: []` get neither, which is correct. A unit test covers it (test file line 123).
+- **Item 6, purpose headline: FIXED.** The purpose is a bold blockquote and the objective is plain text below it, which matches 055's headline shape.
+- **Nothing new reads wrong.** The top of the page is now Title, Jump to, id/description/status, Purpose headline, Task overview, then the story sections. That meets both of the operator's requests ("task overview more on the top", "quick links … at the very top") and follows the 055 arc-007 dossier shape.
+
+### GUIDANCE
+
+1. **Move the `<nav class="arc-quicklinks">` out of `<article class="arc-header">`** so it sits directly after `</article>`, as a sibling in the main content column. Its containing block then covers the whole page and `position: sticky; top: 0` works. Keep the existing CSS. If the bar wraps to two lines at common widths, as it does at 1280px on readme-first-run, check that `scroll-margin-top: 4.5rem` still clears it. Otherwise drop the ~0.8rem bottom margin, or make the bar one line with `overflow-x: auto; flex-wrap: nowrap`.
+2. **Prove it with the evidence that was missing.** Re-take the decisions screenshot *after* the fix, and it must show the bar pinned at the top of the viewport with the "Decisions" heading fully visible below it. Better still, add a Playwright assertion (CLAUDE.md T-971): navigate to `#decisions`, then check that `nav.arc-quicklinks` has a bounding box with `y ≈ 0` and that the `#decisions` heading's `y` is greater than the bar's height. A unit test that greps for `position: sticky` would have passed this round too, so it is not enough.
+3. With 1 and 2 done, this is **GREEN**, and no further independent render review is needed for that change alone.
+
+## Round 3 (parent session, applying the re-review's guidance 1 and 2)
+
+- **Guidance 1, applied:** `<nav class="arc-quicklinks">` moved out of `<article class="arc-header">` and is now a sibling in `main.container`.
+- **Guidance 2, evidence the re-review asked for:**
+  - Geometry after jumping to `#decisions`: `nav.top = 0`, `nav.bottom = 63`, `#decisions.top = 72`, `scrollY = 1772`. The bar is pinned and the heading is clear of it.
+  - Round 2 measured `nav.top = -1297` on the same jump.
+  - Screenshot: `/tmp/playwright-mcp/review/arc-readme-decisions-v3.png`.
+  - Playwright test `tests/playwright/test_arc_quicklinks_sticky.py` asserts the geometry, not the CSS. 2 passed, on FW_TEST_PORT=3197 because 3099 was held by a non-Watchtower process.
+- The re-review stated that with 1 and 2 done the page is GREEN and needs no further independent review for this change alone.

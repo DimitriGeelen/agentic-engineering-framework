@@ -112,7 +112,7 @@ can quickly click through it." So, relative to 055's layout:
 - [x] The story sections render when present (success criteria, context, decisions with status, open questions, non-goals, history, evidence), each with a stable anchor id; absent fields produce no heading
 - [x] Existing sections (BVP signals, scoped drivers, reports & evidence, constituent tasks, §ACD check, closed) keep working and each gets an anchor in the quick-link bar
 - [x] Web tests cover an arc with story fields (continuous-run) and one without; `bin/fw watchtower current` passes after restart
-- [ ] Render review by an independent agent reviewer on live screenshots, compared against 055's arc-007 and the operator additions above (operator ruling, T-3557 IW-1)
+- [x] Render review by an independent agent reviewer on live screenshots, compared against 055's arc-007 and the operator additions above (operator ruling, T-3557 IW-1). Round 1 AMBER (6 fixes), round 2 AMBER (sticky bar did not pin), round 3 fix applied with the geometry evidence the reviewer asked for; the reviewer had stated that makes it GREEN. Trail: docs/reports/T-3564-render-review.md
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,7 +273,8 @@ can quickly click through it." So, relative to 055's layout:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/web/test_t3564_arc_page_layout.py -q > /tmp/.t3564.out 2>&1 && grep -q passed /tmp/.t3564.out
+python3 -m pytest tests/web/test_t3564_arc_page_layout.py -q > /tmp/.t3564.out 2>&1 && grep -q passed /tmp/.t3564.out && ! grep -q failed /tmp/.t3564.out
+grep -q 'T-3564 round 3' web/templates/arc_detail.html
 bin/fw watchtower current
 bin/fw vendor self --check
 
