@@ -36,13 +36,15 @@
     .focus-dot.off { background: transparent; border: 1px solid var(--pico-muted-color); }
     .focus-dot-btn:hover .focus-dot { box-shadow: 0 0 0 2px var(--pico-primary-focus, rgba(0,127,255,0.3)); }
     /* T-3564: quick links + purpose + task overview */
-    .arc-quicklinks { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin: 0.4rem 0 0.8rem 0; padding: 0.4rem 0.7rem; font-size: 0.9rem; background: var(--pico-card-sectioning-background-color); border-radius: 4px; }
+    .arc-quicklinks { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; align-items: baseline; position: sticky; top: 0; z-index: 5; margin: 0.4rem 0 0.8rem 0; padding: 0.4rem 0.7rem; font-size: 0.9rem; background: var(--pico-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: 4px; }
+    .arc-quicklinks .jump-label { color: var(--pico-muted-color); font-weight: 600; }
     .arc-quicklinks a { white-space: nowrap; }
     .arc-purpose { padding: 0.8rem 1rem; border-left: 4px solid var(--pico-primary); background: var(--pico-card-background-color); margin: 1rem 0; }
     .arc-purpose p { margin: 0.3rem 0; }
+    .arc-purpose blockquote { margin: 0.3rem 0 0.6rem 0; padding: 0; border: 0; font-size: 1.15rem; }
     .arc-src { font-size: 0.8em; color: var(--pico-muted-color); }
     .arc-story li { margin-bottom: 0.5rem; }
-    section[id] { scroll-margin-top: 1rem; }
+    section[id], h3[id] { scroll-margin-top: 4.5rem; }
 </style>
 
 <p><a href="/arcs">← All arcs</a></p>
@@ -65,6 +67,7 @@
         {% if focused %}<span class="focus-pill">FOCUSED</span>{% endif %}
     </h1>
     <nav class="arc-quicklinks" aria-label="Arc sections">
+        <span class="jump-label">Jump to:</span>
         {% for sec in sections %}<a href="#{{ sec.id }}">{{ sec.title }}</a>{% endfor %}
     </nav>
     <p class="muted">id: <code>{{ arc_id }}</code></p>
@@ -84,8 +87,8 @@
 {% if 'purpose' in section_ids %}
 <section id="purpose" class="arc-purpose">
     <h2>Purpose</h2>
-    {% if story.purpose %}<p>{{ story.purpose }}</p>{% endif %}
-    {% if story.objective %}<p><strong>Objective:</strong> {{ story.objective }}</p>{% endif %}
+    {% if story.purpose %}<blockquote><strong>{{ story.purpose }}</strong></blockquote>{% endif %}
+    {% if story.objective %}<p>{{ story.objective }}</p>{% endif %}
 </section>
 {% endif %}
 
@@ -111,16 +114,20 @@
 </div>
     {% if task_overview.total %}
     <p>
-        {% for label, n in task_overview.counts %}<span class="badge {% if label == 'done' %}badge-ok{% elif label == 'started-work' %}badge-info{% elif label == 'issues' %}badge-warn{% else %}badge-muted{% endif %}">{{ n }} {{ label }}</span> {% endfor %}
+        {% for label, n in task_overview.counts %}<span class="badge {% if label == 'done' %}badge-ok{% elif label == 'started-work' %}badge-info{% elif label == 'issues' or label == 'awaiting review' %}badge-warn{% else %}badge-muted{% endif %}">{{ n }} {{ label }}</span> {% endfor %}
     </p>
-    {% if task_overview.open_tasks %}
-    <p class="muted" style="margin-bottom: 0.2rem;">Open tasks ({{ task_overview.open_tasks|length }}):</p>
+    {% for title, rows in (('Open tasks', task_overview.open_tasks), ('Awaiting human review', task_overview.awaiting_review)) %}
+    {% if rows %}
+    <p class="muted" style="margin-bottom: 0.2rem;">{{ title }} ({{ rows|length }}):</p>
     <ul>
-        {% for c in task_overview.open_tasks %}
+        {% for c in rows[:10] %}
         <li><a href="/tasks/{{ c.id }}">{{ c.id }}</a> {{ c.name }} <small class="muted">· {{ c.status }}</small></li>
         {% endfor %}
+        {% if rows|length > 10 %}<li class="muted">… +{{ rows|length - 10 }} more — <a href="#constituent-tasks">full table</a></li>{% endif %}
     </ul>
-    {% else %}<p class="muted">No open tasks.</p>{% endif %}
+    {% endif %}
+    {% endfor %}
+    {% if not task_overview.open_tasks and not task_overview.awaiting_review %}<p class="muted">No open tasks.</p>{% endif %}
     {% else %}<p class="muted">No constituent tasks yet.</p>{% endif %}
     <p><small><a href="#constituent-tasks">Full task table ↓</a></small></p>
 </section>
@@ -286,7 +293,7 @@
 
     {# Currently approved scoped drivers — with per-row Remove (T-1976) + live weight sliders (T-1977) #}
     {% if bvp_info.scoped_drivers %}
-    <h3>Scoped drivers ({{ bvp_info.scoped_drivers|length }} / 3 max)</h3>
+    <h3 id="scoped-drivers">Scoped drivers ({{ bvp_info.scoped_drivers|length }} / 3 max)</h3>
     <p class="muted"><small>Drag a slider to preview the new weight (no commit). Press <strong>Commit weight changes</strong> below to persist via <code>fw arc set-scoped-weight --from-watchtower</code> (§ACD, D8). Rationale ≥30 chars required (R6). [T-1977]</small></p>
     <table id="scoped-sliders-table">
         <thead><tr><th>Name</th><th>Server</th><th>Slider</th><th>Current</th><th>Rationale</th><th>Approved</th><th></th></tr></thead>

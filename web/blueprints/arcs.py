@@ -743,6 +743,9 @@ def _source_ref(src: Any) -> dict[str, str]:
     path = text.split("#", 1)[0]
     if re.fullmatch(r"T-\d+", path):
         return {"text": text, "href": f"/tasks/{path}"}
+    m = re.match(r"\.tasks/(?:active|completed)/(T-\d+)-", path)
+    if m:
+        return {"text": text, "href": f"/tasks/{m.group(1)}"}
     if path.startswith("docs/") and (PROJECT_ROOT / path).is_file():
         return {"text": text, "href": f"/file/{path}"}
     return {"text": text, "href": ""}
@@ -793,22 +796,34 @@ def _arc_story(arc: dict[str, Any]) -> dict[str, Any]:
 
 
 def _task_overview(constituents: list[dict[str, Any]]) -> dict[str, Any]:
-    """Counts by status (completed -> 'done') plus the still-open tasks."""
+    """Counts by status (completed -> 'done'), open tasks, and tasks awaiting review.
+
+    A work-completed task still in active/ is partial-complete (waiting on a
+    human), so it is labelled 'awaiting review' and kept out of the open list.
+    """
     counts: dict[str, int] = {}
     open_tasks: list[dict[str, Any]] = []
+    awaiting: list[dict[str, Any]] = []
     for c in constituents:
         if c.get("missing"):
             label = "missing"
         elif c.get("completed"):
             label = "done"
+        elif str(c.get("status") or "") == "work-completed":
+            label = "awaiting review"
+            awaiting.append(c)
         else:
             label = str(c.get("status") or "?")
             open_tasks.append(c)
         counts[label] = counts.get(label, 0) + 1
-    order = ["done", "started-work", "issues", "captured"]
+    order = ["done", "awaiting review", "started-work", "issues", "captured"]
     ordered = sorted(counts.items(),
                      key=lambda kv: (order.index(kv[0]) if kv[0] in order else len(order), kv[0]))
-    return {"counts": ordered, "open_tasks": open_tasks, "total": len(constituents)}
+    open_order = ["issues", "started-work", "captured"]
+    open_tasks.sort(key=lambda c: open_order.index(c.get("status")) if c.get("status") in open_order
+                    else len(open_order))
+    return {"counts": ordered, "open_tasks": open_tasks, "awaiting_review": awaiting,
+            "total": len(constituents)}
 
 
 def _arc_sections(arc: dict[str, Any], story: dict[str, Any], constituents: list,
@@ -831,6 +846,8 @@ def _arc_sections(arc: dict[str, Any], story: dict[str, Any], constituents: list
             s.append({"id": sid, "title": title})
     if bvp_info:
         s.append({"id": "bvp-signals", "title": "BVP signals"})
+        if isinstance(bvp_info, dict) and bvp_info.get("scoped_drivers"):
+            s.append({"id": "scoped-drivers", "title": "Scoped drivers"})
     if reports:
         s.append({"id": "reports", "title": "Reports & evidence"})
     s.append({"id": "constituent-tasks", "title": "Constituent tasks"})
