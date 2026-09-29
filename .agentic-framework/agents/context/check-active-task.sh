@@ -908,7 +908,22 @@ case "$TASK_STATUS" in
         # Same shape as the T-1890 focus-drift bypass: env-var form because it
         # must work for `git commit` too (git rejects unknown flags), Tier-2
         # logged so the authorisation is auditable rather than silent.
+        #
+        # T-3570: the variable is read from the hook's environment AND from the
+        # command string. An agent's Bash call reaches this hook as a string, so
+        # the env read alone made the prefix below — the form this block's own
+        # message prescribes — inert for every agent, while the T-3174 tests,
+        # which set it on the hook process, stayed green. Matched as a whole
+        # token exactly as FW_SWITCH_FOCUS is (line ~736), so a mention inside
+        # an argument does not authorise.
+        _pc_edit_ok=0
         if [ "${FW_ALLOW_PARTIAL_COMPLETE_EDIT:-0}" = "1" ]; then
+            _pc_edit_ok=1
+        elif [ "$TOOL_NAME" = "Bash" ] && \
+             [[ "${BASH_CMD:-}" =~ (^|[[:space:]])FW_ALLOW_PARTIAL_COMPLETE_EDIT=1([[:space:]]|$) ]]; then
+            _pc_edit_ok=1
+        fi
+        if [ "$_pc_edit_ok" = "1" ]; then
             LOG_DIR="$PROJECT_ROOT/.context/working"
             mkdir -p "$LOG_DIR" 2>/dev/null || true
             LOG_FILE="$LOG_DIR/.gate-bypass-log.yaml"
