@@ -15,7 +15,7 @@ components: [bin/fw, lib/bvp.sh]
 related_tasks: [T-1915, T-1916, T-1919]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: '2026-08-16T22:24:00Z'
+last_update: '2026-09-29T08:24:19Z'
 date_finished: 2026-05-19T16:52:32Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
@@ -77,6 +77,16 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=148,acs=6)
     rubric_sha: e4a00f38e801
 ---
 

@@ -17,7 +17,7 @@ components: [tests/playwright/test_fabric_coupling_token.py,
       tests/unit/test_fabric_coupling_token.py, web/templates/fabric_detail.html]
 related_tasks: [T-1994, T-1987, T-2027, T-2023]
 created: 2026-05-24T12:00:21Z
-last_update: '2026-08-16T22:24:04Z'
+last_update: '2026-09-29T08:24:22Z'
 date_finished: 2026-05-26T06:50:52Z
 cost_estimate_proposed:
   - ts: '2026-05-24T12:15:02Z'
@@ -28,6 +28,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 7
+    rationale: blast_radius=3 (3-components); tier=2 (workflow:build); effort=7 
+      (lines=83,acs=6)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-05-24T12:15:02Z'

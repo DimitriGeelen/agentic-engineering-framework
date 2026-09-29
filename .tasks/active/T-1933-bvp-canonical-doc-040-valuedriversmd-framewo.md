@@ -16,7 +16,7 @@ components: [040-ValueDrivers.md, FRAMEWORK.md]
 related_tasks: [T-1915, T-1916, T-1917, T-1920, T-1924, T-1926, T-1932]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: '2026-08-16T22:24:01Z'
+last_update: '2026-09-29T08:24:19Z'
 date_finished: 2026-05-19T13:46:56Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
@@ -77,6 +77,16 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=4 (body/components:instruction-sync); F-AUTONOMY=0 
       (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
       F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 6
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=6 
+      (lines=64,acs=5)
     rubric_sha: e4a00f38e801
 ---
 

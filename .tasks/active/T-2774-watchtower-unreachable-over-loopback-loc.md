@@ -9,16 +9,23 @@ description: >
   127.0.0.1 ttfb measured 19.5s, 13.8s, 2.2s, 3.4s across runs; the LAN address 2.1s,
   2.8s. A raw TCP connect to 127.0.0.1:3001 succeeds in 0.2ms, so there is no firewall
   drop — ufw's INPUT policy is DROP but loopback is permitted, as the connect proves.
-  The actual defect: the Watchtower `/` route takes 2-14 seconds to produce first byte,
-  varying with load, and Playwright's default Page.goto timeout is 15s. The suites sit
-  right on the edge, so they fail intermittently in a way that reads as flakiness rather
+  The actual defect: the Watchtower `/` route takes 2-14 seconds to produce first
+  byte,
+  varying with load, and Playwright's default Page.goto timeout is 15s. The suites
+  sit
+  right on the edge, so they fail intermittently in a way that reads as flakiness
+  rather
   than as a slow server. This is one root cause for three observations from T-2771:
   T-1960 and T-1961 timing out post-repair, and T-1910's red that vanished on re-run.
   Scope: find why `/` costs seconds (the page is 375KB and something behind it is
-  expensive — likely per-request scanning of the task corpus with no caching), fix or
-  cache it, and separately raise the Playwright goto budget so a slow-but-working page
-  fails loudly on an assertion rather than silently on a timeout. Do NOT re-point the
-  suites at port 3000; that was the workaround this whole thread came from — port 3000
+  expensive — likely per-request scanning of the task corpus with no caching), fix
+  or
+  cache it, and separately raise the Playwright goto budget so a slow-but-working
+  page
+  fails loudly on an assertion rather than silently on a timeout. Do NOT re-point
+  the
+  suites at port 3000; that was the workaround this whole thread came from — port
+  3000
   is a different project's Watchtower, and pinning it traded 'our page is slow' for
   'a foreign server passes our assertions'.
 
@@ -27,7 +34,10 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [tests/playwright/conftest.py, tests/unit/test_arcs_membership_cached.py, tests/unit/test_frontmatter_loader_equivalence.py, web/blueprints/arcs.py, web/shared.py]
+components: [tests/playwright/conftest.py, 
+      tests/unit/test_arcs_membership_cached.py, 
+      tests/unit/test_frontmatter_loader_equivalence.py, web/blueprints/arcs.py, 
+      web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -40,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T17:32:26Z
-last_update: 2026-08-03T19:28:14Z
+last_update: '2026-09-29T08:24:28Z'
 date_finished: 2026-08-03T19:28:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -61,6 +71,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 2
+      effort: 8
+    rationale: blast_radius=5 (5-components-medium-blast); tier=2 
+      (workflow:build); effort=8 (lines=376,acs=8)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-03T17:45:10Z'

@@ -15,7 +15,7 @@ components: [agents/fabric/lib/drift.sh, agents/fabric/lib/register.sh]
 related_tasks: []
 arc_id: project-shape-resilience
 created: 2026-05-14T22:30:42Z
-last_update: '2026-08-16T22:24:00Z'
+last_update: '2026-09-29T08:24:19Z'
 date_finished: 2026-05-22T08:10:03Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -83,6 +83,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=138,acs=7)
     rubric_sha: e4a00f38e801
 ---
 

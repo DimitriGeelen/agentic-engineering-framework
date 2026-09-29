@@ -19,7 +19,7 @@ components: [agents/context/check-project-boundary.sh, bin/fw, lib/verify-acs.sh
 related_tasks: [T-1702]
 arc_id: orchestrator-rethink
 created: 2026-05-03T22:05:43Z
-last_update: '2026-08-16T22:23:59Z'
+last_update: '2026-09-29T08:24:18Z'
 date_finished: 2026-05-27T05:51:09Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -87,6 +87,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 2
+      effort: 8
+    rationale: blast_radius=7 (7-components-large-blast); tier=2 
+      (workflow:build); effort=8 (lines=147,acs=8)
     rubric_sha: e4a00f38e801
 ---
 

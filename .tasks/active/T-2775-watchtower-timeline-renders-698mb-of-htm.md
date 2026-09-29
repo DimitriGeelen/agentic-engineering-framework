@@ -26,7 +26,11 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [agents/task-create/create-task.sh, tests/playwright/test_all_routes_size.py, tests/unit/test_task_create_description_yaml.py, web/blueprints/timeline.py, web/templates/timeline.html, web/templates/timeline_session.html]
+components: [agents/task-create/create-task.sh, 
+      tests/playwright/test_all_routes_size.py, 
+      tests/unit/test_task_create_description_yaml.py, 
+      web/blueprints/timeline.py, web/templates/timeline.html, 
+      web/templates/timeline_session.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -39,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T19:18:51Z
-last_update: 2026-08-03T22:39:59Z
+last_update: '2026-09-29T08:24:28Z'
 date_finished: 2026-08-03T22:39:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -60,6 +64,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 2
+      effort: 8
+    rationale: blast_radius=5 (6-components-medium-blast); tier=2 
+      (workflow:build); effort=8 (lines=327,acs=10)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-03T21:45:13Z'

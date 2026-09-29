@@ -14,7 +14,7 @@ components: [lib/ollama_loop.py, lib/spawn.py, tests/unit/test_ollama_loop.py,
 related_tasks: [T-1700, T-1773, T-1774]
 arc_id: orchestrator-rethink
 created: 2026-05-09T21:08:55Z
-last_update: '2026-08-16T22:23:59Z'
+last_update: '2026-09-29T08:24:18Z'
 date_finished: 2026-05-13T21:20:30Z
 bvp_scores_proposed:
   - ts: '2026-05-28T22:54:09Z'
@@ -63,6 +63,16 @@ bvp_scores_proposed:
       (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 2
+      effort: 8
+    rationale: blast_radius=5 (4-components-medium-blast); tier=2 
+      (workflow:build); effort=8 (lines=208,acs=12)
     rubric_sha: e4a00f38e801
 ---
 

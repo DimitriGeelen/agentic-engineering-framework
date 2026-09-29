@@ -4,12 +4,12 @@ name: "cost sweep skips work-completed - exactly when components arrives"
 description: >
   cost sweep skips work-completed - exactly when components arrives
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/bvp-estimator/estimator.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T08:19:09Z
-last_update: 2026-09-29T08:19:09Z
-date_finished: null
+last_update: 2026-09-29T08:26:35Z
+date_finished: 2026-09-29T08:26:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +50,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:24:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=315,acs=9)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3551: cost sweep skips work-completed - exactly when components arrives
@@ -100,16 +110,40 @@ corpus for no decision. That boundary is an acceptance criterion, not a detail.
 Leg B of the same problem — the 38 members with neither `components:` nor
 `write_set:` — is adoption, not mechanism, and is filed separately.
 
+### Result — measured after the sweep
+
+`bin/fw bvp estimate-cost sweep` → `scored 273, skipped 216, errored 0`.
+
+| | before | after |
+|---|---|---|
+| open arc members with a cost | 83 / 152 (54%) | **121 / 155 (78%)** |
+| in-progress arcs passing L1 | **0 of 16** | **7 of 16** |
+
+Arcs now passing L1 (`no unestimated tasks`): `dispatch-safety`,
+`embeddings-strategy`, `ewcr-arc0-contract-evidence`, `horizon-axis-hardening`,
+`onboarding-curriculum`, `parallel-execution-aef`, `watchtower-redesign`.
+
+That change is what makes L1 usable as a gate. Before the sweep it refused every
+arc, which is indistinguishable from a gate that is simply broken — a predicate
+that always returns the same answer carries no information regardless of whether
+the answer is right. It now **discriminates**: 7 arcs clear it, 9 do not, and each
+of the 9 names a specific, countable set of unestimated members. That is the
+difference between a gate and a wall, and it is the precondition for Slices A and B.
+
+The residual 34 are Leg B: members with neither `components:` nor `write_set:`,
+concentrated in `designer-corpus` (14 of 15 open members) and `orchestrator-rethink`
+(5 of 18). Those are adoption, not mechanism.
+
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The cost sweep scores `work-completed` tasks that are still in `.tasks/active/` (partial-complete)
-- [ ] CONTROL: archived tasks under `.tasks/completed/` are still skipped — the boundary is the point, not an accident
-- [ ] The existing `captured` / `started-work` scope is unchanged
-- [ ] A partial-complete task carrying `components:` and a null-blast_radius proposal gains a real `blast_radius` on the next sweep
-- [ ] Confirmed `cost_estimate:` is still never overwritten (sovereignty boundary intact)
-- [ ] A second sweep over unchanged inputs writes nothing — `no-change-since-last` still fires, so the 290-task population cannot grow proposals unboundedly
-- [ ] Arc-member cost coverage re-measured after the sweep and recorded in this task
+- [x] The cost sweep scores `work-completed` tasks that are still in `.tasks/active/` (partial-complete)
+- [x] CONTROL: archived tasks under `.tasks/completed/` are still skipped — the boundary is the point, not an accident
+- [x] The existing `captured` / `started-work` scope is unchanged
+- [x] A partial-complete task carrying `components:` and a null-blast_radius proposal gains a real `blast_radius` on the next sweep
+- [x] Confirmed `cost_estimate:` is still never overwritten (sovereignty boundary intact)
+- [x] A second sweep over unchanged inputs writes nothing — `no-change-since-last` still fires, so the 290-task population cannot grow proposals unboundedly
+- [x] Arc-member cost coverage re-measured after the sweep and recorded in this task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -263,6 +297,21 @@ Leg B of the same problem — the 38 members with neither `components:` nor
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
+timeout 300 python3 -m pytest tests/unit/test_t3551_cost_sweep_partial_complete.py -q > /tmp/.t3551.out 2>&1 && grep -q "10 passed" /tmp/.t3551.out
+test "$(grep -c 'failed\|error' /tmp/.t3551.out)" -eq 0
+python3 -c "import ast,sys; ast.parse(open('agents/termlink/bvp-estimator/estimator.py').read())"
+# the scope predicate exists and is what the sweep consults
+grep -q '_cost_sweep_in_scope' agents/termlink/bvp-estimator/estimator.py
+# cmd_cost_sweep's own body must consult the predicate, not the raw status check.
+# Scoped to the function: cmd_sweep / cmd_all / cmd_cost_all legitimately keep the
+# raw form (this task changed the COST SWEEP only), so a file-wide absence assertion
+# would be false — and was, on first run.
+python3 -c "import re,sys; s=open('agents/termlink/bvp-estimator/estimator.py').read(); b=s[s.index('def cmd_cost_sweep'):]; b=b[:b.index('\ndef ',1)]; sys.exit(0 if '_cost_sweep_in_scope' in b and 'not in statuses' not in b else 1)"
+# the neighbouring estimator suites must stay green
+timeout 300 python3 -m pytest tests/unit/test_t3068_unknown_cost.py tests/unit/test_bvp_estimator.py tests/unit/test_estimator_inception.py -q > /tmp/.t3551b.out 2>&1 && grep -q "passed" /tmp/.t3551b.out
+test "$(grep -c 'failed\|error' /tmp/.t3551b.out)" -eq 0
+bin/fw vendor self --check
+
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -366,3 +415,15 @@ Leg B of the same problem — the 38 members with neither `components:` nor
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3551-cost-sweep-skips-work-completed---exactl.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e6ce994b
+- **Timestamp:** 2026-09-29T08:26:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-29T08:26:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

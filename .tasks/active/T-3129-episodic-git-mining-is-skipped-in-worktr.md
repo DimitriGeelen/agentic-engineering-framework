@@ -11,10 +11,16 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [agents/audit/self-audit.sh, agents/context/lib/episodic.sh, agents/git/lib/hooks.sh, agents/git/lib/large-file-scan.sh, agents/git/lib/secret-scan.sh, agents/termlink/termlink.sh, lib/episodic_footprint.py, lib/init.sh, lib/setup.sh, lib/update.sh, lib/upgrade.sh, lib/upstream.sh, lib/url-credentials.sh, lib/validate-init.sh, tests/unit/episodic_footprint_refresh.bats, tests/unit/episodic_worktree_mining.bats]
+components: [agents/audit/self-audit.sh, agents/context/lib/episodic.sh, 
+      agents/git/lib/hooks.sh, agents/git/lib/large-file-scan.sh, 
+      agents/git/lib/secret-scan.sh, agents/termlink/termlink.sh, 
+      lib/episodic_footprint.py, lib/init.sh, lib/setup.sh, lib/update.sh, 
+      lib/upgrade.sh, lib/upstream.sh, lib/url-credentials.sh, 
+      lib/validate-init.sh, tests/unit/episodic_footprint_refresh.bats, 
+      tests/unit/episodic_worktree_mining.bats]
 related_tasks: []
 created: 2026-08-25T05:58:02Z
-last_update: 2026-09-20T14:05:39Z
+last_update: '2026-09-29T08:24:30Z'
 date_finished: 2026-09-20T14:05:39Z
 cost_estimate_proposed:
   - ts: '2026-08-25T06:00:09Z'
@@ -25,6 +31,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=98,acs=7)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (16-components-cross-cutting); tier=2 
+      (workflow:build); effort=8 (lines=332,acs=7)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-25T06:00:17Z'

@@ -20,12 +20,12 @@ description: >
   NOTE: the filename still carries the original false premise; the frontmatter
   name and this description are the corrected record.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tools/wait-dispatch.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -54,8 +54,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-27T23:07:15Z
-last_update: '2026-09-27T23:15:26Z'
-date_finished:
+last_update: 2026-09-27T23:23:46Z
+date_finished: 2026-09-27T23:23:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -297,6 +297,57 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** I told the operator that worker `judge-arc-r1` had closed T-3527 and exited
+without committing — "exactly what the prompt warned against" — and filed this task on that
+premise. It was false. The worker committed its entire deliverable as `dcd4946b9`, report
+included, and had additionally hit the OBS-250 closed-task dead end and filed T-3530 to get
+the commit through. What I observed was a tree mid-recovery, not an abandoned one.
+
+**Root cause:** my wait predicate was "the task file has appeared in `.tasks/completed/`".
+That move happens *inside* `fw task update --status work-completed`, which the worker runs
+before its final commit. So the predicate names a state the worker passes **through**, and
+everything observed in that window reads as permanent. `exit_code`, `close_state` and
+`finished_at` — the markers `run.sh`'s post-step writes only after `claude -p` returns —
+were available the whole time and are terminal by construction.
+
+**Why structurally allowed:** two compounding reasons, and the first is the ugly one.
+
+1. **I had just retired the identical defect and did not apply the lesson to its
+   replacement.** OBS-557 records waiting on the *first* result line, which fires on a yield
+   rather than completion; round 1 of a four-round run emitted 11. The fix was to stop using
+   result lines and wait on an outcome. I picked a new signal without asking it the one
+   question that had disqualified the old one — *can the worker be observed in this state and
+   still have work left?* For both signals the answer is yes. OBS-557 even **named** the
+   correct candidate ("the dispatch verb's own `close_state` file if one exists") and filed it
+   as unverified; I did not check whether it existed. It does.
+2. **My own prompt primed the explanation.** I had written a warning into the T-3527 dispatch
+   prompt about a worker earlier that day writing its report and exiting without committing.
+   So I had a ready-made failure story, and the first observation that fit it got believed
+   rather than tested. A hypothesis I authored hours earlier is not evidence, and matching a
+   failure I had recently written down should have raised the bar for confirmation, not
+   lowered it.
+
+There was no structural gate to catch this because the predicate lived in a throwaway script
+in the session scratchpad — nothing reviewed it, nothing tested it, and it had no control leg
+asserting it would refuse to fire early.
+
+**Prevention** (distinct from the fix):
+1. `tools/wait-dispatch.sh` — the predicate is now a committed, fabric-registered control
+   rather than a scratch file. Primary condition is `<dispatch_dir>/exit_code` (+ `close_state`,
+   `finished_at`); `worker-gone` and a tree-quiet fallback sit behind it, and each exit path
+   names which condition fired, because they mean different things.
+2. **A negative control is part of its verification**, not an afterthought: a live worker with
+   no terminal marker and an open task must report `TIMEOUT`, not done. Without that leg, a
+   predicate that fires always looks identical to one that fires correctly — which is exactly
+   how the original went unnoticed.
+3. Every exit path prints that the signal is terminal for the *process*, not a verdict on the
+   *work*. `worker-gone` fires for a worker that died mid-edit exactly as for one that
+   finished cleanly.
+4. OBS-557 updated in place with the verified candidate rather than closed, since its first
+   candidate remains unverified and OBS-563 shows its advice did not prevent the next instance.
+5. The generalisable rule, recorded in the script's header: **a wait predicate must name a
+   state the subject cannot pass through.**
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -391,3 +442,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3529-verify-and-commit-t-3527s-staged-but-unc.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-72ad5d97
+- **Timestamp:** 2026-09-27T23:24:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-27T23:23:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

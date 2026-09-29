@@ -20,12 +20,22 @@ owner: human
 horizon: now
 tags: [T-1717-implementation, G-064-closure-pilot, vertical-slice-1, 
       blocked-on-t-1717-go]
-components: [agents/context/check-active-task.sh, agents/context/lib/episodic.sh, agents/context/lib/focus.sh, agents/context/lib/pattern.sh, agents/handover/handover.sh, agents/task-create/update-task.sh, agents/termlink/termlink.sh, bin/fw, lib/ask.py, lib/migrations/arc-id-migration.sh, lib/outcome.py, lib/paths.sh, lib/post-write-index.sh, lib/resolver.py, lib/workflow_lint.py, tests/playwright/test_embeddings_panel.py, tests/unit/t1719_ask_routing.bats, tests/unit/t1719_post_write_index.bats, tests/unit/t3038_session_scoped_focus.bats, web/blueprints/embeddings.py, web/blueprints/__init__.py, web/embeddings.py, web/shared.py, web/templates/embeddings.html]
+components: [agents/context/check-active-task.sh, agents/context/lib/episodic.sh,
+  agents/context/lib/focus.sh, agents/context/lib/pattern.sh, 
+      agents/handover/handover.sh, agents/task-create/update-task.sh, 
+      agents/termlink/termlink.sh, bin/fw, lib/ask.py, 
+      lib/migrations/arc-id-migration.sh, lib/outcome.py, lib/paths.sh, 
+      lib/post-write-index.sh, lib/resolver.py, lib/workflow_lint.py, 
+      tests/playwright/test_embeddings_panel.py, 
+      tests/unit/t1719_ask_routing.bats, tests/unit/t1719_post_write_index.bats, 
+      tests/unit/t3038_session_scoped_focus.bats, web/blueprints/embeddings.py, 
+      web/blueprints/__init__.py, web/embeddings.py, web/shared.py, 
+      web/templates/embeddings.html]
 related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697, 
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: 2026-09-06T17:31:45Z
+last_update: '2026-09-29T08:24:18Z'
 date_finished: 2026-09-06T17:31:45Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -185,6 +195,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=403,acs=10)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (24-components-cross-cutting); tier=2 
+      (workflow:build); effort=8 (lines=826,acs=9)
     rubric_sha: e4a00f38e801
 ---
 

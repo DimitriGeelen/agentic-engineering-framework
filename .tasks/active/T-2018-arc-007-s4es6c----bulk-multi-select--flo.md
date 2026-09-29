@@ -15,7 +15,7 @@ components: [tests/playwright/test_bulk_actions.py,
 related_tasks: [T-1992, T-1993, T-1987, T-2015]
 arc_id: watchtower-redesign
 created: 2026-05-24T09:22:27Z
-last_update: '2026-08-16T22:24:04Z'
+last_update: '2026-09-29T08:24:21Z'
 date_finished: 2026-05-26T06:49:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,6 +36,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 2
+      effort: 8
+    rationale: blast_radius=5 (5-components-medium-blast); tier=2 
+      (workflow:build); effort=8 (lines=226,acs=11)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-05-24T09:30:02Z'

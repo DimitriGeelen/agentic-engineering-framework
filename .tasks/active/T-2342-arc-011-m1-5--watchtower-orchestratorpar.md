@@ -24,7 +24,7 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T18:50:04Z
-last_update: '2026-08-16T22:24:08Z'
+last_update: '2026-09-29T08:24:25Z'
 date_finished: 2026-06-11T18:57:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,6 +72,16 @@ bvp_scores_proposed:
       D4=4 (body:cross-machine); F-RECALL=2 (body:lightly-promoted); 
       F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (3-components); tier=2 (workflow:build); effort=8 
+      (lines=156,acs=6)
     rubric_sha: e4a00f38e801
 ---
 

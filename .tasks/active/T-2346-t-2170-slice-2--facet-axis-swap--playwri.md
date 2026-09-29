@@ -16,7 +16,8 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [bvp-display, v3-followup-D, arc:value-prioritisation]
-components: [tests/playwright/test_bvp_per_driver_display.py, web/templates/bvp.html]
+components: [tests/playwright/test_bvp_per_driver_display.py, 
+      web/templates/bvp.html]
 related_tasks: [T-2170, T-1928, T-1929]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -29,7 +30,7 @@ related_tasks: [T-2170, T-1928, T-1929]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T06:58:59Z
-last_update: 2026-09-20T18:12:26Z
+last_update: '2026-09-29T08:24:25Z'
 date_finished: 2026-09-20T18:12:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -137,6 +138,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=196,acs=7)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=287,acs=7)
     rubric_sha: e4a00f38e801
 ---
 

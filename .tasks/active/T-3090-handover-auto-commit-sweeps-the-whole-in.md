@@ -11,10 +11,11 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [bug, git, handover, concurrency]
-components: [agents/git/lib/commit.sh, agents/handover/handover.sh, tests/unit/handover_commit_scope.bats]
+components: [agents/git/lib/commit.sh, agents/handover/handover.sh, 
+      tests/unit/handover_commit_scope.bats]
 related_tasks: [T-3089, T-3028]
 created: 2026-08-19T21:41:28Z
-last_update: 2026-09-28T21:30:28Z
+last_update: '2026-09-29T08:24:30Z'
 date_finished: 2026-08-19T21:52:38Z
 cost_estimate_proposed:
   - ts: '2026-08-19T21:45:07Z'
@@ -25,6 +26,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=139,acs=7)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (3-components); tier=2 (workflow:build); effort=8 
+      (lines=219,acs=7)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-19T21:45:13Z'

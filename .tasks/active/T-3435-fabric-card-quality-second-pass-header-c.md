@@ -13,7 +13,19 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [web/templates/arc_close.html, web/templates/arc_review.html, web/templates/bvp.html, web/templates/designer_ghosts.html, web/templates/designer_landing.html, web/templates/_error_csrf.html, web/templates/escalation_drift.html, web/templates/hooks.html, web/templates/orchestrator.html, web/templates/_partials/ask_answer_card.html, web/templates/_partials/search_input.html, web/templates/_partials/search_results.html, web/templates/pending.html, web/templates/_project_docs_list.html, web/templates/prompt_detail.html, web/templates/prompts_list.html, web/templates/reviewer_audit.html, web/templates/reviewer_overrides.html, web/templates/_stale_tasks_items.html, web/templates/timeline_session.html, web/templates/_work_queue_items.html]
+components: [web/templates/arc_close.html, web/templates/arc_review.html, 
+      web/templates/bvp.html, web/templates/designer_ghosts.html, 
+      web/templates/designer_landing.html, web/templates/_error_csrf.html, 
+      web/templates/escalation_drift.html, web/templates/hooks.html, 
+      web/templates/orchestrator.html, 
+      web/templates/_partials/ask_answer_card.html, 
+      web/templates/_partials/search_input.html, 
+      web/templates/_partials/search_results.html, web/templates/pending.html, 
+      web/templates/_project_docs_list.html, web/templates/prompt_detail.html, 
+      web/templates/prompts_list.html, web/templates/reviewer_audit.html, 
+      web/templates/reviewer_overrides.html, 
+      web/templates/_stale_tasks_items.html, web/templates/timeline_session.html,
+  web/templates/_work_queue_items.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T12:58:22Z
-last_update: 2026-09-22T15:40:08Z
+last_update: '2026-09-29T08:24:32Z'
 date_finished: 2026-09-22T15:40:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -47,6 +59,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=289,acs=8)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (21-components-cross-cutting); tier=2 
+      (workflow:build); effort=8 (lines=579,acs=10)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-09-22T13:00:33Z'

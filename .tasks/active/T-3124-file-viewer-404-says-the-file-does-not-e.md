@@ -1,8 +1,14 @@
 ---
 id: T-3124
-name: "file viewer 404 says the file does not exist when it exists but its directory is not served"
+name: "file viewer 404 says the file does not exist when it exists but its directory
+  is not served"
 description: >
-  web/blueprints/docs.py:152-157 aborts 404 both when is_viewable_path fails and when the file is genuinely absent. Verified on this build: docs/adr/0001-orchestration-model-pin-enforcement.md is 1692 bytes, tracked, and /file/ renders 'does not exist.' Reported by 001-CashWeb (T-092) who measured the identical sentence on their consumer. 1221 of 2011 tracked docs/ files are unservable here, including 4 ADRs written specifically to be linked to.
+  web/blueprints/docs.py:152-157 aborts 404 both when is_viewable_path fails and when
+  the file is genuinely absent. Verified on this build: docs/adr/0001-orchestration-model-pin-enforcement.md
+  is 1692 bytes, tracked, and /file/ renders 'does not exist.' Reported by 001-CashWeb
+  (T-092) who measured the identical sentence on their consumer. 1221 of 2011 tracked
+  docs/ files are unservable here, including 4 ADRs written specifically to be linked
+  to.
 
 status: work-completed
 workflow_type: build
@@ -22,7 +28,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-23T20:19:07Z
-last_update: 2026-08-23T20:28:34Z
+last_update: '2026-09-29T08:24:30Z'
 date_finished: 2026-08-23T20:28:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +40,16 @@ date_finished: 2026-08-23T20:28:34Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:24:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 8
+    rationale: blast_radius=1 (single-component); tier=2 (workflow:build); 
+      effort=8 (lines=297,acs=10)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3124: file viewer 404 says the file does not exist when it exists but its directory is not served

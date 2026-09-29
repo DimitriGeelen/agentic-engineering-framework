@@ -22,7 +22,10 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [C-004, agents/git/lib/hooks.sh, bin/claude-fw, bin/fw, lib/audit_timing.py, lib/branch-hygiene.sh, lib/config.sh, lib/upgrade.sh, tests/unit/t3182_loop_exit_recorder.bats, web/blueprints/approvals.py, web/blueprints/config.py, web/templates/_approvals_content.html]
+components: [C-004, agents/git/lib/hooks.sh, bin/claude-fw, bin/fw, 
+      lib/audit_timing.py, lib/branch-hygiene.sh, lib/config.sh, lib/upgrade.sh, 
+      tests/unit/t3182_loop_exit_recorder.bats, web/blueprints/approvals.py, 
+      web/blueprints/config.py, web/templates/_approvals_content.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -35,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-24T18:13:40Z
-last_update: 2026-08-27T20:15:35Z
+last_update: '2026-09-29T08:24:30Z'
 date_finished: 2026-08-27T20:15:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -56,6 +59,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=202,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (12-components-cross-cutting); tier=2 
+      (workflow:build); effort=8 (lines=308,acs=9)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-24T18:15:14Z'

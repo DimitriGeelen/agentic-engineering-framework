@@ -19,7 +19,7 @@ components: [agents/termlink/bvp-estimator/estimator.py, lib/bvp.sh,
 related_tasks: [T-1915, T-1916, T-1922, T-1923, T-1928]
 arc_id: value-prioritisation
 created: 2026-05-19T18:36:52Z
-last_update: '2026-08-16T22:24:01Z'
+last_update: '2026-09-29T08:24:19Z'
 date_finished: 2026-05-20T18:17:34Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:45:02Z'
@@ -90,6 +90,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=3 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 2
+      effort: 8
+    rationale: blast_radius=7 (8-components-large-blast); tier=2 
+      (workflow:build); effort=8 (lines=146,acs=7)
     rubric_sha: e4a00f38e801
 ---
 

@@ -15,7 +15,7 @@ components: [web/templates/_review_acs.html]
 related_tasks: [T-2112, T-2113, T-2060, T-667, T-1575]
 arc_id: watchtower-redesign
 created: 2026-05-30T16:32:35Z
-last_update: '2026-08-16T22:24:06Z'
+last_update: '2026-09-29T08:24:24Z'
 date_finished: 2026-05-30T16:40:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -63,6 +63,16 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
       (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 8
+    rationale: blast_radius=1 (single-component); tier=2 (workflow:build); 
+      effort=8 (lines=183,acs=8)
     rubric_sha: e4a00f38e801
 ---
 

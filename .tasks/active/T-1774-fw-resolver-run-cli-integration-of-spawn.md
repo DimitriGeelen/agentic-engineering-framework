@@ -17,7 +17,7 @@ components: [lib/resolver.py, tests/unit/test_resolver_run.py]
 related_tasks: [T-1773, T-1701]
 arc_id: orchestrator-rethink
 created: 2026-05-06T19:05:44Z
-last_update: '2026-08-16T22:23:59Z'
+last_update: '2026-09-29T08:24:18Z'
 date_finished: 2026-05-13T21:20:14Z
 bvp_scores_proposed:
   - ts: '2026-05-28T22:54:09Z'
@@ -66,6 +66,16 @@ bvp_scores_proposed:
       (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=184,acs=11)
     rubric_sha: e4a00f38e801
 ---
 

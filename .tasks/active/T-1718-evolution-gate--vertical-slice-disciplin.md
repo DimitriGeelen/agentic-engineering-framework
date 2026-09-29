@@ -22,7 +22,7 @@ components: [agents/task-create/update-task.sh, lib/evolution_log.sh,
 related_tasks: [T-1717, T-1550, T-1716, T-1671, T-1259, T-1260, G-062, G-066]
 arc_id: embeddings-strategy
 created: 2026-05-04T14:50:48Z
-last_update: '2026-08-16T22:23:59Z'
+last_update: '2026-09-29T08:24:18Z'
 date_finished: 2026-05-27T05:11:05Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -91,6 +91,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (3-components); tier=2 (workflow:build); effort=8 
+      (lines=145,acs=7)
     rubric_sha: e4a00f38e801
 ---
 

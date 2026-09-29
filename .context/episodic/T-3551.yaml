@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3551: cost sweep skips work-completed - exactly when components arrives
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-29T08:26:59Z
+# ============================================================================
+
+task_id: T-3551
+task_name: "cost sweep skips work-completed - exactly when components arrives"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T08:19:09Z
+completed: 2026-09-29T08:26:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-29T10:23:56+02:00
+last_commit: 2026-09-29T10:23:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the cost sweep could not see the population holding the data
+
+# Key outcomes
+outcomes:
+  - 'The cost sweep scores `work-completed` tasks that are still in `.tasks/active/` (partial-complete)'
+  - 'CONTROL: archived tasks under `.tasks/completed/` are still skipped — the boundary is the point, not an accident'
+  - 'The existing `captured` / `started-work` scope is unchanged'
+  - 'A partial-complete task carrying `components:` and a null-blast_radius proposal gains a real `blast_radius` on the next sweep'
+  - 'Confirmed `cost_estimate:` is still never overwritten (sovereignty boundary intact)'
+  - 'A second sweep over unchanged inputs writes nothing — `no-change-since-last` still fires, so the 290-task population cannot grow proposals unboundedly'
+  - 'Arc-member cost coverage re-measured after the sweep and recorded in this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/bvp-estimator/estimator.py'
+  - '.agentic-framework/VERSION'
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - '.tasks/active/T-3551-cost-sweep-skips-work-completed---exactl.md'
+  - 'tests/unit/test_t3551_cost_sweep_partial_complete.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T10:23:56'
+    action: 'T-3551: the cost sweep could not see the population holding the data'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 6
+  lines_added: 644
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3551-cost-sweep-skips-work-completed---exactl.md
+generated_by: context-agent-hybrid

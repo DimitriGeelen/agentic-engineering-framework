@@ -16,7 +16,7 @@ components: [bin/fw, lib/dispatch_pause.py, tests/unit/test_dispatch_pause.py,
 related_tasks: [T-1805, T-1806, T-1807]
 arc_id: dispatch-safety
 created: 2026-05-13T16:04:06Z
-last_update: '2026-08-16T22:24:00Z'
+last_update: '2026-09-29T08:24:18Z'
 date_finished: 2026-05-13T17:13:22Z
 bvp_scores_proposed:
   - ts: '2026-05-28T22:54:10Z'
@@ -66,6 +66,16 @@ bvp_scores_proposed:
       (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
       D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 2
+      effort: 8
+    rationale: blast_radius=5 (5-components-medium-blast); tier=2 
+      (workflow:build); effort=8 (lines=143,acs=11)
     rubric_sha: e4a00f38e801
 ---
 

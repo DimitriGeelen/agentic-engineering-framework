@@ -18,7 +18,7 @@ components: [bin/claude-fw, lib/config.sh, web/blueprints/config.py]
 related_tasks: [T-3239, T-3240, T-3166, T-3182, T-3206]
 arc_id: continuous-run
 created: 2026-09-01T10:03:09Z
-last_update: 2026-09-01T10:35:38Z
+last_update: '2026-09-29T08:24:31Z'
 date_finished: 2026-09-01T10:35:38Z
 cost_estimate_proposed:
   - ts: '2026-09-01T10:15:09Z'
@@ -29,6 +29,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=1 (single-component); tier=2 (workflow:build); 
       effort=8 (lines=159,acs=11)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (3-components); tier=2 (workflow:build); effort=8 
+      (lines=266,acs=12)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-09-01T10:15:17Z'

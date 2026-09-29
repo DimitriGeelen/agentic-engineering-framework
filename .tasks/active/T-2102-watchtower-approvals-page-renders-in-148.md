@@ -20,7 +20,7 @@ components: [tests/playwright/conftest.py, web/blueprints/approvals.py,
       web/templates/_approvals_content.html]
 related_tasks: [T-1954, T-2083]
 created: 2026-05-29T21:52:09Z
-last_update: '2026-08-16T22:24:06Z'
+last_update: '2026-09-29T08:24:23Z'
 date_finished: 2026-05-30T12:36:59Z
 bvp_scores_proposed:
   - ts: '2026-05-29T22:00:02Z'
@@ -74,6 +74,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 2
+      effort: 8
+    rationale: blast_radius=7 (8-components-large-blast); tier=2 
+      (workflow:build); effort=8 (lines=118,acs=6)
     rubric_sha: e4a00f38e801
 ---
 

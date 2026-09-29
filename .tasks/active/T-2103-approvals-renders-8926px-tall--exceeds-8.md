@@ -17,7 +17,7 @@ tags: [watchtower, approvals, height-regression, T-2038-cluster, arc-007]
 components: [tests/playwright/conftest.py, web/templates/_approvals_content.html]
 related_tasks: [T-2038, T-2102]
 created: 2026-05-29T22:04:54Z
-last_update: '2026-08-16T22:24:06Z'
+last_update: '2026-09-29T08:24:23Z'
 date_finished: 2026-05-30T08:27:32Z
 bvp_scores_proposed:
   - ts: '2026-05-29T22:15:02Z'
@@ -72,6 +72,15 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 7
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=7 
+      (lines=110,acs=5)
     rubric_sha: e4a00f38e801
 ---
 

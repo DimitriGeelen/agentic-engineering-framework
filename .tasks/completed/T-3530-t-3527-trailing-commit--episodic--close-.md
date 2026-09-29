@@ -1,18 +1,32 @@
 ---
-id: T-3338
-name: "arc-020 S8: wire aef_resolve endpoint-probe seam to live termlink probes (G3
-  self-heal)"
+id: T-3530
+name: "T-3527 trailing commit — episodic + close-out"
 description: >
-  arc-020 S8: wire aef_resolve endpoint-probe seam to live termlink probes (G3 self-heal)
+  T-3527 trailing commit — episodic + close-out
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
-tags: [arc:arc-020]
-components: [lib/aef_resolve.py]
-related_tasks: [T-3335, T-3336]
-arc_id: arc-020
+owner: agent
+horizon: null
+tags: []
+components: [lib/arc.sh]
+related_tasks: []
+# write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
+#                                 # naming the files this task intends to write. Declared
+#                                 # at CAPTURE, unlike components: which the framework
+#                                 # resolves from git history at close. Feeds TWO things:
+#                                 #   1. `fw write-set check T-A T-B` — without it the
+#                                 #      comparison has nothing to compare and every real
+#                                 #      pair exits 2 (undecidable). 0 of 3032 tasks
+#                                 #      declared it, so that gate has never had an input.
+#                                 #   2. BVP blast_radius before close — the 0.6-weighted
+#                                 #      cost term, unavailable for 85% of rankable tasks
+#                                 #      because components: only exists once the task is
+#                                 #      finished (T-3471).
+#                                 # Example: write_set: ["lib/bvp.sh", "tests/unit/t*_bvp*"]
+#                                 # An EMPTY list is a real declaration ("writes nothing"),
+#                                 # which is not the same as omitting the field. Omitted
+#                                 # means unknown, and unknown must never score as cheap.
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -23,9 +37,9 @@ arc_id: arc-020
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-07T15:36:38Z
-last_update: '2026-09-29T08:24:32Z'
-date_finished: 2026-09-07T15:45:47Z
+created: 2026-09-27T23:08:31Z
+last_update: 2026-09-27T23:11:06Z
+date_finished: 2026-09-27T23:11:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,83 +50,30 @@ date_finished: 2026-09-07T15:45:47Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-07T15:45:09Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=318,acs=8)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-09-29T08:24:32Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 1
-      tier: 2
-      effort: 8
-    rationale: blast_radius=1 (single-component); tier=2 (workflow:build); 
-      effort=8 (lines=335,acs=8)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-07T15:45:16Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      identity-fidelity: 0
-      provisioning-safety: 0
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 4
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: identity-fidelity=0 (no-signal); provisioning-safety=0 
-      (no-signal); D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=4 (body:cross-machine); F-RECALL=2 
-      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3338: arc-020 S8: wire aef_resolve endpoint-probe seam to live termlink probes (G3 self-heal)
+# T-3530: T-3527 trailing commit — episodic + close-out
 
 ## Context
 
-arc-020 S3 (`lib/aef_resolve.py`) climbs the 5-rung address ladder (agent→session→
-project→hub→host) calling an injectable `probe(addr) -> bool` per rung — True = rung
-exists, False = definitively absent, **RAISE = world unknowable (INDETERMINATE)**. The
-raise/return-False distinction is the D4-A death-test: an unreachable world must never be
-reported as a not-found, or provisioning would smuggle timeout-death back in. Until now
-the only probe wired is `_default_path_exists` (project rung, filesystem). This task adds a
-**live termlink-backed probe** — the endpoint-probe seam — that dispatches per deepest-
-present rung to the real termlink binary, serving **G3** (a dropped circuit is *detected*
-so it can self-heal). Design: `docs/reports/T-3287-identity-taxonomy-circuit-model.md`.
-
-**Verb shapes localised against the live binary (the claim-backend grammar-surprise lesson
-— T-3335 Decisions):**
-- session rung → `termlink ping <session> --json` (liveness; `--timeout` guards).
-- hub rung, local → `termlink hub status --json` → `{"ok":true,"status":"running",...}`.
-- hub rung, remote host → `termlink hub probe <host>` (TLS handshake, leaf-cert sha256).
-- host rung → reachability via `hub probe` / net-test (host is the one rung provisioning
-  may only ask, never invent — D5).
-- project rung stays on the existing `path_exists` seam (out of endpoint-probe scope).
-
-Same adapter shape as the T-3335 claim-backend: an injectable `invoke` (default = subprocess
-over `termlink`, reusing `default_termlink_invoke`), fake-invoke unit tests (no live hub),
-one live smoke `[REVIEW]`.
+T-3527 (arc-scoped-driver judge agent) closed via `fw task update --status
+work-completed` before its files were committed, clearing focus per the
+T-2036/P-002 "completed before commit" pattern (`fw work-on T-3527` refuses
+with that exact diagnosis and names this anchor-on-a-different-active-task
+route as the recovery). This trailing task exists solely to hold focus long
+enough to commit T-3527's already-verified, already-closed work.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `lib/aef_resolve.py` exposes a `termlink_probe(invoke=None, *, timeout=...)` factory returning a `probe: Callable[[AEFAddress], bool]` that dispatches per deepest-present rung field (session→ping, hub→hub status/probe, host→reachability) to live termlink verbs via the injectable `invoke` (default subprocess invoker, same pattern as `aef_election.default_termlink_invoke`).
-- [x] The probe returns `True` for a present rung and `False` for a definitively-absent one, and **RAISES `ResolveIndeterminate`** (never returns False) when `invoke` errors/times out — so `resolve()` yields INDETERMINATE, not NOT_FOUND, on an unreachable world (D4-A death-test preserved).
-- [x] The rung→verb dispatch is deterministic and total over the rung kinds it owns (session, hub, host); an unhandled/empty rung raises rather than silently returning False.
-- [x] `tests/unit/test_aef_resolve_termlink.py` covers exists / absent / indeterminate for each owned rung kind via a fake invoke (no live hub), and the existing `tests/unit/test_aef_resolve*.py` stay green.
-- [x] `bin/fw vendor self --check` clean (lib/ is vendored).
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [x] All T-3527 files (lib/arc_driver_judge.py, lib/arc_driver_judge_cli.py,
+      lib/arc.sh, tests/unit/test_arc_driver_judge.py,
+      tests/unit/t3527_arc_driver_judge_entrypoint.bats,
+      docs/reports/T-3527-arc-driver-judge.md, the completed task file, and its
+      generated episodic record) are committed to git.
+- [x] No unrelated file (any other in-progress task's uncommitted changes) is
+      staged or committed by this commit.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -144,18 +105,8 @@ one live smoke `[REVIEW]`.
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] [REVIEW] Live wire-level smoke of the endpoint-probe against a running local hub — the G3 self-heal foundation. A durable session that IS running probes True; a bogus session id probes False; with the hub stopped (or an unreachable remote host), the probe RAISES indeterminate rather than reporting False. This proves the probe distinguishes "gone" from "unreachable" on real termlink — the distinction the self-heal (reconnect vs. give-up) rests on.
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && termlink hub status --json 2>&1 | head` — confirm a hub is running (if not: `termlink hub start`).
-  2. `cd /opt/999-Agentic-Engineering-Framework && python3 tests/manual/s8_probe_smoke.py` (the smoke script committed with this task).
-  **Expected:** Output shows a live session → `exists`, a bogus session → `absent`, and a hub-down/unreachable path → `INDETERMINATE (raised)`.
-  **If not:** Capture the script output + `termlink list --json`; note whether the miss was a real absence or a reachability error the probe mis-reported as absence (that inversion is the D4-A bug the AC guards).
 
 ## Verification
-
-python3 -c "import ast; ast.parse(open('lib/aef_resolve.py').read())"
-out=$(timeout 120 python3 -m pytest tests/unit/test_aef_resolve_termlink.py tests/unit/test_aef_resolve.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -165,6 +116,17 @@ bin/fw vendor self --check
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+#
+# ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
+# Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
+# state — an exact live count, or a grep of live `fw audit`/`fw doctor` output
+# for a specific corpus entity (a named arc, a task count, a census number).
+# The corpus moves under the check, and the line rots: it goes red (or vanishes
+# its pattern) for reasons unrelated to the code under test, blocking closes.
+# Pin the INVARIANT (categories sum, count > 0, property holds) or run the code
+# against a COMMITTED FIXTURE — never the live count or a live-audit line.
+# Origin: T-2969 line grepping live audit for one arc's status; T-2871's census
+# test pinning exact live counts (56→74 files) — both blocked closes (OBS-377).
 #
 # ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
 #
@@ -272,6 +234,9 @@ bin/fw vendor self --check
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+git log --oneline -1 -- lib/arc_driver_judge.py | grep -q "T-3527"
+git status --porcelain -- lib/arc_driver_judge.py lib/arc_driver_judge_cli.py tests/unit/test_arc_driver_judge.py tests/unit/t3527_arc_driver_judge_entrypoint.bats docs/reports/T-3527-arc-driver-judge.md > /tmp/.t3530_status.out 2>&1; test ! -s /tmp/.t3530_status.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -312,12 +277,6 @@ bin/fw vendor self --check
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-09-07 — verb shapes differed from the S3 design's assumed grammar (again)
-- **What changed:** The T-3287 seam map named the probe rungs "host→ping, hub→hub_probe, session→list_sessions". Localising against the live binary showed all three were off: `ping` is *session* liveness (not host), `list-sessions` is `list`, and `hub probe` is a *remote* TLS handshake while local-hub existence is `hub status`. Same class as the T-3335 claim-backend grammar surprise — the design's verb names were plausible but not the real CLI.
-- **Plan impact:** The dispatch table is by *rung kind → real verb*, not the design's guessed pairs: session→`ping`, project→`path_exists` (filesystem, delegated), local-hub→`hub status`, remote-hub/host→`hub probe`. The agent rung is probed via its carrying session (circuit = session token, `is_circuit`); a bare agent rung with no session raises rather than guess — agent-level presence is a documented v2 deferral, not a silent gap.
-- **What sharpened:** the D4-A death-test became concrete per verb — a hub that *answers* `ok:false / "not found"` is a definitive False, but no-structured-verdict (socket down, non-JSON) and every *remote* miss raise INDETERMINATE. The reachable-vs-absent line is the crux the 18 unit tests and the live smoke pin.
-- **Triggered:** no new sub-task. Remaining S8 follow-ons unchanged (peer-query/materialize fleet-source; the full G1+G3 arc-close demo, which now has both its foundations — the T-3335 claim mutex and this probe).
-
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -347,27 +306,6 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO (endpoint-probe seam)
-
-**Rationale:** The endpoint-probe seam — the live probe `resolve()` climbs the ladder with,
-and the G3 self-heal detection foundation — is wired to real termlink and verified three
-ways: 18 unit tests through an injectable fake invoke (exists/absent/indeterminate per rung
-kind, no hub needed), the existing resolve suite still green (34 passed total), and a **live
-smoke on the real hub passing** (live session→exists, bogus→absent, unreachable→INDETERMINATE
-raised). The one `[REVIEW]` Human AC is that live smoke, which already ran green in-session —
-the human need only re-run `python3 tests/manual/s8_probe_smoke.py` on their hub.
-
-**Evidence:**
-- `lib/aef_resolve.py` — `termlink_probe()` factory (session→ping, project→path_exists, local-hub→hub status, remote→hub probe); D4-A raise-vs-False contract enforced per verb.
-- `tests/unit/test_aef_resolve_termlink.py` — 18 tests; existing `test_aef_resolve.py` green (34 total).
-- `tests/manual/s8_probe_smoke.py` — live smoke, exit 0 on hub PID 1026708.
-- `## Evolution` — the verb-grammar divergence from the S3 design captured (sibling to T-3335).
-- `bin/fw vendor self --check` clean.
-
-**Scope note:** one deliverable — the probe seam. Remaining S8 (peer-query/materialize
-fleet-source; the full G1+G3 arc-close demo) tracked in `## Context`. This plus the T-3335
-claim mutex are the two foundations that demo stands on.
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -391,24 +329,24 @@ claim mutex are the two foundations that demo stands on.
 
 ## Updates
 
-### 2026-09-07T15:36:38Z — task-created [task-create-agent]
+### 2026-09-27T23:08:31Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3338-arc-020-s8-wire-aefresolve-endpoint-prob.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3530-t-3527-trailing-commit--episodic--close-.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-80f540c7
-- **Timestamp:** 2026-09-07T15:45:52Z
+- **Scan ID:** R-0282c0f6
+- **Timestamp:** 2026-09-27T23:11:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
 - **Findings:** 1
 
-**Per-AC findings:**
+**Verification-level findings:**
 
-- **AC#3 (Human)** — [REVIEW] Live wire-level smoke of the endpoint-probe against a running local hub — the G3 self-heal foundation. A durable session that IS running probes True; a bogus session id probes False; with the
-  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows a' in Expected: Output shows a live session → `exists`, a bogus session → `absent`, and a hub-down/unreachable path → `INDETERMINATE (raised)`.`
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 127
+     - evidence: `git log --oneline -1 -- lib/arc_driver_judge.py | grep -q "T-3527"`
 
-### 2026-09-07T15:45:47Z — status-update [task-update-agent]
+### 2026-09-27T23:11:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

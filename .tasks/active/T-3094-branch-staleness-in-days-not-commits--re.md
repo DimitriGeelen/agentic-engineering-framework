@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-20T00:17:06Z
-last_update: 2026-08-20T00:42:58Z
+last_update: '2026-09-29T08:24:30Z'
 date_finished: 2026-08-20T00:42:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -45,6 +45,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=227,acs=11)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (3-components); tier=2 (workflow:build); effort=8 
+      (lines=361,acs=12)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-20T00:30:15Z'

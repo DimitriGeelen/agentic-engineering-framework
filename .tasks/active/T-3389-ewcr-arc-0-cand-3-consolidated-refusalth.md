@@ -27,7 +27,7 @@ arc_id: ewcr-arc0-contract-evidence
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-18T15:39:14Z
-last_update: 2026-09-24T20:39:28Z
+last_update: '2026-09-29T08:24:32Z'
 date_finished: 2026-09-24T20:39:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -48,6 +48,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=4 
       (workflow:specification); effort=8 (lines=278,acs=7)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 4
+      effort: 8
+    rationale: blast_radius=1 (single-component); tier=4 
+      (workflow:specification); effort=8 (lines=418,acs=8)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-09-18T15:45:20Z'

@@ -9,7 +9,8 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [C-004, lib/config.sh, lib/gitignore-register.sh, tests/unit/t2994_gitignore_register.bats, web/blueprints/config.py]
+components: [C-004, lib/config.sh, lib/gitignore-register.sh, 
+      tests/unit/t2994_gitignore_register.bats, web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,7 +23,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-14T19:06:30Z
-last_update: 2026-08-14T19:20:20Z
+last_update: '2026-09-29T08:24:29Z'
 date_finished: 2026-08-14T19:20:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,6 +44,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 2
+      effort: 8
+    rationale: blast_radius=5 (5-components-medium-blast); tier=2 
+      (workflow:build); effort=8 (lines=307,acs=10)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-14T19:15:12Z'

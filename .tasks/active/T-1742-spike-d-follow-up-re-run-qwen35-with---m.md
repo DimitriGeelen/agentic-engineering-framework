@@ -18,7 +18,7 @@ components: []
 related_tasks: [T-1741, T-1737]
 arc_id: orchestrator-rethink
 created: 2026-05-05T09:25:26Z
-last_update: 2026-09-20T11:20:53Z
+last_update: '2026-09-29T08:24:18Z'
 date_finished: 2026-09-20T11:20:53Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -150,6 +150,15 @@ cost_estimate_proposed:
       effort: 5
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=5 (lines=114,acs=3)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=204,acs=5)
     rubric_sha: e4a00f38e801
 ---
 

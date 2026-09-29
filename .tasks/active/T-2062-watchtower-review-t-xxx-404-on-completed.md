@@ -17,7 +17,7 @@ components: [web/blueprints/review.py, web/templates/review.html]
 related_tasks: [T-2059, T-2061, T-2056, T-2060, T-679]
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: '2026-08-16T22:24:05Z'
+last_update: '2026-09-29T08:24:23Z'
 date_finished: 2026-05-28T17:59:23Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -28,6 +28,15 @@ cost_estimate_proposed:
       effort: 5
     rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=5 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=177,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-05-28T13:00:02Z'

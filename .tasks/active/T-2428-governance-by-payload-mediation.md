@@ -19,7 +19,7 @@ tags: [governance, proxy, payload-mediation, portability, livefire, lock-1,
       autonomy]
 related_tasks: [T-2389]
 created: 2026-06-18T19:50:00Z
-last_update: '2026-08-16T22:24:09Z'
+last_update: '2026-09-29T08:24:26Z'
 date_finished: 2026-06-18T11:31:47Z
 bvp_scores_proposed:
   - ts: '2026-08-16T22:24:09Z'
@@ -37,6 +37,16 @@ bvp_scores_proposed:
     rationale: D1=4 (no-signal); D2=4 (no-signal); D3=4 (no-signal); D4=4 
       (no-signal); F-RECALL=4 (no-signal); F-AUTONOMY=4 (no-signal); F3=4 
       (no-signal); F1=4 (no-signal); F2=4 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-29T08:24:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 4
+      effort: 8
+    rationale: blast_radius=7 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=8 (lines=282,acs=5)
     rubric_sha: e4a00f38e801
 ---
 

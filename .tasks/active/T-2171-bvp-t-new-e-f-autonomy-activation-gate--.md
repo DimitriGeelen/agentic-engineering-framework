@@ -16,11 +16,14 @@ owner: human
 horizon: now
 tags: [v3-followup-E, f-autonomy-activation, arc:value-prioritisation, 
       blocked-on-T-2158]
-components: [agents/audit/audit.sh, agents/termlink/bvp-estimator/estimator.py, bin/fw, lib/resolver.py, tests/unit/t2915_resolver_inflight_expiry.bats, tests/unit/test_audit_retire_when.bats, tests/unit/test_bvp_estimator.py, tests/unit/test_resolver.py, web/templates/bvp.html]
+components: [agents/audit/audit.sh, agents/termlink/bvp-estimator/estimator.py, 
+      bin/fw, lib/resolver.py, tests/unit/t2915_resolver_inflight_expiry.bats, 
+      tests/unit/test_audit_retire_when.bats, tests/unit/test_bvp_estimator.py, 
+      tests/unit/test_resolver.py, web/templates/bvp.html]
 related_tasks: [T-2158, T-2166, T-2168, T-2170]
 arc_id: value-prioritisation
 created: 2026-06-01T22:22:20Z
-last_update: 2026-09-17T16:38:43Z
+last_update: '2026-09-29T08:24:24Z'
 date_finished: 2026-09-17T16:38:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -156,6 +159,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=207,acs=8)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 2
+      effort: 8
+    rationale: blast_radius=7 (9-components-large-blast); tier=2 
+      (workflow:build); effort=8 (lines=225,acs=8)
     rubric_sha: e4a00f38e801
 ---
 

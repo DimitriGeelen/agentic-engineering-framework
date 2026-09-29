@@ -19,7 +19,12 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [agents/audit/audit.sh, bin/fw, lib/arc-driver-review.sh, lib/arc.sh, tests/unit/arc_remove_driver_verb.bats, tests/unit/t3429_arc_approve_driver_default_path.bats, tests/unit/t3429_arc_driver_review.bats, tests/unit/t3429_arc_driver_reviewer_record_rail.bats, web/blueprints/arcs.py, web/templates/arc_detail.html]
+components: [agents/audit/audit.sh, bin/fw, lib/arc-driver-review.sh, lib/arc.sh,
+  tests/unit/arc_remove_driver_verb.bats, 
+      tests/unit/t3429_arc_approve_driver_default_path.bats, 
+      tests/unit/t3429_arc_driver_review.bats, 
+      tests/unit/t3429_arc_driver_reviewer_record_rail.bats, 
+      web/blueprints/arcs.py, web/templates/arc_detail.html]
 related_tasks: []
 arc_id: arc-006
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -33,7 +38,7 @@ arc_id: arc-006
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-22T10:41:00Z
-last_update: 2026-09-22T18:15:42Z
+last_update: '2026-09-29T08:24:32Z'
 date_finished: 2026-09-22T18:15:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -54,6 +59,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-29T08:24:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (10-components-cross-cutting); tier=2 
+      (workflow:build); effort=8 (lines=352,acs=12)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-09-22T10:45:18Z'
