@@ -1173,17 +1173,70 @@ import time as _time
 # One timestamp for two independently-populated entries cannot be right: either
 # it is stamped by both (and each makes the other look fresh) or by one (and the
 # other never caches). Both halves of that were live.
-_task_cache = {"data": None, "names": None, "tags": None, "ts": 0, "tags_ts": 0}
-_TASK_CACHE_TTL = 30  # seconds
+_task_cache = {"data": None, "names": None, "tags": None, "ts": 0, "tags_ts": 0,
+               "sig": None, "tags_sig": None}
+# T-3575: freshness is CHANGE-driven, not time-driven. The 30s TTL meant any visit
+# more than 30s after the previous one rebuilt ~3,600 task files + ~3,900 episodic
+# files (measured 3.35s cold vs 0.19s warm on /tasks), so most real visits were the
+# slow one. The cache is now validated by a (name, mtime_ns, size) signature over the
+# source files — one stat per file, ~50ms, no reads — and a rebuild re-parses only
+# files whose mtime moved (per-file mtime_cached_get). The TTL survives only as a
+# minutes-long safety net for anything a stat signature cannot see.
+_TASK_CACHE_TTL = 300  # seconds — safety net only; freshness comes from the signature
+
+_TASK_FM_CACHE: dict = {}       # path -> (mtime_ns, frontmatter dict | None)
+_EPISODIC_TAGS_CACHE: dict = {}  # path -> (mtime_ns, (task_id, tags) | None)
+
+
+def _dir_signature(directory, prefix, suffix):
+    """Signature of the files in `directory` named `prefix*suffix`.
+
+    Any add, remove, rename, or in-place rewrite (mtime or size moves) changes it.
+    Reads no file content.
+    """
+    sig = []
+    try:
+        with os.scandir(directory) as it:
+            for entry in it:
+                name = entry.name
+                if name.startswith(prefix) and name.endswith(suffix):
+                    try:
+                        st = entry.stat()
+                    except OSError:
+                        continue
+                    sig.append((name, st.st_mtime_ns, st.st_size))
+    except OSError:
+        return ()
+    sig.sort()
+    return tuple(sig)
+
+
+def _task_files_signature():
+    return tuple(
+        (loc, _dir_signature(PROJECT_ROOT / ".tasks" / loc, "T-", ".md"))
+        for loc in ("active", "completed")
+    )
+
+
+def _parse_task_fm_file(path):
+    try:
+        fm, _ = parse_frontmatter(path.read_text())
+    except OSError:
+        return None
+    return fm or None
 
 
 def get_all_task_metadata():
     """Return list of frontmatter dicts for all tasks (active + completed).
 
-    Cached for _TASK_CACHE_TTL seconds. Each dict has '_location' key.
+    Cached until a task file changes (T-3575; safety TTL _TASK_CACHE_TTL).
+    Each dict has '_location' key.
     """
     now = _time.monotonic()
-    if _task_cache["data"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
+    sig = _task_files_signature()
+    if (_task_cache["data"] is not None
+            and _task_cache["sig"] == sig
+            and (now - _task_cache["ts"]) < _TASK_CACHE_TTL):
         return _task_cache["data"]
 
     all_tasks = []
@@ -1195,8 +1248,9 @@ def get_all_task_metadata():
         for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
             if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
                 continue
-            fm, _ = parse_frontmatter(f.read_text())
-            if fm:
+            parsed = mtime_cached_get(f, _parse_task_fm_file, _TASK_FM_CACHE, default=None)
+            if parsed:
+                fm = dict(parsed)  # per-request-safe: the per-file cache stays unmutated
                 fm["_location"] = location
                 fm["_path"] = str(f)  # T-1244: enable body re-read without re-glob
                 all_tasks.append(fm)
@@ -1208,46 +1262,55 @@ def get_all_task_metadata():
     _task_cache["data"] = all_tasks
     _task_cache["names"] = names
     _task_cache["ts"] = now
+    _task_cache["sig"] = sig
     return all_tasks
 
 
 def get_task_names():
     """Return {task_id: name} dict. Uses task cache."""
-    now = _time.monotonic()
-    if _task_cache["names"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
-        return _task_cache["names"]
-    get_all_task_metadata()  # populate cache
+    get_all_task_metadata()  # validates the cache, rebuilds only on change
     return _task_cache["names"] or {}
 
 
+def _parse_episodic_tags_file(path):
+    try:
+        # T-3458: this loop parses EVERY .context/episodic/T-*.yaml —
+        # thousands of files — so it is the single largest YAML cost on
+        # a cold request, and the one place the 12x parser difference
+        # measured in isolation actually has thousands of documents to
+        # apply to. It was missed by the first pass of that change,
+        # which touched only load_yaml; the task's own test caught it.
+        with open(path) as fh:
+            edata = yaml.load(fh, Loader=_YAML_LOADER)
+    except (yaml.YAMLError, OSError):
+        return None
+    if isinstance(edata, dict):
+        return (edata.get("task_id", path.stem), edata.get("tags", []))
+    return None
+
+
 def get_episodic_tags():
-    """Return {task_id: [tags]} from episodic files. Cached."""
+    """Return {task_id: [tags]} from episodic files. Cached until they change (T-3575)."""
     now = _time.monotonic()
-    if _task_cache["tags"] is not None and (now - _task_cache["tags_ts"]) < _TASK_CACHE_TTL:
+    episodic_dir = PROJECT_ROOT / ".context" / "episodic"
+    sig = _dir_signature(episodic_dir, "T-", ".yaml")
+    if (_task_cache["tags"] is not None
+            and _task_cache["tags_sig"] == sig
+            and (now - _task_cache["tags_ts"]) < _TASK_CACHE_TTL):
         return _task_cache["tags"]
 
     tags = {}
-    episodic_dir = PROJECT_ROOT / ".context" / "episodic"
     if episodic_dir.exists():
         for f in episodic_dir.glob("T-*.yaml"):
             if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
                 continue
-            try:
-                # T-3458: this loop parses EVERY .context/episodic/T-*.yaml —
-                # thousands of files — so it is the single largest YAML cost on
-                # a cold request, and the one place the 12x parser difference
-                # measured in isolation actually has thousands of documents to
-                # apply to. It was missed by the first pass of that change,
-                # which touched only load_yaml; the task's own test caught it.
-                with open(f) as fh:
-                    edata = yaml.load(fh, Loader=_YAML_LOADER)
-                if isinstance(edata, dict):
-                    tags[edata.get("task_id", f.stem)] = edata.get("tags", [])
-            except yaml.YAMLError:
-                continue
+            entry = mtime_cached_get(f, _parse_episodic_tags_file, _EPISODIC_TAGS_CACHE, default=None)
+            if entry:
+                tags[entry[0]] = entry[1]
 
     _task_cache["tags"] = tags
     _task_cache["tags_ts"] = now   # T-3459: stamp what we just computed
+    _task_cache["tags_sig"] = sig
     return tags
 
 

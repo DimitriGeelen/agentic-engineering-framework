@@ -450,9 +450,10 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
             hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="[name='q'],[name='owner'],[name='horizon'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
         <option value="">All Tags</option>
-        {% for tg in all_tags %}
+        {#- T-3575: whitespace-trimmed; this dropdown alone was 68KB of the page -#}
+        {%- for tg in all_tags -%}
         <option value="{{ tg }}" {% if tag_filter == tg %}selected{% endif %}>{{ tg }}</option>
-        {% endfor %}
+        {%- endfor %}
     </select>
     {% endif %}
     <input type="hidden" name="view" value="{{ view }}">
@@ -522,16 +523,20 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         <div class="kanban-column-header">
             {{ status_display.get(s, s|replace('-',' ')|title) }} <span class="count">({{ col_tasks|length }})</span>
         </div>
-        {% for task in (col_tasks[:10] if is_last else col_tasks) %}
+        {# T-3575: every column is capped, not just the last. The board shipped all 170
+           captured cards (~4KB each, 1MB page); the overflow link is the existing
+           list-view status filter, so nothing becomes unreachable. #}
+        {% set _cap = 10 if is_last else board_column_cap %}
+        {% for task in col_tasks[:_cap] %}
         {{ kanban_card(task) }}
         {% else %}
         <div class="kanban-empty">No tasks</div>
         {% endfor %}
-        {% if is_last and col_tasks|length > 10 %}
+        {% if col_tasks|length > _cap %}
         <div class="kanban-overflow-note">
             <a href="/tasks?view=list&status={{ s }}"
                hx-get="/tasks?view=list&status={{ s }}" hx-target="#content" hx-push-url="true">
-                +{{ col_tasks|length - 10 }} more &rarr;
+                +{{ col_tasks|length - _cap }} more &rarr;
             </a>
         </div>
         {% endif %}

@@ -6,9 +6,10 @@
       {% if form_class %}class="{{ form_class }}"{% endif %}>
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <select name="{{ field }}" class="{{ select_class }}" onchange="this.form.requestSubmit()">
-        {% for val in options %}
+        {#- T-3575: whitespace-trimmed — this macro renders 4x per board card and once per list row -#}
+        {%- for val in options -%}
         <option value="{{ val }}" {% if current == val %}selected{% endif %}>{{ val }}</option>
-        {% endfor %}
+        {%- endfor %}
     </select>
 </form>
 {% endmacro %}

@@ -1,10 +1,18 @@
 ---
 id: T-3575
-name: "Tasks page slow at ~3,600 tasks - 30s TTL cache means most visits are cold (3.4s) and the page ships 1MB of markup"
+name: "Tasks page slow at ~3,600 tasks - 30s TTL cache means most visits are cold
+  (3.4s) and the page ships 1MB of markup"
 description: >
-  Measured 2026-09-30: GET /tasks cold 3.35s, warm 0.22s (cache from T-1233 / L-002 still works); page is 1,041,285 bytes; browser DOMContentLoaded 1.1s even when warm. Two causes: (1) web/shared.py _task_cache has _TASK_CACHE_TTL = 30s, so any visit >30s after the last one rebuilds from ~3,600 files; web/shared.py already has mtime_cached_get (line ~503) for invalidate-on-change. (2) the page renders every task. Fix: invalidate on task-dir change instead of time (keep a safety TTL), and cut the default payload (active tasks in full; completed paged or loaded on demand). Measure before/after: cold and warm server time, bytes, and browser DOMContentLoaded.
+  Measured 2026-09-30: GET /tasks cold 3.35s, warm 0.22s (cache from T-1233 / L-002
+  still works); page is 1,041,285 bytes; browser DOMContentLoaded 1.1s even when warm.
+  Two causes: (1) web/shared.py _task_cache has _TASK_CACHE_TTL = 30s, so any visit
+  >30s after the last one rebuilds from ~3,600 files; web/shared.py already has mtime_cached_get
+  (line ~503) for invalidate-on-change. (2) the page renders every task. Fix: invalidate
+  on task-dir change instead of time (keep a safety TTL), and cut the default payload
+  (active tasks in full; completed paged or loaded on demand). Measure before/after:
+  cold and warm server time, bytes, and browser DOMContentLoaded.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T23:21:25Z
-last_update: 2026-09-29T23:21:25Z
-date_finished: null
+last_update: 2026-09-29T23:33:41Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-29T23:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=274,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-29T23:30:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3575: Tasks page slow at ~3,600 tasks - 30s TTL cache means most visits are cold (3.4s) and the page ships 1MB of markup
@@ -64,11 +100,29 @@ works (warm 0.22s) but the 30s TTL makes most visits cold (3.35s), and the page 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The task metadata cache in web/shared.py is invalidated when a task file changes (reuse `mtime_cached_get` or an equivalent directory-mtime check) rather than every 30s; a safety TTL may remain but is minutes, not seconds; a test proves a changed task file is reflected on the next request
-- [ ] The default /tasks payload is cut substantially (e.g. active tasks in full, completed paged or loaded on demand) without removing any filter, search or view the page offers today; measured bytes before/after recorded in the task
+- [x] The task metadata cache in web/shared.py is invalidated when a task file changes (reuse `mtime_cached_get` or an equivalent directory-mtime check) rather than every 30s; a safety TTL may remain but is minutes, not seconds; a test proves a changed task file is reflected on the next request
+- [x] The default /tasks payload is cut substantially (e.g. active tasks in full, completed paged or loaded on demand) without removing any filter, search or view the page offers today; measured bytes before/after recorded in the task
 - [ ] Measured on this host with curl and a browser navigation timing: cold and warm server time, bytes, DOMContentLoaded, before and after, recorded in the task; warm DOMContentLoaded under 500ms
-- [ ] Existing tasks-page web tests pass; `bin/fw watchtower current` passes after restart; `bin/fw vendor self --check` clean
+- [x] Existing tasks-page web tests pass; `bin/fw watchtower current` passes after restart; `bin/fw vendor self --check` clean
 - [ ] Render review by an independent agent reviewer on live screenshots (operator ruling, T-3557 IW-1)
+
+### Results (measured 2026-09-30, host load 20-28 on 24 cores)
+
+| | before | after |
+|---|---|---|
+| GET /tasks cold (>30s idle), curl | 3.35s | 0.18s (change-driven cache, no TTL expiry) |
+| GET /tasks after one task file touched | n/a (full rebuild 3.4s) | 0.37s (only the changed file re-parsed) |
+| GET /tasks warm, curl | 0.19-0.26s | 0.18-0.20s |
+| /tasks bytes (default board) | 1,044,881 | 304,676 |
+| browser TTFB / DOMContentLoaded, first load | 4326 / 5521ms | 407 / 851ms (fresh restart) |
+| browser DOMContentLoaded, warm | 1081-1576ms | 527-592ms |
+| /tasks?view=list bytes | 14.4MB | 13.2MB (unchanged design; not capped) |
+
+Changes: web/shared.py cache validated by a (name, mtime_ns, size) signature with per-file mtime caches and a 300s safety TTL;
+board columns capped at 20 cards (last column 10) with the existing "+N more" link to the status-filtered list view;
+inline_select macro and tag dropdown whitespace-trimmed. Filters/search/views untouched.
+Tests: tests/web/test_t3575_tasks_page_perf.py (5), existing unit/web/Playwright tasks tests pass.
+NOT MET: warm DOMContentLoaded under 500ms (527-592ms on a loaded host; ~200ms of it is TTFB). Board render surface: the independent render review AC is left for the parent.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -325,3 +379,6 @@ works (warm 0.22s) but the 30s TTL makes most visits cold (3.35s), and the page 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3575-tasks-page-slow-at-3600-tasks---30s-ttl-.md
 - **Context:** Initial task creation
+
+### 2026-09-29T23:33:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
