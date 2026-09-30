@@ -152,13 +152,16 @@ EOF
     file=$(_write_task "T-7012" "inception" "")
     run emit_review "T-7012" "$file"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"BLOCKED: Inception T-7012 has empty"* ]]
-    # Block message must name bypass mechanism (T-1890 parity).
-    [[ "$output" == *"FW_ALLOW_EMPTY_RECOMMENDATION=1"* ]]
+    # T-3549 (7a24ba133): the ONE handoff predicate (inception_handoff_blockers)
+    # runs first and refuses an empty Recommendation as [empty-recommendation].
+    [[ "$output" == *"BLOCKED: this inception is not handoff-ready"* ]]
+    [[ "$output" == *"[empty-recommendation]"* ]]
+    [[ "$output" == *"No handoff link has been emitted"* ]]
+    # Block message must name its bypass mechanism (T-1890 parity).
+    [[ "$output" == *"FW_ALLOW_UNREADY_HANDOFF=1"* ]]
     # Block message must name canonical fix path (edit Recommendation block).
     [[ "$output" == *"Recommendation"* ]]
-    # Block message must cross-ref origin chain.
-    [[ "$output" == *"T-2204"* ]] || [[ "$output" == *"T-2205"* ]] || [[ "$output" == *"T-679"* ]]
+    [[ "$output" != *"http://test-host:7777"* ]]
 }
 
 @test "emit_review: inception with template-only Recommendation BLOCKS" {
@@ -166,7 +169,9 @@ EOF
     file=$(_write_task "T-7013" "inception" "<!-- placeholder comment -->")
     run emit_review "T-7013" "$file"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"BLOCKED: Inception T-7013 has empty"* ]]
+    # T-3549 (7a24ba133): refused by the handoff predicate, see test above.
+    [[ "$output" == *"BLOCKED: this inception is not handoff-ready"* ]]
+    [[ "$output" == *"[empty-recommendation]"* ]]
 }
 
 @test "emit_review: FW_ALLOW_EMPTY_RECOMMENDATION=1 bypass → exit 0 + NOTE + log" {
