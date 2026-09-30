@@ -57,6 +57,19 @@ check-render and `fw audit`:
   * the ledger is append-only as verified against git history (`load_ledger`): modified,
     deleted, duplicated or replaced rows refuse everything; rows are validated before selection.
 
+  * (T-3580 round 2) it carries the worker's own SIGNED COMPLETION (review-completions.jsonl,
+    written by `record`): the worker session (`reviewer-<dispatch id>`, fresh, not the issuer or a
+    producer, and the identity `reviewer` is attributed to), the reviewed revision (an ancestor of
+    the introducing commit at which the criterion has the digest the worker read and any cited
+    file still has the hash it recorded), the criterion digest, the evidence hashes and a hash
+    over the exact verdict; and the commit that introduced the row was made, author AND
+    committer, by exactly that worker;
+  * (T-3580 round 2) when the dispatch is bound to a signed review run (review-runs.jsonl):
+    every required seat has its own valid completed green and the seats span the run's required
+    number of distinct vendors (a single-vendor panel cannot satisfy a three-vendor one); a
+    render criterion additionally needs every required page captured, with the screenshot's
+    hash cited as evidence. A render criterion or a rung-5 claim with no run never counts.
+
 The LATEST row for (task, criterion, current digest) decides. `apply` runs at every close
 attempt and WITHDRAWS reviewer-derived ticks that no longer validate.
 
@@ -118,6 +131,13 @@ DISPATCHES = Path(".context/reviews/review-dispatches.jsonl")
 #: Journal of every verdict `record` wrote. A row deleted from the working ledger before it is
 #: committed leaves no trace in git; the journal is what shows it existed (T-3581 round 4).
 RECORDED = Path(".context/reviews/recorded.jsonl")
+#: Review runs (T-3580 round 2): one signed row per `judge` run (its required seats, vendors and
+#: the pages a render criterion needs with the capture result of each), plus one signed `bind`
+#: row per dispatched seat. A row bound to a run counts only when the run's requirements hold.
+RUNS = Path(".context/reviews/review-runs.jsonl")
+#: Signed worker completions: what the worker itself reports when it records a verdict (T-3581
+#: attribution requirements 1-6). A verdict row counts only if a completion agrees with it.
+COMPLETIONS = Path(".context/reviews/review-completions.jsonl")
 DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
 REVIEW_TASK_TYPE = "review"
 
@@ -314,6 +334,147 @@ def dispatch_record(root: Path, dispatch_id: str) -> tuple[dict | None, str]:
     return rec, ""
 
 
+# ── signed worker completion + review runs (T-3580 round 2) ─────────────────────
+#
+# The LEDGER enforces; the judge CLI only asks. Everything below is verified by the shared
+# validator (`_row_fault` / `_fault` / `satisfying_verdict`), so `apply`, `check-render` and
+# `audit` all see it. Same-user honesty is unchanged: whoever can read the dispatch key can
+# sign a coherent completion or run.
+
+
+def _sign_row(key: bytes, row: dict) -> str:
+    body = {k: v for k, v in row.items() if k != "sig"}
+    return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
+                    hashlib.sha256).hexdigest()
+
+
+def _signed_ok(root: Path, row: dict) -> bool:
+    key = _dispatch_key(root)
+    return bool(key) and hmac.compare_digest(str(row.get("sig", "")), _sign_row(key, row))
+
+
+def worker_identity(dispatch_id: str) -> str:
+    """The identity a review worker records and commits under: derived from its dispatch id,
+    which carries a random suffix, so it is fresh per run and never a producer's or issuer's."""
+    return f"reviewer-{dispatch_id.strip()}"
+
+
+def verdict_hash(row: dict) -> str:
+    """Hash over the canonical verdict body: outcome, guidance, evidence (+ its content hashes),
+    criterion digest and reviewed revision. A row whose bytes differ from it is refused."""
+    body = {"outcome": row.get("outcome"), "guidance": row.get("guidance", ""),
+            "evidence": row.get("evidence"), "evidence_sha256": row.get("evidence_sha256") or {},
+            "ac_digest": row.get("ac_digest"), "revision": row.get("revision", "")}
+    return hashlib.sha256(json.dumps(body, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def _head_sha(root: Path) -> str:
+    rc, out = _git_out(root, "rev-parse", "-q", "--verify", "HEAD")
+    return out.strip() if rc == 0 else ""
+
+
+def _criterion_at(root: Path, rev: str, task_id: str, ac: int) -> str | None:
+    """Digest of Human criterion `ac` of `task_id` as it stood at `rev`; None if it did not exist."""
+    rc, listing = _git_out(root, "ls-tree", "-r", "--name-only", rev, "--", ".tasks/active", ".tasks/completed")
+    if rc != 0:
+        return None
+    name = next((ln for ln in listing.splitlines()
+                 if Path(ln).name.startswith(f"{task_id}-") or Path(ln).name == f"{task_id}.md"), None)
+    if not name:
+        return None
+    rc, blob = _git_out(root, "show", f"{rev}:{name}")
+    if rc != 0:
+        return None
+    crit = next((c for c in human_criteria(blob) if c.index == ac), None)
+    return criterion_digest(crit) if crit else None
+
+
+def make_completion(root: Path, row: dict) -> dict:
+    """The signed completion the worker posts for `row` (called from `record`, inside the worker)."""
+    body = {"kind": "completion", "dispatch_id": row["dispatch_id"], "task": row["task"],
+            "ac": row["ac"], "verdict_id": row["id"], "worker": row["worker"],
+            "revision": row["revision"], "ac_digest": row["ac_digest"],
+            "evidence_sha256": row.get("evidence_sha256") or {},
+            "verdict_sha256": verdict_hash(row), "ts": _now()}
+    key = _dispatch_key(root)
+    if key is None:
+        raise VerdictRefused("no dispatch signing key — no completion can be signed")
+    body["sig"] = _sign_row(key, body)
+    return body
+
+
+def _completion_for(root: Path, verdict_id: str) -> dict | None:
+    return next((c for c in _read(COMPLETIONS, root) if c.get("verdict_id") == verdict_id), None)
+
+
+def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats: list[dict],
+                 required_vendors: int = 1, pages: dict | None = None, captures: list | None = None,
+                 inputs: dict | None = None, reason: str = "", degraded: str = "",
+                 root: Path | None = None) -> dict:
+    """(judge, before dispatching) record a review run: the seats it requires, how many distinct
+    vendors it demands, and for render criteria the pages that must have been seen with the
+    capture result of each. Signed; a partial capture failure is kept, never discarded."""
+    root = root or _root()
+    if any(r.get("kind") == "run" and r.get("run_id") == run_id for r in _read(RUNS, root)):
+        raise ValueError(f"run {run_id!r} is already registered")
+    key = _dispatch_key(root, create=True)
+    row = {"kind": "run", "run_id": run_id, "task": task_id, "acs": sorted(acs), "rung": rung,
+           "seats": [{"seat": s["seat"], "vendor": s["vendor"]} for s in seats],
+           "required_vendors": int(required_vendors),
+           "pages": {str(k): list(v) for k, v in (pages or {}).items()},
+           "captures": [dict(c) for c in (captures or [])], "inputs": inputs or {},
+           "reason": reason, "degraded": degraded, "ts": _now()}
+    row["sig"] = _sign_row(key, row)
+    _append(RUNS, row, root)
+    return row
+
+
+def _verified_run(root: Path, run_id: str) -> tuple[dict | None, str]:
+    rows = [r for r in _read(RUNS, root) if r.get("kind") == "run" and r.get("run_id") == run_id]
+    if not rows:
+        return None, f"run {run_id!r} is not registered"
+    if not _signed_ok(root, rows[0]):
+        return None, f"run {run_id!r} has an invalid signature"
+    return rows[0], ""
+
+
+def bind_dispatch(run_id: str, seat: str, dispatch_id: str, vendor: str, *,
+                  root: Path | None = None) -> dict:
+    """(judge, after dispatching a seat) bind the dispatch to its run and seat. `vendor` is the
+    vendor argument the dispatcher was actually invoked with, not the seat's label."""
+    root = root or _root()
+    run, why = _verified_run(root, run_id)
+    if run is None:
+        raise ValueError(why)
+    if seat not in {s["seat"] for s in run["seats"]}:
+        raise ValueError(f"seat {seat!r} is not a seat of run {run_id!r}")
+    drec, why = dispatch_record(root, dispatch_id)
+    if drec is None or drec.get("task") != run["task"]:
+        raise ValueError(why or f"dispatch {dispatch_id!r} was issued for another task")
+    if any(r.get("kind") == "bind" and r.get("dispatch_id") == dispatch_id for r in _read(RUNS, root)):
+        raise ValueError(f"dispatch {dispatch_id!r} is already bound")
+    row = {"kind": "bind", "run_id": run_id, "seat": seat, "dispatch_id": dispatch_id,
+           "vendor": vendor, "task": run["task"], "ts": _now()}
+    row["sig"] = _sign_row(_dispatch_key(root, create=True), row)
+    _append(RUNS, row, root)
+    return row
+
+
+def run_for_dispatch(root: Path, dispatch_id: str) -> tuple[dict | None, dict | None, str]:
+    """(run, bind, why). (None, None, '') when the dispatch is simply not part of any run;
+    a non-empty `why` means a run/bind row exists but does not verify."""
+    binds = [r for r in _read(RUNS, root) if r.get("kind") == "bind" and r.get("dispatch_id") == dispatch_id]
+    if not binds:
+        return None, None, ""
+    bind = binds[0]
+    if not _signed_ok(root, bind):
+        return None, None, f"the run binding of dispatch {dispatch_id!r} has an invalid signature"
+    run, why = _verified_run(root, bind.get("run_id", ""))
+    if run is None:
+        return None, None, why
+    return run, bind, ""
+
+
 # ── identity / producer ──────────────────────────────────────────────────────
 
 
@@ -490,7 +651,8 @@ def load_ledger(root: Path) -> Ledger:
                     f"commit {sha[:9]} modified, deleted or replaced committed ledger rows — "
                     f"the ledger is append-only")
                 return led
-            intro = {"sha": sha, "ids": _identities(parts[1:5], parts[5])}
+            intro = {"sha": sha, "ids": _identities(parts[1:5], parts[5]),
+                     "names": {parts[1].strip(), parts[3].strip()}}
             for ln in lines[len(prev):]:
                 obj = _parse(ln)
                 if obj is None:
@@ -637,8 +799,71 @@ def _structural_fault(row: dict) -> str:
     return ""
 
 
-def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool = True
-               ) -> tuple[str, str] | None:
+def _completion_fault(base: _Base, row: dict, intro: dict | None, need_commit: bool,
+                      completion: dict | None) -> tuple[str, str] | None:
+    """The six worker-attribution requirements (T-3581 round 3, T-3580 round 2). A row counts only
+    if the worker's own signed completion agrees with it on every binding, and the commit that
+    introduced the row was made by exactly that worker."""
+    root = base.root
+    comp = completion or _completion_for(root, str(row.get("id")))
+    if comp is None:
+        return "no-completion", (f"row {row.get('id')} has no signed worker completion — a "
+                                 f"registration is not a completion")
+    if completion is None and not _signed_ok(root, comp):
+        return "bad-completion", "the worker completion has an invalid signature"
+    worker = str(row.get("worker") or "")
+    if not worker:
+        return "no-worker", "the row names no worker session"
+    for k, want in (("dispatch_id", row.get("dispatch_id")), ("task", row.get("task")),
+                    ("ac", row.get("ac")), ("verdict_id", row.get("id")), ("worker", worker),
+                    ("revision", row.get("revision")), ("ac_digest", row.get("ac_digest"))):
+        if comp.get(k) != want:
+            return "completion-mismatch", (f"the worker completion's {k} ({comp.get(k)!r}) is not "
+                                           f"the row's ({want!r})")
+    if (comp.get("evidence_sha256") or {}) != (row.get("evidence_sha256") or {}):
+        return "completion-mismatch", "the worker completion's evidence hashes are not the row's"
+    if comp.get("verdict_sha256") != verdict_hash(row):
+        return "verdict-tampered", ("the row's bytes differ from the verdict the worker reported "
+                                    "(verdict hash mismatch)")
+    # 1. fresh session: derived from the dispatch, not the issuer's, not a producer's
+    if _norm(worker) != _norm(worker_identity(str(row["dispatch_id"]))):
+        return "worker-not-fresh", f"worker {worker!r} is not the identity of dispatch {row['dispatch_id']!r}"
+    if _norm(worker) not in _norm(str(row.get("reviewer"))):
+        return "reviewer-worker-mismatch", (f"reviewer {row.get('reviewer')!r} is not attributed to "
+                                            f"worker {worker!r}")
+    drec, _ = dispatch_record(root, str(row["dispatch_id"]))
+    if drec and _norm(worker) in {_norm(drec.get("issuer_session", "")), _norm(drec.get("issuer_identity", ""))} - {""}:
+        return "worker-not-fresh", f"worker {worker!r} is the dispatch issuer"
+    prod, _err = base.prod
+    hit = is_producer(worker, prod) if prod else ""
+    if hit:
+        return "reviewer-is-producer", f"worker {worker!r} matches producer {hit!r}"
+    # 2/3/4. the reviewed revision holds the criterion the worker read and the evidence it cites
+    rev = str(row.get("revision") or "")
+    rc, _ = _git_out(root, "cat-file", "-e", f"{rev}^{{commit}}") if rev else (1, "")
+    if rc != 0:
+        return "revision", f"reviewed revision {rev!r} is not a commit of this repository"
+    if _criterion_at(root, rev, str(row["task"]), int(row["ac"])) != row["ac_digest"]:
+        return "revision", (f"at reviewed revision {rev[:9]} the criterion is not the text the "
+                            f"worker digested ({row['ac_digest']})")
+    for e, h in (row.get("evidence_sha256") or {}).items():
+        shown = subprocess.run(["git", "show", f"{rev}:{e}"], cwd=str(root), capture_output=True)
+        if shown.returncode == 0 and hashlib.sha256(shown.stdout).hexdigest() != h:
+            return "revision", f"evidence {e!r} at reviewed revision {rev[:9]} is not what the worker hashed"
+    if intro is not None:
+        rc, _ = _git_out(root, "merge-base", "--is-ancestor", rev, intro["sha"])
+        if rc != 0:
+            return "revision", f"reviewed revision {rev[:9]} is not an ancestor of the commit that added the row"
+        # 6. attributed to exactly that worker
+        if intro.get("names") != {worker}:
+            return "introduced-by-other", (
+                f"the commit that added this row ({intro['sha'][:9]}) was made by "
+                f"{sorted(intro.get('names') or [])}, not by its worker {worker!r}")
+    return None
+
+
+def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool = True,
+               completion: dict | None = None) -> tuple[str, str] | None:
     """(class, reason) when `row` is not a valid, attributable record for base.task_id.
 
     HISTORICAL integrity — nothing here depends on the criterion's CURRENT text, so a
@@ -653,6 +878,9 @@ def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool 
     why = _provenance_fault(base.root, base.task_id, row)
     if why:
         return "no-provenance", why
+    f = _completion_fault(base, row, intro, need_commit, completion)
+    if f:
+        return f
     if row["outcome"] != GREEN:
         g = row.get("guidance")
         if not isinstance(g, str) or not g.strip():
@@ -701,8 +929,55 @@ def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool 
     return None
 
 
-def _fault(ctx: _Ctx, row: dict, crit, intro: dict | None, *, need_commit: bool = True
-           ) -> tuple[str, str] | None:
+def _is_render_review(ctx: "_Ctx", crit) -> bool:
+    return (ctx.classify(crit).cls == "render-surface"
+            and bool(_RENDER_REVIEW_RE.search(criterion_body(crit))))
+
+
+def _run_fault(ctx: "_Ctx", row: dict, crit, recording: bool) -> tuple[str, str] | None:
+    """A green's run requirements (T-3580 round 2): a panel-rung claim and a render criterion
+    both need a signed run; a render green needs every required page seen (verified screenshot
+    evidence cited)."""
+    root = ctx.root
+    render = _is_render_review(ctx, crit)
+    claimed = str(row.get("run_id") or "")
+    if recording:
+        run, why = _verified_run(root, claimed) if claimed else (None, "")
+    else:
+        run, _bind, why = run_for_dispatch(root, str(row["dispatch_id"]))
+    if why:
+        return "run", why
+    if run is None:
+        if claimed:
+            return "run-unbound", f"the row claims run {claimed!r} but its dispatch is not bound to it"
+        if str(row["rung"]).startswith("rung-5"):
+            return "panel-needs-run", "a rung-5 panel verdict must belong to a registered review run"
+        if render:
+            return "render-needs-run", ("a render criterion needs a review run that recorded the "
+                                        "pages required and their capture results")
+        return None
+    if run.get("task") != ctx.task_id or row["ac"] not in (run.get("acs") or []):
+        return "run", f"run {run.get('run_id')!r} does not cover {ctx.task_id} AC#{row['ac']}"
+    if claimed != run["run_id"]:
+        return "run-unbound", f"the row names run {claimed!r}, its dispatch is bound to {run['run_id']!r}"
+    if render:
+        pages = (run.get("pages") or {}).get(str(row["ac"])) or []
+        if not pages:
+            return "unseen-page", "no required page was recorded for this render criterion"
+        caps = {c.get("page"): c for c in run.get("captures") or []}
+        cited = set((row.get("evidence_sha256") or {}).values())
+        for p in pages:
+            c = caps.get(p)
+            if not c or not c.get("ok") or not c.get("sha256"):
+                why = (c or {}).get("error") or "no capture result"
+                return "unseen-page", f"required page {p!r} has no verified screenshot ({why})"
+            if c["sha256"] not in cited:
+                return "unseen-page", f"the screenshot of {p!r} is not cited as evidence"
+    return None
+
+
+def _fault(ctx: _Ctx, row: dict, crit, intro: dict | None, *, need_commit: bool = True,
+           completion: dict | None = None) -> tuple[str, str] | None:
     """(class, reason) when `row` may NOT satisfy `crit` right now: historical integrity
     (`_row_fault`) PLUS current eligibility — the row names this criterion, the criterion text
     is unchanged, and the criterion is still reviewer-judged."""
@@ -711,7 +986,7 @@ def _fault(ctx: _Ctx, row: dict, crit, intro: dict | None, *, need_commit: bool 
             return "schema", "row does not name this criterion"
         if row["ac_digest"] != criterion_digest(crit):
             return "digest-mismatch", "the criterion changed after the reviewer read it"
-    f = _row_fault(ctx, row, intro, need_commit=need_commit)
+    f = _row_fault(ctx, row, intro, need_commit=need_commit, completion=completion)
     if f:
         return f
     if row["outcome"] == GREEN:
@@ -720,6 +995,7 @@ def _fault(ctx: _Ctx, row: dict, crit, intro: dict | None, *, need_commit: bool 
             return "not-reviewer-judged", (
                 f"AC#{crit.index} is {cl.cls} ({cl.delegation_class}): only the operator may "
                 f"answer it, so no reviewer verdict can satisfy or escalate it — {cl.reason}")
+        return _run_fault(ctx, row, crit, recording=completion is not None)
     return None
 
 
@@ -806,7 +1082,41 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     f = _fault(ctx, last, crit, led.intro(last["id"]))
     if f:
         return None, f"{f[0]}: {f[1]}"
+    why = _panel_fault(ctx, crit, last, mine)
+    if why:
+        return None, why
     return last, ""
+
+
+def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
+    """'' unless `last` belongs to a run whose requirements are not all met: every required seat
+    needs its own valid, completed green for this criterion, and the seats must span the run's
+    required number of distinct vendors (a single-vendor panel cannot satisfy a three-vendor one)."""
+    root, led = ctx.root, ctx.ledger
+    run, _bind, _why = run_for_dispatch(root, str(last["dispatch_id"]))
+    if run is None:
+        return ""
+    vendors: set[str] = set()
+    for s in run["seats"]:
+        seat_rows = []
+        for r in mine:
+            rr, bb, _ = run_for_dispatch(root, str(r["dispatch_id"]))
+            if rr is not None and rr["run_id"] == run["run_id"] and bb["seat"] == s["seat"]:
+                seat_rows.append((r, bb))
+        if not seat_rows:
+            return f"panel-incomplete: required seat {s['seat']!r} of run {run['run_id']} has no verdict"
+        r, bb = seat_rows[-1]
+        if r.get("outcome") != GREEN:
+            return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}"
+        f = _fault(ctx, r, crit, led.intro(r["id"]))
+        if f:
+            return f"panel-incomplete: seat {s['seat']!r} has no valid green — {f[0]}: {f[1]}"
+        vendors.add(str(bb.get("vendor")))
+    if len(vendors) < int(run.get("required_vendors") or 1):
+        return (f"degraded: run {run['run_id']} demands {run.get('required_vendors')} vendor(s), "
+                f"its seats span {len(vendors)} ({', '.join(sorted(vendors))}) — a single-vendor "
+                f"panel cannot satisfy a multi-vendor requirement")
+    return ""
 
 
 def _task_ctx(root: Path, task_id: str) -> _Ctx | None:
@@ -821,7 +1131,8 @@ def _task_ctx(root: Path, task_id: str) -> _Ctx | None:
 
 def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: str,
            guidance: str = "", evidence: list[str] | None = None,
-           digest: str = "", dispatch_id: str = "", root: Path | None = None) -> dict:
+           digest: str = "", dispatch_id: str = "", run_id: str = "",
+           root: Path | None = None) -> dict:
     """Append a verdict for Human criterion `ac_index` of `task_id`, or raise VerdictRefused.
 
     Every refusal is written to the refusal ledger before it is raised. `digest` is what the
@@ -884,6 +1195,20 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
                f"AC#{ac_index} is {cl.cls} ({cl.delegation_class}): only the operator may "
                f"answer it, so no reviewer verdict can satisfy or escalate it — {cl.reason}")
 
+    # The worker session that runs this record is the one the completion is signed for.
+    worker = worker_identity(dispatch_id)
+    if _norm(worker) not in _norm(reviewer):
+        refuse("reviewer-worker-mismatch",
+               f"reviewer {reviewer.strip()!r} is not attributed to worker {worker!r} — the "
+               f"reviewer identity must contain the worker session of dispatch {dispatch_id!r}")
+    revision = _head_sha(root)
+    if not revision:
+        refuse("no-revision", "the repository has no commit to bind the review to")
+    if _criterion_at(root, revision, task_id, ac_index) != dg:
+        refuse("revision-mismatch",
+               f"at HEAD {revision[:9]} AC#{ac_index} is not the text digest {dg} — commit the "
+               f"task before reviewing, so the review is bound to a revision")
+
     try:
         jv = judge_verdict.verdict(_STATE[outcome], guidance,
                                    judged=f"{task_id}#AC{ac_index}", judge=reviewer.strip(),
@@ -910,13 +1235,19 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
         "evidence_sha256": {e: _hash_path((root / e).resolve()) for e in evidence
                             if not _evidence_fault(root, e)},
         "judgement": jv,
+        "worker": worker,
+        "revision": revision,
     }
-    f = _fault(ctx, rec, crit, None, need_commit=False)  # the row cannot be committed yet
+    if run_id.strip():
+        rec["run_id"] = run_id.strip()
+    comp = make_completion(root, rec)
+    f = _fault(ctx, rec, crit, None, need_commit=False, completion=comp)  # not committed yet
     if f:
         refuse(*f)
     if ctx.ledger.faults:
         refuse("ledger-integrity", f"{ctx.ledger.faults[0]} — no row is appended to a ledger "
                                    f"whose history does not verify")
+    _append(COMPLETIONS, comp, root)
     _append(VERDICTS, rec, root)
     _append(RECORDED, {"ts": _now(), "verdict_id": rec["id"], "task": task_id, "ac": ac_index,
                        "outcome": outcome}, root)
@@ -1227,6 +1558,8 @@ def _cli(argv: list[str] | None = None) -> int:
                    help="digest of the criterion the reviewer read (`verdict digest`)")
     r.add_argument("--dispatch-id", default="", help="id of the review dispatch that produced this "
                    "verdict — must be in the dispatch registry with task-type review")
+    r.add_argument("--run-id", default="", help="id of the review run this verdict belongs to "
+                   "(named in the brief); the dispatcher binds the dispatch to it")
 
     g = sub.add_parser("register-dispatch", help="(dispatcher) register a dispatch for later provenance checks")
     g.add_argument("--dispatch-id", required=True)
@@ -1262,7 +1595,8 @@ def _cli(argv: list[str] | None = None) -> int:
         try:
             rec = record(args.task_id, args.ac, args.outcome, reviewer=args.reviewer,
                          rung=args.rung, guidance=args.guidance, evidence=args.evidence,
-                         digest=args.digest, dispatch_id=args.dispatch_id)
+                         digest=args.digest, dispatch_id=args.dispatch_id,
+                         run_id=args.run_id)
         except VerdictRefused as e:
             print(f"REFUSED: {e}", file=sys.stderr)
             return 1
