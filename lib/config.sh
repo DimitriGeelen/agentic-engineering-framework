@@ -319,6 +319,7 @@ FW_CONFIG_REGISTRY=(
     # deny — deny/defer always logged. Retrofits the load-62 incident. The
     # full mem/disk/cpu/net adaptive governor is slice S5b.
     "PROVISION_LOAD_MAX|0.8|Per-core normalized 1-minute loadavg threshold for the environmental governor's provisioning admission (lib/aef_governor.py). Under = allow, at/over = defer, at/over 2x = deny; bad values fall back to 0.8, logged. T-3311."
+    "REVIEWER_JUDGE_WEEKLY_SPEND_CEILING|10000|Weekly USD spend ceiling for independent reviewer judgments via fw reviewer judge (T-3580, IW-7 rung selection). When reached, rung degrades one step and the verdict records the degradation. Per-unit cost depends on rung (same-vendor independent = lower cost, 3-vendor panel = higher cost). T-3580."
 )
 
 # fw_config_registry — Print all known settings with current values
