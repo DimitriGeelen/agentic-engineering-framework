@@ -49,8 +49,10 @@ import json
 with open('$SETTINGS') as f: d = json.load(f)
 print(d['hooks']['PreToolUse'][0]['hooks'][0]['command'])
 ")
-    [[ "$cmd" == /* ]]
-    [[ "$cmd" == *"$PROJECT_DIR/.agentic-framework/bin/fw hook check-active-task"* ]]
+    # T-2709 (74688119d): the command is host-portable — ${CLAUDE_PROJECT_DIR} is
+    # expanded by Claude Code at hook time to the absolute project path, instead
+    # of this host's checkout path being baked into settings.json.
+    [[ "$cmd" == '${CLAUDE_PROJECT_DIR}/.agentic-framework/bin/fw hook check-active-task' ]]
 }
 
 @test "hook-enable: registered command resolves correctly under sh -c with arbitrary cwd (the original bug)" {
@@ -63,9 +65,10 @@ import json
 with open('$SETTINGS') as f: d = json.load(f)
 print(d['hooks']['PreToolUse'][0]['hooks'][0]['command'])
 ")
-    # Reproduce the failure mode: sh -c from an unrelated cwd (mimics Claude Code hook runner)
+    # Reproduce the failure mode: sh -c from an unrelated cwd (mimics Claude Code hook runner,
+    # which exports CLAUDE_PROJECT_DIR as the absolute project path — T-2709).
     cd /tmp
-    run sh -c "$cmd"
+    CLAUDE_PROJECT_DIR="$PROJECT_DIR" run sh -c "$cmd"
     [ "$status" -eq 0 ]
     [[ "$output" == *"stub-fw hook check-active-task"* ]]
 }
@@ -106,5 +109,6 @@ import json
 with open('$SETTINGS') as f: d = json.load(f)
 print(d['hooks']['PreToolUse'][0]['hooks'][0]['command'])
 ")
-    [[ "$cmd" == "$PROJECT_DIR/bin/fw hook check-active-task" ]]
+    # T-2709 (74688119d): portable ${CLAUDE_PROJECT_DIR} prefix, framework-mode path.
+    [[ "$cmd" == '${CLAUDE_PROJECT_DIR}/bin/fw hook check-active-task' ]]
 }
