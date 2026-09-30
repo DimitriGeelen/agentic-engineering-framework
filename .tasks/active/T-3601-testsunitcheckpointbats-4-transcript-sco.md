@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T20:15:34Z
-last_update: 2026-09-30T20:26:07Z
+last_update: '2026-09-30T20:30:25Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -71,6 +71,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T20:30:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=276,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3601: tests/unit/checkpoint.bats: 4 transcript-scoping tests red (status no longer prints token count); suite not in pre-push
@@ -82,10 +92,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The commit that turned the 4 tests red is identified (git bisect over `agents/context/checkpoint.sh`, `lib/context_tokens.py` and the test), and the task's RCA names it
-- [ ] Decided on evidence whether the TEST is stale (the output changed on purpose, e.g. T-3241/T-3248) or the CODE regressed (a real loss of transcript scoping). The wrong side is fixed and the choice is recorded in Decisions. If it is the code, a scoping regression is a budget-reading bug: say so plainly
-- [ ] `tests/unit/checkpoint.bats` passes in full, with no skips
-- [ ] The RCA answers why a red unit suite was invisible. If other unit suites are red on HEAD, list them in the task and file one concern for the class, not a fix per suite
+- [x] The commit that turned the 4 tests red is identified (git bisect over `agents/context/checkpoint.sh`, `lib/context_tokens.py` and the test), and the task's RCA names it
+- [x] Decided on evidence whether the TEST is stale (the output changed on purpose, e.g. T-3241/T-3248) or the CODE regressed (a real loss of transcript scoping). The wrong side is fixed and the choice is recorded in Decisions. If it is the code, a scoping regression is a budget-reading bug: say so plainly
+- [x] `tests/unit/checkpoint.bats` passes in full, with no skips
+- [x] The RCA answers why a red unit suite was invisible. If other unit suites are red on HEAD, list them in the task and file one concern for the class, not a fix per suite
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -250,19 +260,18 @@ bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `tests/unit/checkpoint.bats` tests 3, 5, 6 and 7 fail: `checkpoint.sh status` prints `Context tokens: unavailable (no transcript)` rather than `50000`.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** the test was stale. The code did not regress. The breaking commit is **`d7ceb71ef` (T-2375, 2026-06-13)**, "fix budget detector blind in git worktrees (transcript dir-name drops dot)". It was bisected by `git archive <rev> | tar -x` into scratch dirs: `d7ceb71ef^` gives 11/11 ok, `d7ceb71ef` gives the same 4 failures. T-2375 changed the transcript dir encoding to Claude Code's real one (`fw_claude_project_dir_name`: every non-alnum → `-`). The tests kept building the dir with `sed 's|/|-|g'`, which maps `/` only. `mktemp -d` returns `/tmp/tmp.XXXX`, which has a dot, so the fixture landed in `-tmp-tmp.XXXX` while the code reads `-tmp-tmp-XXXX`. The live `~/.claude/projects` confirms the code is right (`…--claude-worktrees-…`: the dot becomes `-`). Tests 8 and 11 passed **vacuously** for the same reason: they assert a negative ("not 50000" / "unavailable"), and a dir the code never reads satisfies that. The T-791 transcript scoping and the T-1088 filter were **not** lost; there is no budget-reading bug. T-3598's session-keyed cache is untouched.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** a red unit file stays invisible for three reasons.
+1. The unit suite is not in pre-push and no per-change gate runs it. T-2375 changed the encoding without running `checkpoint.bats`.
+2. The nightly runner (`agents/audit/unit-suite.sh`, cron `unit-suite-nightly`, T-3302, since 2026-09-08) **did** record these 4 failures in `.context/audits/unit-suite/LATEST.yaml`. But all 23 nightly runs hit the 7200s ceiling (`runs.log`: 23/23 `bats_rc=124`). `audit.sh:check_unit_suite_report` treats a timed-out run as "COULD NOT DETERMINE" (T-3357 / OBS-392) and dismisses its whole failure list as a casualty list. Only the in-flight test is a casualty. So the FAIL branch is unreachable while the corpus cannot finish, and every recorded red renders as a WARN.
+3. The fixtures reimplemented the production encoding inline, so a correct change to the encoding broke the test silently, and two tests turned vacuous without anyone seeing it.
+
+**Other reds on HEAD (not fixed here):** every file named in the 2026-09-30 report was re-run in isolation on HEAD. Result: 46 other bats files red (117 not-ok), 1 file (`fabric_coverage_single_source.bats`) over 300s on its own, and 10/10 pytest failures reproduced across 6 files. The full list is in **OBS-587** (`.context/concerns.yaml`), filed as one concern for the class.
+
+**Prevention:** the fixture now spells out Claude Code's encoding (`_claude_dir_name`: `tr -c 'a-zA-Z0-9' '-'`), and a comment explains why it does not call the production helper. Tests 8 and 11 now read the directory the code actually reads, so their negative assertions test something. The class (timed-out nightly hides deterministic reds) is OBS-587, with the fix candidates named there.
 
 ## Evolution
 
@@ -319,14 +328,14 @@ bin/fw vendor self --check
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-30 — fix the test, not the code
+- **Chose:** update the 6 fixture sites in `checkpoint.bats` to Claude Code's real dir encoding (every non-alnum → `-`).
+- **Why:** bisect puts the break at T-2375 (`d7ceb71ef`), a deliberate and correct fix. Live `~/.claude/projects` names show `.` → `-`. Reverting the code would blind the budget gauge in every dotted path (worktrees), which is the bug T-2375 fixed.
+- **Rejected:** (a) calling `fw_claude_project_dir_name` from the test, which makes the test agree with whatever the code does, so it could never catch an encoding regression; (b) avoiding dots with a dot-free temp dir, which hides the exact case T-2375 cares about.
+
+### 2026-09-30 — one concern, no suite fixes
+- **Chose:** file OBS-587 for the "timed-out nightly hides deterministic reds" class, listing all 52 red files; fix none of them here.
+- **Why:** task scope and operator instruction; one bug = one task for the 46+6 files.
 
 ## Decision
 

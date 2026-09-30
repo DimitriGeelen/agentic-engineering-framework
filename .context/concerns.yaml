@@ -1612,3 +1612,66 @@
   - T-3594
   - T-3593
   follow_up_task: null
+- id: OBS-587
+  type: structural
+  severity: high
+  surface: 'agents/audit/audit.sh:check_unit_suite_report (T-3302, timed-out
+    branch added by T-3357 for OBS-392) + agents/audit/unit-suite.sh (nightly
+    runner, 7200s ceiling).'
+  detected_in: T-3601 (checkpoint.bats 4 reds, red since T-2375 on 2026-06-13)
+  symptom: 'Deterministic unit-test reds are recorded every night and shown to
+    nobody. All 23 nightly runs since 2026-09-08 hit the ceiling
+    (runs.log: 23/23 bats_rc=124). A timed-out run renders as WARN "COULD NOT
+    DETERMINE", and its failure list is dismissed as a "casualty list".
+    On 2026-09-30 the report named 123 bats and 10 pytest failures. T-3601
+    re-ran every named file in isolation on HEAD (no timeout pressure): 46 of 48
+    bats files are red (117 not-ok; checkpoint.bats fixed in T-3601; 1 file,
+    fabric_coverage_single_source.bats, exceeds 300s on its own) and 10/10
+    pytest failures reproduce across 6 files. They are real reds, not
+    casualties. Red files: approvals_close_ready_arcs, atomic_yaml_write_lint,
+    audit_arc_progress_arc_id, audit_corpus_lint_findings,
+    audit_inception_recommendation, audit_seed_corpus_refs,
+    audit_split_root_asset_lint, audit_stale_arc_warning, bvp_auto_promote,
+    context_learning, costs_union_leg, doctor_hook_counters,
+    fabric_watch_pattern_fitness, gaps_close, handover_push_timeout,
+    hook_enable_absolute_path, hook_producer_site_parity,
+    init_git_identity_blocker, init_head_bootstrap, learning_application_birth,
+    lib_config, lib_costs, lib_inception, lib_review, no_root_framework_markers,
+    rail_identity_guard, recommendation_gate_build_partial, resume,
+    review_pipefail, sessions_claude_code_adapter, t100144_handover_divergence,
+    t100202_id_quarantine, t2094_upgrade_preflight_doctor_advisory,
+    t2228_audit_sentinel_skip, t2230_bvp_driver_init,
+    t2244_audit_self_vendor_drift, t2267_self_vendor_web,
+    t2298_audit_structure_no_perfile_fork, t2331_driver_propose,
+    t2380_transcript_dir_encoding, t2392_worktree_transcript_resolution,
+    t2466_worktree_status, t2862_greenfield_first_inception_e2e,
+    t2912_upgrade_hook_regen_convergence, t3039_write_set_implicit,
+    t3056_recall_open_tasks (.bats); test_arcs_pages_tokens,
+    test_bvp_estimator_v_alias, test_corpus_lint,
+    test_inception_decide_warning_widen, test_operator_facing_stderr,
+    test_t3066_approve_route (.py).'
+  root_cause: 'The OBS-392 fix treats the WHOLE failure list of a timed-out run
+    as unproven. Only the test in flight at the kill is a casualty. Every test
+    that finished and reported not-ok produced a verdict. Because the corpus
+    never completes inside the ceiling, the WARN branch is the only branch that
+    ever runs, so the FAIL branch is unreachable. The unit suite is also not in
+    the pre-push audit and no per-file gate runs it, so a red test file stays
+    red until someone happens to run it (checkpoint.bats: 3.5 months).'
+  prevention: 'NOT FIXED here (T-3601 is scoped to checkpoint.bats). Candidates:
+    (a) the runner records per-FILE completion, and the audit FAILs on reds in
+    files that finished while the run still timed out (in-flight file
+    excluded). This keeps OBS-392 deadlock-safe only if audit.bats stops
+    asserting a clean live audit (T-3328). (b) shard or parallelise the corpus
+    so a run completes. (c) re-run each named failure file in isolation, as
+    T-3601 did by hand. Also triage the 46 files: one bug = one task.'
+  blast_radius: the whole tests/unit corpus. Every regression a unit test
+    catches after 2026-09-08 is invisible to audit, doctor and pre-push.
+  observed: '2026-09-30'
+  status: open
+  related:
+  - T-3601
+  - T-3302
+  - T-3357
+  - OBS-392
+  - T-3328
+  follow_up_task: null

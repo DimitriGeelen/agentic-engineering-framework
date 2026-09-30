@@ -25,6 +25,16 @@ teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
+# Helper: Claude Code's transcript dir name for a path — EVERY non-alphanumeric
+# character becomes '-' (so '/' AND '.'; mktemp's "tmp.XXXX" has a dot).
+# T-3601: these tests used `sed 's|/|-|g'`, the pre-T-2375 encoding; after T-2375
+# fixed the code they looked in a dir the code never reads (4 red, 2 vacuously
+# green). Spelled out here rather than calling fw_claude_project_dir_name, so the
+# test pins Claude Code's encoding instead of agreeing with whatever the code does.
+_claude_dir_name() {
+    printf '%s' "$1" | tr -c 'a-zA-Z0-9' '-'
+}
+
 # Helper: create a fake JSONL transcript with token data.
 # T-2885: writes TWO usage entries (same model) — the dominant-model scope
 # requires >=2 in-scope entries before it will report a reading at all.
@@ -63,7 +73,7 @@ EOF
     echo "0" > "$PROJECT_ROOT/.context/working/.tool-counter"
     # Create project-specific Claude directory
     local project_dir_name
-    project_dir_name=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+    project_dir_name=$(_claude_dir_name "$PROJECT_ROOT")
     _create_transcript "$HOME/.claude/projects/${project_dir_name}" 50000
     run "$CHECKPOINT" status
     [ "$status" -eq 0 ]
@@ -85,7 +95,7 @@ EOF
 @test "checkpoint: reads correct project when multiple exist" {
     echo "0" > "$PROJECT_ROOT/.context/working/.tool-counter"
     local project_dir_name
-    project_dir_name=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+    project_dir_name=$(_claude_dir_name "$PROJECT_ROOT")
     # Create transcript for THIS project (50K)
     _create_transcript "$HOME/.claude/projects/${project_dir_name}" 50000
     # Create transcript for OTHER project (185K) — more recently modified
@@ -121,7 +131,7 @@ EOF
 @test "checkpoint: T-1088 filters pre-session-start JSONL entries" {
     echo "0" > "$PROJECT_ROOT/.context/working/.tool-counter"
     local project_dir_name
-    project_dir_name=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+    project_dir_name=$(_claude_dir_name "$PROJECT_ROOT")
     _create_timestamped_transcript "$HOME/.claude/projects/${project_dir_name}"
     # Session starts between the two entries — only the 50000 entry counts.
     echo "2026-04-11T10:00:00.000Z" > "$PROJECT_ROOT/.context/working/.session-start-ts"
@@ -134,7 +144,7 @@ EOF
 @test "checkpoint: T-1088 without session-start-ts uses all entries (backward compat)" {
     echo "0" > "$PROJECT_ROOT/.context/working/.tool-counter"
     local project_dir_name
-    project_dir_name=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+    project_dir_name=$(_claude_dir_name "$PROJECT_ROOT")
     _create_timestamped_transcript "$HOME/.claude/projects/${project_dir_name}"
     # No .session-start-ts file — loop should pick the last entry (50000).
     [ ! -f "$PROJECT_ROOT/.context/working/.session-start-ts" ]
@@ -146,7 +156,7 @@ EOF
 @test "checkpoint: T-1088 session-start-ts AFTER all entries yields 0 tokens" {
     echo "0" > "$PROJECT_ROOT/.context/working/.tool-counter"
     local project_dir_name
-    project_dir_name=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+    project_dir_name=$(_claude_dir_name "$PROJECT_ROOT")
     _create_timestamped_transcript "$HOME/.claude/projects/${project_dir_name}"
     # Session start is AFTER both entries — nothing should count.
     echo "2026-04-11T12:00:00.000Z" > "$PROJECT_ROOT/.context/working/.session-start-ts"
@@ -182,7 +192,7 @@ EOF
 @test "checkpoint: ignores agent-prefixed transcript files" {
     echo "0" > "$PROJECT_ROOT/.context/working/.tool-counter"
     local project_dir_name
-    project_dir_name=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+    project_dir_name=$(_claude_dir_name "$PROJECT_ROOT")
     local dir="$HOME/.claude/projects/${project_dir_name}"
     mkdir -p "$dir"
     # Create an agent transcript (should be ignored)
