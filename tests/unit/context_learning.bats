@@ -29,6 +29,10 @@ setup() {
     export TASKS_DIR="$PROJECT_ROOT/.tasks"
     source "$FRAMEWORK_ROOT/lib/compat.sh"
     source "$FRAMEWORK_ROOT/agents/context/lib/learning.sh"
+    # T-2902 (155aa703b): do_add_learning sources $FRAMEWORK_ROOT/lib/corpus-id.sh
+    # lazily. Tests below point FRAMEWORK_ROOT at a temp/fake dir to pick the
+    # L-/PL- prefix branch, so load the allocator now from the real framework.
+    source "$FRAMEWORK_ROOT/lib/corpus-id.sh"
 }
 
 teardown() {
