@@ -100,7 +100,7 @@ cannot succeed should not be offered.
 - [x] `can_complete` on /tasks/<id> (web/blueprints/tasks.py:865) uses the canonical Human-criteria count behind `is_ready_for_batch_completion` (web/shared.py), not `_parse_acceptance_criteria`
 - [x] Test: the T-2200 shape (a `### Human` block after an intervening `## ` heading, unticked) shows no Complete Task button; control: a task whose criteria are all ticked shows it
 - [x] Live /tasks/T-2200 and /tasks/T-2202 show no Complete Task button after restart; `bin/fw watchtower current`; `bin/fw vendor self --check` clean
-- [ ] Render review by an independent internal reviewer (operator ruling, T-3557)
+- [x] Render review by an independent internal reviewer (operator ruling, T-3557). GREEN at rung 1: docs/reports/T-3591-review.md
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
