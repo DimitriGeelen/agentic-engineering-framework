@@ -41,8 +41,14 @@ TERMLINK_SH="$FRAMEWORK_ROOT/agents/termlink/termlink.sh"
 # --- Cleanup ---
 
 @test "termlink cleanup runs without error" {
-    run "$TERMLINK_SH" cleanup
+    # T-3595: NEVER run cleanup against the real /tmp/tl-dispatch. cmd_cleanup ends in
+    # `rm -rf "$DISPATCH_DIR"`, so this test used to wipe every LIVE worker's result,
+    # exit_code and meta whenever any worker ran the unit suite. Sandbox it.
+    local dd="$BATS_TEST_TMPDIR/tl-dispatch"
+    mkdir -p "$dd/done-worker" && echo 0 > "$dd/done-worker/exit_code"
+    run bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; DISPATCH_DIR='$dd'; cmd_cleanup"
     [ "$status" -eq 0 ]
+    [ -d /tmp/tl-dispatch ] || [ ! -e /tmp/tl-dispatch ]
 }
 
 # --- Unknown command ---
