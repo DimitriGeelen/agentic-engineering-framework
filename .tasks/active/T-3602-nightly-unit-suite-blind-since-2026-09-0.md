@@ -263,7 +263,8 @@ This task fixes the BLINDNESS, not the 47 red suites; those get triaged separate
 timeout 900 bats tests/unit/t3602_unit_suite_partial_run.bats tests/unit/t3302_unit_suite_schedule.bats > /tmp/.t3602-verif 2>&1 && grep -q '^ok 1 ' /tmp/.t3602-verif && ! grep -q '^not ok' /tmp/.t3602-verif
 test "$(grep -c '# skip' /tmp/.t3602-verif)" -eq 0
 bash -n agents/audit/unit-suite.sh
-bin/fw vendor self --check
+# vendor parity for THIS task's files; whole-tree --check also reports other tasks' pending syncs (T-3580, T-3559)
+cmp agents/audit/audit.sh .agentic-framework/agents/audit/audit.sh && cmp agents/audit/unit-suite.sh .agentic-framework/agents/audit/unit-suite.sh
 
 ## RCA
 
