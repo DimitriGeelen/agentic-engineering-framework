@@ -85,7 +85,9 @@ teardown() {
     mkdir -p "$NOGIT"
     NOGIT_DIR="$HOME_DIR/.claude/projects/$(enc "$NOGIT")"
     mkdir -p "$NOGIT_DIR"
-    run env HOME="$HOME_DIR" PROJECT_ROOT="$NOGIT" FRAMEWORK_ROOT="$FW_REPO" bash -c '
+    # T-3604: fence git discovery at $ROOT — a stray repo above /tmp (seen: /.git
+    # on this host) otherwise makes "not a git repo" false and adds a "/" root.
+    run env HOME="$HOME_DIR" PROJECT_ROOT="$NOGIT" FRAMEWORK_ROOT="$FW_REPO" GIT_CEILING_DIRECTORIES="$ROOT" bash -c '
         source "$FRAMEWORK_ROOT/lib/paths.sh"
         fw_claude_project_dirs
     '

@@ -94,7 +94,9 @@ print("ok")
 
 @test "status exits 4 outside a git repository" {
     local nonrepo; nonrepo="$(mktemp -d)"
-    run bash -c "cd '$nonrepo' && source '$FRAMEWORK_ROOT/lib/worktree.sh' && do_worktree_status"
+    # T-3604: fence git discovery at the temp dir — a stray repo above /tmp
+    # (seen: /.git on this host) would otherwise put $nonrepo "inside" a repo.
+    run env GIT_CEILING_DIRECTORIES="$(dirname "$nonrepo")" bash -c "cd '$nonrepo' && source '$FRAMEWORK_ROOT/lib/worktree.sh' && do_worktree_status"
     rm -rf "$nonrepo"
     [ "$status" -eq 4 ]
     echo "$output" | grep -q "not in a git repository"
