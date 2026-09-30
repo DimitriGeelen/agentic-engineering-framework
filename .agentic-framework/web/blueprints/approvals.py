@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get, has_unchecked_review_ac, is_ready_for_batch_completion
 
 # T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
 # T-2645 (832 G-004 sibling): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution broke
@@ -396,9 +396,13 @@ def _load_pending_human_acs():
         if not needs_human_review(body):
             continue
 
+        # DISPLAY ONLY (T-3590): the per-criterion detail rendered in the card.
+        # No decision on this page reads it — `_parse_acceptance_criteria` stops
+        # at an intervening `## ` heading and so can see zero Human criteria on a
+        # task that has an unticked one (T-2200/T-2202). Admission, sort priority
+        # and batch readiness use the web.shared predicates instead.
         all_acs = _parse_acceptance_criteria(body)
         human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
-        unchecked = [ac for ac in human_acs if not ac["checked"]]
 
         # Calculate age from date_finished or last_update
         age_days = 0
@@ -415,8 +419,7 @@ def _load_pending_human_acs():
         is_stale = age_days > 7
 
         # Priority: has REVIEW AC unchecked → 0, stale → 1, RUBBER-STAMP only → 2
-        has_review = any(ac.get("confidence") == "review" and not ac["checked"]
-                        for ac in human_acs)
+        has_review = has_unchecked_review_ac(body)  # T-3590: canonical scoping
         sort_priority = 0 if has_review else (1 if is_stale else 2)
 
         # T-1531: extract agent recommendation verdict (GO/DEFER/NO-GO/?)
@@ -433,6 +436,9 @@ def _load_pending_human_acs():
             "name": fm.get("name", ""),
             "status": fm.get("status", ""),
             "human_acs": human_acs,
+            # T-3590: canonical count (every `### Human` block) — the badge and the
+            # card's Complete button read this, never the display list above.
+            "unchecked_count": count_unchecked_human_acs(body),
             "age_days": age_days,
             "is_stale": is_stale,
             "sort_priority": sort_priority,
@@ -444,6 +450,44 @@ def _load_pending_human_acs():
     # Sort: priority ascending, then age descending (oldest first within group)
     results.sort(key=lambda t: (t["sort_priority"], -t["age_days"]))
     return results
+
+
+_TASK_ID_RE = re.compile(r"^T-\d+$")
+
+
+def _read_active_task(task_id: str):
+    """(frontmatter, body) for an active task, read fresh from disk; None if the
+    id is malformed or no active task carries it. T-3590: complete_batch judges
+    readiness at POST time on this, never on the list the page rendered."""
+    if not _TASK_ID_RE.match(task_id or ""):
+        return None
+    for p in sorted((PROJECT_ROOT / ".tasks" / "active").glob(f"{task_id}-*.md")):
+        try:
+            fm, body = parse_frontmatter(p.read_text())
+        except OSError:
+            continue
+        if str(fm.get("id", "")) == task_id:
+            return fm, body
+    return None
+
+
+def _load_batch_ready_tasks():
+    """Active tasks `is_ready_for_batch_completion` accepts (T-3590).
+
+    Returns list of {task_id, name}, id-sorted. The batch form posts exactly
+    these ids; complete_batch re-checks each against the same predicate.
+    """
+    out = []
+    candidates = [fm for fm in get_all_task_metadata() if fm.get("_location") == "active"]
+    candidates.sort(key=lambda fm: task_id_sort_key(fm.get("_path", "")))
+    for fm in candidates:
+        path = fm.get("_path")
+        if not path:
+            continue
+        body = _get_body_cached(path)
+        if is_ready_for_batch_completion(fm.get("status", ""), body):
+            out.append({"task_id": fm.get("id", ""), "name": fm.get("name", "")})
+    return out
 
 
 def _count_deferred_inceptions():
@@ -744,10 +788,7 @@ def _build_approvals_context(expand_overflow: bool = False):
     tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
     tier0_origin_summary = _tier0_origin_summary(pending_tier0)  # T-3078
     go_count = len(pending_go)
-    ac_count = sum(
-        sum(1 for ac in t["human_acs"] if not ac["checked"])
-        for t in pending_acs
-    )
+    ac_count = sum(t["unchecked_count"] for t in pending_acs)  # T-3590: canonical
     paused_count = len(paused_dispatches)  # T-1808
     arc_close_count = len(arcs_close_ready)  # T-1961
     bvp_proposal_count = len(bvp_proposals)  # T-2335
@@ -759,11 +800,12 @@ def _build_approvals_context(expand_overflow: bool = False):
     total = (tier0_count + go_count + len(pending_acs) + paused_count
              + arc_close_count + bvp_proposal_count + decided_unclosed_count)
 
-    # Count tasks ready for batch completion (all human ACs checked)
-    ready_count = sum(
-        1 for t in pending_acs
-        if all(ac["checked"] for ac in t["human_acs"])
-    )
+    # T-3590: tasks the batch button may close, by the ONE canonical predicate.
+    # Disjoint from pending_acs by construction (admission requires an unchecked
+    # Human criterion); the old count filtered pending_acs with a second parser
+    # and so could only ever be non-zero when that parser was wrong.
+    batch_ready = _load_batch_ready_tasks()
+    ready_count = len(batch_ready)
 
     return dict(
         pending_tier0=pending_tier0,
@@ -786,6 +828,7 @@ def _build_approvals_context(expand_overflow: bool = False):
         total_count=total,
         active_count=tier0_count,
         ready_count=ready_count,
+        batch_ready=batch_ready,                    # T-3590
         deferred_count=deferred_count,
         expand_overflow=expand_overflow,
         continuous=_halt_state(),          # T-3200
@@ -941,27 +984,39 @@ def _execute_inception_decide(command_preview: str) -> dict:
 
 @bp.route("/api/approvals/complete-batch", methods=["POST"])
 def complete_batch():
-    """Complete all tasks where ALL Human ACs are checked (T-846).
+    """Complete the tasks the operator saw listed as ready (T-846, T-3590).
 
-    This is a human-initiated batch action from the Watchtower UI.
-    Only completes tasks that are fully ready (no unchecked ACs).
+    This is a human-initiated batch action from the Watchtower UI. The form posts
+    the task ids the page displayed (``task_id``, repeated). Each id is re-read
+    from disk and re-judged by `is_ready_for_batch_completion` NOW; any id that
+    is not ready is refused and named. Nothing outside the posted list is ever
+    touched — there is no "complete everything that happens to be ready".
     """
     import subprocess
+    from markupsafe import escape
 
-    pending_acs = _load_pending_human_acs()
+    requested = []
+    for tid in request.form.getlist("task_id"):
+        tid = (tid or "").strip()
+        if tid and tid not in requested:
+            requested.append(tid)
+    if not requested:
+        return '<p style="color:var(--pico-del-color);">Refused: no task ids posted. Reload /approvals and use the batch button.</p>'
 
-    # Find tasks where ALL human ACs are checked
     ready_tasks = []
-    for t in pending_acs:
-        unchecked = [ac for ac in t["human_acs"] if not ac["checked"]]
-        if not unchecked:
-            ready_tasks.append(t["task_id"])
-
-    if not ready_tasks:
-        return '<p style="color:var(--pico-muted-color);">No tasks ready for completion (all have unchecked ACs).</p>'
+    errors = []
+    for tid in requested:
+        found = _read_active_task(tid)
+        if found is None:
+            errors.append(f"{escape(tid)}: refused — not an active task")
+            continue
+        fm, body = found
+        if not is_ready_for_batch_completion(fm.get("status", ""), body):
+            errors.append(f"{escape(tid)}: refused — not ready (needs status work-completed and every Human criterion ticked)")
+            continue
+        ready_tasks.append(tid)
 
     completed = []
-    errors = []
     fw_path = str(FRAMEWORK_ROOT / "bin" / "fw")
 
     for task_id in ready_tasks:
