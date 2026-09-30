@@ -1,8 +1,14 @@
 ---
 id: T-3585
-name: "fw release status reports 'Latest tag: none' and 'Commits since: 0' when tags use a prefixed pattern (designer-vX.Y.Z)"
+name: "fw release status reports 'Latest tag: none' and 'Commits since: 0' when tags
+  use a prefixed pattern (designer-vX.Y.Z)"
 description: >
-  832 OBS-451 (@20): on a project with 16 tags named designer-vX.Y.Z, fw release status reported 'Latest tag: <none>' and 'Commits since: 0' while 11 commits had touched src/. 'Commits since: 0' is the most misleading value available: it says nothing is due. Fix: support a tag pattern (config key, or detect prefixed semver), and when no tag matches, report 'no matching tag (pattern X)' and the commit count since the root or UNKNOWN, never 0. Verify on a fixture repo with prefixed tags.
+  832 OBS-451 (@20): on a project with 16 tags named designer-vX.Y.Z, fw release status
+  reported 'Latest tag: <none>' and 'Commits since: 0' while 11 commits had touched
+  src/. 'Commits since: 0' is the most misleading value available: it says nothing
+  is due. Fix: support a tag pattern (config key, or detect prefixed semver), and
+  when no tag matches, report 'no matching tag (pattern X)' and the commit count since
+  the root or UNKNOWN, never 0. Verify on a fixture repo with prefixed tags.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T10:02:12Z
-last_update: 2026-09-30T10:02:12Z
-date_finished: null
+last_update: '2026-09-30T10:15:28Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +56,49 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-30T10:15:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-30T10:15:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3585: fw release status reports 'Latest tag: none' and 'Commits since: 0' when tags use a prefixed pattern (designer-vX.Y.Z)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832 OBS-451 via sidecar @20. `lib/release.sh:454` prints `Latest tag: ${latest:-<none>}`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw release status` finds the latest release tag under a configurable pattern (config key in BOTH registries, default matching this repo's existing tags) and also recognises prefixed semver such as `designer-vX.Y.Z`
+- [ ] When no tag matches, it prints "no tag matching <pattern>" and the commit count as UNKNOWN or since the root, labelled as such, and never "Commits since: 0"
+- [ ] Tests on fixture repos: plain vX.Y.Z tags; prefixed designer-vX.Y.Z tags with commits after the latest; no tags. Each asserts the printed tag and count; a negative control proves "0" is never printed when commits exist
+- [ ] config-registry parity passes; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

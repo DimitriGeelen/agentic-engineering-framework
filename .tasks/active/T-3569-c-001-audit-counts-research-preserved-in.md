@@ -95,14 +95,17 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832 @14 offered their fix but has not sent the diff. Build it here from their description (in the
+description field) rather than wait. One shared predicate, both scanners import it.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/research_preserved.py`: one predicate — does the task file carry substantive prose in research-bearing sections (Problem Statement, Open Questions, Exploration Plan, Technical Constraints, Hypothesis, Findings, Evidence, Dialogue Log, Scope Fence, Spikes, Prior Art, Assumptions); NOT counted: Acceptance Criteria, Verification, Updates, Recommendation, Decision(s), Go/No-Go; HTML comments and `[placeholder]` brackets stripped before measuring
+- [ ] Threshold calibrated on OUR corpus, not copied: measure the section-prose length of this repo's completed inceptions, read the boundary cases (the smallest genuine one, the largest filled-in-template one), record both with their numbers in the task, and set the threshold between them
+- [ ] Both `agents/audit/completed-task-scan.py` and `agents/audit/active-task-scan.py` import it (a teeth test asserts neither carries its own section list); an in-task record does not trip the "has artefact but not referenced" branch; ImportError falls back to location-only with a visible note, never universal coverage
+- [ ] Measured before/after on this repo: C-001 findings in both scans, with the inception_count unchanged (coverage must not shrink); each remaining finding read and confirmed genuine
+- [ ] Tests on fixtures, including a filled-in template with empty sections (must still be flagged) and a genuine short hypothesis (must pass); `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
