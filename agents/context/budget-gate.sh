@@ -132,14 +132,28 @@ try:
 except:
     data = {}
 
+import re
 tool_name = data.get('tool_name', '')
 command = data.get('tool_input', {}).get('command', '')
+
+# T-3598: the CLAUDE session making this call. Every Claude process in the
+# project (parent + TermLink workers) writes the same cache, and the framework
+# session_id in it comes from session.yaml, which they all share, so only the
+# Claude session id can tell them apart. Stdin session_id first, else the
+# transcript file stem (Claude Code names transcripts by session id).
+caller_sid = data.get('session_id') or ''
+if not caller_sid:
+    _tp = data.get('transcript_path') or ''
+    if _tp:
+        caller_sid = os.path.splitext(os.path.basename(_tp))[0]
+caller_sid = re.sub(r'[^A-Za-z0-9._-]', '', caller_sid)
 
 # Read cached status file
 status_file = '$STATUS_FILE'
 level = 'unknown'
 tokens = 0
 age = 999
+owner = 'mine'
 
 if os.path.exists(status_file):
     try:
@@ -148,6 +162,12 @@ if os.path.exists(status_file):
         level = s.get('level', 'unknown')
         tokens = s.get('tokens', 0)
         age = int(time.time()) - s.get('timestamp', 0)
+        # T-3598: a cache stamped by another Claude session is not this
+        # session's budget. Legacy caches (no claude_session_id) and callers
+        # with no identity keep the old age-only behaviour.
+        cache_sid = s.get('claude_session_id') or ''
+        if cache_sid and caller_sid and cache_sid != caller_sid:
+            owner = 'foreign'
     except:
         pass
 
@@ -208,7 +228,9 @@ is_wrapup_write = tool_name in ('Write', 'Edit') and any(p in file_path for p in
 _cls = 'allowed' if (is_allowed_cmd or is_read_tool or is_wrapup_write) else 'blocked'
 # Fields 6 and 7+ are T-2919: classifier mode, then the free-text reason the
 # call was refused. The reason is last because it contains spaces.
-print(f'{level} {tokens} {age} {tool_name} {_cls} {_classifier} {_reason}')
+# Field 8 (T-3598): caller Claude session id ('-' when unknown); field 9: cache
+# owner. Both before the free-text reason, which must stay last.
+print(f'{level} {tokens} {age} {tool_name} {_cls} {_classifier} {caller_sid or \"-\"} {owner} {_reason}')
 " 2>/dev/null)
 
 # Parse result
@@ -221,7 +243,11 @@ CMD_CLASS=$(echo "$RESULT" | awk '{print $5}')
 # T-2919: classifier mode + why the call was refused, so the block message can
 # name the offending segment instead of just saying no.
 CMD_CLASSIFIER=$(echo "$RESULT" | awk '{print $6}')
-CMD_REASON=$(echo "$RESULT" | cut -d' ' -f7-)
+# T-3598: which Claude session is calling, and whether the cache is its own.
+CALLER_SID=$(echo "$RESULT" | awk '{print $7}')
+[ "$CALLER_SID" = "-" ] && CALLER_SID=""
+CACHE_OWNER=$(echo "$RESULT" | awk '{print $8}')
+CMD_REASON=$(echo "$RESULT" | cut -d' ' -f9-)
 
 # Default to safe values if Python failed
 STATUS_LEVEL=${STATUS_LEVEL:-unknown}
@@ -245,7 +271,10 @@ _classifier_notice() {
 # Previous Bug 3 fix blindly trusted stale critical, creating a trap where
 # the slow path (which re-reads the actual transcript) could never run after
 # compaction or session restart, permanently blocking the agent.
-if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
+# T-3598: ...and only when this Claude session wrote it. A foreign cache (the
+# parent's, or a TermLink worker's) is skipped here and forces a re-read of the
+# caller's own transcript below, so neither session acts on the other's number.
+if [ "$CACHE_OWNER" != "foreign" ] && [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
     case "$STATUS_LEVEL" in
         ok)
             exit 0
@@ -300,6 +329,11 @@ fi
 # the actual transcript before deciding to block.
 FORCE_RECHECK=0
 if [ "$STATUS_LEVEL" = "critical" ] && [ "${STATUS_AGE}" -ge "$STATUS_MAX_AGE" ]; then
+    FORCE_RECHECK=1
+fi
+# T-3598: a foreign cache says nothing about this session, and the recheck
+# counter is shared too — skipping here would let 4 of 5 calls through unmeasured.
+if [ "$CACHE_OWNER" = "foreign" ]; then
     FORCE_RECHECK=1
 fi
 
@@ -357,8 +391,8 @@ if [ -z "${TRANSCRIPT:-}" ]; then
     if [ -f "$CONTEXT_DIR/working/session.yaml" ]; then
         NT_SESSION_ID=$(grep "^session_id:" "$CONTEXT_DIR/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
     fi
-    printf '{"level": "unknown", "tokens": null, "timestamp": %d, "session_id": "%s", "source": "budget-gate", "note": "no transcript found", "baseline_tokens": null, "headroom_tokens": null, "headroom_ratio": null}' \
-        "$(date +%s)" "${NT_SESSION_ID:-unknown}" > "$STATUS_FILE" 2>/dev/null || true
+    printf '{"level": "unknown", "tokens": null, "timestamp": %d, "session_id": "%s", "claude_session_id": "%s", "source": "budget-gate", "note": "no transcript found", "baseline_tokens": null, "headroom_tokens": null, "headroom_ratio": null}' \
+        "$(date +%s)" "${NT_SESSION_ID:-unknown}" "$CALLER_SID" > "$STATUS_FILE" 2>/dev/null || true
     exit 0
 fi
 
@@ -430,8 +464,8 @@ if [ "$SCAN_OK" -eq 1 ]; then
         HR_JSON=', "baseline_tokens": null, "headroom_tokens": null, "headroom_ratio": null'
     fi
     # Write status file (fast-path cache for subsequent gate calls)
-    printf '{"level": "%s", "tokens": %d, "timestamp": %d, "session_id": "%s", "source": "budget-gate"%s}' \
-        "$LEVEL" "$TOKENS" "$(date +%s)" "${BG_SESSION_ID:-unknown}" "$HR_JSON" > "$STATUS_FILE" 2>/dev/null || true
+    printf '{"level": "%s", "tokens": %d, "timestamp": %d, "session_id": "%s", "claude_session_id": "%s", "source": "budget-gate"%s}' \
+        "$LEVEL" "$TOKENS" "$(date +%s)" "${BG_SESSION_ID:-unknown}" "$CALLER_SID" "$HR_JSON" > "$STATUS_FILE" 2>/dev/null || true
 else
     # T-3241: scan failed (unreadable/unparseable transcript, or too few in-scope
     # entries to trust a scope decision — context_tokens.py's own "return 0 rather
@@ -440,8 +474,8 @@ else
     # pre-existing no-transcript path) — only the ON-DISK claim changes, not gate
     # enforcement.
     LEVEL="unknown"
-    printf '{"level": "unknown", "tokens": null, "timestamp": %d, "session_id": "%s", "source": "budget-gate", "note": "scan failed or produced no data", "baseline_tokens": null, "headroom_tokens": null, "headroom_ratio": null}' \
-        "$(date +%s)" "${BG_SESSION_ID:-unknown}" > "$STATUS_FILE" 2>/dev/null || true
+    printf '{"level": "unknown", "tokens": null, "timestamp": %d, "session_id": "%s", "claude_session_id": "%s", "source": "budget-gate", "note": "scan failed or produced no data", "baseline_tokens": null, "headroom_tokens": null, "headroom_ratio": null}' \
+        "$(date +%s)" "${BG_SESSION_ID:-unknown}" "$CALLER_SID" > "$STATUS_FILE" 2>/dev/null || true
 fi
 LEVEL=${LEVEL:-ok}
 TOKENS=${TOKENS:-0}

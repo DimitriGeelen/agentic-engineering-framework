@@ -94,8 +94,19 @@ _pcr_session_id=""
 if [ -f "$PROJECT_ROOT/.context/working/session.yaml" ]; then
     _pcr_session_id=$(grep "^session_id:" "$PROJECT_ROOT/.context/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
 fi
+# T-3598: also stamp the CLAUDE session id from this hook's stdin. Without it a
+# seed written by one Claude process (say a TermLink worker restarting) is a
+# legacy-shaped cache every other process in the project would trust as its own.
+_pcr_claude_sid=$(python3 -c "
+import json, re, sys
+try:
+    d = json.loads(sys.stdin.read() or '{}')
+except Exception:
+    d = {}
+print(re.sub(r'[^A-Za-z0-9._-]', '', d.get('session_id') or ''))
+" <<< "$SAVED_STDIN" 2>/dev/null || true)
 cat > "$PROJECT_ROOT/.context/working/.budget-status" <<BUDGET_EOF
-{"level": "ok", "tokens": 0, "timestamp": $(date +%s), "session_id": "${_pcr_session_id:-unknown}", "source": "post-compact-resume"}
+{"level": "ok", "tokens": 0, "timestamp": $(date +%s), "session_id": "${_pcr_session_id:-unknown}", "claude_session_id": "${_pcr_claude_sid}", "source": "post-compact-resume"}
 BUDGET_EOF
 
 # T-1088: Write the session-start timestamp in ISO-8601 Z format. budget-gate.sh

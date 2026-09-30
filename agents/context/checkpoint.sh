@@ -615,7 +615,15 @@ except Exception: print('')
             echo "reason: no cache file"
             exit 0
         fi
-        BUDGET_FILE="$BUDGET_FILE" MY_SESSION_ID="$MY_SESSION_ID" STATUS_MAX_AGE="$(fw_config_int "BUDGET_STATUS_MAX_AGE" 90)" python3 -c "
+        # T-3598: the framework session_id above is shared by every Claude
+        # process in the project (session.yaml), so it cannot tell the parent
+        # from a TermLink worker. The Claude session id can: CLAUDE_CODE_SESSION_ID
+        # in a Bash call, else the stem of FW_TRANSCRIPT_PATH.
+        MY_CLAUDE_SID="${CLAUDE_CODE_SESSION_ID:-}"
+        if [ -z "$MY_CLAUDE_SID" ] && [ -n "${FW_TRANSCRIPT_PATH:-}" ]; then
+            MY_CLAUDE_SID=$(basename "$FW_TRANSCRIPT_PATH" .jsonl)
+        fi
+        BUDGET_FILE="$BUDGET_FILE" MY_SESSION_ID="$MY_SESSION_ID" MY_CLAUDE_SID="$MY_CLAUDE_SID" STATUS_MAX_AGE="$(fw_config_int "BUDGET_STATUS_MAX_AGE" 90)" python3 -c "
 import json, os, time, sys
 
 budget_file = os.environ['BUDGET_FILE']
@@ -643,6 +651,10 @@ if age > max_age:
     reasons.append(f'cache is {age}s old (max {max_age}s)')
 if sid != 'unknown' and my_sid != 'unknown' and sid != my_sid:
     reasons.append(f'cache was written by session {sid}, not this session ({my_sid})')
+csid = s.get('claude_session_id') or ''
+my_csid = os.environ.get('MY_CLAUDE_SID') or ''
+if csid and my_csid and csid != my_csid:
+    reasons.append(f'cache was written by Claude session {csid}, not this one ({my_csid})')
 
 if reasons:
     print('level: unknown')

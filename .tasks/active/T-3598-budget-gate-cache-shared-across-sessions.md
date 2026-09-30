@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T19:57:06Z
-last_update: 2026-09-30T19:58:39Z
+last_update: '2026-09-30T20:00:30Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -69,6 +69,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T20:00:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=281,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3598: Budget gate cache shared across sessions
@@ -81,9 +91,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The cache records the writing session's identity (Claude `session_id` from hook stdin, falling back to transcript_path) and the fast path only trusts a cache whose identity matches the calling hook's; a mismatch falls through to the slow path (reads the caller's own transcript)
-- [ ] The slow path never overwrites another live session's cache entry in a way the other session then trusts (per-session cache file or identity-keyed entry); `checkpoint.sh budget` reads its own session's entry and reports `unknown` rather than another session's number
-- [ ] bats test `tests/unit/t3598_budget_cache_session_keyed.bats` reproduces both symptoms first (red), then passes: a foreign-session `critical` cache does not block; a foreign-session `ok/0` cache is not reported as this session's budget
+- [x] The cache records the writing session's identity (Claude `session_id` from hook stdin, falling back to transcript_path) and the fast path only trusts a cache whose identity matches the calling hook's; a mismatch falls through to the slow path (reads the caller's own transcript)
+- [x] The slow path never overwrites another live session's cache entry in a way the other session then trusts (per-session cache file or identity-keyed entry); `checkpoint.sh budget` reads its own session's entry and reports `unknown` rather than another session's number
+- [x] bats test `tests/unit/t3598_budget_cache_session_keyed.bats` reproduces both symptoms first (red), then passes: a foreign-session `critical` cache does not block; a foreign-session `ok/0` cache is not reported as this session's budget
 - [ ] Existing budget-gate / checkpoint suites stay green; `bin/fw vendor self --check` clean
 
 ### Human
@@ -331,6 +341,12 @@ bin/fw vendor self --check
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-09-30 — identity field in the one cache, not one file per session
+- **Chose:** keep the single `.context/working/.budget-status` and stamp it with `claude_session_id` (hook stdin `session_id`, falling back to the transcript file stem). The gate's fast path acts on the cache only when that id matches the caller; a mismatch skips the fast path AND forces the slow path (own transcript), because the recheck counter is shared too and an unforced slow path would let 4 of 5 calls through unmeasured. `checkpoint.sh budget` compares against `CLAUDE_CODE_SESSION_ID` (fallback: `FW_TRANSCRIPT_PATH` stem) and reports `unknown` with a reason on mismatch. A cache without the field (legacy writers, test fixtures) or a caller without an id keeps the old age-only behaviour.
+- **Why:** smaller (no new path, no cleanup of per-session files, every reader keeps its path) and every enforcement decision is taken on the caller's own number. The framework `session_id` the cache already carried (T-3241) comes from `session.yaml`, which every Claude process in a project shares, so it never discriminated.
+- **Rejected:** one file per Claude session — no ping-pong, but it adds a directory that needs pruning, and every legacy reader (doctor, audit CTL-003/018, pre-compact/init cleanup, integrate/worktree classifiers) would need a second path. Cost of the chosen design: while two sessions are live, each call after the other session's write takes the slow path (~30-60ms), and `checkpoint.sh budget` may say `unknown` until the caller's next gate call rewrites the cache.
+- **Readers checked:** `agents/context/budget-gate.sh` (fast path — fixed; all three writes stamp the id); `agents/context/checkpoint.sh budget` (fixed); `agents/context/post-compact-resume.sh` (writer of the ok/0 seed — now stamps the id from its stdin); `bin/fw` doctor supervision check (prints cached tokens — now suppressed when foreign); `agents/audit/audit.sh` CTL-003/CTL-018 (freshness + JSON shape only — compatible, unchanged); `agents/context/pre-compact.sh`, `agents/context/lib/init.sh` (rm only — compatible); `lib/integrate.py`, `lib/worktree.sh` (filename classifiers — compatible); `checkpoint.sh` post-tool / `.restart-requested` (do not read the cache); Watchtower `web/` (only the `BUDGET_STATUS_MAX_AGE` config key — compatible); `lib/templates/claude-project.md` (prose — still accurate).
 
 ## Decision
 
