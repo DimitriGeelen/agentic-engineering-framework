@@ -609,3 +609,35 @@ class TestOversizedNumbers:
     def test_an_oversized_ceiling_config_is_not_a_ceiling(self, hi, monkeypatch):
         monkeypatch.setenv(CEIL, "1" + "0" * 400)
         assert rp.ceiling_status(hi)[0] is None
+
+
+# ── 9b. Claude N7: a review worker takes no environment from its caller ──────────────────────
+
+class TestNoCallerEnvironment:
+    @pytest.mark.parametrize("kv", ["GIT_AUTHOR_NAME=The Operator", "GIT_COMMITTER_EMAIL=op@x.y",
+                                    "FW_SESSION_SCOPED_FOCUS=0", "FW_FOCUS_SESSION_KEY=shared"])
+    def test_probe_n7_even_identity_and_focus_keys_are_refused(self, tmp_path, kv):
+        """N7: GIT_AUTHOR_* let the reviewer's commits carry someone else's name (the operator's
+        included); the focus keys would point its focus writes at the shared focus.yaml."""
+        r = _dispatch_cli(tmp_path, "--env", kv)
+        assert r.returncode != 0 and "takes no environment from its caller" in r.stderr, r.stderr
+        assert "set by the dispatcher" in r.stderr
+
+    def test_the_allowlist_is_empty_in_both_places(self):
+        import re
+        assert vl.REVIEW_ENV_ALLOW == ()
+        m = re.search(r'^REVIEW_ENV_ALLOW="([^"]*)"', TERMLINK.read_text(), re.M)
+        assert m and m.group(1) == ""
+
+    def test_the_dispatchers_own_keys_still_register(self, hi):
+        w = rt.wdir_for(hi, "rv-1")
+        rt.write_launch(w)
+        (w / "env.json").write_text(json.dumps({
+            "GIT_AUTHOR_NAME": "fw worker (termlink-dispatch)", "FW_SIDECAR_AGENT_ID": "rv-1",
+            "FW_SESSION_SCOPED_FOCUS": "1", "FW_FOCUS_SESSION_KEY": "rv-1", "FW_REVIEW_WORKER": "1"}))
+        vl.register_dispatch("rv-1", TID, "review", wdir=str(w), worker_bin=rt.WORKER_BIN, root=hi)
+
+    def test_the_judge_passes_no_env(self):
+        argv = judge_cli._dispatch_argv(Path("/fw"), task_id=TID, name="n", prompt_file=Path("/p"),
+                                        root=Path("/r"), vendor="claude", timeout=1)
+        assert "--env" not in argv

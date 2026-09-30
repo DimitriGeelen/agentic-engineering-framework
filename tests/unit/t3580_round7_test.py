@@ -208,7 +208,8 @@ def _dispatch_cli(tmp_path, *extra):
     (stub / "termlink").write_text("#!/bin/sh\nexit 0\n")
     (stub / "termlink").chmod(0o755)
     import os
-    env = {**os.environ, "PATH": f"{stub}:{os.environ['PATH']}", "FRAMEWORK_ROOT": str(_HERE)}
+    env = {**os.environ, "PATH": f"{stub}:{os.environ['PATH']}", "FRAMEWORK_ROOT": str(_HERE),
+           "FW_DISPATCH_DIR": str(tmp_path / "tl-dispatch")}      # never the shared /tmp/tl-dispatch
     return subprocess.run(["bash", str(TERMLINK), "dispatch", "--task", TID, "--name", "judge-x",
                            "--task-type", "review", "--prompt", "brief", *extra],
                           capture_output=True, text=True, env=env, cwd=tmp_path, timeout=60)
@@ -225,8 +226,9 @@ class TestWorkerSteering:
         r = _dispatch_cli(tmp_path, "--env", kv)
         assert r.returncode != 0 and "refused for a review dispatch" in r.stderr, r.stderr
 
-    def test_control_an_allowlisted_key_gets_past_the_env_check(self, tmp_path):
-        r = _dispatch_cli(tmp_path, "--env", "GIT_AUTHOR_NAME=x")
+    def test_control_no_env_gets_past_the_env_check(self, tmp_path):
+        # Round 8 (N7): the allowlist is empty, so the control is a dispatch with no --env.
+        r = _dispatch_cli(tmp_path)
         assert "refused for a review dispatch" not in r.stderr
 
     def test_the_two_allowlists_are_one(self):

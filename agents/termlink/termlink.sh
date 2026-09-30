@@ -604,10 +604,10 @@ cmd_cleanup() {
 DISPATCH_WORKER_KINDS="claude ollama-loop"
 
 # T-3580 round 7 (Claude F2): the ONLY caller --env keys a REVIEW dispatch accepts — deny by
-# default. Anything that chooses the program or the model (PATH, *_BASE_URL, ANTHROPIC_*,
-# OPENAI_*, CLAUDE_*, LD_*, BASH_ENV, model/binary overrides) is refused by being absent.
-# Mirrors REVIEW_ENV_ALLOW in lib/verdict_ledger.py (pinned equal by t3580_round7_test.py).
-REVIEW_ENV_ALLOW="GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL"
+# default. Round 8 (Claude N7): none. A reviewer needs nothing from its caller's environment:
+# its git identity, sidecar id, focus scope and revision are all set by the dispatcher.
+# Mirrors REVIEW_ENV_ALLOW in lib/verdict_ledger.py (pinned equal by t3580_round7/8 tests).
+REVIEW_ENV_ALLOW=""
 
 # T-3580 round 5: the VENDOR each worker kind runs comes from ONE mapping — `worker_kind` +
 # `vendor` in policy/review-backends.yaml, read through lib/verdict_ledger.py kind-vendors. The
@@ -759,7 +759,7 @@ cmd_dispatch() {
             _k="${_kv%%=*}"
             case " $REVIEW_ENV_ALLOW " in
                 *" $_k "*) : ;;
-                *) die "--env $_k refused for a review dispatch: only $REVIEW_ENV_ALLOW may be set (a key that could choose the worker program or model is never accepted)" ;;
+                *) die "--env $_k refused for a review dispatch: a review worker takes no environment from its caller. Its git identity, sidecar id, focus scope and reviewed revision are set by the dispatcher; a key that chooses its program, model or endpoint is never accepted. Drop --env for review dispatches (fw reviewer judge passes none)." ;;
             esac
         done
         # Round 8 (Claude N2): nor are its tools, permission mode or MCP servers — an MCP config

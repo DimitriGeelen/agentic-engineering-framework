@@ -324,13 +324,17 @@ def _sign(key: bytes, row: dict) -> str:
 
 
 #: Round 7 (Claude F2): the ONLY caller `--env` keys a review dispatch accepts — deny by default.
-#: Nothing that chooses the program or the model is on it: PATH, *_BASE_URL, ANTHROPIC_*, OPENAI_*,
-#: CLAUDE_*, LD_*, BASH_ENV, model and binary overrides are all refused because they are absent.
+#: Round 8 (Claude N7): EMPTY. The test is "a key a reviewer needs from its caller", and there is
+#: none: the git identity is fixed by the dispatcher (fw_worker_git_identity_env; a caller override
+#: only let the reviewer's commits carry someone else's name, the operator's included), and so are
+#: the sidecar id, the focus scope (a caller FW_SESSION_SCOPED_FOCUS=0 would aim the reviewer's
+#: focus writes at the shared focus.yaml) and the revision. `fw reviewer judge` passes no --env.
 #: Mirrored by REVIEW_ENV_ALLOW in agents/termlink/termlink.sh (a test pins the two equal).
-REVIEW_ENV_ALLOW = ("GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL")
-#: Keys the dispatcher itself writes into a review worker's env.sh.
+REVIEW_ENV_ALLOW: tuple[str, ...] = ()
+#: Keys the dispatcher itself writes into a review worker's env.json.
 _RUNTIME_ENV_KEYS = ("FW_SIDECAR_AGENT_ID", "FW_REVIEW_REVISION", "FW_REVIEW_WORKER",
-                     "FW_SESSION_SCOPED_FOCUS", "FW_FOCUS_SESSION_KEY")
+                     "FW_SESSION_SCOPED_FOCUS", "FW_FOCUS_SESSION_KEY",
+                     "GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL")
 
 
 def brief_digest(text: str) -> str:
@@ -412,8 +416,9 @@ def _env_fault(wdir: Path) -> str:
     allowed = set(REVIEW_ENV_ALLOW) | set(_RUNTIME_ENV_KEYS)
     for key in data:
         if key not in allowed:
-            return (f"env.json sets {key!r}, which a review worker may not take from its caller "
-                    f"(allowed: {', '.join(REVIEW_ENV_ALLOW)}) — it could choose the program or model")
+            return (f"env.json sets {key!r}, which a review worker may not take from its caller — it "
+                    f"takes no environment from its caller; only the dispatcher's own keys "
+                    f"({', '.join(_RUNTIME_ENV_KEYS)}) may appear")
     return ""
 
 
