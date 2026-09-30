@@ -1761,7 +1761,10 @@ def _task_history_fms(root: Path, task_id: str) -> list[tuple[str, dict]]:
         return _HISTORY_FM[key]
     out: list[tuple[str, dict]] = []
     if head:
-        rc, log = _git_out(root, "log", "--format=%x1e%H", "--name-only", "--diff-filter=d", "HEAD",
+        # Round 8 (Claude N5): --full-history, so a version committed on a side branch that was
+        # merged TREESAME (e.g. `-s ours`) is not pruned from the walk by history simplification.
+        rc, log = _git_out(root, "log", "--full-history", "--format=%x1e%H", "--name-only",
+                           "--diff-filter=d", "HEAD",
                            "--", f":(glob).tasks/*/{task_id}-*.md", f":(glob).tasks/*/{task_id}.md")
         if rc != 0:
             raise HistoryUnreadable(f"could not read the committed history of {task_id} (git log "

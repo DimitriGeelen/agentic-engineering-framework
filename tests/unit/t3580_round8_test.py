@@ -392,3 +392,24 @@ class TestHistoryErrorsRefuse:
         _git(hi, "commit", "-q", "-m", f"{TID}: move")
         fms = vl._task_history_fms(hi, TID)
         assert fms and all(isinstance(fm, dict) for _s, fm in fms)
+
+
+# ── 9a. Claude N5: the history walk sees side branches merged TREESAME ───────────────────────
+
+class TestFullHistory:
+    def test_probe_n5_a_raised_version_on_a_side_branch_merged_ours_still_counts(self, repo):
+        vl._HISTORY_FM.clear()
+        _mk_task(repo, TASTE)
+        _produce(repo)
+        base = subprocess.run(["git", "-C", str(repo), "rev-parse", "--abbrev-ref", "HEAD"],
+                              capture_output=True, text=True).stdout.strip()
+        _git(repo, "checkout", "-q", "-b", "side")
+        f = next((repo / ".tasks" / "active").glob(f"{TID}-*.md"))
+        text = f.read_text()
+        f.write_text(text.replace("\n---", "\ncost_estimate: {blast_radius: 9}\n---", 1))
+        _git(repo, "commit", "-q", "-am", f"{TID}: raise the estimate")
+        _git(repo, "checkout", "-q", base)
+        _git(repo, "merge", "-q", "-s", "ours", "--no-edit", "side")
+        assert "blast_radius: 9" not in f.read_text()                  # HEAD is TREESAME to main
+        fms = vl._task_history_fms(repo, TID)
+        assert any((fm.get("cost_estimate") or {}).get("blast_radius") == 9 for _s, fm in fms)
