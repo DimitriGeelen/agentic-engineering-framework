@@ -1720,17 +1720,26 @@ def _fault(ctx: _Ctx, row: dict, crit, intro: dict | None, *, need_commit: bool 
     return None
 
 
+class HistoryUnreadable(VerdictRefused):
+    """(round 8, codex 3) git could not answer a question about the task's committed history.
+    Distinct from "there is no history": that is an answer, this is not, and it refuses."""
+
+
 def _task_text_at(root: Path, rev: str, task_id: str) -> str:
-    """The task file as committed at `rev`; '' when it was not there."""
+    """The task file as committed at `rev`; '' when it was not there. Raises HistoryUnreadable
+    when git cannot answer (round 8: a failed lookup is not an absent file)."""
     rc, listing = _git_out(root, "ls-tree", "-r", "--name-only", rev, "--", ".tasks/active", ".tasks/completed")
     if rc != 0:
-        return ""
+        raise HistoryUnreadable(f"could not read the task tree at {rev[:9]} (git ls-tree rc={rc}) — "
+                                f"the review strength it requires cannot be established")
     name = next((ln for ln in listing.splitlines()
                  if Path(ln).name.startswith(f"{task_id}-") or Path(ln).name == f"{task_id}.md"), None)
     if not name:
         return ""
     rc, blob = _git_out(root, "show", f"{rev}:{name}")
-    return blob if rc == 0 else ""
+    if rc != 0:
+        raise HistoryUnreadable(f"could not read {name} at {rev[:9]} (git show rc={rc})")
+    return blob
 
 
 _HISTORY_FM: dict = {}
@@ -1738,24 +1747,36 @@ _HISTORY_FM: dict = {}
 
 def _task_history_fms(root: Path, task_id: str) -> list[tuple[str, dict]]:
     """[(sha, frontmatter)] of every committed version of the task file (active or completed,
-    any slug) reachable from HEAD — round 7 (Claude F4). Cached per (root, task, HEAD)."""
+    any slug) reachable from HEAD — round 7 (Claude F4). Cached per (root, task, HEAD).
+
+    Round 8 (codex 3): [] means git ANSWERED that there is no committed version (no commit, or
+    none touching the task). When git cannot answer — `git log` or a `git show` of a listed
+    version fails — this raises HistoryUnreadable and caches nothing: an unreadable history is
+    not an empty one, and treating it so dropped exactly the higher-risk versions F4 reads.
+    Deletions are filtered out of the walk (`--diff-filter=d`), so every listed version must
+    exist at its commit."""
     head = _head_sha(root)
     key = (str(root), task_id, head)
     if key in _HISTORY_FM:
         return _HISTORY_FM[key]
     out: list[tuple[str, dict]] = []
     if head:
-        rc, log = _git_out(root, "log", "--format=%x1e%H", "--name-only", "HEAD", "--",
-                           f":(glob).tasks/*/{task_id}-*.md", f":(glob).tasks/*/{task_id}.md")
-        for rec in (log.split("\x1e") if rc == 0 else []):
+        rc, log = _git_out(root, "log", "--format=%x1e%H", "--name-only", "--diff-filter=d", "HEAD",
+                           "--", f":(glob).tasks/*/{task_id}-*.md", f":(glob).tasks/*/{task_id}.md")
+        if rc != 0:
+            raise HistoryUnreadable(f"could not read the committed history of {task_id} (git log "
+                                    f"rc={rc}) — the review strength it requires cannot be established")
+        for rec in log.split("\x1e"):
             lines = [ln.strip() for ln in rec.splitlines() if ln.strip()]
             if not lines:
                 continue
             sha = lines[0]
             for name in lines[1:]:
                 rc2, blob = _git_out(root, "show", f"{sha}:{name}")
-                if rc2 == 0 and blob:
-                    out.append((sha, frontmatter(blob)))
+                if rc2 != 0:
+                    raise HistoryUnreadable(f"could not read {name} at {sha[:9]} (git show rc={rc2}) "
+                                            f"— a committed version of {task_id} is unreadable")
+                out.append((sha, frontmatter(blob)))
     _HISTORY_FM.clear() if len(_HISTORY_FM) > 64 else None
     _HISTORY_FM[key] = out
     return out
@@ -1791,7 +1812,10 @@ def _strength_fault(ctx: "_Ctx", row: dict, crit) -> tuple[str, str] | None:
     and vendors (`_panel_fault` then checks each seat). The row's `--rung` must be the run's rung:
     the label is what the run authorised, never what the worker typed."""
     root = ctx.root
-    need, why = required_strength(ctx, crit, str(row.get("revision") or ""))
+    try:
+        need, why = required_strength(ctx, crit, str(row.get("revision") or ""))
+    except HistoryUnreadable as e:
+        return "history-unreadable", str(e)
     claimed = review_policy.rung_number(row.get("rung"))
     run, _bind, rwhy = run_for_dispatch(root, str(row["dispatch_id"]))
     if rwhy:

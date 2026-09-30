@@ -329,3 +329,66 @@ class TestEnvironmentIsData:
         assert data["FW_SIDECAR_AGENT_ID"] == w.name and data["FW_REVIEW_WORKER"] == "1"
         assert data["GIT_AUTHOR_NAME"].startswith("fw worker")
         assert (w / "prompt.md").read_text() == vl.review_prompt("brief")
+
+
+# ── 5. codex 3: git history errors fail open ─────────────────────────────────────────────────
+
+def _failing_git(real, verb, rc=128):
+    """vl._git_out, except `git <verb>` fails with `rc` (the codex in-memory probe) — for `log`,
+    only the task-file history walk."""
+    def fake(root, *args):
+        if args and args[0] == verb and (verb != "log" or any(".tasks/" in a for a in args)):
+            return rc, ""
+        return real(root, *args)
+    return fake
+
+
+def _lower(root):
+    f = next((root / ".tasks" / "active").glob(f"{TID}-*.md"))
+    f.write_text(f.read_text().replace("blast_radius: 9", "blast_radius: 0"))
+    _git(root, "add", str(f.relative_to(root)))
+    _git(root, "commit", "-q", "-m", f"{TID}: lower the estimate")
+
+
+class TestHistoryErrorsRefuse:
+    @pytest.fixture(autouse=True)
+    def _clear(self):
+        vl._HISTORY_FM.clear()
+        yield
+        vl._HISTORY_FM.clear()
+
+    def test_probe_codex3_a_failing_git_log_is_not_an_empty_history(self, hi, monkeypatch):
+        """codex 3: git log exiting 128 became [] — and was cached."""
+        monkeypatch.setattr(vl, "_git_out", _failing_git(vl._git_out, "log"))
+        with pytest.raises(vl.HistoryUnreadable, match="could not read"):
+            vl._task_history_fms(hi, TID)
+        assert not vl._HISTORY_FM, "a failed read must not be cached"
+
+    def test_a_failing_git_show_of_a_listed_version_refuses(self, hi, monkeypatch):
+        monkeypatch.setattr(vl, "_git_out", _failing_git(vl._git_out, "show"))
+        with pytest.raises(vl.HistoryUnreadable):
+            vl._task_history_fms(hi, TID)
+
+    def test_the_ledger_refuses_a_green_when_history_is_unreadable(self, hi, monkeypatch):
+        """End to end: risk lowered in a commit and left lowered; with history unreadable the
+        old code scored only the lowered task (rung 1) and accepted the green."""
+        _lower(hi)
+        rt.dispatch(hi, "rv-1", TID)
+        monkeypatch.setattr(vl, "_git_out", _failing_git(vl._git_out, "log"))
+        with pytest.raises(vl.VerdictRefused, match="could not read"):
+            _record(hi, "rv-1")
+
+    def test_control_no_history_is_not_an_error(self, tmp_path):
+        subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+        assert vl._task_history_fms(tmp_path, TID) == []          # no commit at all
+        subprocess.run(["git", "-C", str(tmp_path), "-c", "user.name=a", "-c", "user.email=a@b",
+                        "commit", "-q", "--allow-empty", "-m", "x"], check=True)
+        assert vl._task_history_fms(tmp_path, TID) == []          # commits, none of the task
+
+    def test_control_a_task_moved_to_completed_is_read_without_error(self, hi):
+        f = next((hi / ".tasks" / "active").glob(f"{TID}-*.md"))
+        (hi / ".tasks" / "completed").mkdir(exist_ok=True)
+        _git(hi, "mv", str(f.relative_to(hi)), f".tasks/completed/{f.name}")
+        _git(hi, "commit", "-q", "-m", f"{TID}: move")
+        fms = vl._task_history_fms(hi, TID)
+        assert fms and all(isinstance(fm, dict) for _s, fm in fms)
