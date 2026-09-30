@@ -210,18 +210,89 @@ _events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     [ "$status" -eq 0 ]
 }
 
-@test "block message names the limit (--no-verify) and the stronger server-side control" {
+@test "block message names the limit (every hook-skipping path) and the stronger server-side control" {
     _diverge
     run git push --force origin main
     [ "$status" -ne 0 ]
-    [[ "$output" == *"--no-verify' skips this hook"* ]]
-    [[ "$output" == *"Server-side branch"* ]]
+    [[ "$output" == *"any path that skips client-side hooks"* ]]
+    [[ "$output" == *"--no-verify"* ]]
+    [[ "$output" == *"core.hooksPath"* ]]
+    [[ "$output" == *"send-pack"* ]]
+    [[ "$output" == *"Server-side branch and tag"* ]]
     [[ "$output" == *"operator decision"* ]]
 }
 
 @test "LIMIT (characterization): --no-verify skips the hook — a git property" {
     _diverge
     run git push --force --no-verify origin main
+    [ "$status" -eq 0 ]
+    [ "$(_remote_sha main)" = "$(git rev-parse HEAD)" ]
+}
+
+# ── Review fixes (docs/reports/T-3593-T-3594-review.md) ──────────────────────
+
+_gate() {
+    local json
+    json=$(python3 -c "import json,sys; print(json.dumps({'tool_input':{'command':sys.argv[1]},'cwd':sys.argv[2]}))" "$1" "$W")
+    printf '%s' "$json" | PROJECT_ROOT="$W" bash "$FRAMEWORK_ROOT/agents/context/check-tier0.sh"
+}
+
+@test "A1: a release tag moved FORWARD by force is refused without approval" {
+    git tag -a v1 -m "T-3594: v1"
+    git push -q origin v1 2>/dev/null
+    local old; old=$(_remote_sha refs/tags/v1)
+    echo "next $RANDOM" > g.txt && git add g.txt && git commit -q -m "T-3594: descendant"
+    git tag -f -a v1 -m "T-3594: v1 moved" >/dev/null
+    run git push -f origin v1
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"force-push: refs/tags/v1"* ]]
+    [ "$(_remote_sha refs/tags/v1)" = "$old" ]
+    # control: approved, the same move goes through once
+    run _approve
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/tags/v1'"* ]]
+    run git push -f origin v1
+    [ "$status" -eq 0 ]
+    [ "$(_remote_sha refs/tags/v1)" != "$old" ]
+}
+
+@test "A1 CONTROL: a NEW annotated tag still passes with no approval" {
+    git tag -a v2 -m "T-3594: v2"
+    run git push origin v2
+    [ "$status" -eq 0 ]
+    [ -n "$(_remote_sha refs/tags/v2)" ]
+}
+
+@test "A2: the text gate matches git -C / git -c pushes that force, +ref or delete" {
+    run _gate "git -C $W push -f origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    run _gate "git -C $W push origin +main"
+    [ "$status" -eq 2 ]
+    run _gate "git -C $W push origin --delete old"
+    [ "$status" -eq 2 ]
+    run _gate "git -c push.default=current push --force origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"Not mapped to an action"* ]]
+    # control: a plain -C push is not touched
+    run _gate "git -C $W push origin main"
+    [ "$status" -eq 0 ]
+}
+
+@test "A2: the text gate blocks a core.hooksPath override, and lets a read pass" {
+    run _gate "git -c core.hooksPath=/dev/null push origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"core.hooksPath"* ]]
+    run _gate "git config core.hooksPath /dev/null"
+    [ "$status" -eq 2 ]
+    run _gate "git config --get core.hooksPath"
+    [ "$status" -eq 0 ]
+}
+
+@test "A2 LIMIT (characterization): a core.hooksPath override from a script skips pre-push" {
+    _diverge
+    printf '#!/bin/bash\ngit -c core.hooksPath=/dev/null push -f origin main\n' > "$FX/push.sh"
+    run bash "$FX/push.sh"
     [ "$status" -eq 0 ]
     [ "$(_remote_sha main)" = "$(git rev-parse HEAD)" ]
 }

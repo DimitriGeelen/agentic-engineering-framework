@@ -479,13 +479,16 @@ control.
 **Force-push and ref deletion are enforced at git pre-push (T-3594).** The pre-push hook
 (installed by `fw git install-hooks`, delivered to consumers by `fw upgrade`) reads git's
 ref-update lines and refuses a non-fast-forward update or a ref deletion unless a matching
-action approval exists (same verb, ref, remote), which it then consumes. That holds however
-the push was launched — typed, `bash push.sh`, make. New refs and fast-forwards (handover
+action approval exists (same verb, ref, remote), which it then consumes. A moved tag (any
+update under `refs/tags/` whose remote value exists) counts as a forced update. That holds for
+any push that runs the hook — typed, `bash push.sh`, make. New refs and fast-forwards (handover
 pushes, mirror sync, tag creation) pass untouched. The text gate only *admits* a push
-approval; pre-push consumes it, so one approval covers one push. **Limit:** `git push
---no-verify` skips every client-side hook, this one included — typed, it is Tier 0; inside a
-script it is not seen. Server-side branch protection (OneDev) is the stronger control and is
-the operator's decision.
+approval; pre-push consumes it, so one approval covers one push. **Limit:** any path that
+skips client-side hooks skips this one too — `git push --no-verify`, a `core.hooksPath`
+override (`git -c core.hooksPath=… push`), plumbing (`git send-pack`) or forge-API ref
+updates. Typed, `--no-verify` and a `core.hooksPath` override are Tier 0 (as are `git -C/-c …
+push` with force, `+ref` or delete); inside a script none of them is seen. Server-side branch
+and tag protection (OneDev) is the stronger control and is the operator's decision.
 
 ## Working with Tasks
 

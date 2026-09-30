@@ -158,9 +158,10 @@ keeps the exact-text approval. Approval is refused to an agent session unless ov
 and the override is recorded as `agent-override`; a record written straight into the
 approval store by a same-user agent cannot be told apart from a genuine one. This does not
 widen what the text gate sees.
-Force-push and ref deletion are additionally enforced at git pre-push, whichever way the
-push is launched; `git push --no-verify` skips that hook (a git property), so server-side
-branch protection remains the stronger control.
+Force-push, tag moves and ref deletion are additionally enforced at git pre-push, for any
+push that runs that hook. Any path that skips client-side hooks skips it too — `git push
+--no-verify`, a `core.hooksPath` override, plumbing (`git send-pack`) or forge-API ref
+updates — so server-side branch and tag protection remains the stronger control.
 
 ## Working with Tasks
 

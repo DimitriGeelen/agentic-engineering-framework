@@ -779,20 +779,25 @@ _block_lines=""
 _stdin_buf=$(cat)
 
 # T-3594 (T-3576 GO): forced ref updates and ref deletions need a Tier 0 ACTION
-# approval (T-3593) — enforced HERE, at the ref level, so it holds however the
-# push was launched: typed, `bash push.sh`, make, python. The PreToolUse text
+# approval (T-3593) — enforced HERE, at the ref level, so it holds for any push
+# that runs this hook: typed, `bash push.sh`, make, python. The PreToolUse text
 # gate only sees typed commands (T-2742); this hook sees what git is about to do.
 #   delete         local sha all zeros                      → branch-delete
 #   new ref        remote sha all zeros                     → allowed
+#   tag moved      refs/tags/*, remote sha not all zeros    → force-push (git
+#                  treats every tag update as forced; is-ancestor would peel the
+#                  old tag and read a moved release tag as a fast-forward)
 #   fast-forward   remote sha is an ancestor of local sha   → allowed
 #   anything else  (incl. remote sha unknown locally)       → force-push
 # A matching approval (same verb, same ref, same remote) is consumed and logged;
 # otherwise the whole push is refused and a pending request is written for
 # `fw tier0 approve`. Fails CLOSED when the approval module cannot be found.
-# LIMIT, stated plainly: `git push --no-verify` skips every client-side hook,
-# this one included (a git property). The typed flag is Tier 0 in the text gate;
-# inside a script it is not seen. Server-side branch protection is the stronger
-# control and is the operator's decision.
+# LIMIT, stated plainly: any path that skips client-side hooks skips this one
+# too — `git push --no-verify`, a `core.hooksPath` override (`git -c
+# core.hooksPath=… push`), and ref updates through plumbing (`git send-pack`) or
+# a forge API. Typed, --no-verify and core.hooksPath are Tier 0 in the text gate;
+# inside a script none of them is seen. Server-side branch and tag protection is
+# the stronger control and is the operator's decision.
 _t3594_root="$(git rev-parse --show-toplevel 2>/dev/null)"
 _t3594_remote="${1:-}"
 _t3594_args=""
@@ -805,6 +810,8 @@ while IFS=' ' read -r _l_ref _l_sha _r_ref _r_sha; do
         _verb="branch-delete"
     elif [ "$_r_sha" = "$_zero" ] || [ "$_l_sha" = "$_r_sha" ]; then
         continue
+    elif [ "${_r_ref#refs/tags/}" != "$_r_ref" ]; then
+        _verb="force-push"                          # T-3594 A1: a tag was moved
     elif git cat-file -e "$_r_sha" 2>/dev/null \
          && git merge-base --is-ancestor "$_r_sha" "$_l_sha" 2>/dev/null; then
         continue
@@ -848,8 +855,10 @@ if [ -n "$_t3594_args" ]; then
             echo "  then push again. One approval covers one ref update, once, for a bounded time." >&2
         fi
         echo "" >&2
-        echo "  Limit: 'git push --no-verify' skips this hook (a git property). Typed, it is" >&2
-        echo "  a Tier 0 command; inside a script it is not seen. Server-side branch" >&2
+        echo "  Limit: any path that skips client-side hooks skips this one too —" >&2
+        echo "  'git push --no-verify', a core.hooksPath override, plumbing (send-pack) or" >&2
+        echo "  forge-API ref updates. Typed, --no-verify and core.hooksPath are Tier 0;" >&2
+        echo "  inside a script none of them is seen. Server-side branch and tag" >&2
         echo "  protection (e.g. OneDev) is the stronger control — an operator decision." >&2
         echo "" >&2
         exit 1

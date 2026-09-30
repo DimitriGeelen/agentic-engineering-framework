@@ -1562,3 +1562,53 @@
   - T-3420
   - OBS-566
   follow_up_task: null
+
+- id: OBS-568
+  type: structural
+  severity: medium
+  surface: 'Tier 0 action approvals (lib/tier0_action.py, T-3593/T-3594): an
+    ADMITTED push approval can outlive the push it was admitted for.'
+  detected_in: T-3593/T-3594 independent review (docs/reports/T-3593-T-3594-review.md, A3)
+  symptom: 'If a typed push is admitted by the text gate but never reaches
+    pre-push (it was a fast-forward after all, the network failed, or a
+    hook-skipping path applies), the approval stays `admitted` and a later
+    script push can consume it within the TTL. That is the second-use mechanism
+    behind review item R1.'
+  root_cause: 'The admitted state carries the full grant TTL, although the
+    admission is only meaningful for the push that follows it within seconds.'
+  prevention: 'NOT FIXED. Candidate: expire `admitted` records quickly (for
+    example after 60 s) instead of after the full grant TTL. R1 (fixed in T-3593)
+    removed the --no-verify route to this; the network-failure and
+    fast-forward-after-all routes remain.'
+  blast_radius: project and every consumer running the vendored pre-push guard
+  observed: '2026-09-30'
+  status: open
+  related:
+  - T-3593
+  - T-3594
+  follow_up_task: null
+
+- id: OBS-569
+  type: structural
+  severity: low
+  surface: 'git pre-push forced-update guard (agents/git/lib/hooks.sh, T-3594):
+    two fail-closed edge cases and one audit-trail wording.'
+  detected_in: T-3593/T-3594 independent review (docs/reports/T-3593-T-3594-review.md, A4)
+  symptom: '(1) PROJECT_ROOT comes from `git rev-parse --show-toplevel`; in a
+    linked worktree that points at the worktree''s .context/working, not the
+    store that `fw tier0 approve` wrote to in the main checkout. This fails
+    closed, but gives a confusing refusal. (2) `_zero` is 40 characters, so in a
+    SHA-256 repository a new-ref push reads as `force-push` (also fails closed).
+    (3) The consumption log said `authorized_by: human` — fixed in T-3593 R2
+    (now copied from the approval record''s approved_by).'
+  root_cause: 'The hook assumes the main checkout and SHA-1 object names.'
+  prevention: 'NOT FIXED for (1) and (2): resolve the store via
+    `git rev-parse --git-common-dir`, and compare against an all-zero string of
+    the repository''s hash length. (3) fixed by T-3593 R2.'
+  blast_radius: worktrees and SHA-256 repositories (both refuse rather than admit)
+  observed: '2026-09-30'
+  status: open
+  related:
+  - T-3594
+  - T-3593
+  follow_up_task: null
