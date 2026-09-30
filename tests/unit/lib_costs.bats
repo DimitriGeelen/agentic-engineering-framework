@@ -38,7 +38,13 @@ JSONL
 # _costs_jsonl_dir — path computation
 # ============================================================
 
+# T-2425 (b2ad63d4b): _costs_jsonl_dir delegates to fw_claude_project_dirs, which
+# emits only candidate dirs that EXIST. So each path test creates its expected
+# dir under a temp HOME first (never the real ~/.claude).
+
 @test "costs: _costs_jsonl_dir computes correct path from PROJECT_ROOT" {
+    export HOME="$TEST_TEMP_DIR/home"
+    mkdir -p "$HOME/.claude/projects/-opt-my-project"
     export PROJECT_ROOT="/opt/my-project"
     source "$FRAMEWORK_ROOT/lib/costs.sh"
     result=$(_costs_jsonl_dir)
@@ -46,6 +52,8 @@ JSONL
 }
 
 @test "costs: _costs_jsonl_dir strips leading dash from path" {
+    export HOME="$TEST_TEMP_DIR/home"
+    mkdir -p "$HOME/.claude/projects/-foo-bar"
     export PROJECT_ROOT="/foo/bar"
     source "$FRAMEWORK_ROOT/lib/costs.sh"
     result=$(_costs_jsonl_dir)
