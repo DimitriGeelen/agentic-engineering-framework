@@ -129,12 +129,12 @@ claim of forgery resistance. Do not build this in T-3581.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw reviewer judge T-XXX [--criterion N] [--dry-run]` selects the task's open REVIEWER_JUDGES criteria, builds a reviewer brief (the spike prompt shape: role, the operator's risk rule, verdict contract, evidence), and dispatches it via `fw termlink dispatch` to a worker that is not the producer
-- [ ] For a render-surface criterion, the verb captures screenshots of the pages the task touched (Playwright) and hands them to the reviewer; if capture fails, the reviewer is told so, and it must not return green on a page it did not see
-- [ ] The reviewer's output is parsed into T-3579 verdict records, one per criterion; malformed output is recorded as `unknown`, never as green
-- [ ] Rung selection follows IW-7: criteria in the hard human classes are never dispatched (reported as operator-only); otherwise `impact = max(cost_if_wrong, value_at_stake)` from existing fields (reversibility/blast_radius/consumer paths, BVP/voi) picks rung 1-2 (same-vendor independent agent) or 5-7 (3-vendor panel via codex/opencode/claude, stdin closed); the chosen rung and its reason are in the record
-- [ ] A weekly spend ceiling is a config key in both registries (lib/config.sh and web/blueprints/config.py); when reached, the rung drops one step and the verdict says so; nothing is silently skipped
-- [ ] `--dry-run` prints criteria, rung and brief without dispatching; tests cover selection, rung choice, the ceiling and output parsing, with a fake dispatcher
+- [x] `fw reviewer judge T-XXX [--criterion N] [--dry-run]` selects the task's open REVIEWER_JUDGES criteria, builds a reviewer brief (the spike prompt shape: role, the operator's risk rule, verdict contract, evidence), and dispatches it via `fw termlink dispatch` to a worker that is not the producer
+- [x] For a render-surface criterion, the verb captures screenshots of the pages the task touched (Playwright) and hands them to the reviewer; if capture fails, the reviewer is told so, and it must not return green on a page it did not see
+- [x] The reviewer's output is parsed into T-3579 verdict records, one per criterion; malformed output is recorded as `unknown`, never as green
+- [x] Rung selection follows IW-7: criteria in the hard human classes are never dispatched (reported as operator-only); otherwise `impact = max(cost_if_wrong, value_at_stake)` from existing fields (reversibility/blast_radius/consumer paths, BVP/voi) picks rung 1-2 (same-vendor independent agent) or 5-7 (3-vendor panel via codex/opencode/claude, stdin closed); the chosen rung and its reason are in the record
+- [x] A weekly spend ceiling is a config key in both registries (lib/config.sh and web/blueprints/config.py); when reached, the rung drops one step and the verdict says so; nothing is silently skipped
+- [x] `--dry-run` prints criteria, rung and brief without dispatching; tests cover selection, rung choice, the ceiling and output parsing, with a fake dispatcher
 - [ ] Live proof: run it on one real open render criterion, and the resulting record closes it through T-3579 with no bypass flag; `bin/fw vendor self --check` clean
 
 ### Human
