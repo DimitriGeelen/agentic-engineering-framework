@@ -618,9 +618,9 @@ Watchtower `/fabric` surfaces the subsystem overview, filterable component table
 **The bands are percentages of `CONTEXT_WINDOW`, never fixed token counts.** Both
 consumers (`agents/context/checkpoint.sh`, `agents/context/budget-gate.sh`) derive
 `TOKEN_WARN/URGENT/CRITICAL` as `CONTEXT_WINDOW * 75|85|95 / 100`, so the ladder moves with
-the cap and no literal needs editing. **This project is set to 900,000** (operator ruling,
-2026-09-28 — `fw config set CONTEXT_WINDOW 900000`, persisted in `.framework.yaml`), which
-puts the bands at **675K / 765K / 855K**. The registry default remains 300,000 for projects
+the cap and no literal needs editing. **This project is set to 975,000** (operator ruling,
+2026-09-30 — `fw config set CONTEXT_WINDOW 975000`, persisted in `.framework.yaml`; was 900,000 from
+2026-09-28), which puts the bands at **731K / 829K / 926K**. The registry default remains 300,000 for projects
 that do not set it.
 
 Quote the *percentage*, not the token figure, when reasoning about budget — and read the
@@ -633,7 +633,7 @@ default was being used as the denominator; the same measurement against the real
 ### Automated Monitoring and Critical Protocol
 
 - **Primary enforcement:** PreToolUse `budget-gate.sh` reads actual token usage from the session JSONL and blocks Write/Edit/Bash at critical (exit code 2). Fallback: PostToolUse `checkpoint.sh` (warnings + auto-handover, T-136).
-- **Escalation ladder:** 75% ok→warn, 85% warn→urgent, 95% urgent→critical (BLOCK) — all percentages of `FW_CONTEXT_WINDOW`, whose registry default is 300K. **This project is set to 900K**, so the ladder sits at 675K / 765K / 855K. Read the live figure from `checkpoint.sh budget`; do not assume the default.
+- **Escalation ladder:** 75% ok→warn, 85% warn→urgent, 95% urgent→critical (BLOCK) — all percentages of `FW_CONTEXT_WINDOW`, whose registry default is 300K. **This project is set to 975K**, so the ladder sits at 731K / 829K / 926K. Read the live figure from `checkpoint.sh budget`; do not assume the default.
 - **At critical (or if you see a SESSION WRAPPING UP block):** only wrap-up is allowed. Allowed: git commit/add, `fw handover`, `fw task update`, reading files, Write/Edit to `.context/` `.tasks/` `.claude/`. Blocked: Write/Edit to source files, general Bash.
 - Status cached in `.context/working/.budget-status` (JSON: level, tokens, timestamp). Check via `./agents/context/checkpoint.sh status`. If no transcript available, fails open (PostToolUse fallback handles it).
 - Wrap up calmly — task files already carry all essential state from continuous capture.
@@ -643,7 +643,7 @@ default was being used as the denominator; the same measurement against the real
 4-tier resolution: explicit CLI flag > `FW_*` env var > `.framework.yaml` > hardcoded default. Persistent per-project config: `fw config set KEY VALUE` writes to `.framework.yaml`.
 
 Agent-relevant settings:
-- `FW_CONTEXT_WINDOW` (registry default 300000; **this project: 900000**) — budget enforcement ceiling. Every band in §Context Budget Management is a percentage of it.
+- `FW_CONTEXT_WINDOW` (registry default 300000; **this project: 975000**) — budget enforcement ceiling. Every band in §Context Budget Management is a percentage of it.
 - `FW_PORT` (3000) — Watchtower listen port (also resolved via triple-file; see Watchtower Port section)
 - `FW_SAFE_MODE` (0) — bypass task gate (escape hatch). **Must be set on the Claude
   process itself, not as a command prefix (T-3179).** `check-active-task.sh` reads the
