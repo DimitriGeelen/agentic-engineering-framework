@@ -10751,6 +10751,10 @@ YAMLEOF
                 ;;
         esac
         ;;
+    review)
+        source "$FW_LIB_DIR/review.sh"
+        review_main "$@"
+        ;;
     config)
         source "$FW_LIB_DIR/config-file.sh"
         do_config "$@"
